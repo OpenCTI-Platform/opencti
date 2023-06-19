@@ -172,7 +172,7 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_STATUS]: [{ src: 'template_id' }, { src: 'type' }],
     [I.ENTITY_TYPE_FEED]: () => uuidv4(),
     [I.ENTITY_TYPE_TAXII_COLLECTION]: () => uuidv4(),
-    [I.ENTITY_TYPE_TASK]: () => uuidv4(),
+    [I.ENTITY_TYPE_BACKGROUND_TASK]: () => uuidv4(),
     [I.ENTITY_TYPE_RETENTION_RULE]: () => uuidv4(),
     [I.ENTITY_TYPE_SYNC]: () => uuidv4(),
     [I.ENTITY_TYPE_STREAM_COLLECTION]: () => uuidv4(),

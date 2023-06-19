@@ -250,7 +250,7 @@ const stixCoreObjectsListQuery = graphql`
           ... on Case {
             name
           }
-          ... on CaseTask {
+          ... on Task {
             name
             description
           }

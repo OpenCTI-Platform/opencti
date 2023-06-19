@@ -94,6 +94,7 @@ import {
 } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import TopMenuCaseRfi from './TopMenuCaseRfi';
 import TopMenuCaseRft from './TopMenuCaseRft';
+import TopMenuTask from './TopMenuTask';
 import TopMenuAudits from './TopMenuAudits';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -308,6 +309,9 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {location.pathname.includes('/dashboard/cases/rfts/') && (
             <TopMenuCaseRft />
+          )}
+          {location.pathname.includes('/dashboard/cases/tasks/') && (
+            <TopMenuTask />
           )}
           {location.pathname.includes('/dashboard/cases/feedbacks/') && (
             <TopMenuCaseFeedback />

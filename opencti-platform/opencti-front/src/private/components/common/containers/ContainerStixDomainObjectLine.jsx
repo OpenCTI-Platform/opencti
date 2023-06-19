@@ -293,7 +293,7 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         ... on Case {
           name
         }
-        ... on CaseTask {
+        ... on Task {
           name
         }
         objectLabel {

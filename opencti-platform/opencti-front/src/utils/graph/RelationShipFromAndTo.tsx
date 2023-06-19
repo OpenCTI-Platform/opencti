@@ -112,7 +112,7 @@ const relationShipFromAndToQuery = graphql`
       ... on Case {
         name
       }
-      ... on CaseTask {
+      ... on Task {
         name
       }
       ... on Narrative {

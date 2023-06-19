@@ -131,7 +131,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   description: String
   content: String
   content_mapping: String
-  tasks: CaseTaskConnection!
+  tasks: TaskConnection!
   # Feedback
   rating: Int
 }

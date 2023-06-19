@@ -58,16 +58,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const caseTemplateTasksPopoverDeletionMutation = graphql`
   mutation CaseTemplateTasksPopoverDeletionMutation($id: ID!) {
-    caseTaskDelete(id: $id)
+    taskTemplateDelete(id: $id)
   }
 `;
 
 const caseTemplateTasksPopoverUnlinkMutation = graphql`
   mutation CaseTemplateTasksPopoverUnlinkMutation($id: ID!, $toId: StixRef!) {
-    stixDomainObjectEdit(id: $id){
-      relationDelete(toId: $toId, relationship_type: "object") {
-        id
-      }
+    caseTemplateRelationDelete(id: $id, toId: $toId, relationship_type: "template-task") {
+      id
+      ...CaseTemplateLine_node
     }
   }
 `;
@@ -121,7 +120,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       },
       updater: (store: RecordSourceSelectorProxy) => deleteNode(
         store,
-        'Pagination_caseTemplate__caseTasks',
+        'Pagination_caseTemplate__taskTemplates',
         paginationOptions,
         task.id,
       ),
@@ -152,7 +151,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       },
       updater: (store: RecordSourceSelectorProxy) => deleteNode(
         store,
-        'Pagination_caseTemplate__caseTasks',
+        'Pagination_caseTemplate__taskTemplates',
         paginationOptions,
         task.id,
       ),
@@ -192,7 +191,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a task')}
+            {t('Update a task template')}
           </Typography>
         </div>
         <div className={classes.formContainer}>
@@ -208,7 +207,7 @@ const CaseTemplateTasksPopover: FunctionComponent<CaseTemplateTasksPopoverProps>
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to unlink this task ?')}
+            {t('Do you want to unlink this task template ?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

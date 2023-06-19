@@ -238,7 +238,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
     });
   };
   return (
-    <div style={{ marginTop: marginTop || 50 }}>
+    <div style={{ marginTop: marginTop || 55 }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {title}
       </Typography>

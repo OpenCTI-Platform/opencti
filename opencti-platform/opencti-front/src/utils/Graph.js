@@ -41,7 +41,7 @@ import CaseIncident from '../static/images/entities/case-incident.svg';
 import Feedback from '../static/images/entities/feedback.svg';
 import CaseRfi from '../static/images/entities/case-rfi.svg';
 import CaseRft from '../static/images/entities/case-rft.svg';
-import CaseTask from '../static/images/entities/case-task.svg';
+import Task from '../static/images/entities/task.svg';
 import Unknown from '../static/images/entities/unknown.svg';
 import StixCyberObservable from '../static/images/entities/stix-cyber-observable.svg';
 import relationship from '../static/images/entities/relationship.svg';
@@ -75,7 +75,7 @@ export const graphImages = {
   'Case-Incident': genImage(CaseIncident),
   'Case-Rfi': genImage(CaseRfi),
   'Case-Rft': genImage(CaseRft),
-  'Case-Task': genImage(CaseTask),
+  Task: genImage(Task),
   'Malware-Analysis': genImage(MalwareAnalysis),
   Campaign: genImage(Campaign),
   Note: genImage(Note),
@@ -177,7 +177,7 @@ export const graphLevel = {
   'Case-Incident': 1,
   'Case-Rft': 1,
   'Case-Rfi': 1,
-  'Case-Task': 1,
+  Task: 1,
   Feedback: 1,
   Directory: 1,
   'Domain-Name': 1,
@@ -252,7 +252,7 @@ export const graphRawImages = {
   Feedback,
   'Case-Rfi': CaseRfi,
   'Case-Rft': CaseRft,
-  'Case-Task': CaseTask,
+  Task,
   Directory: StixCyberObservable,
   'Domain-Name': StixCyberObservable,
   'Email-Addr': StixCyberObservable,

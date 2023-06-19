@@ -229,7 +229,7 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
           name
           description
         }
-        ... on CaseTask {
+        ... on Task {
           name
           description
         }
@@ -346,7 +346,7 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
         ... on Case {
           name
         }
-        ... on CaseTask {
+        ... on Task {
           name
         }
         createdBy {

@@ -125,7 +125,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return (
         <FileDelimitedOutline style={style} fontSize={fontSize} role="img" />
       );
-    case 'Task':
+    case 'BackgroundTask':
       return (
         <AssignmentOutlined style={style} fontSize={fontSize} role="img" />
       );
@@ -258,7 +258,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return (
         <BriefcaseRemoveOutline style={style} fontSize={fontSize} role="img" />
       );
-    case 'Case-Task':
+    case 'Task':
       return <TaskAltOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':

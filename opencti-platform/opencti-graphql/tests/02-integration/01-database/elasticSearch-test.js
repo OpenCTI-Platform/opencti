@@ -469,7 +469,7 @@ describe('Elasticsearch pagination', () => {
       orderMode: 'asc',
       first: 1000
     });
-    expect(data.edges.length).toEqual(326);
+    expect(data.edges.length).toEqual(420);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {

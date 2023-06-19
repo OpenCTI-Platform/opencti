@@ -1,12 +1,22 @@
 import * as R from 'ramda';
-import { Promise } from 'bluebird';
+import { v4 as uuidv4 } from 'uuid';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { paginateAllThings, listThings, listAllThings } from '../database/middleware';
-import { listEntities, listRelations, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
-import { buildRefRelationKey, ENTITY_TYPE_CONTAINER, ID_INFERRED, ID_INTERNAL } from '../schema/general';
+import {
+  internalFindByIds,
+  listEntities,
+  storeLoadById
+} from '../database/middleware-loader';
+import {
+  ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP,
+  buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER,
+  ID_INFERRED,
+  ID_INTERNAL
+} from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
-import { ES_MAX_CONCURRENCY } from '../database/engine';
+import { now } from '../utils/format';
 
 const MANUAL_OBJECT = 'manual';
 const INFERRED_OBJECT = 'inferred';
@@ -61,32 +71,34 @@ export const relatedContainers = async (context, user, containerId, args) => {
 
 export const containersObjectsOfObject = async (context, user, { id, types, filters = [], search = null }) => {
   const queryFilters = [...filters, { key: buildRefRelationKey(RELATION_OBJECT), values: [id] }];
-  const containerConnection = await findAll(context, user, { first: 1000, search, filters: queryFilters });
-  const listRelationPromises = (async (n) => await listRelations(context, user, RELATION_OBJECT, {
-    first: 1000,
-    fromId: n.node.id,
-    toTypes: types,
-  }));
-  const containersObjectsRelationshipsEdges = await Promise.map(containerConnection.edges, listRelationPromises, { concurrency: ES_MAX_CONCURRENCY });
-  const containersObjectsRelationships = R.flatten(R.map((n) => n.edges, containersObjectsRelationshipsEdges));
-  const containerTypedObjectsRelationships = {};
-  containersObjectsRelationships.forEach(({ node }) => {
-    if (!containerTypedObjectsRelationships[node.toType]) {
-      containerTypedObjectsRelationships[node.toType] = [];
-    }
-    if (!containerTypedObjectsRelationships[node.toType].includes(node.toId)) {
-      containerTypedObjectsRelationships[node.toType].push(node.toId);
-    }
-  });
-  const containersObjects = R.flatten(await Promise.map(
-    Object.entries(containerTypedObjectsRelationships),
-    (async ([type, ids]) => await storeLoadByIds(context, user, ids, type)),
-    { concurrency: ES_MAX_CONCURRENCY }
-  ));
-  const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), [
-    ...containerConnection.edges,
-    ...containersObjectsRelationships,
-    ...R.map((n) => ({ node: n }), containersObjects),
-  ]);
-  return buildPagination(0, null, containersObjectsResult, containersObjectsResult.length);
+  const containers = await findAll(context, user, { types: [ENTITY_TYPE_CONTAINER], first: 1000, search, filters: queryFilters, connectionFormat: false });
+  const objectIds = R.uniq(containers.map((n) => n[buildRefRelationKey(RELATION_OBJECT)]).flat());
+  const resolvedObjectsMap = await internalFindByIds(context, user, objectIds, { type: types, toMap: true });
+  const resolvedObjects = Object.values(resolvedObjectsMap);
+  resolvedObjects.push(
+    ...containers,
+    ...(containers.map((c) => c[buildRefRelationKey(RELATION_OBJECT)].filter((toId) => resolvedObjectsMap[toId]).map((toId) => (
+      {
+        id: uuidv4(),
+        created_at: now(),
+        updated_at: now(),
+        parent_types: [ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP],
+        entity_type: RELATION_OBJECT,
+        relationship_type: RELATION_OBJECT,
+        from: {
+          id: c.id,
+          entity_type: c.entity_type,
+          parent_types: c.parent_types,
+          relationship_type: c.parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? c.entity_type : null
+        },
+        to: {
+          id: toId,
+          entity_type: resolvedObjectsMap[toId].entity_type,
+          parent_types: resolvedObjectsMap[toId].parent_types,
+          relationship_type: resolvedObjectsMap[toId].parent_types.includes(ABSTRACT_BASIC_RELATIONSHIP) ? resolvedObjectsMap[toId].entity_type : null
+        }
+      }
+    ))).flat())
+  );
+  return buildPagination(0, null, resolvedObjects.map((r) => ({ node: r })), resolvedObjects.length);
 };

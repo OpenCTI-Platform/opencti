@@ -21,10 +21,9 @@ export const tasksLinesQuery = graphql`
     $search: String
     $count: Int
     $orderMode: OrderingMode
-    $orderBy: CaseTasksOrdering
-    $filters: [CaseTasksFiltering!]
+    $orderBy: TaskTemplatesOrdering
+    $filters: [TaskTemplatesFiltering!]
   ) {
-    
     ...CaseTemplateTasksLines_data
     @arguments(
       search: $search
@@ -39,22 +38,22 @@ export const tasksLinesQuery = graphql`
 export const tasksLinesFragment = graphql`
   fragment CaseTemplateTasksLines_data on Query
   @argumentDefinitions(
-    filters: { type: "[CaseTasksFiltering!]" }
+    filters: { type: "[TaskTemplatesFiltering!]" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 200 }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    orderBy: { type: "CaseTasksOrdering", defaultValue: name }
+    orderBy: { type: "TaskTemplatesOrdering", defaultValue: name }
     after: { type: "ID", defaultValue: "" }
   )
   @refetchable(queryName: "CaseTemplateTasksLines_DataQuery") {
-    caseTasks(
+    taskTemplates(
       filters: $filters
       search: $search
       first: $count
       orderMode: $orderMode
       orderBy: $orderBy
       after: $after
-    ) @connection(key: "Pagination_caseTemplate__caseTasks") {
+    ) @connection(key: "Pagination_caseTemplate__taskTemplates") {
       edges {
         node {
           id
@@ -86,12 +85,12 @@ const CaseTemplateTasksLines: FunctionComponent<TasksLinesProps> = ({
     queryRef,
     linesQuery: tasksLinesQuery,
     linesFragment: tasksLinesFragment,
-    nodePath: ['caseTasks', 'pageInfo', 'globalCount'],
+    nodePath: ['taskTemplates', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 
-  const tasks = data?.caseTasks?.edges ?? [];
-  const globalCount = data?.caseTasks?.pageInfo?.globalCount;
+  const tasks = data?.taskTemplates?.edges ?? [];
+  const globalCount = data?.taskTemplates?.pageInfo?.globalCount;
 
   return (
     <>

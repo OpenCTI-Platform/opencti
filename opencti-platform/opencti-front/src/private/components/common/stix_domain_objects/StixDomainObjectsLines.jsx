@@ -335,6 +335,22 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
+          ... on CaseIncident {
+            name
+            description
+          }
+          ... on CaseRfi {
+            name
+            description
+          }
+          ... on CaseRft {
+            name
+            description
+          }
+          ... on Task {
+            name
+            description
+          }
           ... on AdministrativeArea {
             name
             description
@@ -540,6 +556,18 @@ const StixDomainObjectsLines = createPaginationContainer(
                 name
               }
               ... on Case {
+                name
+              }
+              ... on CaseIncident {
+                name
+              }
+              ... on CaseRfi {
+                name
+              }
+              ... on CaseRft {
+                name
+              }
+              ... on Task {
                 name
               }
               objectLabel {

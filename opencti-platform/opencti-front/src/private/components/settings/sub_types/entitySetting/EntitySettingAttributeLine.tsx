@@ -6,16 +6,18 @@ import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { KeyboardArrowRightOutlined, MoreVertOutlined, ShortTextOutlined } from '@mui/icons-material';
+import {
+  NorthEastOutlined,
+  MoreVertOutlined,
+  ShortTextOutlined,
+} from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import { DataColumns } from '../../../../../components/list_lines';
 import { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import EntitySettingAttributeEdition from './EntitySettingAttributeEdition';
 import { EntitySettingAttributeLine_attribute$key } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
-import {
-  EntitySettingAttributes_entitySetting$data,
-} from './__generated__/EntitySettingAttributes_entitySetting.graphql';
+import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -71,16 +73,14 @@ const entitySettingAttributeLineFragment = graphql`
 `;
 
 interface EntitySettingAttributeLineProps {
-  node?: EntitySettingAttributeLine_attribute$key
-  dataColumns?: DataColumns
-  entitySetting: EntitySettingAttributes_entitySetting$data
+  node?: EntitySettingAttributeLine_attribute$key;
+  dataColumns?: DataColumns;
+  entitySetting: EntitySettingAttributes_entitySetting$data;
 }
 
-const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLineProps> = ({
-  node = null,
-  dataColumns,
-  entitySetting,
-}) => {
+const EntitySettingAttributeLine: FunctionComponent<
+EntitySettingAttributeLineProps
+> = ({ node = null, dataColumns, entitySetting }) => {
   const classes = useStyles();
   const attribute = useFragment(entitySettingAttributeLineFragment, node);
 
@@ -120,7 +120,7 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
+          <NorthEastOutlined />
         </ListItemIcon>
       </ListItemButton>
       <Drawer
@@ -134,7 +134,8 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
         <EntitySettingAttributeEdition
           attribute={attribute}
           entitySetting={entitySetting}
-          handleClose={handleCloseUpdate} />
+          handleClose={handleCloseUpdate}
+        />
       </Drawer>
     </>
   );
@@ -142,7 +143,11 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
 
 export default EntitySettingAttributeLine;
 
-export const EntitySettingAttributeLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const EntitySettingAttributeLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem divider={true} classes={{ root: classes.item }}>

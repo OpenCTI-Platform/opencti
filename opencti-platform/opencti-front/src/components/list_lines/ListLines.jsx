@@ -22,17 +22,20 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import { FormatListGroup, GraphOutline, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
+import {
+  FormatListGroup,
+  GraphOutline,
+  RelationManyToMany,
+  VectorPolygon,
+} from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import Filters from '../../private/components/common/lists/Filters';
-import StixCyberObservablesExports
-  from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import StixCoreRelationshipsExports
-  from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
+import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
 import FilterIconButton from '../FilterIconButton';
 import { ExportContext } from '../../utils/ExportContextProvider';
@@ -191,42 +194,48 @@ class ListLines extends Component {
                 noPadding ? classes.containerNoPadding : classes.container
               }
             >
-              <div
-                className={
-                  parametersWithPadding
-                    ? classes.parametersWithPadding
-                    : classes.parameters
-                }
-              >
-                {typeof handleSearch === 'function' && (
-                  <div style={{ float: 'left', marginRight: 20 }}>
-                    <SearchInput
-                      variant={searchVariant || 'small'}
-                      onSubmit={handleSearch.bind(this)}
-                      keyword={keyword}
+              {!this.props.inline && (
+                <div
+                  className={
+                    parametersWithPadding
+                      ? classes.parametersWithPadding
+                      : classes.parameters
+                  }
+                >
+                  {typeof handleSearch === 'function' && (
+                    <div style={{ float: 'left', marginRight: 20 }}>
+                      <SearchInput
+                        variant={searchVariant || 'small'}
+                        onSubmit={handleSearch.bind(this)}
+                        keyword={keyword}
+                      />
+                    </div>
+                  )}
+                  {extraFields}
+                  {availableFilterKeys && availableFilterKeys.length > 0 && (
+                    <Filters
+                      searchContext={{
+                        entityTypes: exportEntityType ? [exportEntityType] : [],
+                      }}
+                      availableFilterKeys={availableFilterKeys}
+                      handleAddFilter={handleAddFilter}
+                      availableEntityTypes={availableEntityTypes}
+                      availableRelationshipTypes={availableRelationshipTypes}
+                      availableRelationFilterTypes={
+                        availableRelationFilterTypes
+                      }
                     />
-                  </div>
-                )}
-                {extraFields}
-                {availableFilterKeys && availableFilterKeys.length > 0 && (
-                  <Filters
-                    searchContext={{ entityTypes: exportEntityType ? [exportEntityType] : [] }}
+                  )}
+                  {(!availableFilterKeys || availableFilterKeys.length === 0)
+                    && !noHeaders
+                    && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
+                  <FilterIconButton
                     availableFilterKeys={availableFilterKeys}
-                    handleAddFilter={handleAddFilter}
-                    availableEntityTypes={availableEntityTypes}
-                    availableRelationshipTypes={availableRelationshipTypes}
-                    availableRelationFilterTypes={availableRelationFilterTypes}
+                    filters={filters}
+                    handleRemoveFilter={handleRemoveFilter}
                   />
-                )}
-                {(!availableFilterKeys || availableFilterKeys.length === 0)
-                  && !noHeaders
-                  && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
-                <FilterIconButton
-                  availableFilterKeys={availableFilterKeys}
-                  filters={filters}
-                  handleRemoveFilter={handleRemoveFilter}
-                />
-              </div>
+                </div>
+              )}
               <div className={classes.views}>
                 <div style={{ float: 'right', marginTop: -20 }}>
                   {numberOfElements && (
@@ -612,6 +621,7 @@ ListLines.propTypes = {
   handleSwitchRedirectionMode: PropTypes.func,
   redirectionMode: PropTypes.string,
   parametersWithPadding: PropTypes.bool,
+  inline: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

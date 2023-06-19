@@ -52,7 +52,7 @@ const EntitySettingAttributes = ({
 
   const dataColumns = {
     name: {
-      label: 'Attribute',
+      label: 'Name',
       width: '25%',
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {

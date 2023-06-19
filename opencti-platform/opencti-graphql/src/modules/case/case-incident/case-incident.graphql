@@ -131,7 +131,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   description: String
   content: String
   content_mapping: String
-  tasks: CaseTaskConnection!
+  tasks: TaskConnection!
   # Incident Response
   rating: Int
   response_types: [String!]

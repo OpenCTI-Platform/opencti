@@ -53,7 +53,7 @@ const TopMenuTechniques = () => {
             classes={{ root: classes.button }}
           >
             <LockPattern className={classes.icon} fontSize="small" />
-            {t('Attack Patterns')}
+            {t('Attack patterns')}
           </Button>
       )}
       {!useIsHiddenEntity('Narrative') && (

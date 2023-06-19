@@ -36,13 +36,13 @@ const OpinionComponent = ({ opinion }) => {
         placeholder={
           <ContainerHeader
             container={opinion}
-            PopoverComponent={<OpinionPopover opinion={opinion}/>}
+            PopoverComponent={<OpinionPopover opinion={opinion} />}
           />
         }
       >
         <ContainerHeader
           container={opinion}
-          PopoverComponent={<OpinionPopover opinion={opinion}/>}
+          PopoverComponent={<OpinionPopover opinion={opinion} />}
           popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}
         />
       </CollaborativeSecurity>
@@ -52,35 +52,21 @@ const OpinionComponent = ({ opinion }) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <OpinionDetails opinion={opinion}/>
+          <OpinionDetails opinion={opinion} />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={opinion}/>
+          <StixDomainObjectOverview stixDomainObject={opinion} />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={12}>
+        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             container={opinion}
             isSupportParticipation={true}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id}/>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id} />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={opinion.id}
             isSupportParticipation={true}
@@ -88,7 +74,7 @@ const OpinionComponent = ({ opinion }) => {
         </Grid>
       </Grid>
       <CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE]}>
-        <OpinionEdition opinionId={opinion.id}/>
+        <OpinionEdition opinionId={opinion.id} />
       </CollaborativeSecurity>
     </div>
   );
@@ -96,60 +82,60 @@ const OpinionComponent = ({ opinion }) => {
 
 const Opinion = createFragmentContainer(OpinionComponent, {
   opinion: graphql`
-      fragment Opinion_opinion on Opinion {
-          id
-          standard_id
-          entity_type
-          x_opencti_stix_ids
-          spec_version
-          revoked
-          confidence
-          created
-          modified
-          created_at
-          updated_at
-          createdBy {
-            id
-            name
-            entity_type
-          }
-          creators {
-              id
-              name
-          }
-          objectMarking {
-              edges {
-                  node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                  }
-              }
-          }
-          objectLabel {
-              edges {
-                  node {
-                      id
-                      value
-                      color
-                  }
-              }
-          }
-          status {
-              id
-              order
-              template {
-                  name
-                  color
-              }
-          }
-          workflowEnabled
-          ...OpinionDetails_opinion
-          ...ContainerHeader_container
-          ...ContainerStixObjectsOrStixRelationships_container
+    fragment Opinion_opinion on Opinion {
+      id
+      standard_id
+      entity_type
+      x_opencti_stix_ids
+      spec_version
+      revoked
+      confidence
+      created
+      modified
+      created_at
+      updated_at
+      createdBy {
+        id
+        name
+        entity_type
       }
+      creators {
+        id
+        name
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+      ...OpinionDetails_opinion
+      ...ContainerHeader_container
+      ...ContainerStixObjectsOrStixRelationships_container
+    }
   `,
 });
 

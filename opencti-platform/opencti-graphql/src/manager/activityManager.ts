@@ -118,6 +118,7 @@ const initActivityManager = () => {
   };
   return {
     start: async () => {
+      shutdown = false;
       // To start the manager we need to find the last event id indexed
       // and restart the stream consumption from this point.
       const context = executionContext('activity_manager');

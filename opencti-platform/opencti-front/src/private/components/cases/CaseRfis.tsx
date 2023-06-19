@@ -10,14 +10,14 @@ import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import CaseRfiCreation from './case_rfi/CaseRfiCreation';
-import CaseRfisLines, { caseRfisLinesQuery } from './case_rfi/CaseRfiLines';
-import { CaseRfiLineDummy } from './case_rfi/CaseRfiLine';
+import CaseRfiCreation from './case_rfis/CaseRfiCreation';
+import CaseRfisLines, { caseRfisLinesQuery } from './case_rfis/CaseRfiLines';
+import { CaseRfiLineDummy } from './case_rfis/CaseRfiLine';
 import {
   CaseRfiLinesCasesPaginationQuery,
   CaseRfiLinesCasesPaginationQuery$variables,
-} from './case_rfi/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
-import { CaseRfiLineCase_node$data } from './case_rfi/__generated__/CaseRfiLineCase_node.graphql';
+} from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
+import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {

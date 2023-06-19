@@ -289,7 +289,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
     R.map((o) => ({ key: o, name: t(o) })),
     sortByNameCaseInsensitive,
   )(Object.keys(rules));
-  const tasks = R.pathOr([], ['tasks', 'edges'], data);
+  const tasks = R.pathOr([], ['backgroundTasks', 'edges'], data);
   const modules = R.pathOr([], ['settings', 'platform_modules'], data);
   const isEngineEnabled = R.head(
     R.filter((p) => p.id === 'RULE_ENGINE', modules),
@@ -804,7 +804,7 @@ export default createRefetchContainer(
           }
           category
         }
-        tasks(
+        backgroundTasks(
           orderBy: created_at
           orderMode: desc
           filters: { key: type, values: ["RULE"] }

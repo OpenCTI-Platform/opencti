@@ -20,7 +20,7 @@ import type { AuthContext } from '../../types/user';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
-import { ENTITY_TYPE_CONTAINER_CASE_TASK } from '../case/case-task/case-task-types';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 
 export type typeAvailableSetting = boolean | string;
 
@@ -60,7 +60,7 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
-  [ENTITY_TYPE_CONTAINER_CASE_TASK]: [],
+  [ENTITY_TYPE_CONTAINER_TASK]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
 };
 
 export const getAvailableSettings = (targetType: string) => {

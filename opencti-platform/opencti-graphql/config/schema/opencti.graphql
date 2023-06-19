@@ -755,18 +755,18 @@ type FileConnection {
   edges: [FileEdge]
 }
 
-############## Task
-enum TaskType {
+############## BackgroundTask
+enum BackgroundTaskType {
   QUERY
   LIST
   RULE
 }
-type TaskError {
+type BackgroundTaskError {
   id: ID!
   timestamp: DateTime
   message: String
 }
-enum TaskActionType {
+enum BackgroundTaskActionType {
   DELETE
   ADD
   REMOVE
@@ -778,127 +778,127 @@ enum TaskActionType {
   SHARE
   UNSHARE
 }
-enum TaskContextType {
+enum BackgroundTaskContextType {
   ATTRIBUTE
   RELATION
   REVERSED_RELATION
 }
-enum TasksOrdering {
+enum BackgroundTasksOrdering {
   id
   type
   completed
   created_at
   last_execution_date
 }
-enum TasksFilter {
+enum BackgroundTasksFilter {
   type
   initiator
   completed
 }
-input TasksFiltering {
-  key: [TasksFilter!]!
+input BackgroundTasksFiltering {
+  key: [BackgroundTasksFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
-type TaskContext {
+type BackgroundTaskContext {
   field: String
-  type: TaskContextType
+  type: BackgroundTaskContextType
   values: [String]!
 }
-type TaskAction {
-  type: TaskActionType
-  context: TaskContext
+type BackgroundTaskAction {
+  type: BackgroundTaskActionType
+  context: BackgroundTaskContext
 }
 
-interface Task {
+interface BackgroundTask {
   id: ID!
-  type: TaskType
+  type: BackgroundTaskType
   initiator: Creator
-  actions: [TaskAction]
+  actions: [BackgroundTaskAction]
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
   task_expected_number: Int
   task_processed_number: Int
-  errors: [TaskError]
+  errors: [BackgroundTaskError]
 }
 
-type RuleTask implements Task {
+type RuleTask implements BackgroundTask {
   id: ID!
-  type: TaskType
+  type: BackgroundTaskType
   initiator: Creator
-  actions: [TaskAction]
+  actions: [BackgroundTaskAction]
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
   task_expected_number: Int
   task_processed_number: Int
-  errors: [TaskError]
+  errors: [BackgroundTaskError]
   # RuleTask
   rule: ID!
   enable: Boolean
 }
 
-type ListTask implements Task {
+type ListTask implements BackgroundTask {
   id: ID!
-  type: TaskType
+  type: BackgroundTaskType
   initiator: Creator
-  actions: [TaskAction]
+  actions: [BackgroundTaskAction]
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
   task_expected_number: Int
   task_processed_number: Int
-  errors: [TaskError]
+  errors: [BackgroundTaskError]
   # ListTask
   task_ids: [ID!]
 }
 
-type QueryTask implements Task {
+type QueryTask implements BackgroundTask {
   id: ID!
-  type: TaskType
+  type: BackgroundTaskType
   initiator: Creator
-  actions: [TaskAction]
+  actions: [BackgroundTaskAction]
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
   task_expected_number: Int
   task_processed_number: Int
-  errors: [TaskError]
+  errors: [BackgroundTaskError]
   # QueryTask
   task_filters: String!
   task_search: String
 }
 
-type TaskConnectionEdge {
+type BackgroundTaskConnectionEdge {
   cursor: String!
-  node: Task!
+  node: BackgroundTask!
 }
 
-type TaskConnection {
+type BackgroundTaskConnection {
   pageInfo: PageInfo!
-  edges: [TaskConnectionEdge]
+  edges: [BackgroundTaskConnectionEdge]
 }
 
-input TaskContextInput {
+input BackgroundTaskContextInput {
   field: String
-  type: TaskContextType
+  type: BackgroundTaskContextType
   values: [String]!
 }
-input TaskActionInput {
-  type: TaskActionType!
-  context: TaskContextInput
+input BackgroundTaskActionInput {
+  type: BackgroundTaskActionType!
+  context: BackgroundTaskContextInput
 }
 input ListTaskAddInput {
   ids: [ID!]
-  actions: [TaskActionInput]!
+  actions: [BackgroundTaskActionInput]!
 }
 input QueryTaskAddInput {
   filters: String!
   search: String
   excluded_ids: [ID]
-  actions: [TaskActionInput]!
+  actions: [BackgroundTaskActionInput]!
 }
 
 input RetentionRuleAddInput {
@@ -10809,6 +10809,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | StixCoreRelationship
   | StixSightingRelationship
   | StixRefRelationship
+  | Task
   | DataComponent
   | DataSource
   | CaseIncident
@@ -10816,7 +10817,6 @@ union StixObjectOrStixRelationshipOrCreator =
   | CaseRft
   | Feedback
   | CaseTemplate
-  | CaseTask
   | EntitySetting
   | Creator
   | Workspace
@@ -10894,7 +10894,7 @@ union StixObjectOrStixRelationship =
   | CaseRft
   | Feedback
   | CaseTemplate
-  | CaseTask
+  | Task
   | EntitySetting
   | Workspace
 union StixCoreObjectOrStixCoreRelationship =
@@ -10966,7 +10966,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | CaseRft
   | Feedback
   | CaseTemplate
-  | CaseTask
+  | Task
   | EntitySetting
   | Workspace
 
@@ -11581,16 +11581,16 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StatusConnection @auth
-  task(id: String!): Task @auth(for: [KNOWLEDGE])
-  tasks(
+  backgroundTask(id: String!): BackgroundTask @auth(for: [KNOWLEDGE])
+  backgroundTasks(
     first: Int
     after: ID
-    orderBy: TasksOrdering
+    orderBy: BackgroundTasksOrdering
     orderMode: OrderingMode
-    filters: [TasksFiltering]
+    filters: [BackgroundTasksFiltering]
     filterMode: FilterMode
     search: String
-  ): TaskConnection @auth(for: [KNOWLEDGE])
+  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE])
   rule(id: String!): Rule @auth(for: [KNOWLEDGE])
   rules: [Rule] @auth(for: [KNOWLEDGE])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS])
@@ -13022,9 +13022,9 @@ type Mutation {
   workDelete(connectorId: String!): Boolean
 
   ### TASK
-  deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
-  listTaskAdd(input: ListTaskAddInput!): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
-  queryTaskAdd(input: QueryTaskAddInput!): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+  deleteBackgroundTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
+  listTaskAdd(input: ListTaskAddInput!): BackgroundTask! @auth(for: [KNOWLEDGE_KNUPDATE])
+  queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask! @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ### RETENTION RULE
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS])

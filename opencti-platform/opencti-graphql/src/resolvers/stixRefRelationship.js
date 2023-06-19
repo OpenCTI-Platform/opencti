@@ -37,8 +37,8 @@ const stixRefRelationshipResolvers = {
     stixRefRelationshipsNumber: (_, args, context) => stixRefRelationshipsNumber(context, context.user, args),
   },
   StixRefRelationship: {
-    from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
-    to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
+    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load(rel.fromId, context, context.user)),
+    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load(rel.toId, context, context.user)),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
     opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),

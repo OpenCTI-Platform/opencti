@@ -16,7 +16,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { CaseTaskAddInput, CaseTemplateTasksCreationMutation } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
+import { TaskTemplateAddInput, CaseTemplateTasksCreationMutation } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
 import { Option } from './ReferenceField';
 
@@ -35,7 +35,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface CaseTemplateFieldProps {
+interface TaskTemplateFieldProps {
   caseTemplateId?: string
   onChange: (name: string, values: Option[]) => void
   values?: readonly Option[]
@@ -43,22 +43,12 @@ interface CaseTemplateFieldProps {
 
 const CaseTemplateTasksQuery = graphql`
   query CaseTemplateTasksSearchQuery($search: String) {
-    caseTasks(search: $search, filters: [{ key : useAsTemplate, values: ["true"]}]) {
+    taskTemplates(search: $search) {
       edges {
         node {
           id
           name
-          dueDate
           description
-          status {
-            id
-            order
-            template {
-              name
-              color
-            }
-          }
-          workflowEnabled
         }
       }
     }
@@ -66,15 +56,16 @@ const CaseTemplateTasksQuery = graphql`
 `;
 
 const CaseTemplateTasksCreation = graphql`
-  mutation CaseTemplateTasksCreationMutation($input: CaseTaskAddInput!) {
-    caseTaskAdd(input: $input) {
+  mutation CaseTemplateTasksCreationMutation($input: TaskTemplateAddInput!) {
+    taskTemplateAdd(input: $input) {
       id
       name
+      description
     }
   }
 `;
 
-const CaseTemplateTasks: FunctionComponent<CaseTemplateFieldProps> = ({ caseTemplateId, onChange, values }) => {
+const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({ onChange, values }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -89,21 +80,21 @@ const CaseTemplateTasks: FunctionComponent<CaseTemplateFieldProps> = ({ caseTemp
       .toPromise()
       .then((data) => {
         const newTasks = (data as CaseTemplateTasksSearchQuery$data)
-          ?.caseTasks
+          ?.taskTemplates
           ?.edges
           ?.map(({ node }) => ({ value: node.id, label: node.name })) ?? [];
         setTasks(R.uniq([...tasks, ...newTasks]));
       });
   };
 
-  const submitTaskCreation: FormikConfig<CaseTaskAddInput>['onSubmit'] = (
+  const submitTaskCreation: FormikConfig<TaskTemplateAddInput>['onSubmit'] = (
     submitValues,
     { setSubmitting, setErrors, resetForm },
   ) => {
     const { name, description } = submitValues;
     setSubmitting(true);
     commitTaskCreation({
-      variables: { input: { name, description, useAsTemplate: true, ...(caseTemplateId ? { objects: [caseTemplateId] } : {}) } },
+      variables: { input: { name, description } },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -113,7 +104,7 @@ const CaseTemplateTasks: FunctionComponent<CaseTemplateFieldProps> = ({ caseTemp
         setOpenCreation(false);
         onChange('tasks', [
           ...(values ?? []),
-          ...(data.caseTaskAdd ? [{ value: data.caseTaskAdd.id, label: data.caseTaskAdd.name }] : []),
+          ...(data.taskTemplateAdd ? [{ value: data.taskTemplateAdd.id, label: data.taskTemplateAdd.name }] : []),
         ]);
         resetForm();
       },
@@ -149,16 +140,10 @@ const CaseTemplateTasks: FunctionComponent<CaseTemplateFieldProps> = ({ caseTemp
         )}
       />
       <Dialog open={openCreation}>
-        <Formik
-          initialValues={{
-            name: '',
-            description: '',
-          }}
-          onSubmit={submitTaskCreation}
-        >
+        <Formik<TaskTemplateAddInput> initialValues={{ name: '', description: '' }} onSubmit={submitTaskCreation}>
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
-              <DialogTitle>{t('Create a task')}</DialogTitle>
+              <DialogTitle>{t('Create a task template')}</DialogTitle>
               <DialogContent>
                 <Field
                   component={TextField}
