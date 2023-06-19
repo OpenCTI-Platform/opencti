@@ -200,6 +200,7 @@ const relationsTypesMapping = {
   Malware_Vulnerability: ['exploits', 'targets'],
   'Malware-Analysis_Malware': ['characterizes', 'analysis-of', 'static-analysis-of', 'dynamic-analysis-of'],
   Organization_City: ['located-at'],
+  'Organization_Administrative-Area': ['located-at'],
   Organization_Country: ['located-at'],
   Organization_Organization: ['part-of'],
   Organization_Position: ['located-at'],

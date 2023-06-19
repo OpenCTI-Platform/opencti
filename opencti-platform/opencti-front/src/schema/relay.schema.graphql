@@ -3195,7 +3195,7 @@ input IdentityAddInput {
   x_opencti_stix_ids: [StixId]
   type: IdentityType!
   name: String!
-  description: String!
+  description: String
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]

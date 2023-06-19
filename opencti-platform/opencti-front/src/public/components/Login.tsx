@@ -249,7 +249,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
             alt="logo"
             className={classes.logo}
           />
-          <Paper variant="outlined">
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             <OTPForm />
           </Paper>
         </div>
