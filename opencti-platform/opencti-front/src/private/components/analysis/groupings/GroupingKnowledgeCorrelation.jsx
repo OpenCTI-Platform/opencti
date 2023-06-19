@@ -1090,7 +1090,19 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
             }
           }
         }
-        objects {
+        objects(
+          types: [
+            "Threat-Actor"
+            "Intrusion-Set"
+            "Campaign"
+            "Incident"
+            "Malware"
+            "Tool"
+            "Vulnerability"
+            "Stix-Cyber-Observable"
+            "Indicator"
+          ]
+        ) {
           edges {
             node {
               ... on BasicObject {

@@ -13,9 +13,22 @@ import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
-import { buildCorrelationData, computeTimeRangeInterval, computeTimeRangeValues, decodeGraphData, encodeGraphData, linkPaint, nodeAreaPaint, nodePaint, nodeThreePaint } from '../../../../utils/Graph';
+import {
+  buildCorrelationData,
+  computeTimeRangeInterval,
+  computeTimeRangeValues,
+  decodeGraphData,
+  encodeGraphData,
+  linkPaint,
+  nodeAreaPaint,
+  nodePaint,
+  nodeThreePaint,
+} from '../../../../utils/Graph';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
 
@@ -272,7 +285,11 @@ class ReportKnowledgeCorrelationComponent extends Component {
     );
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
-      selectRectangleModeFree: R.propOr(false, 'selectRectangleModeFree', params),
+      selectRectangleModeFree: R.propOr(
+        false,
+        'selectRectangleModeFree',
+        params,
+      ),
       selectModeFree: params.selectModeFree ?? false,
       selectModeFreeReady: false,
       rectSelected: {
@@ -393,21 +410,27 @@ class ReportKnowledgeCorrelationComponent extends Component {
   }
 
   handleToggleRectangleSelectModeFree() {
-    this.setState({
-      selectRectangleModeFree: !this.state.selectRectangleModeFree,
-      selectModeFree: false,
-    }, () => {
-      this.saveParameters();
-    });
+    this.setState(
+      {
+        selectRectangleModeFree: !this.state.selectRectangleModeFree,
+        selectModeFree: false,
+      },
+      () => {
+        this.saveParameters();
+      },
+    );
   }
 
   handleToggleSelectModeFree() {
-    this.setState({
-      selectModeFree: !this.state.selectModeFree,
-      selectRectangleModeFree: false,
-    }, () => {
-      this.saveParameters();
-    });
+    this.setState(
+      {
+        selectModeFree: !this.state.selectModeFree,
+        selectRectangleModeFree: false,
+      },
+      () => {
+        this.saveParameters();
+      },
+    );
   }
 
   handleToggleTreeMode(modeTree) {
@@ -898,10 +921,16 @@ class ReportKnowledgeCorrelationComponent extends Component {
           currentModeFixed={modeFixed}
           handleZoomToFit={this.handleZoomToFit.bind(this)}
           handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
-          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(this)}
+          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
+            this,
+          )}
           handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-          handleToggleRectangleSelectModeFree={this.handleToggleRectangleSelectModeFree.bind(this)}
-          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(this)}
+          handleToggleRectangleSelectModeFree={this.handleToggleRectangleSelectModeFree.bind(
+            this,
+          )}
+          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
+            this,
+          )}
           stixCoreObjectsTypes={currentStixCoreObjectsTypes}
           currentStixCoreObjectsTypes={stixCoreObjectsTypes}
           currentSelectRectangleModeFree={selectRectangleModeFree}
@@ -1064,7 +1093,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 onZoom={this.onZoom.bind(this)}
                 onZoomEnd={this.handleZoomEnd.bind(this)}
                 nodeRelSize={4}
-                enablePanInteraction={!selectRectangleModeFree && !selectModeFree}
+                enablePanInteraction={
+                  !selectRectangleModeFree && !selectModeFree
+                }
                 nodeCanvasObject={(
                   node,
                   ctx, //
@@ -1145,7 +1176,8 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 onLinkClick={this.handleLinkClick.bind(this)}
                 onBackgroundClick={this.handleBackgroundClick.bind(this)}
                 cooldownTicks={modeFixed ? 0 : 100}
-                onEngineStop={() => this.setState({ selectModeFreeReady: true })}
+                onEngineStop={() => this.setState({ selectModeFreeReady: true })
+                }
                 dagMode={
                   // eslint-disable-next-line no-nested-ternary
                   modeTree === 'horizontal'
@@ -1198,7 +1230,19 @@ const ReportKnowledgeCorrelation = createFragmentContainer(
             }
           }
         }
-        objects {
+        objects(
+          types: [
+            "Threat-Actor"
+            "Intrusion-Set"
+            "Campaign"
+            "Incident"
+            "Malware"
+            "Tool"
+            "Vulnerability"
+            "Stix-Cyber-Observable"
+            "Indicator"
+          ]
+        ) {
           edges {
             node {
               ... on BasicObject {
