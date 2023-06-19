@@ -160,8 +160,8 @@ class EntityTestCases:
         return CaseRftTest(api_client)
 
     @staticmethod
-    def case_case_task(api_client):
-        return CaseTaskTest(api_client)
+    def task(api_client):
+        return TaskTest(api_client)
 
 
 class EntityTest:
@@ -1043,7 +1043,7 @@ class CaseRftTest(EntityTest):
         return self.api_client.case_rft
 
 
-class CaseTaskTest(EntityTest):
+class TaskTest(EntityTest):
     def data(self) -> Dict:
         return {
             "name": "Case Task",
@@ -1052,4 +1052,4 @@ class CaseTaskTest(EntityTest):
         }
 
     def own_class(self):
-        return self.api_client.case_task
+        return self.api_client.task
