@@ -59,8 +59,8 @@ schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_IDENTITY, stixDomainOb
 const stixDomainObjectLocationAttributes: Array<AttributeDefinition> = [
   { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
   { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-  { name: 'latitude', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-  { name: 'longitude', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+  { name: 'latitude', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
+  { name: 'longitude', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
   { name: 'precision', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   entityLocationType,
 ];
