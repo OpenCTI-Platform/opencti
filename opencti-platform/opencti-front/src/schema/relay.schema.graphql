@@ -10876,4 +10876,5 @@ input MalwareAnalysisAddInput {
   objectLabel: [String]
   clientMutationId: String
   update: Boolean
+  file: Upload
 }

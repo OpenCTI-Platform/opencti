@@ -11295,6 +11295,7 @@ export type MalwareAnalysisAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   hostVm?: InputMaybe<Scalars['String']>;
   installedSoftware?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
