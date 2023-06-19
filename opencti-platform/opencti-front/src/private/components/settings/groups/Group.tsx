@@ -74,8 +74,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const groupFragment = graphql`
   fragment Group_group on Group
   @argumentDefinitions(
-      rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
-      rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+    rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+    rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
   ) {
     id
     entity_type
@@ -95,10 +95,7 @@ const groupFragment = graphql`
         }
       }
     }
-    roles(
-        orderBy: $rolesOrderBy,
-        orderMode: $rolesOrderMode,
-    ) {
+    roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
       id
       name
       description
@@ -115,7 +112,7 @@ const groupFragment = graphql`
         id
         definition
         x_opencti_color
-        x_opencti_order 
+        x_opencti_order
       }
     }
   }
@@ -172,7 +169,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   ]);
   const allowedMarkings = markingsSort(group.allowed_marking ?? []);
   // Handle only GLOBAL entity type for now
-  const globalDefaultMarkings = markingsSort((group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')?.values ?? []);
+  const globalDefaultMarkings = markingsSort(
+    (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')
+      ?.values ?? [],
+  );
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -252,13 +252,26 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     </ListItem>
                   ))}
                 </List>
-              </Grid>
-              <Grid item={true} xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Allowed markings')}
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 15 }}
+                >
+                  {t('Default markings')}
+                  <Tooltip
+                    title={t(
+                      'You can enable/disable default values for marking in the customization of each entity type.',
+                    )}
+                  >
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ margin: '0 0 -5px 10px' }}
+                    />
+                  </Tooltip>
                 </Typography>
                 <List>
-                  {allowedMarkings.map((marking) => (
+                  {globalDefaultMarkings.map((marking) => (
                     <ListItem
                       key={marking?.id}
                       dense={true}
@@ -276,18 +289,13 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     </ListItem>
                   ))}
                 </List>
-                <Typography variant="h3" gutterBottom={true} style={{ paddingTop: 10 }}>
-                  {t('Default markings')}
-                  <Tooltip title={t('You can enable/disable default values for marking in each specific entity type.')}>
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ margin: '0 0 -5px 10px' }}
-                    />
-                  </Tooltip>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Allowed markings')}
                 </Typography>
                 <List>
-                  {globalDefaultMarkings.map((marking) => (
+                  {allowedMarkings.map((marking) => (
                     <ListItem
                       key={marking?.id}
                       dense={true}

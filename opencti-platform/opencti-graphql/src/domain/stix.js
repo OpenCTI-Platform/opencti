@@ -181,11 +181,15 @@ export const exportTransformFilters = (listFilters, filterOptions, orderOptions)
       ? orderingInversed[listFilters.orderBy]
       : listFilters.orderBy,
     filters: (listFilters.filters ?? []).map(
-      (n) => ({
-        key: n.key in filtersInversed ? filtersInversed[n.key] : n.key,
-        values: n.values,
-        operator: n.operator ?? 'eq',
-      })
+      (n) => {
+        const keys = Array.isArray(n.key) ? n.key : [n.key];
+        const key = keys.map((k) => (k in filtersInversed ? filtersInversed[k] : k));
+        return {
+          key,
+          values: n.values,
+          operator: n.operator ?? 'eq',
+        };
+      }
     ),
   };
 };

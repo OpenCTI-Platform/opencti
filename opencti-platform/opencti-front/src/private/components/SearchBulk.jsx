@@ -404,8 +404,8 @@ const SearchBulk = () => {
         color="secondary"
         style={{ float: 'right', marginTop: -5 }}
       >
-        {!exportDisabled
-          && <ToggleButton
+        {!exportDisabled && (
+          <ToggleButton
             value="export"
             aria-label="export"
             size="small"
@@ -418,25 +418,27 @@ const SearchBulk = () => {
               />
             </Tooltip>
           </ToggleButton>
-        }
-        {exportDisabled
-        && <Tooltip
-            title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}
+        )}
+        {exportDisabled && (
+          <Tooltip
+            title={`${
+              t(
+                'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+              ) + export_max_size
+            })`}
           >
             <span>
-            <ToggleButton
-            value="export"
-            aria-label="export"
-            size="small"
-            disabled={true}
-            >
-              <FileDownloadOutlined
-                fontSize="small"
-              />
-            </ToggleButton>
+              <ToggleButton
+                value="export"
+                aria-label="export"
+                size="small"
+                disabled={true}
+              >
+                <FileDownloadOutlined fontSize="small" />
+              </ToggleButton>
             </span>
           </Tooltip>
-        }
+        )}
       </ToggleButtonGroup>
       <div className="clearfix" />
       {isGrantedToExports && (

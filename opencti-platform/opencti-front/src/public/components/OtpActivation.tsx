@@ -111,7 +111,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
         <Alert
           severity="error"
           variant="outlined"
-          style={{ margin: '0 0 15px 0' }}
+          style={{ margin: '10px 0 10px 0' }}
         >
           {error}
         </Alert>
@@ -119,7 +119,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
         <Alert
           severity="info"
           variant="outlined"
-          style={{ margin: '15px 0', justifyContent: 'center' }}
+          style={{ margin: '10px 0 10px 0', justifyContent: 'center' }}
         >
           {t(
             'You need to activate a two-factor authentication. Please type the code generated in your application.',
