@@ -1,3 +1,9 @@
 site/
 .cache/
+*.iml
+.DS_Store
 .idea
+.mypy_cache
+.venv
+venv
+.vscode

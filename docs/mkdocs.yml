@@ -154,6 +154,7 @@ nav:
       - Native feeds: usage/feeds.md
   - Administration:
     - Introduction: administration/introduction.md
+    - Enterprise edition: administration/enterprise.md
     - Data management:
       - Custom taxonomies: administration/ontologies.md
       - Retention policies: administration/retention.md
@@ -167,7 +168,7 @@ nav:
       - Users and RBAC: administration/users.md
       - Data segregation: administration/segregation.md
       - Sourcing knowledge: administration/sourcing.md
-      - Audit and monitoring: administration/audit.md
+      - Activity monitoring: administration/audit.md
   - Reference:
     - Data:
       - Data model: reference/data-model.md
