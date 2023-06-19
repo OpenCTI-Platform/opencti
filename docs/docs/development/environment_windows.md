@@ -19,6 +19,8 @@ This page documents how to set up an "All-in-One" development environment for Op
     - minio
     - rabbitmq
 
+# EDITORIAL NOTE
+Use of Windows as a development platform in not recommend - but is possible. The OpenCTI platform is distributed in Linux based platform containers, so Windows development is not necessarily in-line with the distribution model. You could encounter odd program behavior or difficulties developing against Windows. Windows is a very popular platform, so the instructions are provided to support that audience of developers. However, you would be better served developing on a native Linux based or MacOS based host platform.  
 # PRE-CONFIGURATION TASKS
 
 - Create a Development Folder
