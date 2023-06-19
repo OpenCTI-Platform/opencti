@@ -220,22 +220,18 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
     <EnrichedTooltip
       title={
         <Grid container={true} spacing={3}>
-          {markings.length === 0
-            ? renderChip({ definition: 'NONE' }, false)
-            : markings.map((markingDefinition) => (
-                <Grid key={markingDefinition.id} item={true} xs={6}>
-                  {renderChip(markingDefinition, true)}
-                </Grid>
-            ))}
+          {markings.map((markingDefinition) => (
+            <Grid key={markingDefinition.id} item={true} xs={6}>
+              {renderChip(markingDefinition, true)}
+            </Grid>
+          ))}
         </Grid>
       }
       placement="bottom"
     >
       <span>
         <StyledBadge variant="dot" color="primary">
-          {markings.length === 0
-            ? renderChip({ definition: 'NONE' }, false)
-            : R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition, false))}
+          {R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition, false))}
         </StyledBadge>
       </span>
     </EnrichedTooltip>
