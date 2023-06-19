@@ -17,7 +17,6 @@ const CHECK_INDICATOR_SCRIPT = { fn: 'check_indicator', py: pyCheckIndicator };
 
 const pyCreatePattern = py.importSync('./src/python/runtime/stix2_create_pattern.py');
 const CREATE_PATTERN_SCRIPT = { fn: 'stix2_create_pattern', py: pyCreatePattern };
-
 // region child
 export const execChildPython = async (context, user, scriptPath, scriptName, args, stopCondition) => {
   const execPythonTestingProcessFn = async () => {
