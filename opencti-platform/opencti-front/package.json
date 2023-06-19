@@ -144,7 +144,10 @@
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
     "control": "yarn audit --groups dependencies --summary",
     "test": "vitest run",
-    "check-ts": "tsc --noEmit"
+    "check-ts": "tsc --noEmit",
+    "clean:schema": "rm -rf src/schema",
+    "clean:relay-generated": "rm -rf src/**/__generated__",
+    "clean": "yarn clean:schema; yarn clean:relay-generated"
   },
   "resolutions": {
     "eslint-plugin-custom-rules": "0.0.1",
