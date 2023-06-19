@@ -7,7 +7,7 @@ from stix2.canonicalization.Canonicalize import canonicalize
 from pycti.entities import LOGGER
 
 
-class CaseTask:
+class Task:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -111,7 +111,7 @@ class CaseTask:
             modified
             name
             description
-            dueDate
+            due_date
             objects {
                 edges {
                     node {
@@ -243,16 +243,16 @@ class CaseTask:
         data = {"name": name}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
-        return "case-task--" + id
+        return "task--" + id
 
     """
-        List Case Task objects
+        List Task objects
         
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Case Task objects
+        :return List of Task objects
     """
 
     def list(self, **kwargs):
@@ -270,15 +270,15 @@ class CaseTask:
 
         self.opencti.log(
             "info",
-            "Listing Case Tasks with filters " + json.dumps(filters) + ".",
+            "Listing Tasks with filters " + json.dumps(filters) + ".",
         )
         query = (
             """
-                            query CaseTasks($filters: [CaseTasksFiltering!], $search: String, $first: Int, $after: ID, $orderBy: CaseTasksOrdering, $orderMode: OrderingMode) {
-                                caseTasks(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                                    edges {
-                                        node {
-                                            """
+                                query tasks($filters: [TasksFiltering!], $search: String, $first: Int, $after: ID, $orderBy: TasksOrdering, $orderMode: OrderingMode) {
+                                    tasks(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                                        edges {
+                                            node {
+                                                """
             + (custom_attributes if custom_attributes is not None else self.properties)
             + """
                         }
@@ -307,11 +307,11 @@ class CaseTask:
         )
         if get_all:
             final_data = []
-            data = self.opencti.process_multiple(result["data"]["caseTasks"])
+            data = self.opencti.process_multiple(result["data"]["tasks"])
             final_data = final_data + data
-            while result["data"]["caseTasks"]["pageInfo"]["hasNextPage"]:
-                after = result["date"]["caseTasks"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Case Tasks after " + after)
+            while result["data"]["tasks"]["pageInfo"]["hasNextPage"]:
+                after = result["date"]["tasks"]["pageInfo"]["endCursor"]
+                self.opencti.log("info", "Listing Tasks after " + after)
                 result = self.opencti.query(
                     query,
                     {
@@ -323,20 +323,20 @@ class CaseTask:
                         "orderMode": order_mode,
                     },
                 )
-                data = self.opencti.process_multiple(result["data"]["caseTasks"])
+                data = self.opencti.process_multiple(result["data"]["tasks"])
                 final_data = final_data + data
             return final_data
         else:
             return self.opencti.process_multiple(
-                result["data"]["caseTasks"], with_pagination
+                result["data"]["tasks"], with_pagination
             )
 
     """
-        Read a Case Task object
+        Read a Task object
 
-        :param id: the id of the Case Task
+        :param id: the id of the Task
         :param filters: the filters to apply if no id provided
-        :return Case Task object
+        :return Task object
     """
 
     def read(self, **kwargs):
@@ -344,12 +344,12 @@ class CaseTask:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Case Task { " + id + "}.")
+            self.opencti.log("info", "Reading Task { " + id + "}.")
             query = (
                 """
-                                query CaseTask($id: String!) {
-                                    caseTask(id: $id) {
-                                        """
+                                    query task($id: String!) {
+                                        task(id: $id) {
+                                            """
                 + (
                     custom_attributes
                     if custom_attributes is not None
@@ -361,7 +361,7 @@ class CaseTask:
             """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["caseTask"])
+            return self.opencti.process_multiple_fields(result["data"]["task"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -370,7 +370,7 @@ class CaseTask:
                 return None
 
     """
-        Read a Case Task object by stix_id or name
+        Read a Task object by stix_id or name
 
         :param type: the Stix-Domain-Entity type
         :param stix_id: the STIX ID of the Stix-Domain-Entity
@@ -398,9 +398,9 @@ class CaseTask:
         return object_result
 
     """
-        Check if a case task already contains a thing (Stix Object or Stix Relationship)
+        Check if a task already contains a thing (Stix Object or Stix Relationship)
 
-        :param id: the id of the Case Task
+        :param id: the id of the Task
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
@@ -415,13 +415,13 @@ class CaseTask:
                 "info",
                 "Checking StixObjectOrStixRelationship {"
                 + stix_object_or_stix_relationship_id
-                + "} in CaseTask {"
+                + "} in Task {"
                 + id
                 + "}",
             )
             query = """
-                query CaseTaskContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
-                    caseTaskContainsStixObjectOrStixRelationship(id: $id, stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId)
+                query taskContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
+                    taskContainsStixObjectOrStixRelationship(id: $id, stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId)
                 }
             """
             result = self.opencti.query(
@@ -431,18 +431,18 @@ class CaseTask:
                     "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
                 },
             )
-            return result["data"]["caseTaskContainsStixObjectOrStixRelationship"]
+            return result["data"]["taskContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.log(
                 "error",
-                "[opencti_caseTask] Missing parameters: id or stixObjectOrStixRelationshipId",
+                "[opencti_Task] Missing parameters: id or stixObjectOrStixRelationshipId",
             )
 
     """
-        Create a Case Task object
+        Create a Task object
 
-        :param name: the name of the Case Task
-        :return Case Task object
+        :param name: the name of the Task
+        :return Task object
     """
 
     def create(self, **kwargs):
@@ -450,13 +450,18 @@ class CaseTask:
         created = kwargs.get("created", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
-        due_date = kwargs.get("dueDate", None)
+        due_date = kwargs.get("due_date", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        granted_refs = kwargs.get("objectOrganization", None)
+        update = kwargs.get("update", False)
 
         if name is not None:
-            self.opencti.log("info", "Creating Case Task {" + name + "}.")
+            self.opencti.log("info", "Creating Task {" + name + "}.")
             query = """
-                mutation CaseTaskAdd($input: CaseTaskAddInput!) {
-                    caseTaskAdd(input: $input) {
+                mutation TaskAdd($input: TaskAddInput!) {
+                    taskAdd(input: $input) {
                         id
                         standard_id
                         entity_type
@@ -471,26 +476,31 @@ class CaseTask:
                         "created": created,
                         "name": name,
                         "description": description,
-                        "dueDate": due_date,
+                        "due_date": due_date,
                         "objects": objects,
+                        "createdBy": created_by,
+                        "objectLabel": object_label,
+                        "objectMarking": object_marking,
+                        "objectOrganization": granted_refs,
+                        "update": update,
                     }
                 },
             )
-            return self.opencti.process_multiple_fields(result["data"]["caseTaskAdd"])
+            return self.opencti.process_multiple_fields(result["data"]["taskAdd"])
         else:
             self.opencti.log(
                 "error",
-                "[opencti_caseTask] Missing parameters: name",
+                "[opencti_task] Missing parameters: name",
             )
 
     def update_field(self, **kwargs):
-        LOGGER.info("Updating Case Task {%s}.", json.dumps(kwargs))
+        LOGGER.info("Updating Task {%s}.", json.dumps(kwargs))
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
             query = """
-                        mutation CaseTaskEdit($id: ID!, $input: [EditInput!]!) {
-                           caseTaskFieldPatch(id: $id, input: $input) {
+                        mutation TaskEdit($id: ID!, $input: [EditInput!]!) {
+                           taskFieldPatch(id: $id, input: $input) {
                                 id
                                 standard_id
                                 entity_type
@@ -499,16 +509,16 @@ class CaseTask:
                     """
             result = self.opencti.query(query, {"id": id, "input": input})
             return self.opencti.process_multiple_fields(
-                result["data"]["caseTaskFieldPatch"]
+                result["data"]["taskFieldPatch"]
             )
         else:
-            LOGGER.error("[opencti_Case_task] Missing parameters: id and key and value")
+            LOGGER.error("[opencti_Task] Missing parameters: id and key and value")
             return None
 
         """
-        Add a Stix-Entity object to Case Task object (object_refs)
+        Add a Stix-Entity object to Task object (object_refs)
 
-        :param id: the id of the Case Task
+        :param id: the id of the Task
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
@@ -523,16 +533,14 @@ class CaseTask:
                 "info",
                 "Adding StixObjectOrStixRelationship {"
                 + stix_object_or_stix_relationship_id
-                + "} to CaseTask {"
+                + "} to Task {"
                 + id
                 + "}",
             )
             query = """
-               mutation CaseTaskEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
-                   caseTaskEdit(id: $id) {
-                        relationAdd(input: $input) {
-                            id
-                        }
+               mutation taskEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   taskRelationAdd(id: $id, input: $input) {
+                        id
                    }
                }
             """
@@ -550,14 +558,14 @@ class CaseTask:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_caseTask] Missing parameters: id and stixObjectOrStixRelationshipId",
+                "[opencti_task] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
 
         """
-        Remove a Stix-Entity object to Case Task object (object_refs)
+        Remove a Stix-Entity object to Task object (object_refs)
 
-        :param id: the id of the Case Task
+        :param id: the id of the Task
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
     """
@@ -572,16 +580,14 @@ class CaseTask:
                 "info",
                 "Removing StixObjectOrStixRelationship {"
                 + stix_object_or_stix_relationship_id
-                + "} to CaseTask {"
+                + "} to Task {"
                 + id
                 + "}",
             )
             query = """
-               mutation CaseTaskEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                   caseTaskEdit(id: $id) {
-                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
-                            id
-                        }
+               mutation taskEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
+                   taskRelationAdd(id: $id, toId: $toId, relationship_type: $relationship_type) {
+                        id
                    }
                }
             """
@@ -597,20 +603,21 @@ class CaseTask:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_caseTask] Missing parameters: id and stixObjectOrStixRelationshipId",
+                "[opencti_task] Missing parameters: id and stixObjectOrStixRelationshipId",
             )
             return False
 
         """
-        Import a Case Task object from a STIX2 object
+        Import a Task object from a STIX2 object
 
-        :param stixObject: the Stix-Object Case Task
-        :return Case Task object
+        :param stixObject: the Stix-Object Task
+        :return Task object
         """
 
     def import_from_stix2(self, **kwargs):
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
+        update = kwargs.get("update", False)
         if stix_object is not None:
             # Search in extensions
             if "x_opencti_stix_ids" not in stix_object:
@@ -623,6 +630,16 @@ class CaseTask:
                 )
 
             return self.create(
+                stix_id=stix_object["id"],
+                createdBy=extras["created_by_id"]
+                if "created_by_id" in extras
+                else None,
+                objectMarking=extras["object_marking_ids"]
+                if "object_marking_ids" in extras
+                else None,
+                objectLabel=extras["object_label_ids"]
+                if "object_label_ids" in extras
+                else None,
                 objects=extras["object_ids"] if "object_ids" in extras else [],
                 created=stix_object["created"] if "created" in stix_object else None,
                 name=stix_object["name"],
@@ -631,25 +648,25 @@ class CaseTask:
                 )
                 if "description" in stix_object
                 else None,
-                dueDate=stix_object["due_date"] if "due_date" in stix_object else None,
+                due_date=stix_object["due_date"] if "due_date" in stix_object else None,
+                objectOrganization=stix_object["granted_refs"]
+                if "granted_refs" in stix_object
+                else None,
+                update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_caseTask] Missing parameters: stixObject"
-            )
+            self.opencti.log("error", "[opencti_task] Missing parameters: stixObject")
 
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Case Task {%s}.", id)
+            LOGGER.info("Deleting Task {%s}.", id)
             query = """
-                 mutation CaseTaskDelete($id: ID!) {
-                     stixDomainObjectEdit(id: $id) {
-                         delete
-                     }
+                 mutation TaskDelete($id: ID!) {
+                     taskDelete(id: $id)
                  }
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_case_task] Missing parameters: id")
+            LOGGER.error("[opencti_task] Missing parameters: id")
             return None
