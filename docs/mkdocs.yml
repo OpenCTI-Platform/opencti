@@ -184,5 +184,6 @@ nav:
       - Use the GraphQL API: development/api-usage.md
       - Python library: development/python.md
     - Contributing:
-      - Environment setup: development/environment.md
+      - Environment Setup (Ubuntu VM): development/environment.md
+      - Environment Setup (Windows 10 Bare Metal): development/environment_windows.md
       - Develop a connector: development/connectors.md
