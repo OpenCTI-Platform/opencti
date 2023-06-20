@@ -33,7 +33,7 @@ class NarrativeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
-          entityType={'Narrative'}
+          entityType='Narrative'
           stixDomainObject={narrative}
           PopoverComponent={<NarrativePopover />}
         />

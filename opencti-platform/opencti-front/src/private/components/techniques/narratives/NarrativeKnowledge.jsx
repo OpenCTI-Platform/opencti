@@ -11,8 +11,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
-import CountryPopover from '../../locations/countries/CountryPopover';
-import country from '../../locations/countries/Country';
+import NarrativePopover from './NarrativePopover';
 
 const styles = () => ({
   container: {
@@ -30,8 +29,8 @@ class NarrativeKnowledgeComponent extends Component {
         <StixDomainObjectHeader
           entityType={'Narrative'}
           disableSharing={true}
-          stixDomainObject={country}
-          PopoverComponent={<CountryPopover />}
+          stixDomainObject={narrative}
+          PopoverComponent={<NarrativePopover />}
         />
         <Switch>
           <Route
