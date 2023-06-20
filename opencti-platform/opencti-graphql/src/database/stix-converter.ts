@@ -1,10 +1,9 @@
 import * as R from 'ramda';
-import { head } from 'ramda';
 import { version as uuidVersion } from 'uuid';
 import { extractEntityRepresentative, isEmptyField, isInferredIndex } from './utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   INPUT_BCC,
   INPUT_BELONGS_TO,
@@ -50,7 +49,7 @@ import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
-import type { BasicStoreCommon, StoreCyberObservable, StoreEntity, StoreObject, StoreRelation, } from '../types/store';
+import type { StoreCyberObservable, StoreEntity, StoreObject, StoreRelation, } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -1548,48 +1547,4 @@ export const registerStixRepresentativeConverter = (type: string, convertFn: Rep
 
 export const getStixRepresentativeConverters = (type: string) => {
   return stixRepresentativeConverters.get(type);
-};
-
-const convertSightingRelationshipEventToBasicStore = (sighting: SRO.StixSighting) => {
-  return [
-    {
-      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_granted_refs,
-      entity_type: sighting.extensions[STIX_EXT_OCTI].sighting_of_type,
-    } as BasicStoreCommon,
-    {
-      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
-      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_granted_refs,
-      entity_type: head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types),
-    } as BasicStoreCommon
-  ];
-};
-
-const convertRelationshipEventToBasicStore = (relation: SRO.StixRelation) => {
-  return [
-    {
-      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].source_ref_granted_refs,
-      entity_type: relation.extensions[STIX_EXT_OCTI].source_type,
-    } as BasicStoreCommon,
-    {
-      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].target_ref_granted_refs,
-      entity_type: relation.extensions[STIX_EXT_OCTI].target_type,
-    } as BasicStoreCommon
-  ];
-};
-
-export const convertSourceAndTargetEventToBasicStore = (
-  instance: S.StixCoreObject | S.StixRelationshipObject
-) => {
-  if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
-    const sighting = instance as SRO.StixSighting;
-    return convertSightingRelationshipEventToBasicStore(sighting);
-  }
-  if (isStixRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
-    const relation = instance as SRO.StixRelation;
-    return convertRelationshipEventToBasicStore(relation);
-  }
-  return [];
 };

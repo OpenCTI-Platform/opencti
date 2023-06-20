@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { groupBy } from 'ramda';
+import { head } from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
@@ -12,12 +12,7 @@ import {
 } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import {
-  executionContext,
-  isUserCanAccessStixElement,
-  isUserCanAccessStoreElement,
-  SYSTEM_USER
-} from '../utils/access';
+import { executionContext, isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser } from '../types/user';
 import { utcDate } from '../utils/format';
@@ -29,17 +24,19 @@ import {
   BasicStoreEntityTrigger,
   ENTITY_TYPE_TRIGGER
 } from '../modules/notification/notification-types';
-import { convertFiltersFrontendFormat, isStixMatchFilters } from '../utils/filtering';
-import { getEntitiesFromCache, getEntitiesMapFromCache } from '../database/cache';
+import { convertFiltersFrontendFormat, isStixMatchFilters, resolvedFiltersMapForUser } from '../utils/filtering';
+import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { resolvedRefsExtractor, stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
+import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { extractStixRepresentative } from '../database/stix-representative';
-import { convertSourceAndTargetEventToBasicStore } from '../database/stix-converter';
-import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import type { BasicStoreCommon } from '../types/store';
+import type { StixRelation, StixSighting } from '../types/stix-sro';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -204,6 +201,56 @@ export const STATIC_OUTCOMES: Array<NotificationOutcome> = [
   }
 ];
 
+// start region: user access information extractors
+// extract information from a sighting to have all the elements to check if a user has access to the from/to of the sighting
+const extractUserAccessPropertiesFromSighting = (sighting: StixSighting) => {
+  return [
+    {
+      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_granted_refs,
+      entity_type: sighting.extensions[STIX_EXT_OCTI].sighting_of_type,
+    } as BasicStoreCommon,
+    {
+      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
+      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_granted_refs,
+      entity_type: head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types),
+    } as BasicStoreCommon
+  ];
+};
+
+// extract information from a relationship to have all the elements to check if a user has access to the from/to of the relationship
+const extractUserAccessPropertiesFromRelationship = (relation: StixRelation) => {
+  return [
+    {
+      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].source_ref_granted_refs,
+      entity_type: relation.extensions[STIX_EXT_OCTI].source_type,
+    } as BasicStoreCommon,
+    {
+      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].target_ref_granted_refs,
+      entity_type: relation.extensions[STIX_EXT_OCTI].target_type,
+    } as BasicStoreCommon
+  ];
+};
+
+// extract information from a stix object to have all the elements to check if a user has access to the object
+const extractUserAccessPropertiesFromStixObject = (
+  instance: StixCoreObject | StixRelationshipObject
+) => {
+  if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
+    const sighting = instance as StixSighting;
+    return extractUserAccessPropertiesFromSighting(sighting);
+  }
+  if (isStixCoreRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
+    const relation = instance as StixRelation;
+    return extractUserAccessPropertiesFromRelationship(relation);
+  }
+  return [];
+};
+
+// endregion
+
 export const isLive = (n: ResolvedTrigger): n is ResolvedLive => n.trigger.trigger_type === 'live';
 export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => n.trigger.trigger_type === 'digest';
 
@@ -278,190 +325,199 @@ const eventTypeTranslater = (isPreviousMatch: boolean, isCurrentlyMatch: boolean
   return currentType;
 };
 
-const instancesMetadata = async (
-  context: AuthContext,
-  user: AuthUser,
-  resolvedFilterEntries: { id: string, object: StixCoreObject }[],
-  eventIds: string[],
-  refsLabelsMap: Map<string, string | undefined>,
-  containing?: boolean,
+const isRelationFromOrToMatchFilters = (
+  listenedInstanceIdsMap: Map<string, StixObject>,
+  instance: StixRelation | StixSighting,
+) => {
+  const stixIdsToSearch = [];
+  if (instance.type === STIX_TYPE_SIGHTING) {
+    stixIdsToSearch.push((instance as StixSighting).sighting_of_ref, ...(instance as StixSighting).where_sighted_refs);
+  } else if (instance.type === STIX_TYPE_RELATION) {
+    stixIdsToSearch.push((instance as StixRelation).source_ref, (instance as StixRelation).target_ref);
+  }
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [_, value] of listenedInstanceIdsMap) {
+    if (stixIdsToSearch.includes(value.id)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const filterInstancesByRefEventIds = (
+  listenedInstanceIdsMap: Map<string, StixObject>,
+  refsEventIds: string[],
 ) => {
   const instances = [];
   // eslint-disable-next-line no-restricted-syntax
-  for (const entry of resolvedFilterEntries) {
-    const visibleEntry = await isUserCanAccessStixElement(context, user, entry.object);
-    if (visibleEntry && eventIds.includes(entry.object.id)) {
-      instances.push({
-        id: entry.id,
-        name: extractStixRepresentative(entry.object),
-        type: entry.object.type,
-        // eslint-disable-next-line no-nested-ternary
-        refType: containing
-          ? (refsLabelsMap.has(entry.object.id) ? `with ${refsLabelsMap.get(entry.object.id)}` : 'containing')
-          : (refsLabelsMap.get(entry.object.id) ? `${refsLabelsMap.get(entry.object.id)} of` : ''),
-      });
+  for (const refId of refsEventIds) {
+    if (listenedInstanceIdsMap.has(refId)) {
+      instances.push(listenedInstanceIdsMap.get(refId));
     }
   }
+  return instances as StixObject[];
+};
+
+const filterUpdateInstanceIdsFromDataContext = (
+  listenedInstanceIdsMap: Map<string, StixObject>,
+  dataContext: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+) => {
+  const addedIds = dataContext.patch
+    .map((n) => (n as { path: string, value: string[] }).value)
+    .flat()
+    .filter((n) => n);
+  const removedIds = dataContext.reverse_patch
+    .map((n) => (n as { path: string, value: string[] }).value)
+    .flat()
+    .filter((n) => n);
+  const instances: StixCoreObject[] = [];
+  [...addedIds, ...removedIds].forEach((id) => {
+    if (listenedInstanceIdsMap.has(id)) {
+      instances.push(listenedInstanceIdsMap.get(id) as StixCoreObject);
+    }
+  });
   return instances;
 };
 
-const refsMapFromPatch = (patch: { op: string, path: string, value?: string | string[] }[], entityType: string) => {
-  const IdsForMap = patch
-    .filter((n) => n.value)
-    .map((n) => [(n as { op: string, path: string, value: string | string[] }).value].flat().map((m) => ({
-      refType: schemaRelationsRefDefinition.relationsRefMap(entityType).get(n.path.split('/')[1]),
-      value: m,
-    })))
-    .flat();
-  return new Map(IdsForMap.map((n) => [
-    n.value,
-    n.refType,
-  ]));
-};
-
-const targetsRefMetadata = async (
-  context: AuthContext,
-  user: AuthUser,
-  resolvedFilterEntries: { id: string, object: StixCoreObject }[],
-  type: string,
-  refsLabelsMap: Map<string, string | undefined>,
-  entityType: string,
-  dataRefs: string[] | undefined = undefined,
-  dataContext: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] } | undefined = undefined,
+const generateNotificationMessageForInstanceWithRefs = (
+  instance: StixCoreObject | StixRelationshipObject,
+  refsInstances: StixObject[],
+  displayedTypeIsUpdate?: boolean,
 ) => {
-  if (dataContext && dataContext.patch.length > 0) { // case adding/removing author X by ref from an entity
-    const addedIds = dataContext.patch.map((n) => (n as { path: string, value: string[] }).value).flat().filter((n) => n);
-    const removedIds = dataContext.reverse_patch.map((n) => (n as { path: string, value: string[] }).value).flat().filter((n) => n);
-    let instances = await instancesMetadata(context, user, resolvedFilterEntries, addedIds, refsLabelsMap);
-    if (instances.length > 0) {
-      return {
-        type: EVENT_TYPE_UPDATE,
-        metadata: {
-          action: 'added in',
-          instances,
-        }
-      };
-    }
-    instances = await instancesMetadata(context, user, resolvedFilterEntries, removedIds, refsMapFromPatch(dataContext.reverse_patch, entityType));
-    // removed items are not in refsLabelsMap: need to generate a map with the reverse_patch
-    if (instances.length > 0) {
-      return {
-        type: EVENT_TYPE_UPDATE,
-        metadata: {
-          action: 'removed from',
-          instances,
-        }
-      };
-    }
+  const instanceRepresentative = extractStixRepresentative(instance);
+  switch (displayedTypeIsUpdate) {
+    case true:
+      return `[${instance.type}] ${instanceRepresentative} because of ${refsInstances.map((ref) => `[${ref.type}] ${extractStixRepresentative(ref)}`)}`;
+    default: // TODO check message
+      return `${refsInstances.map((ref) => `[${ref.type}] ${extractStixRepresentative(ref)}`)} in [${instance.type}] ${instanceRepresentative}`;
   }
-  if (dataRefs) { // case creation/deletion of an entity with X as author by ref
-    const instances = await instancesMetadata(context, user, resolvedFilterEntries, dataRefs, refsLabelsMap, true);
-    if (instances.length > 0) {
-      return {
-        type,
-        metadata: {
-          action: 'containing',
-          instances,
-        },
-      };
-    }
-  }
-  return {
-    type: undefined,
-    metadata: undefined,
-  };
 };
 
-const generateNotificationMessage = async (
+const generateNotificationMessageForInstance = async (
   context: AuthContext,
   user: AuthUser,
   instance: StixCoreObject | StixRelationshipObject,
-  metadata?: { action: string, instances: { id: string, name: string, type: string, refType?: string }[] }
 ) => {
-  const [from, to] = convertSourceAndTargetEventToBasicStore(instance);
+  const [from, to] = extractUserAccessPropertiesFromStixObject(instance);
   const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
   const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
   const instanceRepresentative = extractStixRepresentative(instance, { fromRestricted, toRestricted });
-  if (!metadata) {
-    return (
-      `[${instance.type}] ${instanceRepresentative}`
-    );
-  }
-  const groupedInstances = groupBy((n: { id: string, name: string, type: string, refType?: string }) => n.refType ?? 'containing')(metadata.instances);
-  switch (metadata.action) {
-    case 'containing':
-      return `[${instance.type}] ${instanceRepresentative} ${Object.keys(groupedInstances).map((key) => `${key} ${groupedInstances[key].map((n) => ` [${n.type}] ${n.name}`)}`)}`;
-    default:
-      return `${Object.keys(groupedInstances).map((key) => `${groupedInstances[key].map((n) => `[${n.type}] ${n.name}`)} ${metadata.action} ${key}`)} [${instance.type}] ${instanceRepresentative}`;
-  }
+  return `[${instance.type}] ${instanceRepresentative}`;
 };
 
-const isStixMatchEvents = async (
+const shouldUpdateEventBeInNotifications = (
+  data: StixCoreObject | StixRelationshipObject,
+  useSideEventMatching: boolean,
+) => {
+  if (useSideEventMatching && [STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type)) {
+    return false; // in case of instance trigger: no notification for relationships update
+  }
+  return true;
+};
+
+const generateNotificationMessageForUpdate = async (
+  context: AuthContext,
+  user: AuthUser,
+  data: StixCoreObject | StixRelationshipObject,
+  frontendFilters: Record<string, { id: string, value: string }[]>,
+  useSideEventMatching: boolean,
+  dataContext: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+) => {
+  if (useSideEventMatching) { // 1 Case filtered instance trigger side events: add/remove a listened ref in an entity
+    // We need to filter these instances to keep those that are part of the event refs
+    const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
+    // Keep only the ids in the context patch/reverse_patch that are in the trigger filters
+    const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromDataContext(listenedInstanceIdsMap, dataContext);
+    return generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInPatchIds, true);
+  }
+  // 2 Case classic live trigger
+  // User should be notified of the direct event
+  const message = await generateNotificationMessageForInstance(context, user, data);
+  return message;
+};
+
+const generateNotificationMessageForCreationOrDeletion = async (
+  context: AuthContext,
+  user: AuthUser,
+  data: StixCoreObject | StixRelationshipObject,
+  frontendFilters: Record<string, { id: string, value: string }[]>,
+  useSideEventMatching: boolean,
+  eventType: string,
+  dataContext?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+) => {
+  if (useSideEventMatching) { // 1 Case instance trigger side events
+    // Get ids from the user trigger filters that user has access to
+    const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
+    // -- 1.1.a. If the event if a relationship and the relationship from/to contains an instance of the trigger filters
+    if ([STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type) && isRelationFromOrToMatchFilters(listenedInstanceIdsMap, data as StixRelation | StixSighting)) {
+      // User should be notified of the relationship loss of rights
+      const message = await generateNotificationMessageForInstance(context, user, data);
+      return message;
+    }
+    // -- 1.b. eventType = update --> It's the patch that contains instance(s) of the trigger filters
+    if (eventType === EVENT_TYPE_UPDATE && dataContext) {
+      const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromDataContext(listenedInstanceIdsMap, dataContext);
+      return generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInPatchIds, false);
+    }
+    // -- 1.c. eventType = create/delete --> It's the refs event that contains instance(s) of the trigger filters
+    const dataRefs = stixRefsExtractor(data, generateStandardId);
+    // We need to filter these instances to keep those that are part of the event refs
+    const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
+    return generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInRefsEventIds, false);
+  }
+  // 2 Case classic live trigger
+  // User should be notified of the direct event
+  const message = await generateNotificationMessageForInstance(context, user, data);
+  return message;
+};
+
+const buildTargetEvents = async (
   context: AuthContext,
   users: AuthUser[],
   streamEvent: SseEvent<DataEvent>,
   trigger: BasicStoreEntityLiveTrigger,
   frontendFilters: Record<string, { id: string, value: string }[]>,
-  instance: StixCoreObject,
-  extendedElementId = false
+  useSideEventMatching = false
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
+  console.log('data', data);
+  console.log('eventType', eventType);
   const { event_types, outcomes, instance_trigger } = trigger;
   let triggerEventTypes = event_types;
   if (instance_trigger && event_types.includes('update')) {
-    triggerEventTypes = extendedElementId
+    triggerEventTypes = useSideEventMatching
       ? ['update', 'create', 'delete'] // extends trigger event types for side events search
       : [...event_types, 'create'];
   }
-  const resolvedMap = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: dataContext } = streamEvent.data as UpdateEvent;
     const { newDocument: previous } = jsonpatch.applyPatch(R.clone(data), dataContext.reverse_patch);
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
+      // For each user for a specific trigger
       const user = users[indexUser];
       const notificationUser = convertToNotificationUser(user, outcomes);
       const adaptedFilters = await convertFiltersFrontendFormat(context, user, frontendFilters);
-      const resolvedFilterEntries = adaptedFilters
-        .map((n) => n.values)
-        .flat()
-        .filter((n) => n.id !== '<invalid access>' && resolvedMap.has(n.id))
-        .map((n) => ({
-          id: n.id,
-          object: resolvedMap.get(n.id),
-        })) as { id: any, object: StixCoreObject }[];
-      const isPreviousMatch = await isStixMatchFilters(context, user, previous, adaptedFilters, extendedElementId);
-      const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, extendedElementId);
-      const entityType = data.extensions[STIX_EXT_OCTI].type;
-      const refsLabelsMap = resolvedRefsExtractor(data);
-      const dataRefs = stixRefsExtractor(data, generateStandardId);
+      // Check if the event matched/matches the trigger filters and the user rights
+      const isPreviousMatch = await isStixMatchFilters(context, user, previous, adaptedFilters, useSideEventMatching);
+      const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, useSideEventMatching);
+      // Depending on the previous visibility, the displayed event type will be different
       const translatedType = eventTypeTranslater(isPreviousMatch, isCurrentlyMatch, eventType);
-      if (isPreviousMatch && !isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // No longer visible
-        if (extendedElementId && ![STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type)) { // instance trigger undirect event involving a ref
-          const { type, metadata } = await targetsRefMetadata(context, user, resolvedFilterEntries, translatedType, refsLabelsMap, entityType, dataRefs, dataContext);
-          if (type) {
-            targets.push({ user: notificationUser, type, message: await generateNotificationMessage(context, user, instance, metadata) });
-          }
-        } else {
-          targets.push({ user: notificationUser, type: translatedType, message: await generateNotificationMessage(context, user, instance, undefined) });
-        }
-      } else if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // Newly visible
-        if (extendedElementId && ![STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type)) { // instance trigger undirect event involving a ref
-          const { type, metadata } = await targetsRefMetadata(context, user, resolvedFilterEntries, translatedType, refsLabelsMap, entityType, dataRefs, dataContext);
-          if (type) {
-            targets.push({ user: notificationUser, type, message: await generateNotificationMessage(context, user, instance, metadata) });
-          }
-        } else {
-          targets.push({ user: notificationUser, type: translatedType, message: await generateNotificationMessage(context, user, instance, undefined) });
-        }
-      } else if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // Just an update
-        if (extendedElementId && ![STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type)) { // instance trigger undirect event involving a ref
-          const { type, metadata } = await targetsRefMetadata(context, user, resolvedFilterEntries, translatedType, refsLabelsMap, entityType, undefined, dataContext);
-          if (type) {
-            targets.push({ user: notificationUser, type, message: await generateNotificationMessage(context, user, instance, metadata) });
-          }
-        } else if (!extendedElementId) {
-          targets.push({ user: notificationUser, type: translatedType, message: await generateNotificationMessage(context, user, instance, undefined) });
+      // Case 01. No longer visible because of a data update (user loss of rights on the event)
+      if (isPreviousMatch && !isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translatedType = delete
+        const message = await generateNotificationMessageForCreationOrDeletion(context, user, data, frontendFilters, useSideEventMatching, eventType, dataContext);
+        targets.push({ user: notificationUser, type: translatedType, message });
+      }
+      // Case 02. Newly visible because of a data update (gain of rights)
+      if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = create
+        const message = await generateNotificationMessageForCreationOrDeletion(context, user, data, frontendFilters, useSideEventMatching, eventType, dataContext);
+        targets.push({ user: notificationUser, type: translatedType, message });
+      }
+      // --- 03. Just an update
+      if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = update
+        if (shouldUpdateEventBeInNotifications(data, useSideEventMatching)) {
+          const message = await generateNotificationMessageForUpdate(context, user, data, frontendFilters, useSideEventMatching, dataContext);
+          targets.push({ user: notificationUser, type: translatedType, message });
         }
       }
     }
@@ -470,27 +526,10 @@ const isStixMatchEvents = async (
       const user = users[indexUser];
       const notificationUser = convertToNotificationUser(user, outcomes);
       const adaptedFilters = await convertFiltersFrontendFormat(context, user, frontendFilters);
-      const resolvedFilterEntries = adaptedFilters
-        .map((n) => n.values)
-        .flat()
-        .filter((n) => n.id !== '<invalid access>' && resolvedMap.has(n.id))
-        .map((n) => ({
-          id: n.id,
-          object: resolvedMap.get(n.id),
-        })) as { id: any, object: StixCoreObject }[];
-      const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, extendedElementId);
-      const entityType = data.extensions[STIX_EXT_OCTI].type;
-      const refsLabelsMap = resolvedRefsExtractor(data);
-      const dataRefs = stixRefsExtractor(data, generateStandardId);
+      const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, useSideEventMatching);
       if (isCurrentlyMatch) {
-        if (extendedElementId && ![STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type)) { // instance trigger undirect event involving a ref
-          const { type, metadata } = await targetsRefMetadata(context, user, resolvedFilterEntries, eventType, refsLabelsMap, entityType, dataRefs);
-          if (type) {
-            targets.push({ user: notificationUser, type, message: await generateNotificationMessage(context, user, instance, metadata) });
-          }
-        } else {
-          targets.push({ user: notificationUser, type: eventType, message: await generateNotificationMessage(context, user, instance, undefined) });
-        }
+        const message = await generateNotificationMessageForCreationOrDeletion(context, user, data, frontendFilters, useSideEventMatching, eventType);
+        targets.push({ user: notificationUser, type: eventType, message });
       }
     }
   }
@@ -507,12 +546,12 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data } } = streamEvent;
-      // For each event we need to check if
+      // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
         const { internal_id: notification_id, trigger_type: type, instance_trigger, filters } = trigger;
         const frontendFilters = JSON.parse(filters);
-        const targets = await isStixMatchEvents(context, users, streamEvent, trigger, frontendFilters, data);
+        const targets = await buildTargetEvents(context, users, streamEvent, trigger, frontendFilters);
         if (targets.length > 0) {
           const version = EVENT_NOTIFICATION_VERSION;
           const notificationEvent: NotificationEvent = { version, notification_id, type, targets, data };
@@ -520,7 +559,7 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
         }
         // search side events for instance_trigger
         if (instance_trigger && trigger.event_types.includes('update')) {
-          const sideTargets = await isStixMatchEvents(context, users, streamEvent, trigger, frontendFilters, data, true);
+          const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, frontendFilters, true);
           if (sideTargets.length > 0) {
             const version = EVENT_NOTIFICATION_VERSION;
             const notificationEvent: NotificationEvent = { version, notification_id, type, targets: sideTargets, data };
@@ -566,7 +605,7 @@ const notificationDigestHandler = async () => {
                 notification_id: n.notification_id,
                 type: userTarget?.type ?? type,
                 instance: n.data,
-                message: await generateNotificationMessage(context, user, n.data),
+                message: await generateNotificationMessageForInstance(context, user, n.data),
               });
             });
             const data = await Promise.all(dataPromises);

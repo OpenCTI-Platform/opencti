@@ -35,9 +35,8 @@ import {
 } from './notification-types';
 import { now } from '../../utils/format';
 import { elCount, elFindByIds } from '../../database/engine';
-import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { extractEntityRepresentative, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ENTITY_FILTERS } from '../../utils/filtering';
-import { defaultValue } from '../../utils/mailData';
 import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
@@ -127,7 +126,14 @@ export const batchResolvedInstanceFilters = async (context: AuthContext, user: A
   const allInstanceIds = instanceIds.flat();
   const instanceToFinds = R.uniq(allInstanceIds.filter((u) => isNotEmptyField(u)));
   const instances = await elFindByIds(context, user, instanceToFinds, { toMap: true }) as BasicStoreObject[];
-  return instanceIds.map((ids) => ids.map((id) => ((Object.keys(instances).includes(id)) ? [id, true, defaultValue(instances[id])] : [id, false, defaultValue(instances[id])])));
+  console.log('instances', instances);
+  return instanceIds
+    .map((ids) => ids
+      .map((id) => [
+        id,
+        Object.keys(instances).includes(id),
+        instances[id] ? extractEntityRepresentative(instances[id]) : '',
+      ]));
 };
 
 const resolvedInstanceFiltersLoader = batchLoader(batchResolvedInstanceFilters);

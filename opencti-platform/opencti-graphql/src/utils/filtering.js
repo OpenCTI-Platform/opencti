@@ -69,6 +69,27 @@ export const extractFilterIdsToResolve = (filters) => {
     .map(([, values]) => values.map((v) => v.id)).flat();
 };
 
+// build a map ([id]: StixObject) with the resolved filters accessible for a user
+export const resolvedFiltersMapForUser = async (context, user, filters) => {
+  const resolveUserMap = new Map();
+  const resolvedMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
+  const filterEntries = Object.entries(filters);
+  for (let index = 0; index < filterEntries.length; index += 1) {
+    const [key, rawValues] = filterEntries[index];
+    for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
+      const v = rawValues[vIndex];
+      if (RESOLUTION_FILTERS.includes(key) && resolvedMap.has(v.id)) {
+        const stixInstance = resolvedMap.get(v.id);
+        const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stixInstance);
+        if (isUserHasAccessToElement) {
+          resolvedMap.set(key, stixInstance);
+        }
+      }
+    }
+  }
+  return resolveUserMap;
+};
+
 export const convertFiltersFrontendFormat = async (context, user, filters) => {
   // Grab all values that are internal_id that needs to be converted to standard_ids
   const resolvedMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
@@ -244,7 +265,7 @@ const isMatchNumeric = (values, operator, instanceValue) => {
   return found;
 };
 
-export const isStixMatchFilters = async (context, user, stix, adaptedFilters, extendedElementId = false) => {
+export const isStixMatchFilters = async (context, user, stix, adaptedFilters, useSideEventMatching = false) => {
   // We can start checking the user can access the stix (marking + segregation).
   const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stix);
   if (!isUserHasAccessToElement) {
@@ -287,7 +308,7 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, ex
         const instanceId = stix.extensions?.[STIX_EXT_OCTI]?.id;
         const extractedIds = values.map((v) => v.id);
         const isIdAvailable = instanceId && extractedIds.includes(instanceId);
-        if (!extendedElementId) {
+        if (!useSideEventMatching) {
           // If entity is available but must not be
           if (operator === 'not_eq' && isIdAvailable) {
             return false;
