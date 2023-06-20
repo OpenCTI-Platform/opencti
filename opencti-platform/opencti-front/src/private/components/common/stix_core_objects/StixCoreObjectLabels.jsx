@@ -29,6 +29,7 @@ const styles = () => ({
     fontSize: 12,
     height: 20,
     float: 'left',
+    margin: '0 7px 0 0',
   },
   labelInSearch: {
     height: 25,
@@ -51,10 +52,12 @@ class StixCoreObjectLabels extends Component {
     if (variant === 'inSearch') {
       style = classes.labelInSearch;
     }
-    const labelsNodes = labels ? pipe(
-      map((n) => n.node),
-      sortWith([ascend(prop('value'))]),
-    )(labels.edges) : null;
+    const labelsNodes = labels
+      ? pipe(
+        map((n) => n.node),
+        sortWith([ascend(prop('value'))]),
+      )(labels.edges)
+      : null;
 
     return (
       <div className={classes.objectLabel}>
