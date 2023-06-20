@@ -11028,8 +11028,8 @@ interface StixRelationship {
   # StixRelationship
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  from: StixObjectOrStixRelationship
-  to: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationshipOrCreator
+  to: StixObjectOrStixRelationshipOrCreator
   x_opencti_inferences: [Inference]
   spec_version: String!
   created: DateTime
@@ -11118,10 +11118,10 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  from: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationshipOrCreator
   fromId: String!
   fromType: String!
-  to: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationshipOrCreator
   toId: String!
   toType: String!
   x_opencti_inferences: [Inference]
@@ -11267,10 +11267,10 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  from: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationshipOrCreator
   fromId: String!
   fromType: String!
-  to: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationshipOrCreator
   toId: String!
   toType: String!
   x_opencti_inferences: [Inference]
@@ -11374,8 +11374,8 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  from: StixObjectOrStixRelationship
-  to: StixObjectOrStixRelationship
+  from: StixObjectOrStixRelationshipOrCreator
+  to: StixObjectOrStixRelationshipOrCreator
   x_opencti_inferences: [Inference]
   spec_version: String!
   created: DateTime
@@ -11399,7 +11399,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
 }
 
 type DefinitionRefRelationship {
-  entity: StixObjectOrStixRelationship!
+  entity: StixObjectOrStixRelationshipOrCreator!
   from: [String!]
   to: [String!]
 }

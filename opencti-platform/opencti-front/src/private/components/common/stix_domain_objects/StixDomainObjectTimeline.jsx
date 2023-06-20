@@ -367,6 +367,12 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 ... on ObservedData {
                     name
                 }
+                ... on Creator {
+                  name
+                }
+                ... on MarkingDefinition {
+                  definition
+                }
               }
               to {
                 ... on BasicObject {
@@ -531,6 +537,12 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 }
                 ... on ObservedData {
                     name
+                }
+                ... on Creator {
+                  name
+                }
+                ... on MarkingDefinition {
+                  definition
                 }
               }
             }
