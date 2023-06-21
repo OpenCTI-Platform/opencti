@@ -14,7 +14,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { connectors as findConnectors } from '../database/repository';
 import type {
   BasicStreamEntity,
-  BasicStoreRelation, BasicStoreSettings,
+  BasicStoreRelation,
   BasicTriggerEntity,
   BasicWorkflowStatusEntity,
   StoreEntity,
@@ -37,6 +37,7 @@ import { stixLoadByIds } from '../database/middleware';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixObject } from '../types/stix-common';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import type { BasicStoreSettings } from '../types/settings';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {

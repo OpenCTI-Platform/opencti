@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSubTypesQuery } from './StixDomainObjectsLines';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -40,6 +41,8 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
   const { t } = useFormatter();
   const classes = useStyles();
   const { bannerSettings } = useAuth();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+
   return (
       <Drawer variant="permanent"
         anchor="right"
@@ -61,7 +64,8 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
                 sortByLabel,
               )(subTypesEdges);
               return (
-                <List sx={{ marginTop: bannerSettings.bannerHeight, marginBottom: bannerSettings.bannerHeight }}
+                <List style={{ marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight }}
+                  sx={{ marginBottom: bannerSettings.bannerHeight }}
                   subheader={
                     <ListSubheader component="div">
                       {t('Entity types')}
@@ -106,8 +110,6 @@ StixDomainObjectsRightBar.propTypes = {
   types: PropTypes.array,
   handleToggle: PropTypes.func,
   handleClear: PropTypes.func,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   openExports: PropTypes.bool,
 };
 

@@ -45,6 +45,7 @@ import {
 } from 'mdi-material-ui';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles((theme) => ({
   drawer: {
@@ -67,10 +68,11 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
   const location = useLocation();
   const { bannerSettings } = useAuth();
   const isInAvailableSection = (sections) => any((filter) => includes(filter, sections), availableSections);
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   return (
       <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawer }}>
         <div className={classes.toolbar} />
-        <MenuList style={{ paddingBottom: 0 }} sx={{ marginTop: bannerSettings.bannerHeight }} component="nav">
+        <MenuList style={{ paddingBottom: 0, marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight }} component="nav">
           <MenuItem
             component={Link}
             to={`${stixCoreObjectLink}/overview`}
@@ -789,9 +791,6 @@ StixCoreObjectKnowledgeBar.propTypes = {
   id: PropTypes.string,
   stixCoreObjectLink: PropTypes.string,
   availableSections: PropTypes.array,
-  classes: PropTypes.object,
-  location: PropTypes.object,
-  t: PropTypes.func,
 };
 
 export default StixCoreObjectKnowledgeBar;

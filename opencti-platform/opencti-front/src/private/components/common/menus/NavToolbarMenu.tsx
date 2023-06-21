@@ -9,6 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawer: {
@@ -34,10 +35,12 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
   const location = useLocation();
   const { bannerSettings } = useAuth();
   const bannerHeight = bannerSettings.bannerHeightNumber;
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+
   return (
     <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawer }}>
       <div className={classes.toolbar} />
-      <MenuList component="nav" style={{ marginTop: bannerHeight, marginBottom: bannerHeight }}>
+      <MenuList component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight, marginBottom: bannerHeight }}>
         {entries.map((entry, idx) => {
           return (
             <MenuItem

@@ -8,11 +8,12 @@ import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreCommon, BasicStoreSettings } from '../types/store';
+import type { BasicStoreCommon } from '../types/store';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { telemetry } from '../config/tracing';
+import type { BasicStoreSettings } from '../types/settings';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';

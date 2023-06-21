@@ -20,6 +20,7 @@ import {
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_USER,
 } from '../../schema/internalObject';
+import { settingsMessages } from '../../domain/settings';
 
 const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_SETTINGS]: [
@@ -62,6 +63,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'password_policy_min_uppercase', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'enterprise_edition', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'activity_listeners_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'messages', type: 'json', mandatoryType: 'no', multiple: false, upsert: false, schemaDef: settingsMessages },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },

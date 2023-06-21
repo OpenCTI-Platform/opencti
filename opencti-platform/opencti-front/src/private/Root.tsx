@@ -34,6 +34,7 @@ const rootPrivateQuery = graphql`
       }
     }
     settings {
+      id
       platform_demo
       platform_banner_text
       platform_banner_level

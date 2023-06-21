@@ -12,9 +12,9 @@ import notificationManager from './notificationManager';
 import { registerClusterInstance } from '../database/redis';
 import activityManager from './activityManager';
 import { getEntityFromCache } from '../database/cache';
-import type { BasicStoreSettings } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import type { BasicStoreSettings } from '../types/settings';
 
 const SCHEDULE_TIME = 30000;
 const NODE_INSTANCE_ID = conf.get('app:node_identifier') || uuid();

@@ -6,11 +6,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import {
-  NorthEastOutlined,
-  MoreVertOutlined,
-  ShortTextOutlined,
-} from '@mui/icons-material';
+import { NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import { DataColumns } from '../../../../../components/list_lines';
 import { Theme } from '../../../../../components/Theme';
@@ -175,7 +171,7 @@ export const EntitySettingAttributeLineDummy = ({
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVertOutlined />
+        <NorthEastOutlined />
       </ListItemSecondaryAction>
     </ListItem>
   );

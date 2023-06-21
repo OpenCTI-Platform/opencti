@@ -19815,6 +19815,7 @@ export type Settings = BasicObject & InternalObject & {
   enterprise_edition?: Maybe<Scalars['DateTime']>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
+  messages?: Maybe<Array<SettingsMessage>>;
   otp_mandatory?: Maybe<Scalars['Boolean']>;
   parent_types: Array<Scalars['String']>;
   password_policy_max_length?: Maybe<Scalars['Int']>;
@@ -19872,6 +19873,8 @@ export type SettingsEditMutations = {
   __typename?: 'SettingsEditMutations';
   contextClean?: Maybe<Settings>;
   contextPatch?: Maybe<Settings>;
+  deleteMessage?: Maybe<Settings>;
+  editMessage?: Maybe<Settings>;
   fieldPatch?: Maybe<Settings>;
 };
 
@@ -19881,8 +19884,34 @@ export type SettingsEditMutationsContextPatchArgs = {
 };
 
 
+export type SettingsEditMutationsDeleteMessageArgs = {
+  input: Scalars['String'];
+};
+
+
+export type SettingsEditMutationsEditMessageArgs = {
+  input: SettingsMessageInput;
+};
+
+
 export type SettingsEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
+};
+
+export type SettingsMessage = {
+  __typename?: 'SettingsMessage';
+  activated: Scalars['Boolean'];
+  dismissible: Scalars['Boolean'];
+  id: Scalars['ID'];
+  message: Scalars['String'];
+  updated_at: Scalars['DateTime'];
+};
+
+export type SettingsMessageInput = {
+  activated: Scalars['Boolean'];
+  dismissible: Scalars['Boolean'];
+  id?: InputMaybe<Scalars['ID']>;
+  message: Scalars['String'];
 };
 
 export type Software = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -22340,6 +22369,7 @@ export type Subscription = {
   notification?: Maybe<Notification>;
   notificationsNumber?: Maybe<NotificationCount>;
   settings?: Maybe<Settings>;
+  settingsMessages?: Maybe<Settings>;
   statusTemplate?: Maybe<StatusTemplate>;
   stixCoreObject?: Maybe<StixCoreObject>;
   stixCoreRelationship?: Maybe<StixCoreRelationship>;
@@ -22383,6 +22413,11 @@ export type SubscriptionMarkingDefinitionArgs = {
 
 
 export type SubscriptionSettingsArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type SubscriptionSettingsMessagesArgs = {
   id: Scalars['ID'];
 };
 
@@ -26517,7 +26552,9 @@ export type ResolversTypes = ResolversObject<{
   SectorsOrdering: SectorsOrdering;
   SessionDetail: ResolverTypeWrapper<SessionDetail>;
   Settings: ResolverTypeWrapper<Omit<Settings, 'platform_organization'> & { platform_organization?: Maybe<ResolversTypes['Organization']> }>;
-  SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
+  SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
+  SettingsMessage: ResolverTypeWrapper<SettingsMessage>;
+  SettingsMessageInput: SettingsMessageInput;
   Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']> }>;
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
@@ -27179,7 +27216,9 @@ export type ResolversParentTypes = ResolversObject<{
   SectorsFiltering: SectorsFiltering;
   SessionDetail: SessionDetail;
   Settings: Omit<Settings, 'platform_organization'> & { platform_organization?: Maybe<ResolversParentTypes['Organization']> };
-  SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']> };
+  SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, deleteMessage?: Maybe<ResolversParentTypes['Settings']>, editMessage?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']> };
+  SettingsMessage: SettingsMessage;
+  SettingsMessageInput: SettingsMessageInput;
   Software: Omit<Software, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']> };
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversParentTypes['SoftwareEdge']> };
@@ -32575,6 +32614,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   enterprise_edition?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  messages?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -32632,7 +32672,18 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
 export type SettingsEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettingsEditMutations'] = ResolversParentTypes['SettingsEditMutations']> = ResolversObject<{
   contextClean?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType>;
   contextPatch?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, Partial<SettingsEditMutationsContextPatchArgs>>;
+  deleteMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsDeleteMessageArgs, 'input'>>;
+  editMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsEditMessageArgs, 'input'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsFieldPatchArgs, 'input'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SettingsMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettingsMessage'] = ResolversParentTypes['SettingsMessage']> = ResolversObject<{
+  activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  dismissible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -33389,6 +33440,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   notification?: SubscriptionResolver<Maybe<ResolversTypes['Notification']>, "notification", ParentType, ContextType>;
   notificationsNumber?: SubscriptionResolver<Maybe<ResolversTypes['NotificationCount']>, "notificationsNumber", ParentType, ContextType>;
   settings?: SubscriptionResolver<Maybe<ResolversTypes['Settings']>, "settings", ParentType, ContextType, RequireFields<SubscriptionSettingsArgs, 'id'>>;
+  settingsMessages?: SubscriptionResolver<Maybe<ResolversTypes['Settings']>, "settingsMessages", ParentType, ContextType, RequireFields<SubscriptionSettingsMessagesArgs, 'id'>>;
   statusTemplate?: SubscriptionResolver<Maybe<ResolversTypes['StatusTemplate']>, "statusTemplate", ParentType, ContextType, RequireFields<SubscriptionStatusTemplateArgs, 'id'>>;
   stixCoreObject?: SubscriptionResolver<Maybe<ResolversTypes['StixCoreObject']>, "stixCoreObject", ParentType, ContextType, RequireFields<SubscriptionStixCoreObjectArgs, 'id'>>;
   stixCoreRelationship?: SubscriptionResolver<Maybe<ResolversTypes['StixCoreRelationship']>, "stixCoreRelationship", ParentType, ContextType, RequireFields<SubscriptionStixCoreRelationshipArgs, 'id'>>;
@@ -34739,6 +34791,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SessionDetail?: SessionDetailResolvers<ContextType>;
   Settings?: SettingsResolvers<ContextType>;
   SettingsEditMutations?: SettingsEditMutationsResolvers<ContextType>;
+  SettingsMessage?: SettingsMessageResolvers<ContextType>;
   Software?: SoftwareResolvers<ContextType>;
   SoftwareConnection?: SoftwareConnectionResolvers<ContextType>;
   SoftwareEdge?: SoftwareEdgeResolvers<ContextType>;

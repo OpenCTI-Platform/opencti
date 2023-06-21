@@ -7,6 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
+import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles((theme) => ({
   drawer: {
@@ -24,10 +25,12 @@ const SharingMenu = () => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+
   return (
     <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawer }}>
       <div className={classes.toolbar} />
-      <MenuList component="nav" sx={{ marginTop: bannerHeightNumber, marginBottom: bannerHeightNumber }}>
+      <MenuList component="nav" style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }} sx={{ marginBottom: bannerHeightNumber }}>
         <MenuItem
           component={Link}
           to={'/dashboard/data/sharing/streams'}

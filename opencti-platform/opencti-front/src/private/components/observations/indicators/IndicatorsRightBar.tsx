@@ -18,6 +18,7 @@ import { StixCyberObservablesLinesSubTypesQuery$data } from '../stix_cyber_obser
 import { vocabularyQuery } from '../../common/form/OpenVocabField';
 import { OpenVocabFieldQuery$data } from '../../common/form/__generated__/OpenVocabFieldQuery.graphql';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -74,6 +75,7 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   return (
     <Drawer
       variant="permanent"
@@ -82,7 +84,7 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
         paper: openExports ? classes.drawerPaperExports : classes.drawerPaper,
       }}
       PaperProps={{
-        style: { paddingTop: bannerHeightNumber },
+        style: { paddingTop: bannerHeightNumber + settingsMessagesBannerHeight },
       }}
     >
       <div className={classes.toolbar} />

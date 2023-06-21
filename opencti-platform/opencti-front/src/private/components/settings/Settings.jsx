@@ -34,6 +34,7 @@ import { now } from '../../../utils/Time';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { isNotEmptyField } from '../../../utils/utils';
+import SettingsMessages from './settings_messages/SettingsMessages';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -128,6 +129,7 @@ const settingsQuery = graphql`
       }
       enterprise_edition
       otp_mandatory
+      ...SettingsMessages_settingsMessages
     }
     about {
       version
@@ -1073,6 +1075,11 @@ const Settings = () => {
                         ))}
                       </List>
                     </Paper>
+                  </Grid>
+                </Grid>
+                <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
+                  <Grid item={true} xs={12}>
+                    <SettingsMessages settings={settings}/>
                   </Grid>
                 </Grid>
               </>
