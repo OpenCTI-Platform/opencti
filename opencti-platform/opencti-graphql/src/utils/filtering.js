@@ -82,7 +82,7 @@ export const resolvedFiltersMapForUser = async (context, user, filters) => {
         const stixInstance = resolvedMap.get(v.id);
         const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stixInstance);
         if (isUserHasAccessToElement) {
-          resolvedMap.set(key, stixInstance);
+          resolveUserMap.set(stixInstance.id, stixInstance);
         }
       }
     }

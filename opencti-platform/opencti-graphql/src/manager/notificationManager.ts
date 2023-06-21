@@ -325,7 +325,9 @@ const eventTypeTranslater = (isPreviousMatch: boolean, isCurrentlyMatch: boolean
   return currentType;
 };
 
-const isRelationFromOrToMatchFilters = (
+// TODO remove export that is for tests
+// indicates if a relation from/to contains an instance that is in an instances map
+export const isRelationFromOrToMatchFilters = (
   listenedInstanceIdsMap: Map<string, StixObject>,
   instance: StixRelation | StixSighting,
 ) => {
@@ -336,7 +338,7 @@ const isRelationFromOrToMatchFilters = (
     stixIdsToSearch.push((instance as StixRelation).source_ref, (instance as StixRelation).target_ref);
   }
   // eslint-disable-next-line no-restricted-syntax
-  for (const [_, value] of listenedInstanceIdsMap) {
+  for (const value of listenedInstanceIdsMap.values()) {
     if (stixIdsToSearch.includes(value.id)) {
       return true;
     }
@@ -344,6 +346,7 @@ const isRelationFromOrToMatchFilters = (
   return false;
 };
 
+// keep only the refs event ids that are in the map of the listened instances
 const filterInstancesByRefEventIds = (
   listenedInstanceIdsMap: Map<string, StixObject>,
   refsEventIds: string[],
@@ -358,7 +361,9 @@ const filterInstancesByRefEventIds = (
   return instances as StixObject[];
 };
 
-const filterUpdateInstanceIdsFromDataContext = (
+// TODO remove export that is for tests
+// keep only the instances that are in patch/reverse_patch and in the map of the listened instances
+export const filterUpdateInstanceIdsFromDataContext = (
   listenedInstanceIdsMap: Map<string, StixObject>,
   dataContext: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
 ) => {
@@ -379,21 +384,36 @@ const filterUpdateInstanceIdsFromDataContext = (
   return instances;
 };
 
-const generateNotificationMessageForInstanceWithRefs = (
+// display an update action on refs depending on the displayed event type
+const updateActionFromEventType = (eventType?: string) => {
+  switch (eventType) {
+    case EVENT_TYPE_CREATE:
+      return 'added in';
+    case EVENT_TYPE_DELETE:
+      return 'removed from';
+    default:
+      return 'in';
+  }
+};
+
+// TODO : need to find import in test without export keyword
+export const generateNotificationMessageForInstanceWithRefs = (
   instance: StixCoreObject | StixRelationshipObject,
   refsInstances: StixObject[],
   displayedTypeIsUpdate?: boolean,
+  translatedType?: string,
 ) => {
   const instanceRepresentative = extractStixRepresentative(instance);
   switch (displayedTypeIsUpdate) {
     case true:
-      return `[${instance.type}] ${instanceRepresentative} because of ${refsInstances.map((ref) => `[${ref.type}] ${extractStixRepresentative(ref)}`)}`;
-    default: // TODO check message
-      return `${refsInstances.map((ref) => `[${ref.type}] ${extractStixRepresentative(ref)}`)} in [${instance.type}] ${instanceRepresentative}`;
+      return `[${instance.type.toLowerCase()}] ${instanceRepresentative} containing ${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)}`;
+    default:
+      return `${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)} ${updateActionFromEventType(translatedType)} [${instance.type.toLowerCase()}] ${instanceRepresentative}`;
   }
 };
 
-const generateNotificationMessageForInstance = async (
+// TODO : need to find import in test without export keyword
+export const generateNotificationMessageForInstance = async (
   context: AuthContext,
   user: AuthUser,
   instance: StixCoreObject | StixRelationshipObject,
@@ -402,38 +422,18 @@ const generateNotificationMessageForInstance = async (
   const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
   const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
   const instanceRepresentative = extractStixRepresentative(instance, { fromRestricted, toRestricted });
-  return `[${instance.type}] ${instanceRepresentative}`;
+  return `[${instance.type.toLowerCase()}] ${instanceRepresentative}`;
 };
 
 const shouldUpdateEventBeInNotifications = (
   data: StixCoreObject | StixRelationshipObject,
   useSideEventMatching: boolean,
 ) => {
-  if (useSideEventMatching && [STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type)) {
-    return false; // in case of instance trigger: no notification for relationships update
+  if (useSideEventMatching) {
+    return false; // in case of instance trigger: no notification for updates
+    // (because it is update of a relationship involving a listened instance or of an instance with a listened instance in its refs)
   }
   return true;
-};
-
-const generateNotificationMessageForUpdate = async (
-  context: AuthContext,
-  user: AuthUser,
-  data: StixCoreObject | StixRelationshipObject,
-  frontendFilters: Record<string, { id: string, value: string }[]>,
-  useSideEventMatching: boolean,
-  dataContext: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
-) => {
-  if (useSideEventMatching) { // 1 Case filtered instance trigger side events: add/remove a listened ref in an entity
-    // We need to filter these instances to keep those that are part of the event refs
-    const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
-    // Keep only the ids in the context patch/reverse_patch that are in the trigger filters
-    const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromDataContext(listenedInstanceIdsMap, dataContext);
-    return generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInPatchIds, true);
-  }
-  // 2 Case classic live trigger
-  // User should be notified of the direct event
-  const message = await generateNotificationMessageForInstance(context, user, data);
-  return message;
 };
 
 const generateNotificationMessageForCreationOrDeletion = async (
@@ -443,29 +443,33 @@ const generateNotificationMessageForCreationOrDeletion = async (
   frontendFilters: Record<string, { id: string, value: string }[]>,
   useSideEventMatching: boolean,
   eventType: string,
+  translatedType?: string,
   dataContext?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
 ) => {
-  if (useSideEventMatching) { // 1 Case instance trigger side events
+  if (useSideEventMatching) { // 1. Case instance trigger side events
     // Get ids from the user trigger filters that user has access to
     const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
-    // -- 1.1.a. If the event if a relationship and the relationship from/to contains an instance of the trigger filters
+    // -- 1.1. If the event if a relationship and the relationship from/to contains an instance of the trigger filters
     if ([STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type) && isRelationFromOrToMatchFilters(listenedInstanceIdsMap, data as StixRelation | StixSighting)) {
       // User should be notified of the relationship loss of rights
       const message = await generateNotificationMessageForInstance(context, user, data);
       return message;
     }
-    // -- 1.b. eventType = update --> It's the patch that contains instance(s) of the trigger filters
+    // -- 1.2. eventType = update
     if (eventType === EVENT_TYPE_UPDATE && dataContext) {
       const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromDataContext(listenedInstanceIdsMap, dataContext);
-      return generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInPatchIds, false);
+      if (listenedInstancesInPatchIds.length > 0) { // 1.2.a.--> It's the patch that contains instance(s) of the trigger filters
+        return generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInPatchIds, false, translatedType);
+      }
+      // 1.2.b.--> the modification is a modification of rights, the instance is newly/no-more visible, we go in case 1.3.
     }
-    // -- 1.c. eventType = create/delete --> It's the refs event that contains instance(s) of the trigger filters
+    // -- 1.3. eventType = create/delete --> It's the data refs that contain instance(s) of the trigger filters
     const dataRefs = stixRefsExtractor(data, generateStandardId);
     // We need to filter these instances to keep those that are part of the event refs
     const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
-    return generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInRefsEventIds, false);
+    return generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInRefsEventIds, true);
   }
-  // 2 Case classic live trigger
+  // 2. Case classic live trigger
   // User should be notified of the direct event
   const message = await generateNotificationMessageForInstance(context, user, data);
   return message;
@@ -480,8 +484,6 @@ const buildTargetEvents = async (
   useSideEventMatching = false
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
-  console.log('data', data);
-  console.log('eventType', eventType);
   const { event_types, outcomes, instance_trigger } = trigger;
   let triggerEventTypes = event_types;
   if (instance_trigger && event_types.includes('update')) {
@@ -503,20 +505,20 @@ const buildTargetEvents = async (
       const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, useSideEventMatching);
       // Depending on the previous visibility, the displayed event type will be different
       const translatedType = eventTypeTranslater(isPreviousMatch, isCurrentlyMatch, eventType);
-      // Case 01. No longer visible because of a data update (user loss of rights on the event)
+      // Case 01. No longer visible because of a data update (user loss of rights OR instance_trigger & remove a listened instance in the refs)
       if (isPreviousMatch && !isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translatedType = delete
-        const message = await generateNotificationMessageForCreationOrDeletion(context, user, data, frontendFilters, useSideEventMatching, eventType, dataContext);
+        const message = await generateNotificationMessageForCreationOrDeletion(context, user, data, frontendFilters, useSideEventMatching, eventType, translatedType, dataContext);
         targets.push({ user: notificationUser, type: translatedType, message });
       }
-      // Case 02. Newly visible because of a data update (gain of rights)
+      // Case 02. Newly visible because of a data update (gain of rights OR instance_trigger & add a listened instance in the refs)
       if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = create
-        const message = await generateNotificationMessageForCreationOrDeletion(context, user, data, frontendFilters, useSideEventMatching, eventType, dataContext);
+        const message = await generateNotificationMessageForCreationOrDeletion(context, user, data, frontendFilters, useSideEventMatching, eventType, translatedType, dataContext);
         targets.push({ user: notificationUser, type: translatedType, message });
       }
       // --- 03. Just an update
       if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = update
         if (shouldUpdateEventBeInNotifications(data, useSideEventMatching)) {
-          const message = await generateNotificationMessageForUpdate(context, user, data, frontendFilters, useSideEventMatching, dataContext);
+          const message = await generateNotificationMessageForInstance(context, user, data);
           targets.push({ user: notificationUser, type: translatedType, message });
         }
       }

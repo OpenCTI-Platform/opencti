@@ -34,9 +34,6 @@ describe('Stix opencti converter', () => {
       remainingData = R.dissoc(rawKey, remainingData);
       const initialData = rawData[rawKey];
       const refetchData = stixData[rawKey];
-      // console.log(rawKey);
-      // console.log('initialData', initialData);
-      // console.log('refetchData', refetchData);
       if (rawKey === 'id') { // Because of standard_id generation
         if (standardId) { // Cant be compare for sighting and relationship
           expect(refetchData).toBe(standardId);

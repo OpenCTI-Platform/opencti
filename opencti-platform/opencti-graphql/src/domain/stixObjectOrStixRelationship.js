@@ -36,10 +36,10 @@ export const stixObjectOrRelationshipAddRefRelations = async (context, user, sti
   const finalInput = input.toIds.map(
     (n) => ({ fromId: stixObjectOrRelationshipId, toId: n, relationship_type: input.relationship_type })
   );
-  const relations = await createRelations(context, user, finalInput, opts);
+  await createRelations(context, user, finalInput, opts);
   const entity = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   await notify(BUS_TOPICS[type].EDIT_TOPIC, entity, user);
-  return relations;
+  return entity;
 };
 
 export const stixObjectOrRelationshipDeleteRefRelation = async (context, user, stixObjectOrRelationshipId, toId, relationshipType, type, opts = {}) => {
