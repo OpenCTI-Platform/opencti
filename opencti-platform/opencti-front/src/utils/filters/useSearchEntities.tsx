@@ -144,7 +144,7 @@ const filtersStixCoreObjectsSearchQuery = graphql`
               name
             }
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }

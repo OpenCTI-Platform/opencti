@@ -1,5 +1,5 @@
 import { expect, it, describe } from 'vitest';
-import { addThreatActor } from '../../src/domain/threatActor';
+import { addThreatActorGroup } from '../../src/domain/threatActorGroup';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { createRelation, internalDeleteElementById, mergeEntities } from '../../src/database/middleware';
 import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCoreRelationship';
@@ -20,7 +20,7 @@ describe('Attribute use rule when merging', () => {
     async () => {
       // ---- Create the dataset
       // 01. Create a threat actor
-      const threat = await addThreatActor(testContext, SYSTEM_USER, { name: 'MY TREAT ACTOR' });
+      const threat = await addThreatActorGroup(testContext, SYSTEM_USER, { name: 'MY TREAT ACTOR' });
       const MY_THREAT = threat.standard_id;
       // 02. Create require relation
       // APT41 -> uses -> Paradise (start: 2020-02-28T23:00:00.000Z, stop: 2020-02-29T23:00:00.000Z, confidence: 30)
@@ -45,7 +45,7 @@ describe('Attribute use rule when merging', () => {
       expect(myThreatToParadise[RULE].length).toBe(1);
       expect(myThreatToParadise.confidence).toBe(20); // AVG 2 relations (30 + 10) = 20
       // 02. Create a second threat actor
-      const secondThreat = await addThreatActor(testContext, SYSTEM_USER, { name: 'MY SECOND TREAT ACTOR', description: 'Threat' });
+      const secondThreat = await addThreatActorGroup(testContext, SYSTEM_USER, { name: 'MY SECOND TREAT ACTOR', description: 'Threat' });
       // 02. Create require relation
       // APT41 -> uses -> Paradise (start: 2020-02-28T23:00:00.000Z, stop: 2020-02-29T23:00:00.000Z, confidence: 30)
       await createRelation(testContext, SYSTEM_USER, { fromId: APT41, toId: secondThreat.id, relationship_type: RELATION_ATTRIBUTED_TO });

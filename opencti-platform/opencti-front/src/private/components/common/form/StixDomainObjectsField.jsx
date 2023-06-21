@@ -136,7 +136,7 @@ export const stixDomainObjectsFieldSearchQuery = graphql`
             first_seen
             last_seen
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
             first_seen

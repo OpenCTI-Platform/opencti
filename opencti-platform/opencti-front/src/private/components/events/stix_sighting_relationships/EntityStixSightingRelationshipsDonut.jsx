@@ -112,7 +112,7 @@ const entityStixSightingRelationshipsDonutStixSightingRelationshipsDistributionQ
           name
           description
         }
-        ... on ThreatActor {
+        ... on ThreatActorGroup {
           name
           description
         }

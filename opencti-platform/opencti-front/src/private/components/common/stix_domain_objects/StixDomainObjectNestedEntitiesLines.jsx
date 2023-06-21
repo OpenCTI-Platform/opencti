@@ -284,7 +284,7 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
                 ... on MalwareAnalysis {
                   result_name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   description
                 }
@@ -403,7 +403,7 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
                 ... on MalwareAnalysis {
                   result_name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   description
                 }

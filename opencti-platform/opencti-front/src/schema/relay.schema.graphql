@@ -4888,7 +4888,7 @@ input MalwareAddInput {
   file: Upload
 }
 
-enum ThreatActorsOrdering {
+enum ThreatActorsGroupOrdering {
   name
   created
   modified
@@ -4898,7 +4898,7 @@ enum ThreatActorsOrdering {
   confidence
 }
 
-enum ThreatActorsFilter {
+enum ThreatActorsGroupFilter {
   name
   aliases
   created
@@ -4915,24 +4915,24 @@ enum ThreatActorsFilter {
   creator
 }
 
-input ThreatActorsFiltering {
-  key: [ThreatActorsFilter!]!
+input ThreatActorsGroupFiltering {
+  key: [ThreatActorsGroupFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
 
-type ThreatActorConnection {
+type ThreatActorGroupConnection {
   pageInfo: PageInfo!
-  edges: [ThreatActorEdge]
+  edges: [ThreatActorGroupEdge]
 }
 
-type ThreatActorEdge {
+type ThreatActorGroupEdge {
   cursor: String!
-  node: ThreatActor!
+  node: ThreatActorGroup!
 }
 
-type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -4991,7 +4991,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   workflowEnabled: Boolean
 }
 
-input ThreatActorAddInput {
+input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
@@ -7216,11 +7216,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | Creator | Workspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | Creator | Workspace
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7808,8 +7808,8 @@ type Query {
   positions(first: Int, after: ID, orderBy: PositionsOrdering, orderMode: OrderingMode, filters: [PositionsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): PositionConnection
   malware(id: String): Malware
   malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, filters: [MalwaresFiltering], filterMode: FilterMode, search: String, toStix: Boolean): MalwareConnection
-  threatActor(id: String): ThreatActor
-  threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, filters: [ThreatActorsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorConnection
+  threatActorGroup(id: String): ThreatActorGroup
+  threatActorsGroup(first: Int, after: ID, orderBy: ThreatActorsGroupOrdering, orderMode: OrderingMode, filters: [ThreatActorsGroupFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorGroupConnection
   tool(id: String): Tool
   tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, filters: [ToolsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ToolConnection
   vulnerability(id: String): Vulnerability
@@ -8266,13 +8266,13 @@ type MalwareEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): Malware
 }
 
-type ThreatActorEditMutations {
+type ThreatActorGroupEditMutations {
   delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ThreatActor
-  contextPatch(input: EditContext): ThreatActor
-  contextClean: ThreatActor
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorGroup
+  contextPatch(input: EditContext): ThreatActorGroup
+  contextClean: ThreatActorGroup
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): ThreatActor
+  relationDelete(toId: StixRef!, relationship_type: String!): ThreatActorGroup
 }
 
 type ToolEditMutations {
@@ -8471,8 +8471,8 @@ type Mutation {
   positionEdit(id: ID!): PositionEditMutations
   malwareAdd(input: MalwareAddInput!): Malware
   malwareEdit(id: ID!): MalwareEditMutations
-  threatActorAdd(input: ThreatActorAddInput!): ThreatActor
-  threatActorEdit(id: ID!): ThreatActorEditMutations
+  threatActorGroupAdd(input: ThreatActorGroupAddInput!): ThreatActorGroup
+  threatActorGroupEdit(id: ID!): ThreatActorGroupEditMutations
   toolAdd(input: ToolAddInput!): Tool
   toolEdit(id: ID!): ToolEditMutations
   vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability

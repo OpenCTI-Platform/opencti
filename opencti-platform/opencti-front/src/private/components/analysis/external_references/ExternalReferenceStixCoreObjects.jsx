@@ -173,7 +173,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                     first_seen
                     last_seen
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                     description
                     first_seen
@@ -324,7 +324,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                     first_seen
                     last_seen
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                     description
                     first_seen
@@ -480,7 +480,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                     first_seen
                     last_seen
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                     description
                     first_seen
@@ -631,7 +631,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                     first_seen
                     last_seen
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                     description
                     first_seen
@@ -774,7 +774,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }

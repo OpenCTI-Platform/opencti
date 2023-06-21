@@ -197,7 +197,7 @@ const stixBaseEntityContribution = {
     [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
     [D.ENTITY_TYPE_LOCATION_POSITION]: [[{ src: 'latitude' }, { src: 'longitude' }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_THREAT_ACTOR]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created' }],

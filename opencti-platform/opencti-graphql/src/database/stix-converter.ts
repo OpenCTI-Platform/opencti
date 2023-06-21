@@ -63,7 +63,7 @@ import {
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
@@ -475,8 +475,8 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
     }
   };
 };
-const convertThreatActorToStix = (instance: StoreEntity, type: string): SDO.StixThreatActor => {
-  assertType(ENTITY_TYPE_THREAT_ACTOR, type);
+const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActorGroup => {
+  assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, type);
   return {
     ...buildStixDomain(instance),
     name: instance.name,
@@ -1378,8 +1378,8 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     if (ENTITY_TYPE_CAMPAIGN === type) {
       return convertCampaignToStix(basic, type);
     }
-    if (ENTITY_TYPE_THREAT_ACTOR === type) {
-      return convertThreatActorToStix(basic, type);
+    if (ENTITY_TYPE_THREAT_ACTOR_GROUP === type) {
+      return convertThreatActorGroupToStix(basic, type);
     }
     if (ENTITY_TYPE_CONTAINER_NOTE === type) {
       return convertNoteToStix(basic, type);

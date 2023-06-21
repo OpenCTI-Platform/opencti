@@ -416,7 +416,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             name
             description
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }
@@ -589,7 +589,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }
@@ -764,7 +764,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }
@@ -941,7 +941,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
             name
             description
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }
@@ -1114,7 +1114,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }
@@ -1289,7 +1289,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }

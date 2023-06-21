@@ -24,7 +24,7 @@ import {
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
 } from '../../../src/schema/stixDomainObject';
 import {
   ABSTRACT_STIX_REF_RELATIONSHIP,
@@ -61,7 +61,7 @@ import {
   listRelations,
   storeLoadById
 } from '../../../src/database/middleware-loader';
-import { addThreatActor } from '../../../src/domain/threatActor';
+import { addThreatActorGroup } from '../../../src/domain/threatActorGroup';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
@@ -671,8 +671,8 @@ describe('Relations distribution', () => {
 
 // Some utils
 const createThreat = async (input) => {
-  const threat = await addThreatActor(testContext, ADMIN_USER, input);
-  return storeLoadById(testContext, ADMIN_USER, threat.id, ENTITY_TYPE_THREAT_ACTOR);
+  const threat = await addThreatActorGroup(testContext, ADMIN_USER, input);
+  return storeLoadById(testContext, ADMIN_USER, threat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
 };
 const createFile = async (input) => {
   const observableSyntaxResult = checkObservableSyntax(ENTITY_HASHED_OBSERVABLE_STIX_FILE, input);
@@ -815,7 +815,7 @@ describe('Upsert and merge entities', () => {
       'data.reason',
       'You cant update an element with stop_time less than start_time'
     );
-    await deleteElementById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR);
+    await deleteElementById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     await deleteElementById(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
   });
   it('should entity merged', async () => {
@@ -837,7 +837,7 @@ describe('Upsert and merge entities', () => {
       toId: malware01.internal_id,
       relationship_type: RELATION_USES,
     });
-    target = await storeLoadById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR);
+    target = await storeLoadById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     // source 01
     const sourceInput01 = {
       name: 'THREAT_SOURCE_01',
@@ -860,7 +860,7 @@ describe('Upsert and merge entities', () => {
       objectMarking: [testMarking, clearMarking, mitreMarking],
       objectLabel: ['report', 'note', 'malware'],
     });
-    source02 = await storeLoadById(testContext, ADMIN_USER, source02.id, ENTITY_TYPE_THREAT_ACTOR);
+    source02 = await storeLoadById(testContext, ADMIN_USER, source02.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     // source 03
     const sourceInput03 = { name: 'THREAT_SOURCE_03', objectMarking: [testMarking], objectLabel: ['note', 'malware'] };
     let source03 = await createThreat(sourceInput03);
@@ -871,7 +871,7 @@ describe('Upsert and merge entities', () => {
       objectMarking: [testMarking, clearMarking, mitreMarking],
       objectLabel: ['report', 'note', 'malware'],
     });
-    source03 = await storeLoadById(testContext, ADMIN_USER, source03.id, ENTITY_TYPE_THREAT_ACTOR);
+    source03 = await storeLoadById(testContext, ADMIN_USER, source03.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     // source 04
     const sourceInput04 = {
       name: 'THREAT_SOURCE_04',
@@ -890,7 +890,7 @@ describe('Upsert and merge entities', () => {
       toId: malware03.internal_id,
       relationship_type: RELATION_USES,
     });
-    source06 = await storeLoadById(testContext, ADMIN_USER, source06.id, ENTITY_TYPE_THREAT_ACTOR);
+    source06 = await storeLoadById(testContext, ADMIN_USER, source06.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     // Merge with fully resolved entities
     const merged = await mergeEntities(testContext, ADMIN_USER, target.internal_id, [
       source01.internal_id,
@@ -900,7 +900,7 @@ describe('Upsert and merge entities', () => {
       source05.internal_id,
       source06.internal_id,
     ]);
-    const loadedThreat = await storeLoadByIdWithRefs(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR);
+    const loadedThreat = await storeLoadByIdWithRefs(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     // List of ids that should disappears
     const idsThatShouldNotExists = [
       source01.internal_id,
@@ -928,7 +928,7 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, malware01.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, malware02.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, malware03.id, ENTITY_TYPE_MALWARE);
-    await deleteElementById(testContext, ADMIN_USER, loadedThreat.id, ENTITY_TYPE_THREAT_ACTOR);
+    await deleteElementById(testContext, ADMIN_USER, loadedThreat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
   });
   it('should observable merged by update', async () => {
     // Merged 3 Stix File into one

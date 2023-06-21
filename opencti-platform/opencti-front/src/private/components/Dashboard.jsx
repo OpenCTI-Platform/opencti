@@ -817,7 +817,7 @@ const DefaultDashboard = ({ timeField }) => {
             height={400}
             relationshipType="stix-core-relationship"
             toTypes={[
-              'Threat-Actor',
+              'Threat-Actor-Group',
               'Intrusion-Set',
               'Campaign',
               'Malware',

@@ -14,32 +14,32 @@ import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const threatActorMutationFieldPatch = graphql`
-  mutation ThreatActorEditionDetailsFieldPatchMutation(
+const ThreatActorGroupMutationFieldPatch = graphql`
+  mutation ThreatActorGroupEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
     $references: [String]
   ) {
-    threatActorEdit(id: $id) {
+    threatActorGroupEdit(id: $id) {
       fieldPatch(
         input: $input
         commitMessage: $commitMessage
         references: $references
       ) {
-        ...ThreatActorEditionDetails_threatActor
-        ...ThreatActor_threatActor
+        ...ThreatActorGroupEditionDetails_ThreatActorGroup
+        ...ThreatActorGroup_ThreatActorGroup
       }
     }
   }
 `;
 
-const threatActorEditionDetailsFocus = graphql`
-  mutation ThreatActorEditionDetailsFocusMutation(
+const ThreatActorGroupEditionDetailsFocus = graphql`
+  mutation ThreatActorGroupEditionDetailsFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    threatActorEdit(id: $id) {
+    threatActorGroupEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -47,7 +47,7 @@ const threatActorEditionDetailsFocus = graphql`
   }
 `;
 
-const threatActorValidation = (t) => Yup.object().shape({
+const ThreatActorGroupValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -64,17 +64,17 @@ const threatActorValidation = (t) => Yup.object().shape({
   references: Yup.array(),
 });
 
-const ThreatActorEditionDetailsComponent = ({
-  threatActor,
+const ThreatActorGroupEditionDetailsComponent = ({
+  threatActorGroup,
   enableReferences,
   context,
   handleClose,
 }) => {
   const { t } = useFormatter();
   const handleChangeFocus = (name) => commitMutation({
-    mutation: threatActorEditionDetailsFocus,
+    mutation: ThreatActorGroupEditionDetailsFocus,
     variables: {
-      id: threatActor.id,
+      id: threatActorGroup.id,
       input: {
         focusOn: name,
       },
@@ -105,9 +105,9 @@ const ThreatActorEditionDetailsComponent = ({
       })),
     )(values);
     commitMutation({
-      mutation: threatActorMutationFieldPatch,
+      mutation: ThreatActorGroupMutationFieldPatch,
       variables: {
-        id: threatActor.id,
+        id: threatActorGroup.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -126,13 +126,13 @@ const ThreatActorEditionDetailsComponent = ({
       if (name === 'goals') {
         finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
-      threatActorValidation(t)
+      ThreatActorGroupValidation(t)
         .validateAt(name, { [name]: value })
         .then(() => {
           commitMutation({
-            mutation: threatActorMutationFieldPatch,
+            mutation: ThreatActorGroupMutationFieldPatch,
             variables: {
-              id: threatActor.id,
+              id: threatActorGroup.id,
               input: { key: name, value: finalValue || '' },
             },
           });
@@ -141,18 +141,18 @@ const ThreatActorEditionDetailsComponent = ({
     }
   };
   const initialValues = R.pipe(
-    R.assoc('first_seen', buildDate(threatActor.first_seen)),
-    R.assoc('last_seen', buildDate(threatActor.last_seen)),
+    R.assoc('first_seen', buildDate(threatActorGroup.first_seen)),
+    R.assoc('last_seen', buildDate(threatActorGroup.last_seen)),
     R.assoc(
       'secondary_motivations',
-      threatActor.secondary_motivations ? threatActor.secondary_motivations : [],
+      threatActorGroup.secondary_motivations ? threatActorGroup.secondary_motivations : [],
     ),
     R.assoc(
       'personal_motivations',
-      threatActor.personal_motivations ? threatActor.personal_motivations : [],
+      threatActorGroup.personal_motivations ? threatActorGroup.personal_motivations : [],
     ),
-    R.assoc('goals', R.join('\n', threatActor.goals ? threatActor.goals : [])),
-    R.assoc('roles', threatActor.roles ? threatActor.roles : []),
+    R.assoc('goals', R.join('\n', threatActorGroup.goals ? threatActorGroup.goals : [])),
+    R.assoc('roles', threatActorGroup.roles ? threatActorGroup.roles : []),
     R.pick([
       'first_seen',
       'last_seen',
@@ -164,13 +164,13 @@ const ThreatActorEditionDetailsComponent = ({
       'goals',
       'roles',
     ]),
-  )(threatActor);
+  )(threatActorGroup);
   return (
     <div>
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={threatActorValidation(t)}
+        validationSchema={ThreatActorGroupValidation(t)}
         onSubmit={onSubmit}
       >
         {({
@@ -312,7 +312,7 @@ const ThreatActorEditionDetailsComponent = ({
                   setFieldValue={setFieldValue}
                   open={false}
                   values={values.references}
-                  id={threatActor.id}
+                  id={threatActorGroup.id}
                 />
               )}
             </Form>
@@ -323,9 +323,9 @@ const ThreatActorEditionDetailsComponent = ({
   );
 };
 
-export default createFragmentContainer(ThreatActorEditionDetailsComponent, {
-  threatActor: graphql`
-    fragment ThreatActorEditionDetails_threatActor on ThreatActor {
+export default createFragmentContainer(ThreatActorGroupEditionDetailsComponent, {
+  threatActorGroup: graphql`
+    fragment ThreatActorGroupEditionDetails_ThreatActorGroup on ThreatActorGroup {
       id
       first_seen
       last_seen

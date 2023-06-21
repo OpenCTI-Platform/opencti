@@ -243,7 +243,7 @@ const stixCoreRelationshipsListQuery = graphql`
               ... on Malware {
                 name
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
               }
               ... on Tool {
@@ -331,7 +331,7 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on Malware {
                     name
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                   }
                   ... on Tool {
@@ -466,7 +466,7 @@ const stixCoreRelationshipsListQuery = graphql`
                             first_seen
                             last_seen
                           }
-                          ... on ThreatActor {
+                          ... on ThreatActorGroup {
                             name
                             description
                             first_seen
@@ -567,7 +567,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Malware {
                         name
                       }
-                      ... on ThreatActor {
+                      ... on ThreatActorGroup {
                         name
                       }
                       ... on Tool {
@@ -643,7 +643,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Malware {
                         name
                       }
-                      ... on ThreatActor {
+                      ... on ThreatActorGroup {
                         name
                       }
                       ... on Tool {
@@ -771,7 +771,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 first_seen
                                 last_seen
                               }
-                              ... on ThreatActor {
+                              ... on ThreatActorGroup {
                                 name
                                 description
                                 first_seen
@@ -868,7 +868,7 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on Malware {
                     name
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                   }
                   ... on Tool {
@@ -999,7 +999,7 @@ const stixCoreRelationshipsListQuery = graphql`
                             first_seen
                             last_seen
                           }
-                          ... on ThreatActor {
+                          ... on ThreatActorGroup {
                             name
                             description
                             first_seen
@@ -1099,7 +1099,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Malware {
                         name
                       }
-                      ... on ThreatActor {
+                      ... on ThreatActorGroup {
                         name
                       }
                       ... on Tool {
@@ -1230,7 +1230,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 first_seen
                                 last_seen
                               }
-                              ... on ThreatActor {
+                              ... on ThreatActorGroup {
                                 name
                                 description
                                 first_seen
@@ -1324,7 +1324,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Malware {
                         name
                       }
-                      ... on ThreatActor {
+                      ... on ThreatActorGroup {
                         name
                       }
                       ... on Tool {
@@ -1455,7 +1455,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 first_seen
                                 last_seen
                               }
-                              ... on ThreatActor {
+                              ... on ThreatActorGroup {
                                 name
                                 description
                                 first_seen
@@ -1556,7 +1556,7 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on Malware {
                     name
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                   }
                   ... on Tool {
@@ -1687,7 +1687,7 @@ const stixCoreRelationshipsListQuery = graphql`
                             first_seen
                             last_seen
                           }
-                          ... on ThreatActor {
+                          ... on ThreatActorGroup {
                             name
                             description
                             first_seen
@@ -1785,7 +1785,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Malware {
                         name
                       }
-                      ... on ThreatActor {
+                      ... on ThreatActorGroup {
                         name
                       }
                       ... on Tool {
@@ -1861,7 +1861,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Malware {
                         name
                       }
-                      ... on ThreatActor {
+                      ... on ThreatActorGroup {
                         name
                       }
                       ... on Tool {
@@ -1989,7 +1989,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 first_seen
                                 last_seen
                               }
-                              ... on ThreatActor {
+                              ... on ThreatActorGroup {
                                 name
                                 description
                                 first_seen
@@ -2086,7 +2086,7 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on Malware {
                     name
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                   }
                   ... on Tool {
@@ -2217,7 +2217,7 @@ const stixCoreRelationshipsListQuery = graphql`
                             first_seen
                             last_seen
                           }
-                          ... on ThreatActor {
+                          ... on ThreatActorGroup {
                             name
                             description
                             first_seen
@@ -2317,7 +2317,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Malware {
                         name
                       }
-                      ... on ThreatActor {
+                      ... on ThreatActorGroup {
                         name
                       }
                       ... on Tool {
@@ -2448,7 +2448,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 first_seen
                                 last_seen
                               }
-                              ... on ThreatActor {
+                              ... on ThreatActorGroup {
                                 name
                                 description
                                 first_seen
@@ -2542,7 +2542,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Malware {
                         name
                       }
-                      ... on ThreatActor {
+                      ... on ThreatActorGroup {
                         name
                       }
                       ... on Tool {
@@ -2673,7 +2673,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 first_seen
                                 last_seen
                               }
-                              ... on ThreatActor {
+                              ... on ThreatActorGroup {
                                 name
                                 description
                                 first_seen
@@ -2789,7 +2789,7 @@ const stixCoreRelationshipsListQuery = graphql`
             ... on Malware {
               name
             }
-            ... on ThreatActor {
+            ... on ThreatActorGroup {
               name
             }
             ... on Tool {
@@ -2920,7 +2920,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       first_seen
                       last_seen
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                       description
                       first_seen
@@ -3018,7 +3018,7 @@ const stixCoreRelationshipsListQuery = graphql`
                 ... on Malware {
                   name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {
@@ -3094,7 +3094,7 @@ const stixCoreRelationshipsListQuery = graphql`
                 ... on Malware {
                   name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {
@@ -3174,7 +3174,7 @@ const stixCoreRelationshipsListQuery = graphql`
             ... on Malware {
               name
             }
-            ... on ThreatActor {
+            ... on ThreatActorGroup {
               name
             }
             ... on Tool {
@@ -3305,7 +3305,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       first_seen
                       last_seen
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                       description
                       first_seen
@@ -3396,7 +3396,7 @@ const stixCoreRelationshipsListQuery = graphql`
                 ... on Malware {
                   name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {
@@ -3468,7 +3468,7 @@ const stixCoreRelationshipsListQuery = graphql`
                 ... on Malware {
                   name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {

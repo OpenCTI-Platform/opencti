@@ -75,7 +75,7 @@ class CampaignKnowledgeComponent extends Component {
                 entityId={campaign.id}
                 relationshipTypes={['related-to']}
                 stixCoreObjectTypes={[
-                  'Threat-Actor',
+                  'Threat-Actor-Group',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',
@@ -105,7 +105,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={campaign.id}
                 relationshipTypes={['attributed-to']}
-                stixCoreObjectTypes={['Threat-Actor', 'Intrusion-Set']}
+                stixCoreObjectTypes={['Threat-Actor-Group', 'Intrusion-Set']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}

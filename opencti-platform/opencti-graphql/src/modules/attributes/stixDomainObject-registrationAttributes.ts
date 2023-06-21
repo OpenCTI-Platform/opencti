@@ -33,7 +33,7 @@ import {
   ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
@@ -381,7 +381,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'implementation_languages', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Implementation languages' },
     { name: 'capabilities', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
-  [ENTITY_TYPE_THREAT_ACTOR]: [
+  [ENTITY_TYPE_THREAT_ACTOR_GROUP]: [
     aliases,
     iAliasedIds,
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },

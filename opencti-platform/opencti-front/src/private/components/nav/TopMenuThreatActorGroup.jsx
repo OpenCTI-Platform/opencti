@@ -34,23 +34,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TopMenuThreatActor = () => {
+const TopMenuThreatActorGroup = () => {
   const classes = useStyles();
   const location = useLocation();
   const { t } = useFormatter();
-  const { threatActorId } = useParams();
+  const { threatActorGroupId } = useParams();
   return (
     <div>
       <Button
         component={Link}
-        to="/dashboard/threats/threat_actors"
+        to="/dashboard/threats/threat_actors_group"
         variant="contained"
         size="small"
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
         <LaptopAccount className={classes.icon} fontSize="small" />
-        {t('Threat actors')}
+        {t('Threat actors group')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"
@@ -58,17 +58,17 @@ const TopMenuThreatActor = () => {
       />
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}`}
         variant={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`
             ? 'secondary'
             : 'primary'
         }
@@ -79,10 +79,10 @@ const TopMenuThreatActor = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`}
         variant={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActorId}/knowledge`,
+            `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`,
           )
             ? 'contained'
             : 'text'
@@ -90,7 +90,7 @@ const TopMenuThreatActor = () => {
         size="small"
         color={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActorId}/knowledge`,
+            `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`,
           )
             ? 'secondary'
             : 'primary'
@@ -102,17 +102,17 @@ const TopMenuThreatActor = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}/analysis`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/analysis`}
         variant={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/analysis`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/analysis`
             ? 'secondary'
             : 'primary'
         }
@@ -123,10 +123,10 @@ const TopMenuThreatActor = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}/indicators`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/indicators`}
         variant={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActorId}/indicators`,
+            `/dashboard/threats/threat_actors_group/${threatActorGroupId}/indicators`,
           )
             ? 'contained'
             : 'text'
@@ -134,7 +134,7 @@ const TopMenuThreatActor = () => {
         size="small"
         color={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActorId}/indicators`,
+            `/dashboard/threats/threat_actors_group/${threatActorGroupId}/indicators`,
           )
             ? 'secondary'
             : 'primary'
@@ -147,17 +147,17 @@ const TopMenuThreatActor = () => {
       <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
         <Button
           component={Link}
-          to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
+          to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/files`}
           variant={
             location.pathname
-            === `/dashboard/threats/threat_actors/${threatActorId}/files`
+            === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/files`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/threat_actors/${threatActorId}/files`
+            === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/files`
               ? 'secondary'
               : 'primary'
           }
@@ -169,17 +169,17 @@ const TopMenuThreatActor = () => {
       </Security>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}/history`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/history`}
         variant={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}/history`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/history`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}/history`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/history`
             ? 'secondary'
             : 'primary'
         }
@@ -192,4 +192,4 @@ const TopMenuThreatActor = () => {
   );
 };
 
-export default TopMenuThreatActor;
+export default TopMenuThreatActorGroup;

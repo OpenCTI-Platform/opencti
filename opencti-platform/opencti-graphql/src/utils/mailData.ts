@@ -111,8 +111,8 @@ export const resolveLink = (type: string) => {
       return '/dashboard/arsenal/channels';
     case 'Narrative':
       return '/dashboard/techniques/narratives';
-    case 'Threat-Actor':
-      return '/dashboard/threats/threat_actors';
+    case 'Threat-Actor-Group':
+      return '/dashboard/threats/threat_actors_group';
     case 'Tool':
       return '/dashboard/arsenal/tools';
     case 'Vulnerability':

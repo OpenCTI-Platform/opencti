@@ -25,14 +25,17 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
-import { ThreatActorsCardsPaginationQuery$variables } from './__generated__/ThreatActorsCardsPaginationQuery.graphql';
+import { ThreatActorsGroupCardsPaginationQuery$variables } from './__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
-import {
-  ThreatActorCreationMutation,
-  ThreatActorCreationMutation$variables,
-} from './__generated__/ThreatActorCreationMutation.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import {
+  ThreatActorGroupCreationMutation,
+  ThreatActorGroupCreationMutation$variables,
+} from './__generated__/ThreatActorGroupCreationMutation.graphql';
+import {
+  ThreatActorsGroupLinesPaginationQuery$variables,
+} from './__generated__/ThreatActorsGroupLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -77,23 +80,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const threatActorMutation = graphql`
-  mutation ThreatActorCreationMutation($input: ThreatActorAddInput!) {
-    threatActorAdd(input: $input) {
+const ThreatActorGroupMutation = graphql`
+  mutation ThreatActorGroupCreationMutation($input: ThreatActorGroupAddInput!) {
+    threatActorGroupAdd(input: $input) {
       id
       standard_id
       name
       description
       entity_type
       parent_types
-      ...ThreatActorCard_node
+      ...ThreatActorGroupCard_node
     }
   }
 `;
 
-const THREAT_ACTOR_TYPE = 'Threat-Actor';
+const THREAT_ACTOR_GROUP_TYPE = 'Threat-Actor-Group';
 
-interface ThreatActorAddInput {
+interface ThreatActorGroupAddInput {
   name: string;
   threat_actor_types: string[];
   confidence: number | undefined;
@@ -105,7 +108,7 @@ interface ThreatActorAddInput {
   file: File | undefined;
 }
 
-interface ThreatActorFormProps {
+interface ThreatActorGroupFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
@@ -115,8 +118,8 @@ interface ThreatActorFormProps {
   inputValue?: string;
 }
 
-export const ThreatActorCreationForm: FunctionComponent<
-ThreatActorFormProps
+export const ThreatActorGroupCreationForm: FunctionComponent<
+ThreatActorGroupFormProps
 > = ({
   updater,
   onReset,
@@ -134,18 +137,18 @@ ThreatActorFormProps
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
-  const threatActorValidator = useSchemaCreationValidation(
-    THREAT_ACTOR_TYPE,
+  const threatActorGroupValidator = useSchemaCreationValidation(
+    THREAT_ACTOR_GROUP_TYPE,
     basicShape,
   );
 
-  const [commit] = useMutation<ThreatActorCreationMutation>(threatActorMutation);
+  const [commit] = useMutation<ThreatActorGroupCreationMutation>(ThreatActorGroupMutation);
 
-  const onSubmit: FormikConfig<ThreatActorAddInput>['onSubmit'] = (
+  const onSubmit: FormikConfig<ThreatActorGroupAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const input: ThreatActorCreationMutation$variables['input'] = {
+    const input: ThreatActorGroupCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       threat_actor_types: values.threat_actor_types,
@@ -162,10 +165,10 @@ ThreatActorFormProps
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'threatActorAdd');
+          updater(store, 'threatActorGroupAdd');
         }
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
@@ -179,7 +182,7 @@ ThreatActorFormProps
     });
   };
 
-  const initialValues = useDefaultValues(THREAT_ACTOR_TYPE, {
+  const initialValues = useDefaultValues(THREAT_ACTOR_GROUP_TYPE, {
     name: inputValue ?? '',
     threat_actor_types: [],
     confidence: defaultConfidence,
@@ -194,7 +197,7 @@ ThreatActorFormProps
   return (
     <Formik
       initialValues={initialValues}
-      validationSchema={threatActorValidator}
+      validationSchema={threatActorGroupValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -222,7 +225,7 @@ ThreatActorFormProps
             onChange={setFieldValue}
           />
           <ConfidenceField
-            entityType="Threat-Actor"
+            entityType="Threat-Actor-Group"
             containerStyle={{ width: '100%', marginTop: 20 }}
           />
           <Field
@@ -289,10 +292,10 @@ ThreatActorFormProps
   );
 };
 
-const ThreatActorCreation = ({
+const ThreatActorGroupCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: ThreatActorsCardsPaginationQuery$variables;
+  paginationOptions: ThreatActorsGroupCardsPaginationQuery$variables;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -301,9 +304,9 @@ const ThreatActorCreation = ({
   const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_threatActors',
+    'Pagination_threatActorsGroup',
     paginationOptions,
-    'threatActorAdd',
+    'threatActorGroupAdd',
   );
   return (
     <div>
@@ -333,10 +336,10 @@ const ThreatActorCreation = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a threat actor')}</Typography>
+          <Typography variant="h6">{t('Create a threat actor group')}</Typography>
         </div>
         <div className={classes.container}>
-          <ThreatActorCreationForm
+          <ThreatActorGroupCreationForm
             updater={updater}
             onCompleted={handleClose}
             onReset={handleClose}
@@ -347,4 +350,4 @@ const ThreatActorCreation = ({
   );
 };
 
-export default ThreatActorCreation;
+export default ThreatActorGroupCreation;

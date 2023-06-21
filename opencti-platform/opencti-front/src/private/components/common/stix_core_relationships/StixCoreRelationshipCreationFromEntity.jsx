@@ -126,7 +126,7 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
       ... on Malware {
         name
       }
-      ... on ThreatActor {
+      ... on ThreatActorGroup {
         name
       }
       ... on Tool {

@@ -19,32 +19,32 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const threatActorMutationFieldPatch = graphql`
-  mutation ThreatActorEditionOverviewFieldPatchMutation(
+const ThreatActorGroupMutationFieldPatch = graphql`
+  mutation ThreatActorGroupEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
     $references: [String]
   ) {
-    threatActorEdit(id: $id) {
+    threatActorGroupEdit(id: $id) {
       fieldPatch(
         input: $input
         commitMessage: $commitMessage
         references: $references
       ) {
-        ...ThreatActorEditionOverview_threatActor
-        ...ThreatActor_threatActor
+        ...ThreatActorGroupEditionOverview_ThreatActorGroup
+        ...ThreatActorGroup_ThreatActorGroup
       }
     }
   }
 `;
 
-export const threatActorEditionOverviewFocus = graphql`
-  mutation ThreatActorEditionOverviewFocusMutation(
+export const ThreatActorGroupEditionOverviewFocus = graphql`
+  mutation ThreatActorGroupEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    threatActorEdit(id: $id) {
+    threatActorGroupEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -52,37 +52,37 @@ export const threatActorEditionOverviewFocus = graphql`
   }
 `;
 
-const threatActorMutationRelationAdd = graphql`
-  mutation ThreatActorEditionOverviewRelationAddMutation(
+const ThreatActorGroupMutationRelationAdd = graphql`
+  mutation ThreatActorGroupEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    threatActorEdit(id: $id) {
+    threatActorGroupEdit(id: $id) {
       relationAdd(input: $input) {
         from {
-          ...ThreatActorEditionOverview_threatActor
+          ...ThreatActorGroupEditionOverview_ThreatActorGroup
         }
       }
     }
   }
 `;
 
-const threatActorMutationRelationDelete = graphql`
-  mutation ThreatActorEditionOverviewRelationDeleteMutation(
+const ThreatActorGroupMutationRelationDelete = graphql`
+  mutation ThreatActorGroupEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    threatActorEdit(id: $id) {
+    threatActorGroupEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...ThreatActorEditionOverview_threatActor
+        ...ThreatActorGroupEditionOverview_ThreatActorGroup
       }
     }
   }
 `;
 
-const ThreatActorEditionOverviewComponent = (props) => {
-  const { threatActor, enableReferences, context, handleClose } = props;
+const ThreatActorGroupEditionOverviewComponent = (props) => {
+  const { threatActorGroup, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
@@ -92,21 +92,21 @@ const ThreatActorEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const threatActorValidator = useSchemaEditionValidation(
-    'Threat-Actor',
+  const ThreatActorGroupValidator = useSchemaEditionValidation(
+    'Threat-Actor-Group',
     basicShape,
   );
   const queries = {
-    fieldPatch: threatActorMutationFieldPatch,
-    relationAdd: threatActorMutationRelationAdd,
-    relationDelete: threatActorMutationRelationDelete,
-    editionFocus: threatActorEditionOverviewFocus,
+    fieldPatch: ThreatActorGroupMutationFieldPatch,
+    relationAdd: ThreatActorGroupMutationRelationAdd,
+    relationDelete: ThreatActorGroupMutationRelationDelete,
+    editionFocus: ThreatActorGroupEditionOverviewFocus,
   };
   const editor = useFormEditor(
-    threatActor,
+    threatActorGroup,
     enableReferences,
     queries,
-    threatActorValidator,
+    ThreatActorGroupValidator,
   );
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -123,7 +123,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
     )(values);
     editor.fieldPatch({
       variables: {
-        id: threatActor.id,
+        id: threatActorGroup.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
@@ -141,12 +141,12 @@ const ThreatActorEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      threatActorValidator
+      ThreatActorGroupValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
             variables: {
-              id: threatActor.id,
+              id: threatActorGroup.id,
               input: { key: name, value: finalValue ?? '' },
             },
           });
@@ -155,14 +155,14 @@ const ThreatActorEditionOverviewComponent = (props) => {
     }
   };
   const initialValues = R.pipe(
-    R.assoc('createdBy', convertCreatedBy(threatActor)),
-    R.assoc('killChainPhases', convertKillChainPhases(threatActor)),
-    R.assoc('objectMarking', convertMarkings(threatActor)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, threatActor)),
+    R.assoc('createdBy', convertCreatedBy(threatActorGroup)),
+    R.assoc('killChainPhases', convertKillChainPhases(threatActorGroup)),
+    R.assoc('objectMarking', convertMarkings(threatActorGroup)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, threatActorGroup)),
     R.assoc('references', []),
     R.assoc(
       'threat_actor_types',
-      threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
+      threatActorGroup.threat_actor_types ? threatActorGroup.threat_actor_types : [],
     ),
     R.pick([
       'name',
@@ -175,12 +175,12 @@ const ThreatActorEditionOverviewComponent = (props) => {
       'objectMarking',
       'x_opencti_workflow_id',
     ]),
-  )(threatActor);
+  )(threatActorGroup);
   return (
     <Formik
       enableReinitialize={true}
       initialValues={{ ...initialValues, references: [] }}
-      validationSchema={threatActorValidator}
+      validationSchema={ThreatActorGroupValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -219,7 +219,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
           <ConfidenceField
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            entityType="Threat-Actor"
+            entityType="Threat-Actor-Group"
             containerStyle={{ width: '100%', marginTop: 20 }}
             editContext={context}
             variant="edit"
@@ -238,7 +238,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
-          {threatActor.workflowEnabled && (
+          {threatActorGroup.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Threat-Actor"
@@ -278,7 +278,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}
-              id={threatActor.id}
+              id={threatActorGroup.id}
             />
           )}
         </Form>
@@ -287,9 +287,9 @@ const ThreatActorEditionOverviewComponent = (props) => {
   );
 };
 
-export default createFragmentContainer(ThreatActorEditionOverviewComponent, {
-  threatActor: graphql`
-    fragment ThreatActorEditionOverview_threatActor on ThreatActor {
+export default createFragmentContainer(ThreatActorGroupEditionOverviewComponent, {
+  threatActorGroup: graphql`
+    fragment ThreatActorGroupEditionOverview_ThreatActorGroup on ThreatActorGroup {
       id
       name
       threat_actor_types

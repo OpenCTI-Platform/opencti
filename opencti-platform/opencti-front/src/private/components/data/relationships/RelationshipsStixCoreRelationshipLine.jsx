@@ -390,7 +390,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
             ... on Malware {
               name
             }
-            ... on ThreatActor {
+            ... on ThreatActorGroup {
               name
             }
             ... on Tool {
@@ -487,7 +487,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                 ... on Malware {
                   name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {
@@ -631,7 +631,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           first_seen
                           last_seen
                         }
-                        ... on ThreatActor {
+                        ... on ThreatActorGroup {
                           name
                           description
                           first_seen
@@ -732,7 +732,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -817,7 +817,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -954,7 +954,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActor {
+                            ... on ThreatActorGroup {
                               name
                               description
                               first_seen
@@ -1051,7 +1051,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                 ... on Malware {
                   name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {
@@ -1191,7 +1191,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           first_seen
                           last_seen
                         }
-                        ... on ThreatActor {
+                        ... on ThreatActorGroup {
                           name
                           description
                           first_seen
@@ -1291,7 +1291,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -1431,7 +1431,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActor {
+                            ... on ThreatActorGroup {
                               name
                               description
                               first_seen
@@ -1525,7 +1525,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -1665,7 +1665,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActor {
+                            ... on ThreatActorGroup {
                               name
                               description
                               first_seen
@@ -1766,7 +1766,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                 ... on Malware {
                   name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {
@@ -1906,7 +1906,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           first_seen
                           last_seen
                         }
-                        ... on ThreatActor {
+                        ... on ThreatActorGroup {
                           name
                           description
                           first_seen
@@ -2007,7 +2007,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -2092,7 +2092,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -2229,7 +2229,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActor {
+                            ... on ThreatActorGroup {
                               name
                               description
                               first_seen
@@ -2326,7 +2326,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                 ... on Malware {
                   name
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {
@@ -2466,7 +2466,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           first_seen
                           last_seen
                         }
-                        ... on ThreatActor {
+                        ... on ThreatActorGroup {
                           name
                           description
                           first_seen
@@ -2566,7 +2566,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -2706,7 +2706,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActor {
+                            ... on ThreatActorGroup {
                               name
                               description
                               first_seen
@@ -2800,7 +2800,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -2940,7 +2940,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActor {
+                            ... on ThreatActorGroup {
                               name
                               description
                               first_seen
@@ -3060,7 +3060,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
           ... on Malware {
             name
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
           }
           ... on Tool {
@@ -3221,7 +3221,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     first_seen
                     last_seen
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                     description
                     first_seen
@@ -3319,7 +3319,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
               }
               ... on Tool {
@@ -3404,7 +3404,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
               }
               ... on Tool {
@@ -3493,7 +3493,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
           ... on Malware {
             name
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
           }
           ... on Tool {
@@ -3654,7 +3654,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     first_seen
                     last_seen
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                     description
                     first_seen
@@ -3745,7 +3745,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
               }
               ... on Tool {
@@ -3826,7 +3826,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
               }
               ... on Tool {

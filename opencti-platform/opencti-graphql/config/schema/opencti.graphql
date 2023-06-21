@@ -6313,8 +6313,8 @@ input MalwareAddInput {
   file: Upload
 }
 
-############## ThreatActors
-enum ThreatActorsOrdering {
+############## ThreatActorsGroup
+enum ThreatActorsGroupOrdering {
   name
   created
   modified
@@ -6323,7 +6323,7 @@ enum ThreatActorsOrdering {
   x_opencti_workflow_id
   confidence
 }
-enum ThreatActorsFilter {
+enum ThreatActorsGroupFilter {
   name
   aliases
   created
@@ -6339,21 +6339,21 @@ enum ThreatActorsFilter {
   confidence
   creator
 }
-input ThreatActorsFiltering {
-  key: [ThreatActorsFilter!]!
+input ThreatActorsGroupFiltering {
+  key: [ThreatActorsGroupFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
-type ThreatActorConnection {
+type ThreatActorGroupConnection {
   pageInfo: PageInfo!
-  edges: [ThreatActorEdge]
+  edges: [ThreatActorGroupEdge]
 }
-type ThreatActorEdge {
+type ThreatActorGroupEdge {
   cursor: String!
-  node: ThreatActor!
+  node: ThreatActorGroup!
 }
-type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6446,7 +6446,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  # ThreatActor
+  # ThreatActorGroup
   name: String!
   description: String
   aliases: [String]
@@ -6474,7 +6474,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   status: Status
   workflowEnabled: Boolean
 }
-input ThreatActorAddInput {
+input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
@@ -10794,7 +10794,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Position
   | Malware
   | MalwareAnalysis
-  | ThreatActor
+  | ThreatActorGroup
   | Tool
   | Vulnerability
   | Incident
@@ -10872,7 +10872,7 @@ union StixObjectOrStixRelationship =
   | Position
   | Malware
   | MalwareAnalysis
-  | ThreatActor
+  | ThreatActorGroup
   | Tool
   | Vulnerability
   | Incident
@@ -10946,7 +10946,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | Malware
   | MalwareAnalysis
   | Narrative
-  | ThreatActor
+  | ThreatActorGroup
   | Tool
   | Vulnerability
   | Incident ## Six Cyber Observables
@@ -12194,17 +12194,17 @@ type Query {
     search: String
     toStix: Boolean
   ): MalwareConnection @auth(for: [KNOWLEDGE])
-  threatActor(id: String): ThreatActor @auth(for: [KNOWLEDGE])
-  threatActors(
+  threatActorGroup(id: String): ThreatActorGroup @auth(for: [KNOWLEDGE])
+  threatActorsGroup(
     first: Int
     after: ID
-    orderBy: ThreatActorsOrdering
+    orderBy: ThreatActorsGroupOrdering
     orderMode: OrderingMode
-    filters: [ThreatActorsFiltering]
+    filters: [ThreatActorsGroupFiltering]
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): ThreatActorConnection @auth(for: [KNOWLEDGE])
+  ): ThreatActorGroupConnection @auth(for: [KNOWLEDGE])
   tool(id: String): Tool @auth(for: [KNOWLEDGE])
   tools(
     first: Int
@@ -12926,14 +12926,14 @@ type MalwareEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-type ThreatActorEditMutations {
+type ThreatActorGroupEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ThreatActor
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorGroup
     @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): ThreatActorGroup @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: ThreatActorGroup @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: StixRef!, relationship_type: String!): ThreatActorGroup @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type ToolEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -13201,8 +13201,8 @@ type Mutation {
   positionEdit(id: ID!): PositionEditMutations
   malwareAdd(input: MalwareAddInput!): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   malwareEdit(id: ID!): MalwareEditMutations
-  threatActorAdd(input: ThreatActorAddInput!): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorEdit(id: ID!): ThreatActorEditMutations
+  threatActorGroupAdd(input: ThreatActorGroupAddInput!): ThreatActorGroup @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorGroupEdit(id: ID!): ThreatActorGroupEditMutations
   toolAdd(input: ToolAddInput!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   toolEdit(id: ID!): ToolEditMutations
   vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])

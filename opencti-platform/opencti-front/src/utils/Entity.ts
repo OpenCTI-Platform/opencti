@@ -44,8 +44,8 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/locations/positions';
     case 'Malware':
       return '/dashboard/arsenal/malwares';
-    case 'Threat-Actor':
-      return '/dashboard/threats/threat_actors';
+    case 'Threat-Actor-Group':
+      return '/dashboard/threats/threat_actors_group';
     case 'Tool':
       return '/dashboard/arsenal/tools';
     case 'Channel':

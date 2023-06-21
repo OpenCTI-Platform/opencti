@@ -136,7 +136,7 @@ const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
         ... on MalwareAnalysis {
           result_name
         }
-        ... on ThreatActor {
+        ... on ThreatActorGroup {
           name
           description
         }

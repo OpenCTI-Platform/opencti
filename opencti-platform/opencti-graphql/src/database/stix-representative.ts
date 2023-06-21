@@ -17,7 +17,7 @@ import {
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
@@ -113,8 +113,8 @@ export const extractStixRepresentative = (
   if (entityType === ENTITY_TYPE_CAMPAIGN) {
     return (stix as SDO.StixCampaign).name;
   }
-  if (entityType === ENTITY_TYPE_THREAT_ACTOR) {
-    return (stix as SDO.StixThreatActor).name;
+  if (entityType === ENTITY_TYPE_THREAT_ACTOR_GROUP) {
+    return (stix as SDO.StixThreatActorGroup).name;
   }
   if (entityType === ENTITY_TYPE_CONTAINER_NOTE) {
     return (stix as SDO.StixNote).abstract;

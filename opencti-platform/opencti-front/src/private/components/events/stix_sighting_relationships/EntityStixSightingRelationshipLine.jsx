@@ -284,7 +284,7 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }

@@ -363,7 +363,7 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }

@@ -402,7 +402,7 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
           ... on Malware {
             name
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
           }
           ... on Tool {

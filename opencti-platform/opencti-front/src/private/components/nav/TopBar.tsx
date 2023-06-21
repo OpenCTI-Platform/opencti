@@ -40,7 +40,7 @@ import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
-import TopMenuThreatActor from './TopMenuThreatActor';
+import TopMenuThreatActorGroup from './TopMenuThreatActorGroup';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
 import TopMenuCampaign from './TopMenuCampaign';
 import TopMenuArsenal from './TopMenuArsenal';
@@ -354,8 +354,8 @@ const TopBar: FunctionComponent<TopBarProps> = ({
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
               <TopMenuThreats />
           )}
-          {location.pathname.includes('/dashboard/threats/threat_actors/') && (
-            <TopMenuThreatActor />
+          {location.pathname.includes('/dashboard/threats/threat_actors_group/') && (
+            <TopMenuThreatActorGroup />
           )}
           {location.pathname.includes('/dashboard/threats/intrusion_sets/') && (
             <TopMenuIntrusionSet />

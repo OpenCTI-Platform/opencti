@@ -16,7 +16,7 @@ import {
   ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR
+  ENTITY_TYPE_THREAT_ACTOR_GROUP
 } from '../../schema/stixDomainObject';
 import type { RuleRuntime } from '../../types/rules';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
@@ -103,7 +103,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     };
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: fromSightingIndicator,
-      toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT],
+      toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT],
       callback: listFromCallback
     };
     await listAllRelations(context, RULE_MANAGER_USER, RELATION_INDICATES, listFromArgs);

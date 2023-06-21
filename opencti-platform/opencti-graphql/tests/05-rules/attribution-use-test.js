@@ -1,5 +1,5 @@
 import { expect, it, describe } from 'vitest';
-import { addThreatActor } from '../../src/domain/threatActor';
+import { addThreatActorGroup } from '../../src/domain/threatActorGroup';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { createRelation, internalDeleteElementById } from '../../src/database/middleware';
 import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCoreRelationship';
@@ -21,7 +21,7 @@ describe('Attribute use rule', () => {
     async () => {
       // ---- Create the dataset
       // 01. Create a threat actor
-      const threat = await addThreatActor(testContext, SYSTEM_USER, { name: 'MY TREAT ACTOR' });
+      const threat = await addThreatActorGroup(testContext, SYSTEM_USER, { name: 'MY TREAT ACTOR' });
       const MY_THREAT = threat.standard_id;
       // 02. Create require relation
       // APT41 -> attributed to -> MY TREAT ACTOR

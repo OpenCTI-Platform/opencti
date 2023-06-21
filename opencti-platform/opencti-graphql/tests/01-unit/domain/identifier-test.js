@@ -35,7 +35,7 @@ describe('identifier', () => {
     const ids = cleanStixIds(
       [
         'indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf',
-        'threat-actor--077b66a5-e64f-53df-bb22-03787ea16815',
+        'threat-actor-group--077b66a5-e64f-53df-bb22-03787ea16815',
         _2020_09_03T22_41_18,
         _2020_09_03T22_41_32,
         _2020_09_04T08_00_00,
@@ -73,7 +73,7 @@ describe('identifier', () => {
     let ids = cleanStixIds(
       [
         _2020_09_04T14_18_43,
-        'threat-actor--077b66a5-e64f-53df-bb22-03787ea16815',
+        'threat-actor-group--077b66a5-e64f-53df-bb22-03787ea16815',
         'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
         'indicator--51640662-9c78-4402-932f-1d4531624723',
         _2020_09_04T08_00_43,
@@ -82,7 +82,7 @@ describe('identifier', () => {
       2
     );
     expect(ids.length).toEqual(5);
-    expect(ids.includes('threat-actor--077b66a5-e64f-53df-bb22-03787ea16815')).toBeTruthy();
+    expect(ids.includes('threat-actor-group--077b66a5-e64f-53df-bb22-03787ea16815')).toBeTruthy();
     expect(ids.includes(_2020_09_04T08_00_43)).toBeFalsy();
     expect(ids.includes(_2020_09_04T11_58_50)).toBeTruthy();
     expect(ids.includes(_2020_09_04T14_18_43)).toBeTruthy();
@@ -90,7 +90,7 @@ describe('identifier', () => {
     ids = cleanStixIds(
       [
         _2020_09_04T14_18_43,
-        'threat-actor--077b66a5-e64f-53df-bb22-03787ea16815',
+        'threat-actor-group--077b66a5-e64f-53df-bb22-03787ea16815',
         _2020_09_03T22_41_18,
         _2020_09_03T22_41_32,
         _2020_09_04T08_00_00,
@@ -102,7 +102,7 @@ describe('identifier', () => {
       5
     );
     expect(ids.length).toEqual(8);
-    expect(ids.includes('threat-actor--077b66a5-e64f-53df-bb22-03787ea16815')).toBeTruthy();
+    expect(ids.includes('threat-actor-group--077b66a5-e64f-53df-bb22-03787ea16815')).toBeTruthy();
     expect(ids.includes('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27')).toBeTruthy();
     expect(ids.includes('indicator--51640662-9c78-4402-932f-1d4531624723')).toBeTruthy();
     expect(ids.includes(_2020_09_03T22_41_18)).toBeFalsy(); // Oldest removed
@@ -128,7 +128,7 @@ describe('identifier', () => {
       [
         _2020_09_04T14_18_43,
         _2020_09_04T14_39_43,
-        'threat-actor--077b66a5-e64f-53df-bb22-03787ea16815',
+        'threat-actor-group--077b66a5-e64f-53df-bb22-03787ea16815',
         'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
         'indicator--51640662-9c78-4402-932f-1d4531624723',
         _2020_09_03T22_41_18,

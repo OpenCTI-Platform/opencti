@@ -26,7 +26,7 @@ import Country from '../static/images/entities/country.svg';
 import Region from '../static/images/entities/region.svg';
 import Position from '../static/images/entities/position.svg';
 import Malware from '../static/images/entities/malware.svg';
-import ThreatActor from '../static/images/entities/threat-actor.svg';
+import ThreatActorGroup from '../static/images/entities/threat-actor.svg';
 import Tool from '../static/images/entities/tool.svg';
 import Vulnerability from '../static/images/entities/vulnerability.svg';
 import Incident from '../static/images/entities/incident.svg';
@@ -97,7 +97,7 @@ export const graphImages = {
   Region: genImage(Region),
   Position: genImage(Position),
   Malware: genImage(Malware),
-  'Threat-Actor': genImage(ThreatActor),
+  'Threat-Actor': genImage(ThreatActorGroup),
   Tool: genImage(Tool),
   Vulnerability: genImage(Vulnerability),
   Incident: genImage(Incident),
@@ -238,7 +238,7 @@ export const graphRawImages = {
   Position,
   Malware,
   'Malware-Analysis': MalwareAnalysis,
-  'Threat-Actor': ThreatActor,
+  'Threat-Actor': ThreatActorGroup,
   Tool,
   Vulnerability,
   Incident,

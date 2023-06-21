@@ -362,7 +362,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                     }
                   }
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                 }
                 ... on Tool {

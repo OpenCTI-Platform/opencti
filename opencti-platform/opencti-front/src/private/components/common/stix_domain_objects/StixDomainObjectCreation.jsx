@@ -33,7 +33,7 @@ import { RegionCreationForm } from '../../locations/regions/RegionCreation';
 import { ReportCreationForm } from '../../analysis/reports/ReportCreation';
 import { SectorCreationForm } from '../../entities/sectors/SectorCreation';
 import { SystemCreationForm } from '../../entities/systems/SystemCreation';
-import { ThreatActorCreationForm } from '../../threats/threat_actors/ThreatActorCreation';
+import { ThreatActorGroupCreationForm } from '../../threats/threat_actors_group/ThreatActorGroupCreation';
 import { ToolCreationForm } from '../../arsenal/tools/ToolCreation';
 import { VulnerabilityCreationForm } from '../../arsenal/vulnerabilities/VulnerabilityCreation';
 import {
@@ -600,7 +600,7 @@ const StixDomainPanel = ({
     if (type === 'Threat-Actor') {
       // Threat-Actor
       return (
-        <ThreatActorCreationForm
+        <ThreatActorGroupCreationForm
           inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}

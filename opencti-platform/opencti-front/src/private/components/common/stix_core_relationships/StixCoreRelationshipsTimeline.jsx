@@ -192,7 +192,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
               name
               description
             }
-            ... on ThreatActor {
+            ... on ThreatActorGroup {
               name
               description
             }
@@ -404,7 +404,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   name
                   description
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   description
                 }
@@ -590,7 +590,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   name
                   description
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   description
                 }
@@ -778,7 +778,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
               name
               description
             }
-            ... on ThreatActor {
+            ... on ThreatActorGroup {
               name
               description
             }
@@ -962,7 +962,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   name
                   description
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   description
                 }
@@ -1148,7 +1148,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                   name
                   description
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   description
                 }

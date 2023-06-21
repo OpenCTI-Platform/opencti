@@ -215,7 +215,7 @@ const stixDomainObjectsListQuery = graphql`
             name
             description
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }

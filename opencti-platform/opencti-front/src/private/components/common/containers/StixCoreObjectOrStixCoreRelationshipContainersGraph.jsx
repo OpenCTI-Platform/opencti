@@ -921,7 +921,7 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                   first_seen
                   last_seen
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   first_seen
                   last_seen

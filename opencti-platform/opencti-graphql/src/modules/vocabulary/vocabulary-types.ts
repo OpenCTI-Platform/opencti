@@ -6,7 +6,7 @@ import {
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
 import { ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
@@ -46,7 +46,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   attack_motivation_ov: {
     description: `Knowing a Threat Actor or Intrusion Set's motivation may allow an analyst or defender to better understand likely targets and behaviors.
       Motivation shapes the intensity and the persistence of an attack. Threat Actors and Intrusion Sets usually act in a manner that reflects their underlying emotion or situation, and this informs defenders of the manner of attack. For example, a spy motivated by nationalism (ideology) likely has the patience to achieve long-term goals and work quietly for years, whereas a cyber-vandal out for notoriety can create an intense and attention-grabbing attack but may quickly lose interest and move on. Understanding these differences allows defenders to implement controls tailored to each type of attack for greatest efficiency`,
-    entity_types: [ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET],
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET],
     fields: [{
       key: 'primary_motivation',
       required: false,
@@ -63,7 +63,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   attack_resource_level_ov: {
     description: 'Attack Resource Level is an open vocabulary that captures the general level of resources that a threat actor, intrusion set, or campaign might have access to. It ranges from individual, a person acting alone, to government, the resources of a national government',
-    entity_types: [ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET],
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET],
     fields: [{
       key: 'resource_level',
       required: false,
@@ -329,7 +329,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   // T
   threat_actor_type_ov: {
     description: 'Threat actor type is an open vocabulary used to describe what type of threat actor the individual or group is. For example, some threat actors are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor can be both a disgruntled insider and a spy. [Casey 2007])',
-    entity_types: [ENTITY_TYPE_THREAT_ACTOR],
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP],
     fields: [{
       key: 'threat_actor_types',
       required: false,
@@ -339,7 +339,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   threat_actor_role_ov: {
     description: `Threat actor role is an open vocabulary that is used to describe the different roles that a threat actor can play. For example, some threat actors author malware or operate botnets while other actors actually carry out attacks directly
       Threat actor roles are not mutually exclusive. For example, an actor can be both a financial backer for attacks and also direct attacks`,
-    entity_types: [ENTITY_TYPE_THREAT_ACTOR],
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP],
     fields: [{
       key: 'roles',
       required: false,
@@ -348,7 +348,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   threat_actor_sophistication_ov: {
     description: 'Threat actor sophistication vocabulary captures the skill level of a threat actor. It ranges from "none", which describes a complete novice, to "strategic", which describes an attacker who is able to influence supply chains to introduce vulnerabilities. This vocabulary is separate from resource level because an innovative, highly-skilled threat actor may have access to very few resources while a minimal-level actor might have the resources of an organized crime ring',
-    entity_types: [ENTITY_TYPE_THREAT_ACTOR],
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP],
     fields: [{
       key: 'sophistication',
       required: false,

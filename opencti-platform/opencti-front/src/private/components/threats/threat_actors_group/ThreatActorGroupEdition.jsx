@@ -8,8 +8,8 @@ import { Edit } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import ThreatActorEditionContainer from './ThreatActorEditionContainer';
-import { threatActorEditionOverviewFocus } from './ThreatActorEditionOverview';
+import ThreatActorGroupEditionContainer from './ThreatActorGroupEditionContainer';
+import { ThreatActorGroupEditionOverviewFocus } from './ThreatActorGroupEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -31,15 +31,15 @@ const styles = (theme) => ({
   },
 });
 
-export const threatActorEditionQuery = graphql`
-  query ThreatActorEditionContainerQuery($id: String!) {
-    threatActor(id: $id) {
-      ...ThreatActorEditionContainer_threatActor
+export const ThreatActorGroupEditionQuery = graphql`
+  query ThreatActorGroupEditionContainerQuery($id: String!) {
+    threatActorGroup(id: $id) {
+      ...ThreatActorGroupEditionContainer_ThreatActorGroup
     }
   }
 `;
 
-class ThreatActorEdition extends Component {
+class ThreatActorGroupEdition extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -51,9 +51,9 @@ class ThreatActorEdition extends Component {
 
   handleClose() {
     commitMutation({
-      mutation: threatActorEditionOverviewFocus,
+      mutation: ThreatActorGroupEditionOverviewFocus,
       variables: {
-        id: this.props.threatActorId,
+        id: this.props.threatActorGroupId,
         input: { focusOn: '' },
       },
     });
@@ -61,7 +61,7 @@ class ThreatActorEdition extends Component {
   }
 
   render() {
-    const { classes, threatActorId } = this.props;
+    const { classes, threatActorGroupId } = this.props;
     return (
       <div>
         <Fab
@@ -81,13 +81,13 @@ class ThreatActorEdition extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={threatActorEditionQuery}
-            variables={{ id: threatActorId }}
+            query={ThreatActorGroupEditionQuery}
+            variables={{ id: threatActorGroupId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <ThreatActorEditionContainer
-                    threatActor={props.threatActor}
+                  <ThreatActorGroupEditionContainer
+                    threatActorGroup={props.threatActorGroup}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
@@ -101,8 +101,8 @@ class ThreatActorEdition extends Component {
   }
 }
 
-ThreatActorEdition.propTypes = {
-  threatActorId: PropTypes.string,
+ThreatActorGroupEdition.propTypes = {
+  threatActorGroupId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -111,4 +111,4 @@ ThreatActorEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(ThreatActorEdition);
+)(ThreatActorGroupEdition);

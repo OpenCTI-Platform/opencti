@@ -196,7 +196,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }
@@ -326,7 +326,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
           name
           description
         }
-        ... on ThreatActor {
+        ... on ThreatActorGroup {
           name
           description
         }
@@ -554,7 +554,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }
@@ -684,7 +684,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
           name
           description
         }
-        ... on ThreatActor {
+        ... on ThreatActorGroup {
           name
           description
         }

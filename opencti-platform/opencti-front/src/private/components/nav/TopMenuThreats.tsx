@@ -27,13 +27,13 @@ const TopMenuThreats = () => {
 
   return (
     <div>
-      {!useIsHiddenEntity('Threat-Actor') && (
+      {!useIsHiddenEntity('Threat-Actor-Group') && (
         <Button
           component={Link}
-          to="/dashboard/threats/threat_actors"
+          to="/dashboard/threats/threat_actors_group"
           variant={
             location.pathname.includes(
-              '/dashboard/threats/threat_actors',
+              '/dashboard/threats/threat_actors_group',
             )
               ? 'contained'
               : 'text'
@@ -41,7 +41,7 @@ const TopMenuThreats = () => {
           size="small"
           color={
             location.pathname.includes(
-              '/dashboard/threats/threat_actors',
+              '/dashboard/threats/threat_actors_group',
             )
               ? 'secondary'
               : 'primary'
@@ -49,7 +49,7 @@ const TopMenuThreats = () => {
           classes={{ root: classes.button }}
         >
           <LaptopAccount className={classes.icon} fontSize="small" />
-          {t('Threat actors')}
+          {t('Threat actors group')}
         </Button>
       )}
       {!useIsHiddenEntity('Intrusion-Set') && (
