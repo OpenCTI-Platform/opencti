@@ -37,6 +37,8 @@ export interface LocalStorage {
   selectedElements?: Record<string, unknown>;
   deSelectedElements?: Record<string, unknown>;
   messages?: MessageFromLocalStorage[]
+  timeField?: string
+  dashboard?: string
 }
 
 export interface UseLocalStorageHelpers {
@@ -51,7 +53,6 @@ export interface UseLocalStorageHelpers {
     symbol?: string;
     original?: number;
   }) => void;
-  handleSetRedirectionMode: (value: string) => void;
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
 }
@@ -104,6 +105,8 @@ const buildParamsFromHistory = (params: LocalStorage) => {
     searchTerm: params.searchTerm,
     sortBy: params.sortBy,
     orderAsc: params.orderAsc,
+    timeField: params.timeField,
+    dashboard: params.dashboard,
     types: (params.types && params.types.length > 0) ? params.types.join(',') : undefined,
   });
 };
@@ -118,6 +121,8 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
     sortBy: searchObject.get('sortBy'),
     types: searchObject.get('types') ? searchObject.get('types')?.split(',') : undefined,
     orderAsc: searchObject.get('orderAsc') ? searchObject.get('orderAsc') === 'true' : undefined,
+    timeField: searchObject.get('timeField'),
+    dashboard: searchObject.get('dashboard'),
   });
 };
 
@@ -325,9 +330,6 @@ export const usePaginationLocalStorage = <U>(
           };
         });
       }
-    },
-    handleSetRedirectionMode: (value: string) => {
-      setValue((c) => ({ ...c, redirectionMode: value }));
     },
   };
 

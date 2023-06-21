@@ -90,7 +90,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'theme', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'language', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'external', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'bookmarks', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'api_token', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'otp_secret', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },

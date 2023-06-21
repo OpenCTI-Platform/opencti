@@ -285,7 +285,8 @@ const ProfileOverviewComponent = (props) => {
   };
   return (
     <div className={classes.container}>
-      <Dialog open={display2FA}
+      <Dialog
+        open={display2FA}
         PaperProps={{ elevation: 1 }}
         keepMounted={false}
         onClose={() => setDisplay2FA(false)}>
@@ -431,7 +432,7 @@ const ProfileOverviewComponent = (props) => {
           )}
         </div>
         <div className="clearfix" />
-        { !external && <Formik
+        {!external && <Formik
           enableReinitialize={true}
           initialValues={{
             current_password: '',
@@ -451,7 +452,7 @@ const ProfileOverviewComponent = (props) => {
                 fullWidth={true}
                 disabled={external}
               />
-              <PasswordPolicies/>
+              <PasswordPolicies />
               <Field
                 component={TextField}
                 variant="standard"
@@ -486,7 +487,7 @@ const ProfileOverviewComponent = (props) => {
               </div>
             </Form>
           )}
-        </Formik> }
+        </Formik>}
       </Paper>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Typography variant="h1" gutterBottom={true}>

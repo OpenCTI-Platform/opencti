@@ -1,9 +1,9 @@
 import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import Triggers from './Triggers';
 import Notifications from './Notifications';
 import Profile from './Profile';
+import Triggers from './Triggers';
 
 const Root = () => (
   <Switch>
