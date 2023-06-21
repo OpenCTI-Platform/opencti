@@ -3,13 +3,13 @@ import { graphql } from 'react-relay';
 import { DataColumns } from '../../../../components/list_lines';
 
 export interface OrganizationsLinesProps {
-  // paginationOptions: SettingsOrganizationsLines_DataQuery$variables;
+  // paginationOptions: OrganizationsLines_DataQuery$variables;
   dataColumns: DataColumns;
-  // queryRef: PreloadedQuery<SettingsOrganizationsLinesPaginationQuery>;
+  // queryRef: PreloadedQuery<OrganizationsLinesPaginationQuery>;
 }
 
 export const organizationsLinesQuery = graphql`
-  query SettingsOrganizationsLinesPaginationQuery(
+  query OrganizationsLinesPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
@@ -17,7 +17,7 @@ export const organizationsLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: [OrganizationsFiltering]
   ) {
-    ...SettingsOrganizationsLines_data
+    ...OrganizationsLines_data
     @arguments(
       search: $search
       count: $count
@@ -30,7 +30,7 @@ export const organizationsLinesQuery = graphql`
 `;
 
 export const organizationsLinesFragment = graphql`
-  fragment SettingsOrganizationsLines_data on Query
+  fragment OrganizationsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
@@ -52,7 +52,7 @@ export const organizationsLinesFragment = graphql`
           id
           name
           description
-          ...SettingsOrganizationLine_node
+          ...OrganizationLine_node
         }
       }
       pageInfo {
@@ -70,8 +70,8 @@ const OrganizationsLines: FunctionComponent<OrganizationsLinesProps> = ({
   paginationOptions,
 }) => {
   // const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  // SettingsOrganizationsLines_DataQuery,
-  // SettingsOrganizationsLines_data$key
+  // OrganizationsLines_DataQuery,
+  // OrganizationsLines_data$key
   // >({
   //   queryRef,
   //   linesQuery: organizationsLinesQuery,

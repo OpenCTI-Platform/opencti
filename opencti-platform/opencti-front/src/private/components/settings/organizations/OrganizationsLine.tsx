@@ -51,7 +51,7 @@ interface OrganizationLineProps {
 }
 
 const OrganizationFragment = graphql`
-  fragment SettingsOrganizationLine_node on Organization {
+  fragment OrganizationLine_node on Organization {
     id
     x_opencti_organization_type
     name
