@@ -252,7 +252,7 @@ const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContain
                   name
                   description
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   description
                 }

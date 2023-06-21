@@ -23,7 +23,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on ThreatActor {
+      ... on ThreatActorGroup {
         ...ThreatActorGroup_ThreatActorGroup
         ...ThreatActorGroupEditionContainer_ThreatActorGroup
       }

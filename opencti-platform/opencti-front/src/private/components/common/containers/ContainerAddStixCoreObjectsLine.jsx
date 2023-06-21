@@ -257,7 +257,7 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
           aliases
           description
         }
-        ... on ThreatActor {
+        ... on ThreatActorGroup {
           name
           aliases
           description

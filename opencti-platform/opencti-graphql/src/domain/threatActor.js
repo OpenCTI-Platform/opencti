@@ -5,11 +5,11 @@ import { ENTITY_TYPE_LOCATION, ENTITY_TYPE_THREAT_ACTOR } from '../schema/genera
 import { RELATION_ORIGINATES_FROM } from '../schema/stixCoreRelationship';
 
 export const findById = (context, user, threatActorId) => {
-  return storeLoadById(context, user, threatActorId, ENTITY_TYPE_THREAT_ACTOR);
+  return storeLoadById(context, user, threatActorId, ENTITY_TYPE_THREAT_ACTOR_GROUP);
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_THREAT_ACTOR], args);
+  return listEntities(context, user, [ENTITY_TYPE_THREAT_ACTOR_GROUP], args);
 };
 
 export const batchLocations = (context, user, threatActorGroupIds) => {

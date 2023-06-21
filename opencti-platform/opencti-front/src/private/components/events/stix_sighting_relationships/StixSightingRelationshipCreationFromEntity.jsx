@@ -124,7 +124,7 @@ const stixSightingRelationshipCreationFromEntityQuery = graphql`
       ... on Malware {
         name
       }
-      ... on ThreatActor {
+      ... on ThreatActorGroup {
         name
       }
       ... on Tool {

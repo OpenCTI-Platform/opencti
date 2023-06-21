@@ -119,7 +119,7 @@ const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = gr
           name
           description
         }
-        ... on ThreatActor {
+        ... on ThreatActorGroup {
           name
           description
         }

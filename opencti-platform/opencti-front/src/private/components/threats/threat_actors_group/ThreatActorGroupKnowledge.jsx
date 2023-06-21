@@ -61,7 +61,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={threatActorGroup.id}
-              stixDomainObjectType="Threat-Actor"
+              stixDomainObjectType="Threat-Actor-Group"
               {...routeProps}
             />
           )}
@@ -96,12 +96,12 @@ class ThreatActorGroupKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge/threat_actors"
+          path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge/threat_actors_group"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActorGroup.id}
               relationshipTypes={['part-of', 'cooperates-with']}
-              stixCoreObjectTypes={['Threat-Actor']}
+              stixCoreObjectTypes={['Threat-Actor-Group']}
               entityLink={link}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}

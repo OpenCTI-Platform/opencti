@@ -144,7 +144,7 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
         ... on DataSource {
           name
         }
-        ... on ThreatActor {
+        ... on ThreatActorGroup {
           name
         }
         ... on Tool {
@@ -226,7 +226,7 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
         ... on DataSource {
           name
         }
-        ... on ThreatActor {
+        ... on ThreatActorGroup {
           name
         }
         ... on Tool {

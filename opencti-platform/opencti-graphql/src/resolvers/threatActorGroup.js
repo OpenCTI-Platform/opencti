@@ -27,7 +27,7 @@ const threatActorGroupResolvers = {
     threatActorGroup: (_, { id }, context) => groupFindById(context, context.user, id),
     threatActorsGroup: (_, args, context) => groupFindAll(context, context.user, args),
   },
-  ThreatActor: {
+  ThreatActorGroup: {
     locations: (threatActorGroup, _, context) => locationsLoader.load(threatActorGroup.id, context, context.user),
     countries: (threatActorGroup, _, context) => countriesLoader.load(threatActorGroup.id, context, context.user),
     __resolveType(obj) {

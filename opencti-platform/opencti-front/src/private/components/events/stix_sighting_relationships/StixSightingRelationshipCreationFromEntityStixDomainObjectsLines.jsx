@@ -279,7 +279,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = createP
                   name
                   description
                 }
-                ... on ThreatActor {
+                ... on ThreatActorGroup {
                   name
                   description
                 }

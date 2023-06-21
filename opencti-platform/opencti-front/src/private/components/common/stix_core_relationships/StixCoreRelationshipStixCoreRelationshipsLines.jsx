@@ -271,7 +271,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {
@@ -358,7 +358,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActor {
+                    ... on ThreatActorGroup {
                       name
                     }
                     ... on Tool {

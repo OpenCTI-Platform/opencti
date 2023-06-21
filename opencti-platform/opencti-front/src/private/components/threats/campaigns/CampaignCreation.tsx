@@ -200,7 +200,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
             label={t('Name')}
             fullWidth={true}
             detectDuplicate={[
-              'Threat-Actor',
+              'Threat-Actor-Group',
               'Intrusion-Set',
               'Campaign',
               'Malware',

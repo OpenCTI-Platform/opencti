@@ -367,7 +367,7 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }
@@ -518,7 +518,7 @@ const StixDomainObjectsLines = createPaginationContainer(
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }

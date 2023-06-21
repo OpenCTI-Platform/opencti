@@ -6314,7 +6314,7 @@ input MalwareAddInput {
 }
 
 ############## ThreatActorsGroup
-enum ThreatActorsOrdering {
+enum ThreatActorsGroupOrdering {
   name
   created
   modified
@@ -6323,7 +6323,7 @@ enum ThreatActorsOrdering {
   x_opencti_workflow_id
   confidence
 }
-enum ThreatActorsFilter {
+enum ThreatActorsGroupFilter {
   name
   aliases
   created
@@ -6339,8 +6339,8 @@ enum ThreatActorsFilter {
   confidence
   creator
 }
-input ThreatActorsFiltering {
-  key: [ThreatActorsFilter!]!
+input ThreatActorsGroupFiltering {
+  key: [ThreatActorsGroupFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -6354,9 +6354,9 @@ type ThreatActorGroupEdge {
   node: ThreatActorGroup!
 }
 
-type ThreatActorEdge {
+type ThreatActorGroupEdge {
   cursor: String!
-  node: ThreatActor!
+  node: ThreatActorGroup!
 }
 
 type  ThreatActorConnection {
@@ -12327,17 +12327,17 @@ type Query {
     search: String
     toStix: Boolean
   ): MalwareConnection @auth(for: [KNOWLEDGE])
-  threatActor(id: String): ThreatActor @auth(for: [KNOWLEDGE])
-  threatActors(
+  threatActorGroup(id: String): ThreatActorGroup @auth(for: [KNOWLEDGE])
+  threatActorsGroup(
     first: Int
     after: ID
-    orderBy: ThreatActorsOrdering
+    orderBy: ThreatActorsGroupOrdering
     orderMode: OrderingMode
-    filters: [ThreatActorsFiltering]
+    filters: [ThreatActorsGroupFiltering]
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): ThreatActorConnection @auth(for: [KNOWLEDGE])
+  ): ThreatActorGroupConnection @auth(for: [KNOWLEDGE])
   threatActorGroup(id: String): ThreatActorGroup @auth(for: [KNOWLEDGE])
   threatActorsGroup(
     first: Int

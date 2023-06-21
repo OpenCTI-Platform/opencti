@@ -364,7 +364,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
                     first_seen
                     last_seen
                   }
-                  ... on ThreatActor {
+                  ... on ThreatActorGroup {
                     name
                     description
                     first_seen

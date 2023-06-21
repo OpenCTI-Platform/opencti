@@ -224,7 +224,7 @@ const incidentKnowledgeGraphStixCoreObjectQuery = graphql`
         first_seen
         last_seen
       }
-      ... on ThreatActor {
+      ... on ThreatActorGroup {
         name
         first_seen
         last_seen
@@ -1864,7 +1864,7 @@ const IncidentKnowledgeGraph = createFragmentContainer(
                 first_seen
                 last_seen
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 first_seen
                 last_seen

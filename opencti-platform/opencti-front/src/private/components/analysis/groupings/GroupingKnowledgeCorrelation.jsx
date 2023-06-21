@@ -121,7 +121,7 @@ const groupingKnowledgeCorrelationStixCoreObjectQuery = graphql`
         first_seen
         last_seen
       }
-      ... on ThreatActor {
+      ... on ThreatActorGroup {
         name
         first_seen
         last_seen
@@ -1221,7 +1221,7 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
                 first_seen
                 last_seen
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 first_seen
                 last_seen

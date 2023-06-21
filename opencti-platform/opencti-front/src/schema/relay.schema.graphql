@@ -4888,7 +4888,7 @@ input MalwareAddInput {
   file: Upload
 }
 
-enum ThreatActorsOrdering {
+enum ThreatActorsGroupOrdering {
   name
   created
   modified
@@ -4898,7 +4898,7 @@ enum ThreatActorsOrdering {
   confidence
 }
 
-enum ThreatActorsFilter {
+enum ThreatActorsGroupFilter {
   name
   aliases
   created
@@ -4915,8 +4915,8 @@ enum ThreatActorsFilter {
   creator
 }
 
-input ThreatActorsFiltering {
-  key: [ThreatActorsFilter!]!
+input ThreatActorsGroupFiltering {
+  key: [ThreatActorsGroupFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4932,9 +4932,9 @@ type ThreatActorGroupEdge {
   node: ThreatActorGroup!
 }
 
-type ThreatActorEdge {
+type ThreatActorGroupEdge {
   cursor: String!
-  node: ThreatActor!
+  node: ThreatActorGroup!
 }
 
 type ThreatActorConnection {

@@ -414,7 +414,7 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
           ... on MalwareAnalysis {
             result_name
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }
@@ -551,7 +551,7 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
           ... on MalwareAnalysis {
             result_name
           }
-          ... on ThreatActor {
+          ... on ThreatActorGroup {
             name
             description
           }

@@ -290,7 +290,7 @@ const StixDomainObjectAddObjectRefsLines = createPaginationContainer(
                 name
                 description
               }
-              ... on ThreatActor {
+              ... on ThreatActorGroup {
                 name
                 description
               }
