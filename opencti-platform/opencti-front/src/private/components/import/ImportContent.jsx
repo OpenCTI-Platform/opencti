@@ -27,7 +27,6 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import { v4 as uuid } from 'uuid';
 import Fab from '@mui/material/Fab';
 import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
@@ -41,9 +40,7 @@ import FileUploader from '../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import WorkbenchFileLine from '../common/files/workbench/WorkbenchFileLine';
 import FreeTextUploader from '../common/files/FreeTextUploader';
-import TextField from '../../../components/TextField';
-import AutocompleteFreeSoloField from '../../../components/AutocompleteFreeSoloField';
-import ItemIcon from '../../../components/ItemIcon';
+import WorkbenchFileCreator from '../common/files/workbench/WorkbenchFileCreator';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -89,19 +86,6 @@ const styles = (theme) => ({
   },
   itemIcon: {
     color: theme.palette.primary.main,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
   createButton: {
     position: 'fixed',
@@ -173,21 +157,8 @@ export const importContentQuery = graphql`
   }
 `;
 
-const importContentMutation = graphql`
-  mutation ImportContentMutation($file: Upload!, $labels: [String]) {
-    uploadPending(file: $file, labels: $labels, errorOnExisting: true) {
-      id
-      ...FileLine_file
-    }
-  }
-`;
-
 const importValidation = (t) => Yup.object().shape({
   connector_id: Yup.string().required(t('This field is required')),
-});
-
-const fileValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
 });
 
 class ImportContentComponent extends Component {
@@ -269,33 +240,8 @@ class ImportContentComponent extends Component {
     });
   }
 
-  onSubmitCreate(values, { setSubmitting, resetForm }) {
-    let { name } = values;
-    const finalLabels = R.pluck('value', values.labels);
-    if (!name.endsWith('.json')) {
-      name += '.json';
-    }
-    const data = { id: `bundle--${uuid()}`, type: 'bundle', objects: [] };
-    const json = JSON.stringify(data);
-    const blob = new Blob([json], { type: 'text/json' });
-    const file = new File([blob], name, {
-      type: 'application/json',
-    });
-    commitMutation({
-      mutation: importContentMutation,
-      variables: { file, labels: finalLabels },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        this.handleCloseCreate();
-        this.props.relay.refetch();
-      },
-    });
-  }
-
-  onResetCreate() {
-    this.handleCloseCreate();
+  onCreateWorkbenchCompleted() {
+    this.props.relay.refetch();
   }
 
   reverseBy(field) {
@@ -652,70 +598,11 @@ class ImportContentComponent extends Component {
               </Form>
             )}
           </Formik>
-          <Formik
-            enableReinitialize={true}
-            initialValues={{ name: '', labels: [] }}
-            validationSchema={fileValidation(t)}
-            onSubmit={this.onSubmitCreate.bind(this)}
-            onReset={this.onResetCreate.bind(this)}
-          >
-            {({ submitForm, handleReset, isSubmitting }) => (
-              <Form>
-                <Dialog
-                  PaperProps={{ elevation: 1 }}
-                  open={displayCreate}
-                  onClose={this.handleCloseCreate.bind(this)}
-                  fullWidth={true}
-                >
-                  <DialogTitle>{t('Create a workbench')}</DialogTitle>
-                  <DialogContent>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="name"
-                      label={t('Name')}
-                      fullWidth={true}
-                    />
-                    <Field
-                      component={AutocompleteFreeSoloField}
-                      style={{ marginTop: 20 }}
-                      name="labels"
-                      multiple={true}
-                      textfieldprops={{
-                        variant: 'standard',
-                        label: t('Labels'),
-                      }}
-                      options={[]}
-                      renderOption={(optionProps, option) => (
-                        <li {...optionProps}>
-                          <div className={classes.icon}>
-                            <ItemIcon type="Label" />
-                          </div>
-                          <div className={classes.text}>{option.label}</div>
-                        </li>
-                      )}
-                      classes={{
-                        clearIndicator: classes.autoCompleteIndicator,
-                      }}
-                    />
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleReset} disabled={isSubmitting}>
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      type="submit"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Form>
-            )}
-          </Formik>
+          <WorkbenchFileCreator
+            handleCloseCreate={this.handleCloseCreate.bind(this)}
+            openCreate={!!displayCreate}
+            onCompleted={this.onCreateWorkbenchCompleted.bind(this)}
+          />
         </div>
         <Fab
           onClick={this.handleOpenCreate.bind(this)}
