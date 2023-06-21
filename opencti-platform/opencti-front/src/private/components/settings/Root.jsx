@@ -30,7 +30,7 @@ import RootUser from './users/Root';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
 import RootActivity from './activity/Root';
-import Organizations from "./Organizations";
+import SettingsOrganizations from "./SettingsOrganizations";
 
 const Root = () => (
   <Switch>
@@ -81,7 +81,7 @@ const Root = () => (
             needs={[SETTINGS_SETACCESSES]}
             placeholder={<Redirect to={'/dashboard/settings'} />}
           >
-            <Organizations />
+            <SettingsOrganizations />
           </Security>
         )}
       />

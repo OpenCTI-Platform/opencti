@@ -13,6 +13,7 @@ import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectL
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import { SettingsOrganizationLine_node$key } from './__generated__/SettingsOrganizationLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -36,22 +37,22 @@ const useStyles = makeStyles<Theme>((theme) => ({
     right: -10,
   },
   itemIconDisabled: {
-    color: theme.palette.grey[700],
+    color: theme.palette.grey?.[700],
   },
   placeholder: {
     display: 'inline-block',
     height: '1em',
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: theme.palette.grey?.[700],
   },
 }));
 
-interface OrganizationLineProps {
-  // node: OrganizationLine_node$key; // TODO Change import
+interface SettingsOrganizationLineProps {
+  node: SettingsOrganizationLine_node$key;
   dataColumns: DataColumns;
 }
 
-const OrganizationFragment = graphql`
-  fragment OrganizationLine_node on Organization {
+const SettingsOrganizationFragment = graphql`
+  fragment SettingsOrganizationLine_node on Organization {
     id
     x_opencti_organization_type
     name
@@ -69,22 +70,14 @@ const OrganizationFragment = graphql`
   }
 `;
 
-export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
+export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLineProps> = ({
   node,
   dataColumns,
-  // paginationOptions,
-  // refetch,
-  // selectedElements,
-  // deSelectedElements,
-  // onToggleEntity,
-  // selectAll,
-  // onToggleShiftEntity,
-  // index,
 }) => {
   const classes = useStyles();
   const { fd, t } = useFormatter();
 
-  const organization = useFragment(OrganizationFragment, node);
+  const organization = useFragment(SettingsOrganizationFragment, node);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -144,7 +137,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
   );
 };
 
-export const OrganizationLineDummy = ({
+export const SettingsOrganizationLineDummy = ({
   dataColumns,
 }: {
   dataColumns: DataColumns;
