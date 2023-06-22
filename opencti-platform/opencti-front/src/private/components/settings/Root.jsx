@@ -31,6 +31,7 @@ import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
 import RootActivity from './activity/Root';
 import SettingsOrganizations from "./SettingsOrganizations";
+import RootSettingsOrganization from "./organizations/Root";
 
 const Root = () => (
   <Switch>
@@ -74,6 +75,17 @@ const Root = () => (
         )}
       />
       <BoundaryRoute
+        path="/dashboard/settings/accesses/users/:userId"
+        render={() => (
+          <Security
+            needs={[SETTINGS_SETACCESSES]}
+            placeholder={<Redirect to={'/dashboard/settings'} />}
+          >
+            <RootUser />
+          </Security>
+        )}
+      />
+      <BoundaryRoute
         exact
         path="/dashboard/settings/accesses/organizations"
         render={() => (
@@ -85,14 +97,21 @@ const Root = () => (
           </Security>
         )}
       />
+      {
+        // TODO What is the difference between these two ways of doing? And why there is no capability check in one?
+      }
+      {/*<BoundaryRoute*/}
+      {/*  path="/dashboard/settings/accesses/organizations/:organizationId"*/}
+      {/*  component={RootSettingsOrganization}*/}
+      {/*/>*/}
       <BoundaryRoute
-        path="/dashboard/settings/accesses/users/:userId"
+        path="/dashboard/settings/accesses/organizations/:organizationId"
         render={() => (
           <Security
             needs={[SETTINGS_SETACCESSES]}
             placeholder={<Redirect to={'/dashboard/settings'} />}
           >
-            <RootUser />
+            <RootSettingsOrganization />
           </Security>
         )}
       />
