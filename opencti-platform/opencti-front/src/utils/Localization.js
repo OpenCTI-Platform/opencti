@@ -1575,8 +1575,8 @@ const i18n = {
       'No direct instance trigger': 'Sin desencadenador directo de instancias',
       'other trigger(s) related to this entity':
         'otros desencadenantes relacionados con esta entidad',
-      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.':
-        'Un desencadenador de instancia notifica los siguientes eventos: actualización/eliminación de la entidad, creación/eliminación de una relación que involucra a la entidad, creación/eliminación de un contenedor que contiene la entidad, adición/eliminación de la entidad en un contenedor.',
+      'An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.':
+        'Un desencadenador de instancia en una entidad X notifica los siguientes eventos: actualización/eliminación de X, creación/eliminación de una relación de/hacia X, creación/eliminación de una entidad que tiene X en sus referencias (por ejemplo, contiene X, se comparte con X, es creada por X...), agrega/elimina X en la referencia de una entidad.',
       'User interface': 'Interfaz de usuario',
       Notification: 'Notificación',
       Creation: 'Creación',
@@ -3608,8 +3608,8 @@ const i18n = {
       'No direct instance trigger': "Aucun déclencheur d'instance direct",
       'other trigger(s) related to this entity':
         'autre(s) déclencheur(s) lié(s) à cette entité',
-      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.':
-        'Un déclencheur d’instance notifie les événements suivants : mise à jour/suppression de l’entité, création/suppression d’une relation impliquant l’entité, création/suppression d’un conteneur qui contient l’entité, ajout/suppression de l’entité dans un conteneur.',
+      'An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.':
+        'Un déclencheur d’instance sur une entité X notifie les événements suivants : mise à jour/suppression de X, création/suppression d’une relation de/vers X, création/suppression d’une entité qui a X dans ses refs (par exemple contient X, est partagée avec X, est créée par X...), ajout/suppression de X dans la ref d’une entité.',
       'User interface': 'Interface utilisateur',
       Notification: 'Notification',
       Creation: 'Création',
@@ -5564,8 +5564,8 @@ const i18n = {
       'No direct instance trigger': '直接インスタンストリガーなし',
       'other trigger(s) related to this entity':
         'このエンティティに関連するその他のトリガー',
-      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.':
-        'インスタンス トリガーは、エンティティの更新/削除、エンティティに関連するリレーションシップの作成/削除、エンティティを含むコンテナーの作成/削除、コンテナー内のエンティティの追加/削除のイベントを通知します。',
+      'An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.':
+        'エンティティ X のインスタンス トリガーは、次のイベントを通知します: X の更新/削除、X からの/へのリレーションシップの作成/削除、参照に X を持つエンティティの作成/削除 (たとえば、X を含む、X と共有されている、X によって作成されている...)、エンティティの参照で X を追加/削除します。',
       'User interface': 'ユーザーインターフェース',
       Notification: '通知',
       Creation: '創造',
@@ -7406,8 +7406,8 @@ const i18n = {
       'Update instance triggers': '更新實例觸發器',
       'No direct instance trigger': '',
       'other trigger(s) related to this entity': '無直接實例觸發器',
-      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.':
-        '實例觸發器通知以下事件：更新/刪除實體、創建/刪除涉及實體的關係、創建/刪除包含實體的容器、在容器中添加/刪除實體。',
+      'An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.':
+        '實體 X 上的實體的實例觸發器通知以下事件：更新/刪除 X、創建/刪除與 X 的關係、創建/刪除在其引用中包含 X 的實體（例如包含 X，與 X 共用，由 X 創建...），在實體的 ref 中添加/刪除 X。',
       'User interface': '用戶介面',
       Notification: '通知',
       Creation: '創造',

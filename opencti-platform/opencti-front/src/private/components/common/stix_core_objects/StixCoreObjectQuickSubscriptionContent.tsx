@@ -7,7 +7,6 @@ import { FormikConfig } from 'formik/dist/types';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import { InformationOutline } from 'mdi-material-ui';
 import { Field, Form, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
@@ -20,6 +19,7 @@ import Collapse from '@mui/material/Collapse';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
+import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../../components/i18n';
 import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEditionOverview';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
@@ -38,7 +38,7 @@ import { convertEventTypes, convertOutcomes } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { TriggerLine_node$data } from '../../profile/triggers/__generated__/TriggerLine_node.graphql';
-import { triggerLiveCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
+import { instanceTriggerDescription, triggerLiveCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
 import {
   TriggerLiveAddInput,
   TriggerLiveCreationMutation,
@@ -136,11 +136,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   subcontainer: {
     padding: '10px 20px 20px 40px',
-  },
-  informationIcon: {
-    position: 'absolute',
-    top: 25,
-    right: 25,
   },
   nested: {
     marginLeft: '20px',
@@ -479,18 +474,10 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Update instance triggers')}</Typography>
-          <Tooltip
-            title={t(
-              'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship from/to the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.',
-            )}
-          >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-              className={classes.informationIcon}
-            />
-          </Tooltip>
         </div>
+        <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+          {t(instanceTriggerDescription)}
+        </Alert>
         {uniqInstanceTriggers.length > 0
           ? <div>
             {uniqInstanceTriggers.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger, false))}

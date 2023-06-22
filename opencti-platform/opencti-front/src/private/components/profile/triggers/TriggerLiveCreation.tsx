@@ -20,6 +20,8 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { Theme } from '../../../../components/Theme';
@@ -99,6 +101,12 @@ const liveTriggerValidation = (t: (message: string) => string) => Yup.object().s
     .required(t('This field is required')),
   outcomes: Yup.array().nullable(),
 });
+
+export const instanceTriggerDescription = 'An instance trigger on an entity X notifies the following events: '
+  + 'update/deletion of X, '
+  + 'creation/deletion of a relationship from/to X, '
+  + 'creation/deletion of an entity that has X in its refs (i.e. contains X, is shared with X, is created by X...), '
+  + 'adding/removing X in the ref of an entity.';
 
 interface TriggerLiveAddInput {
   name: string;
