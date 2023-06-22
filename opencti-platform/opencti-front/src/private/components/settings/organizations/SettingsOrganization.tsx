@@ -10,6 +10,5 @@ const settingsOrganizationFragment = graphql`
 // TODO Add Details fragment once created
 const SettingsOrganization = () => {
   console.log(settingsOrganizationFragment);
-
 };
 export default SettingsOrganization;
