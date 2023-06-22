@@ -62,7 +62,7 @@ import {
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
@@ -140,7 +140,7 @@ export const convertTypeToStixType = (type: string): string => {
   if (isStixSightingRelationship(type)) {
     return 'sighting';
   }
-  if (isStixDomainObjectThreatActor(type)) {
+  if (isStixDomainObjectThreatActors(type)) {
     return 'threat-actor';
   }
   return type.toLowerCase();
@@ -477,10 +477,13 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
     }
   };
 };
-const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActorGroup => {
-  assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, type);
+const convertThreatActorToStix = (instance: StoreEntity, type: string): SDO.StixThreatActor => {
+  if (!isStixDomainObjectThreatActors(type)) {
+    throw UnsupportedError(`${instance.entity_type} not compatible with threat actors`);
+  }
+  const threatActor = buildStixDomain(instance);
   return {
-    ...buildStixDomain(instance),
+    ...threatActor,
     name: instance.name,
     description: instance.description,
     threat_actor_types: instance.threat_actor_types,
@@ -1364,9 +1367,10 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     if (isStixDomainObjectLocation(type)) {
       return convertLocationToStix(basic, type);
     }
-
-    if (ENTITY_TYPE_THREAT_ACTOR_GROUP === type) {
-      return convertThreatActorGroupToStix(basic, type);
+    // ENTITY_TYPE_THREAT_ACTOR_GROUP,
+    // ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
+    if (isStixDomainObjectThreatActors(type)) {
+      return convertThreatActorToStix(basic, type);
     }
     // Remaining
     if (ENTITY_TYPE_CONTAINER_REPORT === type) {
@@ -1383,9 +1387,6 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     }
     if (ENTITY_TYPE_CAMPAIGN === type) {
       return convertCampaignToStix(basic, type);
-    }
-    if (ENTITY_TYPE_THREAT_ACTOR_GROUP === type) {
-      return convertThreatActorGroupToStix(basic, type);
     }
     if (ENTITY_TYPE_CONTAINER_NOTE === type) {
       return convertNoteToStix(basic, type);

@@ -5,8 +5,7 @@ import {
   ABSTRACT_STIX_REF_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LOCATION,
-  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_LOCATION, ENTITY_TYPE_THREAT_ACTOR,
 } from './general';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
@@ -95,11 +94,12 @@ export const isStixDomainObjectLocation = (type: string): boolean => schemaTypes
 
 const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL
+  // ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL
 ];
 schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THREAT_ACTORS);
-export const isStixDomainObjectThreatActor = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)
-    || type === ENTITY_TYPE_THREAT_ACTOR;
+
+export const isStixDomainObjectThreatActors = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)
+  || type === ENTITY_TYPE_THREAT_ACTOR;
 
 const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,
