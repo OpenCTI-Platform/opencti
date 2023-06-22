@@ -192,7 +192,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   ) => {
     return setNotificationsNumber(response?.notificationsNumber?.count ?? null);
   };
-  const isNewNotifification = notificationsNumber !== null
+  const isNewNotification = notificationsNumber !== null
     ? notificationsNumber > 0
     : (data.myUnreadNotificationsCount ?? 0) > 0;
   const subConfig = useMemo<
@@ -586,7 +586,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
                 <Badge
                   color="warning"
                   variant="dot"
-                  invisible={!isNewNotifification}
+                  invisible={!isNewNotification}
                 >
                   <NotificationsOutlined fontSize="medium" />
                 </Badge>
