@@ -8,7 +8,7 @@ interface RootSettingsOrganizationComponentProps {
   // queryRef: PreloadedQuery<RootSettingsOrganizationQuery>,
   organizationId: string,
 }
-const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizationComponentProps> = ({  organizationId }) => {
+const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizationComponentProps> = ({ organizationId}) => {
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <div>
