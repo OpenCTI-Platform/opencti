@@ -6,14 +6,18 @@ import Grid from '@mui/material/Grid';
 import { Theme } from '../../../../components/Theme';
 import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
 import AccessesMenu from '../AccessesMenu';
-import OrganizationDetails from '../../entities/organizations/OrganizationDetails';
+import SettingsOrganizationDetails from './SettingsOrganizationDetails';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
+    padding: '0 200px 0 0',
   },
   gridContainer: {
     marginBottom: 20,
+  },
+  title: {
+    float: 'left',
   },
 }));
 const settingsOrganizationFragment = graphql`
@@ -21,10 +25,9 @@ const settingsOrganizationFragment = graphql`
     id
     standard_id
     name
-#     ...SettingsOrganizationDetails_organization
+    ...SettingsOrganizationDetails_organization
   }
 `;
-// TODO Add Details fragment once created
 const SettingsOrganization = ({ organizationData }: { organizationData: SettingsOrganization_organization$key }) => {
   const classes = useStyles();
   const organization = useFragment<SettingsOrganization_organization$key>(settingsOrganizationFragment, organizationData);
@@ -33,13 +36,13 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
     <div className={classes.container}>
       <AccessesMenu />
       <div>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        classes={{ root: classes.title }}
-      >
-        {organization.name}
-      </Typography>
+        <Typography
+          variant="h1"
+          gutterBottom={true}
+          classes={{ root: classes.title }}
+        >
+          {organization.name}
+        </Typography>
       </div>
       <div className="clearfix" />
       <Grid
@@ -47,8 +50,9 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <OrganizationDetails organization={organization} />
+        <Grid item={true} xs={12} style={{ paddingTop: 10 }}>
+
+          <SettingsOrganizationDetails settingsOrganizationFragment={organization} />
         </Grid>
       </Grid>
     </div>
