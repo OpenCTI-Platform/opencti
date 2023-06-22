@@ -17,11 +17,9 @@ import {
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
+  ENTITY_TYPE_TOOL, ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation
+  isStixDomainObjectLocation, isStixDomainObjectThreatActors
 } from '../schema/stixDomainObject';
 import type * as SDO from '../types/stix-sdo';
 import {
@@ -98,6 +96,9 @@ export const extractStixRepresentative = (
   if (isStixDomainObjectLocation(entityType)) {
     return (stix as SDO.StixLocation).name;
   }
+  if (isStixDomainObjectThreatActors(entityType)) {
+    return (stix as SDO.StixThreatActor).name;
+  }
   if (entityType === ENTITY_TYPE_CONTAINER_REPORT) {
     return (stix as SDO.StixReport).name;
   }
@@ -112,9 +113,6 @@ export const extractStixRepresentative = (
   }
   if (entityType === ENTITY_TYPE_CAMPAIGN) {
     return (stix as SDO.StixCampaign).name;
-  }
-  if (entityType === ENTITY_TYPE_THREAT_ACTOR_GROUP) {
-    return (stix as SDO.StixThreatActorGroup).name;
   }
   if (entityType === ENTITY_TYPE_CONTAINER_NOTE) {
     return (stix as SDO.StixNote).abstract;

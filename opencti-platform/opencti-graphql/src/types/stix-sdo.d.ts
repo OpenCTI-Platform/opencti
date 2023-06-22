@@ -271,7 +271,7 @@ export interface StixReport extends StixContainer {
 // Threat Actor Specific Properties
 // name, description, threat_actor_types, aliases, first_seen, last_seen, roles, goals,
 // sophistication, resource_level, primary_motivation, secondary_motivations, personal_motivations
-export interface StixThreatActorGroup extends StixDomainObject {
+export interface StixThreatActor extends StixDomainObject {
   name: string;
   description: string; // optional
   threat_actor_types : Array<string>; // threat-actor-type-ov - optional
