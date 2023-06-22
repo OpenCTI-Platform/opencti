@@ -221,6 +221,9 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         ... on Grouping {
           name
         }
+        ... on Note {
+            attribute_abstract
+        }
         ... on Individual {
           name
         }
