@@ -98,9 +98,9 @@ const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
 ];
 schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THREAT_ACTORS);
 
-export const isStixDomainObjectThreatActors = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)
-  || type === ENTITY_TYPE_THREAT_ACTOR;
-
+export const isStixDomainObjectThreatActors = (type: string): boolean => {
+  return schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR) || type === ENTITY_TYPE_THREAT_ACTOR;
+};
 const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -133,6 +133,7 @@ export const isStixDomainObject = (type: string): boolean => {
     || isStixDomainObjectIdentity(type)
     || isStixDomainObjectLocation(type)
     || isStixDomainObjectContainer(type)
+    || isStixDomainObjectThreatActors(type)
     || type === ABSTRACT_STIX_DOMAIN_OBJECT;
 };
 
@@ -160,7 +161,7 @@ export const isStixObjectAliased = (type: string): boolean => {
 
 export const resolveAliasesField = (type: string): AttributeDefinition => {
   // eslint-disable-next-line max-len
-  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || type === ENTITY_TYPE_CONTAINER_GROUPING || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
+  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || type === ENTITY_TYPE_CONTAINER_GROUPING || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type) || isStixDomainObjectThreatActors(type)) {
     return xOpenctiAliases;
   }
   return aliases;
