@@ -26,7 +26,7 @@ const RELATIONS_EMBEDDED_STIX_ATTRIBUTES = [
   externalReferences.stixName, killChainPhases.stixName, objectLabel.stixName, bodyMultipart.stixName
 ];
 // eslint-disable-next-line
-export const stixRefsExtractor = (data: any, idGenerator: (key: string, data: unknown) => string) => {
+export const stixRefsExtractor = (data: any, idGenerator?: (key: string, data: unknown) => string) => {
   const stixNames = schemaRelationsRefDefinition.getStixNames(data.extensions[STIX_EXT_OCTI].type)
     .filter((key) => !RELATIONS_EMBEDDED_STIX_ATTRIBUTES.includes(key))
     .concat(RELATIONS_STIX_ATTRIBUTES);

@@ -29,7 +29,6 @@ import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
-import { generateStandardId } from '../schema/identifier';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
@@ -325,7 +324,6 @@ const eventTypeTranslater = (isPreviousMatch: boolean, isCurrentlyMatch: boolean
   return currentType;
 };
 
-// TODO remove export that is for tests
 // indicates if a relation from/to contains an instance that is in an instances map
 export const isRelationFromOrToMatchFilters = (
   listenedInstanceIdsMap: Map<string, StixObject>,
@@ -361,17 +359,16 @@ const filterInstancesByRefEventIds = (
   return instances as StixObject[];
 };
 
-// TODO remove export that is for tests
 // keep only the instances that are in patch/reverse_patch and in the map of the listened instances
-export const filterUpdateInstanceIdsFromDataContext = (
+export const filterUpdateInstanceIdsFromUpdatePatch = (
   listenedInstanceIdsMap: Map<string, StixObject>,
-  dataContext: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+  updatePatch: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
 ) => {
-  const addedIds = dataContext.patch
+  const addedIds = updatePatch.patch
     .map((n) => (n as { path: string, value: string[] }).value)
     .flat()
     .filter((n) => n);
-  const removedIds = dataContext.reverse_patch
+  const removedIds = updatePatch.reverse_patch
     .map((n) => (n as { path: string, value: string[] }).value)
     .flat()
     .filter((n) => n);
@@ -396,7 +393,6 @@ const updateActionFromEventType = (eventType?: string) => {
   }
 };
 
-// TODO : need to find import in test without export keyword
 export const generateNotificationMessageForInstanceWithRefs = (
   instance: StixCoreObject | StixRelationshipObject,
   refsInstances: StixObject[],
@@ -412,7 +408,6 @@ export const generateNotificationMessageForInstanceWithRefs = (
   }
 };
 
-// TODO : need to find import in test without export keyword
 export const generateNotificationMessageForInstance = async (
   context: AuthContext,
   user: AuthUser,
@@ -434,7 +429,7 @@ const generateNotificationMessageAndDisplayedEventTypeForFilteredSideEvents = as
   frontendFilters: Record<string, { id: string, value: string }[]>,
   eventType: string,
   translatedType?: string,
-  dataContext?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+  updatePatch?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
 ) => {
   // Get ids from the user trigger filters that user has access to
   const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
@@ -448,50 +443,55 @@ const generateNotificationMessageAndDisplayedEventTypeForFilteredSideEvents = as
     return { displayedEventType: translatedType, message };
   }
   // -- 02. eventType = update
-  if (eventType === EVENT_TYPE_UPDATE && dataContext) {
-    const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromDataContext(listenedInstanceIdsMap, dataContext);
+  if (eventType === EVENT_TYPE_UPDATE) {
+    if (!updatePatch) {
+      throw Error('An event of type update should have an update patch.');
+    }
+    const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch); // TODO call upper and pass to function (more global context)
     if (listenedInstancesInPatchIds.length > 0) { // 2.a.--> It's the patch that contains instance(s) of the trigger filters
       const message = generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInPatchIds, false, translatedType);
-      return { displayedEventType: EVENT_TYPE_UPDATE, message }; // the displayed type is an update
+      return { displayedEventType: EVENT_TYPE_UPDATE, message }; // the displayed type is an update // TODO translatedType before in a separated function
     }
     if ([STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type)) { // 2.b. --> the patch doesn't contain listened instances and the update instance is a relationship
-      // filtered event: no notification for relationship update if the update ref doesn't concern a listened instance
+      // filtered event: no notification for relationship update if the update ref doesn't concern a listened instance // TODO except modif of markings
       return { displayedEventType: undefined, message: undefined };
-    }
-    // 2.c.--> the modification is a modification of rights, the instance is newly/no-more visible, we go in case 1.3.
+    } // TODO filtering function before
+    // 2.c.--> the modification is a modification of rights, the instance is newly/no-more visible, we go in case 3.
   }
   // -- 03. --> It's the data refs that contain instance(s) of the trigger filters (translatedType = create/delete)
-  const dataRefs = stixRefsExtractor(data, generateStandardId);
-  // We need to filter these instances to keep those that are part of the event refs
-  const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
-  if (listenedInstancesInRefsEventIds.length > 0) {
-    const message = generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInRefsEventIds, true);
-    return { displayedEventType: translatedType, message };
+  if (translatedType !== EVENT_TYPE_UPDATE) { // we don't want update of an entity that has listened instances in its refs
+    const dataRefs = stixRefsExtractor(data);
+    // We need to filter these instances to keep those that are part of the event refs
+    const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
+    if (listenedInstancesInRefsEventIds.length > 0) {
+      const message = generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInRefsEventIds, true);
+      return { displayedEventType: translatedType, message };
+    }
   }
-  // TODO check no more visible entity
   return { displayedEventType: undefined, message: undefined }; // filtered event: no notification
 };
 
-const buildTargetEvents = async (
+export const buildTargetEvents = async (
   context: AuthContext,
   users: AuthUser[],
   streamEvent: SseEvent<DataEvent>,
   trigger: BasicStoreEntityLiveTrigger,
-  frontendFilters: Record<string, { id: string, value: string }[]>,
   useSideEventMatching = false
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
-  const { event_types, outcomes, instance_trigger } = trigger;
+  const { event_types, outcomes, instance_trigger, filters } = trigger;
+  const frontendFilters = JSON.parse(filters);
   let triggerEventTypes = event_types;
-  if (instance_trigger && event_types.includes('update')) {
+  if (instance_trigger && event_types.includes(EVENT_TYPE_UPDATE)) {
     triggerEventTypes = useSideEventMatching
-      ? ['update', 'create', 'delete'] // extends trigger event types for side events search
-      : [...event_types, 'create']; // create is always included for instance_triggers with update in their event_types
+      ? [EVENT_TYPE_UPDATE, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE] // extends trigger event types for side events search
+      : [...event_types, EVENT_TYPE_CREATE]; // create is always included for instance_triggers with update in their event_types
   }
   const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
   if (eventType === EVENT_TYPE_UPDATE) {
-    const { context: dataContext } = streamEvent.data as UpdateEvent;
-    const { newDocument: previous } = jsonpatch.applyPatch(R.clone(data), dataContext.reverse_patch);
+    const { context: updatePatch } = streamEvent.data as UpdateEvent;
+    const { newDocument: previous } = jsonpatch.applyPatch(R.clone(data), updatePatch.reverse_patch);
+    console.log('users', users);
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];
@@ -507,22 +507,25 @@ const buildTargetEvents = async (
         if (isPreviousMatch && !isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translatedType = delete
           const message = await generateNotificationMessageForInstance(context, user, data);
           targets.push({ user: notificationUser, type: translatedType, message });
-        }
+        } else
         // Case 02. Newly visible because of a data update (gain of rights OR instance_trigger & add a listened instance in the refs)
         if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = create
           const message = await generateNotificationMessageForInstance(context, user, data);
           targets.push({ user: notificationUser, type: translatedType, message });
-        }
+        } else
         // --- 03. Just an update
         if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = update
           const message = await generateNotificationMessageForInstance(context, user, data);
           targets.push({ user: notificationUser, type: translatedType, message });
         }
       } else { // useSideEventMatching = true: Case side events for instance triggers
-        const { displayedEventType, message } = await
-        generateNotificationMessageAndDisplayedEventTypeForFilteredSideEvents(context, user, data, frontendFilters, eventType, translatedType, dataContext);
-        if (displayedEventType) {
-          targets.push({ user: notificationUser, type: displayedEventType, message });
+        // eslint-disable-next-line no-lonely-if
+        if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
+          const { displayedEventType, message } = await
+          generateNotificationMessageAndDisplayedEventTypeForFilteredSideEvents(context, user, data, frontendFilters, eventType, translatedType, updatePatch);
+          if (displayedEventType) {
+            targets.push({ user: notificationUser, type: displayedEventType, message });
+          }
         }
       }
     }
@@ -537,7 +540,8 @@ const buildTargetEvents = async (
           const message = await generateNotificationMessageForInstance(context, user, data);
           targets.push({ user: notificationUser, type: eventType, message });
         } else { // instance trigger side events
-          const { displayedEventType, message } = await generateNotificationMessageAndDisplayedEventTypeForFilteredSideEvents(context, user, data, frontendFilters, eventType);
+          const { displayedEventType, message } = await
+          generateNotificationMessageAndDisplayedEventTypeForFilteredSideEvents(context, user, data, frontendFilters, eventType, eventType);
           if (displayedEventType) {
             targets.push({ user: notificationUser, type: displayedEventType, message });
           }
@@ -561,17 +565,16 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
-        const { internal_id: notification_id, trigger_type: type, instance_trigger, filters } = trigger;
-        const frontendFilters = JSON.parse(filters);
-        const targets = await buildTargetEvents(context, users, streamEvent, trigger, frontendFilters);
+        const { internal_id: notification_id, trigger_type: type, instance_trigger } = trigger;
+        const targets = await buildTargetEvents(context, users, streamEvent, trigger);
         if (targets.length > 0) {
           const version = EVENT_NOTIFICATION_VERSION;
           const notificationEvent: NotificationEvent = { version, notification_id, type, targets, data };
           await storeNotificationEvent(context, notificationEvent);
         }
         // search side events for instance_trigger
-        if (instance_trigger && trigger.event_types.includes('update')) {
-          const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, frontendFilters, true);
+        if (instance_trigger && trigger.event_types.includes(EVENT_TYPE_UPDATE)) {
+          const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, true);
           if (sideTargets.length > 0) {
             const version = EVENT_NOTIFICATION_VERSION;
             const notificationEvent: NotificationEvent = { version, notification_id, type, targets: sideTargets, data };

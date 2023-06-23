@@ -341,6 +341,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         ? (<div style={fieldSpacingContainerStyle}>
           <FilterAutocomplete
             filterKey={'elementId'}
+            searchContext={{ entityTypes: ['Stix-Core-Object'] }}
             defaultHandleAddFilter={handleAddFilter}
             inputValues={instanceFilters}
             setInputValues={setInstanceFilters}

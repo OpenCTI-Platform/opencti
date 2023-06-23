@@ -65,8 +65,13 @@ export const GlobalFilters = {
 
 export const extractFilterIdsToResolve = (filters) => {
   const filterEntries = Object.entries(filters);
-  return filterEntries.filter(([key]) => RESOLUTION_FILTERS.map((r) => [r, r + NEGATION_FILTER_SUFFIX]).flat().includes(key))
-    .map(([, values]) => values.map((v) => v.id)).flat();
+  return filterEntries
+    .filter(([key]) => RESOLUTION_FILTERS
+      .map((r) => [r, r + NEGATION_FILTER_SUFFIX])
+      .flat()
+      .includes(key))
+    .map(([, values]) => values.map((v) => v.id))
+    .flat();
 };
 
 // build a map ([id]: StixObject) with the resolved filters accessible for a user

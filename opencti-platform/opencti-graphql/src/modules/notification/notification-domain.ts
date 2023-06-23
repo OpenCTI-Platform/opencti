@@ -126,7 +126,6 @@ export const batchResolvedInstanceFilters = async (context: AuthContext, user: A
   const allInstanceIds = instanceIds.flat();
   const instanceToFinds = R.uniq(allInstanceIds.filter((u) => isNotEmptyField(u)));
   const instances = await elFindByIds(context, user, instanceToFinds, { toMap: true }) as BasicStoreObject[];
-  console.log('instances', instances);
   return instanceIds
     .map((ids) => ids
       .map((id) => [
