@@ -11,10 +11,9 @@ import {
   TaskDetails_task$data,
   TaskDetails_task$key,
 } from './__generated__/TaskDetails_task.graphql';
-import { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
-const styles = makeStyles<Theme>((theme) => ({
+const styles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -22,25 +21,8 @@ const styles = makeStyles<Theme>((theme) => ({
     padding: '15px',
     borderRadius: 6,
   },
-  labelInDetails: {
-    border: 'none',
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
+  label: {
     borderRadius: 5,
-    color: theme.palette.text?.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-  labelErrorInDetails: {
-    border: 'none',
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.error.dark,
-    borderRadius: 5,
-    color: theme.palette.text?.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
   },
 }));
 
@@ -109,10 +91,8 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
     TaskDetailsFragment,
     tasksData,
   );
-
   const currentDate = new Date();
   const isoDate = currentDate.toISOString();
-
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -124,28 +104,19 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
             <Typography variant="h3" gutterBottom={true}>
               {t('Description')}
             </Typography>
-            <FieldOrEmpty source={data.description}>
-              {data.description && (
-                <ExpandableMarkdown source={data.description} limit={300} />
-              )}
-            </FieldOrEmpty>
+            <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
               {t('Due Date')}
             </Typography>
             <FieldOrEmpty source={data.due_date}>
-              {data.due_date && (
-                <Chip
-                  label={fldt(data.due_date)}
-                  classes={{
-                    root:
-                      data.due_date < isoDate
-                        ? classes.labelErrorInDetails
-                        : classes.labelInDetails,
-                  }}
-                />
-              )}
+              <Chip
+                label={fldt(data.due_date)}
+                variant="outlined"
+                color={data.due_date < isoDate ? 'error' : 'info'}
+                classes={{ root: classes.label }}
+              />
             </FieldOrEmpty>
           </Grid>
         </Grid>

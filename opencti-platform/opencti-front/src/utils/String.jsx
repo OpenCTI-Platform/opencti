@@ -3,6 +3,7 @@ import React from 'react';
 import { Base64 } from 'js-base64';
 import Tooltip from '@mui/material/Tooltip';
 import { APP_BASE_PATH } from '../relay/environment';
+import { isNotEmptyField } from './utils';
 
 export const truncate = (str, limit) => {
   if (str === undefined || str === null || str.length <= limit) {
@@ -115,3 +116,5 @@ export const renderObservableValue = (observable) => {
       return observable.observable_value;
   }
 };
+
+export const emptyFilled = (str) => (isNotEmptyField(str) ? str : '-');

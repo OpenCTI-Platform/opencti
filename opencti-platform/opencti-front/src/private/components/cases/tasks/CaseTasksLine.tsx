@@ -31,10 +31,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  labelInList: {
+  chipInList: {
     fontSize: 12,
     height: 20,
     float: 'left',
+    width: 120,
+    borderRadius: 5,
   },
 }));
 

@@ -12,6 +12,7 @@ import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import TaskEdition from './TaskEdition';
+import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -25,6 +26,7 @@ const useStyles = makeStyles(() => ({
 export const taskFragment = graphql`
   fragment Tasks_tasks on Task {
     id
+    standard_id
     name
     due_date
     description
@@ -106,7 +108,13 @@ const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
             displayAssignees={true}
           />
         </Grid>
-        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={task}
+          />
+        </Grid>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={task.id} />
         </Grid>
       </Grid>

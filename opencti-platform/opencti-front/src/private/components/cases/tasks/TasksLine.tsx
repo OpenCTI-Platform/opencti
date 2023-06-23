@@ -8,6 +8,7 @@ import Checkbox from '@mui/material/Checkbox';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import {
@@ -45,6 +46,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 20,
     float: 'left',
     width: 120,
+    borderRadius: 5,
   },
 }));
 
@@ -103,12 +105,15 @@ export const tasksDataColumns: DataColumns = {
     label: 'Due Date',
     width: '15%',
     isSortable: true,
-    render: (task: TasksLine_node$data, { fld }) => {
+    render: (task: TasksLine_node$data, { fld, classes }) => {
       const isoDate = new Date().toISOString();
       return (
-        <span color={task.due_date < isoDate ? 'error' : undefined}>
-          {fld(task.due_date)}
-        </span>
+        <Chip
+          label={fld(task.due_date)}
+          variant="outlined"
+          color={task.due_date < isoDate ? 'error' : 'info'}
+          classes={{ root: classes.chipInList }}
+        />
       );
     },
   },
