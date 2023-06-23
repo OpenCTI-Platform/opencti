@@ -5,7 +5,7 @@ python-magic-bin~=0.4.14; sys_platform == 'win32'
 python_json_logger~=2.0.4
 PyYAML~=6.0
 requests~=2.31.0
-setuptools~=67.8.0
+setuptools~=68.0.0
 filigran-sseclient~=1.0.0
 stix2~=3.0.1
 cachetools~=5.3.0
