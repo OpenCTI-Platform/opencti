@@ -63,7 +63,7 @@ const StixCoreObjectsMultiVerticalBars = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       let types = ['Stix-Core-Object'];
@@ -90,6 +90,13 @@ const StixCoreObjectsMultiVerticalBars = ({
         filters,
       };
     });
+    let formatter = fsd;
+    if (parameters.interval === 'month' || parameters.interval === 'quarter') {
+      formatter = mtdy;
+    }
+    if (parameters.interval === 'year') {
+      formatter = yd;
+    }
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiVerticalBarsTimeSeriesQuery}
@@ -106,12 +113,15 @@ const StixCoreObjectsMultiVerticalBars = ({
               <Chart
                 options={verticalBarsChartOptions(
                   theme,
-                  fsd,
+                  formatter,
                   simpleNumberFormat,
                   false,
-                  true,
+                  !!['day', 'week'].includes(parameters.interval),
                   parameters.stacked,
                   parameters.legend,
+                  !['day', 'week'].includes(parameters.interval)
+                    ? 'dataPoints'
+                    : undefined,
                 )}
                 series={dataSelection.map((selection, i) => ({
                   name: selection.label ?? t('Number of entities'),

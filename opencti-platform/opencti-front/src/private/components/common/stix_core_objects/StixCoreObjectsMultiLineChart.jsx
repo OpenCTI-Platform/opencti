@@ -63,7 +63,7 @@ const StixCoreObjectsMultiLineChart = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       let types = ['Stix-Core-Object'];
@@ -90,6 +90,13 @@ const StixCoreObjectsMultiLineChart = ({
         filters,
       };
     });
+    let formatter = fsd;
+    if (parameters.interval === 'month' || parameters.interval === 'quarter') {
+      formatter = mtdy;
+    }
+    if (parameters.interval === 'year') {
+      formatter = yd;
+    }
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiLineChartTimeSeriesQuery}
@@ -106,10 +113,12 @@ const StixCoreObjectsMultiLineChart = ({
               <Chart
                 options={lineChartOptions(
                   theme,
-                  true,
-                  fsd,
+                  !!['day', 'week'].includes(parameters.interval),
+                  formatter,
                   simpleNumberFormat,
-                  undefined,
+                  !['day', 'week'].includes(parameters.interval)
+                    ? 'dataPoints'
+                    : undefined,
                   false,
                   parameters.legend,
                 )}

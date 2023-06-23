@@ -116,6 +116,15 @@ const inject18n = (WrappedComponent) => {
         }
         return this.props.intl.formatDate(date, { month: 'long' });
       };
+      const monthTextYearDate = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, {
+          month: 'long',
+          year: 'numeric',
+        });
+      };
       const yearDate = (date) => {
         if (isNone(date)) {
           return translate('None');
@@ -136,6 +145,7 @@ const inject18n = (WrappedComponent) => {
           {...{ fd: standardDate }}
           {...{ md: monthDate }}
           {...{ mtd: monthTextDate }}
+          {...{ mtdy: monthTextYearDate }}
           {...{ yd: yearDate }}
         >
           {children}
@@ -254,6 +264,12 @@ export const useFormatter = () => {
     }
     return intl.formatDate(date, { month: 'long' });
   };
+  const monthTextYearDate = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, { month: 'long', year: 'numeric' });
+  };
   const yearDate = (date) => {
     if (isNone(date)) {
       return translate('None');
@@ -283,6 +299,7 @@ export const useFormatter = () => {
     fd: standardDate,
     md: monthDate,
     mtd: monthTextDate,
+    mtdy: monthTextYearDate,
     yd: yearDate,
     nt: numericTime,
   };

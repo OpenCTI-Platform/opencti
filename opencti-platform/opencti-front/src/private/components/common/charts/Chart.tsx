@@ -20,12 +20,12 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 interface ChartType extends ReactApexChart {
-  chart: { ctx: ApexCharts }
+  chart: { ctx: ApexCharts };
 }
 
 interface ExportPopoverProps {
-  chartRef: RefObject<ChartType>
-  series?: ApexOptions['series'],
+  chartRef: RefObject<ChartType>;
+  series?: ApexOptions['series'];
 }
 
 const ExportPopover = ({ chartRef, series }: ExportPopoverProps) => {
@@ -51,34 +51,61 @@ const ExportPopover = ({ chartRef, series }: ExportPopoverProps) => {
     }
   };
   return (
-        <div className={classes.container}>
-            <IconButton onClick={(event) => {
-              event.stopPropagation();
-              event.preventDefault();
-              setAnchorEl(event.currentTarget);
-            }} aria-haspopup="true" size="small">
-                <FileDownloadOutlined fontSize="small" />
-            </IconButton>
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} keepMounted={true}
-                  onClose={() => setAnchorEl(null)} className="noDrag">
-                <MenuItem onClick={handleExportToPng}>{t('Export png')}</MenuItem>
-                <MenuItem onClick={handleExportToSVG}>{t('Export svg')}</MenuItem>
-                <MenuItem onClick={handleExportToCSV}>{t('Export csv')}</MenuItem>
-            </Menu>
-        </div>
+    <div className={classes.container}>
+      <IconButton
+        onClick={(event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          setAnchorEl(event.currentTarget);
+        }}
+        aria-haspopup="true"
+        size="small"
+      >
+        <FileDownloadOutlined fontSize="small" />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        keepMounted={true}
+        onClose={() => setAnchorEl(null)}
+        className="noDrag"
+      >
+        <MenuItem onClick={handleExportToPng}>{t('Export png')}</MenuItem>
+        <MenuItem onClick={handleExportToSVG}>{t('Export svg')}</MenuItem>
+        <MenuItem onClick={handleExportToCSV}>{t('Export csv')}</MenuItem>
+      </Menu>
+    </div>
   );
 };
 
 interface OpenCTIChartProps extends Props {
-  withExportPopover?: boolean
+  withExportPopover?: boolean;
 }
 
-const Chart = ({ options, series, type, width, height, withExportPopover }: OpenCTIChartProps) => {
+const Chart = ({
+  options,
+  series,
+  type,
+  width,
+  height,
+  withExportPopover,
+}: OpenCTIChartProps) => {
   const chartRef = useRef<ChartType>(null);
-  return <>
-        <ApexChart ref={chartRef} options={options} series={series} type={type} width={width} height={height}/>
-        { withExportPopover === true && <ExportPopover chartRef={chartRef} series={series}/> }
-    </>;
+  return (
+    <>
+      <ApexChart
+        ref={chartRef}
+        options={options}
+        series={series}
+        type={type}
+        width={width}
+        height={height}
+      />
+      {withExportPopover === true && (
+        <ExportPopover chartRef={chartRef} series={series} />
+      )}
+    </>
+  );
 };
 
 export default Chart;

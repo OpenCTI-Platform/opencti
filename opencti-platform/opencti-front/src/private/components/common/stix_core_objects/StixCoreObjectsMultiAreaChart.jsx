@@ -63,7 +63,7 @@ const StixCoreObjectsMultiAreaChart = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd } = useFormatter();
+  const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       let types = ['Stix-Core-Object'];
@@ -90,6 +90,13 @@ const StixCoreObjectsMultiAreaChart = ({
         filters,
       };
     });
+    let formatter = fsd;
+    if (parameters.interval === 'month' || parameters.interval === 'quarter') {
+      formatter = mtdy;
+    }
+    if (parameters.interval === 'year') {
+      formatter = yd;
+    }
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiAreaChartTimeSeriesQuery}
@@ -106,10 +113,12 @@ const StixCoreObjectsMultiAreaChart = ({
               <Chart
                 options={areaChartOptions(
                   theme,
-                  true,
-                  fsd,
+                  !!['day', 'week'].includes(parameters.interval),
+                  formatter,
                   simpleNumberFormat,
-                  undefined,
+                  !['day', 'week'].includes(parameters.interval)
+                    ? 'dataPoints'
+                    : undefined,
                   parameters.stacked,
                   parameters.legend,
                 )}
