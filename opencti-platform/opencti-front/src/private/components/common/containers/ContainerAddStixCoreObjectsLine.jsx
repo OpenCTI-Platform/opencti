@@ -160,6 +160,7 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
           name
           description
           aliases
+          x_mitre_id
         }
         ... on Campaign {
           name
@@ -191,6 +192,7 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
           name
           description
           x_opencti_aliases
+          x_mitre_id
         }
         ... on Individual {
           name
