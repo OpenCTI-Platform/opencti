@@ -366,6 +366,15 @@ const WorkbenchFileContentComponent = ({
     if (file.metaData.entity_id && file.metaData.entity) {
       currentEntityId = file.metaData.entity_id;
     }
+    // update entity container objects_refs
+    if (currentEntityId) {
+      const currentEntityContainer = containers.find((container) => container.x_opencti_id === currentEntityId);
+      if (currentEntityContainer) {
+        const currentEntityObjectRefs = currentEntityContainer.object_refs?.length ? currentEntityContainer.object_refs : [];
+        const objectIds = [...stixDomainObjects.map((s) => s.id), ...stixCyberObservables.map((s) => s.id)];
+        currentEntityContainer.object_refs = R.uniq([...currentEntityObjectRefs, ...objectIds]);
+      }
+    }
     const data = {
       id: `bundle--${uuid()}`,
       type: 'bundle',
