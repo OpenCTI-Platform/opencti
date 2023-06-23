@@ -48,6 +48,7 @@ def get_config_variable(
     config: Dict = {},
     isNumber: Optional[bool] = False,
     default=None,
+    required=False,
 ) -> Union[bool, int, None, str]:
     """[summary]
 
@@ -73,6 +74,13 @@ def get_config_variable(
         return False
     if isNumber:
         return int(result)
+
+    if (
+        required
+        and default is None
+        and (result is None or (isinstance(result, str) and len(result) == 0))
+    ):
+        raise ValueError("The configuration " + env_var + " is required")
 
     if isinstance(result, str) and len(result) == 0:
         return default
