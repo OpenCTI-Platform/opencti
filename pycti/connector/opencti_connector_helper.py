@@ -1198,6 +1198,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :rtype: bool
         """
 
+        if tlp is None or max_tlp is None:
+            return True
+
         allowed_tlps: Dict[str, List[str]] = {
             "TLP:RED": [
                 "TLP:WHITE",
@@ -1220,7 +1223,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "TLP:CLEAR": ["TLP:WHITE", "TLP:CLEAR"],
         }
 
-        return tlp in allowed_tlps[max_tlp]
+        return tlp.upper() in allowed_tlps[max_tlp.upper()]
 
     @staticmethod
     def get_attribute_in_extension(key, object) -> any:

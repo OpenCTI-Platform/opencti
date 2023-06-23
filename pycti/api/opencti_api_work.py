@@ -22,7 +22,7 @@ class OpenCTIApiWork:
         self.api.query(query, {"id": work_id, "message": message})
 
     def to_processed(self, work_id: str, message: str, in_error: bool = False):
-        LOGGER.info("Reporting work update_received %s", work_id)
+        LOGGER.info("Reporting work update_processed %s", work_id)
         query = """
             mutation workToProcessed($id: ID!, $message: String, $inError: Boolean) {
                 workEdit(id: $id) {
