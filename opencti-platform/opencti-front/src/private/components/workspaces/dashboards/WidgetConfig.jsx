@@ -569,10 +569,18 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     });
     setDataSelection(newDataSelection);
   };
-  const handleChangeDataValidationParameter = (i, key, value) => {
+  const handleChangeDataValidationParameter = (
+    i,
+    key,
+    value,
+    number = false,
+  ) => {
     const newDataSelection = dataSelection.map((data, n) => {
       if (n === i) {
-        return { ...dataSelection[i], [key]: value };
+        return {
+          ...dataSelection[i],
+          [key]: number ? parseInt(value, 10) : value,
+        };
       }
       return data;
     });
@@ -1063,8 +1071,31 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             .fill(0)
             .map((_, i) => {
               return (
-                <div key={i} style={{ marginTop: 20 }}>
-                  <div style={{ display: 'flex', width: '100%' }}>
+                <div key={i}>
+                  {getCurrentCategory() === 'distribution' && (
+                    <TextField
+                      variant="standard"
+                      label={t('Number of results')}
+                      fullWidth={true}
+                      type="number"
+                      value={dataSelection[i].number ?? 10}
+                      onChange={(event) => handleChangeDataValidationParameter(
+                        i,
+                        'number',
+                        event.target.value,
+                        true,
+                      )
+                      }
+                      style={{ marginTop: 20 }}
+                    />
+                  )}
+                  <div
+                    style={{
+                      display: 'flex',
+                      width: '100%',
+                      marginTop: 20,
+                    }}
+                  >
                     <FormControl fullWidth={true} style={{ flex: 1 }}>
                       <InputLabel id="relative" variant="standard" size="small">
                         {isNotEmptyField(dataSelection[i].label)

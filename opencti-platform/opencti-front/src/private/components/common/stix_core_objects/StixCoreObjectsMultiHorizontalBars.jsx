@@ -429,7 +429,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
               ? selection.date_attribute
               : 'created_at',
           filters: finalFilters,
-          limit: 10,
+          limit: selection.number ?? 10,
           subDistributionRelationshipType:
             subSelectionDataSelectionRelationshipType,
           subDistributionToTypes: subSelectionDataSelectionToTypes,
@@ -442,7 +442,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
               ? subSelection.date_attribute
               : 'created_at',
           subDistributionOperation: 'count',
-          subDistributionLimit: 15,
+          subDistributionLimit: subSelection.number ?? 10,
           subDistributionTypes: subSelectionDataSelectionTypes,
           subDistributionFilters: subSelectionFinalFilters,
         }}

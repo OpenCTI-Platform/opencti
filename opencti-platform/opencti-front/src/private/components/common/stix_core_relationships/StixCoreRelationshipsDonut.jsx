@@ -254,7 +254,7 @@ const StixCoreRelationshipsDonut = ({
       startDate,
       endDate,
       dateAttribute,
-      limit: 10,
+      limit: selection.number ?? 10,
       filters: finalFilters,
       isTo: selection.isTo,
     };

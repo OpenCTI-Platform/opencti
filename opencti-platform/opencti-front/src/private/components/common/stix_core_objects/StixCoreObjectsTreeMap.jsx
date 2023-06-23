@@ -222,7 +222,7 @@ const StixCoreObjectsTreeMap = ({
               ? selection.date_attribute
               : 'created_at',
           filters: finalFilters,
-          limit: 10,
+          limit: selection.number ?? 10,
         }}
         render={({ props }) => {
           if (

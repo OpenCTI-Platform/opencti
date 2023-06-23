@@ -237,7 +237,7 @@ const StixCoreObjectsDonut = ({
           ? selection.date_attribute
           : 'created_at',
       filters: finalFilters,
-      limit: 10,
+      limit: selection.number ?? 10,
     };
     if (dataSelectionToTypes && dataSelectionToTypes.length > 0) {
       variables.toTypes = dataSelectionToTypes;

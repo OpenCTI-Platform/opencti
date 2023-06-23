@@ -861,7 +861,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
       startDate,
       endDate,
       dateAttribute: dateAttribute || dataSelectionDateAttribute,
-      limit: 10,
+      limit: selection.number ?? 10,
       filters: finalFilters,
       isTo: selection.isTo,
       dynamicFrom: convertFilters(selection.dynamicFrom),
@@ -881,7 +881,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             ? subSelection.date_attribute
             : 'created_at',
         subDistributionOperation: 'count',
-        subDistributionLimit: 15,
+        subDistributionLimit: subSelection.number ?? 15,
         subDistributionTypes,
         subDistributionFilters: subSelectionFinalFilters,
       };
@@ -897,7 +897,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             ? subSelection.date_attribute
             : 'created_at',
         subDistributionIsTo: subSelection.isTo,
-        subDistributionLimit: 15,
+        subDistributionLimit: subSelection.number ?? 15,
         subDistributionFromId: subSelectionFromId,
         subDistributionFromTypes: subSelectionFromTypes,
         subDistributionToId: subSelectionToId,
@@ -940,7 +940,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
               }
             }
             const sortedEntityMapping = R.take(
-              15,
+              subSelection.number ?? 15,
               Object.entries(entitiesMapping).sort(([, a], [, b]) => b - a),
             );
             const categoriesValues = {};
@@ -996,7 +996,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                 }
               }
               subSectionIdsOrder = R.take(
-                15,
+                subSelection.number ?? 15,
                 Object.entries(subSectionIdsOrder)
                   .sort(([, a], [, b]) => b - a)
                   .map((k) => k[0]),
