@@ -2,7 +2,8 @@ import json
 import uuid
 
 from dateutil.parser import parse
-from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class Task:
@@ -236,12 +237,8 @@ class Task:
         """
 
     @staticmethod
-    def generate_id(name):
-        name = name.lower().strip()
-        data = {"name": name}
-        data = canonicalize(data, utf8=False)
-        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
-        return "task--" + id
+    def generate_id():
+        return "task--" + str(uuid.uuid4())
 
     """
         List Task objects
@@ -266,10 +263,7 @@ class Task:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info",
-            "Listing Tasks with filters " + json.dumps(filters) + ".",
-        )
+        LOGGER.info("Listing Tasks with filters " + json.dumps(filters) + ".")
         query = (
             """
         query tasks($filters: [TasksFiltering!], $search: String, $first: Int, $after: ID, $orderBy: TasksOrdering, $orderMode: OrderingMode) {
@@ -660,7 +654,7 @@ class Task:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            self.opencti.log("info", "Deleting Task {%s}.", id)
+            LOGGER.info("Deleting Task {%s}.", id)
             query = """
                  mutation TaskDelete($id: ID!) {
                      taskDelete(id: $id)
@@ -668,5 +662,5 @@ class Task:
              """
             self.opencti.query(query, {"id": id})
         else:
-            self.opencti.log("error", "[opencti_task] Missing parameters: id")
+            LOGGER.error("[opencti_task] Missing parameters: id")
             return None
