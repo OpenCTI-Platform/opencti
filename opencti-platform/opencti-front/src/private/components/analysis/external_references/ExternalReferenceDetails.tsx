@@ -11,11 +11,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
+import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -30,11 +30,6 @@ const useStyles = makeStyles(() => ({
 interface ExternalReferenceDetailsComponentProps {
   externalReference: ExternalReferenceDetails_externalReference$data;
 }
-
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const ExternalReferenceDetailsComponent: FunctionComponent<
 ExternalReferenceDetailsComponentProps
@@ -76,16 +71,22 @@ ExternalReferenceDetailsComponentProps
             <Typography
               variant="h3"
               gutterBottom={true}
-              style={{ marginTop: 20 }}>
+              style={{ marginTop: 20 }}
+            >
               {t('Creators')}
             </Typography>
             <div>
               {(externalReference.creators ?? []).map((c) => {
-                return <div key={`creator-${c.id}`} style={{ float: 'left', marginRight: '10px' }}>
-                  <ItemCreator creator={c} />
-                </div>;
+                return (
+                  <div
+                    key={`creator-${c.id}`}
+                    style={{ float: 'left', marginRight: '10px' }}
+                  >
+                    <ItemCreator creator={c} />
+                  </div>
+                );
               })}
-              <div style={{ clear: 'both' }}/>
+              <div style={{ clear: 'both' }} />
             </div>
           </Grid>
           <Grid item={true} xs={6}>
@@ -99,7 +100,7 @@ ExternalReferenceDetailsComponentProps
                   onClick={() => handleOpenExternalLink(externalReference.url ?? '')
                   }
                   size="medium"
-                  color="secondary"
+                  color="primary"
                   style={{ position: 'absolute', right: 0, top: 0 }}
                   disabled={!externalReference.url}
                 >

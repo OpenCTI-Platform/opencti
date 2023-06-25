@@ -124,7 +124,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
 > = ({ stixCoreObjectId, data, relay }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const [displayDialog, setDisplayDialog] = useState(false);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
@@ -147,53 +146,43 @@ StixCoreObjectExternalReferencesLinesContainerProps
   | null
   | undefined
   >(null);
-
   const externalReferencesEdges = data.stixCoreObject
     ? data.stixCoreObject.externalReferences?.edges
     : [];
-
   const firstExternalReferenceEdge = externalReferencesEdges?.map((o) => o)[0];
   type externalReferenceEdge_type = typeof firstExternalReferenceEdge;
-
   const expandable = externalReferencesEdges
     ? externalReferencesEdges.length > 7
     : false;
   const importConnsPerFormat = data.connectorsForImport
     ? scopesConn(data.connectorsForImport)
     : {};
-
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
-
   const handleOpenDialog = (
     externalReferenceEdge: externalReferenceEdge_type,
   ) => {
     setDisplayDialog(true);
     setExternalReferenceToRemove(externalReferenceEdge);
   };
-
   const handleCloseDialog = () => {
     setDisplayDialog(false);
     setExternalReferenceToRemove(null);
   };
-
   const handleOpenExternalLink = (url: string) => {
     setDisplayExternalLink(true);
     setExternalLink(url);
   };
-
   const handleCloseExternalLink = () => {
     setDisplayExternalLink(false);
     setExternalLink(undefined);
   };
-
   const handleBrowseExternalLink = () => {
     window.open(externalLink, '_blank');
     setDisplayExternalLink(false);
     setExternalLink(undefined);
   };
-
   const removeExternalReference = (
     externalReferenceEdge: externalReferenceEdge_type | null,
   ) => {
@@ -223,12 +212,10 @@ StixCoreObjectExternalReferencesLinesContainerProps
       setSubmitting: undefined,
     });
   };
-
   const handleRemoval = () => {
     setRemoving(true);
     removeExternalReference(externalReferenceToRemove);
   };
-
   const handleOpenImport = (
     file:
     | {
@@ -243,11 +230,9 @@ StixCoreObjectExternalReferencesLinesContainerProps
   ) => {
     setFileToImport(file);
   };
-
   const handleCloseImport = () => {
     setFileToImport(null);
   };
-
   const onSubmitImport: FormikConfig<{ connector_id: string }>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
@@ -272,7 +257,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
       setSubmitting: undefined,
     });
   };
-
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -332,21 +316,30 @@ StixCoreObjectExternalReferencesLinesContainerProps
                           <ItemIcon type="External-Reference" />
                         </ListItemIcon>
                         <ListItemText
-                          primary={truncate(`${externalReference.source_name} ${externalReferenceId}`, 70)}
+                          primary={truncate(
+                            `${externalReference.source_name} ${externalReferenceId}`,
+                            70,
+                          )}
                           secondary={truncate(externalReferenceSecondary, 70)}
                         />
                         <ListItemSecondaryAction>
                           <Tooltip title={t('Browse the link')}>
                             <IconButton
-                              onClick={() => handleOpenExternalLink(externalReference.url ?? '')}
-                              size="large" color="primary">
+                              onClick={() => handleOpenExternalLink(
+                                externalReference.url ?? '',
+                              )
+                              }
+                              size="large"
+                              color="primary"
+                            >
                               <OpenInBrowserOutlined />
                             </IconButton>
                           </Tooltip>
                           <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                             <FileUploader
                               entityId={externalReference.id}
-                              onUploadSuccess={() => relay.refetchConnection(200)}
+                              onUploadSuccess={() => relay.refetchConnection(200)
+                              }
                               color="inherit"
                               size={undefined}
                             />
@@ -359,7 +352,8 @@ StixCoreObjectExternalReferencesLinesContainerProps
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
                             <ExternalReferencePopover
                               id={externalReference.id}
-                              handleRemove={() => handleOpenDialog(externalReferenceEdge)}
+                              handleRemove={() => handleOpenDialog(externalReferenceEdge)
+                              }
                             />
                           </Security>
                         </ListItemSecondaryAction>
@@ -375,7 +369,11 @@ StixCoreObjectExternalReferencesLinesContainerProps
                                 nested={true}
                                 workNested={true}
                                 onDelete={() => relay.refetchConnection(200)}
-                                connectors={ importConnsPerFormat[file?.node.metaData?.mimetype ?? 0] }
+                                connectors={
+                                  importConnsPerFormat[
+                                    file?.node.metaData?.mimetype ?? 0
+                                  ]
+                                }
                                 handleOpenImport={handleOpenImport}
                               />
                             ))}

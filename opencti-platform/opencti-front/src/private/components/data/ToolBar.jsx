@@ -208,7 +208,14 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task'];
+const notMergableTypes = [
+  'Indicator',
+  'Note',
+  'Opinion',
+  'Label',
+  'Case-Template',
+  'Task',
+];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -412,7 +419,7 @@ class ToolBar extends Component {
     const { actionsInputs } = this.state;
     actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
     if (key === 'field') {
-      const values = value === 'creator_id' ? ['From history'] : [];
+      const values = [];
       actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
       if (
         value === 'object-marking'
@@ -656,7 +663,7 @@ class ToolBar extends Component {
         { label: t('Author'), value: 'created-by' },
         { label: t('Score'), value: 'x_opencti_score' },
         { label: t('Confidence'), value: 'confidence' },
-        { label: t('filter_creator'), value: 'creator_id' },
+        { label: t('Description'), value: 'description' },
       ];
       if (this.props.type) {
         options.push({ label: t('Status'), value: 'x_opencti_workflow_id' });
@@ -886,7 +893,10 @@ class ToolBar extends Component {
                 this.setState(({ containers }) => ({
                   containers: [...(containers ?? []), element],
                 }));
-                this.handleChangeActionInputValues(i, null, [...(actionsInputs[i]?.values ?? []), element]);
+                this.handleChangeActionInputValues(i, null, [
+                  ...(actionsInputs[i]?.values ?? []),
+                  element,
+                ]);
               }}
             />
             <Autocomplete
@@ -1135,16 +1145,6 @@ class ToolBar extends Component {
                 <div className={classes.text}>{option.label}</div>
               </li>
             )}
-          />
-        );
-      case 'creator_id':
-        return (
-          <TextField
-            variant="standard"
-            disabled={true}
-            label="&nbsp;"
-            fullWidth={true}
-            value={'From history'}
           />
         );
       default:
@@ -2181,7 +2181,10 @@ class ToolBar extends Component {
                 this.setState(({ containers }) => ({
                   containers: [...(containers ?? []), element],
                 }));
-                this.handleChangeActionInputValues(0, null, [...(actionsInputs[0]?.values ?? []), element]);
+                this.handleChangeActionInputValues(0, null, [
+                  ...(actionsInputs[0]?.values ?? []),
+                  element,
+                ]);
               }}
             />
             <Autocomplete
@@ -2235,15 +2238,20 @@ class ToolBar extends Component {
             <Button
               color="secondary"
               onClick={() => {
-                this.setState({
-                  displayAddInContainer: false,
-                  actionsInputs: [{
-                    ...actionsInputs[0],
-                    type: 'ADD',
-                    fieldType: 'ATTRIBUTE',
-                    field: 'container-object',
-                  }],
-                }, this.handleLaunchUpdate.bind(this));
+                this.setState(
+                  {
+                    displayAddInContainer: false,
+                    actionsInputs: [
+                      {
+                        ...actionsInputs[0],
+                        type: 'ADD',
+                        fieldType: 'ATTRIBUTE',
+                        field: 'container-object',
+                      },
+                    ],
+                  },
+                  this.handleLaunchUpdate.bind(this),
+                );
               }}
             >
               {t('Add')}

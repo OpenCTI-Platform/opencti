@@ -244,23 +244,8 @@ const executeReplace = async (context, user, actionContext, element) => {
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
-    // Special case for creator_id, that will be replaced from history
-    if (field === 'creator_id') {
-      if (isEmptyField(element.creator_id)) {
-        const historicCreator = await creatorFromHistory(context, user, element.internal_id);
-        // Direct elastic update to prevent any check/stream propagation
-        await elUpdate(element._index, element.id, {
-          script: {
-            source: 'ctx._source["creator_id"] = params.creator_id;',
-            lang: 'painless',
-            params: { creator_id: [historicCreator] }
-          },
-        });
-      }
-    } else {
-      const patch = { [field]: values };
-      await patchAttribute(context, user, element.id, element.entity_type, patch);
-    }
+    const patch = { [field]: values };
+    await patchAttribute(context, user, element.id, element.entity_type, patch);
   }
 };
 const executeMerge = async (context, user, actionContext, element) => {

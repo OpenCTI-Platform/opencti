@@ -114,7 +114,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
             isSupportParticipation={false}
             container={caseRftData}
             types={['Incident', 'stix-sighting-relationship', 'Report']}
-            title={t('Origin of the Case')}
+            title={t('Origin of the case')}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
