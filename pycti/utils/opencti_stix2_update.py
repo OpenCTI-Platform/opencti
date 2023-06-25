@@ -300,6 +300,6 @@ class OpenCTIStix2Update:
                             )
                             inputs.append({"key": key, "value": values})
             self.update_attribute(data["type"], data["id"], inputs)
-        except Exception as e:
+        except Exception:
             error_msg = traceback.format_exc()
             API_LOGGER.error(error_msg)
