@@ -4,35 +4,32 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent } from 'react';
-import Slide, { SlideProps } from '@mui/material/Slide';
 import { useFormatter } from './i18n';
-
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+import Transition from './Transition';
 
 interface ExternalLinkPopoverProps {
-  displayExternalLink: boolean,
-  externalLink: string | URL | undefined,
-  setDisplayExternalLink: (value: boolean) => void,
-  setExternalLink: (value: string | URL | undefined) => void,
+  displayExternalLink: boolean;
+  externalLink: string | URL | undefined;
+  setDisplayExternalLink: (value: boolean) => void;
+  setExternalLink: (value: string | URL | undefined) => void;
 }
 
-const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({ displayExternalLink, externalLink, setDisplayExternalLink, setExternalLink }) => {
+const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({
+  displayExternalLink,
+  externalLink,
+  setDisplayExternalLink,
+  setExternalLink,
+}) => {
   const { t } = useFormatter();
-
   const handleCloseExternalLink = () => {
     setDisplayExternalLink(false);
     setExternalLink(undefined);
   };
-
   const handleBrowseExternalLink = () => {
     window.open(externalLink, '_blank');
     setDisplayExternalLink(false);
     setExternalLink(undefined);
   };
-
   return (
     <Dialog
       PaperProps={{ elevation: 1 }}

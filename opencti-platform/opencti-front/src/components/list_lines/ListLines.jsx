@@ -363,19 +363,20 @@ class ListLines extends Component {
                           </Tooltip>
                         </ToggleButton>
                       )}
-                      {!enableEntitiesView && (
-                        <ToggleButton value="lines" aria-label="lines">
-                          <Tooltip title={t('Lines view')}>
-                            <ViewListOutlined
-                              fontSize="small"
-                              color={
-                                currentView === 'lines' || !currentView
-                                  ? 'secondary'
-                                  : 'primary'
-                              }
-                            />
-                          </Tooltip>
-                        </ToggleButton>
+                      {typeof handleChangeView === 'function'
+                        && !enableEntitiesView && (
+                          <ToggleButton value="lines" aria-label="lines">
+                            <Tooltip title={t('Lines view')}>
+                              <ViewListOutlined
+                                fontSize="small"
+                                color={
+                                  currentView === 'lines' || !currentView
+                                    ? 'secondary'
+                                    : 'primary'
+                                }
+                              />
+                            </Tooltip>
+                          </ToggleButton>
                       )}
                       {typeof handleChangeView === 'function'
                         && enableGraph && (

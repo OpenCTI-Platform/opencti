@@ -66,9 +66,25 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   const { t } = useFormatter();
   const classes = useStyles();
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
-    availableRelationFilterTypes || {},
+    availableRelationFilterTypes || {
+      targets: [
+        'Region',
+        'Country',
+        'Administrative-Area',
+        'City',
+        'Position',
+        'Sector',
+        'Organization',
+        'Individual',
+        'System',
+        'Event',
+        'Vulnerability',
+      ],
+    },
   );
-  const [cacheEntities, setCacheEntities] = useState<Record<string, { label: string, value: string, type: string }[]>>({});
+  const [cacheEntities, setCacheEntities] = useState<
+  Record<string, { label: string; value: string; type: string }[]>
+  >({});
   const [entities, searchEntities] = useSearchEntities({
     searchScope,
     setInputValues,
@@ -80,8 +96,13 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     (
       filterKey: string,
       searchContext: { entityTypes: string[] },
-      cacheEntities: Record<string, { label: string, value: string, type: string }[]>,
-      setCacheEntities: Dispatch<Record<string, { label: string, value: string, type: string }[]>>,
+      cacheEntities: Record<
+      string,
+      { label: string; value: string; type: string }[]
+      >,
+      setCacheEntities: Dispatch<
+      Record<string, { label: string; value: string; type: string }[]>
+      >,
       event: SyntheticEvent
     ) => Record<string, OptionValue[]>,
   ]; // change when useSearchEntities will be in TS
@@ -141,7 +162,14 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       getOptionLabel={(option) => option.label ?? ''}
       noOptionsText={t('No available options')}
       options={options}
-      onInputChange={(event) => searchEntities(filterKey, searchContext, cacheEntities, setCacheEntities, event)}
+      onInputChange={(event) => searchEntities(
+        filterKey,
+        searchContext,
+        cacheEntities,
+        setCacheEntities,
+        event,
+      )
+      }
       inputValue={(inputValues[filterKey] as string) || ''}
       onChange={handleChange}
       groupBy={
@@ -157,7 +185,14 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
           variant="outlined"
           size="small"
           fullWidth={true}
-          onFocus={(event) => searchEntities(filterKey, searchContext, cacheEntities, setCacheEntities, event)}
+          onFocus={(event) => searchEntities(
+            filterKey,
+            searchContext,
+            cacheEntities,
+            setCacheEntities,
+            event,
+          )
+          }
           InputProps={{
             ...params.InputProps,
             endAdornment: isStixObjectTypes

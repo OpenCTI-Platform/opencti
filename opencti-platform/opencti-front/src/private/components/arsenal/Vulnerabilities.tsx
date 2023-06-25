@@ -1,6 +1,8 @@
 import React from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import VulnerabilitiesLines, { vulnerabilitiesLinesQuery } from './vulnerabilities/VulnerabilitiesLines';
+import VulnerabilitiesLines, {
+  vulnerabilitiesLinesQuery,
+} from './vulnerabilities/VulnerabilitiesLines';
 import VulnerabilityCreation from './vulnerabilities/VulnerabilityCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -15,7 +17,9 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useAuth from '../../../utils/hooks/useAuth';
 
 const Vulnerabilities = () => {
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
     'view-vulnerabilities',

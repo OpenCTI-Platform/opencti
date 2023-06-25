@@ -28,7 +28,6 @@ class Channels extends Component {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -176,7 +175,7 @@ class Channels extends Component {
   }
 
   render() {
-    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
+    const { sortBy, orderAsc, searchTerm, filters } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
@@ -186,7 +185,7 @@ class Channels extends Component {
     };
     return (
       <div>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        {this.renderLines(paginationOptions)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ChannelCreation paginationOptions={paginationOptions} />
         </Security>

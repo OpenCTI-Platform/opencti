@@ -152,6 +152,8 @@ export const IncidentCard: FunctionComponent<IncidentCardProps> = ({
             <MarkdownDisplay
               content={data.description ?? ''}
               remarkGfmPlugin={true}
+              commonmark={true}
+              removeLinks={true}
             />
           </div>
           <div className={classes.objectLabel}>

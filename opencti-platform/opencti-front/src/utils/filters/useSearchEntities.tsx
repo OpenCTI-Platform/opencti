@@ -139,10 +139,10 @@ const filtersStixCoreObjectsSearchQuery = graphql`
             description
           }
           ... on MalwareAnalysis {
-              product
-              operatingSystem {
-                name
-              }
+            product
+            operatingSystem {
+              name
+            }
           }
           ... on ThreatActor {
             name
@@ -254,8 +254,13 @@ const useSearchEntities = ({
   const searchEntities = (
     filterKey: string,
     searchContext: { entityTypes: string[] },
-    cacheEntities: Record<string, { label: string, value: string, type: string }[]>,
-    setCacheEntities: Dispatch<Record<string, { label: string, value: string, type: string }[]>>,
+    cacheEntities: Record<
+    string,
+    { label: string; value: string; type: string }[]
+    >,
+    setCacheEntities: Dispatch<
+    Record<string, { label: string; value: string; type: string }[]>
+    >,
     event: SelectChangeEvent<string | number>,
   ) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -310,7 +315,10 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const membersEntities = ((data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []).map((n) => ({
+            const membersEntities = (
+              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
+                ?.edges ?? []
+            ).map((n) => ({
               label: n?.node.name,
               value: n?.node.id,
               type: n?.node.entity_type,
@@ -326,7 +334,10 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const membersEntities = ((data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []).map((n) => ({
+            const membersEntities = (
+              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
+                ?.edges ?? []
+            ).map((n) => ({
               label: n?.node.name,
               value: n?.node.id,
               type: n?.node.entity_type,
@@ -342,7 +353,10 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const membersEntities = ((data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []).map((n) => ({
+            const membersEntities = (
+              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
+                ?.edges ?? []
+            ).map((n) => ({
               label: n?.node.name,
               value: n?.node.id,
               type: n?.node.entity_type,
@@ -380,14 +394,17 @@ const useSearchEntities = ({
             .toPromise()
             .then((data) => {
               const assigneeToEntities = (
-                (data as ObjectAssigneeFieldAssigneesSearchQuery$data)?.assignees
-                  ?.edges ?? []
+                (data as ObjectAssigneeFieldAssigneesSearchQuery$data)
+                  ?.assignees?.edges ?? []
               ).map((n) => ({
                 label: n?.node.name ?? '',
                 value: n?.node.id ?? '',
                 type: 'User',
               }));
-              setCacheEntities({ ...cacheEntities, [filterKey]: assigneeToEntities });
+              setCacheEntities({
+                ...cacheEntities,
+                [filterKey]: assigneeToEntities,
+              });
               unionSetEntities('assigneeTo', assigneeToEntities);
             });
         }
@@ -402,7 +419,9 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const createdByEntities = (
-              (data as IdentitySearchIdentitiesSearchQuery$data)?.identities?.edges ?? []).map((n) => ({
+              (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
+                ?.edges ?? []
+            ).map((n) => ({
               label: n?.node.name,
               value: n?.node.id,
               type: n?.node.entity_type,

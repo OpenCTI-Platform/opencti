@@ -61,6 +61,7 @@ class ThreatActorsCards extends Component {
               nbOfCardsToLoad={nbOfCardsToLoad}
               onLabelClick={onLabelClick.bind(this)}
               bookmarkList={bookmarks}
+              rowHeight={340}
             />
           </div>
         )}

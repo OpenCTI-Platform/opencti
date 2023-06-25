@@ -8,10 +8,10 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import { StarBorderOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import Typography from '@mui/material/Typography';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import {
@@ -19,24 +19,23 @@ import {
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import ItemIcon from '../../../../components/ItemIcon';
+import { emptyFilled } from '../../../../utils/String';
 
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: 170,
+    height: 320,
     borderRadius: 6,
   },
   cardDummy: {
     width: '100%',
-    height: 170,
+    height: 320,
     color: theme.palette.grey[700],
     borderRadius: 6,
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    backgroundColor: theme.palette.grey[600],
   },
   icon: {
     margin: '10px 20px 0 0',
@@ -56,43 +55,52 @@ const styles = (theme) => ({
     width: '100%',
     paddingTop: 0,
   },
+  contentDummy: {
+    width: '100%',
+    height: 200,
+    marginTop: 20,
+  },
   description: {
-    height: 61,
+    marginTop: 5,
+    height: 65,
     display: '-webkit-box',
-    '-webkit-box-orient': 'vertical',
-    '-webkit-line-clamp': 2,
     overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    '-webkit-line-clamp': 3,
+    '-webkit-box-orient': 'vertical',
   },
   objectLabel: {
     height: 45,
     paddingTop: 15,
   },
-  contentDummy: {
-    width: '100%',
-    height: 120,
+  extras: {
+    marginTop: 25,
+  },
+  extraColumn: {
+    height: 45,
+    width: '50%',
+    float: 'left',
+    display: '-webkit-box',
     overflow: 'hidden',
-    marginTop: 15,
+    textOverflow: 'ellipsis',
+    '-webkit-line-clamp': 2,
+    '-webkit-box-orient': 'vertical',
   },
-  placeholderHeader: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  placeholderHeaderDark: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey[800],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
+  title: {
+    fontWeight: 600,
   },
 });
 
 class IntrusionSetCardComponent extends Component {
   render() {
-    const { t, fsd, classes, node, bookmarksIds, onLabelClick } = this.props;
+    const { t, fld, classes, node, bookmarksIds, onLabelClick } = this.props;
+    const usedMalware = node.usedMalware.map((n) => n.entity.name).join(', ');
+    const targetedCountries = node.targetedCountries
+      .map((n) => n.entity.name)
+      .join(', ');
+    const targetedSectors = node.targetedSectors
+      .map((n) => n.entity.name)
+      .join(', ');
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -101,12 +109,10 @@ class IntrusionSetCardComponent extends Component {
           to={`/dashboard/threats/intrusion_sets/${node.id}`}
         >
           <CardHeader
-            classes={{ root: classes.header }}
-            avatar={
-              <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
-            }
+            classes={{ root: classes.header, title: classes.title }}
+            avatar={<ItemIcon type="Intrusion-Set" size="large" />}
             title={node.name}
-            subheader={`${t('Updated on')} ${fsd(node.modified)}`}
+            subheader={fld(node.modified)}
             action={
               <IconButton
                 size="small"
@@ -128,7 +134,38 @@ class IntrusionSetCardComponent extends Component {
                 remarkGfmPlugin={true}
                 commonmark={true}
                 removeLinks={true}
+                limit={260}
               />
+            </div>
+            <div className={classes.extras}>
+              <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
+                <Typography variant="h4">{t('Known as')}</Typography>
+                <Typography variant="body2">
+                  {emptyFilled((node.aliases || []).join(', '))}
+                </Typography>
+              </div>
+              <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
+                <Typography variant="h4">{t('Used malware')}</Typography>
+                <Typography variant="body2">
+                  {emptyFilled(usedMalware)}
+                </Typography>
+              </div>
+              <div className="clearfix" />
+            </div>
+            <div className={classes.extras}>
+              <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
+                <Typography variant="h4">{t('Targeted countries')}</Typography>
+                <Typography variant="body2">
+                  {emptyFilled(targetedCountries)}
+                </Typography>
+              </div>
+              <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
+                <Typography variant="h4">{t('Targeted sectors')}</Typography>
+                <Typography variant="body2">
+                  {emptyFilled(targetedSectors)}
+                </Typography>
+              </div>
+              <div className="clearfix" />
             </div>
             <div className={classes.objectLabel}>
               <StixCoreObjectLabels
@@ -159,6 +196,7 @@ const IntrusionSetCardFragment = createFragmentContainer(
       fragment IntrusionSetCard_node on IntrusionSet {
         id
         name
+        aliases
         description
         created
         modified
@@ -179,6 +217,48 @@ const IntrusionSetCardFragment = createFragmentContainer(
               id
               value
               color
+            }
+          }
+        }
+        targetedCountries: stixCoreObjectsDistribution(
+          operation: count
+          field: "internal_id"
+          relationship_type: ["targets"]
+          types: ["Country"]
+          limit: 5
+        ) {
+          label
+          entity {
+            ... on Country {
+              name
+            }
+          }
+        }
+        targetedSectors: stixCoreObjectsDistribution(
+          operation: count
+          field: "internal_id"
+          relationship_type: ["targets"]
+          types: ["Sector"]
+          limit: 5
+        ) {
+          label
+          entity {
+            ... on Sector {
+              name
+            }
+          }
+        }
+        usedMalware: stixCoreObjectsDistribution(
+          operation: count
+          field: "internal_id"
+          relationship_type: ["uses"]
+          types: ["Malware"]
+          limit: 5
+        ) {
+          label
+          entity {
+            ... on Malware {
+              name
             }
           }
         }
@@ -235,24 +315,56 @@ class IntrusionSetCardDummyComponent extends Component {
             }
           />
           <CardContent classes={{ root: classes.contentDummy }}>
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              style={{ marginBottom: 10 }}
-            />
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="95%"
-              style={{ marginBottom: 10 }}
-            />
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              style={{ marginBottom: 10 }}
-            />
+            <div className={classes.description}>
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                style={{ marginBottom: 10 }}
+              />
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="80%"
+                style={{ marginBottom: 10 }}
+              />
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                style={{ marginBottom: 10 }}
+              />
+            </div>
+            <div className={classes.extras}>
+              <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="100%"
+                  style={{ marginBottom: 10 }}
+                />
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="100%"
+                  style={{ marginBottom: 10 }}
+                />
+              </div>
+              <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="100%"
+                  style={{ marginBottom: 10 }}
+                />
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="100%"
+                  style={{ marginBottom: 10 }}
+                />
+              </div>
+            </div>
           </CardContent>
         </CardActionArea>
       </Card>

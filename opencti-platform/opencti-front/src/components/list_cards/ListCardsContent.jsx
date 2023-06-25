@@ -39,7 +39,10 @@ class ListCardsContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (!R.equals(prevProps.dataList, this.props.dataList) || !R.equals(prevProps.bookmarkList, this.props.bookmarkList)) {
+    if (
+      !R.equals(prevProps.dataList, this.props.dataList)
+      || !R.equals(prevProps.bookmarkList, this.props.bookmarkList)
+    ) {
       this.gridRef.forceUpdate();
     }
   }

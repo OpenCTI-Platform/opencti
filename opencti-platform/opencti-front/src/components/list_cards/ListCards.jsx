@@ -103,7 +103,9 @@ class ListCards extends Component {
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
-              searchContext={{ entityTypes: exportEntityType ? [exportEntityType] : [] }}
+              searchContext={{
+                entityTypes: exportEntityType ? [exportEntityType] : [],
+              }}
             />
           )}
           <InputLabel
@@ -177,39 +179,45 @@ class ListCards extends Component {
                     </Tooltip>
                   </ToggleButton>
                 )}
-                <ToggleButton value="lines" aria-label="lines">
-                  <Tooltip title={t('Lines view')}>
-                    <ViewListOutlined color="primary" fontSize="small" />
-                  </Tooltip>
-                </ToggleButton>
-                {typeof handleToggleExports === 'function'
-                  && !exportDisabled
-                  && <ToggleButton value="export" aria-label="export">
-                    <Tooltip title={t('Open export panel')}>
-                      <FileDownloadOutlined
-                        color={openExports ? 'secondary' : 'primary'}
-                        fontSize="small"
-                      />
+                {typeof handleChangeView === 'function' && (
+                  <ToggleButton value="lines" aria-label="lines">
+                    <Tooltip title={t('Lines view')}>
+                      <ViewListOutlined color="primary" fontSize="small" />
                     </Tooltip>
                   </ToggleButton>
-                }
+                )}
                 {typeof handleToggleExports === 'function'
-                  && exportDisabled
-                  && <Tooltip title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}>
-                    <span>
-                    <ToggleButton
-                      size="small"
-                      value="export"
-                      aria-label="export"
-                      disabled={true}
-                    >
-                      <FileDownloadOutlined
-                        fontSize="small"
-                      />
+                  && !exportDisabled && (
+                    <ToggleButton value="export" aria-label="export">
+                      <Tooltip title={t('Open export panel')}>
+                        <FileDownloadOutlined
+                          color={openExports ? 'secondary' : 'primary'}
+                          fontSize="small"
+                        />
+                      </Tooltip>
                     </ToggleButton>
-                    </span>
-                  </Tooltip>
-                }
+                )}
+                {typeof handleToggleExports === 'function'
+                  && exportDisabled && (
+                    <Tooltip
+                      title={`${
+                        t(
+                          'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                        ) + export_max_size
+                      })`}
+                    >
+                      <span>
+                        <ToggleButton
+                          size="small"
+                          value="export"
+                          aria-label="export"
+                          disabled={true}
+                        >
+                          <FileDownloadOutlined fontSize="small" />
+                        </ToggleButton>
+                      </span>
+                    </Tooltip>
+                )}
               </ToggleButtonGroup>
             )}
           </div>

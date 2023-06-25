@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm';
 import { Theme } from './Theme';
 import { truncate } from '../utils/String';
 import ExternalLinkPopover from './ExternalLinkPopover';
+import FieldOrEmpty from './FieldOrEmpty';
 
 export const MarkDownComponents = (
   theme: Theme,
@@ -137,7 +138,6 @@ MarkdownWithRedirectionWarningProps
       </Markdown>
     );
   };
-
   const browseLinkWarning = (
     event: SyntheticEvent<HTMLElement, MouseEvent>,
   ) => {
@@ -149,8 +149,15 @@ MarkdownWithRedirectionWarningProps
       handleOpenExternalLink(link.href);
     }
   };
+  if (removeLinks) {
+    return (
+      <FieldOrEmpty source={content}>
+        {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
+      </FieldOrEmpty>
+    );
+  }
   return (
-    <>
+    <FieldOrEmpty source={content}>
       <div onClick={(event) => browseLinkWarning(event)}>
         {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
       </div>
@@ -160,7 +167,7 @@ MarkdownWithRedirectionWarningProps
         setDisplayExternalLink={setDisplayExternalLink}
         setExternalLink={setExternalLink}
       />
-    </>
+    </FieldOrEmpty>
   );
 };
 

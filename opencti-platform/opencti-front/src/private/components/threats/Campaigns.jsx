@@ -10,13 +10,9 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
-import ListLines from '../../../components/list_lines/ListLines';
 import CampaignsCards, {
   campaignsCardsQuery,
 } from './campaigns/CampaignsCards';
-import CampaignsLines, {
-  campaignsLinesQuery,
-} from './campaigns/CampaignsLines';
 import CampaignCreation from './campaigns/CampaignCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -34,7 +30,6 @@ class Campaigns extends Component {
       sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('cards', 'view', params),
       filters: R.propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -48,10 +43,6 @@ class Campaigns extends Component {
       'view-campaigns',
       this.state,
     );
-  }
-
-  handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
   }
 
   handleSearch(value) {
@@ -132,7 +123,6 @@ class Campaigns extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
-        handleChangeView={this.handleChangeView.bind(this)}
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
@@ -151,6 +141,8 @@ class Campaigns extends Component {
           'creator',
           'revoked',
           'confidence',
+          'x_opencti_workflow_id',
+          'targets',
         ]}
       >
         <QueryRenderer
@@ -170,84 +162,8 @@ class Campaigns extends Component {
     );
   }
 
-  renderLines(paginationOptions) {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = this.state;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '35%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '25%',
-        isSortable: false,
-      },
-      created: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
-      },
-    };
-    return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleChangeView={this.handleChangeView.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        exportEntityType="Campaign"
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'createdBy',
-          'revoked',
-          'confidence',
-        ]}
-      >
-        <QueryRenderer
-          query={campaignsLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <CampaignsLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        />
-      </ListLines>
-    );
-  }
-
   render() {
-    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
+    const { sortBy, orderAsc, searchTerm, filters } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
@@ -256,13 +172,12 @@ class Campaigns extends Component {
       filters: finalFilters,
     };
     return (
-      <div>
-        {view === 'cards' ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+      <>
+        {this.renderCards(paginationOptions)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CampaignCreation paginationOptions={paginationOptions} />
         </Security>
-      </div>
+      </>
     );
   }
 }
