@@ -15,7 +15,6 @@ import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from './i18n';
-import ExternalLinkPopover from './ExternalLinkPopover';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -81,15 +80,6 @@ const RichTextField = (props) => {
       onSelect(selection.trim());
     }
   };
-  const handleOpenExternalLink = (url) => {
-    setDisplayExternalLink(true);
-    setExternalLink(url);
-  };
-  const browseLinkWarning = (event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    handleOpenExternalLink(event.target.href);
-  };
   return (
     <div style={style} className={!R.isNil(meta.error) ? 'error' : 'main'}>
       <InputLabel shrink={true} variant="standard" style={{ float: 'left' }}>
@@ -148,12 +138,6 @@ const RichTextField = (props) => {
               disabled={disabled}
             />
           </div>
-          <ExternalLinkPopover
-            displayExternalLink={displayExternalLink}
-            externalLink={externalLink}
-            setDisplayExternalLink={setDisplayExternalLink}
-            setExternalLink={setExternalLink}
-          ></ExternalLinkPopover>
           {!R.isNil(meta.error) && (
             <FormHelperText error={true}>{meta.error}</FormHelperText>
           )}
@@ -186,12 +170,6 @@ const RichTextField = (props) => {
             onBlur={internalOnBlur}
             onFocus={internalOnFocus}
             disabled={disabled}
-          />
-          <ExternalLinkPopover
-            displayExternalLink={displayExternalLink}
-            externalLink={externalLink}
-            setDisplayExternalLink={setDisplayExternalLink}
-            setExternalLink={setExternalLink}
           />
         </>
       )}

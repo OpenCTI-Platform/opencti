@@ -9,9 +9,9 @@ import { Theme } from './Theme';
 import { truncate } from '../utils/String';
 import ExternalLinkPopover from './ExternalLinkPopover';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const MarkDownComponents = (
   theme: Theme,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, FunctionComponent<any>> => ({
   table: ({ tableProps }) => (
     <table
