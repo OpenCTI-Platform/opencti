@@ -223,6 +223,26 @@ class CustomObservableText:
 
 
 @CustomObservable(
+    "cryptocurrency-wallet",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableCryptocurrencyWallet:
+    """Cryptocurrency wallet observable."""
+
+    pass
+
+
+@CustomObservable(
     "user-agent",
     [
         ("value", StringProperty(required=True)),
