@@ -1,7 +1,9 @@
+import datetime
 import json
 import uuid
 
 from dateutil.parser import parse
+from stix2.canonicalization.Canonicalize import canonicalize
 
 from pycti.entities import LOGGER
 
@@ -237,8 +239,14 @@ class Task:
         """
 
     @staticmethod
-    def generate_id():
-        return "task--" + str(uuid.uuid4())
+    def generate_id(name, created):
+        name = name.lower().strip()
+        if isinstance(created, datetime.datetime):
+            created = created.isoformat()
+        data = {"name": name, "created": created}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "task--" + id
 
     """
         List Task objects
