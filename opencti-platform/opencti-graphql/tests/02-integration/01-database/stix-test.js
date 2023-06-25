@@ -136,7 +136,7 @@ describe('Stix opencti converter', () => {
 
     await rawDataCompare('identity--c017f212-546b-4f21-999d-97d3dc558f7b', 'identity--732421a0-8471-52de-8d9f-18c8b260813c');
 
-    await rawDataCompare('incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4', 'incident--9024f9de-e5cc-5347-9509-cb7efdf8081d');
+    await rawDataCompare('incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4', 'incident--8658860d-df08-5f41-bf41-106095e48085');
 
     await rawDataCompare('indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf', 'indicator--4099edd7-1efd-54aa-9736-7bcd7219b78b');
 
