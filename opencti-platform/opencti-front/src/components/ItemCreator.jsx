@@ -1,5 +1,4 @@
 import React from 'react';
-import * as PropTypes from 'prop-types';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import Security from '../utils/Security';
@@ -34,10 +33,6 @@ const ItemCreator = (props) => {
       </Security>
     </div>
   );
-};
-
-ItemCreator.propTypes = {
-  creator: PropTypes.object,
 };
 
 export default ItemCreator;
