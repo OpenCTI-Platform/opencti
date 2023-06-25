@@ -69,12 +69,10 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   const { t } = useFormatter();
   const classes = useStyles();
   const navigate = useNavigate();
-
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleOpenDelete = () => {
@@ -82,9 +80,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
-
   const [commit] = useMutation(NotePopoverDeletionMutation);
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -92,7 +88,9 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
         id,
       },
       updater: (store) => {
-        if (paginationOptions) deleteNode(store, 'Pagination_notes', paginationOptions, note.id);
+        if (paginationOptions) {
+          deleteNode(store, 'Pagination_notes', paginationOptions, note.id);
+        }
       },
       onCompleted: () => {
         setDeleting(false);

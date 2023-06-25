@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import Alert from '@mui/material/Alert';
@@ -13,13 +13,14 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import { MoreVertOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { Theme } from '../../../../components/Theme';
 import { ExternalReferencePopoverEditionQuery$data } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
+import { deleteNodeFromId } from '../../../../utils/store';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -61,72 +62,70 @@ const externalReferenceEditionQuery = graphql`
 
 interface ExternalReferencePopoverProps {
   id: string;
+  objectId?: string;
   handleRemove: (() => void) | undefined;
   isExternalReferenceAttachment?: boolean;
 }
 
 const ExternalReferencePopover: FunctionComponent<
 ExternalReferencePopoverProps
-> = ({ id, handleRemove, isExternalReferenceAttachment }) => {
+> = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const history = useHistory();
-
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
+  const [commit] = useMutation(externalReferencePopoverDeletionMutation);
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
-
   const handleOpenUpdate = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   const handleCloseUpdate = () => {
     setDisplayEdit(false);
   };
-
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
   };
-
   const handleCloseDelete = () => {
     setDisplayDelete(false);
   };
-
   const submitDelete = () => {
     setDeleting(true);
-    commitMutation({
-      mutation: externalReferencePopoverDeletionMutation,
+    commit({
       variables: {
         id,
       },
-      updater: undefined,
+      updater: (store) => {
+        if (handleRemove && objectId) {
+          deleteNodeFromId(
+            store,
+            objectId,
+            'Pagination_externalReferences',
+            undefined,
+            id,
+          );
+        }
+      },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
         if (handleRemove) {
           handleCloseDelete();
         } else {
-          history.push('/dashboard/analysis/external_references');
+          navigate('/dashboard/analysis/external_references');
         }
       },
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      onError: undefined,
-      setSubmitting: undefined,
     });
   };
-
   return (
     <span className={classes.container}>
       <IconButton

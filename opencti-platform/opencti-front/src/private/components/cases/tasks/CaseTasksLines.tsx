@@ -172,9 +172,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
     linesQuery: caseTasksLinesQuery,
     linesFragment: caseTasksLinesFragment,
   });
-
   const { count: _, ...tasksFilters } = paginationOptions;
-
   return (
     <div style={{ height: '100%' }}>
       <Typography
@@ -319,6 +317,8 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             dataList={data?.tasks?.edges ?? []}
             LineComponent={CaseTasksLine}
             isLoading={() => false}
+            entityId={caseId}
+            paginationOptions={tasksFilters}
           />
         </ListLines>
       </Paper>

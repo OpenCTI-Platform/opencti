@@ -280,6 +280,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                               <ExternalReferencePopover
                                 id={externalReference.id}
                                 isExternalReferenceAttachment={isFileAttached}
+                                objectId={stixCoreRelationshipId}
                                 handleRemove={this.handleOpenDialog.bind(
                                   this,
                                   externalReferenceEdge,

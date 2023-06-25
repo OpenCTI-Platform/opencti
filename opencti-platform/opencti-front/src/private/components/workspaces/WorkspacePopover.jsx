@@ -13,6 +13,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import PropTypes from 'prop-types';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import { workspaceEditionQuery } from './WorkspaceEdition';
@@ -21,6 +22,7 @@ import Loader from '../../../components/Loader';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/hooks/useGranted';
 import Transition from '../../../components/Transition';
+import { deleteNode } from '../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -45,16 +47,15 @@ const WorkspacePopoverDeletionMutation = graphql`
   }
 `;
 
-const WorkspacePopover = ({ workspace }) => {
+const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const { id, type } = workspace;
-  const history = useHistory();
+  const navigate = useNavigate();
   const classes = useStyles();
   const { t } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const handleOpenDelete = () => {
@@ -63,25 +64,31 @@ const WorkspacePopover = ({ workspace }) => {
   };
   const handleCloseDelete = () => setDisplayDelete(false);
   const [commit] = useMutation(WorkspacePopoverDeletionMutation);
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
       variables: { id },
+      updater: (store) => {
+        if (paginationOptions) {
+          deleteNode(store, 'Pagination_workspaces', paginationOptions, id);
+        }
+      },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        history.push(`/dashboard/workspaces/${type}s`);
+        if (paginationOptions) {
+          handleCloseDelete();
+        } else {
+          navigate(`/dashboard/workspaces/${type}s`);
+        }
       },
     });
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
   const handleCloseEdit = () => setDisplayEdit(false);
-
   const userCanManage = workspace.currentUserAccessRight === 'admin';
   const userCanEdit = userCanManage || workspace.currentUserAccessRight === 'edit';
   if (!userCanEdit) {
@@ -154,6 +161,7 @@ const WorkspacePopover = ({ workspace }) => {
 
 WorkspacePopover.propTypes = {
   workspace: PropTypes.object,
+  paginationOptions: PropTypes.object,
 };
 
 export default WorkspacePopover;

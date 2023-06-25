@@ -62,7 +62,6 @@ export const insertNode = (
 
 export const deleteNodeFromId = (store, containerId, key, filters, id) => {
   const record = store.get(containerId);
-
   // Connections cannot use count as a filter because we NEED to update the count when we remove new elements
   const params = { ...filters };
   delete params.count;
@@ -81,7 +80,6 @@ export const deleteNode = (store, key, filters, id) => {
 
 export const deleteNodeFromEdge = (store, path, rootId, deleteId, params) => {
   const node = store.get(rootId);
-
   const records = node.getLinkedRecord(path, params);
   const edges = records.getLinkedRecords('edges');
   const newEdges = filter(

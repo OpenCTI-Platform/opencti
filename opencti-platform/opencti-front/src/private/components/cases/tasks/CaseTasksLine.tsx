@@ -12,6 +12,7 @@ import { tasksDataColumns } from './TasksLine';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';
 import TaskPopover from './TaskPopover';
+import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -85,9 +86,15 @@ const CaseTaskFragment = graphql`
 
 interface CaseTasksLineProps {
   node: CaseTasksLine_data$key;
+  entityId?: string;
+  paginationOptions: CaseTasksLinesQuery$variables;
 }
 
-const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({ node }) => {
+const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
+  node,
+  entityId,
+  paginationOptions,
+}) => {
   const classes = useStyles();
   const { fld } = useFormatter();
   const task = useFragment(CaseTaskFragment, node);
@@ -118,7 +125,11 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({ node }) => {
         }
       />
       <ListItemSecondaryAction>
-        <TaskPopover id={task.id} />
+        <TaskPopover
+          id={task.id}
+          objectId={entityId}
+          paginationOptions={paginationOptions}
+        />
       </ListItemSecondaryAction>
     </ListItem>
   );

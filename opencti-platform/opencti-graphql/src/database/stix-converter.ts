@@ -628,6 +628,8 @@ const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote =>
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...note.extensions[STIX_EXT_OCTI],
+        extension_type: 'property-extension',
+        content_mapping: instance.content_mapping,
         object_refs_inferred: convertObjectReferences(instance, true),
       })
     }
@@ -645,6 +647,9 @@ const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.Sti
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...observedData.extensions[STIX_EXT_OCTI],
+        extension_type: 'property-extension',
+        content: instance.content,
+        content_mapping: instance.content_mapping,
         object_refs_inferred: convertObjectReferences(instance, true),
       })
     }
@@ -662,6 +667,9 @@ const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpin
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...opinion.extensions[STIX_EXT_OCTI],
+        extension_type: 'property-extension',
+        content: instance.content,
+        content_mapping: instance.content_mapping,
         object_refs_inferred: convertObjectReferences(instance, true),
       })
     }

@@ -200,28 +200,54 @@ export interface StixContainer extends StixDomainObject {
 
 // Note Specific Properties
 // abstract, content, authors, object_refs
+export interface StixNoteExtension extends StixOpenctiExtension {
+  content_mapping: string;
+  object_refs_inferred?: Array<StixId>; // optional
+}
+
 export interface StixNote extends StixContainer {
   abstract: string
   content: string
   authors: Array<string>
   note_types: Array<string>
   likelihood: number
+  extensions: {
+    [STIX_EXT_OCTI]: StixNoteExtension;
+  };
 }
 
 // Observed Data Specific Properties
 // first_observed, last_observed, number_observed, objects, object_refs
+export interface StixObservedDataExtension extends StixOpenctiExtension {
+  content: string;
+  content_mapping: string;
+  object_refs_inferred?: Array<StixId>; // optional
+}
+
 export interface StixObservedData extends StixContainer {
   first_observed: StixDate
   last_observed: StixDate
   number_observed: number
+  extensions: {
+    [STIX_EXT_OCTI]: StixObservedDataExtension;
+  };
 }
 
 // Opinion Specific Properties
 // explanation, authors, opinion, object_refs
+export interface StixOpinionExtension extends StixOpenctiExtension {
+  content: string;
+  content_mapping: string;
+  object_refs_inferred?: Array<StixId>; // optional
+}
+
 export interface StixOpinion extends StixContainer {
   explanation: string // optional
   authors: Array<string> // optional
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree'
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpinionExtension;
+  };
 }
 
 // Report Specific Properties

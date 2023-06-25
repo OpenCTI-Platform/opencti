@@ -7,7 +7,8 @@ import StixCoreObjectOrStixCoreRelationshipNotesCards, {
   stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
 } from './StixCoreObjectOrStixCoreRelationshipNotesCards';
 import {
-  NotesOrdering, OrderingMode,
+  NotesOrdering,
+  OrderingMode,
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 
@@ -15,7 +16,11 @@ interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
   marginTop?: number;
   isRelationship?: boolean;
-  defaultMarkings?: { id: string; definition: string | null, x_opencti_color: string | null }[];
+  defaultMarkings?: {
+    id: string;
+    definition: string | null;
+    x_opencti_color: string | null;
+  }[];
 }
 
 const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<

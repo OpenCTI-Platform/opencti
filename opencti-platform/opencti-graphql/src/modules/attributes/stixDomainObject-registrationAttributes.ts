@@ -122,6 +122,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       label: 'Note types'
     },
     { name: 'likelihood', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Likelihood' },
+    { name: 'content_mapping', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
     {
@@ -148,11 +149,15 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       upsert: false,
       label: 'Number observed'
     },
+    { name: 'content', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'content_mapping', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_TYPE_CONTAINER_OPINION]: [
     { name: 'explanation', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'authors', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'opinion', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'content', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'content_mapping', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_TYPE_CONTAINER_REPORT]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },

@@ -25,6 +25,8 @@ import TasksEditionContainer, {
   tasksEditionQuery,
 } from './TasksEditionContainer';
 import { TasksEditionContainerQuery } from './__generated__/TasksEditionContainerQuery.graphql';
+import { deleteNode } from '../../../../utils/store';
+import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -49,38 +51,38 @@ const taskPopoverDeletionMutation = graphql`
   }
 `;
 
-const TaskPopover = ({ id }: { id: string }) => {
+const TaskPopover = ({
+  id,
+  objectId,
+  paginationOptions,
+}: {
+  id: string;
+  objectId?: string;
+  paginationOptions?: CaseTasksLinesQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const navigate = useNavigate();
-
-  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
+  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-
   const [commit] = useMutation(taskPopoverDeletionMutation);
   const queryRef = useQueryLoading<TasksEditionContainerQuery>(
     tasksEditionQuery,
     { id },
   );
-
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
-    setAnchorEl(undefined);
+    setAnchorEl(null);
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   const handleCloseEdit = () => {
     setDisplayEdit(false);
   };
-
   const {
     deleting,
     handleOpenDelete,
@@ -88,21 +90,28 @@ const TaskPopover = ({ id }: { id: string }) => {
     handleCloseDelete,
     setDeleting,
   } = useDeletion({ handleClose });
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
       variables: {
         id,
       },
+      updater: (store) => {
+        if (paginationOptions) {
+          deleteNode(store, 'Pagination_tasks', paginationOptions, id);
+        }
+      },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/cases/tasks');
+        if (objectId) {
+          handleCloseDelete();
+        } else {
+          navigate('/dashboard/cases/tasks');
+        }
       },
     });
   };
-
   return (
     <div className={classes.container}>
       <IconButton

@@ -6,7 +6,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import {
   DashboardCustomizeOutlined,
-  KeyboardArrowRightOutlined,
   TravelExploreOutlined,
 } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
@@ -16,6 +15,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import MoreVert from '@mui/icons-material/MoreVert';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { useFormatter } from '../../../components/i18n';
+import WorkspacePopover from './WorkspacePopover';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const WorkspaceLineComponent = ({ dataColumns, node }) => {
+const WorkspaceLineComponent = ({ dataColumns, node, paginationOptions }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
   return (
@@ -111,7 +111,10 @@ const WorkspaceLineComponent = ({ dataColumns, node }) => {
         }
       />
       <ListItemSecondaryAction>
-        <KeyboardArrowRightOutlined />
+        <WorkspacePopover
+          workspace={node}
+          paginationOptions={paginationOptions}
+        />
       </ListItemSecondaryAction>
     </ListItem>
   );
@@ -131,6 +134,7 @@ export const WorkspaceLine = createFragmentContainer(WorkspaceLineComponent, {
         name
         entity_type
       }
+      currentUserAccessRight
     }
   `,
 });
