@@ -31,7 +31,7 @@ import {
   CampaignCreationMutation,
   CampaignCreationMutation$variables,
 } from './__generated__/CampaignCreationMutation.graphql';
-import { CampaignsLinesPaginationQuery$variables } from './__generated__/CampaignsLinesPaginationQuery.graphql';
+import { CampaignsCardsPaginationQuery$variables } from './__generated__/CampaignsCardsPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -92,14 +92,14 @@ const campaignMutation = graphql`
 const CAMPAIGN_TYPE = 'Campaign';
 
 interface CampaignAddInput {
-  name: string
-  description: string
-  confidence: number | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  confidence: number | undefined;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface CampaignFormProps {
@@ -128,7 +128,10 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
-  const campaignValidator = useSchemaCreationValidation(CAMPAIGN_TYPE, basicShape);
+  const campaignValidator = useSchemaCreationValidation(
+    CAMPAIGN_TYPE,
+    basicShape,
+  );
 
   const [commit] = useMutation<CampaignCreationMutation>(campaignMutation);
 
@@ -169,19 +172,16 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    CAMPAIGN_TYPE,
-    {
-      name: inputValue ?? '',
-      confidence: defaultConfidence,
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues(CAMPAIGN_TYPE, {
+    name: inputValue ?? '',
+    confidence: defaultConfidence,
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik
@@ -276,7 +276,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
 const CampaignCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CampaignsLinesPaginationQuery$variables;
+  paginationOptions: CampaignsCardsPaginationQuery$variables;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();

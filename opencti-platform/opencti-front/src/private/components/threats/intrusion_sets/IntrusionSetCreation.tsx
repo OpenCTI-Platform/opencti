@@ -30,7 +30,7 @@ import {
   IntrusionSetCreationMutation,
   IntrusionSetCreationMutation$variables,
 } from './__generated__/IntrusionSetCreationMutation.graphql';
-import { IntrusionSetsLinesPaginationQuery$variables } from './__generated__/IntrusionSetsLinesPaginationQuery.graphql';
+import { IntrusionSetsCardsPaginationQuery$variables } from './__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -92,27 +92,29 @@ const intrusionSetMutation = graphql`
 const INTRUSION_SET_TYPE = 'Intrusion-Set';
 
 interface IntrusionSetAddInput {
-  name: string
-  description: string
-  confidence: number | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  confidence: number | undefined;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface IntrusionSetFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
   inputValue?: string;
 }
 
-export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> = ({
+export const IntrusionSetCreationForm: FunctionComponent<
+IntrusionSetFormProps
+> = ({
   updater,
   onReset,
   onCompleted,
@@ -132,11 +134,10 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
     basicShape,
   );
   const [commit] = useMutation<IntrusionSetCreationMutation>(intrusionSetMutation);
-  const onSubmit: FormikConfig<IntrusionSetAddInput>['onSubmit'] = (values, {
-    setSubmitting,
-    setErrors,
-    resetForm,
-  }) => {
+  const onSubmit: FormikConfig<IntrusionSetAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: IntrusionSetCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -170,19 +171,16 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
     });
   };
 
-  const initialValues = useDefaultValues(
-    INTRUSION_SET_TYPE,
-    {
-      name: '',
-      confidence: defaultConfidence,
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues(INTRUSION_SET_TYPE, {
+    name: '',
+    confidence: defaultConfidence,
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik
@@ -274,8 +272,10 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
   );
 };
 
-const IntrusionSetCreation = ({ paginationOptions }: {
-  paginationOptions: IntrusionSetsLinesPaginationQuery$variables
+const IntrusionSetCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: IntrusionSetsCardsPaginationQuery$variables;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();

@@ -5,7 +5,7 @@
 // Sighting = sighting_of_ref - sighting_of_type - where_sighted_refs - where_sighted_types
 export const STIX_EXT_OCTI = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
 
-// New SCOs supported by OCTI = CryptocurrencyWallet - CryptographicKey - Hostname - Text
+// New SCOs supported by OCTI = CryptocurrencyWallet - CryptographicKey - Hostname - Text - UserAgent
 // Attributes extensions
 // Global = labels - description
 // StixFile =  additional_names

@@ -25,7 +25,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
-import { ThreatActorsLinesPaginationQuery$variables } from './__generated__/ThreatActorsLinesPaginationQuery.graphql';
+import { ThreatActorsCardsPaginationQuery$variables } from './__generated__/ThreatActorsCardsPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import {
   ThreatActorCreationMutation,
@@ -93,15 +93,15 @@ const threatActorMutation = graphql`
 const THREAT_ACTOR_TYPE = 'Threat-Actor';
 
 interface ThreatActorAddInput {
-  name: string
-  threat_actor_types: string[]
-  confidence: number | undefined
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[],
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  threat_actor_types: string[];
+  confidence: number | undefined;
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface ThreatActorFormProps {
@@ -178,20 +178,17 @@ ThreatActorFormProps
     });
   };
 
-  const initialValues = useDefaultValues(
-    THREAT_ACTOR_TYPE,
-    {
-      name: inputValue ?? '',
-      threat_actor_types: [],
-      confidence: defaultConfidence,
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues(THREAT_ACTOR_TYPE, {
+    name: inputValue ?? '',
+    threat_actor_types: [],
+    confidence: defaultConfidence,
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik
@@ -294,7 +291,7 @@ ThreatActorFormProps
 const ThreatActorCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: ThreatActorsLinesPaginationQuery$variables;
+  paginationOptions: ThreatActorsCardsPaginationQuery$variables;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
