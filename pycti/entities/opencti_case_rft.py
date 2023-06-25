@@ -1,3 +1,4 @@
+import datetime
 import json
 import uuid
 
@@ -238,9 +239,11 @@ class CaseRft:
         """
 
     @staticmethod
-    def generate_id(name):
+    def generate_id(name, created):
         name = name.lower().strip()
-        data = {"name": name}
+        if isinstance(created, datetime.datetime):
+            created = created.isoformat()
+        data = {"name": name, "created": created}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "case-rft--" + id
@@ -267,11 +270,7 @@ class CaseRft:
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
             first = 500
-
-        self.opencti.log(
-            "info",
-            "Listing Case Rfts with filters " + json.dumps(filters) + ".",
-        )
+        LOGGER.info("Listing Case Rfts with filters " + json.dumps(filters) + ".")
         query = (
             """
                         query CaseRfts($filters: [CaseRftsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: CaseRftsOrdering, $orderMode: OrderingMode) {
@@ -556,7 +555,7 @@ class CaseRft:
             )
             return False
 
-        """
+    """
         Remove a Stix-Entity object to Case Rft object (object_refs)
 
         :param id: the id of the Case Rft
@@ -672,7 +671,7 @@ class CaseRft:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Case RFT {%s}.", id)
+            self.opencti.log("info", "Deleting Case RFT {%s}.", id)
             query = """
                  mutation CaseRFTDelete($id: ID!) {
                      stixDomainObjectEdit(id: $id) {
@@ -682,5 +681,5 @@ class CaseRft:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_case_rft] Missing parameters: id")
+            self.opencti.log("error", "[opencti_case_rft] Missing parameters: id")
             return None

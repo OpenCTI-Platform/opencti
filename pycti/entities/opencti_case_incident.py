@@ -1,8 +1,11 @@
+import datetime
 import json
 import uuid
 
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
+
+from pycti.entities import LOGGER
 
 
 class CaseIncident:
@@ -239,9 +242,11 @@ class CaseIncident:
         """
 
     @staticmethod
-    def generate_id(name):
+    def generate_id(name, created):
         name = name.lower().strip()
-        data = {"name": name}
+        if isinstance(created, datetime.datetime):
+            created = created.isoformat()
+        data = {"name": name, "created": created}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "case-incident--" + id
@@ -269,10 +274,7 @@ class CaseIncident:
         if get_all:
             first = 500
 
-        self.opencti.log(
-            "info",
-            "Listing Case Incidents with filters " + json.dumps(filters) + ".",
-        )
+        LOGGER.info("Listing Case Incidents with filters " + json.dumps(filters) + ".")
         query = (
             """
                 query CaseIncidents($filters: [CaseIncidentsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: CaseIncidentsOrdering, $orderMode: OrderingMode) {
