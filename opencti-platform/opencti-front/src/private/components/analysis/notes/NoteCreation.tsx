@@ -19,12 +19,14 @@ import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
@@ -112,17 +114,17 @@ export const noteCreationMutation = graphql`
 `;
 
 interface NoteAddInput {
-  created: Date | null
-  attribute_abstract: string
-  content: string
-  note_types: string[]
-  confidence: number | undefined
-  likelihood?: number
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  created: Date | null;
+  attribute_abstract: string;
+  content: string;
+  note_types: string[];
+  confidence: number | undefined;
+  likelihood?: number;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface NoteCreationProps {
@@ -215,22 +217,19 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues<NoteAddInput>(
-    NOTE_TYPE,
-    {
-      created: null,
-      attribute_abstract: '',
-      content: inputValue || '',
-      note_types: [],
-      confidence: defaultConfidence,
-      likelihood: 50,
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues<NoteAddInput>(NOTE_TYPE, {
+    created: null,
+    attribute_abstract: '',
+    content: inputValue || '',
+    note_types: [],
+    confidence: defaultConfidence,
+    likelihood: 50,
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik<NoteAddInput>
@@ -259,7 +258,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             style={{ marginTop: 20 }}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="content"
             label={t('Content')}
             fullWidth={true}
@@ -352,19 +351,15 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
     return insertNode(store, 'Pagination_notes', paginationOptions, key);
   };
-
   const renderClassic = () => {
     return (
       <div>
         <Fab
-          onClick={handleOpen}
+          onClick={() => setOpen(true)}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -377,13 +372,13 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
+          onClose={() => setOpen(false)}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={handleClose}
+              onClick={() => setOpen(false)}
               size="large"
               color="primary"
             >
@@ -395,8 +390,8 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
             <NoteCreationForm
               inputValue={inputValue}
               updater={updater}
-              onCompleted={handleClose}
-              onReset={handleClose}
+              onCompleted={() => setOpen(false)}
+              onReset={() => setOpen(false)}
             />
           </div>
         </Drawer>
@@ -407,21 +402,25 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab
-          onClick={handleOpen}
+          onClick={() => setOpen(true)}
           color="secondary"
           aria-label="Add"
           className={classes.createButtonContextual}
         >
           <Add />
         </Fab>
-        <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+        <Dialog
+          open={open}
+          onClose={() => setOpen(false)}
+          PaperProps={{ elevation: 1 }}
+        >
           <DialogTitle>{t('Create a note')}</DialogTitle>
           <DialogContent>
             <NoteCreationForm
               inputValue={inputValue}
               updater={updater}
-              onCompleted={handleClose}
-              onReset={handleClose}
+              onCompleted={() => setOpen(false)}
+              onReset={() => setOpen(false)}
             />
           </DialogContent>
         </Dialog>

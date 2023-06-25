@@ -198,8 +198,11 @@ const ThemeLight = (
               borderBottom: '2px solid #000000 !important',
             },
             '&:focus': {
-              borderBottom: `2px solid #${primary || '#007fff'} !important`,
+              borderBottom: `2px solid ${primary || '#007fff'} !important`,
             },
+          },
+          '.mde-preview .mde-preview-content a': {
+            color: `${primary || '#007fff'} !important`,
           },
           '.react-grid-placeholder': {
             backgroundColor: `${accent || '#c0dfff'} !important`,

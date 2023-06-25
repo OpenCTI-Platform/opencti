@@ -20,7 +20,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -198,7 +198,7 @@ class LocationCreation extends Component {
                     detectDuplicate={['City', 'Country', 'Region']}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -284,7 +284,7 @@ class LocationCreation extends Component {
                     detectDuplicate={['Organization', 'Individual']}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

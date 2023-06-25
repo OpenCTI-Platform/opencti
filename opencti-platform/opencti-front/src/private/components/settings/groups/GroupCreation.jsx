@@ -15,7 +15,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -176,7 +176,7 @@ class GroupCreation extends Component {
                     fullWidth={true}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

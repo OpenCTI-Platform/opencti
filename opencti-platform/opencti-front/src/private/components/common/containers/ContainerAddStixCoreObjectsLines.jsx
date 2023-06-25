@@ -12,8 +12,8 @@ import {
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  ContainerAddStixCoreObjectsLine,
   ContainerAddStixCoreObjecstLineDummy,
+  ContainerAddStixCoreObjectsLine,
 } from './ContainerAddStixCoreObjectsLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 import { insertNode } from '../../../../utils/store';

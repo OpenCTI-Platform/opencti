@@ -5,14 +5,16 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
-import { ArrowRightAlt, Edit, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
+import {
+  ArrowRightAlt,
+  Edit,
+  ExpandLessOutlined,
+  ExpandMoreOutlined,
+} from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
@@ -26,15 +28,16 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
-import StixCoreRelationshipEdition, { stixCoreRelationshipEditionDeleteMutation } from './StixCoreRelationshipEdition';
+import StixCoreRelationshipEdition, {
+  stixCoreRelationshipEditionDeleteMutation,
+} from './StixCoreRelationshipEdition';
 import { commitMutation } from '../../../../relay/environment';
 import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
-import StixCoreRelationshipExternalReferences
-  from '../../analysis/external_references/StixCoreRelationshipExternalReferences';
+import StixCoreRelationshipExternalReferences from '../../analysis/external_references/StixCoreRelationshipExternalReferences';
 import StixCoreRelationshipLatestHistory from './StixCoreRelationshipLatestHistory';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -44,10 +47,10 @@ import ItemCreator from '../../../../components/ItemCreator';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectKillChainPhasesView from '../stix_core_objects/StixCoreObjectKillChainPhasesView';
-import StixCoreObjectOrStixRelationshipLastContainers
-  from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixCoreObjectOrStixRelationshipLastContainers from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -420,18 +423,22 @@ class StixCoreRelationshipContainer extends Component {
                       >
                         {t('Description')}
                       </Typography>
-                      <Markdown
-                        remarkPlugins={[remarkGfm, remarkParse]}
-                        parserOptions={{ commonmark: true }}
-                        className="markdown"
-                      >
-                        {stixCoreRelationship.x_opencti_inferences !== null ? (
-                          <i>{t('Inferred knowledge')}</i>
-                        ) : (
-                          stixCoreRelationship.description
-                        )}
-                      </Markdown>
-                      <StixCoreObjectKillChainPhasesView killChainPhasesEdges={stixCoreRelationship.killChainPhases.edges}/>
+                      <MarkdownDisplay
+                        content={
+                          stixCoreRelationship.x_opencti_inferences !== null ? (
+                            <i>{t('Inferred knowledge')}</i>
+                          ) : (
+                            stixCoreRelationship.description
+                          )
+                        }
+                        remarkGfmPlugin={true}
+                        commonmark={true}
+                      />
+                      <StixCoreObjectKillChainPhasesView
+                        killChainPhasesEdges={
+                          stixCoreRelationship.killChainPhases.edges
+                        }
+                      />
                     </div>
                   </Grid>
                 </Grid>
@@ -707,15 +714,15 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         }
         workflowEnabled
         killChainPhases {
-            edges {
-                node {
-                    id
-                    entity_type
-                    kill_chain_name
-                    phase_name
-                    x_opencti_order
-                }
+          edges {
+            node {
+              id
+              entity_type
+              kill_chain_name
+              phase_name
+              x_opencti_order
             }
+          }
         }
         x_opencti_inferences {
           rule {

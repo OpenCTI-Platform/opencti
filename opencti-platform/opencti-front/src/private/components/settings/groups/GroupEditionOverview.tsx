@@ -5,7 +5,7 @@ import { pick } from 'ramda';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import SwitchField from '../../../../components/SwitchField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
@@ -105,7 +105,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               }
             />
             <Field
-              component={MarkDownField}
+              component={MarkdownField}
               name="description"
               label={t('Description')}
               fullWidth={true}

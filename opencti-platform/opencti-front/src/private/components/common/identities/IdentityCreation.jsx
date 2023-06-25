@@ -22,7 +22,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
@@ -205,7 +205,7 @@ class IdentityCreation extends Component {
                     detectDuplicate={['Organization', 'Individual']}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -325,7 +325,7 @@ class IdentityCreation extends Component {
                     detectDuplicate={['Organization', 'Individual']}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

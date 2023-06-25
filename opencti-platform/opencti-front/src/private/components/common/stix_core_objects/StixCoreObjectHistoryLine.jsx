@@ -1,17 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import Markdown from 'react-markdown';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import {
-  green,
-  pink,
   deepOrange,
   deepPurple,
-  yellow,
+  green,
   indigo,
-  teal,
+  pink,
   red,
+  teal,
+  yellow,
 } from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -19,12 +18,12 @@ import Badge from '@mui/material/Badge';
 import Avatar from '@mui/material/Avatar';
 import {
   AddOutlined,
+  DeleteOutlined,
   EditOutlined,
-  LinkOutlined,
-  LinkOffOutlined,
   HelpOutlined,
   LanguageOutlined,
-  DeleteOutlined,
+  LinkOffOutlined,
+  LinkOutlined,
 } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -33,8 +32,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -43,6 +40,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -325,23 +323,19 @@ class StixCoreObjectHistoryLineComponent extends Component {
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
-                <Markdown
-                  remarkPlugins={[remarkGfm, remarkParse]}
-                  parserOptions={{ commonmark: true }}
-                  className="markdown"
-                >
-                  {`\`${node.user.name}\` ${node.context_data.message}`}
-                </Markdown>
+                <MarkdownDisplay
+                  content={`\`${node.user.name}\` ${node.context_data.message}`}
+                  remarkGfmPlugin={true}
+                  commonmark={true}
+                />
               }
             >
               <div className={classes.description}>
-                <Markdown
-                  remarkPlugins={[remarkGfm, remarkParse]}
-                  parserOptions={{ commonmark: true }}
-                  className="markdown"
-                >
-                  {`\`${node.user.name}\` ${node.context_data.message}`}
-                </Markdown>
+                <MarkdownDisplay
+                  content={`\`${node.user.name}\` ${node.context_data.message}`}
+                  remarkGfmPlugin={true}
+                  commonmark={true}
+                />
               </div>
             </Tooltip>
             {node.context_data.external_references
@@ -425,13 +419,11 @@ class StixCoreObjectHistoryLineComponent extends Component {
         >
           <DialogTitle>{t('Commit message')}</DialogTitle>
           <DialogContent>
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkParse]}
-              parserOptions={{ commonmark: true }}
-              className="markdown"
-            >
-              {node.context_data.commit}
-            </Markdown>
+            <MarkdownDisplay
+              content={node.context_data.commit}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />
           </DialogContent>
           <DialogActions>
             <Button color="primary" onClick={this.handleClose.bind(this)}>

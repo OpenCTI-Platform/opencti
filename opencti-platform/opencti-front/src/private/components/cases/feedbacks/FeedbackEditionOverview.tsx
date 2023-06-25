@@ -15,7 +15,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import RatingField from '../../../../components/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -270,7 +270,7 @@ FeedbackEditionOverviewProps
             }
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}

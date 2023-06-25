@@ -13,15 +13,14 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import makeStyles from '@mui/styles/makeStyles';
-import Markdown from 'react-markdown';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
-import { truncate } from '../../../../utils/String';
 import { itemColor } from '../../../../utils/Colors';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -316,9 +315,10 @@ const StixCoreObjectsTimeline = ({
                               {defaultValue(stixCoreObject)}
                             </Typography>
                             <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                              <Markdown>
-                                {truncate(stixCoreObject.description, 150)}
-                              </Markdown>
+                              <MarkdownDisplay
+                                content={stixCoreObject.description}
+                                limit={150}
+                              />
                             </div>
                           </Paper>
                         </TimelineContent>

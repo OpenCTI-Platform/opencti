@@ -16,7 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { Theme } from '../../../../components/Theme';
 import { CountriesLinesPaginationQuery$variables } from './__generated__/CountriesLinesPaginationQuery.graphql';
 import { insertNode } from '../../../../utils/store';
@@ -203,7 +203,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
           detectDuplicate={['Country']}
         />
         <Field
-          component={MarkDownField}
+          component={MarkdownField}
           name="description"
           label={t('Description')}
           fullWidth={true}

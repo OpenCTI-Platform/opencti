@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = () => ({
   paper: {
@@ -49,13 +47,11 @@ class SystemDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Contact information')}
               </Typography>
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                parserOptions={{ commonmark: true }}
-                className="markdown"
-              >
-                {system.contact_information}
-              </Markdown>
+              <MarkdownDisplay
+                content={system.contact_information}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
             </Grid>
           </Grid>
         </Paper>

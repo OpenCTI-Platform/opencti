@@ -9,7 +9,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -347,7 +347,7 @@ const IndicatorEditionOverviewComponent = ({
             }
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}

@@ -9,7 +9,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import StatusField from '../../common/form/StatusField';
 import {
   convertCreatedBy,
@@ -220,7 +220,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             }
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}

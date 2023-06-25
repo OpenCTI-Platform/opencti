@@ -1,12 +1,9 @@
 import React, { FunctionComponent, useState } from 'react';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Drawer from '@mui/material/Drawer';
-import Markdown from 'react-markdown';
 import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -20,6 +17,7 @@ import { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { isNotEmptyField } from '../../../../../utils/utils';
+import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -118,55 +116,100 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
-  const isHistoryUpdate = data.entity_type === 'History' && data.event_type === 'update' && isNotEmptyField(data.context_data?.entity_name);
-  const message = `\`${data.user?.name}\` ${data.context_data?.message} ${isHistoryUpdate ? (`for \`${data.context_data?.entity_name}\` (${data.context_data?.entity_type})`) : ''}`;
+  const isHistoryUpdate = data.entity_type === 'History'
+    && data.event_type === 'update'
+    && isNotEmptyField(data.context_data?.entity_name);
+  const message = `\`${data.user?.name}\` ${data.context_data?.message} ${
+    isHistoryUpdate
+      ? `for \`${data.context_data?.entity_name}\` (${data.context_data?.entity_type})`
+      : ''
+  }`;
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
   return (
     <>
-      { selectedLog && <Drawer open={true} anchor="right" elevation={1}
-          sx={{ zIndex: 1202 }} classes={{ paper: classes.drawerPaper }} onClose={() => setSelectedLog(null)}>
-        <div className={classes.header}>
-          <IconButton aria-label="Close" className={classes.closeButton} onClick={() => setSelectedLog(null)}
-              size="large" color="primary">
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>{t('Activity raw detail')}</Typography>
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <div>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Message')}
+      {selectedLog && (
+        <Drawer
+          open={true}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={() => setSelectedLog(null)}
+        >
+          <div className={classes.header}>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={() => setSelectedLog(null)}
+              size="large"
+              color="primary"
+            >
+              <Close fontSize="small" color="primary" />
+            </IconButton>
+            <Typography variant="h6" classes={{ root: classes.title }}>
+              {t('Activity raw detail')}
             </Typography>
-            <Markdown remarkPlugins={[remarkGfm, remarkParse]} className="markdown">{message}</Markdown>
+            <div className="clearfix" />
           </div>
-          {data.context_uri && <div style={{ marginTop: 16 }}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Instance context')}
-            </Typography>
-            <Link to={data.context_uri}>View the element</Link>
-          </div>}
-          <div style={{ marginTop: 16 }}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Raw data')}
-            </Typography>
-            <pre>{data.raw_data}</pre>
+          <div className={classes.container}>
+            <div>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Message')}
+              </Typography>
+              <MarkdownDisplay
+                content={message}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
+            </div>
+            {data.context_uri && (
+              <div style={{ marginTop: 16 }}>
+                <Typography variant="h4" gutterBottom={true}>
+                  {t('Instance context')}
+                </Typography>
+                <Link to={data.context_uri}>View the element</Link>
+              </div>
+            )}
+            <div style={{ marginTop: 16 }}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Raw data')}
+              </Typography>
+              <pre>{data.raw_data}</pre>
+            </div>
           </div>
-        </div>
-      </Drawer>}
-      <ListItem classes={{ root: classes.item }} divider={true} button={true} onClick={() => setSelectedLog(data.id)}>
+        </Drawer>
+      )}
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        onClick={() => setSelectedLog(data.id)}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon color={color} type={data.context_data?.entity_type ?? data.event_type} />
+          <ItemIcon
+            color={color}
+            type={data.context_data?.entity_type ?? data.event_type}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.timestamp.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.timestamp.width }}
+              >
                 <span style={{ color }}>{fldt(data.timestamp)}</span>
               </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.message.width }}
+              >
                 <span style={{ color }}>
-                <Markdown remarkPlugins={[remarkGfm, remarkParse]} className="markdown">{message}</Markdown>
+                  <MarkdownDisplay
+                    content={message}
+                    remarkGfmPlugin={true}
+                    commonmark={true}
+                  />
                 </span>
               </div>
             </div>
@@ -191,7 +234,10 @@ export const AuditLineDummy = ({
       <ListItemText
         primary={
           <div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.timestamp.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.timestamp.width }}
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -199,7 +245,10 @@ export const AuditLineDummy = ({
                 height="100%"
               />
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.message.width }}
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"

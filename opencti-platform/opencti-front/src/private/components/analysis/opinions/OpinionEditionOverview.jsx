@@ -7,7 +7,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -139,7 +139,7 @@ const OpinionEditionOverviewComponent = (props) => {
               editContext={context}
             />
             <Field
-              component={MarkDownField}
+              component={MarkdownField}
               name="explanation"
               label={t('Explanation')}
               fullWidth={true}

@@ -18,7 +18,7 @@ import TextField from '../../../../components/TextField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
@@ -228,7 +228,7 @@ ThreatActorFormProps
             containerStyle={{ width: '100%', marginTop: 20 }}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}

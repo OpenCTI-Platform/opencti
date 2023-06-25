@@ -27,7 +27,7 @@ import { KNOWLEDGE_KNPARTICIPATE } from '../../../../utils/hooks/useGranted';
 import AddNotes from './AddNotes';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -304,7 +304,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
               }) => (
                 <Form style={{ width: '100%' }}>
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="content"
                     label={t('Content')}
                     fullWidth={true}

@@ -18,7 +18,7 @@ import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
@@ -211,7 +211,7 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
             containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}

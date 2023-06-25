@@ -10,7 +10,7 @@ import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { hasKillChainPhase } from '../../../../utils/Relation';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
@@ -284,7 +284,7 @@ const StixCoreRelationshipCreationForm = ({
               }}
             />
             <Field
-              component={MarkDownField}
+              component={MarkdownField}
               name="description"
               label={t('Description')}
               fullWidth={true}

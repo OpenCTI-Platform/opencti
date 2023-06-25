@@ -49,6 +49,8 @@ const RichTextField = (props) => {
   const { t } = useFormatter();
   const [field, meta] = useField(name);
   const [fullScreen, setFullScreen] = useState(false);
+  const [externalLink, setExternalLink] = useState(false);
+  const [displayExternalLink, setDisplayExternalLink] = useState(undefined);
   const internalOnFocus = () => {
     if (typeof onFocus === 'function') {
       onFocus(name);
@@ -135,39 +137,41 @@ const RichTextField = (props) => {
               onFocus={internalOnFocus}
               disabled={disabled}
             />
-            {!R.isNil(meta.error) && (
-              <FormHelperText error={true}>{meta.error}</FormHelperText>
-            )}
           </div>
+          {!R.isNil(meta.error) && (
+            <FormHelperText error={true}>{meta.error}</FormHelperText>
+          )}
           <DialogActions>
             <Button onClick={() => setFullScreen(false)}>{t('Close')}</Button>
           </DialogActions>
         </Dialog>
       ) : (
-        <CKEditor
-          editor={Editor}
-          onReady={(editor) => {
-            editorReference = editor;
-            editorReference.model.document.selection.on(
-              'change',
-              internalOnSelect,
-            );
-          }}
-          config={{
-            width: '100%',
-            language: 'en',
-            image: {
-              resizeUnit: 'px',
-            },
-          }}
-          data={field.value || ''}
-          onChange={(event, editor) => {
-            setFieldValue(name, editor.getData());
-          }}
-          onBlur={internalOnBlur}
-          onFocus={internalOnFocus}
-          disabled={disabled}
-        />
+        <>
+          <CKEditor
+            editor={Editor}
+            onReady={(editor) => {
+              editorReference = editor;
+              editorReference.model.document.selection.on(
+                'change',
+                internalOnSelect,
+              );
+            }}
+            config={{
+              width: '100%',
+              language: 'en',
+              image: {
+                resizeUnit: 'px',
+              },
+            }}
+            data={field.value || ''}
+            onChange={(event, editor) => {
+              setFieldValue(name, editor.getData());
+            }}
+            onBlur={internalOnBlur}
+            onFocus={internalOnFocus}
+            disabled={disabled}
+          />
+        </>
       )}
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>

@@ -15,7 +15,7 @@ import * as Yup from 'yup';
 import { useHistory } from 'react-router-dom';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -30,7 +30,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
-import { CaseRfiAddInput, CaseRfiCreationCaseMutation } from './__generated__/CaseRfiCreationCaseMutation.graphql';
+import {
+  CaseRfiAddInput,
+  CaseRfiCreationCaseMutation,
+} from './__generated__/CaseRfiCreationCaseMutation.graphql';
 import { CaseRfiLinesCasesPaginationQuery$variables } from './__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
@@ -92,17 +95,17 @@ const caseRfiMutation = graphql`
 `;
 
 interface FormikCaseRfiAddInput {
-  name: string
-  confidence: number | undefined
-  description: string
+  name: string;
+  confidence: number | undefined;
+  description: string;
   content: string;
-  file: File | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectAssignee: Option[]
-  objectLabel: Option[]
-  externalReferences: Option[]
-  created: Date | null
+  file: File | undefined;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectAssignee: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  created: Date | null;
   information_types: string[];
   severity: string;
   priority: string;
@@ -140,7 +143,10 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const caseRfiValidator = useSchemaCreationValidation(CASE_RFI_TYPE, basicShape);
+  const caseRfiValidator = useSchemaCreationValidation(
+    CASE_RFI_TYPE,
+    basicShape,
+  );
   const [commit] = useMutation<CaseRfiCreationCaseMutation>(caseRfiMutation);
   const onSubmit: FormikConfig<FormikCaseRfiAddInput>['onSubmit'] = (
     values,
@@ -187,30 +193,27 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues<FormikCaseRfiAddInput>(
-    CASE_RFI_TYPE,
-    {
-      name: '',
-      confidence: defaultConfidence,
-      description: '',
-      content: '',
-      severity: '',
-      priority: '',
-      caseTemplates: [],
-      created: null,
-      information_types: [],
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectAssignee: [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues<FormikCaseRfiAddInput>(CASE_RFI_TYPE, {
+    name: '',
+    confidence: defaultConfidence,
+    description: '',
+    content: '',
+    severity: '',
+    priority: '',
+    caseTemplates: [],
+    created: null,
+    information_types: [],
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectAssignee: [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik<FormikCaseRfiAddInput>
-    initialValues={initialValues}
+      initialValues={initialValues}
       validationSchema={caseRfiValidator}
       onSubmit={onSubmit}
       onReset={onReset}
@@ -266,7 +269,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}
@@ -393,6 +396,7 @@ const CaseRfiCreation = ({
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        disableEnforceFocus={true}
       >
         <div className={classes.header}>
           <IconButton

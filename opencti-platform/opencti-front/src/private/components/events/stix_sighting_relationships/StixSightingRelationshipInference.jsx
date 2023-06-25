@@ -6,10 +6,7 @@ import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
-import Markdown from 'react-markdown';
 import { withRouter } from 'react-router-dom';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import {
   buildGraphData,
@@ -19,6 +16,7 @@ import {
 } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { isEmptyField } from '../../../../utils/utils';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = () => ({
   container: {
@@ -75,24 +73,51 @@ class StixSightingRelationshipInference extends Component {
   }
 
   render() {
-    const { t, classes, inference, theme, stixSightingRelationship, paddingRight } = this.props;
+    const {
+      t,
+      classes,
+      inference,
+      theme,
+      stixSightingRelationship,
+      paddingRight,
+    } = this.props;
     const width = window.innerWidth - (paddingRight ? 450 : 250);
     const stixRelationship = { ...stixSightingRelationship };
     // Complete the relationship if needed
     if (isEmptyField(stixRelationship.from)) {
-      stixRelationship.from = { id: stixSightingRelationship.fromId, name: 'Restricted', entity_type: stixSightingRelationship.fromType, parent_types: [] };
+      stixRelationship.from = {
+        id: stixSightingRelationship.fromId,
+        name: 'Restricted',
+        entity_type: stixSightingRelationship.fromType,
+        parent_types: [],
+      };
     }
     if (isEmptyField(stixRelationship.to)) {
-      stixRelationship.to = { id: stixSightingRelationship.toId, name: 'Restricted', relationship_type: stixSightingRelationship.toType, parent_types: [] };
+      stixRelationship.to = {
+        id: stixSightingRelationship.toId,
+        name: 'Restricted',
+        relationship_type: stixSightingRelationship.toType,
+        parent_types: [],
+      };
     }
     // Complete the explanations if needed
     const explanations = inference.explanation.map((ex) => {
       const data = { ...ex };
       if (isEmptyField(ex.from)) {
-        data.from = { id: ex.fromId, name: 'Restricted', entity_type: ex.fromType, parent_types: [] };
+        data.from = {
+          id: ex.fromId,
+          name: 'Restricted',
+          entity_type: ex.fromType,
+          parent_types: [],
+        };
       }
       if (isEmptyField(ex.to)) {
-        data.to = { id: ex.toId, name: 'Restricted', relationship_type: ex.toType, parent_types: [] };
+        data.to = {
+          id: ex.toId,
+          name: 'Restricted',
+          relationship_type: ex.toType,
+          parent_types: [],
+        };
       }
       return data;
     });
@@ -102,7 +127,10 @@ class StixSightingRelationshipInference extends Component {
       stixRelationship.from,
       stixRelationship.to,
       ...explanations.filter((n) => n !== null),
-      ...explanations.filter((n) => n !== null).map((n) => [n.from, n.to]).flat(),
+      ...explanations
+        .filter((n) => n !== null)
+        .map((n) => [n.from, n.to])
+        .flat(),
     ];
     const graphData = buildGraphData(graphObjects, [], t);
     return (
@@ -114,13 +142,10 @@ class StixSightingRelationshipInference extends Component {
         <Typography variant="h3" gutterBottom={true}>
           {t(inference.rule.name)}
         </Typography>
-        <Markdown
-          remarkPlugins={[remarkGfm, remarkParse]}
-          parserOptions={{ commonmark: true }}
-          className="markdown"
-        >
-          {inference.rule.description}
-        </Markdown>
+        <MarkdownDisplay
+          content={inference.rule.description}
+          commonmark={true}
+        />
         <ForceGraph2D
           ref={this.graph}
           width={width}

@@ -7,16 +7,13 @@ import { ChartTimeline, GraphOutline, VectorLink } from 'mdi-material-ui';
 import {
   AddTaskOutlined,
   AssistantOutlined,
-  ViewColumnOutlined,
   DifferenceOutlined,
+  ViewColumnOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { DialogTitle } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import Markdown from 'react-markdown';
 import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -30,11 +27,10 @@ import Slide from '@mui/material/Slide';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
-import { makeStyles, useTheme } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
-import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { truncate } from '../../../../utils/String';
 import {
   commitMutation,
@@ -49,6 +45,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -491,7 +488,6 @@ const ContainerHeader = (props) => {
     enableSuggestions,
     onApplied,
   } = props;
-  const theme = useTheme();
   const classes = useStyles();
   const { t, fd } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -931,14 +927,12 @@ const ContainerHeader = (props) => {
                             >
                               <ListItemText
                                 primary={
-                                  <Markdown
-                                    remarkPlugins={[remarkGfm, remarkParse]}
-                                    parserOptions={{ commonmark: true }}
-                                    components={MarkDownComponents(theme)}
-                                    className="markdown"
-                                  >
-                                    {t(`suggestion_${suggestion.type}`)}
-                                  </Markdown>
+                                  <MarkdownDisplay
+                                    content={t(`suggestion_${suggestion.type}`)}
+                                    remarkGfmPlugin={true}
+                                    commonmark={true}
+                                    markdownComponents={true}
+                                  />
                                 }
                               />
                               <Select

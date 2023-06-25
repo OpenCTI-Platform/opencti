@@ -3,7 +3,7 @@ import { graphql, useMutation } from 'react-relay';
 import React from 'react';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -59,7 +59,7 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
             onSubmit={onSubmit}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}

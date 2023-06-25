@@ -12,7 +12,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import {
   SubscriptionAvatars,
@@ -394,7 +394,7 @@ const StixDomainObjectEditionContainer = (props) => {
               )}
               {'description' in stixDomainObject && (
                 <Field
-                  component={MarkDownField}
+                  component={MarkdownField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

@@ -16,7 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
@@ -203,7 +203,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           detectDuplicate={['City']}
         />
         <Field
-          component={MarkDownField}
+          component={MarkdownField}
           name="description"
           label={t('Description')}
           fullWidth={true}

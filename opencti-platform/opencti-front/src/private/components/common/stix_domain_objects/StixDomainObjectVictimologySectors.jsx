@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
-import Markdown from 'react-markdown';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -19,9 +18,7 @@ import {
   LibraryBooksOutlined,
 } from '@mui/icons-material';
 import { AutoFix, FormatListGroup, RelationManyToMany } from 'mdi-material-ui';
-import { graphql, createRefetchContainer } from 'react-relay';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
+import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -44,6 +41,7 @@ import {
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -351,31 +349,36 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                     <FormatListGroup fontSize="small" />
                   </Tooltip>
                 </ToggleButton>
-                {!exportDisabled
-                  && <ToggleButton value="export" aria-label="export">
-                  <Tooltip title={t('Open export panel')}>
-                    <FileDownloadOutlined
-                      fontSize="small"
-                      color={openExports ? 'secondary' : 'primary'}
-                    />
-                  </Tooltip>
-                </ToggleButton>}
-                {exportDisabled
-                  && <Tooltip title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}>
-                    <span>
-                    <ToggleButton
-                      size="small"
-                      value="export"
-                      aria-label="export"
-                      disabled={true}
-                    >
+                {!exportDisabled && (
+                  <ToggleButton value="export" aria-label="export">
+                    <Tooltip title={t('Open export panel')}>
                       <FileDownloadOutlined
                         fontSize="small"
+                        color={openExports ? 'secondary' : 'primary'}
                       />
-                    </ToggleButton>
+                    </Tooltip>
+                  </ToggleButton>
+                )}
+                {exportDisabled && (
+                  <Tooltip
+                    title={`${
+                      t(
+                        'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                      ) + export_max_size
+                    })`}
+                  >
+                    <span>
+                      <ToggleButton
+                        size="small"
+                        value="export"
+                        aria-label="export"
+                        disabled={true}
+                      >
+                        <FileDownloadOutlined fontSize="small" />
+                      </ToggleButton>
                     </span>
                   </Tooltip>
-                }
+                )}
               </ToggleButtonGroup>
             </div>
           </div>
@@ -447,13 +450,11 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               // eslint-disable-next-line no-nested-ternary
                               stixCoreRelationship.description
                               && stixCoreRelationship.description.length > 0 ? (
-                                <Markdown
-                                  remarkPlugins={[remarkGfm, remarkParse]}
-                                  parserOptions={{ commonmark: true }}
-                                  className="markdown"
-                                >
-                                  {stixCoreRelationship.description}
-                                </Markdown>
+                                <MarkdownDisplay
+                                  content={stixCoreRelationship.description}
+                                  remarkGfmPlugin={true}
+                                  commonmark={true}
+                                />
                                 ) : (
                                   t('No description of this targeting')
                                 )
@@ -578,18 +579,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                           stixCoreRelationship.description
                                           && stixCoreRelationship.description
                                             .length > 0 ? (
-                                            <Markdown
-                                              remarkPlugins={[
-                                                remarkGfm,
-                                                remarkParse,
-                                              ]}
-                                              parserOptions={{
-                                                commonmark: true,
-                                              }}
-                                              className="markdown"
-                                            >
-                                              {stixCoreRelationship.description}
-                                            </Markdown>
+                                            <MarkdownDisplay
+                                              content={
+                                                stixCoreRelationship.description
+                                              }
+                                              remarkGfmPlugin={true}
+                                              commonmark={true}
+                                            ></MarkdownDisplay>
                                             ) : stixCoreRelationship.inferred ? (
                                             <i>
                                               {t('This relation is inferred')}

@@ -27,7 +27,7 @@ import {
 } from '../../../../utils/hooks/useEntitySettings';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import CommitMessage from '../form/CommitMessage';
 import RichTextField from '../../../../components/RichTextField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
@@ -350,7 +350,7 @@ const ContainerContentComponent = ({ containerData }) => {
               }) => (
                 <Form styke={{ margin: 0 }}>
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

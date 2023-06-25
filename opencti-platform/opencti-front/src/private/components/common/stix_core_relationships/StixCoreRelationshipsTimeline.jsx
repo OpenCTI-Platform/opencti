@@ -11,7 +11,6 @@ import { Link } from 'react-router-dom';
 import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
-import Markdown from 'react-markdown';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { defaultValue } from '../../../../utils/Graph';
@@ -19,9 +18,9 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { truncate } from '../../../../utils/String';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { itemColor } from '../../../../utils/Colors';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -1360,9 +1359,10 @@ const StixCoreRelationshipsTimeline = ({
                                 {defaultValue(remoteNode)}
                               </Typography>
                               <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                                <Markdown>
-                                  {truncate(remoteNode.description, 150)}
-                                </Markdown>
+                                <MarkdownDisplay
+                                  content={remoteNode.description}
+                                  limit={150}
+                                />
                               </div>
                             </Paper>
                           </TimelineContent>

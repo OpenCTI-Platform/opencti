@@ -8,7 +8,7 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import {
   convertCreatedBy,
   convertMarkings,
@@ -226,7 +226,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             }
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}
@@ -240,7 +240,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             }
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="x_opencti_threat_hunting"
             label={t('Threat hunting techniques')}
             fullWidth={true}

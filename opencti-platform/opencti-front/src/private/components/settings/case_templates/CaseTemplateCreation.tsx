@@ -12,7 +12,7 @@ import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
@@ -170,7 +170,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                   fullWidth={true}
                 />
                 <Field
-                  component={MarkDownField}
+                  component={MarkdownField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

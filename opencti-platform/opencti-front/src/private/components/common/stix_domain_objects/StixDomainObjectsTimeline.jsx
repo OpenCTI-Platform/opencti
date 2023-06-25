@@ -14,14 +14,13 @@ import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import { Link } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
-import Markdown from 'react-markdown';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
-import { truncate } from '../../../../utils/String';
 import { itemColor } from '../../../../utils/Colors';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -230,9 +229,10 @@ class StixDomainObjectsTimeline extends Component {
                               {defaultValue(stixDomainObject)}
                             </Typography>
                             <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                              <Markdown>
-                                {truncate(stixDomainObject.description, 150)}
-                              </Markdown>
+                              <MarkdownDisplay
+                                content={stixDomainObject.description}
+                                limit={150}
+                              />
                             </div>
                           </Paper>
                         </TimelineContent>

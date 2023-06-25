@@ -5,7 +5,7 @@ import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import {
@@ -258,7 +258,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}

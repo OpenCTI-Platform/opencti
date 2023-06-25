@@ -25,7 +25,7 @@ import { Option } from '../common/form/ReferenceField';
 import SwitchField from '../../../components/SwitchField';
 import TextField from '../../../components/TextField';
 import { Policies$key } from './__generated__/Policies.graphql';
-import MarkDownField from '../../../components/MarkDownField';
+import MarkdownField from '../../../components/MarkdownField';
 import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
 
 const useStyles = makeStyles(() => ({
@@ -346,7 +346,7 @@ const Policies: FunctionComponent = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Field
-                        component={MarkDownField}
+                        component={MarkdownField}
                         name="platform_login_message"
                         label={t('Platform login message')}
                         fullWidth
@@ -356,7 +356,7 @@ const Policies: FunctionComponent = () => {
                         variant="standard"
                       />
                       <Field
-                        component={MarkDownField}
+                        component={MarkdownField}
                         name="platform_consent_message"
                         label={t('Platform consent message')}
                         fullWidth
@@ -365,7 +365,7 @@ const Policies: FunctionComponent = () => {
                         variant="standard"
                       />
                       <Field
-                        component={MarkDownField}
+                        component={MarkdownField}
                         name="platform_consent_confirm_text"
                         label={t('Platform consent confirm text')}
                         fullWidth

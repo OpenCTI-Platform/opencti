@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import { Link } from 'react-router-dom';
-import Markdown from 'react-markdown';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -14,8 +13,6 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
@@ -34,6 +31,7 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -255,12 +253,10 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               {t('Abstract')}
             </Typography>
             {note.attribute_abstract && (
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                className="markdown"
-              >
-                {note.attribute_abstract}
-              </Markdown>
+              <MarkdownDisplay
+                content={note.attribute_abstract}
+                remarkGfmPlugin={true}
+              />
             )}
             <Typography
               variant="h3"
@@ -270,16 +266,15 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               {t('Content')}
             </Typography>
             {note.content && (
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                className="markdown"
-              >
-                {note.content}
-              </Markdown>
+              <MarkdownDisplay content={note.content} remarkGfmPlugin={true} />
             )}
           </Grid>
           <Grid item={true} xs={3}>
-            <StixCoreObjectLabelsView labels={note.objectLabel} id={note.id} entity_type={note.entity_type}/>
+            <StixCoreObjectLabelsView
+              labels={note.objectLabel}
+              id={note.id}
+              entity_type={note.entity_type}
+            />
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography
@@ -289,7 +284,10 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                 >
                   {t('Confidence level')}
                 </Typography>
-                <ItemConfidence confidence={note.confidence} entityType={note.entity_type} />
+                <ItemConfidence
+                  confidence={note.confidence}
+                  entityType={note.entity_type}
+                />
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography

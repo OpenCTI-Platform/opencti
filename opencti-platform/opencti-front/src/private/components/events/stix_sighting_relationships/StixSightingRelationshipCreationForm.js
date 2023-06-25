@@ -12,7 +12,7 @@ import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
@@ -278,7 +278,7 @@ const StixSightingRelationshipCreationForm = ({
               }}
             />
             <Field
-              component={MarkDownField}
+              component={MarkdownField}
               name="description"
               label={t('Description')}
               fullWidth={true}

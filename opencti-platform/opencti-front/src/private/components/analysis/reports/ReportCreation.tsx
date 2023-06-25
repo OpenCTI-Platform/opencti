@@ -19,7 +19,7 @@ import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -111,18 +111,18 @@ export const reportCreationMutation = graphql`
 const REPORT_TYPE = 'Report';
 
 interface ReportAddInput {
-  name: string
-  description: string
-  content: string
-  published: Date | null
-  confidence: number | undefined
-  report_types: string[]
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  objectAssignee: { value: string }[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  content: string;
+  published: Date | null;
+  confidence: number | undefined;
+  report_types: string[];
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  objectAssignee: { value: string }[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface ReportFormProps {
@@ -211,23 +211,20 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues<ReportAddInput>(
-    REPORT_TYPE,
-    {
-      name: inputValue ?? '',
-      published: null,
-      report_types: [],
-      confidence: defaultConfidence,
-      description: '',
-      content: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectAssignee: [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues<ReportAddInput>(REPORT_TYPE, {
+    name: inputValue ?? '',
+    published: null,
+    report_types: [],
+    confidence: defaultConfidence,
+    description: '',
+    content: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectAssignee: [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik<ReportAddInput>
@@ -268,7 +265,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}
@@ -368,13 +365,11 @@ const ReportCreation = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
   return (
     <div>
       <Fab
-        onClick={handleOpen}
+        onClick={() => setOpen(true)}
         color="secondary"
         aria-label="Add"
         className={classes.createButton}
@@ -387,13 +382,14 @@ const ReportCreation = ({
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
+        onClose={() => setOpen(false)}
+        disableEnforceFocus={true}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose}
+            onClick={() => setOpen(false)}
             size="large"
             color="primary"
           >
@@ -404,8 +400,8 @@ const ReportCreation = ({
         <div className={classes.container}>
           <ReportCreationForm
             updater={updater}
-            onCompleted={handleClose}
-            onReset={handleClose}
+            onCompleted={() => setOpen(false)}
+            onReset={() => setOpen(false)}
           />
         </div>
       </Drawer>

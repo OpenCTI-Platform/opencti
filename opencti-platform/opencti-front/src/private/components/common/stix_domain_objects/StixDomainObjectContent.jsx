@@ -15,9 +15,6 @@ import 'ckeditor5-custom-build/build/translations/zh-cn';
 import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import ReactMde from 'react-mde';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectContentFiles, {
@@ -35,6 +32,7 @@ import {
 import Loader from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.js`;
 
@@ -502,12 +500,11 @@ class StixDomainObjectContentComponent extends Component {
                   selectedTab={markdownSelectedTab}
                   onTabChange={this.onMarkdownChangeTab.bind(this)}
                   generateMarkdownPreview={(markdown) => Promise.resolve(
-                      <Markdown
-                        remarkPlugins={[remarkGfm, remarkParse]}
-                        parserOptions={{ commonmark: true }}
-                      >
-                        {markdown}
-                      </Markdown>,
+                      <MarkdownDisplay
+                        content={markdown}
+                        remarkGfmPlugin={true}
+                        commonmark={true}
+                      />,
                   )
                   }
                   l18n={{
