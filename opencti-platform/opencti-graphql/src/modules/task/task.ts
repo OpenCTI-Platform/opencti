@@ -1,6 +1,5 @@
-import { v4 as uuid } from 'uuid';
 import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { normalizeName } from '../../schema/identifier';
+import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectAssignee, objectOrganization } from '../../schema/stixRefRelationship';
 import convertCaseTaskToStix from './task-converter';
@@ -21,7 +20,7 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_TASK]: () => uuid(),
+      [ENTITY_TYPE_CONTAINER_TASK]: [{ src: NAME_FIELD }, { src: 'created' }],
     },
     resolvers: {
       name(data: object) {
