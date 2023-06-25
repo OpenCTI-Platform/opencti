@@ -1189,6 +1189,7 @@ class ToolBar extends Component {
       noWarning,
       deleteDisable,
       warning,
+      warningMessage,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -1485,7 +1486,7 @@ class ToolBar extends Component {
           )}
           {deleteDisable !== true && (
             <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-              <Tooltip title={t('Delete')}>
+              <Tooltip title={warningMessage ? warningMessage : t('Delete')}>
                 <span>
                   <IconButton
                     aria-label="delete"
@@ -2279,6 +2280,7 @@ ToolBar.propTypes = {
   type: PropTypes.string,
   handleCopy: PropTypes.func,
   warning: PropTypes.bool,
+  warningMessage: PropTypes.string,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);

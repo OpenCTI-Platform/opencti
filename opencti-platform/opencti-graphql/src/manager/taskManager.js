@@ -36,7 +36,6 @@ import { now } from '../utils/format';
 import {
   EVENT_TYPE_CREATE,
   INDEX_INTERNAL_OBJECTS,
-  isEmptyField,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -63,7 +62,6 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { promoteIndicatorToObservable } from '../domain/indicator';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
-import { creatorFromHistory } from '../domain/log';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_DELETE,

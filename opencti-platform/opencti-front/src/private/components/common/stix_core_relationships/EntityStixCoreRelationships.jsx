@@ -377,7 +377,9 @@ class EntityStixCoreRelationships extends Component {
                       paginationOptions={paginationOptions}
                       entityLink={entityLink}
                       entityId={entityId}
-                      dataColumns={this.buildColumnRelationships(platformModuleHelpers)}
+                      dataColumns={this.buildColumnRelationships(
+                        platformModuleHelpers,
+                      )}
                       initialLoading={props === null}
                       setNumberOfElements={this.setNumberOfElements.bind(this)}
                       onToggleEntity={this.handleToggleSelectEntity.bind(this)}
@@ -390,7 +392,9 @@ class EntityStixCoreRelationships extends Component {
                       data={props}
                       paginationOptions={paginationOptions}
                       entityLink={entityLink}
-                      dataColumns={this.buildColumnRelationships(platformModuleHelpers)}
+                      dataColumns={this.buildColumnRelationships(
+                        platformModuleHelpers,
+                      )}
                       initialLoading={props === null}
                       setNumberOfElements={this.setNumberOfElements.bind(this)}
                       onToggleEntity={this.handleToggleSelectEntity.bind(this)}
@@ -403,7 +407,9 @@ class EntityStixCoreRelationships extends Component {
                       data={props}
                       paginationOptions={paginationOptions}
                       entityLink={entityLink}
-                      dataColumns={this.buildColumnRelationships(platformModuleHelpers)}
+                      dataColumns={this.buildColumnRelationships(
+                        platformModuleHelpers,
+                      )}
                       initialLoading={props === null}
                       setNumberOfElements={this.setNumberOfElements.bind(this)}
                       onToggleEntity={this.handleToggleSelectEntity.bind(this)}
@@ -506,6 +512,7 @@ class EntityStixCoreRelationships extends Component {
       handleChangeView,
       currentView,
       enableNestedView,
+      t,
     } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -614,6 +621,10 @@ class EntityStixCoreRelationships extends Component {
                 this,
               )}
               variant="medium"
+              warning={true}
+              warningMessage={t(
+                'Be careful, you are about to delete the selected entities (not the relationships!).',
+              )}
             />
           </div>
         )}
