@@ -48,6 +48,11 @@ from .entities.opencti_threat_actor import ThreatActor
 from .entities.opencti_tool import Tool
 from .entities.opencti_vulnerability import Vulnerability
 from .utils.constants import (
+    CustomObjectCaseIncident,
+    CustomObjectTask,
+    CustomObservableHostname,
+    CustomObservableText,
+    CustomObservableUserAgent,
     MultipleRefRelationship,
     StixCyberObservableTypes,
     StixMetaTypes,
@@ -108,4 +113,10 @@ __all__ = [
     "Tool",
     "Vulnerability",
     "get_config_variable",
+    "CustomObjectCaseIncident",
+    "CustomObjectTask",
+    "StixCyberObservableTypes",
+    "CustomObservableHostname",
+    "CustomObservableUserAgent",
+    "CustomObservableText",
 ]

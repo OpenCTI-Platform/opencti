@@ -779,10 +779,15 @@ class OpenCTIStix2:
             "report": self.opencti.report.import_from_stix2,
             "grouping": self.opencti.grouping.import_from_stix2,
             "case-rfi": self.opencti.case_rfi.import_from_stix2,
+            "x-opencti-case-rfi": self.opencti.case_rfi.import_from_stix2,
             "case-rft": self.opencti.case_rft.import_from_stix2,
+            "x-opencti-case-rft": self.opencti.case_rft.import_from_stix2,
             "task": self.opencti.task.import_from_stix2,
+            "x-opencti-task": self.opencti.task.import_from_stix2,
             "case-incident": self.opencti.case_incident.import_from_stix2,
+            "x-opencti-case-incident": self.opencti.case_incident.import_from_stix2,
             "feedback": self.opencti.feedback.import_from_stix2,
+            "x-opencti-feedback": self.opencti.feedback.import_from_stix2,
             "course-of-action": self.opencti.course_of_action.import_from_stix2,
             "data-component": self.opencti.data_component.import_from_stix2,
             "x-mitre-data-component": self.opencti.data_component.import_from_stix2,
@@ -1255,6 +1260,31 @@ class OpenCTIStix2:
         # Files
         if entity["entity_type"] == "StixFile":
             entity["entity_type"] = "File"
+
+        # Case Incident
+        if entity["entity_type"] == "Case-Incident":
+            entity["standard_id"] = "x-opencti-" + entity["standard_id"]
+            entity["entity_type"] = "x-opencti-" + entity["entity_type"]
+
+        # Case RFI
+        if entity["entity_type"] == "Case-Rfi":
+            entity["standard_id"] = "x-opencti-" + entity["standard_id"]
+            entity["entity_type"] = "x-opencti-" + entity["entity_type"]
+
+        # Case RFT
+        if entity["entity_type"] == "Case-Rft":
+            entity["standard_id"] = "x-opencti-" + entity["standard_id"]
+            entity["entity_type"] = "x-opencti-" + entity["entity_type"]
+
+        # Feedback
+        if entity["entity_type"] == "Feedback":
+            entity["standard_id"] = "x-opencti-" + entity["standard_id"]
+            entity["entity_type"] = "x-opencti-" + entity["entity_type"]
+
+        # Task
+        if entity["entity_type"] == "Task":
+            entity["standard_id"] = "x-opencti-" + entity["standard_id"]
+            entity["entity_type"] = "x-opencti-" + entity["entity_type"]
 
         # Data component
         if entity["entity_type"] == "Data-Component":
