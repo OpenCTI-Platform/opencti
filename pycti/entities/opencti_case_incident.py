@@ -4,8 +4,6 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class CaseIncident:
     def __init__(self, opencti):
@@ -565,7 +563,7 @@ class CaseIncident:
             )
             return False
 
-        """
+    """
         Remove a Stix-Entity object to Case Incident object (object_refs)
 
         :param id: the id of the Case Incident
@@ -612,12 +610,12 @@ class CaseIncident:
             )
             return False
 
-        """
+    """
         Import a Case Incident object from a STIX2 object
 
         :param stixObject: the Stix-Object Case Incident
         :return Case Incident object
-        """
+    """
 
     def import_from_stix2(self, **kwargs):
         stix_object = kwargs.get("stixObject", None)
@@ -683,7 +681,7 @@ class CaseIncident:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Case Incident {%s}.", id)
+            self.opencti.log("info", "Deleting Case Incident {%s}.", id)
             query = """
                  mutation CaseIncidentDelete($id: ID!) {
                      stixDomainObjectEdit(id: $id) {
@@ -693,5 +691,5 @@ class CaseIncident:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_case_incident] Missing parameters: id")
+            self.opencti.log("error", "[opencti_case_incident] Missing parameters: id")
             return None

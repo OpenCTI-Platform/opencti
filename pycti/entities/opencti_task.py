@@ -4,8 +4,6 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.entities import LOGGER
-
 
 class Task:
     def __init__(self, opencti):
@@ -274,11 +272,11 @@ class Task:
         )
         query = (
             """
-                                query tasks($filters: [TasksFiltering!], $search: String, $first: Int, $after: ID, $orderBy: TasksOrdering, $orderMode: OrderingMode) {
-                                    tasks(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                                        edges {
-                                            node {
-                                                """
+        query tasks($filters: [TasksFiltering!], $search: String, $first: Int, $after: ID, $orderBy: TasksOrdering, $orderMode: OrderingMode) {
+            tasks(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                edges {
+                    node {
+                            """
             + (custom_attributes if custom_attributes is not None else self.properties)
             + """
                         }
@@ -494,7 +492,7 @@ class Task:
             )
 
     def update_field(self, **kwargs):
-        LOGGER.info("Updating Task {%s}.", json.dumps(kwargs))
+        self.opencti.log("info", "Updating Task {%s}.", json.dumps(kwargs))
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
@@ -512,10 +510,12 @@ class Task:
                 result["data"]["taskFieldPatch"]
             )
         else:
-            LOGGER.error("[opencti_Task] Missing parameters: id and key and value")
+            self.opencti.log(
+                "error", "[opencti_Task] Missing parameters: id and key and value"
+            )
             return None
 
-        """
+    """
         Add a Stix-Entity object to Task object (object_refs)
 
         :param id: the id of the Task
@@ -562,7 +562,7 @@ class Task:
             )
             return False
 
-        """
+    """
         Remove a Stix-Entity object to Task object (object_refs)
 
         :param id: the id of the Task
@@ -607,12 +607,12 @@ class Task:
             )
             return False
 
-        """
+    """
         Import a Task object from a STIX2 object
 
         :param stixObject: the Stix-Object Task
         :return Task object
-        """
+    """
 
     def import_from_stix2(self, **kwargs):
         stix_object = kwargs.get("stixObject", None)
@@ -660,7 +660,7 @@ class Task:
     def delete(self, **kwargs):
         id = kwargs.get("id", None)
         if id is not None:
-            LOGGER.info("Deleting Task {%s}.", id)
+            self.opencti.log("info", "Deleting Task {%s}.", id)
             query = """
                  mutation TaskDelete($id: ID!) {
                      taskDelete(id: $id)
@@ -668,5 +668,5 @@ class Task:
              """
             self.opencti.query(query, {"id": id})
         else:
-            LOGGER.error("[opencti_task] Missing parameters: id")
+            self.opencti.log("error", "[opencti_task] Missing parameters: id")
             return None

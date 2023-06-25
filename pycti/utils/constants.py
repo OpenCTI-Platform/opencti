@@ -3,6 +3,15 @@
 """
 from enum import Enum
 
+from stix2 import CustomObject, CustomObservable
+from stix2.properties import (
+    ListProperty,
+    ReferenceProperty,
+    StringProperty,
+    TimestampProperty,
+)
+from stix2.utils import NOW
+
 
 class StixCyberObservableTypes(Enum):
     AUTONOMOUS_SYSTEM = "Autonomous-System"
@@ -116,3 +125,118 @@ class MultipleRefRelationship(Enum):
     def has_value(cls, value):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
         return value.lower() in lower_attr
+
+
+# Custom objects
+
+
+@CustomObject(
+    "case-incident",
+    [
+        ("name", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        ("description", StringProperty()),
+        ("severity", StringProperty()),
+        ("priority", StringProperty()),
+        ("response_types", ListProperty(StringProperty)),
+        (
+            "object_refs",
+            ListProperty(
+                ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.1")
+            ),
+        ),
+    ],
+)
+class CustomObjectCaseIncident:
+    """Case-Incident object."""
+
+    pass
+
+
+@CustomObject(
+    "task",
+    [
+        ("name", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        ("description", StringProperty()),
+        (
+            "due_date",
+            TimestampProperty(
+                default=lambda: NOW, precision="millisecond", precision_constraint="min"
+            ),
+        ),
+        (
+            "object_refs",
+            ListProperty(
+                ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.1")
+            ),
+        ),
+    ],
+)
+class CustomObjectTask:
+    """Task object."""
+
+    pass
+
+
+# Custom observables
+
+
+@CustomObservable(
+    "hostname",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableHostname:
+    """Hostname observable."""
+
+    pass
+
+
+@CustomObservable(
+    "text",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableText:
+    """Text observable."""
+
+    pass
+
+
+@CustomObservable(
+    "user-agent",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableUserAgent:
+    """User-Agent observable."""
+
+    pass
