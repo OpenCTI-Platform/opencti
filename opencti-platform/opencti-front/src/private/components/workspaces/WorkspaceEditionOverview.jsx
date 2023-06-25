@@ -9,7 +9,7 @@ import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
-import MarkDownField from '../../../components/MarkDownField';
+import MarkdownField from '../../../components/MarkdownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -120,7 +120,7 @@ class WorkspaceEditionOverviewComponent extends Component {
               }
             />
             <Field
-              component={MarkDownField}
+              component={MarkdownField}
               name="description"
               label={t('Description')}
               fullWidth={true}

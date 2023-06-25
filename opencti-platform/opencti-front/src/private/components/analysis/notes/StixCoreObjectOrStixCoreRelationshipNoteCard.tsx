@@ -24,18 +24,14 @@ import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { Theme } from '../../../../components/Theme';
 import { deleteNode } from '../../../../utils/store';
-import {
-  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
-import {
-  StixCoreObjectOrStixCoreRelationshipNoteCard_node$key,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import Transition from '../../../../components/Transition';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -257,10 +253,10 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               {t('Abstract')}
             </Typography>
             {note.attribute_abstract && (
-              <MarkdownWithRedirectionWarning
+              <MarkdownDisplay
                 content={note.attribute_abstract}
                 remarkGfmPlugin={true}
-              ></MarkdownWithRedirectionWarning>
+              />
             )}
             <Typography
               variant="h3"
@@ -270,14 +266,15 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               {t('Content')}
             </Typography>
             {note.content && (
-              <MarkdownWithRedirectionWarning
-                content={note.content}
-                remarkGfmPlugin={true}
-              ></MarkdownWithRedirectionWarning>
+              <MarkdownDisplay content={note.content} remarkGfmPlugin={true} />
             )}
           </Grid>
           <Grid item={true} xs={3}>
-            <StixCoreObjectLabelsView labels={note.objectLabel} id={note.id} entity_type={note.entity_type}/>
+            <StixCoreObjectLabelsView
+              labels={note.objectLabel}
+              id={note.id}
+              entity_type={note.entity_type}
+            />
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography
@@ -287,7 +284,10 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                 >
                   {t('Confidence level')}
                 </Typography>
-                <ItemConfidence confidence={note.confidence} entityType={note.entity_type} />
+                <ItemConfidence
+                  confidence={note.confidence}
+                  entityType={note.entity_type}
+                />
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography

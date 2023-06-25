@@ -8,7 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { convertOrganizations } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
@@ -260,7 +260,7 @@ const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewCompone
               }
             />
             <Field
-              component={MarkDownField}
+              component={MarkdownField}
               name="description"
               label={t('Description')}
               fullWidth={true}

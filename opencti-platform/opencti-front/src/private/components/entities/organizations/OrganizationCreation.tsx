@@ -20,7 +20,7 @@ import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
@@ -213,7 +213,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           detectDuplicate={['Organization']}
         />
         <Field
-          component={MarkDownField}
+          component={MarkdownField}
           name="description"
           label={t('Description')}
           fullWidth={true}

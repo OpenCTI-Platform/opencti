@@ -20,7 +20,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { itemColor } from '../../../../utils/Colors';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -315,7 +315,7 @@ const StixCoreObjectsTimeline = ({
                               {defaultValue(stixCoreObject)}
                             </Typography>
                             <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                              <MarkdownWithRedirectionWarning
+                              <MarkdownDisplay
                                 content={stixCoreObject.description}
                                 limit={150}
                               />

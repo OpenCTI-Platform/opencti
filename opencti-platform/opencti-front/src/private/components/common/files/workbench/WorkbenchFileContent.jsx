@@ -42,7 +42,7 @@ import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import ItemIcon from '../../../../../components/ItemIcon';
-import MarkDownField from '../../../../../components/MarkDownField';
+import MarkdownField from '../../../../../components/MarkdownField';
 import SelectField from '../../../../../components/SelectField';
 import StixItemLabels from '../../../../../components/StixItemLabels';
 import StixItemMarkings from '../../../../../components/StixItemMarkings';
@@ -1649,7 +1649,7 @@ const WorkbenchFileContentComponent = ({
                         if (R.includes(attribute, markdownAttributes)) {
                           return (
                             <Field
-                              component={MarkDownField}
+                              component={MarkdownField}
                               key={attribute}
                               name={attribute}
                               label={attribute}
@@ -2114,7 +2114,7 @@ const WorkbenchFileContentComponent = ({
                         if (R.includes(attribute, markdownAttributes)) {
                           return (
                             <Field
-                              component={MarkDownField}
+                              component={MarkdownField}
                               key={attribute}
                               name={attribute}
                               label={attribute}
@@ -2377,7 +2377,7 @@ const WorkbenchFileContentComponent = ({
                         if (R.includes(attribute, markdownAttributes)) {
                           return (
                             <Field
-                              component={MarkDownField}
+                              component={MarkdownField}
                               key={attribute}
                               name={attribute}
                               label={attribute}
@@ -2576,7 +2576,7 @@ const WorkbenchFileContentComponent = ({
                         if (R.includes(attribute, markdownAttributes)) {
                           return (
                             <Field
-                              component={MarkDownField}
+                              component={MarkdownField}
                               key={attribute}
                               name={attribute}
                               label={attribute}

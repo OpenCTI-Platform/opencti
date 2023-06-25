@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import Markdown from 'react-markdown';
 import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import {
@@ -35,9 +34,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -169,7 +167,10 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && (eventMessage.includes('replaces') || eventMessage.includes('updates'))) {
+      if (
+        eventType === 'update'
+        && (eventMessage.includes('replaces') || eventMessage.includes('updates'))
+      ) {
         return (
           <Avatar
             sx={{
@@ -314,23 +315,19 @@ class UserHistoryLineComponent extends Component {
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
-                <Markdown
-                  remarkPlugins={[remarkGfm, remarkParse]}
-                  parserOptions={{ commonmark: true }}
-                  className="markdown"
-                >
-                  {`\`${node.user.name}\` ${node.context_data?.message}`}
-                </Markdown>
+                <MarkdownDisplay
+                  content={`\`${node.user.name}\` ${node.context_data?.message}`}
+                  remarkGfmPlugin={true}
+                  commonmark={true}
+                />
               }
             >
               <div className={classes.description}>
-                <Markdown
-                  remarkPlugins={[remarkGfm, remarkParse]}
-                  parserOptions={{ commonmark: true }}
-                  className="markdown"
-                >
-                  {`\`${node.user.name}\` ${node.context_data?.message}`}
-                </Markdown>
+                <MarkdownDisplay
+                  content={`\`${node.user.name}\` ${node.context_data?.message}`}
+                  remarkGfmPlugin={true}
+                  commonmark={true}
+                />
               </div>
             </Tooltip>
           </Paper>
@@ -344,13 +341,11 @@ class UserHistoryLineComponent extends Component {
         >
           <DialogTitle>{t('Commit message')}</DialogTitle>
           <DialogContent>
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkParse]}
-              parserOptions={{ commonmark: true }}
-              className="markdown"
-            >
-              {node.context_data?.commit}
-            </Markdown>
+            <MarkdownDisplay
+              content={node.context_data?.commit}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />
           </DialogContent>
           <DialogActions>
             <Button color="primary" onClick={this.handleClose.bind(this)}>

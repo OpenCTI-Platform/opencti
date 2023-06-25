@@ -203,8 +203,11 @@ const ThemeDark = (
               borderBottom: '2px solid #ffffff !important',
             },
             '&:focus': {
-              borderBottom: `2px solid #${primary || '00b1ff'} !important`,
+              borderBottom: `2px solid ${primary || '#00b1ff'} !important`,
             },
+          },
+          '.mde-preview .mde-preview-content a': {
+            color: `${primary || '#00b1ff'} !important`,
           },
           '.react-grid-placeholder': {
             backgroundColor: `${accent || '#01478d'} !important`,

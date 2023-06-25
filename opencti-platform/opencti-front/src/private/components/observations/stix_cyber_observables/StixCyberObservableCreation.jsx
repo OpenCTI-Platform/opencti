@@ -47,7 +47,7 @@ import {
   stixCyberObservablesLinesSubTypesQuery,
 } from './StixCyberObservablesLines';
 import { parse } from '../../../../utils/Time';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import {
@@ -479,7 +479,7 @@ const StixCyberObservableCreation = ({
                         type="number"
                       />
                       <Field
-                        component={MarkDownField}
+                        component={MarkdownField}
                         name="x_opencti_description"
                         label={t('Description')}
                         fullWidth={true}

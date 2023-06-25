@@ -23,7 +23,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { stixCyberObservablesLinesAttributesQuery } from './StixCyberObservablesLines';
 import { buildDate } from '../../../../utils/Time';
 import SwitchField from '../../../../components/SwitchField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import {
   booleanAttributes,
@@ -338,7 +338,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                     }
                   />
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="x_opencti_description"
                     label={t('Description')}
                     fullWidth={true}

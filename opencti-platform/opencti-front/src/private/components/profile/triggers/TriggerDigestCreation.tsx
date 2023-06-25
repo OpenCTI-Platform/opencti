@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import TriggersField from './TriggersField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
@@ -199,7 +199,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         fullWidth={true}
       />
       <Field
-        component={MarkDownField}
+        component={MarkdownField}
         name="description"
         label={t('Description')}
         fullWidth={true}

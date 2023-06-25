@@ -17,7 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -223,7 +223,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             multiple={false}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="explanation"
             label={t('Explanation')}
             fullWidth={true}
@@ -383,7 +383,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             multiple={false}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="explanation"
             label={t('Explanation')}
             fullWidth={true}

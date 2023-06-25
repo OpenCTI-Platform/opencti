@@ -1,5 +1,7 @@
 html[data-theme="light"],
 body[data-theme="light"] {
+  --ck-z-modal: 3000 !important;
+
   /* Overrides the border radius setting in the theme. */
   --ck-border-radius: 4px !important;
 

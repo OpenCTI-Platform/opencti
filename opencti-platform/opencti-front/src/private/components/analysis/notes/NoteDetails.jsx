@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   paper: {
@@ -44,10 +44,10 @@ class NoteDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Abstract')}
               </Typography>
-              <MarkdownWithRedirectionWarning
+              <MarkdownDisplay
                 content={note.attribute_abstract}
                 remarkGfmPlugin={true}
-              ></MarkdownWithRedirectionWarning>
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -55,11 +55,11 @@ class NoteDetailsComponent extends Component {
               >
                 {t('Content')}
               </Typography>
-              <MarkdownWithRedirectionWarning
+              <MarkdownDisplay
                 content={note.content}
                 remarkGfmPlugin={true}
                 commonmark={true}
-              ></MarkdownWithRedirectionWarning>
+              />
             </Grid>
             <Grid item={true} xs={3}>
               <Typography variant="h3" gutterBottom={true}>

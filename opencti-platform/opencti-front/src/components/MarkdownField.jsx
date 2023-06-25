@@ -3,14 +3,11 @@ import ReactMde from 'react-mde';
 import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import remarkFlexibleMarkers from 'remark-flexible-markers';
 import * as R from 'ramda';
 import { useFormatter } from './i18n';
-import MarkdownWithRedirectionWarning from './MarkdownWithRedirectionWarning';
+import MarkdownDisplay from './MarkdownDisplay';
 
-const MarkDownField = (props) => {
+const MarkdownField = (props) => {
   const {
     form: { setFieldValue, setTouched },
     field: { name },
@@ -51,10 +48,12 @@ const MarkDownField = (props) => {
     }
   };
   return (
-    <div style={style}
+    <div
+      style={style}
       className={!R.isNil(meta.error) ? 'error' : 'main'}
       onBlur={internalOnBlur}
-      onFocus={internalOnFocus}>
+      onFocus={internalOnFocus}
+    >
       <InputLabel shrink={true} variant="standard">
         {label}
       </InputLabel>
@@ -63,15 +62,20 @@ const MarkDownField = (props) => {
         readOnly={disabled}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={controlledSelectedTab || selectedTab}
-        onTabChange={(tab) => (controlledSetSelectTab ? controlledSetSelectTab(tab) : setSelectedTab(tab))}
+        onTabChange={(tab) => (controlledSetSelectTab
+          ? controlledSetSelectTab(tab)
+          : setSelectedTab(tab))
+        }
         generateMarkdownPreview={(markdown) => Promise.resolve(
             <div onMouseUp={() => internalOnSelect()}>
-              <Markdown remarkPlugins={[remarkGfm, remarkParse, remarkFlexibleMarkers]}
-                parserOptions={{ commonmark: true }}>
-                {markdown}
-              </Markdown>
+              <MarkdownDisplay
+                content={markdown}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
             </div>,
-        )}
+        )
+        }
         l18n={{
           write: t('Write'),
           preview: t('Preview'),
@@ -91,4 +95,4 @@ const MarkDownField = (props) => {
   );
 };
 
-export default MarkDownField;
+export default MarkdownField;

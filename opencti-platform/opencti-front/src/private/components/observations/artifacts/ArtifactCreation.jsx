@@ -21,7 +21,7 @@ import {
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -229,7 +229,7 @@ class ArtifactCreation extends Component {
                     fullWidth={true}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="x_opencti_description"
                     label={t('Description')}
                     fullWidth={true}

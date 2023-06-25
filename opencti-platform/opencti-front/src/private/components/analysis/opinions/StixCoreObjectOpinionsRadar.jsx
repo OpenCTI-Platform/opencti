@@ -22,7 +22,7 @@ import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { opinionCreationMutation } from './OpinionCreation';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { opinionMutationFieldPatch } from './OpinionEditionOverview';
 import { radarChartOptions } from '../../../../utils/Charts';
@@ -325,7 +325,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
                               max={5}
                             />
                             <Field
-                              component={MarkDownField}
+                              component={MarkdownField}
                               name="explanation"
                               label={t('Explanation')}
                               fullWidth={true}

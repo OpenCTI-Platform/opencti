@@ -17,7 +17,7 @@ import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../../common/form/PasswordPolicies';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -231,7 +231,7 @@ class UserCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

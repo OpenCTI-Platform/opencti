@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = () => ({
   paper: {
@@ -47,11 +47,11 @@ class SystemDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Contact information')}
               </Typography>
-              <MarkdownWithRedirectionWarning
+              <MarkdownDisplay
                 content={system.contact_information}
                 remarkGfmPlugin={true}
                 commonmark={true}
-              ></MarkdownWithRedirectionWarning>
+              />
             </Grid>
           </Grid>
         </Paper>

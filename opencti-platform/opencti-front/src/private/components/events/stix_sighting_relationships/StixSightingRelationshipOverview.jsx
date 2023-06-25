@@ -30,8 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixSightingRelationshipInference from './StixSightingRelationshipInference';
-import StixSightingRelationshipExternalReferences
-  from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
+import StixSightingRelationshipExternalReferences from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -40,11 +39,10 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import StixCoreObjectOrStixRelationshipLastContainers
-  from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -225,14 +223,18 @@ class StixSightingRelationshipContainer extends Component {
     // eslint-disable-next-line no-nested-ternary
     const linkFrom = from
       ? from.relationship_type
-        ? `${resolveLink(from.from.entity_type)}/${from.from.id}/knowledge/relations`
+        ? `${resolveLink(from.from.entity_type)}/${
+          from.from.id
+        }/knowledge/relations`
         : resolveLink(from.entity_type)
       : '';
     const toRestricted = to === null;
     // eslint-disable-next-line no-nested-ternary
     const linkTo = to
       ? to.relationship_type
-        ? `${resolveLink(to.from.entity_type)}/${to.from.id}/knowledge/relations`
+        ? `${resolveLink(to.from.entity_type)}/${
+          to.from.id
+        }/knowledge/relations`
         : resolveLink(to.entity_type)
       : '';
     return (
@@ -293,10 +295,10 @@ class StixSightingRelationshipContainer extends Component {
                       {!fromRestricted
                         ? truncate(
                           from.name
-                          || from.observable_value
-                          || from.attribute_abstract
-                          || from.content
-                          || t(`relationship_${from.entity_type}`),
+                              || from.observable_value
+                              || from.attribute_abstract
+                              || from.content
+                              || t(`relationship_${from.entity_type}`),
                           50,
                         )
                         : t('Restricted')}
@@ -348,7 +350,7 @@ class StixSightingRelationshipContainer extends Component {
                         ? to.relationship_type
                           ? t('Relationship')
                           : t(`entity_${to.entity_type}`)
-                        : ('Restricted')}
+                        : 'Restricted'}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -356,10 +358,10 @@ class StixSightingRelationshipContainer extends Component {
                       {!toRestricted
                         ? truncate(
                           to.name
-                          || to.observable_value
-                          || to.attribute_abstract
-                          || to.content
-                          || t(`relationship_${to.entity_type}`),
+                              || to.observable_value
+                              || to.attribute_abstract
+                              || to.content
+                              || t(`relationship_${to.entity_type}`),
                           50,
                         )
                         : t('Restricted')}
@@ -440,16 +442,18 @@ class StixSightingRelationshipContainer extends Component {
                       >
                         {t('Description')}
                       </Typography>
-                      <MarkdownWithRedirectionWarning
-                        content={stixSightingRelationship.x_opencti_inferences
-                        !== null ? (
-                          <i>{t('Inferred knowledge')}</i>
-                          ) : (
-                            stixSightingRelationship.description
-                          )}
+                      <MarkdownDisplay
+                        content={
+                          stixSightingRelationship.x_opencti_inferences
+                          !== null ? (
+                            <i>{t('Inferred knowledge')}</i>
+                            ) : (
+                              stixSightingRelationship.description
+                            )
+                        }
                         remarkGfmPlugin={true}
                         commonmark={true}
-                      ></MarkdownWithRedirectionWarning>
+                      />
                     </div>
                   </Grid>
                 </Grid>

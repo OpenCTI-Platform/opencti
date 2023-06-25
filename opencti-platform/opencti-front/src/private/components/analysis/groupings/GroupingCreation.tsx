@@ -18,7 +18,7 @@ import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -109,16 +109,16 @@ const groupingMutation = graphql`
 const GROUPING_TYPE = 'Grouping';
 
 interface GroupingAddInput {
-  name: string
-  confidence: number | undefined
-  context: string
-  description: string
+  name: string;
+  confidence: number | undefined;
+  context: string;
+  description: string;
   content: string;
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface GroupingFormProps {
@@ -154,7 +154,10 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
   };
-  const groupingValidator = useSchemaCreationValidation(GROUPING_TYPE, basicShape);
+  const groupingValidator = useSchemaCreationValidation(
+    GROUPING_TYPE,
+    basicShape,
+  );
 
   const [commit] = useMutation<GroupingCreationMutation>(groupingMutation);
 
@@ -202,21 +205,18 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    GROUPING_TYPE,
-    {
-      name: '',
-      confidence: defaultConfidence,
-      context: '',
-      description: '',
-      content: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues(GROUPING_TYPE, {
+    name: '',
+    confidence: defaultConfidence,
+    context: '',
+    description: '',
+    content: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik
@@ -247,7 +247,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             onChange={setFieldValue}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}
@@ -362,6 +362,7 @@ const GroupingCreation = ({
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={() => setOpen(false)}
+        disableEnforceFocus={true}
       >
         <div className={classes.header}>
           <IconButton

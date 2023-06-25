@@ -17,7 +17,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -225,7 +225,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
           detectDuplicate={['Position']}
         />
         <Field
-          component={MarkDownField}
+          component={MarkdownField}
           name="description"
           label={t('Description')}
           fullWidth={true}

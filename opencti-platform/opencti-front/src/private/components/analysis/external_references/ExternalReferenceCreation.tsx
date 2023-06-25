@@ -23,7 +23,7 @@ import {
 } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
@@ -325,7 +325,7 @@ ExternalReferenceCreationProps
                     />
                   )}
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -441,7 +441,7 @@ ExternalReferenceCreationProps
                     />
                   )}
                   <Field
-                    component={MarkDownField}
+                    component={MarkdownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

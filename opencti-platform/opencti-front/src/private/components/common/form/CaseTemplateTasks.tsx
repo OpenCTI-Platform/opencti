@@ -12,7 +12,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -153,7 +153,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({ onChange
                   fullWidth={true}
                 />
                 <Field
-                  component={MarkDownField}
+                  component={MarkdownField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

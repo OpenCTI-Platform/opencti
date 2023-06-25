@@ -14,8 +14,11 @@ import { StarBorderOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import { addBookmark, deleteBookMark } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import {
+  addBookmark,
+  deleteBookMark,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   card: {
@@ -115,11 +118,12 @@ class ThreatActorCardComponent extends Component {
           />
           <CardContent className={classes.content}>
             <div className={classes.description}>
-              <MarkdownWithRedirectionWarning
+              <MarkdownDisplay
                 content={node.description}
                 remarkGfmPlugin={true}
                 commonmark={true}
-              ></MarkdownWithRedirectionWarning>
+                removeLinks={true}
+              />
             </div>
             <div className={classes.objectLabel}>
               <StixCoreObjectLabels

@@ -10,7 +10,12 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
-import { ExpandLess, ExpandMore, Flag, LocalPlayOutlined } from '@mui/icons-material';
+import {
+  ExpandLess,
+  ExpandMore,
+  Flag,
+  LocalPlayOutlined,
+} from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import { yearFormat } from '../../../../utils/Time';
@@ -19,7 +24,7 @@ import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRela
 import ItemYears from '../../../../components/ItemYears';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -329,11 +334,11 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                             // eslint-disable-next-line no-nested-ternary
                             stixCoreRelationship.description
                             && stixCoreRelationship.description.length > 0 ? (
-                                <MarkdownWithRedirectionWarning
-                                  content={stixCoreRelationship.description}
-                                  remarkGfmPlugin={true}
-                                  commonmark={true}
-                                ></MarkdownWithRedirectionWarning>
+                              <MarkdownDisplay
+                                content={stixCoreRelationship.description}
+                                remarkGfmPlugin={true}
+                                commonmark={true}
+                              />
                               ) : (
                                 t('No description of this targeting')
                               )
@@ -454,11 +459,13 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                       stixCoreRelationship.description
                                       && stixCoreRelationship.description.length
                                         > 0 ? (
-                                          <MarkdownWithRedirectionWarning
-                                            content={stixCoreRelationship.description}
-                                            remarkGfmPlugin={true}
-                                            commonmark={true}
-                                          ></MarkdownWithRedirectionWarning>
+                                        <MarkdownDisplay
+                                          content={
+                                            stixCoreRelationship.description
+                                          }
+                                          remarkGfmPlugin={true}
+                                          commonmark={true}
+                                        />
                                         ) : stixCoreRelationship.inferred ? (
                                         <i>{t('This relation is inferred')}</i>
                                         ) : (
@@ -559,11 +566,13 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                               stixCoreRelationship.description
                                               && stixCoreRelationship.description
                                                 .length > 0 ? (
-                                                  <MarkdownWithRedirectionWarning
-                                                    content={stixCoreRelationship.description}
-                                                    remarkGfmPlugin={true}
-                                                    commonmark={true}
-                                                  ></MarkdownWithRedirectionWarning>
+                                                <MarkdownDisplay
+                                                  content={
+                                                    stixCoreRelationship.description
+                                                  }
+                                                  remarkGfmPlugin={true}
+                                                  commonmark={true}
+                                                />
                                                 ) : stixCoreRelationship.inferred ? (
                                                 <i>
                                                   {t(

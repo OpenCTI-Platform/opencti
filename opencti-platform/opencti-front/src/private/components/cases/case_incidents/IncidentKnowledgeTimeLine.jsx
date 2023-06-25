@@ -16,7 +16,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 export const incidentKnowledgeTimeLineQuery = graphql`
   query IncidentKnowledgeTimeLineCaseQuery(
@@ -107,7 +107,7 @@ const IncidentKnowledgeTimeLineComponent = ({
                 <Paper variant="outlined" className={classes.paper}>
                   <Typography variant="h2">{defaultValue(node)}</Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                    <MarkdownWithRedirectionWarning
+                    <MarkdownDisplay
                       content={defaultSecondaryValue(node)}
                       limit={150}
                     />

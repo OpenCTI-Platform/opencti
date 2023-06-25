@@ -11,7 +11,7 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
@@ -184,7 +184,7 @@ const FeedbackCreation: FunctionComponent<{
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
-                  component={MarkDownField}
+                  component={MarkdownField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

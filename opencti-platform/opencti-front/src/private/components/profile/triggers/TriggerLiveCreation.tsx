@@ -21,7 +21,7 @@ import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -237,7 +237,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         fullWidth={true}
       />
       <Field
-        component={MarkDownField}
+        component={MarkdownField}
         name="description"
         label={t('Description')}
         fullWidth={true}

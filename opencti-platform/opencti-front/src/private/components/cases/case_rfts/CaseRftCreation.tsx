@@ -15,7 +15,7 @@ import * as Yup from 'yup';
 import { useHistory } from 'react-router-dom';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -30,7 +30,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
-import { CaseRftAddInput, CaseRftCreationCaseMutation } from './__generated__/CaseRftCreationCaseMutation.graphql';
+import {
+  CaseRftAddInput,
+  CaseRftCreationCaseMutation,
+} from './__generated__/CaseRftCreationCaseMutation.graphql';
 import { CaseRftLinesCasesPaginationQuery$variables } from './__generated__/CaseRftLinesCasesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
@@ -92,21 +95,21 @@ const caseRftMutation = graphql`
 `;
 
 interface FormikCaseRftAddInput {
-  name: string
-  confidence: number | undefined
-  description: string
+  name: string;
+  confidence: number | undefined;
+  description: string;
   content: string;
-  file: File | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectAssignee: Option[]
-  objectLabel: Option[]
-  externalReferences: Option[]
-  created: Date | null
-  takedown_types: string[]
-  severity: string
-  priority: string
-  caseTemplates?: Option[]
+  file: File | undefined;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectAssignee: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  created: Date | null;
+  takedown_types: string[];
+  severity: string;
+  priority: string;
+  caseTemplates?: Option[];
 }
 
 interface CaseRftFormProps {
@@ -141,7 +144,10 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
   };
-  const caseRftValidator = useSchemaCreationValidation(CASE_RFT_TYPE, basicShape);
+  const caseRftValidator = useSchemaCreationValidation(
+    CASE_RFT_TYPE,
+    basicShape,
+  );
   const [commit] = useMutation<CaseRftCreationCaseMutation>(caseRftMutation);
 
   const onSubmit: FormikConfig<FormikCaseRftAddInput>['onSubmit'] = (
@@ -189,30 +195,27 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues<FormikCaseRftAddInput>(
-    CASE_RFT_TYPE,
-    {
-      name: '',
-      confidence: defaultConfidence,
-      description: '',
-      content: '',
-      created: null,
-      takedown_types: [],
-      caseTemplates: [],
-      severity: '',
-      priority: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectAssignee: [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues<FormikCaseRftAddInput>(CASE_RFT_TYPE, {
+    name: '',
+    confidence: defaultConfidence,
+    description: '',
+    content: '',
+    created: null,
+    takedown_types: [],
+    caseTemplates: [],
+    severity: '',
+    priority: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectAssignee: [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik<FormikCaseRftAddInput>
-    initialValues={initialValues}
+      initialValues={initialValues}
       validationSchema={caseRftValidator}
       onSubmit={onSubmit}
       onReset={onReset}
@@ -268,7 +271,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
             containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}
@@ -394,6 +397,7 @@ const CaseRftCreation = ({
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        disableEnforceFocus={true}
       >
         <div className={classes.header}>
           <IconButton

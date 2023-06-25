@@ -8,10 +8,15 @@ import Paper from '@mui/material/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
 import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
-import { buildGraphData, linkPaint, nodeAreaPaint, nodePaint } from '../../../../utils/Graph';
+import {
+  buildGraphData,
+  linkPaint,
+  nodeAreaPaint,
+  nodePaint,
+} from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { isEmptyField } from '../../../../utils/utils';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = () => ({
   container: {
@@ -73,19 +78,39 @@ class StixCoreRelationshipInference extends Component {
     const stixRelationship = { ...stixCoreRelationship };
     // Complete the relationship if needed
     if (isEmptyField(stixRelationship.from)) {
-      stixRelationship.from = { id: stixCoreRelationship.fromId, name: 'Restricted', entity_type: stixCoreRelationship.fromType, parent_types: [] };
+      stixRelationship.from = {
+        id: stixCoreRelationship.fromId,
+        name: 'Restricted',
+        entity_type: stixCoreRelationship.fromType,
+        parent_types: [],
+      };
     }
     if (isEmptyField(stixRelationship.to)) {
-      stixRelationship.to = { id: stixCoreRelationship.toId, name: 'Restricted', entity_type: stixCoreRelationship.toType, parent_types: [] };
+      stixRelationship.to = {
+        id: stixCoreRelationship.toId,
+        name: 'Restricted',
+        entity_type: stixCoreRelationship.toType,
+        parent_types: [],
+      };
     }
     // Complete the explanations if needed
     const explanations = inference.explanation.map((ex) => {
       const data = { ...ex };
       if (isEmptyField(ex.from)) {
-        data.from = { id: ex.fromId, name: 'Restricted', entity_type: ex.fromType, parent_types: [] };
+        data.from = {
+          id: ex.fromId,
+          name: 'Restricted',
+          entity_type: ex.fromType,
+          parent_types: [],
+        };
       }
       if (isEmptyField(ex.to)) {
-        data.to = { id: ex.toId, name: 'Restricted', entity_type: ex.toType, parent_types: [] };
+        data.to = {
+          id: ex.toId,
+          name: 'Restricted',
+          entity_type: ex.toType,
+          parent_types: [],
+        };
       }
       return data;
     });
@@ -95,7 +120,10 @@ class StixCoreRelationshipInference extends Component {
       stixRelationship.from,
       stixRelationship.to,
       ...explanations.filter((n) => n !== null),
-      ...explanations.filter((n) => n !== null).map((n) => [n.from, n.to]).flat(),
+      ...explanations
+        .filter((n) => n !== null)
+        .map((n) => [n.from, n.to])
+        .flat(),
     ];
     const graphData = buildGraphData(graphObjects, [], t);
     return (
@@ -107,12 +135,11 @@ class StixCoreRelationshipInference extends Component {
         <Typography variant="h3" gutterBottom={true}>
           {t(inference.rule.name)}
         </Typography>
-        <MarkdownWithRedirectionWarning
+        <MarkdownDisplay
           content={inference.rule.description}
           remarkGfmPlugin={true}
           commonmark={true}
-        >
-        </MarkdownWithRedirectionWarning>
+        />
         <ForceGraph2D
           ref={this.graph}
           width={width}

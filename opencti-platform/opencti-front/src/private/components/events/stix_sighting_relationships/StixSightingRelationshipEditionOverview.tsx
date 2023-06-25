@@ -16,7 +16,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -377,7 +377,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 disabled={inferred}
               />
               <Field
-                component={MarkDownField}
+                component={MarkdownField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}

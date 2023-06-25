@@ -7,7 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import type { ExternalReferencesValues } from './ExternalReferencesField';
 import { ExternalReferencesField } from './ExternalReferencesField';
 import { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
@@ -97,7 +97,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             noStoreUpdate={noStoreUpdate}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="message"
             label={t('Message')}
             fullWidth={true}

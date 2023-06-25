@@ -2,7 +2,16 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
+import {
+  deepOrange,
+  deepPurple,
+  green,
+  indigo,
+  pink,
+  red,
+  teal,
+  yellow,
+} from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Badge from '@mui/material/Badge';
@@ -31,7 +40,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -314,19 +323,19 @@ class StixCoreObjectHistoryLineComponent extends Component {
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
-                <MarkdownWithRedirectionWarning
+                <MarkdownDisplay
                   content={`\`${node.user.name}\` ${node.context_data.message}`}
                   remarkGfmPlugin={true}
                   commonmark={true}
-                ></MarkdownWithRedirectionWarning>
+                />
               }
             >
               <div className={classes.description}>
-                <MarkdownWithRedirectionWarning
+                <MarkdownDisplay
                   content={`\`${node.user.name}\` ${node.context_data.message}`}
                   remarkGfmPlugin={true}
                   commonmark={true}
-                ></MarkdownWithRedirectionWarning>
+                />
               </div>
             </Tooltip>
             {node.context_data.external_references
@@ -410,11 +419,11 @@ class StixCoreObjectHistoryLineComponent extends Component {
         >
           <DialogTitle>{t('Commit message')}</DialogTitle>
           <DialogContent>
-            <MarkdownWithRedirectionWarning
+            <MarkdownDisplay
               content={node.context_data.commit}
               remarkGfmPlugin={true}
               commonmark={true}
-            ></MarkdownWithRedirectionWarning>
+            />
           </DialogContent>
           <DialogActions>
             <Button color="primary" onClick={this.handleClose.bind(this)}>

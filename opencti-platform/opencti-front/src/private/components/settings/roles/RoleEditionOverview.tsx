@@ -5,7 +5,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import HiddenTypesList from '../entity_settings/HiddenTypesList';
 import { RoleEditionOverview_role$data } from './__generated__/RoleEditionOverview_role.graphql';
@@ -97,7 +97,7 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
               }
             />
             <Field
-              component={MarkDownField}
+              component={MarkdownField}
               name="description"
               label={t('Description')}
               fullWidth={true}

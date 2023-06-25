@@ -1,5 +1,6 @@
 import Markdown from 'react-markdown';
 import remarkParse from 'remark-parse';
+import remarkFlexibleMarkers from 'remark-flexible-markers';
 import { useTheme } from '@mui/styles';
 import { PluggableList } from 'react-markdown/lib/react-markdown';
 import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
@@ -9,7 +10,9 @@ import { truncate } from '../utils/String';
 import ExternalLinkPopover from './ExternalLinkPopover';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const MarkDownComponents = (theme: Theme): Record<string, FunctionComponent<any>> => ({
+export const MarkDownComponents = (
+  theme: Theme,
+): Record<string, FunctionComponent<any>> => ({
   table: ({ tableProps }) => (
     <table
       style={{
@@ -43,84 +46,111 @@ export const MarkDownComponents = (theme: Theme): Record<string, FunctionCompone
 });
 
 interface MarkdownWithRedirectionWarningProps {
-  content: string,
-  expand?: boolean,
-  limit?: number,
-  remarkGfmPlugin?: boolean
-  markdownComponents?: boolean,
-  commonmark?: boolean,
-  remarkPlugins?: PluggableList,
+  content: string;
+  expand?: boolean;
+  limit?: number;
+  remarkGfmPlugin?: boolean;
+  markdownComponents?: boolean;
+  commonmark?: boolean;
+  removeLinks?: boolean;
+  remarkPlugins?: PluggableList;
 }
 
-const MarkdownWithRedirectionWarning: FunctionComponent<MarkdownWithRedirectionWarningProps> = ({
+const MarkdownDisplay: FunctionComponent<
+MarkdownWithRedirectionWarningProps
+> = ({
   content,
   expand,
   limit,
   remarkGfmPlugin,
   markdownComponents,
   commonmark,
+  removeLinks,
   remarkPlugins,
 }) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
-  const [externalLink, setExternalLink] = useState<string | URL | undefined>(undefined);
-
+  const [externalLink, setExternalLink] = useState<string | URL | undefined>(
+    undefined,
+  );
   const handleOpenExternalLink = (url: string) => {
     setDisplayExternalLink(true);
     setExternalLink(url);
   };
-
   const markdownElement = () => {
     return (
-      <Markdown>
+      <Markdown
+        className="markdown"
+        disallowedElements={removeLinks ? ['a'] : []}
+        unwrapDisallowed={true}
+      >
         {limit ? truncate(content, limit) : content}
       </Markdown>
     );
   };
-
   const remarkGfmMarkdownElement = () => {
     if (remarkPlugins) {
       return (
         <Markdown
-          remarkPlugins={remarkPlugins}
           className="markdown"
+          remarkPlugins={remarkPlugins}
+          disallowedElements={removeLinks ? ['a'] : []}
+          unwrapDisallowed={true}
         >
-          {(expand || !limit) ? content : truncate(content, limit)}
+          {expand || !limit ? content : truncate(content, limit)}
         </Markdown>
       );
     }
     if (markdownComponents) {
       return (
         <Markdown
-          remarkPlugins={[remarkGfm, [remarkParse, { commonmark: (!!commonmark) }]] as PluggableList}
-          components={MarkDownComponents(theme)}
           className="markdown"
+          remarkPlugins={
+            [
+              remarkGfm,
+              remarkFlexibleMarkers,
+              [remarkParse, { commonmark: !!commonmark }],
+            ] as PluggableList
+          }
+          components={MarkDownComponents(theme)}
+          disallowedElements={removeLinks ? ['a'] : []}
+          unwrapDisallowed={true}
         >
-          {(expand || !limit) ? content : truncate(content, limit)}
+          {expand || !limit ? content : truncate(content, limit)}
         </Markdown>
       );
     }
     return (
       <Markdown
-        remarkPlugins={[remarkGfm, [remarkParse, { commonmark: (!!commonmark) }]] as PluggableList}
         className="markdown"
+        remarkPlugins={
+          [
+            remarkGfm,
+            remarkFlexibleMarkers,
+            [remarkParse, { commonmark: !!commonmark }],
+          ] as PluggableList
+        }
+        disallowedElements={removeLinks ? ['a'] : []}
+        unwrapDisallowed={true}
       >
         {limit ? truncate(content, limit) : content}
       </Markdown>
     );
   };
 
-  const browseLinkWarning = (event: SyntheticEvent<HTMLElement, MouseEvent>) => {
-    if ((event.target as HTMLElement).localName === 'a') { // if the user clicks on a link
+  const browseLinkWarning = (
+    event: SyntheticEvent<HTMLElement, MouseEvent>,
+  ) => {
+    if ((event.target as HTMLElement).localName === 'a') {
+      // if the user clicks on a link
       event.stopPropagation();
       event.preventDefault();
       const link = event.target as HTMLLinkElement;
       handleOpenExternalLink(link.href);
     }
   };
-
   return (
-    <div>
+    <>
       <div onClick={(event) => browseLinkWarning(event)}>
         {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
       </div>
@@ -129,9 +159,9 @@ const MarkdownWithRedirectionWarning: FunctionComponent<MarkdownWithRedirectionW
         externalLink={externalLink}
         setDisplayExternalLink={setDisplayExternalLink}
         setExternalLink={setExternalLink}
-      ></ExternalLinkPopover>
-    </div>
+      />
+    </>
   );
 };
 
-export default MarkdownWithRedirectionWarning;
+export default MarkdownDisplay;

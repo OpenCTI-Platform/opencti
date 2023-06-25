@@ -20,7 +20,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { itemColor } from '../../../../utils/Colors';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -1359,7 +1359,7 @@ const StixCoreRelationshipsTimeline = ({
                                 {defaultValue(remoteNode)}
                               </Typography>
                               <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                                <MarkdownWithRedirectionWarning
+                                <MarkdownDisplay
                                   content={remoteNode.description}
                                   limit={150}
                                 />

@@ -10,7 +10,13 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
-import { Domain, ExpandLess, ExpandMore, FileDownloadOutlined, LibraryBooksOutlined } from '@mui/icons-material';
+import {
+  Domain,
+  ExpandLess,
+  ExpandMore,
+  FileDownloadOutlined,
+  LibraryBooksOutlined,
+} from '@mui/icons-material';
 import { AutoFix, FormatListGroup, RelationManyToMany } from 'mdi-material-ui';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
@@ -23,13 +29,19 @@ import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/S
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -337,31 +349,36 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                     <FormatListGroup fontSize="small" />
                   </Tooltip>
                 </ToggleButton>
-                {!exportDisabled
-                  && <ToggleButton value="export" aria-label="export">
-                  <Tooltip title={t('Open export panel')}>
-                    <FileDownloadOutlined
-                      fontSize="small"
-                      color={openExports ? 'secondary' : 'primary'}
-                    />
-                  </Tooltip>
-                </ToggleButton>}
-                {exportDisabled
-                  && <Tooltip title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}>
-                    <span>
-                    <ToggleButton
-                      size="small"
-                      value="export"
-                      aria-label="export"
-                      disabled={true}
-                    >
+                {!exportDisabled && (
+                  <ToggleButton value="export" aria-label="export">
+                    <Tooltip title={t('Open export panel')}>
                       <FileDownloadOutlined
                         fontSize="small"
+                        color={openExports ? 'secondary' : 'primary'}
                       />
-                    </ToggleButton>
+                    </Tooltip>
+                  </ToggleButton>
+                )}
+                {exportDisabled && (
+                  <Tooltip
+                    title={`${
+                      t(
+                        'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                      ) + export_max_size
+                    })`}
+                  >
+                    <span>
+                      <ToggleButton
+                        size="small"
+                        value="export"
+                        aria-label="export"
+                        disabled={true}
+                      >
+                        <FileDownloadOutlined fontSize="small" />
+                      </ToggleButton>
                     </span>
                   </Tooltip>
-                }
+                )}
               </ToggleButtonGroup>
             </div>
           </div>
@@ -433,11 +450,11 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               // eslint-disable-next-line no-nested-ternary
                               stixCoreRelationship.description
                               && stixCoreRelationship.description.length > 0 ? (
-                                  <MarkdownWithRedirectionWarning
-                                    content={stixCoreRelationship.description}
-                                    remarkGfmPlugin={true}
-                                    commonmark={true}
-                                  ></MarkdownWithRedirectionWarning>
+                                <MarkdownDisplay
+                                  content={stixCoreRelationship.description}
+                                  remarkGfmPlugin={true}
+                                  commonmark={true}
+                                />
                                 ) : (
                                   t('No description of this targeting')
                                 )
@@ -562,11 +579,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                           stixCoreRelationship.description
                                           && stixCoreRelationship.description
                                             .length > 0 ? (
-                                              <MarkdownWithRedirectionWarning
-                                                content={stixCoreRelationship.description}
-                                                remarkGfmPlugin={true}
-                                                commonmark={true}
-                                              ></MarkdownWithRedirectionWarning>
+                                            <MarkdownDisplay
+                                              content={
+                                                stixCoreRelationship.description
+                                              }
+                                              remarkGfmPlugin={true}
+                                              commonmark={true}
+                                            ></MarkdownDisplay>
                                             ) : stixCoreRelationship.inferred ? (
                                             <i>
                                               {t('This relation is inferred')}

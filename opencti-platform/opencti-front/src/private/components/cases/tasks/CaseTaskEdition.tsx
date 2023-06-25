@@ -3,7 +3,7 @@ import React from 'react';
 import * as Yup from 'yup';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { convertAssignees, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -118,7 +118,7 @@ const CaseTaskEdition = ({ task }: { task: CaseTasksLine_data$data }) => {
             />
           )}
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}

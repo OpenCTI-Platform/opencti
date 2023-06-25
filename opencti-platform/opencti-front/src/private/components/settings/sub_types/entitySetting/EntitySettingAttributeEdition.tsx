@@ -25,7 +25,7 @@ import { Option } from '../../../common/form/ReferenceField';
 import CreatedByField from '../../../common/form/CreatedByField';
 import { useComputeDefaultValues } from '../../../../../utils/hooks/useDefaultValues';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
-import MarkDownField from '../../../../../components/MarkDownField';
+import MarkdownField from '../../../../../components/MarkdownField';
 import ObjectAssigneeField from '../../../common/form/ObjectAssigneeField';
 import RichTextField from '../../../../../components/RichTextField';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
@@ -311,7 +311,7 @@ const EntitySettingAttributeEdition = ({
     if (attribute.name === 'description') {
       return (
         <Field
-          component={MarkDownField}
+          component={MarkdownField}
           name="default_values"
           label={label}
           fullWidth={true}

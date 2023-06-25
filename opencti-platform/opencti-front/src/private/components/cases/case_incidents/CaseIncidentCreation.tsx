@@ -15,7 +15,7 @@ import * as Yup from 'yup';
 import { useHistory } from 'react-router-dom';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -34,9 +34,7 @@ import {
   CaseIncidentAddInput,
   CaseIncidentCreationCaseMutation,
 } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
-import {
-  CaseIncidentsLinesCasesPaginationQuery$variables,
-} from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import { CaseIncidentsLinesCasesPaginationQuery$variables } from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import RichTextField from '../../../../components/RichTextField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
@@ -98,21 +96,21 @@ const caseIncidentMutation = graphql`
 `;
 
 interface FormikCaseIncidentAddInput {
-  name: string
-  confidence: number | undefined
-  severity: string
-  priority: string
-  description: string
+  name: string;
+  confidence: number | undefined;
+  severity: string;
+  priority: string;
+  description: string;
   content: string;
-  file: File | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectAssignee: Option[]
-  objectLabel: Option[]
-  externalReferences: Option[]
-  created: Date | null
-  response_types: string[]
-  caseTemplates?: Option[]
+  file: File | undefined;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectAssignee: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  created: Date | null;
+  response_types: string[];
+  caseTemplates?: Option[];
 }
 
 interface IncidentFormProps {
@@ -220,7 +218,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
 
   return (
     <Formik<FormikCaseIncidentAddInput>
-    initialValues={initialValues}
+      initialValues={initialValues}
       validationSchema={caseIncidentValidator}
       onSubmit={onSubmit}
       onReset={onReset}
@@ -276,7 +274,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-            component={MarkDownField}
+            component={MarkdownField}
             name="description"
             label={t('Description')}
             fullWidth={true}
@@ -371,8 +369,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
 const CaseIncidentCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables
-  ;
+  paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -404,6 +401,7 @@ const CaseIncidentCreation = ({
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
+        disableEnforceFocus={true}
       >
         <div className={classes.header}>
           <IconButton

@@ -20,7 +20,7 @@ import inject18n from '../../../../components/i18n';
 import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { itemColor } from '../../../../utils/Colors';
-import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = (theme) => ({
   container: {
@@ -229,7 +229,7 @@ class StixDomainObjectsTimeline extends Component {
                               {defaultValue(stixDomainObject)}
                             </Typography>
                             <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                              <MarkdownWithRedirectionWarning
+                              <MarkdownDisplay
                                 content={stixDomainObject.description}
                                 limit={150}
                               />
