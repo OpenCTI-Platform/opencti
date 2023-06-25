@@ -1,5 +1,7 @@
 # coding: utf-8
 
+import traceback
+
 from pycti.api import LOGGER as API_LOGGER
 from pycti.utils.constants import StixCyberObservableTypes
 
@@ -299,6 +301,5 @@ class OpenCTIStix2Update:
                             inputs.append({"key": key, "value": values})
             self.update_attribute(data["type"], data["id"], inputs)
         except Exception as e:
-            print(e)
-            print(data)
-            API_LOGGER.error("Cannot process this message")
+            error_msg = traceback.format_exc()
+            API_LOGGER.error(error_msg)
