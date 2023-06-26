@@ -1,7 +1,12 @@
-# Parameters
+# Platform
 
-!!! tip "Under construction"
+## Platform Announcement
 
-    We are doing our best to complete this page. 
-    If you want to participae, dont hesitate to join the [Filigran Community on Slack](https://community.filigran.io) 
-    or submit your pull request on the [Github doc repository](https://github.com/OpenCTI-Platform/docs).
+This section gives you the possibility to display a broadcast message as a platform header.
+
+![Broadcast message configuration](assets/broadcast_message_configuration.png)
+
+The message can be accompanied by a “Dismiss” button. When click by a user, it make disappear the message
+for this user. This option can be deactivated to have a permanent broadcast message.
+
+![Broadcast message display](assets/broadcast_message_display.png)
