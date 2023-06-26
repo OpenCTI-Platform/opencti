@@ -181,6 +181,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
               filters={{
                 entity_type: [{ id: 'Case-Rfi', value: 'Case-Rfi' }],
               }}
+              type="Case-Rfi"
             />
           </React.Suspense>
         )}

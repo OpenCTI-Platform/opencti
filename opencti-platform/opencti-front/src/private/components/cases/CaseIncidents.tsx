@@ -176,6 +176,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
               filters={{
                 entity_type: [{ id: 'Case-Incident', value: 'Case-Incident' }],
               }}
+              type="Case-Incident"
             />
           </React.Suspense>
         )}

@@ -123,6 +123,7 @@ const Tasks = () => {
               filters={{
                 entity_type: [{ id: 'Task', value: 'Task' }],
               }}
+              type="Task"
             />
           </>
         )}
