@@ -94,6 +94,7 @@ const groupFragment = graphql`
           firstname
           lastname
           external
+          created_at
         }
       }
     }
