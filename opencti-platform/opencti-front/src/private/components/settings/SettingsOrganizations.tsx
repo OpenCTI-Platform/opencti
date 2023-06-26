@@ -28,18 +28,13 @@ const SettingsOrganizations = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '23%',
+        width: '30%',
         isSortable: true,
       },
       x_opencti_organization_type: {
         label: 'Type',
-        width: '15%',
+        width: '20%',
         isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '23%',
-        isSortable: false,
       },
       created: {
         label: 'Creation date',

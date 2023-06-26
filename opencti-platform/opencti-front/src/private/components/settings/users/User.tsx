@@ -482,7 +482,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                       divider={true}
                       button={true}
                       component={Link}
-                      to={`/dashboard/entities/organizations/${organizationEdge.node.id}`}
+                      to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
                     >
                       <ListItemIcon>
                         <AccountBalanceOutlined color="primary" />

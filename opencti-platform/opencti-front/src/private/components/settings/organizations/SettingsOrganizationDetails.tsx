@@ -72,7 +72,7 @@ SettingsOrganizationDetailsProps
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t('Basic information')}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
@@ -98,15 +98,6 @@ SettingsOrganizationDetailsProps
             <ExpandableMarkdown
               source={organization.description}
               limit={400}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t('Reliability')}
-            </Typography>
-            <ItemReliability
-              reliability={organization.x_opencti_reliability}
-              label={t(`reliability_${organization.x_opencti_reliability}`)}
             />
             <Typography
               variant="h3"

@@ -58,15 +58,6 @@ const SettingsOrganizationFragment = graphql`
     name
     created
     modified
-    objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
-    }
   }
 `;
 
@@ -105,15 +96,6 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
               {organization.x_opencti_organization_type
                 ? t(`organization_${organization.x_opencti_organization_type}`)
                 : ''}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
-              <StixCoreObjectLabels
-                variant="inList"
-                labels={organization.objectLabel}
-              />
             </div>
             <div
               className={classes.bodyItem}
