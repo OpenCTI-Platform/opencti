@@ -37,7 +37,6 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'tasks', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [],
   relationsRefs: [CaseTemplateToTaskTemplateRelation],
