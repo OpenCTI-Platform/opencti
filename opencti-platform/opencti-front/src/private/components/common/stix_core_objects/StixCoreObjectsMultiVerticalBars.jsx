@@ -116,10 +116,12 @@ const StixCoreObjectsMultiVerticalBars = ({
                   formatter,
                   simpleNumberFormat,
                   false,
-                  !!['day', 'week'].includes(parameters.interval),
+                  !parameters.interval
+                    || ['day', 'week'].includes(parameters.interval),
                   parameters.stacked,
                   parameters.legend,
-                  !['day', 'week'].includes(parameters.interval)
+                  parameters.interval
+                    && !['day', 'week'].includes(parameters.interval)
                     ? 'dataPoints'
                     : undefined,
                 )}

@@ -113,10 +113,12 @@ const StixCoreObjectsMultiAreaChart = ({
               <Chart
                 options={areaChartOptions(
                   theme,
-                  !!['day', 'week'].includes(parameters.interval),
+                  !parameters.interval
+                    || ['day', 'week'].includes(parameters.interval),
                   formatter,
                   simpleNumberFormat,
-                  !['day', 'week'].includes(parameters.interval)
+                  parameters.interval
+                    && !['day', 'week'].includes(parameters.interval)
                     ? 'dataPoints'
                     : undefined,
                   parameters.stacked,
