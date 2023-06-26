@@ -445,6 +445,7 @@ export const getPlatformHttpProxyAgent = (uri) => {
 };
 
 // Playground
+export const ENABLED_DEMO_MODE = booleanConf('demo_mode', false);
 export const PLAYGROUND_INTROSPECTION_DISABLED = booleanConf('app:graphql:playground:force_disabled_introspection', false);
 export const PLAYGROUND_ENABLED = booleanConf('app:graphql:playground:enabled', true);
 export const GRAPHQL_ARMOR_ENABLED = booleanConf('app:graphql:armor_enabled', true);

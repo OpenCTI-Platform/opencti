@@ -17,6 +17,7 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Alert from '@mui/material/Alert';
 import ActivityMenu from '../../ActivityMenu';
 import { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
@@ -30,6 +31,8 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import AuditLines, { AuditLinesQuery } from './AuditLines';
 import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
 import { AuditLineDummy } from './AuditLine';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import { useFormatter } from '../../../../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'view-audit';
 
@@ -42,6 +45,8 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const Audit = () => {
   const classes = useStyles();
+  const { settings } = useAuth();
+  const { t } = useFormatter();
   const {
     viewStorage,
     paginationOptions,
@@ -135,8 +140,12 @@ const Audit = () => {
                     <AuditLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
-          >
+            }>
+            {settings.platform_demo && <div>
+                <Alert severity="error" variant="outlined">
+                    <b>{t('DEMO PLATFORM > Data will only display *** Redacted *** names')}</b>
+                </Alert>
+            </div>}
             <AuditLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}

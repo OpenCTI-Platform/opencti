@@ -15,10 +15,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { ACTIVITY_STREAM_NAME, createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
-import conf, { logApp } from '../config/conf';
+import conf, { ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
@@ -58,7 +58,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
       event_status: event.data.status,
       event_access: event.data.event_access,
       event_scope: event.data.event_scope,
-      user_id: event.data.origin?.user_id,
+      user_id: ENABLED_DEMO_MODE ? REDACTED_USER.id : event.data.origin?.user_id,
       group_ids: event.data.origin?.group_ids ?? [],
       organization_ids: event.data.origin?.organization_ids ?? [],
       applicant_id: event.data.origin?.applicant_id,

@@ -43,7 +43,7 @@ import {
   userWithOrigin,
   batchRolesForUsers,
 } from '../domain/user';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
@@ -51,7 +51,7 @@ import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
-import { executionContext } from '../utils/access';
+import { executionContext, REDACTED_USER } from '../utils/access';
 import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
@@ -84,6 +84,14 @@ const userResolvers = {
     objectOrganization: (current, args, context) => organizationsLoader.load(current.id, context, context.user, { ...args, withInferences: false }),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
+  },
+  Member: {
+    name: (current, _, context) => {
+      if (current.entity_type !== ENTITY_TYPE_USER) {
+        return current.name;
+      }
+      return (ENABLED_DEMO_MODE && context.user.id !== current.id) ? REDACTED_USER.name : current.name;
+    },
   },
   MeUser: {
     objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
@@ -137,7 +145,7 @@ const userResolvers = {
         event_scope: 'login',
         event_access: 'administration',
         status: 'error',
-        context_data: { username: input.email, provider: 'form' }
+        context_data: { username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email, provider: 'form' }
       });
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
@@ -150,7 +158,7 @@ const userResolvers = {
         event_type: 'mutation',
         event_scope: 'delete',
         event_access: 'administration',
-        message: `kills \`specific session\` for user \`${user.user_email}\``,
+        message: `kills \`specific session\` for user \`${ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email}\``,
         context_data: { entity_type: ENTITY_TYPE_USER, input: { user_id: user.id, session_id: kill.sessionId } }
       });
       return id;
@@ -165,7 +173,7 @@ const userResolvers = {
         event_type: 'mutation',
         event_scope: 'delete',
         event_access: 'administration',
-        message: `kills \`all sessions\` for user \`${user.user_email}\``,
+        message: `kills \`all sessions\` for user \`${ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email}\``,
         context_data: { entity_type: ENTITY_TYPE_USER, input: { user_id: id } }
       });
       return sessionIds;

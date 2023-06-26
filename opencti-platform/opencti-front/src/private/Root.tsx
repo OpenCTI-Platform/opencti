@@ -31,6 +31,7 @@ const rootPrivateQuery = graphql`
       }
     }
     settings {
+      platform_demo
       platform_map_tile_server_dark
       platform_map_tile_server_light
       platform_theme

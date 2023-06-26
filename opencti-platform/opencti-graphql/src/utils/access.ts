@@ -23,6 +23,7 @@ export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRIC
 export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
+export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
 
 export const MEMBER_ACCESS_ALL = 'ALL';
 export const MEMBER_ACCESS_RIGHT_ADMIN = 'admin';
@@ -87,6 +88,25 @@ export const RULE_MANAGER_USER: AuthUser = {
   api_token: '',
 };
 
+export const REDACTED_USER: AuthUser = {
+  id: REDACTED_USER_UUID,
+  internal_id: REDACTED_USER_UUID,
+  individual_id: undefined,
+  name: '*** Redacted ***',
+  user_email: '*** Redacted ***',
+  inside_platform_organization: false,
+  origin: { user_id: REDACTED_USER_UUID },
+  roles: [],
+  groups: [],
+  capabilities: [],
+  organizations: [],
+  allowed_organizations: [],
+  allowed_marking: [],
+  default_marking: [],
+  all_marking: [],
+  api_token: '',
+};
+
 export interface AuthorizedMember { id: string, access_right: string }
 
 class TracingContext {
@@ -121,7 +141,8 @@ export const executionContext = (source: string, auth?: AuthUser): AuthContext =
 export const INTERNAL_USERS = {
   [SYSTEM_USER.id]: SYSTEM_USER,
   [RETENTION_MANAGER_USER.id]: RETENTION_MANAGER_USER,
-  [RULE_MANAGER_USER.id]: RULE_MANAGER_USER
+  [RULE_MANAGER_USER.id]: RULE_MANAGER_USER,
+  [REDACTED_USER.id]: REDACTED_USER
 };
 
 export const isBypassUser = (user: AuthUser): boolean => {

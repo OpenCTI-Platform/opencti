@@ -46,13 +46,6 @@ export type AckDetails = {
   rate?: Maybe<Scalars['Float']>;
 };
 
-export type ActivityListener = {
-  __typename?: 'ActivityListener';
-  entity_type: Scalars['String'];
-  id: Scalars['ID'];
-  name: Scalars['String'];
-};
-
 export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'AdministrativeArea';
   cases?: Maybe<CaseConnection>;
@@ -19808,7 +19801,7 @@ export type SessionDetail = {
 
 export type Settings = BasicObject & InternalObject & {
   __typename?: 'Settings';
-  activity_listeners?: Maybe<Array<ActivityListener>>;
+  activity_listeners?: Maybe<Array<Member>>;
   created_at: Scalars['DateTime'];
   editContext?: Maybe<Array<EditUserContext>>;
   enterprise_edition?: Maybe<Scalars['DateTime']>;
@@ -19826,6 +19819,7 @@ export type Settings = BasicObject & InternalObject & {
   platform_cluster: Cluster;
   platform_consent_confirm_text?: Maybe<Scalars['String']>;
   platform_consent_message?: Maybe<Scalars['String']>;
+  platform_demo?: Maybe<Scalars['Boolean']>;
   platform_email?: Maybe<Scalars['String']>;
   platform_favicon?: Maybe<Scalars['String']>;
   platform_feature_flags?: Maybe<Array<Module>>;
@@ -25980,7 +25974,6 @@ export type ResolversUnionParentTypes = ResolversObject<{
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   AckDetails: ResolverTypeWrapper<AckDetails>;
-  ActivityListener: ResolverTypeWrapper<ActivityListener>;
   AdministrativeArea: ResolverTypeWrapper<BasicStoreEntityAdministrativeArea>;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
   AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>> }>;
@@ -26747,7 +26740,6 @@ export type ResolversTypes = ResolversObject<{
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
   AckDetails: AckDetails;
-  ActivityListener: ActivityListener;
   AdministrativeArea: BasicStoreEntityAdministrativeArea;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
   AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['AdministrativeAreaEdge']>> };
@@ -27381,13 +27373,6 @@ export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args 
 
 export type AckDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AckDetails'] = ResolversParentTypes['AckDetails']> = ResolversObject<{
   rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type ActivityListenerResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActivityListener'] = ResolversParentTypes['ActivityListener']> = ResolversObject<{
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -32557,7 +32542,7 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
-  activity_listeners?: Resolver<Maybe<Array<ResolversTypes['ActivityListener']>>, ParentType, ContextType>;
+  activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   enterprise_edition?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -32575,6 +32560,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_demo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
@@ -34426,7 +34412,6 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   AckDetails?: AckDetailsResolvers<ContextType>;
-  ActivityListener?: ActivityListenerResolvers<ContextType>;
   AdministrativeArea?: AdministrativeAreaResolvers<ContextType>;
   AdministrativeAreaConnection?: AdministrativeAreaConnectionResolvers<ContextType>;
   AdministrativeAreaEdge?: AdministrativeAreaEdgeResolvers<ContextType>;

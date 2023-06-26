@@ -2,10 +2,10 @@ import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
 import { createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
@@ -109,7 +109,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       entity_type: ENTITY_TYPE_HISTORY,
       event_type: 'mutation',
       event_scope: event.event,
-      user_id: event.data.origin?.user_id,
+      user_id: ENABLED_DEMO_MODE ? REDACTED_USER.id : event.data.origin?.user_id,
       group_ids: event.data.origin?.group_ids ?? [],
       organization_ids: event.data.origin?.organization_ids ?? [],
       applicant_id: event.data.origin?.applicant_id,

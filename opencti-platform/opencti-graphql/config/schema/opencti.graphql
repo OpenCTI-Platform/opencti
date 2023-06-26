@@ -958,11 +958,6 @@ type Provider {
   strategy: String
   provider: String
 }
-type ActivityListener {
-  id: ID!
-  name: String!
-  entity_type: String!
-}
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -1002,12 +997,13 @@ type Settings implements InternalObject & BasicObject {
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String
+  platform_demo: Boolean
   platform_reference_attachment: Boolean @auth
   platform_feature_flags: [Module!] @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   enterprise_edition: DateTime @auth(for: [SETTINGS])
-  activity_listeners: [ActivityListener!] @auth(for: [SETTINGS])
+  activity_listeners: [Member!] @auth(for: [SETTINGS])
   otp_mandatory: Boolean @auth
   password_policy_min_length: Int @auth
   password_policy_max_length: Int @auth
