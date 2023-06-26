@@ -8,7 +8,6 @@ import Chip from '@mui/material/Chip';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import ItemReliability from '../../../../components/ItemReliability';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { SettingsOrganizationDetails_organization$key } from './__generated__/SettingsOrganizationDetails_organization.graphql';
 import { useFormatter } from '../../../../components/i18n';

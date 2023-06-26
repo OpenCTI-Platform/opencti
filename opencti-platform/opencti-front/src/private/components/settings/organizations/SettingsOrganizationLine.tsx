@@ -9,7 +9,6 @@ import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import ItemIcon from '../../../../components/ItemIcon';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
