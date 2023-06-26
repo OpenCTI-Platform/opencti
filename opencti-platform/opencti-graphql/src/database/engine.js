@@ -1341,9 +1341,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
         script: { source, params },
       };
     }
-  } else if (search !== null && search.length > 0) {
+  } else { // If not ordering criteria, order by _score and standard_id
     ordering.push({ _score: 'desc' });
-  } else { // If not ordering criteria, order by standard_id
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
   // Build query
