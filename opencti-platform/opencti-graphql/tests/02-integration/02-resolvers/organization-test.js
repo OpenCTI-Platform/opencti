@@ -118,14 +118,14 @@ describe('Organization resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.organization).not.toBeNull();
-    expect(queryResult.data.organization.sectors.edges.length).toEqual(1);
-    expect(queryResult.data.organization.sectors.edges[0].node.standard_id).toEqual(
+    expect(queryResult.data.organization.suborganizations.edges.length).toEqual(1);
+    expect(queryResult.data.organization.suborganizations.edges[0].node.standard_id).toEqual(
       'identity--ae876e2d-4927-43df-af22-e36c9487fd8d'
     );
   });
   it('should list organizations', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.organizations.edges.length).toEqual(6);
+    expect(queryResult.data.organizations.edges.length).toEqual(7);
   });
   it('should update organization', async () => {
     const UPDATE_QUERY = gql`

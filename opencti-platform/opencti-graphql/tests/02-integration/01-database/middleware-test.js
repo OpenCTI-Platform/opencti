@@ -193,7 +193,7 @@ describe('Entities listing', () => {
   it('should list multiple entities', async () => {
     const entities = await listEntities(testContext, ADMIN_USER, ['Malware', 'Organization']);
     expect(entities).not.toBeNull();
-    expect(entities.edges.length).toEqual(7); // 2 malwares + 8 organizations
+    expect(entities.edges.length).toEqual(8); // 2 malwares + 6 organizations
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
     expect(aggregationMap.get('Paradise Ransomware')).not.toBeUndefined();
     expect(aggregationMap.get('Allied Universal')).not.toBeUndefined();
@@ -253,7 +253,7 @@ describe('Relations listing', () => {
   it('should list relations', async () => {
     const stixCoreRelationships = await listRelations(testContext, ADMIN_USER, 'stix-core-relationship');
     expect(stixCoreRelationships).not.toBeNull();
-    expect(stixCoreRelationships.edges.length).toEqual(23);
+    expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
     expect(stixRefRelationships.edges.length).toEqual(119);

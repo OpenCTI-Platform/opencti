@@ -186,7 +186,7 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(R.head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(R.head(data).value).toEqual(30);
+    expect(R.head(data).value).toEqual(31);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -203,7 +203,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2019-11')).toEqual(0);
     expect(aggregationMap.get('2019-12')).toEqual(0);
     expect(aggregationMap.get('2020-01')).toEqual(1);
-    expect(aggregationMap.get('2020-02')).toEqual(13);
+    expect(aggregationMap.get('2020-02')).toEqual(14);
     expect(aggregationMap.get('2020-03')).toEqual(1);
   });
   it('should year histogram accurate', async () => {
@@ -222,7 +222,7 @@ describe('Elasticsearch computation', () => {
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(6);
-    expect(aggregationMap.get('2020')).toEqual(15);
+    expect(aggregationMap.get('2020')).toEqual(16);
   });
   it('should year histogram with relation filter accurate (uses)', async () => {
     const attackPattern = await elLoadById(testContext, ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
@@ -346,7 +346,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: 1000 });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(420);
+    expect(data.edges.length).toEqual(421);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -364,7 +364,7 @@ describe('Elasticsearch pagination', () => {
       first: 1000,
     });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(1);
+    expect(data.edges.length).toEqual(349);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -420,7 +420,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
-    expect(data.edges.length).toEqual(413);
+    expect(data.edges.length).toEqual(414);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
@@ -469,7 +469,7 @@ describe('Elasticsearch pagination', () => {
       orderMode: 'asc',
       first: 1000
     });
-    expect(data.edges.length).toEqual(420);
+    expect(data.edges.length).toEqual(421);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -506,7 +506,7 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length).toEqual(41);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].length).toEqual(23);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].length).toEqual(24);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(119);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length).toEqual(3);
     const metas = groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].map((m) => m.node);
