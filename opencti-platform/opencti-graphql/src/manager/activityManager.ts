@@ -111,7 +111,7 @@ const initActivityManager = () => {
         logApp.error('[OPENCTI-MODULE] Activity manager failed to start', { error: e });
       }
     } finally {
-      shutdown = true;
+      running = false;
       if (streamProcessor) await streamProcessor.shutdown();
       if (lock) await lock.unlock();
     }
