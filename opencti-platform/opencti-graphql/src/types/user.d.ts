@@ -20,6 +20,7 @@ interface UserOrigin {
 }
 
 interface AuthUser extends BasicStoreIdentifier {
+  entity_type: string;
   id: string;
   internal_id: string;
   individual_id: string | undefined;

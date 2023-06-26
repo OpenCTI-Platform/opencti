@@ -32,6 +32,7 @@ export const MEMBER_ACCESS_RIGHT_VIEW = 'view';
 const MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
 
 export const SYSTEM_USER: AuthUser = {
+  entity_type: 'User',
   id: OPENCTI_SYSTEM_UUID,
   internal_id: OPENCTI_SYSTEM_UUID,
   individual_id: undefined,
@@ -51,6 +52,7 @@ export const SYSTEM_USER: AuthUser = {
 };
 
 export const RETENTION_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
   id: RETENTION_MANAGER_USER_UUID,
   internal_id: RETENTION_MANAGER_USER_UUID,
   individual_id: undefined,
@@ -70,6 +72,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
 };
 
 export const RULE_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
   id: RULE_MANAGER_USER_UUID,
   internal_id: RULE_MANAGER_USER_UUID,
   individual_id: undefined,
@@ -89,6 +92,7 @@ export const RULE_MANAGER_USER: AuthUser = {
 };
 
 export const REDACTED_USER: AuthUser = {
+  entity_type: 'User',
   id: REDACTED_USER_UUID,
   internal_id: REDACTED_USER_UUID,
   individual_id: undefined,

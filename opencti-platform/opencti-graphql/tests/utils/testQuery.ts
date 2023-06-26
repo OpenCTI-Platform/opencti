@@ -126,6 +126,7 @@ export const AMBER_STRICT_GROUP: Group = {
 // Users
 interface User { id: string, email: string, password: string, roles?: Role[], groups: Group[], client: AxiosInstance }
 export const ADMIN_USER: AuthUser = {
+  entity_type: 'User',
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   individual_id: undefined,
@@ -344,6 +345,7 @@ export const getUserIdByEmail = async (email: string) => {
 type markingType = { standard_id: string; internal_id: string };
 export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: markingType[]): AuthUser => {
   return {
+    entity_type: 'User',
     id: '88ec0c6a-12ce-5e39-b486-354fe4a7084f',
     internal_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f',
     individual_id: undefined,

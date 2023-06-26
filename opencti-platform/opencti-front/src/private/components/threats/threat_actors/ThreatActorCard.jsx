@@ -226,7 +226,7 @@ const ThreatActorCardFragment = createFragmentContainer(
           field: "internal_id"
           relationship_type: ["targets"]
           types: ["Country"]
-          limit: 5
+          limit: 4
         ) {
           label
           entity {
@@ -240,7 +240,7 @@ const ThreatActorCardFragment = createFragmentContainer(
           field: "internal_id"
           relationship_type: ["targets"]
           types: ["Sector"]
-          limit: 5
+          limit: 4
         ) {
           label
           entity {
@@ -254,7 +254,7 @@ const ThreatActorCardFragment = createFragmentContainer(
           field: "internal_id"
           relationship_type: ["uses"]
           types: ["Malware"]
-          limit: 5
+          limit: 4
         ) {
           label
           entity {

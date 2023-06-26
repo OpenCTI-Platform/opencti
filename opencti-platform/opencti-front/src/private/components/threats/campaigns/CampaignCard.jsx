@@ -223,7 +223,7 @@ const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
         field: "internal_id"
         relationship_type: ["targets"]
         types: ["Country"]
-        limit: 5
+        limit: 4
       ) {
         label
         entity {
@@ -237,7 +237,7 @@ const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
         field: "internal_id"
         relationship_type: ["targets"]
         types: ["Sector"]
-        limit: 5
+        limit: 4
       ) {
         label
         entity {
@@ -251,7 +251,7 @@ const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
         field: "internal_id"
         relationship_type: ["uses"]
         types: ["Malware"]
-        limit: 5
+        limit: 4
       ) {
         label
         entity {
