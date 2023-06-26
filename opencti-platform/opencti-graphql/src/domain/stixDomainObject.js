@@ -27,7 +27,7 @@ import {
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation, isStixDomainObjectThreatActors,
+  isStixDomainObjectLocation,
 } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
@@ -145,9 +145,6 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   }
   if (isStixDomainObjectLocation(innerType)) {
     data.x_opencti_location_type = innerType;
-  }
-  if (isStixDomainObjectThreatActors(innerType)) {
-    data.x_opencti_threat_actor_type = innerType;
   }
   if (innerType === ENTITY_TYPE_CONTAINER_REPORT) {
     data.published = utcDate();

@@ -5,7 +5,7 @@ import {
   ABSTRACT_STIX_REF_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LOCATION, ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_LOCATION,
 } from './general';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
@@ -92,15 +92,6 @@ schemaTypesDefinition.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATION
 export const isStixDomainObjectLocation = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_LOCATION)
   || type === ENTITY_TYPE_LOCATION;
 
-const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
-  ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  // ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL
-];
-schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THREAT_ACTORS);
-
-export const isStixDomainObjectThreatActors = (type: string): boolean => {
-  return schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR) || type === ENTITY_TYPE_THREAT_ACTOR;
-};
 const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -133,7 +124,6 @@ export const isStixDomainObject = (type: string): boolean => {
     || isStixDomainObjectIdentity(type)
     || isStixDomainObjectLocation(type)
     || isStixDomainObjectContainer(type)
-    || isStixDomainObjectThreatActors(type)
     || type === ABSTRACT_STIX_DOMAIN_OBJECT;
 };
 
@@ -161,7 +151,7 @@ export const isStixObjectAliased = (type: string): boolean => {
 
 export const resolveAliasesField = (type: string): AttributeDefinition => {
   // eslint-disable-next-line max-len
-  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || type === ENTITY_TYPE_CONTAINER_GROUPING || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type) || isStixDomainObjectThreatActors(type)) {
+  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || type === ENTITY_TYPE_CONTAINER_GROUPING || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
     return xOpenctiAliases;
   }
   return aliases;

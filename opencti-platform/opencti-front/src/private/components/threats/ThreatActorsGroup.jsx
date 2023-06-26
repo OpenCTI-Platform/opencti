@@ -17,8 +17,6 @@ import ThreatActorGroupCreation from './threat_actors_group/ThreatActorGroupCrea
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
-import ThreatActorsGroupCards, { threatActorsGroupCardsQuery } from './threat_actors_group/ThreatActorsGroupCards';
-import ThreatActorsGroupLines, { threatActorsGroupLinesQuery } from './threat_actors_group/ThreatActorsGroupLines';
 
 class ThreatActorGroups extends Component {
   constructor(props) {
