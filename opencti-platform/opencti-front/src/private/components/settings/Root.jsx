@@ -97,24 +97,10 @@ const Root = () => (
           </Security>
         )}
       />
-      {
-        // TODO What is the difference between these two ways of doing? And why there is no capability check in one?
-      }
       <BoundaryRoute
         path="/dashboard/settings/accesses/organizations/:organizationId"
         component={RootSettingsOrganization}
       />
-      {/* <BoundaryRoute */}
-      {/*  path="/dashboard/settings/accesses/organizations/:organizationId" */}
-      {/*  render={() => ( */}
-      {/*    <Security */}
-      {/*      needs={[SETTINGS_SETACCESSES]} */}
-      {/*      placeholder={<Redirect to={'/dashboard/settings'} />} */}
-      {/*    > */}
-      {/*      <RootSettingsOrganization /> */}
-      {/*    </Security> */}
-      {/*  )} */}
-      {/* /> */}
       <BoundaryRoute
         exact
         path="/dashboard/settings/accesses/roles"

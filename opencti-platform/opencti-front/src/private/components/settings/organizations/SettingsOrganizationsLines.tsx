@@ -7,7 +7,6 @@ import { SettingsOrganizationsLinesPaginationQuery, SettingsOrganizationsLinesPa
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { SettingsOrganizationLine, SettingsOrganizationLineDummy } from './SettingsOrganizationLine';
 
-// TODO check that Organization is replaced by SettingsOrganization everywhere in *.graphql.ts (except type Organization)
 const nbOfRowsToLoad = 50;
 
 export interface SettingsOrganizationsLinesProps {
