@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
@@ -8,10 +8,16 @@ import Chip from '@mui/material/Chip';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import { SettingsOrganizationDetails_organization$key } from './__generated__/SettingsOrganizationDetails_organization.graphql';
-import { useFormatter } from '../../../../components/i18n';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import { Link } from 'react-router-dom';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import { AccountBalanceOutlined } from '@mui/icons-material';
+import ListItemText from '@mui/material/ListItemText';
 import { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
+import { SettingsOrganizationDetails_organization$key } from './__generated__/SettingsOrganizationDetails_organization.graphql';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -38,14 +44,22 @@ const SettingsOrganizationDetailsFragment = graphql`
         id
         description
         contact_information
-        x_opencti_reliability
         x_opencti_organization_type
-        objectLabel {
+        subOrganizations {
           edges {
             node {
               id
-              value
-              color
+              standard_id
+              name
+            }
+          }
+        }
+        parentOrganizations {
+          edges {
+            node {
+              id
+              standard_id
+              name
             }
           }
         }
@@ -62,11 +76,12 @@ SettingsOrganizationDetailsProps
 > = ({ settingsOrganizationFragment }) => {
   const { t } = useFormatter();
   const classes = styles();
-  // TODO don't use useFragment again and use the object instead
   const organization = useFragment(
     SettingsOrganizationDetailsFragment,
     settingsOrganizationFragment,
   );
+  const subOrganizations = organization.subOrganizations?.edges ?? [];
+  const parentOrganizations = organization.parentOrganizations?.edges ?? [];
 
   return (
     <div style={{ height: '100%' }}>
@@ -112,6 +127,49 @@ SettingsOrganizationDetailsProps
               {organization.contact_information ?? ''}
             </Markdown>
           </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Part of')}
+              </Typography>
+              <List>
+                {parentOrganizations.map((parentOrganization) => (
+                  <ListItem
+                    key={parentOrganization.node.id}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                    component={Link}
+                    to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
+                  >
+                    <ListItemIcon>
+                      <AccountBalanceOutlined color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={parentOrganization.node.name} />
+                  </ListItem>
+                ))}
+              </List>
+              <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}
+              >
+                {t('Sub organizations')}
+              </Typography>
+              <List>
+                {subOrganizations.map((subOrganization) => (
+                  <ListItem
+                    key={subOrganization.node.id}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                    component={Link}
+                    to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
+                  >
+                    <ListItemIcon>
+                      <AccountBalanceOutlined color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={subOrganization.node.name} />
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
         </Grid>
       </Paper>
     </div>
