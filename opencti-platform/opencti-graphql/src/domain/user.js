@@ -991,7 +991,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
       user: userOrigin,
       event_type: 'authentication',
       event_access: 'administration',
-      event_scope: 'administration',
+      event_scope: 'login',
       context_data: { provider }
     });
   }
