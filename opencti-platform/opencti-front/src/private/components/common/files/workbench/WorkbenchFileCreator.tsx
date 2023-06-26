@@ -94,9 +94,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({ op
         setSubmitting(false);
         resetForm();
         handleCloseCreate();
-        if (onCompleted) {
-          onCompleted();
-        }
+        onCompleted?.();
       },
     });
   };

@@ -600,7 +600,7 @@ class ImportContentComponent extends Component {
           </Formik>
           <WorkbenchFileCreator
             handleCloseCreate={this.handleCloseCreate.bind(this)}
-            openCreate={!!displayCreate}
+            openCreate={displayCreate}
             onCompleted={this.onCreateWorkbenchCompleted.bind(this)}
           />
         </div>

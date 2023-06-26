@@ -370,8 +370,8 @@ const WorkbenchFileContentComponent = ({
     if (currentEntityId) {
       const currentEntityContainer = containers.find((container) => container.x_opencti_id === currentEntityId);
       if (currentEntityContainer) {
-        const currentEntityObjectRefs = currentEntityContainer.object_refs?.length ? currentEntityContainer.object_refs : [];
-        const objectIds = [...stixDomainObjects.map((s) => s.id), ...stixCyberObservables.map((s) => s.id)];
+        const currentEntityObjectRefs = Array.isArray(currentEntityContainer.object_refs) ? currentEntityContainer.object_refs : [];
+        const objectIds = [...stixDomainObjects, ...stixCyberObservables].map((s) => s.id);
         currentEntityContainer.object_refs = R.uniq([...currentEntityObjectRefs, ...objectIds]);
       }
     }

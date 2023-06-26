@@ -32,7 +32,6 @@ const styles = () => ({
 
 const WorkbenchFileViewerBase = ({
   entity,
-  disableImport,
   handleOpenImport,
   connectors,
   relay,
@@ -41,7 +40,6 @@ const WorkbenchFileViewerBase = ({
 }) => {
   const { id, pendingFiles } = entity;
   const { edges } = pendingFiles;
-  const isContainer = entity.entity_type !== 'Report';
   const [openCreate, setOpenCreate] = useState(false);
 
   useEffect(() => {
@@ -89,7 +87,6 @@ const WorkbenchFileViewerBase = ({
                 <WorkbenchFileLine
                   key={file.node.id}
                   dense={true}
-                  disableImport={isContainer || disableImport}
                   file={file.node}
                   connectors={
                     connectors && connectors[file.node.metaData.mimetype]
