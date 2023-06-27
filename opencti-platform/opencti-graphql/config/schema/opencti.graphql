@@ -4234,8 +4234,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
   members: UserConnection @auth(for: [SETTINGS_SETACCESSES])
-  subOrganizations: [Organization!]
-  parentOrganizations: [Organization!]
+  subOrganizations: OrganizationConnection
+  parentOrganizations: OrganizationConnection
   # Technical
   creators: [Creator!]
   toStix: String
