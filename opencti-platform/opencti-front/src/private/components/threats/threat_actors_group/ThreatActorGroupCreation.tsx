@@ -33,9 +33,6 @@ import {
   ThreatActorGroupCreationMutation,
   ThreatActorGroupCreationMutation$variables,
 } from './__generated__/ThreatActorGroupCreationMutation.graphql';
-import {
-  ThreatActorsGroupLinesPaginationQuery$variables,
-} from './__generated__/ThreatActorsGroupLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

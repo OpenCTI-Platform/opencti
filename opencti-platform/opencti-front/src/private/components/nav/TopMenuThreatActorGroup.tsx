@@ -10,8 +10,9 @@ import {
   KNOWLEDGE_KNGETEXPORT,
   KNOWLEDGE_KNUPLOAD,
 } from '../../../utils/hooks/useGranted';
+import { Theme } from '../../../components/Theme';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '0 5px 0 5px',
