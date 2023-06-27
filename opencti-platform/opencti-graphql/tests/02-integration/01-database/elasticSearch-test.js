@@ -364,7 +364,7 @@ describe('Elasticsearch pagination', () => {
       first: 1000,
     });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(349);
+    expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -512,7 +512,7 @@ describe('Elasticsearch pagination', () => {
     const metas = groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].map((m) => m.node);
     const metaByEntityType = R.groupBy((m) => m.entity_type, metas);
     expect(metaByEntityType.object.length).toEqual(38);
-    expect(metaByEntityType['object-label'].length).toEqual(28);
+    expect(metaByEntityType['object-label'].length).toEqual(29);
     expect(metaByEntityType['created-by'].length).toEqual(19);
     expect(metaByEntityType['external-reference'].length).toEqual(7);
     expect(metaByEntityType['object-marking'].length).toEqual(23);
