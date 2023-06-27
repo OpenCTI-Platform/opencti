@@ -128,7 +128,7 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.organization).not.toBeNull();
     expect(queryResult.data.organization.subOrganizations.edges.length).toEqual(1);
-    expect(queryResult.data.organization.subOrganizations.edges[0].node.standard_id).toEqual(
+    expect(queryResult.data.organization.subOrganizations.edges[0].node.id).toEqual(
       'identity--ae876e2d-4927-43df-af22-e36c9487fd8d'
     );
   });

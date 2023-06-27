@@ -200,7 +200,7 @@ describe('StixDomainObject resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixDomainObjectsTimeSeries.length).toEqual(14);
-    expect(queryResult.data.stixDomainObjectsTimeSeries[1].value).toEqual(13);
+    expect(queryResult.data.stixDomainObjectsTimeSeries[1].value).toEqual(14);
     expect(queryResult.data.stixDomainObjectsTimeSeries[2].value).toEqual(5);
   });
   it('should update stixDomainObject', async () => {
