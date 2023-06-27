@@ -81,7 +81,7 @@ export const getAvailableSettings = (targetType: string) => {
 // -- HELPERS --
 
 export const getEntitySettingFromCache = async (context: AuthContext, type: string) => {
-  const entitySettings = await getEntitiesFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING);
+  const entitySettings = await getEntitiesFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING) as BasicStoreEntityEntitySetting[];
   let entitySetting = entitySettings.find((es) => es.target_type === type);
 
   if (!entitySetting) {

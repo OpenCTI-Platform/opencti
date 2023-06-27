@@ -393,21 +393,8 @@ const updateActionFromEventType = (eventType?: string) => {
   }
 };
 
-export const generateNotificationMessageForInstanceWithRefs = (
-  instance: StixCoreObject | StixRelationshipObject,
-  refsInstances: StixObject[],
-  displayedTypeIsUpdate?: boolean,
-  translatedType?: string,
-) => {
-  const instanceRepresentative = extractStixRepresentative(instance);
-  switch (displayedTypeIsUpdate) {
-    case true:
-      return `[${instance.type.toLowerCase()}] ${instanceRepresentative} containing ${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)}`;
-    default:
-      return `${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)} ${updateActionFromEventType(translatedType)} [${instance.type.toLowerCase()}] ${instanceRepresentative}`;
-  }
-};
-
+// generate a notification message for an instance
+// taking the user rights into account in case of a relationship (from/to restricted or not)
 export const generateNotificationMessageForInstance = async (
   context: AuthContext,
   user: AuthUser,
@@ -418,6 +405,26 @@ export const generateNotificationMessageForInstance = async (
   const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
   const instanceRepresentative = extractStixRepresentative(instance, { fromRestricted, toRestricted });
   return `[${instance.type.toLowerCase()}] ${instanceRepresentative}`;
+};
+
+// generate a notification message with an instance and refs
+// taking the user rights into account in case of a relationship (from/to restricted or not)
+// but not for the refs (the refs should already have been filtered with the user rights)
+export const generateNotificationMessageForInstanceWithRefs = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StixCoreObject | StixRelationshipObject,
+  refsInstances: StixObject[],
+  displayedTypeIsUpdate?: boolean,
+  translatedType?: string,
+) => {
+  const mainInstanceMessage = await generateNotificationMessageForInstance(context, user, instance);
+  switch (displayedTypeIsUpdate) {
+    case true:
+      return `${mainInstanceMessage} containing ${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)}`;
+    default:
+      return `${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)} ${updateActionFromEventType(translatedType)} ${mainInstanceMessage}`;
+  }
 };
 
 // generate the message and the event type to display in the notification for the filtered events
@@ -449,7 +456,7 @@ const generateNotificationMessageAndDisplayedEventTypeForFilteredSideEvents = as
     }
     const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch); // TODO call upper and pass to function (more global context)
     if (listenedInstancesInPatchIds.length > 0) { // 2.a.--> It's the patch that contains instance(s) of the trigger filters
-      const message = generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInPatchIds, false, translatedType);
+      const message = await generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInPatchIds, false, translatedType);
       return { displayedEventType: EVENT_TYPE_UPDATE, message }; // the displayed type is an update // TODO translatedType before in a separated function
     }
     if ([STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type)) { // 2.b. --> the patch doesn't contain listened instances and the update instance is a relationship
@@ -464,7 +471,7 @@ const generateNotificationMessageAndDisplayedEventTypeForFilteredSideEvents = as
     // We need to filter these instances to keep those that are part of the event refs
     const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
     if (listenedInstancesInRefsEventIds.length > 0) {
-      const message = generateNotificationMessageForInstanceWithRefs(data, listenedInstancesInRefsEventIds, true);
+      const message = await generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds, true);
       return { displayedEventType: translatedType, message };
     }
   }
@@ -491,7 +498,6 @@ export const buildTargetEvents = async (
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
     const { newDocument: previous } = jsonpatch.applyPatch(R.clone(data), updatePatch.reverse_patch);
-    console.log('users', users);
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];

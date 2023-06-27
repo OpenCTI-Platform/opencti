@@ -17,22 +17,59 @@ import {
   isRelationFromOrToMatchFilters
 } from '../../../src/manager/notificationManager';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
-import { generateStandardId, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { generateInternalId, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { RELATION_DELIVERS } from '../../../src/schema/stixCoreRelationship';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../src/schema/general';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { resetCacheForEntity } from '../../../src/database/cache';
 
 // -- PREPARE queries --
-const READ_QUERY = gql`
+const MARKING_READ_QUERY = gql`
   query markingDefinition($id: String!) {
     markingDefinition(id: $id) {
       id
       definition_type
       definition
+      standard_id
     }
   }
+`;
+const CREATE_USER_QUERY = gql`
+    mutation UserAdd($input: UserAddInput!) {
+        userAdd(input: $input) {
+            id
+            name
+            standard_id
+        }
+    }
+`;
+const CREATE_GROUP_QUERY = gql`
+    mutation GroupAdd($input: GroupAddInput!) {
+        groupAdd(input: $input) {
+            id
+            name
+        }
+    }
+`;
+const GROUP_RELATION_ADD_QUERY = gql`
+    mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
+        groupEdit(id: $id) {
+            relationAdd(input: $input) {
+                id
+                to {
+                    ... on Group {
+                        members {
+                            edges {
+                                node {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 `;
 const CREATE_LIVE_TRIGGER_QUERY = gql`
     mutation TriggerLiveAdd($input: TriggerLiveAddInput!) {
@@ -97,24 +134,55 @@ const CREATE_SIGHTING_QUERY = gql`
 
 describe('Notification manager behaviors test', async () => {
   // -- PREPARE --
-  // -- markings
-  let queryResult = await queryAsAdmin({
-    query: READ_QUERY,
+  // -- markings --
+  const greenMarkingQueryResult = await queryAsAdmin({
+    query: MARKING_READ_QUERY,
     variables: { id: MARKING_TLP_GREEN }
   });
-  expect(queryResult).not.toBeNull();
-  const internalMarkingGreenId = queryResult?.data?.markingDefinition.id;
-  queryResult = await queryAsAdmin({
-    query: READ_QUERY,
+  expect(greenMarkingQueryResult).not.toBeNull();
+  const [greenMarkingInternalId, greenMarkingStandardId] = [greenMarkingQueryResult?.data?.markingDefinition.id, greenMarkingQueryResult?.data?.markingDefinition.standard_id];
+  const redMarkingQueryResult = await queryAsAdmin({
+    query: MARKING_READ_QUERY,
     variables: { id: MARKING_TLP_RED }
   });
-  expect(queryResult).not.toBeNull();
-  const internalMarkingRedId = queryResult?.data?.markingDefinition.id;
-  // -- users
-  const loggingUserId = generateStandardId(ENTITY_TYPE_USER, { user_email: 'user@opencti.io' });
+  expect(redMarkingQueryResult).not.toBeNull();
+  const [redMarkingInternalId, redMarkingStandardId] = [redMarkingQueryResult?.data?.markingDefinition.id, redMarkingQueryResult?.data?.markingDefinition.standard_id];
+  // -- users --
   const context = testContext;
-  const adminUser = ADMIN_USER;
-  const loggingUser = {
+  const adminUser = ADMIN_USER; // admin user with all rights
+  const mail = `${generateInternalId()}@mail.com`; // TODO set a fixed email
+  const loggingUserAddResult = await queryAsAdmin({ // create a restricted users with only access to green markings
+    query: CREATE_USER_QUERY,
+    variables: {
+      input: {
+        name: 'greenuser_name',
+        password: 'greenuser',
+        user_email: mail,
+      },
+    },
+  });
+  const loggingUserId = loggingUserAddResult.data.userAdd.id;
+  const greenGroupAddResult = await queryAsAdmin({ // create a group with only green marking allowed
+    query: CREATE_GROUP_QUERY,
+    variables: {
+      input: {
+        name: 'Group with green marking allowed',
+        description: 'Group of restricted user, only green marking allowed',
+      }
+    },
+  });
+  const greenGroupId = greenGroupAddResult.data.groupAdd.id;
+  await queryAsAdmin({ // create the relation between the restricted user and the green group
+    query: GROUP_RELATION_ADD_QUERY,
+    variables: {
+      id: greenGroupId,
+      input: {
+        fromId: loggingUserId,
+        relationship_type: 'member-of',
+      },
+    },
+  });
+  const loggingUser = { // restricted user with only access to green markings
     id: loggingUserId,
     internal_id: loggingUserId,
     individual_id: undefined,
@@ -127,12 +195,12 @@ describe('Notification manager behaviors test', async () => {
     capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }],
     organizations: [],
     allowed_organizations: [],
-    allowed_marking: [{ internal_id: internalMarkingGreenId }],
+    allowed_marking: [{ internal_id: greenMarkingInternalId, standard_id: greenMarkingStandardId }],
     default_marking: [],
     all_marking: [],
     api_token: '',
   };
-  // -- create data
+  // -- create data --
   const reportAddResult = await queryAsAdmin({
     query: CREATE_REPORT_QUERY,
     variables: {
@@ -188,14 +256,14 @@ describe('Notification manager behaviors test', async () => {
     },
   });
 
-  // -- fetch data ids
+  // -- fetch data ids --
   const [reportId, reportStandardId] = [reportAddResult.data.reportAdd.id, reportAddResult.data.reportAdd.standard_id];
   const [redReportId, redReportStandardId] = [redReportAddResult.data.reportAdd.id, redReportAddResult.data.reportAdd.standard_id];
   const [malwareId, malwareStandardId] = [malwareAddResult.data.malwareAdd.id, malwareAddResult.data.malwareAdd.standard_id];
   const [greenOrganizationId, greenOrganizationStandardId] = [greenOrganizationAddResult.data.organizationAdd.id, greenOrganizationAddResult.data.organizationAdd.standard_id];
   const [redOrganizationId, redOrganizationStandardId] = [redOrganizationAddResult.data.organizationAdd.id, redOrganizationAddResult.data.organizationAdd.standard_id];
   const [redAttackPatternId, redAttackPatternStandardId] = [redAttackPatternAddResult.data.attackPatternAdd.id, redAttackPatternAddResult.data.attackPatternAdd.standard_id];
-  // -- create relationships
+  // -- create relationships --
   const relationshipAddResult = await queryAsAdmin({
     query: CREATE_RELATIONSHIP_QUERY,
     variables: {
@@ -218,7 +286,7 @@ describe('Notification manager behaviors test', async () => {
   });
   const [relationshipId, relationshipStandardId] = [relationshipAddResult.data.stixCoreRelationshipAdd.id, relationshipAddResult.data.stixCoreRelationshipAdd.standard_id];
   const [sightingId, sightingStandardId] = [sightingAddResult.data.stixSightingRelationshipAdd.id, sightingAddResult.data.stixSightingRelationshipAdd.standard_id];
-  // -- build stix data
+  // -- build stix data --
   const stixReport = {
     name: 'report_name',
     id: reportStandardId,
@@ -295,13 +363,13 @@ describe('Notification manager behaviors test', async () => {
         id: sightingId,
         type: STIX_SIGHTING_RELATIONSHIP,
 
-        sighting_of_ref_object_marking_refs: [internalMarkingGreenId],
+        sighting_of_ref_object_marking_refs: [greenMarkingInternalId],
         sighting_of_ref_granted_refs: [],
         sighting_of_type: ENTITY_TYPE_MALWARE,
         sighting_of_value: 'malware_entity',
         source_of_ref: malwareId,
 
-        where_sighted_refs_object_marking_refs: [internalMarkingRedId],
+        where_sighted_refs_object_marking_refs: [redMarkingInternalId],
         where_sighted_refs_granted_refs: [],
         where_sighted_types: [ENTITY_TYPE_CONTAINER_REPORT],
         where_sighted_values: ['report_entity'],
@@ -322,13 +390,13 @@ describe('Notification manager behaviors test', async () => {
         id: relationshipId,
         type: RELATION_DELIVERS,
 
-        source_ref_object_marking_refs: [internalMarkingRedId],
+        source_ref_object_marking_refs: [redMarkingInternalId],
         source_ref_granted_refs: [],
         source_type: ENTITY_TYPE_ATTACK_PATTERN,
         source_value: 'attack-pattern_entity',
         source_ref: redAttackPatternId,
 
-        target_ref_object_marking_refs: [internalMarkingGreenId],
+        target_ref_object_marking_refs: [greenMarkingInternalId],
         target_ref_granted_refs: [],
         target_type: ENTITY_TYPE_MALWARE,
         target_value: ['malware_entity'],
@@ -338,23 +406,27 @@ describe('Notification manager behaviors test', async () => {
   };
 
   it('Should generate a notification message for an instance with refs', async () => {
-    let result = generateNotificationMessageForInstanceWithRefs(stixReport, [stixGreenOrganization, stixRedOrganization], true);
+    let result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixRedOrganization], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name,[organization] redOrganization_name');
-    result = generateNotificationMessageForInstanceWithRefs(stixReport, [stixGreenOrganization], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name');
-    result = generateNotificationMessageForInstanceWithRefs(stixReport, [stixGreenOrganization, stixMalware], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixMalware], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name,[malware] malware_name');
-    result = generateNotificationMessageForInstanceWithRefs(stixCoreRelationship, [stixGreenOrganization, stixMalware], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], true);
     expect(result).toEqual('[relationship] attack-pattern_entity delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
+    result = await generateNotificationMessageForInstanceWithRefs(context, loggingUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], true);
+    expect(result).toEqual('[relationship] Restricted delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
 
-    result = generateNotificationMessageForInstanceWithRefs(stixReport, [stixGreenOrganization, stixRedOrganization], false);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixRedOrganization], false);
     expect(result).toEqual('[organization] greenOrganization_name,[organization] redOrganization_name in [report] report_name');
-    result = generateNotificationMessageForInstanceWithRefs(stixReport, [stixGreenOrganization], false);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization], false);
     expect(result).toEqual('[organization] greenOrganization_name in [report] report_name');
-    result = generateNotificationMessageForInstanceWithRefs(stixReport, [stixGreenOrganization, stixMalware], false);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixMalware], false);
     expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name in [report] report_name');
-    result = generateNotificationMessageForInstanceWithRefs(stixCoreRelationship, [stixGreenOrganization, stixMalware], false);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], false);
     expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name in [relationship] attack-pattern_entity delivers malware_entity');
+    result = await generateNotificationMessageForInstanceWithRefs(context, loggingUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], false);
+    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name in [relationship] Restricted delivers malware_entity');
   });
 
   it('Should generate a notification message for an instance', async () => {
@@ -678,6 +750,15 @@ describe('Notification manager behaviors test', async () => {
         },
       }
     };
+    const streamEventCreateReportCreatedByGreenOrganization = { // create a report with a green organization in its creators
+      event: EVENT_TYPE_CREATE,
+      data: {
+        data: {
+          ...stixReport,
+          created_by_ref: [greenOrganizationStandardId],
+        },
+      }
+    };
     const streamEventShareMalwareWithRedOrganization = { // share a malware with a red organization
       event: EVENT_TYPE_UPDATE,
       data: {
@@ -695,6 +776,31 @@ describe('Notification manager behaviors test', async () => {
             op: 'add',
             path: '/granted_refs',
             value: [redOrganizationStandardId],
+          }],
+          reverse_patch: [{
+            op: 'remove',
+            path: '/granted_refs',
+          }]
+        }
+      }
+    };
+    const streamEventShareMalwareWithGreenOrganization = { // share a malware with a green organization
+      event: EVENT_TYPE_UPDATE,
+      data: {
+        data: {
+          ...stixMalware,
+          extensions: {
+            [STIX_EXT_OCTI]: {
+              type: ENTITY_TYPE_MALWARE,
+              granted_refs: [greenOrganizationStandardId],
+            }
+          }
+        },
+        context: {
+          patch: [{
+            op: 'add',
+            path: '/granted_refs',
+            value: [greenOrganizationStandardId],
           }],
           reverse_patch: [{
             op: 'remove',
@@ -1103,12 +1209,16 @@ describe('Notification manager behaviors test', async () => {
 
     // trigger on O and a red organization
     result = await buildTargetEvents(context, users, streamEventAddGreenOrganizationInAuthorOfSighting, triggerOrganizationsAllEvents, true);
-    expect(result.length).toEqual(1);
+    expect(result.length).toEqual(2);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
     expect(result[0].message).toEqual('[identity] greenOrganization_name added in [sighting] malware_entity sighted in/at report_entity');
     expect(result[0].user.user_id).toEqual(adminUser.id);
+    expect(result[1].message).toEqual('[identity] greenOrganization_name added in [sighting] malware_entity sighted in/at Restricted');
 
-    // -- 8. delete a report that contains a malware M and a red attack pattern A and that is shared with a red orga O
+    // TODO share a malware with an orga, user has access to this orga
+    // TODO mark a relationship as red
+
+    // -- 8. delete a report that contains a malware M and a red attack pattern A and that is created by a red orga O
     // trigger on M, A and O
     result = await buildTargetEvents(context, users, streamEventDeleteReportWithMultipleRefs, triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents, true);
     expect(result.length).toEqual(2);
@@ -1117,19 +1227,34 @@ describe('Notification manager behaviors test', async () => {
     expect(result[0].message).toEqual('[report] report_name containing [identity] redOrganization_name,[malware] malware_name,[attack-pattern] redAttackPattern_name');
     expect(result[1].message).toEqual('[report] report_name containing [malware] malware_name');
 
-    // -- 9. share a malware M with a red organization O
-    // trigger on O and M
+    // -- 9. share a malware M with an organization
+    // O is a red organization, trigger on O and M
     result = await buildTargetEvents(context, users, streamEventShareMalwareWithRedOrganization, triggerMalwareAndRedOrganizationAllEvents, true);
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
     expect(result[0].message).toEqual('[identity] redOrganization_name in [malware] malware_name');
 
-    // -- 10. create a report created by red organization O
+    // O is a green organization, trigger on O and another organization
+    result = await buildTargetEvents(context, users, streamEventShareMalwareWithGreenOrganization, triggerOrganizationsAllEvents, true);
+    expect(result.length).toEqual(1);
+    expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
+    expect(result[0].message).toEqual('[identity] greenOrganization_name in [malware] malware_name');
+
+    // -- 10. create a report created by a red organization O
     // trigger on O
     result = await buildTargetEvents(context, users, streamEventCreateReportCreatedByRedOrganization, triggerRedOrganizationAllEvents, true);
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_CREATE);
     expect(result[0].message).toEqual('[report] report_name containing [identity] redOrganization_name');
+
+    // -- 11. create a report created by a green organization O
+    // trigger on O
+    result = await buildTargetEvents(context, users, streamEventCreateReportCreatedByGreenOrganization, triggerOrganizationsAllEvents, true);
+    expect(result.length).toEqual(2);
+    expect(result[0].type).toEqual(EVENT_TYPE_CREATE);
+    expect(result[0].message).toEqual('[report] report_name containing [identity] greenOrganization_name');
+    expect(result[1].type).toEqual(EVENT_TYPE_CREATE);
+    expect(result[1].message).toEqual('[report] report_name containing [identity] greenOrganization_name');
 
     // -- MARKINGS MODIFICATION
     // -- 11. add red marking to a report X containing a malware M
