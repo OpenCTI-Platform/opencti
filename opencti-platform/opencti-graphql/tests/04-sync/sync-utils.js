@@ -61,7 +61,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
-export const UPLOADED_FILE_SIZE = 36926;
+export const UPLOADED_FILE_SIZE = 37891;
 
 export const checkPreSyncContent = async () => {
   const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
