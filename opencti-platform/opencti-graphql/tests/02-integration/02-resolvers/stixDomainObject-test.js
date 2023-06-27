@@ -199,7 +199,7 @@ describe('StixDomainObject resolver standard behavior', () => {
         interval: 'month',
       },
     });
-    expect(queryResult.data.stixDomainObjectsTimeSeries.length).toEqual(14);
+    expect(queryResult.data.stixDomainObjectsTimeSeries.length).toEqual(13);
     expect(queryResult.data.stixDomainObjectsTimeSeries[1].value).toEqual(14);
     expect(queryResult.data.stixDomainObjectsTimeSeries[2].value).toEqual(5);
   });
