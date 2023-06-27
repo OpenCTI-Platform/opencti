@@ -48,6 +48,15 @@ const READ_QUERY = gql`
           }
         }
       }
+      subOrganizations {
+        edges {
+          node {
+            id
+            standard_id
+            name
+          }
+        }
+      }
       toStix
     }
   }
