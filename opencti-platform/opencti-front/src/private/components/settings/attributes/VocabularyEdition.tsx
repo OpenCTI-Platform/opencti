@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { formikFieldToEditInput } from '../../../../utils/utils';
+import formikFieldToEditInput from '../../../../utils/FormikUtils';
 import { Theme } from '../../../../components/Theme';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -61,12 +61,14 @@ const vocabularyMutationUpdate = graphql`
 const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
+  order: Yup.number().nullable(),
 });
 
 interface VocabularyEditionFormikValues {
   name: string;
   description: string;
   aliases: { id: string; label: string; value: string }[];
+  order: number | null;
 }
 
 const VocabularyEdition = ({
@@ -143,6 +145,7 @@ const VocabularyEdition = ({
               label: n,
             })) as { id: string; label: string; value: string }[],
             description: vocab.description ?? '',
+            order: vocab.order,
           }}
           validationSchema={attributeValidation(t)}
           onSubmit={onSubmit}
@@ -186,6 +189,15 @@ const VocabularyEdition = ({
                   </li>
                 )}
                 classes={{ clearIndicator: classes.autoCompleteIndicator }}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="order"
+                label={t('Order')}
+                fullWidth={true}
+                type="number"
+                style={{ marginTop: 20 }}
               />
               <div className={classes.buttons}>
                 <Button

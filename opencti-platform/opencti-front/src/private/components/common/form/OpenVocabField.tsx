@@ -72,8 +72,7 @@ Omit<OpenVocabProps, 'type'>
       value,
       label: value,
       description,
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+    }));
   let internalOnChange: ((n: string, v: Option | Option[]) => void) | undefined;
   let internalOnSubmit: ((n: string, v: Option | Option[]) => void) | undefined;
   if (onChange) {

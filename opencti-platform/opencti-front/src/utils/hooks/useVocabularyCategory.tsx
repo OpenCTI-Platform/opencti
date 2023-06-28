@@ -41,6 +41,7 @@ export const vocabFragment = graphql`
     usages
     aliases
     builtIn
+    order
     category {
       key
       entity_types

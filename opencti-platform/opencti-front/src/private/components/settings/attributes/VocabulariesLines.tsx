@@ -56,7 +56,7 @@ export const vocabulariesLinesFragment = graphql`
     count: { type: "Int", defaultValue: 200 }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     orderBy: { type: "VocabularyOrdering", defaultValue: name }
-    after: { type: "ID", defaultValue: "" }
+    after: { type: "ID" }
     category: { type: "VocabularyCategory" }
   )
   @refetchable(queryName: "VocabulariesLines_DataQuery") {
@@ -128,24 +128,5 @@ const VocabulariesLines: FunctionComponent<VocabulariesLinesProps> = ({
     />
   );
 };
-
-export const vocabulariesQuery = graphql`
-  query VocabulariesLinesQuery($category: VocabularyCategory!) {
-    vocabularies(category: $category) {
-      edges {
-        node {
-          id
-          name
-          description
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-        globalCount
-      }
-    }
-  }
-`;
 
 export default VocabulariesLines;

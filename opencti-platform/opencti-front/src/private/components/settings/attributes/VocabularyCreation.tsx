@@ -76,6 +76,7 @@ const vocabularyAdd = graphql`
 
 const labelValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  order: Yup.number().nullable(),
 });
 
 const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
@@ -94,6 +95,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
     name: string;
     description: string;
     aliases: { value: string }[];
+    order: number;
   }
   const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (
     values,
@@ -158,6 +160,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
               name: '',
               description: '',
               aliases: [] as { value: string }[],
+              order: 0,
             }}
             validationSchema={labelValidation(t)}
             onSubmit={onSubmit}
@@ -199,6 +202,15 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                     </li>
                   )}
                   classes={{ clearIndicator: classes.autoCompleteIndicator }}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="order"
+                  label={t('Order')}
+                  fullWidth={true}
+                  type="number"
+                  style={{ marginTop: 20 }}
                 />
                 <div className={classes.buttons}>
                   <Button

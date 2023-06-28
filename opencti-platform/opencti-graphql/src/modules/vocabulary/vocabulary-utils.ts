@@ -9,7 +9,7 @@ export const builtInOv = [
   'pattern_type_ov',
 ];
 
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string, aliases?: string[] }>> = {
+export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string, aliases?: string[], order?: number }>> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },
@@ -110,16 +110,16 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
   ],
   // C
   case_severity_ov: [
-    { key: '01 - low', description: 'Low impact', aliases: ['low'] },
-    { key: '02 - medium', description: 'Medium impact', aliases: ['medium'] },
-    { key: '03 - high', description: 'High impact', aliases: ['high'] },
-    { key: '04 - critical', description: 'Critical impact', aliases: ['critical'] },
+    { key: 'low', description: 'Low impact', aliases: ['low'], order: 1 },
+    { key: 'medium', description: 'Medium impact', aliases: ['medium'], order: 2 },
+    { key: 'high', description: 'High impact', aliases: ['high'], order: 3 },
+    { key: 'critical', description: 'Critical impact', aliases: ['critical'], order: 4 },
   ],
   case_priority_ov: [
-    { key: 'P1', description: 'Critical priority' },
-    { key: 'P2', description: 'High priority' },
-    { key: 'P3', description: 'Medium priority' },
-    { key: 'P4', description: 'Low priority' },
+    { key: 'P1', description: 'Critical priority', order: 1 },
+    { key: 'P2', description: 'High priority', order: 2 },
+    { key: 'P3', description: 'Medium priority', order: 3 },
+    { key: 'P4', description: 'Low priority', order: 4 },
   ],
   channel_types_ov: [
     { key: 'Twitter' },
@@ -309,10 +309,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   incident_severity_ov: [
-    { key: '01 - low', description: 'Low impact', aliases: ['low'] },
-    { key: '02 - medium', description: 'Medium impact', aliases: ['medium'] },
-    { key: '03 - high', description: 'High impact', aliases: ['high'] },
-    { key: '04 - critical', description: 'Critical impact', aliases: ['critical'] },
+    { key: 'low', description: 'Low impact', aliases: ['low'], order: 1 },
+    { key: 'medium', description: 'Medium impact', aliases: ['medium'], order: 2 },
+    { key: 'high', description: 'High impact', aliases: ['high'], order: 3 },
+    { key: 'critical', description: 'Critical impact', aliases: ['critical'], order: 4 },
   ],
   indicator_type_ov: [
     {
@@ -425,10 +425,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   integrity_level_ov: [
-    { key: '01 - low', description: 'A low level of integrity.', aliases: ['low'] },
-    { key: '02 - medium', description: 'A medium level of integrity.', aliases: ['medium'] },
-    { key: '03 - high', description: 'A high level of integrity.', aliases: ['high'] },
-    { key: '04 - system', description: 'A system level of integrity.', aliases: ['critical'] },
+    { key: 'low', description: 'A low level of integrity.', aliases: ['low'], order: 1 },
+    { key: 'medium', description: 'A medium level of integrity.', aliases: ['medium'], order: 2 },
+    { key: 'high', description: 'A high level of integrity.', aliases: ['high'], order: 3 },
+    { key: 'system', description: 'A system level of integrity.', aliases: ['critical'], order: 4 },
   ],
   // M
   malware_capabilities_ov: [
@@ -747,20 +747,24 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
   opinion_ov: [
     {
       key: 'strongly-disagree',
-      description: 'The creator strongly disagrees with the information and believes it is inaccurate or incorrect.'
+      description: 'The creator strongly disagrees with the information and believes it is inaccurate or incorrect.',
+      order: 1,
     },
     {
       key: 'disagree',
-      description: 'The creator disagrees with the information and believes it is inaccurate or incorrect.'
+      description: 'The creator disagrees with the information and believes it is inaccurate or incorrect.',
+      order: 2,
     },
-    { key: 'neutral', description: 'The creator is neutral about the accuracy or correctness of the information.' },
+    { key: 'neutral', description: 'The creator is neutral about the accuracy or correctness of the information.', order: 3 },
     {
       key: 'agree',
-      description: 'The creator agrees with the information and believes that it is accurate and correct.'
+      description: 'The creator agrees with the information and believes that it is accurate and correct.',
+      order: 4,
     },
     {
       key: 'strongly-agree',
-      description: 'The creator strongly agrees with the information and believes that it is accurate and correct.'
+      description: 'The creator strongly agrees with the information and believes that it is accurate and correct.',
+      order: 5,
     },
   ],
   // P

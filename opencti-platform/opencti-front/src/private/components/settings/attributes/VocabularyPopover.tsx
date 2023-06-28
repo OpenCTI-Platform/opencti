@@ -79,9 +79,9 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
       || vocab.usages === 0);
   if (!deletable) {
     if (vocab.builtIn) {
-      deleteLabel = 'This item is built-in';
+      deleteLabel = t('This item is built-in');
     } else {
-      deleteLabel = 'Some fields in usage are mandatory';
+      deleteLabel = t('Some fields in usage are mandatory');
     }
   }
   const {
