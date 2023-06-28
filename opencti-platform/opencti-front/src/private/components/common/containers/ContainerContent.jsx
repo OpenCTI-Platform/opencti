@@ -222,6 +222,7 @@ const ContainerContentComponent = ({ containerData }) => {
   };
   const matchCase = (text, pattern) => {
     let result = '';
+    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < text.length; i++) {
       const c = text.charAt(i);
       const p = pattern.charCodeAt(i);
@@ -356,7 +357,7 @@ const ContainerContentComponent = ({ containerData }) => {
                     fullWidth={true}
                     multiline={true}
                     rows="4"
-                    onSubmit={editionMode ? handleSubmitField : null}
+                    onSubmit={handleSubmitField}
                     onSelect={handleTextSelection}
                     helperText={
                       <SubscriptionFocus
@@ -373,7 +374,7 @@ const ContainerContentComponent = ({ containerData }) => {
                     name="content"
                     label={t('Content')}
                     fullWidth={true}
-                    onSubmit={editionMode ? handleSubmitField : null}
+                    onSubmit={handleSubmitField}
                     onSelect={handleTextSelection}
                     style={{
                       ...fieldSpacingContainerStyle,

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import { compose, pathOr, pipe, map } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import { CenterFocusStrong } from '@mui/icons-material';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = () => ({
   icon: {
@@ -99,7 +99,7 @@ class GroupField extends Component {
         renderOption={(props, option) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
-              <CenterFocusStrong />
+              <ItemIcon type="Group" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>

@@ -103,10 +103,16 @@ const Audit = () => {
       />
     </div>
   );
-
   return (
     <div className={classes.container}>
       <ActivityMenu />
+      {settings.platform_demo && (
+        <Alert severity="info" variant="outlined" style={{ marginBottom: 30 }}>
+          {t(
+            'This platform is running in demo mode, all names in the activity and audit logs are redacted.',
+          )}
+        </Alert>
+      )}
       <ListLines
         sortBy={sortBy}
         orderAsc={orderAsc}
@@ -140,12 +146,8 @@ const Audit = () => {
                     <AuditLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }>
-            {settings.platform_demo && <div>
-                <Alert severity="error" variant="outlined">
-                    <b>{t('DEMO PLATFORM > Data will only display *** Redacted *** names')}</b>
-                </Alert>
-            </div>}
+            }
+          >
             <AuditLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
