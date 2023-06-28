@@ -52,7 +52,7 @@ export const stixObjectOrRelationshipAddRefRelations = async (
   }
   const finalInput = input.toIds?.map(
     (n) => ({ fromId: stixObjectOrRelationshipId, toId: n, relationship_type: input.relationship_type })
-  );
+  ) ?? [];
   await createRelations(context, user, finalInput, opts);
   const entity = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, entity, user);
