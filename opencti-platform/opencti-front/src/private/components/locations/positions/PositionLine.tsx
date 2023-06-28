@@ -50,13 +50,33 @@ interface PositionLineProps {
 }
 
 const positionLineFragment = graphql`
-      fragment PositionLine_node on Position {
+  fragment PositionLine_node on Position {
+    id
+    name
+    created
+    modified
+    objectMarking {
+      edges {
+        node {
           id
-          name
-          created
-          modified
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
       }
-  `;
+    }
+    objectLabel {
+      edges {
+        node {
+          id
+          value
+          color
+        }
+      }
+    }
+  }
+`;
 
 export const PositionLine: FunctionComponent<PositionLineProps> = ({
   dataColumns,
@@ -113,18 +133,15 @@ interface PositionLineDummyProps {
   dataColumns: DataColumns;
 }
 
-export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({ dataColumns }) => {
+export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
+  dataColumns,
+}) => {
   const classes = useStyles();
 
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

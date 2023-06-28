@@ -85,6 +85,26 @@ const sectorMutation = graphql`
       entity_type
       parent_types
       isSubSector
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
       subSectors {
         edges {
           node {

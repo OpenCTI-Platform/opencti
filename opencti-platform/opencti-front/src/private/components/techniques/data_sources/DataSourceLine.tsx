@@ -66,6 +66,17 @@ const dataSourceLineFragment = graphql`
     x_mitre_platforms
     collection_layers
     confidence
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
     objectLabel {
       edges {
         node {

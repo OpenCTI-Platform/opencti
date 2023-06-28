@@ -60,6 +60,26 @@ const countryLineFragment = graphql`
     x_opencti_aliases
     created
     modified
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
+    objectLabel {
+      edges {
+        node {
+          id
+          value
+          color
+        }
+      }
+    }
   }
 `;
 

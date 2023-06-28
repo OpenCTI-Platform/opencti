@@ -63,6 +63,17 @@ const dataComponentFragment = graphql`
     created
     modified
     confidence
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
     objectLabel {
       edges {
         node {

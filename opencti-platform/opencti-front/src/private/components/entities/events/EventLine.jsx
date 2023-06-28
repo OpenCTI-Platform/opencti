@@ -118,6 +118,17 @@ const EventLineFragment = createFragmentContainer(EventLineComponent, {
       modified
       start_time
       stop_time
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
     }
   `,
 });

@@ -87,6 +87,26 @@ const attackPatternMutation = graphql`
       description
       isSubAttackPattern
       x_mitre_id
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
       subAttackPatterns {
         edges {
           node {
