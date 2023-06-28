@@ -1,29 +1,7 @@
 import type { Checker, RelationRefDefinition } from './relationRef-definition';
-import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ABSTRACT_STIX_REF_RELATIONSHIP,
-  INPUT_ASSIGNEE,
-  INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
-  INPUT_GRANTED_REFS,
-  INPUT_KILLCHAIN,
-  INPUT_LABELS,
-  INPUT_MARKINGS,
-  INPUT_OBJECTS
-} from './general';
-import {
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  isStixDomainObjectContainer,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation
-} from './stixDomainObject';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION
-} from './stixMetaObject';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS, INPUT_PARTICIPANT } from './general';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION, isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_USER } from './internalObject';
 import { schemaTypesDefinition } from './schema-types';
@@ -371,6 +349,7 @@ export const RELATION_EXTERNAL_REFERENCE = 'external-reference'; // external_ref
 export const RELATION_KILL_CHAIN_PHASE = 'kill-chain-phase'; // kill_chain_phases
 export const RELATION_GRANTED_TO = 'granted'; // granted_refs (OpenCTI)
 export const RELATION_OBJECT_ASSIGNEE = 'object-assignee';
+export const RELATION_OBJECT_PARTICIPANT = 'object-participant';
 
 // EXTERNAL
 
@@ -425,6 +404,17 @@ export const objectAssignee: RelationRefDefinition = {
   multiple: true,
   checker: (fromType, toType) => ENTITY_TYPE_USER === toType,
   label: 'Assignees',
+  datable: false,
+};
+
+export const objectParticipant: RelationRefDefinition = {
+  inputName: INPUT_PARTICIPANT,
+  databaseName: RELATION_OBJECT_PARTICIPANT,
+  stixName: 'object_participant_refs',
+  mandatoryType: 'customizable',
+  multiple: true,
+  checker: (fromType, toType) => ENTITY_TYPE_USER === toType,
+  label: 'Participants',
   datable: false,
 };
 
