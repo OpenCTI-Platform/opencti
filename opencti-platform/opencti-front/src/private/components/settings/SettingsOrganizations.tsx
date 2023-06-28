@@ -24,30 +24,31 @@ const SettingsOrganizations = () => {
     orderAsc: false,
   });
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
-  const renderLines = () => {
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '30%',
-        isSortable: true,
-      },
-      x_opencti_organization_type: {
-        label: 'Type',
-        width: '20%',
-        isSortable: true,
-      },
-      created: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
-      },
-    };
-    return (
+  const dataColumns = {
+    name: {
+      label: 'Name',
+      width: '30%',
+      isSortable: true,
+    },
+    x_opencti_organization_type: {
+      label: 'Type',
+      width: '20%',
+      isSortable: true,
+    },
+    created: {
+      label: 'Creation date',
+      width: '15%',
+      isSortable: true,
+    },
+    modified: {
+      label: 'Modification date',
+      width: '15%',
+      isSortable: true,
+    },
+  };
+  return (
+    <div className={classes.container}>
+      <AccessesMenu />
       <ListLines
         sortBy={viewStorage.sortBy}
         orderAsc={viewStorage.orderAsc}
@@ -71,12 +72,6 @@ const SettingsOrganizations = () => {
           </>
         )}
       </ListLines>
-    );
-  };
-  return (
-    <div className={classes.container}>
-      <AccessesMenu />
-      {renderLines()}
     </div>
   );
 };
