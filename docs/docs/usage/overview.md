@@ -75,4 +75,13 @@ Thus, in the `Basic information` section, are displayed all common properties to
 
 ![Basic information](assets/basic.png)
 
+Below these two sections, you will find latest modifications in the Knowledge base related to the Entity :
+- `Latest created relationships`: display the latest relationships that have been created <u>from</u> or <u>to</u> this Entity. For example, latest Indicators of Compromise and associated Threat Actor of a Malware.
+- `latest containers about the object`: display all the Cases and Analysis that contains this Entity. For example, the latest Reports about a Malware.
+- `External references`: display all the the external sources associated with the Entity. You will often find here links to external reports or webpages from where Entity's information came from.
+- `History`: display the latest chronological modifications of the Entity and its relationships that occured in the platform, in order to traceback any alteration.
 
+![Latest relations and containers](assets/latest_additions.png)
+![References and History](assets/ref_and_history.png)
+
+Last, all Notes written by users of the platform about this Entity are displayed in order to access unstructured analysis comments.
