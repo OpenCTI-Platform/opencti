@@ -133,7 +133,7 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
                 <List>
                   {members.map((member) => (
                     <UserLine
-                      key={member?.node?.id}
+                      key={member?.node.id}
                       dataColumns={userColumns}
                       node={member?.node}
                     />
