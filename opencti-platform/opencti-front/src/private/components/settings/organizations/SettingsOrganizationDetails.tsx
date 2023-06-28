@@ -5,9 +5,6 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
@@ -18,6 +15,7 @@ import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { SettingsOrganizationDetails_organization$key } from './__generated__/SettingsOrganizationDetails_organization.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const styles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -120,54 +118,57 @@ SettingsOrganizationDetailsProps
             >
               {t('Contact information')}
             </Typography>
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkParse]}
-              className="markdown"
-            >
-              {organization.contact_information ?? ''}
-            </Markdown>
+            <MarkdownDisplay
+              content={organization.contact_information ?? ''}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />
           </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Part of')}
               </Typography>
-              <List>
-                {parentOrganizations.map((parentOrganization) => (
-                  <ListItem
-                    key={parentOrganization.node.id}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                    component={Link}
-                    to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
-                  >
-                    <ListItemIcon>
-                      <AccountBalanceOutlined color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary={parentOrganization.node.name} />
-                  </ListItem>
-                ))}
-              </List>
+                <List>
+                  {
+                    parentOrganizations.length > 0 ? parentOrganizations.map((parentOrganization) => (
+                      <ListItem
+                        key={parentOrganization.node.id}
+                        dense={true}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
+                      >
+                        <ListItemIcon>
+                          <AccountBalanceOutlined color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary={parentOrganization.node.name} />
+                      </ListItem>
+                    )) : '-'
+                  }
+                </List>
               <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}
               >
                 {t('Sub organizations')}
               </Typography>
               <List>
-                {subOrganizations.map((subOrganization) => (
-                  <ListItem
-                    key={subOrganization.node.id}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                    component={Link}
-                    to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
-                  >
-                    <ListItemIcon>
-                      <AccountBalanceOutlined color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary={subOrganization.node.name} />
-                  </ListItem>
-                ))}
+                {
+                  subOrganizations.length > 0 ? subOrganizations.map((subOrganization) => (
+                    <ListItem
+                      key={subOrganization.node.id}
+                      dense={true}
+                      divider={true}
+                      button={true}
+                      component={Link}
+                      to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
+                    >
+                      <ListItemIcon>
+                        <AccountBalanceOutlined color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary={subOrganization.node.name} />
+                    </ListItem>
+                  )) : '-'
+                }
               </List>
             </Grid>
         </Grid>
