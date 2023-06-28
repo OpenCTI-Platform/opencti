@@ -22,7 +22,7 @@
     "sector": {"sector": ["part-of"]},
     "system": {"organization": ["belongs-to"], "region": ["located-at"]},
     "targets": {"location": ["located-at"]},
-    "threat-actor": {"threat-actor": ["part-of"]},
+    "threat-actor-group": {"threat-actor-group": ["part-of"]},
     "tool": {"attack-pattern":  ["uses", "drops", "delivers"]},
     "hostname": {"attack-pattern": ["uses"], "artifact": ["drops"], "file": ["drops"], "ipv4-addr": ["communicates-with"], "ipv6-addr": ["communicates-with"], "domain-name": ["communicates-with"]}
 }
