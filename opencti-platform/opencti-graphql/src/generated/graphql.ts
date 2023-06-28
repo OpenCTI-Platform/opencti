@@ -808,6 +808,7 @@ export enum AttackPatternsFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  KillChainPhase = 'killChainPhase',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   MitigatedBy = 'mitigatedBy',

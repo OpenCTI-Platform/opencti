@@ -90,6 +90,7 @@ const dataComponentMutation = graphql`
   mutation DataComponentCreationMutation($input: DataComponentAddInput!) {
     dataComponentAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

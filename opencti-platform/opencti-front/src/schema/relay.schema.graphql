@@ -2103,6 +2103,7 @@ enum AttackPatternsFilter {
   created_at
   updated_at
   x_mitre_id
+  killChainPhase
   createdBy
   markedBy
   assigneeTo

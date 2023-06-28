@@ -1,42 +1,21 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
-import { graphql } from 'react-relay';
+import { assoc, compose, dissoc, propOr, uniqBy, prop } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
+import ListLines from '../../../components/list_lines/ListLines';
 import AttackPatternsLines, {
   attackPatternsLinesQuery,
 } from './attack_patterns/AttackPatternsLines';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
-import SearchInput from '../../../components/SearchInput';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-
-export const attackPatternsSearchQuery = graphql`
-  query AttackPatternsSearchQuery($search: String) {
-    attackPatterns(search: $search) {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
-const styles = () => ({
-  parameters: {
-    float: 'left',
-    marginTop: -10,
-  },
-});
 
 class AttackPatterns extends Component {
   constructor(props) {
@@ -47,8 +26,13 @@ class AttackPatterns extends Component {
       'view-attackPatterns',
     );
     this.state = {
+      sortBy: propOr('name', 'sortBy', params),
+      orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
+      filters: propOr({}, 'filters', params),
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -65,34 +49,148 @@ class AttackPatterns extends Component {
     this.setState({ searchTerm: value }, () => this.saveView());
   }
 
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
+  }
+
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  render() {
-    const { searchTerm } = this.state;
-    const { classes } = this.props;
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: assoc(
+            key,
+            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+  }
+
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
+  renderLines(paginationOptions) {
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
+    } = this.state;
+    const dataColumns = {
+      killChainPhase: {
+        label: 'Kill chain phase',
+        width: '15%',
+        isSortable: false,
+      },
+      x_mitre_id: {
+        label: 'ID',
+        width: '10%',
+        isSortable: true,
+      },
+      name: {
+        label: 'Name',
+        width: '30%',
+        isSortable: true,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '20%',
+        isSortable: false,
+      },
+      created: {
+        label: 'Creation date',
+        width: '10%',
+        isSortable: true,
+      },
+      modified: {
+        label: 'Modification date',
+        width: '10%',
+        isSortable: true,
+      },
+    };
     return (
-      <div>
-        <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20 }}>
-            <SearchInput
-              variant="small"
-              onSubmit={this.handleSearch.bind(this)}
-              keyword={searchTerm}
-            />
-          </div>
-        </div>
-        <div className="clearfix" />
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={this.handleSort.bind(this)}
+        handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Attack-Pattern"
+        keyword={searchTerm}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'labelledBy',
+          'markedBy',
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+          'creator',
+          'revoked',
+          'killChainPhase',
+        ]}
+      >
         <QueryRenderer
           query={attackPatternsLinesQuery}
-          variables={{ count: 1500 }}
+          variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <AttackPatternsLines data={props} keyword={searchTerm} />
+            <AttackPatternsLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+              onLabelClick={this.handleAddFilter.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
+            />
           )}
         />
+      </ListLines>
+    );
+  }
+
+  render() {
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
+    const finalFilters = convertFilters(filters);
+    const paginationOptions = {
+      search: searchTerm,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
+      filters: finalFilters,
+    };
+    return (
+      <div>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AttackPatternCreation />
+          <AttackPatternCreation paginationOptions={paginationOptions} />
         </Security>
       </div>
     );
@@ -103,11 +201,6 @@ AttackPatterns.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
-  classes: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(AttackPatterns);
+export default compose(inject18n, withRouter)(AttackPatterns);

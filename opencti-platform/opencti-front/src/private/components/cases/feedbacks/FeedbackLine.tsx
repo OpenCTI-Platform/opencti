@@ -77,6 +77,7 @@ interface FeedbackLineComponentProps {
 const feedbackFragment = graphql`
   fragment FeedbackLine_node on Feedback {
     id
+    standard_id
     name
     description
     rating

@@ -81,6 +81,7 @@ const organizationMutation = graphql`
   mutation OrganizationCreationMutation($input: OrganizationAddInput!) {
     organizationAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

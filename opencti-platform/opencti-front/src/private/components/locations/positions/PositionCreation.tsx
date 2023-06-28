@@ -79,6 +79,7 @@ const positionMutation = graphql`
   mutation PositionCreationMutation($input: PositionAddInput!) {
     positionAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

@@ -88,6 +88,7 @@ export const externalReferenceCreationMutation = graphql`
   ) {
     externalReferenceAdd(input: $input) {
       id
+      standard_id
       source_name
       description
       url

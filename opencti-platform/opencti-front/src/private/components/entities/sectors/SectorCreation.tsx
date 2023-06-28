@@ -79,6 +79,7 @@ const sectorMutation = graphql`
   mutation SectorCreationMutation($input: SectorAddInput!) {
     sectorAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

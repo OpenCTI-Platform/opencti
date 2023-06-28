@@ -75,6 +75,7 @@ const cityMutation = graphql`
   mutation CityCreationMutation($input: CityAddInput!) {
     cityAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

@@ -88,6 +88,7 @@ const locationMutation = graphql`
   mutation LocationCreationMutation($input: LocationAddInput!) {
     locationAdd(input: $input) {
       id
+      standard_id
       name
       entity_type
     }

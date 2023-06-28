@@ -80,6 +80,7 @@ const intrusionSetMutation = graphql`
   mutation IntrusionSetCreationMutation($input: IntrusionSetAddInput!) {
     intrusionSetAdd(input: $input) {
       id
+      standard_id
       name
       entity_type
       parent_types

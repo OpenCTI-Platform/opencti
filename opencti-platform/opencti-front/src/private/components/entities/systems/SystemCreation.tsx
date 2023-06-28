@@ -79,6 +79,7 @@ const systemMutation = graphql`
   mutation SystemCreationMutation($input: SystemAddInput!) {
     systemAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

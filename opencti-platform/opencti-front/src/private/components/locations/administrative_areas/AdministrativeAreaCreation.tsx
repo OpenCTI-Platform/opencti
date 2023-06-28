@@ -79,6 +79,7 @@ const administrativeAreaMutation = graphql`
   ) {
     administrativeAreaAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

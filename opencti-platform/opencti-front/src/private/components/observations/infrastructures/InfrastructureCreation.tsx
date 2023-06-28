@@ -86,6 +86,7 @@ const infrastructureMutation = graphql`
   mutation InfrastructureCreationMutation($input: InfrastructureAddInput!) {
     infrastructureAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

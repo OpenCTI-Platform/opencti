@@ -99,6 +99,7 @@ export const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
     reportAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

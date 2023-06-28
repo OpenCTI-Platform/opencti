@@ -88,6 +88,7 @@ const narrativeMutation = graphql`
   mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
     narrativeAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

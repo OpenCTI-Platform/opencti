@@ -1,147 +1,105 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  pipe,
-  map,
-  propOr,
-  pathOr,
-  sortBy,
-  toLower,
-  filter,
-  join,
-  assoc,
-} from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import List from '@mui/material/List';
+import { pathOr } from 'ramda';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AttackPatternLine, AttackPatternLineDummy } from './AttackPatternLine';
-import inject18n from '../../../../components/i18n';
+import { setNumberOfElements } from '../../../../utils/Number';
 
-const styles = () => ({
-  root: {
-    margin: 0,
-  },
-});
+const nbOfRowsToLoad = 50;
 
-class AttackPatternsLinesComponent extends Component {
-  render() {
-    const { data, keyword, classes } = this.props;
-    const sortByXMitreIdCaseInsensitive = sortBy(
-      compose(toLower, propOr('', 'x_mitre_id')),
+class AttackPatternsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'attackPatterns',
+      this.props.setNumberOfElements.bind(this),
     );
-    const filterSubattackPattern = (n) => n.isSubAttackPattern === false;
-    const filterByKeyword = (n) => keyword === ''
-      || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase())
-        !== -1
-      || (n.x_mitre_id ?? '').toLowerCase().indexOf(keyword.toLowerCase())
-        !== -1
-      || (n.subattackPatterns_text ?? '')
-        .toLowerCase()
-        .indexOf(keyword.toLowerCase()) !== -1;
-    const attackPatterns = pipe(
-      pathOr([], ['attackPatterns', 'edges']),
-      map((n) => n.node),
-      map((n) => assoc(
-        'subattackPatterns_text',
-        pipe(
-          map(
-            (o) => `${o.node.x_mitre_id} ${o.node.name} ${o.node.description}`,
-          ),
-          join(' | '),
-        )(pathOr([], ['subAttackPatterns', 'edges'], n)),
-        n,
-      )),
-      filter(filterSubattackPattern),
-      filter(filterByKeyword),
-      sortByXMitreIdCaseInsensitive,
-    )(data);
+  }
+
+  render() {
+    const { initialLoading, dataColumns, relay, onLabelClick } = this.props;
     return (
-      <List
-        component="nav"
-        aria-labelledby="nested-list-subheader"
-        className={classes.root}
-      >
-        {data
-          ? map((attackPattern) => {
-            const subAttackPatterns = pipe(
-              pathOr([], ['subAttackPatterns', 'edges']),
-              map((n) => n.node),
-              filter(filterByKeyword),
-              sortByXMitreIdCaseInsensitive,
-            )(attackPattern);
-            return (
-                <AttackPatternLine
-                  key={attackPattern.id}
-                  node={attackPattern}
-                  subAttackPatterns={subAttackPatterns}
-                />
-            );
-          }, attackPatterns)
-          : Array.from(Array(20), (e, i) => <AttackPatternLineDummy key={i} />)}
-      </List>
+      <ListLinesContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore.bind(this)}
+        hasMore={relay.hasMore.bind(this)}
+        isLoading={relay.isLoading.bind(this)}
+        dataList={pathOr([], ['attackPatterns', 'edges'], this.props.data)}
+        globalCount={pathOr(
+          nbOfRowsToLoad,
+          ['attackPatterns', 'pageInfo', 'globalCount'],
+          this.props.data,
+        )}
+        LineComponent={<AttackPatternLine />}
+        DummyLineComponent={<AttackPatternLineDummy />}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
+        onLabelClick={onLabelClick.bind(this)}
+      />
     );
   }
 }
 
-AttackPatternsLinesComponent.propTypes = {
+AttackPatternsLines.propTypes = {
   classes: PropTypes.object,
-  keyword: PropTypes.string,
+  paginationOptions: PropTypes.object,
+  dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
+  relay: PropTypes.object,
+  initialLoading: PropTypes.bool,
+  onLabelClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const attackPatternsLinesQuery = graphql`
   query AttackPatternsLinesPaginationQuery(
-    $orderBy: AttackPatternsOrdering
-    $orderMode: OrderingMode
+    $search: String
     $count: Int!
     $cursor: ID
+    $orderBy: AttackPatternsOrdering
+    $orderMode: OrderingMode
+    $filters: [AttackPatternsFiltering]
   ) {
     ...AttackPatternsLines_data
       @arguments(
-        orderBy: $orderBy
-        orderMode: $orderMode
+        search: $search
         count: $count
         cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
 
-const AttackPatternsLinesFragment = createPaginationContainer(
-  AttackPatternsLinesComponent,
+export default createPaginationContainer(
+  AttackPatternsLines,
+
   {
     data: graphql`
       fragment AttackPatternsLines_data on Query
       @argumentDefinitions(
-        orderBy: { type: "AttackPatternsOrdering", defaultValue: x_mitre_id }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
+        search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
+        orderBy: { type: "AttackPatternsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[AttackPatternsFiltering]" }
       ) {
         attackPatterns(
-          orderBy: $orderBy
-          orderMode: $orderMode
+          search: $search
           first: $count
           after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_attackPatterns") {
           edges {
             node {
-              id
               name
-              description
-              isSubAttackPattern
-              x_mitre_id
-              subAttackPatterns {
-                edges {
-                  node {
-                    id
-                    name
-                    description
-                    x_mitre_id
-                  }
-                }
-              }
+              ...AttackPatternLine_node
             }
           }
           pageInfo {
@@ -164,17 +122,16 @@ const AttackPatternsLinesFragment = createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }) {
+    getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        search: fragmentVariables.search,
         count,
         cursor,
+        orderBy: fragmentVariables.orderBy,
+        orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: attackPatternsLinesQuery,
   },
 );
-
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AttackPatternsLinesFragment);

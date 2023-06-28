@@ -85,6 +85,7 @@ const caseRfiMutation = graphql`
   mutation CaseRfiCreationCaseMutation($input: CaseRfiAddInput!) {
     caseRfiAdd(input: $input) {
       id
+      standard_id
       entity_type
       parent_types
       name

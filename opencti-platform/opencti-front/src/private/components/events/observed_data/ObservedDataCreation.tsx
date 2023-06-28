@@ -82,6 +82,7 @@ const observedDataCreationMutation = graphql`
   mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
     observedDataAdd(input: $input) {
       id
+      standard_id
       name
       entity_type
       parent_types

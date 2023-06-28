@@ -91,6 +91,7 @@ export const noteCreationUserMutation = graphql`
   mutation NoteCreationUserMutation($input: NoteUserAddInput!) {
     userNoteAdd(input: $input) {
       id
+      standard_id
       entity_type
       parent_types
       attribute_abstract
@@ -104,6 +105,7 @@ export const noteCreationMutation = graphql`
   mutation NoteCreationMutation($input: NoteAddInput!) {
     noteAdd(input: $input) {
       id
+      standard_id
       entity_type
       parent_types
       attribute_abstract

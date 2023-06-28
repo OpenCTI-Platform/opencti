@@ -91,6 +91,7 @@ const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
     courseOfActionAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

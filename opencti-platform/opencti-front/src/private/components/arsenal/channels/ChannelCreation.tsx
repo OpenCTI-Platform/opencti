@@ -94,6 +94,7 @@ const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
     channelAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

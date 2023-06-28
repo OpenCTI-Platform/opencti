@@ -59,6 +59,7 @@ const CaseTemplateTasksCreation = graphql`
   mutation CaseTemplateTasksCreationMutation($input: TaskTemplateAddInput!) {
     taskTemplateAdd(input: $input) {
       id
+      standard_id
       name
       description
     }

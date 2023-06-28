@@ -79,6 +79,7 @@ const individualMutation = graphql`
   mutation IndividualCreationMutation($input: IndividualAddInput!) {
     individualAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

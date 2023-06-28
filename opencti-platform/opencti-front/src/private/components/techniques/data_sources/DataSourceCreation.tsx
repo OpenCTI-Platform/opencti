@@ -90,6 +90,7 @@ const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {
     dataSourceAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

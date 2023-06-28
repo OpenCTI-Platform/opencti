@@ -90,6 +90,7 @@ const indicatorMutation = graphql`
   mutation IndicatorCreationMutation($input: IndicatorAddInput!) {
     indicatorAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

@@ -84,6 +84,7 @@ export const opinionCreationUserMutation = graphql`
   mutation OpinionCreationUserMutation($input: OpinionUserAddInput!) {
     userOpinionAdd(input: $input) {
       id
+      standard_id
       entity_type
       parent_types
       opinion
@@ -97,6 +98,7 @@ export const opinionCreationMutation = graphql`
   mutation OpinionCreationMutation($input: OpinionAddInput!) {
     opinionAdd(input: $input) {
       id
+      standard_id
       entity_type
       parent_types
       opinion

@@ -97,6 +97,7 @@ const groupingMutation = graphql`
   mutation GroupingCreationMutation($input: GroupingAddInput!) {
     groupingAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

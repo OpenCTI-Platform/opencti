@@ -1,43 +1,35 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
+import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import { compose, map } from 'ramda';
-import List from '@mui/material/List';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
+import { emptyFilled } from '../../../../utils/String';
 
 const styles = (theme) => ({
-  item: {},
-  itemNested: {
-    paddingLeft: theme.spacing(4),
+  item: {
+    paddingLeft: 10,
+    height: 50,
   },
   itemIcon: {
     color: theme.palette.primary.main,
   },
-  name: {
-    width: '20%',
+  bodyItem: {
     height: 20,
-    lineHeight: '20px',
+    fontSize: 13,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  description: {
-    width: '70%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
+    paddingRight: 10,
   },
   goIcon: {
     position: 'absolute',
@@ -48,93 +40,129 @@ const styles = (theme) => ({
   },
   placeholder: {
     display: 'inline-block',
-    height: '.6em',
+    height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
 });
 
 class AttackPatternLineComponent extends Component {
   render() {
-    const { classes, subAttackPatterns, node, isSubAttackPattern, t } = this.props;
+    const { fd, classes, node, dataColumns, onLabelClick } = this.props;
     return (
-      <div>
-        <ListItem
-          classes={{
-            root: isSubAttackPattern ? classes.itemNested : classes.item,
-          }}
-          divider={true}
-          button={true}
-          component={Link}
-          to={`/dashboard/techniques/attack_patterns/${node.id}`}
-        >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ItemIcon
-              type="Attack-Pattern"
-              size={isSubAttackPattern ? 'small' : 'medium'}
-            />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <div>
-                <div
-                  className={classes.name}
-                  style={{ fontSize: isSubAttackPattern ? 11 : 13 }}
-                >
-                  {node.x_mitre_id ? <strong>{node.x_mitre_id}</strong> : ''}
-                  {node.x_mitre_id ? ' - ' : ''}
-                  {node.name}
-                </div>
-                <div
-                  className={classes.description}
-                  style={{ fontSize: isSubAttackPattern ? 11 : 13 }}
-                >
-                  {node.description && node.description.length > 0
-                    ? node.description
-                    : t('This attack pattern does not have any description.')}
-                </div>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`/dashboard/techniques/attack_patterns/${node.id}`}
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type="Attack-Pattern" />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.killChainPhase.width }}
+              >
+                {node.killChainPhases.edges.length > 0
+                  ? `[${node.killChainPhases.edges[0].node.kill_chain_name}] ${node.killChainPhases.edges[0].node.phase_name}`
+                  : '-'}
               </div>
-            }
-          />
-          <ListItemIcon classes={{ root: classes.goIcon }}>
-            <KeyboardArrowRightOutlined />
-          </ListItemIcon>
-        </ListItem>
-        {subAttackPatterns && (
-          <List disablePadding={true}>
-            {map(
-              (subAttackPattern) => (
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                <AttackPatternLine
-                  key={subAttackPattern.id}
-                  node={subAttackPattern}
-                  isSubAttackPattern={true}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.x_mitre_id.width }}
+              >
+                <code>{emptyFilled(node.x_mitre_id)}</code>
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
                 />
-              ),
-              subAttackPatterns,
-            )}
-          </List>
-        )}
-      </div>
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fd(node.created)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                {fd(node.modified)}
+              </div>
+            </div>
+          }
+        />
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
+      </ListItem>
     );
   }
 }
 
 AttackPatternLineComponent.propTypes = {
+  dataColumns: PropTypes.object,
   node: PropTypes.object,
-  isSubAttackPattern: PropTypes.bool,
-  subAttackPatterns: PropTypes.array,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
+
+const AttackPatternLineFragment = createFragmentContainer(
+  AttackPatternLineComponent,
+  {
+    node: graphql`
+      fragment AttackPatternLine_node on AttackPattern {
+        id
+        name
+        x_mitre_id
+        created
+        modified
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
+        killChainPhases {
+          edges {
+            node {
+              kill_chain_name
+              phase_name
+            }
+          }
+        }
+      }
+    `,
+  },
+);
 
 export const AttackPatternLine = compose(
   inject18n,
   withStyles(styles),
-)(AttackPatternLineComponent);
+)(AttackPatternLineFragment);
 
 class AttackPatternLineDummyComponent extends Component {
   render() {
-    const { classes } = this.props;
+    const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -147,16 +175,78 @@ class AttackPatternLineDummyComponent extends Component {
         </ListItemIcon>
         <ListItemText
           primary={
-            <Skeleton
-              animation="wave"
-              variant="rectangular"
-              width="90%"
-              height={20}
-            />
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.killChainPhase.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.x_mitre_id.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.modified.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+            </div>
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
+          <KeyboardArrowRight />
         </ListItemIcon>
       </ListItem>
     );
@@ -164,6 +254,7 @@ class AttackPatternLineDummyComponent extends Component {
 }
 
 AttackPatternLineDummyComponent.propTypes = {
+  dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 

@@ -204,6 +204,7 @@ const stixCyberObservableMutation = graphql`
       MediaContent: $MediaContent
     ) {
       id
+      standard_id
       entity_type
       parent_types
       observable_value
@@ -253,6 +254,7 @@ const StixCyberObservableCreation = ({
   type,
   display,
   speeddial,
+  inputValue,
   paginationKey,
   paginationOptions,
 }) => {
@@ -446,6 +448,8 @@ const StixCyberObservableCreation = ({
                 initialValues['hashes_SHA-1'] = '';
                 initialValues['hashes_SHA-256'] = '';
                 initialValues['hashes_SHA-512'] = '';
+              } else if (attribute.value === 'value') {
+                initialValues[attribute.value] = inputValue || '';
               } else {
                 initialValues[attribute.value] = '';
               }
@@ -625,7 +629,9 @@ const StixCyberObservableCreation = ({
                       component={SimpleFileUpload}
                       name="file"
                       label={t('Associated file')}
-                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                      FormControlProps={{
+                        style: { marginTop: 20, width: '100%' },
+                      }}
                       InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                       InputProps={{ fullWidth: true, variant: 'standard' }}
                       fullWidth={true}

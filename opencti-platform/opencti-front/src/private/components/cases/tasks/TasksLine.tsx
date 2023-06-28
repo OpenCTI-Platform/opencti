@@ -53,6 +53,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const TaskFragment = graphql`
   fragment TasksLine_node on Task {
     id
+    standard_id
     name
     due_date
     description

@@ -81,6 +81,7 @@ const threatActorMutation = graphql`
   mutation ThreatActorCreationMutation($input: ThreatActorAddInput!) {
     threatActorAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

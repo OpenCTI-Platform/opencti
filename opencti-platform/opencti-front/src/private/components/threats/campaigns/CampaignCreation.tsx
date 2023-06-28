@@ -80,6 +80,7 @@ const campaignMutation = graphql`
   mutation CampaignCreationMutation($input: CampaignAddInput!) {
     campaignAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

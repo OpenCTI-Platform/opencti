@@ -17,7 +17,12 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { batchKillChainPhases } from '../domain/stixCoreObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
 import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';
@@ -47,6 +52,7 @@ const attackPatternResolvers = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     mitigatedBy: buildRefRelationKey(RELATION_MITIGATES),
+    killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
     creator: 'creator_id',
   },
   Mutation: {

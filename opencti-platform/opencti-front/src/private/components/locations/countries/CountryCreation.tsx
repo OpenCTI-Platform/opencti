@@ -87,6 +87,7 @@ const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {
     countryAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

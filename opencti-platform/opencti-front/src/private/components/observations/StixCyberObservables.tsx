@@ -247,6 +247,7 @@ const StixCyberObservables: FunctionComponent = () => {
             type={undefined}
             display={undefined}
             speeddial={false}
+            inputValue={undefined}
           />
         </Security>
         <StixCyberObservablesRightBar

@@ -84,6 +84,7 @@ const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
     regionAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

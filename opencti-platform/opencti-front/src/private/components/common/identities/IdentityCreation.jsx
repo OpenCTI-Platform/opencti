@@ -75,6 +75,7 @@ const identityMutation = graphql`
   mutation IdentityCreationMutation($input: IdentityAddInput!) {
     identityAdd(input: $input) {
       id
+      standard_id
       name
       entity_type
     }

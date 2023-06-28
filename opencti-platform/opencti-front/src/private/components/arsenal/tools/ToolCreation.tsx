@@ -82,6 +82,7 @@ const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
     toolAdd(input: $input) {
       id
+      standard_id
       name
       description
       entity_type

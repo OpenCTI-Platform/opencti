@@ -80,6 +80,7 @@ const attackPatternMutation = graphql`
   mutation AttackPatternCreationMutation($input: AttackPatternAddInput!) {
     attackPatternAdd(input: $input) {
       id
+      standard_id
       name
       entity_type
       parent_types
