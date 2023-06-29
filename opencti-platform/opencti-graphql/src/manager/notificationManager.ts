@@ -403,19 +403,15 @@ const eventTypeTranslaterForSideEvents = async (
 ) => {
   // 1. case update, we should check the updatePatch content
   if (currentType === EVENT_TYPE_UPDATE && updatePatch) {
-    const areRightsRefsAndSthElseModified = updatePatch.patch.some((n) => n.path.includes('object_markings_refs') || n.path.includes('granted_refs'))
-      && updatePatch.patch.some((n) => !(n.path.includes('object_markings_refs') || n.path.includes('granted_refs')));
-    // 1.a. update of both a ref linked to rights (markings/granted_refs) and sth else
-    if (areRightsRefsAndSthElseModified) {
-      // we should first check if the visibility of the instance has changed for the user
-      const previouslyVisible = await isUserCanAccessStixElement(context, user, previousInstance);
-      const currentlyVisible = await isUserCanAccessStixElement(context, user, instance);
-      // - the visiblity has changed: display a changing of rights, don't take the eventual changed refs into account
-      if (previouslyVisible !== currentlyVisible) {
-        return eventTypeTranslater(isPreviousMatch, isCurrentlyMatch, currentType); // case modification of rights (newly/no more visible)
-      }
-      // - the visibility has not changed: eventually display an update of refs (-> go to case 1.b.)
+    // 1.a. we should first check if the visibility of the instance has changed for the user
+    // (to deal with cases of update of both a ref linked to rights (markings/granted_refs) and sth else)
+    const previouslyVisible = await isUserCanAccessStixElement(context, user, previousInstance);
+    const currentlyVisible = await isUserCanAccessStixElement(context, user, instance);
+    // - the visiblity has changed: display a changing of rights, don't take the eventual changed refs into account
+    if (previouslyVisible !== currentlyVisible) {
+      return eventTypeTranslater(isPreviousMatch, isCurrentlyMatch, currentType); // case modification of rights (newly/no more visible)
     }
+    // - the visibility has not changed: eventually display an update of refs (-> go to case 1.b.)
     // 1.b. update of a ref without rights modification
     const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch);
     if (listenedInstancesInPatchIds.length > 0) { // update of a ref that is in the listened instances

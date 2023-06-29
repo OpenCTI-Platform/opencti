@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import {
@@ -25,7 +25,7 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 
 // !!!!
 // These tests enable to protect the notificationManager code, and especially the instance trigger notification system behavior.
-// The modification of these tests should be taken with caution since the code is complex and sensitve,
+// The modification of these tests should be taken with caution since the code is complex and sensitive,
 // and testing cases numerous and precise.
 // !!!!
 
@@ -145,6 +145,99 @@ const CREATE_SIGHTING_QUERY = gql`
         stixSightingRelationshipAdd(input: $input) {
             id
             standard_id
+        }
+    }
+`;
+
+const DELETE_USER_QUERY = gql`
+    mutation userDelete($id: ID!) {
+        userEdit(id: $id) {
+            delete
+        }
+    }
+`;
+const DELETE_GROUP_QUERY = gql`
+    mutation groupDelete($id: ID!) {
+        groupEdit(id: $id) {
+            delete
+        }
+    }
+`;
+// const GROUP_RELATION_ADD_QUERY = gql`
+//     mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
+//         groupEdit(id: $id) {
+//             relationAdd(input: $input) {
+//                 id
+//                 to {
+//                     ... on Group {
+//                         members {
+//                             edges {
+//                                 node {
+//                                     id
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// `;
+// const USER_ORGANIZATION_ADD_QUERY = gql`
+//     mutation UserEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+//         userEdit(id: $id) {
+//             organizationAdd(organizationId: $organizationId) {
+//                 id
+//                 name
+//                 standard_id
+//             }
+//         }
+//     }
+// `;
+const DELETE_TRIGGER_QUERY = gql`
+    mutation triggerDelete($id: ID!) {
+        triggerDelete(id: $id)
+    }
+`;
+const DELETE_MALWARE_QUERY = gql`
+    mutation malwareDelete($id: ID!) {
+        malwareEdit(id: $id) {
+            delete
+        }
+    }
+`;
+const DELETE_REPORT_QUERY = gql`
+    mutation reportDelete($id: ID!) {
+        reportEdit(id: $id) {
+            delete
+        }
+    }
+`;
+const DELETE_ORGANIZATION_QUERY = gql`
+    mutation organizationDelete($id: ID!) {
+        organizationEdit(id: $id) {
+            delete
+        }
+    }
+`;
+const DELETE_ATTACKPATTERN_QUERY = gql`
+    mutation attackPatternDelete($id: ID!) {
+        attackPatternEdit(id: $id) {
+            delete
+        }
+    }
+`;
+const DELETE_RELATIONSHIP_QUERY = gql`
+    mutation stixCoreRelationshipDelete($id: ID!) {
+        stixCoreRelationshipEdit(id: $id) {
+            delete
+        }
+    }
+`;
+const DELETE_SIGHTING_QUERY = gql`
+    mutation stixSightingRelationshipDelete($id: ID!) {
+        stixSightingRelationshipEdit(id: $id) {
+            delete
         }
     }
 `;
@@ -1242,60 +1335,18 @@ describe('Notification manager behaviors test', async () => {
       filters: JSON.stringify(frontendFiltersMalwareAndRedOrganizationAndRedAttackPattern),
     };
     // -- create the triggers
-    await queryAsAdmin({
+    const triggersToCreate = [triggerRedReportAllEvents, triggerMalwareAllEvents, triggerRedOrganizationAllEvents,
+      triggerOrganizationsAllEvents, triggerAttackPatternAllEvents, triggerMalwareAndRedAttackPatternAllEvents,
+      triggerMalwareAndRedOrganizationAllEvents, triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents
+    ];
+    const triggerAddQueryPromise = triggersToCreate.map((triggerInput) => queryAsAdmin({
       query: CREATE_LIVE_TRIGGER_QUERY,
       variables: {
-        input: triggerRedReportUpdate,
+        input: triggerInput,
       },
-    });
-    await queryAsAdmin({
-      query: CREATE_LIVE_TRIGGER_QUERY,
-      variables: {
-        input: triggerRedReportAllEvents,
-      },
-    });
-    await queryAsAdmin({
-      query: CREATE_LIVE_TRIGGER_QUERY,
-      variables: {
-        input: triggerMalwareAllEvents,
-      },
-    });
-    await queryAsAdmin({
-      query: CREATE_LIVE_TRIGGER_QUERY,
-      variables: {
-        input: triggerRedOrganizationAllEvents,
-      },
-    });
-    await queryAsAdmin({
-      query: CREATE_LIVE_TRIGGER_QUERY,
-      variables: {
-        input: triggerOrganizationsAllEvents,
-      },
-    });
-    await queryAsAdmin({
-      query: CREATE_LIVE_TRIGGER_QUERY,
-      variables: {
-        input: triggerAttackPatternAllEvents,
-      },
-    });
-    await queryAsAdmin({
-      query: CREATE_LIVE_TRIGGER_QUERY,
-      variables: {
-        input: triggerMalwareAndRedAttackPatternAllEvents,
-      },
-    });
-    await queryAsAdmin({
-      query: CREATE_LIVE_TRIGGER_QUERY,
-      variables: {
-        input: triggerMalwareAndRedOrganizationAllEvents,
-      },
-    });
-    await queryAsAdmin({
-      query: CREATE_LIVE_TRIGGER_QUERY,
-      variables: {
-        input: triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents,
-      },
-    });
+    }));
+    const triggerAddQueryResults = await Promise.all(triggerAddQueryPromise);
+    const createdTriggerIds = triggerAddQueryResults.map((result) => result.data.triggerLiveAdd.id);
     resetCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS);
 
     // -- TESTS -- //
@@ -1634,5 +1685,62 @@ describe('Notification manager behaviors test', async () => {
     expect(result[1].type).toEqual(EVENT_TYPE_DELETE);
     expect(result[1].message).toEqual('[report] report_name containing [identity] greenOrganization_name');
     expect(result[1].user.user_id).toEqual(greenUser.id);
+
+    // -- delete created triggers --
+    const triggerDeleteQueryPromises = createdTriggerIds.map((triggerId) => queryAsAdmin({
+      query: DELETE_TRIGGER_QUERY,
+      variables: { id: triggerId },
+    }));
+    await Promise.all(triggerDeleteQueryPromises);
+    resetCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS);
+  });
+  afterAll(async () => {
+    // -- delete created data (clean stream)
+    const deleteUserPromise = queryAsAdmin({
+      query: DELETE_USER_QUERY,
+      variables: { id: greenUserId },
+    });
+    const deleteGroupPromise = queryAsAdmin({
+      query: DELETE_GROUP_QUERY,
+      variables: { id: greenGroupId },
+    });
+    const deleteReportPromise = queryAsAdmin({
+      query: DELETE_REPORT_QUERY,
+      variables: { id: reportId },
+    });
+    const deleteRedReportPromise = queryAsAdmin({
+      query: DELETE_REPORT_QUERY,
+      variables: { id: redReportId },
+    });
+    const deleteMalwarePromise = queryAsAdmin({
+      query: DELETE_MALWARE_QUERY,
+      variables: { id: malwareId },
+    });
+    const deleteRedAttackPatternPromise = queryAsAdmin({
+      query: DELETE_ATTACKPATTERN_QUERY,
+      variables: { id: redAttackPatternId },
+    });
+    const deleteUserOrganizationPromise = queryAsAdmin({
+      query: DELETE_ORGANIZATION_QUERY,
+      variables: { id: userOrganizationId },
+    });
+    const deleteGreenOrganizationPromise = queryAsAdmin({
+      query: DELETE_ORGANIZATION_QUERY,
+      variables: { id: greenOrganizationId },
+    });
+    const deleteRedOrganizationPromise = queryAsAdmin({
+      query: DELETE_ORGANIZATION_QUERY,
+      variables: { id: redOrganizationId },
+    });
+    const deleteRelationshipPromise = queryAsAdmin({
+      query: DELETE_RELATIONSHIP_QUERY,
+      variables: { id: relationshipId },
+    });
+    const deleteSightingPromise = queryAsAdmin({
+      query: DELETE_SIGHTING_QUERY,
+      variables: { id: sightingId },
+    });
+    await Promise.all([deleteUserPromise, deleteGroupPromise, deleteReportPromise, deleteRedReportPromise, deleteMalwarePromise, deleteRedAttackPatternPromise,
+      deleteUserOrganizationPromise, deleteGreenOrganizationPromise, deleteRedOrganizationPromise, deleteRelationshipPromise, deleteSightingPromise]);
   });
 });

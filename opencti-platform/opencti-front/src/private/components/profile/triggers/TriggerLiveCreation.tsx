@@ -313,6 +313,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         type="checkbox"
         name="instance_trigger"
         label={t('Instance trigger')}
+        tooltip={instanceTriggerDescription}
         containerstyle={{ marginTop: 20 }}
         onChange={() => onChangeInstanceTrigger(setFieldValue)}
       />
