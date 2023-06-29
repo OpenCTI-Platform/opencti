@@ -229,6 +229,7 @@ class ListLinesContent extends Component {
       selectedElements,
       deSelectedElements,
       height: propHeight,
+      width: propWidth,
       containerRef: propContainerRef,
     } = this.props;
     const countWithLoading = isLoading()
@@ -263,7 +264,10 @@ class ListLinesContent extends Component {
               style={{
                 height: propHeight || 'auto',
                 maxHeight: propHeight || 'auto',
+                width: propWidth || 'auto',
+                maxWidth: propWidth || 'auto',
                 overflowY: propHeight ? 'auto' : 'hidden',
+                overflowX: propWidth ? 'auto' : 'hidden',
               }}
               ref={this.containerRef}
             >
