@@ -14,10 +14,9 @@ import { Theme } from '../../../../components/Theme';
 import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
 import AccessesMenu from '../AccessesMenu';
 import SettingsOrganizationDetails from './SettingsOrganizationDetails';
-import UserLineTitles from '../users/UserLineTitles';
-import { UserLine } from '../users/UserLine';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import MembersList from '../users/MembersList';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -88,40 +87,7 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
   const subOrganizations = organization.subOrganizations?.edges ?? [];
   const parentOrganizations = organization.parentOrganizations?.edges ?? [];
 
-  const userColumns = {
-    name: {
-      label: 'Name',
-      width: '20%',
-      isSortable: true,
-    },
-    user_email: {
-      label: 'Email',
-      width: '30%',
-      isSortable: true,
-    },
-    firstname: {
-      label: 'Firstname',
-      width: '15%',
-      isSortable: true,
-    },
-    lastname: {
-      label: 'Lastname',
-      width: '15%',
-      isSortable: true,
-    },
-    otp: {
-      label: '2FA',
-      width: '5%',
-      isSortable: false,
-    },
-    created_at: {
-      label: 'Creation date',
-      width: '10%',
-      isSortable: true,
-    },
-  };
   return (
-
     <div className={classes.container}>
       <AccessesMenu />
       <div>
@@ -202,34 +168,7 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
         </Grid>
         </Grid>
 
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 20 }}
-      >
-        <Grid item={true} xs={12}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t('Members')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12} style={{ paddingTop: 20 }}>
-                <UserLineTitles dataColumns={userColumns} />
-                <List>
-                  {members.map((member) => (
-                    <UserLine
-                      key={member?.node.id}
-                      dataColumns={userColumns}
-                      node={member?.node}
-                    />
-                  ))}
-                </List>
-              </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
-      </Grid>
+      <MembersList members={members} />
     </div>
   );
 };

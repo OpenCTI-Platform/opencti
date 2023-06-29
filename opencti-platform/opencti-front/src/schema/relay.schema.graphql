@@ -1157,7 +1157,7 @@ input UsersFiltering {
 
 type UserConnection {
   pageInfo: PageInfo!
-  edges: [UserEdge]
+  edges: [UserEdge!]!
 }
 
 type CreatorConnection {
