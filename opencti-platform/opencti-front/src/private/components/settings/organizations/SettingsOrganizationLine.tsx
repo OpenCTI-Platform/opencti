@@ -82,32 +82,15 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {organization.name}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.x_opencti_organization_type.width }}
-            >
-              {organization.x_opencti_organization_type
-                ? t(`organization_${organization.x_opencti_organization_type}`)
-                : ''}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created.width }}
-            >
-              {fd(organization.created)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.modified.width }}
-            >
-              {fd(organization.modified)}
-            </div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                {value.render?.(organization, { t, classes })}
+              </div>
+            ))}
           </div>
         }
       />
