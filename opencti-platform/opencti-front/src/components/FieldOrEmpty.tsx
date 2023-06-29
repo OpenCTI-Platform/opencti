@@ -9,7 +9,6 @@ interface FieldOrEmptyProps {
 }
 
 const FieldOrEmpty: FunctionComponent<FieldOrEmptyProps> = ({ source, children }) => {
-  const notEmptyField = isNotEmptyField(source);
-  return <>{notEmptyField ? children : '-'}</>; // render the children if source is defined
+  return <>{isNotEmptyField(source) ? children : '-'}</>; // render the children if source is defined
 };
 export default FieldOrEmpty;
