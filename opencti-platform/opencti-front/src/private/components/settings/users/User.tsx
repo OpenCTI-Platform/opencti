@@ -7,8 +7,6 @@ import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import {
   AccountBalanceOutlined,
-  BackupTableOutlined,
-  CampaignOutlined,
   Delete,
   DeleteForeverOutlined,
   Edit,
@@ -32,7 +30,6 @@ import { Link } from 'react-router-dom';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
-import Tooltip from '@mui/material/Tooltip';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -44,26 +41,16 @@ import UserHistory from './UserHistory';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import Transition from '../../../../components/Transition';
-import TriggersLines, {
-  triggersLinesQuery,
-} from '../../profile/triggers/TriggersLines';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import {
-  TriggerFilter,
-  TriggersLinesPaginationQuery,
-} from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { User_user$key } from './__generated__/User_user.graphql';
-import { UserLogsTimeSeriesQuery$data } from './__generated__/UserLogsTimeSeriesQuery.graphql';
-import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import AccessesMenu from '../AccessesMenu';
 import Chart from '../../common/charts/Chart';
-import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
-import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation';
 import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
+import Triggers from '../Triggers';
+import { UserLogsTimeSeriesQuery$data } from './__generated__/UserLogsTimeSeriesQuery.graphql';
+import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
-import TriggerLineTitles from '../../profile/TriggerLineTitles';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -102,10 +89,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
-  },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
   },
   chip: {
     fontSize: 12,
@@ -271,44 +254,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
     };
   }, []);
 
-  const paginationOptions = {
-    count: 25,
-    filters: [{ key: ['user_ids' as TriggerFilter], values: [user.id] }],
-  };
-
-  const queryRef = useQueryLoading<TriggersLinesPaginationQuery>(
-    triggersLinesQuery,
-    paginationOptions,
-  );
-
-  const dataColumns = {
-    trigger_type: {
-      label: 'Type',
-      width: '10%',
-      isSortable: true,
-    },
-    name: {
-      label: 'Name',
-      width: '15%',
-      isSortable: true,
-    },
-    outcomes: {
-      label: 'Notification',
-      width: '20%',
-      isSortable: true,
-    },
-    event_types: {
-      label: 'Triggering on',
-      width: '20%',
-      isSortable: false,
-    },
-    filters: {
-      label: 'Details',
-      width: '30%',
-      isSortable: false,
-    },
-  };
-
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
@@ -392,15 +337,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
 
-  const [openLive, setOpenLive] = useState(false);
-  const [openDigest, setOpenDigest] = useState(false);
-  const handleOpenCreateLive = () => {
-    setOpenLive(true);
-  };
-  const handleOpenCreateDigest = () => {
-    setOpenDigest(true);
-  };
-
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -422,7 +358,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10, marginBottom: 20 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Basic information')}
           </Typography>
@@ -483,7 +419,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10, marginBottom: 20 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Permissions')}
           </Typography>
@@ -628,64 +564,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ float: 'left' }}
-          >
-            {t('Triggers and Digests')}
-          </Typography>
-          <Tooltip title={t('Add a live trigger')}>
-            <IconButton
-              aria-label="Add"
-              className={classes.createButton}
-              onClick={handleOpenCreateLive}
-              size="large"
-              color="secondary"
-            >
-              <CampaignOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <TriggerLiveCreation
-            paginationOptions={paginationOptions}
-            open={openLive}
-            handleClose={() => setOpenLive(false)}
-            recipientId={user.id}
-          />
-          <Tooltip title={t('Add a  regular digest')}>
-            <IconButton
-              aria-label="Add"
-              className={classes.createButton}
-              onClick={handleOpenCreateDigest}
-              size="large"
-              color="secondary"
-            >
-              <BackupTableOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <div className="clearfix" />
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ marginTop: 0 }}
-          >
-            <TriggerLineTitles dataColumns={dataColumns} />
-            {queryRef && (
-              <TriggersLines
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-              />
-            )}
-          </Paper>
-          <TriggerDigestCreation
-            paginationOptions={paginationOptions}
-            open={openDigest}
-            handleClose={() => setOpenDigest(false)}
-            recipientId={user.id}
-          />
-        </Grid>
+        <Triggers recipientId={user.id} filter={'user_ids'}/>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Operations')}

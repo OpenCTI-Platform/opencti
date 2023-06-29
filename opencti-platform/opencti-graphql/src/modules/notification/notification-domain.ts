@@ -10,6 +10,7 @@ import type {
   TriggerLiveAddInput,
   TriggerType
 } from '../../generated/graphql';
+import { TriggerFilter } from '../../generated/graphql';
 import {
   internalFindByIds,
   internalLoadById,
@@ -31,12 +32,12 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import {
   AuthorizedMember,
   isUserHasCapability,
-  MEMBER_ACCESS_RIGHT_ADMIN,
-  SETTINGS_SET_ACCESSES, SYSTEM_USER,
+  MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW,
+  SETTINGS_SET_ACCESSES,
+  SYSTEM_USER,
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { TriggerFilter } from '../../generated/graphql';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreEntity } from '../../types/store';
 
 // Outcomes
@@ -48,22 +49,19 @@ const extractUniqRecipient = async (
   user: AuthUser,
   triggerInput: TriggerDigestAddInput | TriggerLiveAddInput,
   type: TriggerType
-): Promise<{ id: string, name: string }> => {
-  if (triggerInput.recipients && triggerInput.recipients.length > 0) {
+): Promise<BasicStoreEntity> => {
+  const { recipients } = triggerInput;
+  let recipient = user.id;
+  if (recipients?.length && recipients?.length === 1) {
     if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
       throw ForbiddenAccess();
     }
-    if (triggerInput.recipients.length > 1) {
+    if (recipients?.length && recipients?.length > 1) {
       throw UnsupportedError(`Cannot create ${type} trigger for more than one recipient`);
     }
-    const [recipientId] = triggerInput.recipients;
-    const recipientUser = await internalLoadById<BasicStoreEntity>(context, user, recipientId, { type: ENTITY_TYPE_USER });
-    if (!recipientUser) {
-      throw UnsupportedError('Recipient user not found');
-    }
-    return recipientUser;
+    [recipient] = recipients;
   }
-  return user;
+  return internalLoadById(context, user, recipient);
 };
 
 export const addTrigger = async (
@@ -72,11 +70,19 @@ export const addTrigger = async (
   triggerInput: TriggerDigestAddInput | TriggerLiveAddInput,
   type: TriggerType
 ): Promise<BasicStoreEntityTrigger> => {
+  let authorizedMembers;
   const recipient = await extractUniqRecipient(context, user, triggerInput, type);
   const isSelfTrigger = recipient.id === user.id;
-  const authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
-  const defaultOpts = { trigger_type: type, authorized_members: authorizedMembers, user_ids: [recipient.id], group_ids: [], created: now(), updated: now() };
+  if (recipient.entity_type === ENTITY_TYPE_USER) {
+    authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+  } else if (recipient.entity_type === ENTITY_TYPE_GROUP) {
+    authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }];
+  } else {
+    throw UnsupportedError(`Cannot add a recipient with type ${type}`);
+  }
+  const defaultOpts = { trigger_type: type, authorized_members: authorizedMembers, created: now(), updated: now() };
   const trigger = { ...triggerInput, ...defaultOpts };
+  delete trigger.recipients;
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
   await publishUserAction({
     user,
@@ -127,11 +133,16 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
 };
 export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersArgs) => {
   let queryArgs = { ...opts };
-  if (opts.filters?.some((f) => f.key.includes(TriggerFilter.UserIds))) {
+  // key is a string[] because of the resolver, we have updated the keys
+  const userIdFilter = opts.filters?.find((f) => (f.key as string[]).includes('authorized_members.id'));
+  if (userIdFilter) {
     if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
       throw UnsupportedError(`${TriggerFilter.UserIds} filter is only accessible for administration users (set access)`);
     }
-    queryArgs = { ...queryArgs, adminBypassUserAccess: true };
+    queryArgs = {
+      ...queryArgs,
+      adminBypassUserAccess: true
+    };
   }
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };

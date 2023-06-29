@@ -16,10 +16,11 @@ import Chip from '@mui/material/Chip';
 import { DataColumns } from '../../../../components/list_lines';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import TriggerPopover from './TriggerPopover';
 import { dayStartDate } from '../../../../utils/Time';
+import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -102,6 +103,7 @@ const triggerLineFragment = graphql`
       id
       name
     }
+    currentUserAccessRight
   }
 `;
 
@@ -132,6 +134,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   const time = currentTime.length > 1
     ? new Date(`2000-01-01T${currentTime[1]}`)
     : new Date(`2000-01-01T${currentTime[0]}`);
+
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon>
@@ -251,7 +254,10 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <TriggerPopover id={data.id} paginationOptions={paginationOptions} />
+       <TriggerPopover
+         id={data.id}
+         paginationOptions={paginationOptions}
+         disabled={!(data.currentUserAccessRight === 'admin' || useGranted([SETTINGS_SETACCESSES]))}/>
       </ListItemIcon>
     </ListItem>
   );

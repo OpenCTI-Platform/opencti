@@ -15,6 +15,7 @@ enum TriggerFilter {
     created
     event_types
     user_ids
+    group_ids
 }
 input TriggersFiltering {
     key: [TriggerFilter!]!
@@ -38,7 +39,6 @@ type Trigger implements InternalObject & BasicObject {
     modified: DateTime
     name: String!
     description: String
-    user_ids: [StixRef!]!
     trigger_type: TriggerType! # live or digest
     event_types: [TriggerEventType!]
     filters: String
@@ -47,6 +47,7 @@ type Trigger implements InternalObject & BasicObject {
     triggers: [Trigger]
     period: DigestPeriod
     trigger_time: String
+    currentUserAccessRight: String
 }
 
 type TriggerConnection {

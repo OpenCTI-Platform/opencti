@@ -11,6 +11,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
@@ -45,9 +46,11 @@ const TriggerPopoverDeletionMutation = graphql`
 const TriggerPopover = ({
   id,
   paginationOptions,
+  disabled,
 }: {
   id: string;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
+  disabled:boolean;
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -89,14 +92,19 @@ const TriggerPopover = ({
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
     <div className={classes.container}>
-      <IconButton
-        onClick={handleOpen}
-        aria-haspopup="true"
-        style={{ marginTop: 3 }}
-        size="large"
-      >
-        <MoreVert />
-      </IconButton>
+      <Tooltip title={disabled ? t('This trigger/digest has been shared with you and you are not able to modify or delete it') : ''}>
+        <div>
+          <IconButton
+            onClick={handleOpen}
+            aria-haspopup="true"
+            style={{ marginTop: 3 }}
+            size="large"
+            disabled={disabled}
+          >
+             <MoreVert/>
+          </IconButton>
+        </div>
+      </Tooltip>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>

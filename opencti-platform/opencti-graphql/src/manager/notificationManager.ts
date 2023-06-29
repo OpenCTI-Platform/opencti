@@ -197,11 +197,10 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
   const triggers = await getEntitiesFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   return triggers.map((trigger) => {
-    const triggerGroupIds = trigger.group_ids ?? [];
+    const triggerAuthorizedMembersIds = trigger.authorized_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
-      .some((id: string) => triggerGroupIds.includes(id)));
-    const triggerUserIds = trigger.user_ids ?? [];
-    const usersFromIds = platformUsers.filter((user) => triggerUserIds.includes(user.id));
+      .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
+    const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
     return { users: [...usersFromGroups, ...usersFromIds], trigger };
   });
 };
