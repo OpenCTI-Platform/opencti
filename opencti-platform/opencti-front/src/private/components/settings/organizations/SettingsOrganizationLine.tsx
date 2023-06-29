@@ -8,6 +8,7 @@ import { KeyboardArrowRightOutlined, MoreVertOutlined } from '@mui/icons-materia
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
@@ -38,11 +39,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
 }));
 
 interface SettingsOrganizationLineProps {
@@ -65,14 +61,14 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
   dataColumns,
 }) => {
   const classes = useStyles();
-  const { fd, t } = useFormatter();
+  const { t } = useFormatter();
 
   const organization = useFragment(SettingsOrganizationFragment, node);
   return (
-    <ListItem
+    <ListItemButton
+      key={organization.id}
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/settings/accesses/organizations/${organization.id}`}
     >
@@ -97,7 +93,7 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 
