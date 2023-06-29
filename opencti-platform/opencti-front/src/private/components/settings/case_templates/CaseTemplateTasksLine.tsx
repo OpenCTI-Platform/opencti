@@ -45,27 +45,21 @@ export const CaseTemplateTasksLineFragment = graphql`
 `;
 
 interface CaseTemplateTasksLineProps {
-  node: CaseTemplateTasksLine_node$key
-  dataColumns: DataColumns
-  paginationOptions: CaseTemplateTasksLinesPaginationQuery$data
+  node: CaseTemplateTasksLine_node$key;
+  dataColumns: DataColumns;
+  paginationOptions: CaseTemplateTasksLinesPaginationQuery$data;
 }
 
-export const CaseTemplateTasksLine: FunctionComponent<CaseTemplateTasksLineProps> = ({
-  node,
-  dataColumns,
-  paginationOptions,
-}) => {
+export const CaseTemplateTasksLine: FunctionComponent<
+CaseTemplateTasksLineProps
+> = ({ node, dataColumns, paginationOptions }) => {
   const classes = useStyles();
   const task = useFragment(CaseTemplateTasksLineFragment, node);
 
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-      button={true}
-    >
+    <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={'Task'} />
+        <ItemIcon type="Task" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -96,7 +90,9 @@ interface CaseTemplateLineDummyProps {
   dataColumns: DataColumns;
 }
 
-export const CaseTemplateTasksLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({ dataColumns }) => {
+export const CaseTemplateTasksLineDummy: FunctionComponent<
+CaseTemplateLineDummyProps
+> = ({ dataColumns }) => {
   const classes = useStyles();
 
   return (
@@ -114,11 +110,7 @@ export const CaseTemplateTasksLineDummy: FunctionComponent<CaseTemplateLineDummy
         primary={
           <div>
             {Object.values(dataColumns).map(({ label, width }) => (
-              <div
-                key={label}
-                className={classes.bodyItem}
-                style={{ width }}
-              >
+              <div key={label} className={classes.bodyItem} style={{ width }}>
                 <Skeleton
                   animation="wave"
                   variant="rectangular"

@@ -4,7 +4,7 @@ import Fab from '@mui/material/Fab';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import { Field, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import React, { FunctionComponent, useRef } from 'react';
 import { graphql, useMutation } from 'react-relay';
@@ -53,7 +53,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const caseTemplateAddTask = graphql`
-  mutation CaseTemplateEditionAddTaskMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
+  mutation CaseTemplateEditionAddTaskMutation(
+    $id: ID!
+    $input: StixRefRelationshipAddInput!
+  ) {
     caseTemplateRelationAdd(id: $id, input: $input) {
       ...CaseTemplateLine_node
     }
@@ -62,7 +65,11 @@ const caseTemplateAddTask = graphql`
 
 const caseTemplateDeleteTask = graphql`
   mutation CaseTemplateEditionDeleteTaskMutation($id: ID!, $toId: StixRef!) {
-    caseTemplateRelationDelete(id: $id, toId: $toId, relationship_type: "template-task") {
+    caseTemplateRelationDelete(
+      id: $id
+      toId: $toId
+      relationship_type: "template-task"
+    ) {
       id
     }
   }
@@ -77,7 +84,7 @@ export const caseTemplateQuery = graphql`
 `;
 
 export const caseTemplateFieldPatch = graphql`
-  mutation CaseTemplateEditionMutation($id: ID!, $input: [EditInput!]!){
+  mutation CaseTemplateEditionMutation($id: ID!, $input: [EditInput!]!) {
     caseTemplateFieldPatch(id: $id, input: $input) {
       id
       ...CaseTemplateLine_node
@@ -86,10 +93,10 @@ export const caseTemplateFieldPatch = graphql`
 `;
 
 interface CaseTemplateEditionProps {
-  caseTemplate: CaseTemplateLine_node$data
-  paginationOptions: CaseTemplateTasksLines_DataQuery$variables
-  openPanel: boolean
-  setOpenPanel: (status: boolean) => void
+  caseTemplate: CaseTemplateLine_node$data;
+  paginationOptions: CaseTemplateTasksLines_DataQuery$variables;
+  openPanel: boolean;
+  setOpenPanel: (status: boolean) => void;
 }
 
 const caseTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
@@ -115,11 +122,14 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
 
   const existingTasks = useRef<Option[] | undefined>();
   if (!existingTasks.current) {
-    existingTasks.current = caseTemplate.tasks.edges.map(({ node }) => ({ value: node.id, label: node.name }));
+    existingTasks.current = caseTemplate.tasks.edges.map(({ node }) => ({
+      value: node.id,
+      label: node.name,
+    }));
   }
   const submitTaskEdition = (values: Option[]) => {
-    const added = R.difference(values, (existingTasks.current ?? [])).at(0);
-    const removed = R.difference((existingTasks.current ?? []), values).at(0);
+    const added = R.difference(values, existingTasks.current ?? []).at(0);
+    const removed = R.difference(existingTasks.current ?? [], values).at(0);
     if (added?.value) {
       const input = { toId: added.value, relationship_type: 'template-task' };
       commitAddTask({
@@ -156,10 +166,12 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
     commitFieldPatch({
       variables: {
         id: caseTemplate.id,
-        input: [{
-          key: name,
-          value: [value],
-        }],
+        input: [
+          {
+            key: name,
+            value: [value],
+          },
+        ],
       },
     });
   };
@@ -200,12 +212,11 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
               ...caseTemplate,
               tasks: existingTasks.current,
             }}
-            onSubmit={() => {
-            }}
+            onSubmit={() => {}}
             validationSchema={caseTemplateValidation(t)}
           >
             {({ values: currentValues, setFieldValue }) => (
-              <>
+              <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
                   variant="standard"
@@ -232,7 +243,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
                   }}
                   values={currentValues.tasks}
                 />
-              </>
+              </Form>
             )}
           </Formik>
         </div>

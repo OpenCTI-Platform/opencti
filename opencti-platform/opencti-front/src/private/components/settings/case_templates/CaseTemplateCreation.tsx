@@ -145,9 +145,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">
-            {t('Create a case template')}
-          </Typography>
+          <Typography variant="h6">{t('Create a case template')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik
@@ -160,7 +158,13 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
             onSubmit={onSubmit}
             onReset={handleClose}
           >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}

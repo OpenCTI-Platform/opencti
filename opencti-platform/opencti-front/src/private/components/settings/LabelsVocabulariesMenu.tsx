@@ -16,11 +16,11 @@ const LabelsVocabulariesMenu: FunctionComponent = () => {
       label: 'Vocabularies',
     },
     {
-      path: '/dashboard/settings/vocabularies/statusTemplates',
+      path: '/dashboard/settings/vocabularies/status_templates',
       label: 'Status templates',
     },
     {
-      path: '/dashboard/settings/vocabularies/caseTemplates',
+      path: '/dashboard/settings/vocabularies/case_templates',
       label: 'Case templates',
     },
   ];

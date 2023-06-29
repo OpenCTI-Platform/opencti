@@ -1,4 +1,3 @@
-import { CenterFocusStrong } from '@mui/icons-material';
 import { DialogContent } from '@mui/material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -16,9 +15,13 @@ import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { TaskTemplateAddInput, CaseTemplateTasksCreationMutation } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
+import {
+  TaskTemplateAddInput,
+  CaseTemplateTasksCreationMutation,
+} from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
 import { Option } from './ReferenceField';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -36,9 +39,9 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TaskTemplateFieldProps {
-  caseTemplateId?: string
-  onChange: (name: string, values: Option[]) => void
-  values?: readonly Option[]
+  caseTemplateId?: string;
+  onChange: (name: string, values: Option[]) => void;
+  values?: readonly Option[];
 }
 
 const CaseTemplateTasksQuery = graphql`
@@ -66,28 +69,31 @@ const CaseTemplateTasksCreation = graphql`
   }
 `;
 
-const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({ onChange, values }) => {
+const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
+  onChange,
+  values,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const [tasks, setTasks] = useState<Option[]>([...(values ?? [])]);
   const [openCreation, setOpenCreation] = useState(false);
-
-  const [commitTaskCreation] = useMutation<CaseTemplateTasksCreationMutation>(CaseTemplateTasksCreation);
-
+  const [commitTaskCreation] = useMutation<CaseTemplateTasksCreationMutation>(
+    CaseTemplateTasksCreation,
+  );
   const searchTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
     const search = event?.target?.value ?? '';
     fetchQuery(CaseTemplateTasksQuery, { search })
       .toPromise()
       .then((data) => {
-        const newTasks = (data as CaseTemplateTasksSearchQuery$data)
-          ?.taskTemplates
-          ?.edges
-          ?.map(({ node }) => ({ value: node.id, label: node.name })) ?? [];
+        const newTasks = (
+          data as CaseTemplateTasksSearchQuery$data
+        )?.taskTemplates?.edges?.map(({ node }) => ({
+          value: node.id,
+          label: node.name,
+        })) ?? [];
         setTasks(R.uniq([...tasks, ...newTasks]));
       });
   };
-
   const submitTaskCreation: FormikConfig<TaskTemplateAddInput>['onSubmit'] = (
     submitValues,
     { setSubmitting, setErrors, resetForm },
@@ -105,13 +111,19 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({ onChange
         setOpenCreation(false);
         onChange('tasks', [
           ...(values ?? []),
-          ...(data.taskTemplateAdd ? [{ value: data.taskTemplateAdd.id, label: data.taskTemplateAdd.name }] : []),
+          ...(data.taskTemplateAdd
+            ? [
+              {
+                value: data.taskTemplateAdd.id,
+                label: data.taskTemplateAdd.name,
+              },
+            ]
+            : []),
         ]);
         resetForm();
       },
     });
   };
-
   return (
     <>
       <Field
@@ -130,18 +142,25 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({ onChange
         onChange={onChange}
         openCreate={() => setOpenCreation(true)}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value}
-        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: Option) => (
+        isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value
+        }
+        renderOption={(
+          props: React.HTMLAttributes<HTMLLIElement>,
+          option: Option,
+        ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
-              <CenterFocusStrong />
+              <ItemIcon type="Task" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>
         )}
       />
-      <Dialog open={openCreation}>
-        <Formik<TaskTemplateAddInput> initialValues={{ name: '', description: '' }} onSubmit={submitTaskCreation}>
+      <Dialog PaperProps={{ elevation: 1 }} open={openCreation}>
+        <Formik<TaskTemplateAddInput>
+          initialValues={{ name: '', description: '' }}
+          onSubmit={submitTaskCreation}
+        >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
               <DialogTitle>{t('Create a task template')}</DialogTitle>

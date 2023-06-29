@@ -66,6 +66,7 @@ import {
   BriefcaseSearchOutline,
   BriefcaseRemoveOutline,
   BriefcaseEditOutline,
+  BriefcaseCheckOutline,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -92,7 +93,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
 
   switch (type) {
     case 'unauthorized':
-      return <ReportProblemOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <ReportProblemOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'global':
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Trigger':
@@ -245,7 +248,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
         <BriefcaseEyeOutline style={style} fontSize={fontSize} role="img" />
       );
     case 'Case-Template':
-      return <CasesOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <BriefcaseCheckOutline style={style} fontSize={fontSize} role="img" />
+      );
     case 'Feedback':
       return (
         <BriefcaseEditOutline style={style} fontSize={fontSize} role="img" />

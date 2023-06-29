@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { CasesOutlined, KeyboardArrowRightOutlined } from '@mui/icons-material';
+import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -9,6 +9,7 @@ import ListItem from '@mui/material/ListItem';
 import { Theme } from '../../../../components/Theme';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>({
   item: {
@@ -41,7 +42,7 @@ export const CaseTemplateLineFragment = graphql`
         node {
           id
           name
-        } 
+        }
       }
       pageInfo {
         globalCount
@@ -55,7 +56,10 @@ interface CaseTemplateLineProps {
   dataColumns: DataColumns;
 }
 
-const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({ node, dataColumns }) => {
+const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
+  node,
+  dataColumns,
+}) => {
   const classes = useStyles();
 
   const data = useFragment(CaseTemplateLineFragment, node);
@@ -66,9 +70,10 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({ node, data
       component={Link}
       divider
       button
-      to={`/dashboard/settings/vocabularies/caseTemplates/${data.id}`}>
+      to={`/dashboard/settings/vocabularies/case_templates/${data.id}`}
+    >
       <ListItemIcon>
-        <CasesOutlined />
+        <ItemIcon type="Case-Template" />
       </ListItemIcon>
       <ListItemText
         primary={

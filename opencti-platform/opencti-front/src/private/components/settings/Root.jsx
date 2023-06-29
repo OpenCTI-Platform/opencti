@@ -183,7 +183,7 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/vocabularies/statusTemplates"
+        path="/dashboard/settings/vocabularies/status_templates"
         component={StatusTemplates}
       />
       <BoundaryRoute
@@ -217,7 +217,7 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/vocabularies/caseTemplates"
+        path="/dashboard/settings/vocabularies/case_templates"
         render={() => (
           <Security
             needs={[SETTINGS_SETLABELS]}
@@ -229,7 +229,7 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/vocabularies/caseTemplates/:caseTemplateId"
+        path="/dashboard/settings/vocabularies/case_templates/:caseTemplateId"
         render={() => (
           <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
             <CaseTemplateTasks />
