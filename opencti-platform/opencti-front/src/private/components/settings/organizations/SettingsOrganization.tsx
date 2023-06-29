@@ -43,6 +43,9 @@ const settingsOrganizationFragment = graphql`
     id
     standard_id
     name
+    description
+    contact_information
+    x_opencti_organization_type
     members {
       edges {
         node {
@@ -75,7 +78,6 @@ const settingsOrganizationFragment = graphql`
         }
       }
     }
-    ...SettingsOrganizationDetails_organization
   }
 `;
 const SettingsOrganization = ({ organizationData }: { organizationData: SettingsOrganization_organization$key }) => {
@@ -138,12 +140,12 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <SettingsOrganizationDetails settingsOrganizationFragment={organization} />
+          <SettingsOrganizationDetails settingsOrganization={organization} />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <div style={{ height: '100%' }}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Basic information')}
+              {t('More information')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>

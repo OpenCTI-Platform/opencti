@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -7,9 +6,9 @@ import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { SettingsOrganizationDetails_organization$key } from './__generated__/SettingsOrganizationDetails_organization.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 
 const styles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -31,29 +30,17 @@ const styles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const SettingsOrganizationDetailsFragment = graphql`
-      fragment SettingsOrganizationDetails_organization on Organization {
-        id
-        description
-        contact_information
-        x_opencti_organization_type
-      }
-    `;
-
 interface SettingsOrganizationDetailsProps {
-  settingsOrganizationFragment: SettingsOrganizationDetails_organization$key;
+  settingsOrganization: SettingsOrganization_organization$data;
 
 }
 
 const SettingsOrganizationDetails: FunctionComponent<
 SettingsOrganizationDetailsProps
-> = ({ settingsOrganizationFragment }) => {
+> = ({ settingsOrganization }) => {
   const { t } = useFormatter();
   const classes = styles();
-  const organization = useFragment(
-    SettingsOrganizationDetailsFragment,
-    settingsOrganizationFragment,
-  );
+  const organization = settingsOrganization;
 
   return (
     <div style={{ height: '100%' }}>
