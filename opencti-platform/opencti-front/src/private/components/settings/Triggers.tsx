@@ -85,7 +85,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openDigest, setOpenDigest] = useState(false);
 
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+    <Grid item={true} xs={12} style={{ marginTop: 10 }}>
       <Typography
         variant="h4"
         gutterBottom={true}

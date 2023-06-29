@@ -135,10 +135,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
     ? new Date(`2000-01-01T${currentTime[1]}`)
     : new Date(`2000-01-01T${currentTime[0]}`);
 
-  const hasAccess = () => {
-    return data.currentUserAccessRight === 'admin' || useGranted([SETTINGS_SETACCESSES]);
-  };
-
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon>
@@ -261,7 +257,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
        <TriggerPopover
          id={data.id}
          paginationOptions={paginationOptions}
-         disabled={!hasAccess()}/>
+         disabled={!(data.currentUserAccessRight === 'admin' || useGranted([SETTINGS_SETACCESSES]))}/>
       </ListItemIcon>
     </ListItem>
   );

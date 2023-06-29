@@ -328,7 +328,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           style={{ marginTop: 20, marginLeft: 0 }}
         >
           <Triggers recipientId={group.id} filter={filter}/>
-          <Grid item={true} xs={12}>
+          <Grid item={true} xs={12} style={{ marginTop: 30 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Members')}
             </Typography>

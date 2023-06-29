@@ -358,7 +358,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10, marginBottom: 20 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Basic information')}
           </Typography>
@@ -419,7 +419,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10, marginBottom: 20 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Permissions')}
           </Typography>
