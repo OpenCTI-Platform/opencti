@@ -5,6 +5,11 @@ import React from 'react';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import { Link } from 'react-router-dom';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import { AccountBalanceOutlined } from '@mui/icons-material';
+import ListItemText from '@mui/material/ListItemText';
 import { Theme } from '../../../../components/Theme';
 import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
 import AccessesMenu from '../AccessesMenu';
@@ -12,6 +17,7 @@ import SettingsOrganizationDetails from './SettingsOrganizationDetails';
 import UserLineTitles from '../users/UserLineTitles';
 import { UserLine } from '../users/UserLine';
 import { useFormatter } from '../../../../components/i18n';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -51,6 +57,24 @@ const settingsOrganizationFragment = graphql`
         }
       }
     }
+    subOrganizations {
+      edges {
+        node {
+          id
+          standard_id
+          name
+        }
+      }
+    }
+    parentOrganizations {
+      edges {
+        node {
+          id
+          standard_id
+          name
+        }
+      }
+    }
     ...SettingsOrganizationDetails_organization
   }
 `;
@@ -59,6 +83,8 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
   const { t } = useFormatter();
   const organization = useFragment<SettingsOrganization_organization$key>(settingsOrganizationFragment, organizationData);
   const members = organization.members?.edges ?? [];
+  const subOrganizations = organization.subOrganizations?.edges ?? [];
+  const parentOrganizations = organization.parentOrganizations?.edges ?? [];
 
   const userColumns = {
     name: {
@@ -111,10 +137,68 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={12} style={{ paddingTop: 10 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <SettingsOrganizationDetails settingsOrganizationFragment={organization} />
         </Grid>
-      </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <div style={{ height: '100%' }}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Basic information')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={12}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Part of')}
+                  </Typography>
+                  <FieldOrEmpty source={parentOrganizations}>
+                    <List>
+                      {parentOrganizations.map((parentOrganization) => (
+                        <ListItem
+                          key={parentOrganization.node.id}
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
+                        >
+                          <ListItemIcon>
+                            <AccountBalanceOutlined color="primary" />
+                          </ListItemIcon>
+                          <ListItemText primary={parentOrganization.node.name} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </FieldOrEmpty>
+                  <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}
+                  >
+                    {t('Sub organizations')}
+                  </Typography>
+                  <FieldOrEmpty source={subOrganizations}>
+                    <List>
+                      {subOrganizations.map((subOrganization) => (
+                        <ListItem
+                          key={subOrganization.node.id}
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
+                        >
+                          <ListItemIcon>
+                            <AccountBalanceOutlined color="primary" />
+                          </ListItemIcon>
+                          <ListItemText primary={subOrganization.node.name} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </FieldOrEmpty>
+                </Grid>
+              </Grid>
+            </Paper>
+          </div>
+        </Grid>
+        </Grid>
 
       <Grid
         container={true}

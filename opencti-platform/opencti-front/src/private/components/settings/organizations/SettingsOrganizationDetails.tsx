@@ -5,18 +5,11 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { AccountBalanceOutlined } from '@mui/icons-material';
-import ListItemText from '@mui/material/ListItemText';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { SettingsOrganizationDetails_organization$key } from './__generated__/SettingsOrganizationDetails_organization.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -44,24 +37,6 @@ const SettingsOrganizationDetailsFragment = graphql`
         description
         contact_information
         x_opencti_organization_type
-        subOrganizations {
-          edges {
-            node {
-              id
-              standard_id
-              name
-            }
-          }
-        }
-        parentOrganizations {
-          edges {
-            node {
-              id
-              standard_id
-              name
-            }
-          }
-        }
       }
     `;
 
@@ -79,8 +54,6 @@ SettingsOrganizationDetailsProps
     SettingsOrganizationDetailsFragment,
     settingsOrganizationFragment,
   );
-  const subOrganizations = organization.subOrganizations?.edges ?? [];
-  const parentOrganizations = organization.parentOrganizations?.edges ?? [];
 
   return (
     <div style={{ height: '100%' }}>
@@ -89,7 +62,7 @@ SettingsOrganizationDetailsProps
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
               {t('Organization type')}
             </Typography>
@@ -125,53 +98,6 @@ SettingsOrganizationDetailsProps
               commonmark={true}
             />
           </Grid>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Part of')}
-              </Typography>
-                <FieldOrEmpty source={parentOrganizations}>
-              <List>
-                  {parentOrganizations.map((parentOrganization) => (
-                      <ListItem
-                        key={parentOrganization.node.id}
-                        dense={true}
-                        divider={true}
-                        button={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
-                      >
-                        <ListItemIcon>
-                          <AccountBalanceOutlined color="primary" />
-                        </ListItemIcon>
-                        <ListItemText primary={parentOrganization.node.name} />
-                      </ListItem>
-                  ))}
-                </List>
-                </FieldOrEmpty>
-              <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}
-              >
-                {t('Sub organizations')}
-              </Typography>
-              <FieldOrEmpty source={subOrganizations}>
-                <List>
-                  {subOrganizations.map((subOrganization) => (
-                      <ListItem
-                        key={subOrganization.node.id}
-                        dense={true}
-                        divider={true}
-                        button={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
-                      >
-                        <ListItemIcon>
-                          <AccountBalanceOutlined color="primary" />
-                        </ListItemIcon>
-                        <ListItemText primary={subOrganization.node.name} />
-                      </ListItem>
-                  ))}
-                </List>
-              </FieldOrEmpty>
-            </Grid>
         </Grid>
       </Paper>
     </div>
