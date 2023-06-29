@@ -34,6 +34,7 @@ generates:
         EntitySetting: ../modules/entitySetting/entitySetting-types#BasicStoreEntityEntitySetting
         Workspace: ../modules/workspace/workspace-types#BasicStoreEntityWorkspace
         MalwareAnalysis: ../modules/malwareAnalysis/malwareAnalysis-types#BasicStoreEntityMalwareAnalysis
+        ThreatActorIndividual: ../modules/threatActorIndividual/threat-actor-individual-types#BasicStoreEntityThreatActorIndividual
   ./graphql.schema.json:
     plugins:
       - "introspection"

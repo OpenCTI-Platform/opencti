@@ -47,7 +47,7 @@ export const MarkDownComponents = (
 });
 
 interface MarkdownWithRedirectionWarningProps {
-  content: string;
+  content: string | null;
   expand?: boolean;
   limit?: number;
   remarkGfmPlugin?: boolean;

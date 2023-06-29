@@ -243,6 +243,9 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         ... on ThreatActor {
           name
         }
+        ... on ThreatActorIndividual {
+          name
+        }
         ... on Tool {
           name
         }

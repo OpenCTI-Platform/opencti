@@ -11059,6 +11059,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Malware
   | MalwareAnalysis
   | ThreatActorGroup
+  | ThreatActorIndividual
   | Tool
   | Vulnerability
   | Incident
@@ -11137,6 +11138,7 @@ union StixObjectOrStixRelationship =
   | Malware
   | MalwareAnalysis
   | ThreatActorGroup
+  | ThreatActorIndividual
   | Tool
   | Vulnerability
   | Incident
@@ -11211,6 +11213,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | MalwareAnalysis
   | Narrative
   | ThreatActorGroup
+  | ThreatActorIndividual
   | Tool
   | Vulnerability
   | Incident ## Six Cyber Observables
