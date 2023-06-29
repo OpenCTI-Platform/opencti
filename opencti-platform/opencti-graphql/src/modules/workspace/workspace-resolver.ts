@@ -2,6 +2,7 @@ import { withFilter } from 'graphql-subscriptions';
 import {
   addWorkspace,
   editAuthorizedMembers,
+  exportObjectsAsStixReportBundle,
   findAll,
   findById,
   getCurrentUserAccessRight,
@@ -37,6 +38,7 @@ const workspaceResolvers: Resolvers = {
     owner: (workspace, _, context) => creatorLoader.load(getOwnerId(workspace), context, context.user),
     objects: (workspace, args, context) => objects(context, context.user, workspace.id, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
+    toStixReportBundle: (workspace, _, context) => exportObjectsAsStixReportBundle(context, context.user, workspace),
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {

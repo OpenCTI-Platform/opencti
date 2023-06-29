@@ -494,6 +494,15 @@ const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
   }
   return [];
 };
+const loadByFiltersWithDependencies = async (context, user, types, args = {}) => {
+  const { indices = READ_DATA_INDICES } = args;
+  const paginateArgs = buildEntityFilters({ types, ...args });
+  const elements = await elList(context, user, indices, { ...paginateArgs, withoutRels: true, connectionFormat: false });
+  if (elements.length > 0) {
+    return loadElementsWithDependencies(context, user, elements, { ...args, onlyMarking: false, withoutRels: true });
+  }
+  return [];
+};
 // Get element with every elements connected element -> rel -> to
 export const storeLoadByIdsWithRefs = async (context, user, ids, opts = {}) => {
   // When loading with explicit references, data must be loaded without internal rels
@@ -518,6 +527,10 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);
   return data ? JSON.stringify(data) : '';
+};
+export const stixLoadByFilters = async (context, user, types, args) => {
+  const elements = await loadByFiltersWithDependencies(context, user, types, args);
+  return elements ? elements.map((element) => convertStoreToStix(element)) : [];
 };
 // endregion
 
