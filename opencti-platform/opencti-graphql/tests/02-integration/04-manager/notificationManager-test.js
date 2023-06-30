@@ -31,14 +31,14 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 
 // -- PREPARE queries --
 const MARKING_READ_QUERY = gql`
-  query markingDefinition($id: String!) {
-    markingDefinition(id: $id) {
-      id
-      definition_type
-      definition
-      standard_id
+    query markingDefinition($id: String!) {
+        markingDefinition(id: $id) {
+            id
+            definition_type
+            definition
+            standard_id
+        }
     }
-  }
 `;
 const CREATE_USER_QUERY = gql`
     mutation UserAdd($input: UserAddInput!) {
@@ -192,20 +192,6 @@ const DELETE_ORGANIZATION_QUERY = gql`
 const DELETE_ATTACKPATTERN_QUERY = gql`
     mutation attackPatternDelete($id: ID!) {
         attackPatternEdit(id: $id) {
-            delete
-        }
-    }
-`;
-const DELETE_RELATIONSHIP_QUERY = gql`
-    mutation stixCoreRelationshipDelete($id: ID!) {
-        stixCoreRelationshipEdit(id: $id) {
-            delete
-        }
-    }
-`;
-const DELETE_SIGHTING_QUERY = gql`
-    mutation stixSightingRelationshipDelete($id: ID!) {
-        stixSightingRelationshipEdit(id: $id) {
             delete
         }
     }
@@ -1701,15 +1687,7 @@ describe('Notification manager behaviors test', async () => {
       query: DELETE_ORGANIZATION_QUERY,
       variables: { id: redOrganizationId },
     });
-    const deleteRelationshipPromise = queryAsAdmin({
-      query: DELETE_RELATIONSHIP_QUERY,
-      variables: { id: relationshipId },
-    });
-    const deleteSightingPromise = queryAsAdmin({
-      query: DELETE_SIGHTING_QUERY,
-      variables: { id: sightingId },
-    });
     await Promise.all([deleteUserPromise, deleteGroupPromise, deleteReportPromise, deleteRedReportPromise, deleteMalwarePromise, deleteRedAttackPatternPromise,
-      deleteUserOrganizationPromise, deleteGreenOrganizationPromise, deleteRedOrganizationPromise, deleteRelationshipPromise, deleteSightingPromise]);
+      deleteUserOrganizationPromise, deleteGreenOrganizationPromise, deleteRedOrganizationPromise]);
   });
 });
