@@ -262,7 +262,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatAct
           />
           <OpenVocabField
             variant="edit"
-            type="threat-actor-type-ov"
+            type="threat-actor-individual-type-ov"
             name="threat_actor_types"
             label={t('Threat actor types')}
             containerStyle={{ width: '100%', marginTop: 20 }}

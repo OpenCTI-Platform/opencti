@@ -9689,9 +9689,12 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
-  threat_actor_type_ov
-  threat_actor_role_ov
-  threat_actor_sophistication_ov
+  threat_actor_group_type_ov
+  threat_actor_group_role_ov
+  threat_actor_group_sophistication_ov
+  threat_actor_individual_type_ov
+  threat_actor_individual_role_ov
+  threat_actor_individual_sophistication_ov
   tool_types_ov
   note_types_ov
 }

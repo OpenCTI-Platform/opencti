@@ -88,7 +88,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                 {t('Sophistication')}
               </Typography>
               <ItemOpenVocab
-                type="threat-actor-sophistication-ov"
+                type="threat-actor-individual-sophistication-ov"
                 value={data.sophistication}
                 small
               />
@@ -121,7 +121,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                       <ListItemText
                         primary={
                           <ItemOpenVocab
-                            type="threat-actor-role-ov"
+                            type="threat-actor-individual-role-ov"
                             value={role}
                             small
                           />
@@ -153,7 +153,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Threat actor group types')}
+                {t('Threat actor individual types')}
               </Typography>
               {data.threat_actor_types
                 && data.threat_actor_types.map((threatActorIndividualType) => (

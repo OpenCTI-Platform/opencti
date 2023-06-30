@@ -28,18 +28,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
   cardDummy: {
     width: '100%',
     height: 320,
-    color: theme.palette.grey?.[700],
+    color: theme.palette.grey[700],
     borderRadius: 6,
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
   },
-  avatarDisabled: {
-    backgroundColor: theme.palette.grey?.[600],
-  },
   icon: {
     margin: '10px 20px 0 0',
     fontSize: 40,
+    color: '#242d30',
   },
   area: {
     width: '100%',
@@ -54,37 +52,39 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: '100%',
     paddingTop: 0,
   },
+  contentDummy: {
+    width: '100%',
+    height: 200,
+    marginTop: 20,
+  },
   description: {
-    height: 61,
+    marginTop: 5,
+    height: 65,
     display: '-webkit-box',
-    '-webkit-box-orient': 'vertical',
-    '-webkit-line-clamp': 2,
     overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    '-webkit-line-clamp': 3,
+    '-webkit-box-orient': 'vertical',
   },
   objectLabel: {
     height: 45,
     paddingTop: 15,
   },
-  contentDummy: {
-    width: '100%',
-    height: 120,
+  extras: {
+    marginTop: 25,
+  },
+  extraColumn: {
+    height: 45,
+    width: '50%',
+    float: 'left',
+    display: '-webkit-box',
     overflow: 'hidden',
-    marginTop: 15,
+    textOverflow: 'ellipsis',
+    '-webkit-line-clamp': 2,
+    '-webkit-box-orient': 'vertical',
   },
-  placeholderHeader: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
-  placeholderHeaderDark: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey?.[800],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
+  title: {
+    fontWeight: 600,
   },
 }));
 

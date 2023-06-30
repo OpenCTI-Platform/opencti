@@ -19,6 +19,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
@@ -327,8 +328,8 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }],
   },
   // T
-  threat_actor_type_ov: {
-    description: 'Threat actor type is an open vocabulary used to describe what type of threat actor the individual or group is. For example, some threat actors are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor can be both a disgruntled insider and a spy. [Casey 2007])',
+  threat_actor_group_type_ov: {
+    description: 'Threat actor type is an open vocabulary used to describe what type of threat actor group is. For example, some threat actors groups are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor group can be both a disgruntled insider and a spy. [Casey 2007])',
     entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP],
     fields: [{
       key: 'threat_actor_types',
@@ -336,9 +337,9 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
-  threat_actor_role_ov: {
-    description: `Threat actor role is an open vocabulary that is used to describe the different roles that a threat actor can play. For example, some threat actors author malware or operate botnets while other actors actually carry out attacks directly
-      Threat actor roles are not mutually exclusive. For example, an actor can be both a financial backer for attacks and also direct attacks`,
+  threat_actor_group_role_ov: {
+    description: `Threat actor group role is an open vocabulary that is used to describe the different roles that a threat actor group can play. For example, some threat actors groups author malware or operate botnets while other actors actually carry out attacks directly
+      Threat actor group roles are not mutually exclusive. For example, an actor can be both a financial backer for attacks and also direct attacks`,
     entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP],
     fields: [{
       key: 'roles',
@@ -346,9 +347,37 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
-  threat_actor_sophistication_ov: {
-    description: 'Threat actor sophistication vocabulary captures the skill level of a threat actor. It ranges from "none", which describes a complete novice, to "strategic", which describes an attacker who is able to influence supply chains to introduce vulnerabilities. This vocabulary is separate from resource level because an innovative, highly-skilled threat actor may have access to very few resources while a minimal-level actor might have the resources of an organized crime ring',
+  threat_actor_group_sophistication_ov: {
+    description: 'Threat actor group sophistication vocabulary captures the skill level of a threat actor group. It ranges from "none", which describes a complete novice, to "strategic", which describes an attacker who is able to influence supply chains to introduce vulnerabilities. This vocabulary is separate from resource level because an innovative, highly-skilled threat actor group may have access to very few resources while a minimal-level actor might have the resources of an organized crime ring',
     entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP],
+    fields: [{
+      key: 'sophistication',
+      required: false,
+      multiple: false,
+    }]
+  },
+  threat_actor_individual_type_ov: {
+    description: 'Threat actor individual type is an open vocabulary used to describe what type of threat actor the individual is. For example, some threat actors individuals are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor individual can be both a disgruntled insider and a spy. [Casey 2007])',
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL],
+    fields: [{
+      key: 'threat_actor_types',
+      required: false,
+      multiple: true,
+    }]
+  },
+  threat_actor_individual_role_ov: {
+    description: `Threat actor individual role is an open vocabulary that is used to describe the different roles that a threat actor individual can play. For example, some threat actors individuals author malware or operate botnets while other actors actually carry out attacks directly
+      Threat actor individual roles are not mutually exclusive. For example, an actor can be both a financial backer for attacks and also direct attacks`,
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL],
+    fields: [{
+      key: 'roles',
+      required: false,
+      multiple: true,
+    }]
+  },
+  threat_actor_individual_sophistication_ov: {
+    description: 'Threat actor individual sophistication vocabulary captures the skill level of a threat actor individual. It ranges from "none", which describes a complete novice, to "strategic", which describes an attacker who is able to influence supply chains to introduce vulnerabilities. This vocabulary is separate from resource level because an innovative, highly-skilled threat actor individual may have access to very few resources while a minimal-level actor might have the resources of an organized crime ring',
+    entity_types: [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL],
     fields: [{
       key: 'sophistication',
       required: false,

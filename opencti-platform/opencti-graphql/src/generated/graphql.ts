@@ -25046,9 +25046,12 @@ export enum VocabularyCategory {
   ServiceStatusOv = 'service_status_ov',
   ServiceTypeOv = 'service_type_ov',
   StartTypeOv = 'start_type_ov',
-  ThreatActorRoleOv = 'threat_actor_role_ov',
-  ThreatActorSophisticationOv = 'threat_actor_sophistication_ov',
-  ThreatActorTypeOv = 'threat_actor_type_ov',
+  ThreatActorGroupRoleOv = 'threat_actor_group_role_ov',
+  ThreatActorGroupSophisticationOv = 'threat_actor_group_sophistication_ov',
+  ThreatActorGroupTypeOv = 'threat_actor_group_type_ov',
+  ThreatActorIndividualRoleOv = 'threat_actor_individual_role_ov',
+  ThreatActorIndividualSophisticationOv = 'threat_actor_individual_sophistication_ov',
+  ThreatActorIndividualTypeOv = 'threat_actor_individual_type_ov',
   ToolTypesOv = 'tool_types_ov'
 }
 

@@ -264,7 +264,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
                 />
                 <OpenVocabField
                   label={t('Roles')}
-                  type="threat-actor-role-ov"
+                  type="threat-actor-individual-role-ov"
                   name="roles"
                   onFocus={handleChangeFocus}
                   onChange={(name, value) => setFieldValue(name, value)}

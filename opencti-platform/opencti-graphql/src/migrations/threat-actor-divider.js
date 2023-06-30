@@ -7,7 +7,7 @@ const splitThreatActorsByCategory = async (indices) => {
     script: {
       params: { toType: 'Threat-Actor-Individual' },
       source: `
-        if (ctx._source.x_opencti_category === 'Individual') {
+        if (ctx._source.resource_level === 'individual') {
           ctx._source.entity_type = params.toType;
         }
       `,

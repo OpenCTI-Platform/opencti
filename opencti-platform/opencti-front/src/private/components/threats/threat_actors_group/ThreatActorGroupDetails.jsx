@@ -61,7 +61,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 {t('Sophistication')}
               </Typography>
               <ItemOpenVocab
-                type="threat-actor-sophistication-ov"
+                type="threat-actor-group-sophistication-ov"
                 value={threatActorGroup.sophistication}
               />
               <Typography
@@ -92,7 +92,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                       <ListItemText
                         primary={
                           <ItemOpenVocab
-                            type="threat-actor-role-ov"
+                            type="threat-actor-group-role-ov"
                             value={role}
                           />
                         }
