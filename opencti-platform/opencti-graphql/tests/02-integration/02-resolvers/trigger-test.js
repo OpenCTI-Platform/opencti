@@ -132,6 +132,7 @@ describe('Trigger resolver standard behavior', () => {
         outcomes: [],
         filters: '',
         recipients: [AMBER_GROUP.id],
+        instance_trigger: false,
       },
     };
     const trigger = await securityQuery({
