@@ -336,9 +336,9 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     });
   };
 
-  const updateInstanceTriggerContent = (instanceTrigger: InstanceTriggerEditionFormValues, multiple: boolean) => {
+  const updateInstanceTriggerContent = (instanceTrigger: InstanceTriggerEditionFormValues, firstTrigger: boolean, multipleInstanceTrigger: boolean) => {
     return (
-      <div key={instanceTrigger.id} className={multiple ? classes.subcontainer : classes.container}>
+      <div key={instanceTrigger.id} className={firstTrigger ? classes.container : classes.subcontainer}>
         <Formik
           initialValues={instanceTrigger}
           validationSchema={liveTriggerValidation}
@@ -404,7 +404,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                   </MenuItem>
                 )}
               />
-              {multiple
+              {multipleInstanceTrigger
                 && <div style={{ ...fieldSpacingContainerStyle }}>
                   <FilterIconButton
                     filters={JSON.parse(instanceTrigger.filters ?? '[]')}
@@ -415,14 +415,14 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                   />
                 </div>
               }
-              <div className={classes.buttons} style={{ marginTop: multiple ? 40 : 20 }}>
+              <div className={classes.buttons} style={{ marginTop: firstTrigger ? 20 : 40 }}>
                 <Button
                   variant="contained"
-                  onClick={multiple ? () => submitRemove(values.id, values.filters) : () => submitDelete(values.id)}
+                  onClick={multipleInstanceTrigger ? () => submitRemove(values.id, values.filters) : () => submitDelete(values.id)}
                   disabled={deleting}
                   classes={{ root: classes.deleteButton }}
                 >
-                  {multiple ? t('Remove') : t('Delete')}
+                  {multipleInstanceTrigger ? t('Remove') : t('Delete')}
                 </Button>
                 <Button
                   variant="contained"
@@ -441,6 +441,10 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     );
   };
 
+  const isInstanceTriggerOnMultipleInstances = (triggerValue: InstanceTriggerEditionFormValues) => {
+    return triggerValue.filters && JSON.parse(triggerValue.filters).elementId.length > 1;
+  };
+
   const updateInstanceTrigger = () => {
     const triggerValues = existingInstanceTriggersEdges
       .filter((l) => l)
@@ -449,10 +453,16 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         outcomes: convertOutcomes(n?.node, outcomesOptionsMap),
         event_types: convertEventTypes(n?.node, instanceEventTypesOptionsMap),
       })) as InstanceTriggerEditionFormValues[];
-    const uniqInstanceTriggers = triggerValues.filter((n) => n.filters && JSON.parse(n.filters).elementId.length === 1);
+    const uniqInstanceTriggers = triggerValues
+      .filter((n) => !isInstanceTriggerOnMultipleInstances(n))
+      .map((n) => ({ values: n, multiple: false }));
     const multipleInstanceTriggers = triggerValues
-      .filter((n) => n.filters && JSON.parse(n.filters).elementId.length > 1)
-      .sort((a, b) => a.name.localeCompare(b.name));
+      .filter((n) => isInstanceTriggerOnMultipleInstances(n))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((n) => ({ values: n, multiple: true }));
+    const sortedTriggersToDisplay = uniqInstanceTriggers.concat(multipleInstanceTriggers);
+    const firstInstanceTriggerToDisplay = sortedTriggersToDisplay[0];
+    const otherInstanceTriggersToDisplay = sortedTriggersToDisplay.slice(1); // the other instance triggers
     return (
       <Drawer
         disableRestoreFocus={true}
@@ -478,23 +488,10 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
           {t(instanceTriggerDescription)}
         </Alert>
-        {uniqInstanceTriggers.length > 0
-          ? <div>
-            {uniqInstanceTriggers.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger, false))}
-          </div>
-          : <div style={{ display: 'table', height: '25%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t('No direct instance trigger')}
-            </span>
-          </div>
-        }
-        {multipleInstanceTriggers.length > 0
+        <div>
+          {updateInstanceTriggerContent(firstInstanceTriggerToDisplay.values, true, firstInstanceTriggerToDisplay.multiple)}
+        </div>
+        {otherInstanceTriggersToDisplay.length > 0
           && <List>
             <ListItem
               button={true}
@@ -502,7 +499,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
               classes={{ root: classes.nested }}
               onClick={handleToggleLine}
             >
-              <ListItemText primary={`${multipleInstanceTriggers.length} ${t('other trigger(s) related to this entity')}`} />
+              <ListItemText primary={`${otherInstanceTriggersToDisplay.length} ${t('other trigger(s) related to this entity')}`} />
               <ListItemSecondaryAction>
                 <IconButton
                   onClick={handleToggleLine}
@@ -520,7 +517,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
             <Collapse
               in={expandedLines}
             >
-              {multipleInstanceTriggers.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger, true))}
+              {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger.values, false, instanceTrigger.multiple))}
             </Collapse>
           </List>
         }
