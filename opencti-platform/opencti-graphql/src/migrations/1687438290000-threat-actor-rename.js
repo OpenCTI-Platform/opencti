@@ -1,12 +1,11 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
-import { READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
-import { convertTypeToStixType } from '../database/stix-converter';
 
 const entityTypeChange = (fromType, toType, indices) => {
   const updateQuery = {
     script: {
-      params: { toType, prefix: convertTypeToStixType(toType) },
+      params: { toType },
       source: 'ctx._source.entity_type = params.toType;',
     },
     query: {
@@ -25,7 +24,7 @@ const entityTypeChange = (fromType, toType, indices) => {
 
 export const up = async (next) => {
   // Change Threat Actor type to Threat Actor Group
-  await entityTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_STIX_META_OBJECTS);
+  await entityTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS);
   next();
 };
 
