@@ -10,7 +10,10 @@ import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { Option } from '../../common/form/ReferenceField';
-import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
+import {
+  TriggerEditionOverview_trigger$key,
+  TriggerEventType,
+} from './__generated__/TriggerEditionOverview_trigger.graphql';
 import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
 import Filters from '../../common/lists/Filters';
@@ -23,7 +26,6 @@ import { dayStartDate, parse } from '../../../../utils/Time';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { TriggerEventType } from './__generated__/TriggerCreationLiveMutation.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const triggerMutationFieldPatch = graphql`
