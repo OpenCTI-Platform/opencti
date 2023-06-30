@@ -20,7 +20,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
-import { getEntitiesFromCache } from '../database/cache';
+import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { elCount } from '../database/engine';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -32,12 +32,12 @@ export const findAllTemplates = async (context: AuthContext, user: AuthUser, arg
   return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
 export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<BasicWorkflowStatus> => {
-  const platformStatuses = await getEntitiesFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS) as BasicWorkflowStatus[];
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const basicWorkflowStatus = platformStatuses.find((status) => status.id === statusId);
   return basicWorkflowStatus ?? await storeLoadById(context, user, statusId, ENTITY_TYPE_STATUS) as unknown as BasicWorkflowStatus;
 };
 export const findByType = async (context: AuthContext, user: AuthUser, statusType: string): Promise<Array<BasicWorkflowStatus>> => {
-  const platformStatuses = await getEntitiesFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS) as BasicWorkflowStatus[];
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return platformStatuses.filter((status) => status.type === statusType);
 };
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryStatusesArgs) => {

@@ -210,7 +210,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesFromCache } from './cache';
+import { getEntitiesListFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import {
@@ -1646,7 +1646,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   const updatedInputs = [];
   const impactedInputs = [];
   const isWorkflowChange = inputKeys.includes(X_WORKFLOW_ID);
-  const platformStatuses = isWorkflowChange ? await getEntitiesFromCache(context, user, ENTITY_TYPE_STATUS) : [];
+  const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
@@ -2640,7 +2640,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
     }
     if (type) {
       // Get statuses
-      const platformStatuses = await getEntitiesFromCache(context, user, ENTITY_TYPE_STATUS);
+      const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
       const statusesForType = platformStatuses.filter((p) => p.type === type);
       if (statusesForType.length > 0) {
         data[X_WORKFLOW_ID] = R.head(statusesForType).id;
@@ -3011,7 +3011,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
     // Get statuses
-    const platformStatuses = await getEntitiesFromCache(context, user, ENTITY_TYPE_STATUS);
+    const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
     const statusesForType = platformStatuses.filter((p) => p.type === type);
     if (statusesForType.length > 0) {
       data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);

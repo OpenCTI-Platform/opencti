@@ -14,7 +14,7 @@ import {
 import { UnsupportedError } from '../../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting, ScaleConfig } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
-import { getEntitiesFromCache } from '../../database/cache';
+import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
@@ -81,7 +81,7 @@ export const getAvailableSettings = (targetType: string) => {
 // -- HELPERS --
 
 export const getEntitySettingFromCache = async (context: AuthContext, type: string) => {
-  const entitySettings = await getEntitiesFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING) as BasicStoreEntityEntitySetting[];
+  const entitySettings = await getEntitiesListFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING);
   let entitySetting = entitySettings.find((es) => es.target_type === type);
 
   if (!entitySetting) {

@@ -69,7 +69,10 @@ export const dynamicCacheUpdater = (
   }
 };
 
-export const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>(
+// not exported because mixes 2 types
+// (map or array according to the data type storage in the cache)
+// use either getEntitiesMapFromCache or getEntitiesListFromCache in export
+const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string
 ): Promise<Array<T> | Map<string, T>> => {
   const getEntitiesFromCacheFn = async (): Promise<Array<T> | Map<string, T>> => {
@@ -88,20 +91,34 @@ export const getEntitiesFromCache = async <T extends BasicStoreIdentifier | Stix
   }, getEntitiesFromCacheFn);
 };
 
+// get the list of the entities in the cache for a given type
+export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | StixObject>(
+  context: AuthContext, user: AuthUser, type: string
+): Promise<Array<T>> => {
+  if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
+    const map = await getEntitiesFromCache(context, user, type) as Map<string, T>;
+    const result: T[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const value of map.values()) {
+      result.push(value);
+    }
+    return result;
+  }
+  return await getEntitiesFromCache(context, user, type) as T[];
+};
+
+// get a map <id, instance> of the entities in the cache for a given type
 export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string
 ): Promise<Map<string | StixId, T>> => {
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
-    return await getEntitiesFromCache(context, user, type) as Map<string, T>;
+    return await getEntitiesFromCache(context, user, type) as Map<string, T>; // map of <standard_id, instance>
   }
   const data = await getEntitiesFromCache(context, user, type) as BasicStoreIdentifier[];
-  return buildStoreEntityMap(data);
+  return buildStoreEntityMap(data); // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
 };
 
 export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {
-  if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
-    throw Error('Can\'t fetch an entity from a map.');
-  }
-  const data = await getEntitiesFromCache<T>(context, user, type) as T[];
+  const data = await getEntitiesListFromCache<T>(context, user, type);
   return data[0];
 };

@@ -30,7 +30,7 @@ import {
   ENTITY_TYPE_TRIGGER
 } from '../modules/notification/notification-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters, resolvedFiltersMapForUser } from '../utils/filtering';
-import { getEntitiesFromCache } from '../database/cache';
+import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
@@ -259,8 +259,8 @@ export const isLive = (n: ResolvedTrigger): n is ResolvedLive => n.trigger.trigg
 export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => n.trigger.trigger_type === 'digest';
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
-  const triggers = await getEntitiesFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER) as BasicStoreEntityTrigger[];
-  const platformUsers = await getEntitiesFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER) as AuthUser[];
+  const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
+  const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   return triggers.map((trigger) => {
     const triggerAuthorizedMembersIds = trigger.authorized_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)

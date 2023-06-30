@@ -36,7 +36,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { getEntitiesFromCache } from '../database/cache';
+import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -93,7 +93,7 @@ const isUserGlobalCapabilityGranted = (user) => {
 };
 
 const computeUserAndCollection = async (res, { context, user, id }) => {
-  const collections = await getEntitiesFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
+  const collections = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
   const collection = collections.find((c) => c.id === id);
 
   if (collection && !collection.stream_live) {

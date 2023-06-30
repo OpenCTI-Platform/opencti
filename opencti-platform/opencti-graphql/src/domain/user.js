@@ -57,7 +57,7 @@ import {
 } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
-import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { addIndividual } from './individual';
 import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -243,7 +243,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
   const groupIds = userGroups.map((r) => r.id);
   const userCapabilities = capabilities.map((c) => c.name);
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
-  const allMarkingsPromise = getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const allMarkingsPromise = getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   let userMarkingsPromise;
   if (shouldBypass) {
     userMarkingsPromise = allMarkingsPromise;
