@@ -1,5 +1,5 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { convertTypeToStixType } from '../database/stix-converter';
 
@@ -25,7 +25,7 @@ const entityTypeChange = (fromType, toType, indices) => {
 
 export const up = async (next) => {
   // Change Threat Actor type to Threat Actor Group
-  await entityTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_INTERNAL_OBJECTS);
+  await entityTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_STIX_META_OBJECTS);
   next();
 };
 
