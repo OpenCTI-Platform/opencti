@@ -163,37 +163,6 @@ const DELETE_GROUP_QUERY = gql`
         }
     }
 `;
-// const GROUP_RELATION_ADD_QUERY = gql`
-//     mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
-//         groupEdit(id: $id) {
-//             relationAdd(input: $input) {
-//                 id
-//                 to {
-//                     ... on Group {
-//                         members {
-//                             edges {
-//                                 node {
-//                                     id
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// `;
-// const USER_ORGANIZATION_ADD_QUERY = gql`
-//     mutation UserEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
-//         userEdit(id: $id) {
-//             organizationAdd(organizationId: $organizationId) {
-//                 id
-//                 name
-//                 standard_id
-//             }
-//         }
-//     }
-// `;
 const DELETE_TRIGGER_QUERY = gql`
     mutation triggerDelete($id: ID!) {
         triggerDelete(id: $id)
@@ -1230,7 +1199,7 @@ describe('Notification manager behaviors test', async () => {
       }
       ]
     };
-    // -- build triggers inputs
+    // -- triggers inputs
     const triggerReportUpdate = { // instance trigger on a report, update only
       name: 'triggerReportUpdate',
       instance_trigger: true,

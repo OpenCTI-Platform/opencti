@@ -23955,8 +23955,8 @@ export enum TriggerEventType {
 export enum TriggerFilter {
   Created = 'created',
   EventTypes = 'event_types',
-  GroupIds = 'group_ids',
   Filters = 'filters',
+  GroupIds = 'group_ids',
   InstanceTrigger = 'instance_trigger',
   TriggerType = 'trigger_type',
   UserIds = 'user_ids'
