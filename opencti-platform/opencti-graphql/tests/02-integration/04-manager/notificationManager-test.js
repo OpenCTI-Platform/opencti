@@ -1651,43 +1651,41 @@ describe('Notification manager behaviors test', async () => {
   });
   afterAll(async () => {
     // -- delete created data (clean stream)
-    const deleteUserPromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: greenUserId },
     });
-    const deleteGroupPromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_GROUP_QUERY,
       variables: { id: greenGroupId },
     });
-    const deleteReportPromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_REPORT_QUERY,
       variables: { id: reportId },
     });
-    const deleteRedReportPromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_REPORT_QUERY,
       variables: { id: redReportId },
     });
-    const deleteMalwarePromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_MALWARE_QUERY,
       variables: { id: malwareId },
     });
-    const deleteRedAttackPatternPromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_ATTACKPATTERN_QUERY,
       variables: { id: redAttackPatternId },
     });
-    const deleteUserOrganizationPromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_ORGANIZATION_QUERY,
       variables: { id: userOrganizationId },
     });
-    const deleteGreenOrganizationPromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_ORGANIZATION_QUERY,
       variables: { id: greenOrganizationId },
     });
-    const deleteRedOrganizationPromise = queryAsAdmin({
+    await queryAsAdmin({
       query: DELETE_ORGANIZATION_QUERY,
       variables: { id: redOrganizationId },
     });
-    await Promise.all([deleteUserPromise, deleteGroupPromise, deleteReportPromise, deleteRedReportPromise, deleteMalwarePromise, deleteRedAttackPatternPromise,
-      deleteUserOrganizationPromise, deleteGreenOrganizationPromise, deleteRedOrganizationPromise]);
   });
 });
