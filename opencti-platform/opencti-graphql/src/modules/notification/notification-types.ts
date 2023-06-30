@@ -16,6 +16,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   outcomes: string[]
   user_ids: string[]
   group_ids: string[]
+  organization_ids: string[]
   trigger_ids: string[]
   authorized_members: Array<AuthorizedMember>;
   instance_trigger: boolean
@@ -41,6 +42,7 @@ export interface StoreEntityTrigger extends StoreEntity {
   outcomes: string[]
   user_ids: string[]
   group_ids: string[]
+  organization_ids: string[]
   authorized_members: Array<AuthorizedMember>;
   instance_trigger: boolean
 }

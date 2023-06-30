@@ -73,6 +73,8 @@ describe('Trigger resolver standard behavior', () => {
   let digestInternalId;
   let triggerUserInternalId;
   let triggerGroupInternalId;
+  let triggerOrganizationInternalId;
+  // region User trigger
   it('should live trigger created', async () => {
     // Create the trigger
     const TRIGGER_TO_CREATE = {
@@ -121,54 +123,6 @@ describe('Trigger resolver standard behavior', () => {
     expect(queryResult.data.trigger).not.toBeNull();
     expect(queryResult.data.trigger.id).toEqual(triggerInternalId);
   });
-  // Group trigger start
-  it('security user should create group trigger', async () => {
-    // Create the trigger
-    const GROUP_TRIGGER_TO_CREATE = {
-      input: {
-        name: 'group trigger',
-        description: '',
-        event_types: EVENT_TYPE_CREATE,
-        outcomes: [],
-        filters: '',
-        recipients: [AMBER_GROUP.id],
-        instance_trigger: false,
-      },
-    };
-    const trigger = await securityQuery({
-      query: CREATE_LIVE_QUERY,
-      variables: GROUP_TRIGGER_TO_CREATE,
-    });
-    expect(trigger).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd.name).toEqual('group trigger');
-    triggerGroupInternalId = trigger.data.triggerLiveAdd.id;
-  });
-  it('editor user should list group trigger', async () => {
-    const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(1);
-  });
-  it('editor user should not update group trigger', async () => {
-    const queryResult = await editorQuery({
-      query: UPDATE_QUERY,
-      variables: { id: triggerGroupInternalId, input: { key: 'name', value: ['group trigger - updated'] } },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
-  });
-  it('security user should group trigger deleted', async () => {
-    // Delete the trigger
-    await securityQuery({
-      query: DELETE_QUERY,
-      variables: { id: triggerGroupInternalId },
-    });
-    // Verify is no longer found
-    const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerGroupInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
-  });
-  // Group trigger end
   it('security user should create trigger for Admin user', async () => {
     // Create the trigger
     const TRIGGER_TO_CREATE_FOR_USER = {
@@ -217,17 +171,6 @@ describe('Trigger resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.trigger).toBeNull();
   });
-  it('security user should Admin trigger deleted', async () => {
-    // Delete the trigger
-    await securityQuery({
-      query: DELETE_QUERY,
-      variables: { id: triggerUserInternalId },
-    });
-    // Verify is no longer found
-    const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerUserInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
-  });
   it('should regular digest deleted', async () => {
     // Delete the digest
     await queryAsAdmin({
@@ -239,4 +182,112 @@ describe('Trigger resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.trigger).toBeNull();
   });
+  it('security user should Admin trigger deleted', async () => {
+    // Delete the trigger
+    await securityQuery({
+      query: DELETE_QUERY,
+      variables: { id: triggerUserInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerUserInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.trigger).toBeNull();
+  });
+  // endregion
+  // region Group trigger
+  it('security user should create group trigger', async () => {
+    // Create the trigger
+    const GROUP_TRIGGER_TO_CREATE = {
+      input: {
+        name: 'group trigger',
+        description: '',
+        event_types: [EVENT_TYPE_CREATE],
+        outcomes: [],
+        filters: '',
+        recipients: [AMBER_GROUP.id],
+        instance_trigger: false,
+      },
+    };
+    const trigger = await securityQuery({
+      query: CREATE_LIVE_QUERY,
+      variables: GROUP_TRIGGER_TO_CREATE,
+    });
+    expect(trigger).not.toBeNull();
+    expect(trigger.data.triggerLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerLiveAdd.name).toEqual('group trigger');
+    triggerGroupInternalId = trigger.data.triggerLiveAdd.id;
+  });
+  it('editor user should list group trigger', async () => {
+    const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
+    expect(queryResult.data.triggers.edges.length).toEqual(1);
+  });
+  it('editor user should not update group trigger', async () => {
+    const queryResult = await editorQuery({
+      query: UPDATE_QUERY,
+      variables: { id: triggerGroupInternalId, input: { key: 'name', value: ['group trigger - updated'] } },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+  });
+  it('security user should group trigger deleted', async () => {
+    // Delete the trigger
+    await securityQuery({
+      query: DELETE_QUERY,
+      variables: { id: triggerGroupInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerGroupInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.trigger).toBeNull();
+  });
+  // endregion
+  // region Organization trigger
+  it('security user should create organization trigger', async () => {
+    // Create the trigger
+    const ORGANIZATION_TRIGGER_TO_CREATE = {
+      input: {
+        name: 'organization trigger',
+        description: '',
+        event_types: [EVENT_TYPE_CREATE],
+        outcomes: [],
+        filters: '',
+        recipients: [AMBER_GROUP.id],
+        instance_trigger: false,
+      },
+    };
+    const trigger = await securityQuery({
+      query: CREATE_LIVE_QUERY,
+      variables: ORGANIZATION_TRIGGER_TO_CREATE,
+    });
+    expect(trigger).not.toBeNull();
+    expect(trigger.data.triggerLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerLiveAdd.name).toEqual('organization trigger');
+    triggerOrganizationInternalId = trigger.data.triggerLiveAdd.id;
+  });
+  it('editor user should list organization trigger', async () => {
+    const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
+    expect(queryResult.data.triggers.edges.length).toEqual(1);
+  });
+  it('editor user should not update organization trigger', async () => {
+    const queryResult = await editorQuery({
+      query: UPDATE_QUERY,
+      variables: { id: triggerOrganizationInternalId, input: { key: 'name', value: ['organization trigger - updated'] } },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+  });
+  it('security user should organization trigger deleted', async () => {
+    // Delete the trigger
+    await securityQuery({
+      query: DELETE_QUERY,
+      variables: { id: triggerOrganizationInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerOrganizationInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.trigger).toBeNull();
+  });
+  // endregion
 });

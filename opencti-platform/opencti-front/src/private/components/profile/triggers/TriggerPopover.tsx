@@ -98,7 +98,7 @@ const TriggerPopover = ({
             onClick={handleOpen}
             aria-haspopup="true"
             style={{ marginTop: 3 }}
-            size="large"
+            size="medium"
             disabled={disabled}
           >
              <MoreVert/>
