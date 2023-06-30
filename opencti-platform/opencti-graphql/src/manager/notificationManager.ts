@@ -344,14 +344,14 @@ const filterInstancesByRefEventIds = (
   listenedInstanceIdsMap: Map<string, StixObject>,
   refsEventIds: string[],
 ) => {
-  const instances = [];
-  // eslint-disable-next-line no-restricted-syntax
-  for (const refId of refsEventIds) {
-    if (listenedInstanceIdsMap.has(refId)) {
-      instances.push(listenedInstanceIdsMap.get(refId));
+  const instances: StixObject[] = [];
+  refsEventIds.forEach((refId) => {
+    const instance = listenedInstanceIdsMap.get(refId);
+    if (instance) {
+      instances.push(instance);
     }
-  }
-  return instances as StixObject[];
+  });
+  return instances;
 };
 
 // keep only the instances that are in patch/reverse_patch and in the map of the listened instances
