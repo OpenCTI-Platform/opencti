@@ -1,4 +1,4 @@
-# Data model
+# Indicators lifecycle
 
 !!! tip "Under construction"
 

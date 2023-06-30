@@ -1,4 +1,4 @@
-# Data model
+# Manual creations
 
 !!! tip "Under construction"
 

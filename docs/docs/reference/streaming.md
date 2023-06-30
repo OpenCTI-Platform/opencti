@@ -1,4 +1,4 @@
-# Data model
+# Events streaming
 
 !!! tip "Under construction"
 

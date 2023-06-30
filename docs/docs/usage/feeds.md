@@ -1,4 +1,4 @@
-# Data model
+# Native feeds
 
 !!! tip "Under construction"
 

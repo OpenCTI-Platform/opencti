@@ -1,4 +1,4 @@
-# Data model
+# Merge objects
 
 !!! tip "Under construction"
 

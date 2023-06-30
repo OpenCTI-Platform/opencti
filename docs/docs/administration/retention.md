@@ -1,4 +1,4 @@
-# Data model
+# Retention policies
 
 !!! tip "Under construction"
 

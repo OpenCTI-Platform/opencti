@@ -1,4 +1,4 @@
-# Data model
+# Analyst workbench
 
 !!! tip "Under construction"
 

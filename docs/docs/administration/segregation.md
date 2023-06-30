@@ -1,4 +1,4 @@
-# Data model
+# Data segregation
 
 !!! tip "Under construction"
 

@@ -1,4 +1,4 @@
-# Data model
+# Case management
 
 !!! tip "Under construction"
 

@@ -1,4 +1,4 @@
-# Data model
+# Merging and de-duplication
 
 !!! tip "Under construction"
 
