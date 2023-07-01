@@ -31,6 +31,10 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_FEEDBACK,
     {
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,

@@ -56,7 +56,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
   const paginationOptions = {
     id: container?.id ?? null,
     types: types ?? [],
-    count: 50,
+    count: 10,
   };
   const dataColumns = {
     entity_type: {

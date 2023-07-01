@@ -37,9 +37,13 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseRftLinesCasesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_RFT,
     {
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
       searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
+      sortBy: 'created',
+      orderAsc: false,
       openExports: false,
       filters: {} as Filters,
     },
