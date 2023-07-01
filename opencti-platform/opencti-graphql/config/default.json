@@ -46,6 +46,7 @@
     },
     "request_timeout": 1200000,
     "session_timeout": 1200000,
+    "session_idle_timeout": 0,
     "session_manager": "shared",
     "rate_protection": {
       "time_window": 1,

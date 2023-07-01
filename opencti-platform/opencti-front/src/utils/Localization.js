@@ -301,6 +301,10 @@ const i18n = {
       Registration: 'Registro',
       'are updating...': 'se están modificando...',
       'is updating...': 'se está modificando...',
+      'You will be automatically logged out in': 'Se cerrará la sesión automáticamente',
+      'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
+        'Seleccione CONTINUAR para seguir trabajando o seleccione CERRAR SESIÓN para terminar su sesión.',
+      'Disable timeout on this page': 'Deshabilitar el tiempo de espera en esta página',
       // Form
       Yes: 'Sí',
       No: 'No',
@@ -1987,6 +1991,13 @@ const i18n = {
         'Requiere aceptación para habilitar el formulario de inicio de sesión cuando se establece',
       'One line confirm label next to confirm checkbox':
         'Etiqueta de confirmación de una línea junto a la casilla de verificación de confirmación',
+      OFF: 'APAGADO',
+      GREEN: 'VERDE',
+      RED: 'ROJO',
+      YELLOW: 'AMARILLO',
+      'Platform Banner Level': 'Nivel de banner de plataforma',
+      'Platform Banner Text': 'Texto de la pancarta de la plataforma',
+      'System Banner Configuration': 'Configuración de la pancarta del sistema',
     },
     'fr-fr': {
       // Titles
@@ -2305,6 +2316,10 @@ const i18n = {
       Registration: 'Inscription',
       'are updating...': 'modifient actuellement...',
       'is updating...': 'modifie actuellement...',
+      'You will be automatically logged out in': 'Vous serez automatiquement déconnecté',
+      'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
+        'Sélectionnez CONTINUER pour continuer à travailler ou sélectionnez DÉCONNEXION pour mettre fin à votre session.',
+      'Disable timeout on this page': 'Désactiver le délai d\'attente sur cette page',
       // Form
       Yes: 'Oui',
       No: 'Non',
@@ -3975,6 +3990,13 @@ const i18n = {
         "Nécessite une acceptation pour activer le formulaire de connexion lorsqu'il est défini",
       'One line confirm label next to confirm checkbox':
         'Texte monoligne de confirmation à côté de la case à cocher de confirmation',
+      OFF: 'DÉSACTIVÉ',
+      GREEN: 'VERT',
+      RED: 'ROUGE',
+      YELLOW: 'JAUNE',
+      'Platform Banner Level': 'Niveau de la bannière de la plate-forme',
+      'Platform Banner Text': 'Texte de la bannière de la plate-forme',
+      'System Banner Configuration': 'Configuration de la bannière système',
     },
     'ja-jp': {
       // Titles
@@ -4258,6 +4280,10 @@ const i18n = {
       Registration: '登録',
       'are updating...': 'がアップデート中',
       'is updating...': 'がアップデート中',
+      'You will be automatically logged out in': '自動的にログアウトされます',
+      'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
+        '[続行] を選択して作業を続行するか、[ログアウト] を選択してセッションを終了します。',
+      'Disable timeout on this page': 'このページでタイムアウトを無効にする',
       // Form
       Yes: 'はい',
       No: 'いいえ',
@@ -5892,6 +5918,13 @@ const i18n = {
         '設定時にログインフォームを有効にするには同意が必要です',
       'One line confirm label next to confirm checkbox':
         '確認チェックボックスの横にある 1 行の確認ラベル',
+      OFF: 'オフ',
+      GREEN: '緑',
+      RED: '赤',
+      YELLOW: '黄色',
+      'Platform Banner Level': 'プラットフォーム バナー レベル',
+      'Platform Banner Text': 'プラットフォームのバナーテキスト',
+      'System Banner Configuration': 'システムバナーの設定',
     },
     'zh-cn': {
       // Titles
@@ -6133,6 +6166,10 @@ const i18n = {
       Registration: '注册',
       'are updating...': '正在更新...',
       'is updating...': '正在更新...',
+      'You will be automatically logged out in': '您将自动注销',
+      'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
+        '选择继续以继续工作或选择注销以终止您的会话。',
+      'Disable timeout on this page': '在此页面上禁用超时',
       // Form
       Yes: '是',
       No: '否',
@@ -7706,6 +7743,13 @@ const i18n = {
         '設置後需要接受才能啟用登錄表單',
       'One line confirm label next to confirm checkbox':
         '確認複選框旁邊的一行確認標籤',
+      OFF: '离开',
+      GREEN: '绿色的',
+      RED: '红色的',
+      YELLOW: '黄色的',
+      'Platform Banner Level': '平台横幅级别',
+      'Platform Banner Text': '平台横幅文本',
+      'System Banner Configuration': '系统横幅配置',
     },
     'en-us': {
       gt: 'Greater than',

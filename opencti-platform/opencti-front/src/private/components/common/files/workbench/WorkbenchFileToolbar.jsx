@@ -22,6 +22,7 @@ import { Form, Formik } from 'formik';
 import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../../components/i18n';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
+import { getBannerSettings } from '../../../../../utils/SystemBanners';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -30,7 +31,7 @@ Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   bottomNav: {
-    zIndex: 1100,
+    zIndex: 1040,
     padding: '0 0 0 180px',
     display: 'flex',
     height: 50,
@@ -107,6 +108,9 @@ class WorkbenchFileToolbar extends Component {
       displayDelete: false,
       displayApplyMarking: false,
     };
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
   }
 
   handleOpenApplyMarking() {
@@ -146,6 +150,7 @@ class WorkbenchFileToolbar extends Component {
       handleClearSelectedElements,
       submitDelete,
       theme,
+      rightOffset,
     } = this.props;
     const { displayDelete, displayApplyMarking } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -159,7 +164,7 @@ class WorkbenchFileToolbar extends Component {
           paper: classes.bottomNav,
         }}
         open={isOpen}
-        PaperProps={{ variant: 'elevation', elevation: 1 }}
+        PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: this.bannerHeight, paddingRight: rightOffset ?? 85 } }}
       >
         <Toolbar style={{ minHeight: 54 }}>
           <Typography
@@ -289,6 +294,7 @@ WorkbenchFileToolbar.propTypes = {
   handleClearSelectedElements: PropTypes.func,
   submitDelete: PropTypes.func,
   submitApplyMarking: PropTypes.func,
+  rightOffset: PropTypes.number,
 };
 
 export default R.compose(

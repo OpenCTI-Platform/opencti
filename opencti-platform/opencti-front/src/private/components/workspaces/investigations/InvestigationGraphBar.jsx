@@ -63,6 +63,7 @@ import StixCoreRelationshipEdition from '../../common/stix_core_relationships/St
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const styles = () => ({
   bottomNav: {
@@ -103,6 +104,9 @@ class InvestigationGraphBar extends Component {
       relationReversed: false,
       openCreatedRelation: false,
     };
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
   }
 
   handleOpenRemove() {
@@ -340,7 +344,11 @@ class InvestigationGraphBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
-        PaperProps={{ variant: 'elevation', elevation: 1 }}
+        PaperProps={{
+          variant: 'elevation',
+          elevation: 1,
+          style: { bottom: this.bannerHeight },
+        }}
       >
         <div
           style={{

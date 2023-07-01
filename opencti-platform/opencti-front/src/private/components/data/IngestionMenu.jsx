@@ -6,6 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
+import { useBannerSettings } from '../../../utils/SystemBanners';
 
 const useStyles = makeStyles((theme) => ({
   drawer: {
@@ -22,6 +23,7 @@ const SharingMenu = () => {
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
+  const { bannerHeight } = useBannerSettings();
   return (
     <Drawer
       variant="permanent"
@@ -29,7 +31,7 @@ const SharingMenu = () => {
       classes={{ paper: classes.drawer }}
     >
       <div className={classes.toolbar} />
-      <MenuList component="nav">
+      <MenuList component="nav" sx={{ marginTop: bannerHeight, marginBottom: bannerHeight }}>
         <MenuItem
           component={Link}
           to={'/dashboard/data/ingestion/sync'}

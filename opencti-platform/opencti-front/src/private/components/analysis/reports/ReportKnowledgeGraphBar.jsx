@@ -71,6 +71,7 @@ import StixNestedRefRelationshipEdition from '../../common/stix_nested_ref_relat
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import { isStixNestedRefRelationship } from '../../../../utils/Relation';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const styles = () => ({
   bottomNav: {
@@ -117,6 +118,9 @@ class ReportKnowledgeGraphBar extends Component {
       displayRemove: false,
       deleteObject: false,
     };
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
   }
 
   handleOpenRemove() {
@@ -438,6 +442,7 @@ class ReportKnowledgeGraphBar extends Component {
         PaperProps={{
           variant: 'elevation',
           elevation: 1,
+          style: { bottom: this.bannerHeight },
         }}
       >
         <div

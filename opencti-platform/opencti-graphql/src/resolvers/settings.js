@@ -1,4 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
+import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
   getApplicationInfo,
@@ -25,6 +26,8 @@ const settingsResolvers = {
     relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
   },
   Settings: {
+    platform_session_idle_timeout: () => Number(nconf.get('app:session_idle_timeout')),
+    platform_session_timeout: () => Number(nconf.get('app:session_timeout')),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
     activity_listeners: (settings, __, context) => internalFindByIds(context, context.user, settings.activity_listeners_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,

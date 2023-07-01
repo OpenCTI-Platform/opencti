@@ -14,6 +14,7 @@ import { FilterOffOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -36,6 +37,13 @@ const styles = (theme) => ({
 });
 
 class StixCyberObservablesRightBar extends Component {
+  constructor(props) {
+    super(props);
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
+  }
+
   render() {
     const { classes, t, types = [], handleToggle, handleClear } = this.props;
     return (
@@ -59,6 +67,7 @@ class StixCyberObservablesRightBar extends Component {
               )(subTypesEdges);
               return (
                 <List
+                  sx={{ marginTop: this.bannerHeight, marginBottom: this.bannerHeight }}
                   subheader={
                     <ListSubheader component="div">
                       {t('Observable types')}

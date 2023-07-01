@@ -17,6 +17,9 @@ import { LoginRootPublicQuery$data } from "../__generated__/LoginRootPublicQuery
 import { useFormatter } from "../../components/i18n";
 import { isNotEmptyField } from "../../utils/utils";
 import useDimensions from "../../utils/hooks/useDimensions";
+import SystemBanners from "./SystemBanners";
+import { useBannerSettings } from "../../utils/SystemBanners";
+import { Alert, AlertTitle } from "@mui/material";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -135,7 +138,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       type: string | null;
     }>
   ) => (
-    <div style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 10, marginBottom: 20}}>
       {authButtons.map((value, index) => (
         <Button
           key={`${value.provider}_${index}`}
@@ -189,21 +192,52 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const [checked, setChecked] = useState(false);
   const handleChange = () => {
     setChecked(!checked);
+    // Auto scroll to bottom of unhidden/re-hidden login options.
+    window.setTimeout(function() {
+      const scrollingElement = (document.scrollingElement ?? document.body);
+       scrollingElement.scrollTop = scrollingElement.scrollHeight;
+    }, 1);
   };
+  // Session expiration automatic logout functions
+  const [expired, setExpired] = useState(false);
+  const handleExpiredChange = () => {
+    if (expired === true) {
+      return; // Don't render again.
+    }
+    setExpired(true);
+  };
+
+  function sessionExpiredUrlKeys() {
+    const url = new URL(window.location.href);
+    const key = url.searchParams.get('ExpiredSession');
+    if (key === '1') {
+      handleExpiredChange();
+    }
+  }
+  sessionExpiredUrlKeys();
+
   const loginScreen = () => (
-    <div>
+    <div style={{ marginBottom: 10 }}>
       <img
         src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
         alt="logo"
         className={classes.logo}
       />
+      {expired && expired === true && (
+        <Paper classes={{ root: classes.paper }} style={{ backgroundImage: 'none', backgroundColor: 'transparent', boxShadow: 'none' }}>
+          <Alert severity="warning">
+            <AlertTitle style={{ textAlign: 'left' }}>Warning</AlertTitle>
+            You were automatically logged out due to session expiration.
+          </Alert>
+        </Paper>
+      )}
       {isLoginMessage && (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Markdown>{loginMessage}</Markdown>
         </Paper>
       )}
       {isConsentMessage && (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} variant="outlined" >
           <Markdown>{consentMessage}</Markdown>
           <Box display="flex" justifyContent="center" alignItems="center">
             <Markdown>{consentConfirmText}</Markdown>
@@ -240,6 +274,8 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     </div>
   );
 
+  const { bannerLevel, bannerText } = useBannerSettings();
+
   const authScreen = () => {
     if (type === "2FA_VALIDATION") {
       return (
@@ -262,8 +298,11 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   };
 
   return (
-    <div className={classes.container} style={{ marginTop }}>
-      {authScreen()}
+    <div>
+      <SystemBanners bannerLevel={bannerLevel} bannerText={bannerText} />
+      <div className={classes.container} style={{ marginTop }}>
+        {authScreen()}
+      </div>
     </div>
   );
 };

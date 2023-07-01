@@ -67,6 +67,7 @@ import StixNestedRefRelationshipEdition from '../../common/stix_nested_ref_relat
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import { isStixNestedRefRelationship } from '../../../../utils/Relation';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const styles = () => ({
   bottomNav: {
@@ -112,6 +113,9 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditObservable: false,
       displayRemove: false,
     };
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
   }
 
   handleOpenRemove() {
@@ -422,7 +426,11 @@ class GroupingKnowledgeGraphBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
-        PaperProps={{ variant: 'elevation', elevation: 1 }}
+        PaperProps={{
+          variant: 'elevation',
+          elevation: 1,
+          style: { bottom: this.bannerHeight },
+        }}
       >
         <div
           style={{

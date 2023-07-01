@@ -1055,6 +1055,10 @@ type Settings implements InternalObject & BasicObject {
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String
+  platform_banner_text: String
+  platform_banner_level: String
+  platform_session_idle_timeout: Int
+  platform_session_timeout: Int
   platform_demo: Boolean
   platform_reference_attachment: Boolean
   platform_feature_flags: [Module!]

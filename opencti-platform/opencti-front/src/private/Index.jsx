@@ -27,6 +27,7 @@ import StixObjectOrStixRelationship from './components/StixObjectOrStixRelations
 import SearchBulk from './components/SearchBulk';
 import TopBar from './components/nav/TopBar';
 import RootCases from './components/cases/Root';
+import { useBannerSettings } from '../utils/SystemBanners';
 
 const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
@@ -38,8 +39,9 @@ const Index = () => {
   const location = useLocation();
   const theme = useTheme();
   const classes = useStyles();
+  const { bannerHeight } = useBannerSettings();
   return (
-    <Box sx={{ display: 'flex', minWidth: 1400 }}>
+    <Box sx={{ display: 'flex', minWidth: 1400, marginTop: bannerHeight, marginBottom: bannerHeight }}>
       <CssBaseline />
       {!noTopBarLocations.includes(location.pathname) && <TopBar />}
       <LeftBar />

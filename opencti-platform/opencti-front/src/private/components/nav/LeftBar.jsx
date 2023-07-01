@@ -39,6 +39,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import {
   useIsHiddenEntities,
 } from '../../../utils/hooks/useEntitySettings';
+import { useBannerSettings } from '../../../utils/SystemBanners';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -160,6 +161,7 @@ const LeftBar = () => {
     'City',
     'Position',
   );
+  const { bannerHeight } = useBannerSettings();
   return (
     <Drawer
       variant="permanent"
@@ -175,7 +177,7 @@ const LeftBar = () => {
       }}
     >
       <Toolbar />
-      <MenuList component="nav">
+      <MenuList component="nav" sx={{ marginTop: bannerHeight }}>
         <StyledTooltip title={!navOpen && t('Dashboard')} placement="right">
           <MenuItem
             component={Link}
@@ -443,6 +445,7 @@ const LeftBar = () => {
       </Security>
       <MenuItem
         dense={true}
+        sx={{ marginBottom: bannerHeight }}
         classes={{
           root: navOpen ? classes.menuCollapseOpen : classes.menuCollapse,
         }}
