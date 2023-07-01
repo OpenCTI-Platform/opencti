@@ -134,6 +134,7 @@ class ThreatActorCardComponent extends Component {
                 remarkGfmPlugin={true}
                 commonmark={true}
                 removeLinks={true}
+                removeLineBreaks={true}
                 limit={260}
               />
             </div>
@@ -221,12 +222,13 @@ const ThreatActorCardFragment = createFragmentContainer(
             }
           }
         }
-        targetedCountries: stixCoreObjectsDistribution(
+        targetedCountries: stixCoreRelationshipsDistribution(
           operation: count
           field: "internal_id"
           relationship_type: ["targets"]
-          types: ["Country"]
+          elementWithTargetTypes: ["Country"]
           limit: 4
+          isTo: true
         ) {
           label
           entity {
@@ -235,12 +237,13 @@ const ThreatActorCardFragment = createFragmentContainer(
             }
           }
         }
-        targetedSectors: stixCoreObjectsDistribution(
+        targetedSectors: stixCoreRelationshipsDistribution(
           operation: count
           field: "internal_id"
           relationship_type: ["targets"]
-          types: ["Sector"]
+          elementWithTargetTypes: ["Sector"]
           limit: 4
+          isTo: true
         ) {
           label
           entity {
@@ -249,12 +252,13 @@ const ThreatActorCardFragment = createFragmentContainer(
             }
           }
         }
-        usedMalware: stixCoreObjectsDistribution(
+        usedMalware: stixCoreRelationshipsDistribution(
           operation: count
           field: "internal_id"
           relationship_type: ["uses"]
-          types: ["Malware"]
+          elementWithTargetTypes: ["Malware"]
           limit: 4
+          isTo: true
         ) {
           label
           entity {

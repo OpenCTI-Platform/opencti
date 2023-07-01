@@ -54,6 +54,7 @@ interface MarkdownWithRedirectionWarningProps {
   markdownComponents?: boolean;
   commonmark?: boolean;
   removeLinks?: boolean;
+  removeLineBreaks?: boolean;
   remarkPlugins?: PluggableList;
 }
 
@@ -67,6 +68,7 @@ MarkdownWithRedirectionWarningProps
   markdownComponents,
   commonmark,
   removeLinks,
+  removeLineBreaks,
   remarkPlugins,
 }) => {
   const theme = useTheme<Theme>();
@@ -78,11 +80,18 @@ MarkdownWithRedirectionWarningProps
     setDisplayExternalLink(true);
     setExternalLink(url);
   };
+  const disallowedElements: string[] = [];
+  if (removeLinks) {
+    disallowedElements.push('a');
+  }
+  if (removeLineBreaks) {
+    disallowedElements.push('p');
+  }
   const markdownElement = () => {
     return (
       <Markdown
         className="markdown"
-        disallowedElements={removeLinks ? ['a'] : []}
+        disallowedElements={disallowedElements}
         unwrapDisallowed={true}
       >
         {limit ? truncate(content, limit) : content}
@@ -95,7 +104,7 @@ MarkdownWithRedirectionWarningProps
         <Markdown
           className="markdown"
           remarkPlugins={remarkPlugins}
-          disallowedElements={removeLinks ? ['a'] : []}
+          disallowedElements={disallowedElements}
           unwrapDisallowed={true}
         >
           {expand || !limit ? content : truncate(content, limit)}
@@ -114,7 +123,7 @@ MarkdownWithRedirectionWarningProps
             ] as PluggableList
           }
           components={MarkDownComponents(theme)}
-          disallowedElements={removeLinks ? ['a'] : []}
+          disallowedElements={disallowedElements}
           unwrapDisallowed={true}
         >
           {expand || !limit ? content : truncate(content, limit)}
@@ -131,7 +140,7 @@ MarkdownWithRedirectionWarningProps
             [remarkParse, { commonmark: !!commonmark }],
           ] as PluggableList
         }
-        disallowedElements={removeLinks ? ['a'] : []}
+        disallowedElements={disallowedElements}
         unwrapDisallowed={true}
       >
         {limit ? truncate(content, limit) : content}
@@ -149,7 +158,7 @@ MarkdownWithRedirectionWarningProps
       handleOpenExternalLink(link.href);
     }
   };
-  if (removeLinks) {
+  if (removeLinks || removeLineBreaks) {
     return (
       <FieldOrEmpty source={content}>
         {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
