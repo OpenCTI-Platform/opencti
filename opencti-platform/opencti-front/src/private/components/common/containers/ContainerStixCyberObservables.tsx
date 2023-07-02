@@ -19,7 +19,6 @@ import {
 } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { StixCyberObservableLine_node$data } from '../../observations/stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ContainerStixCyberObservables_container$data } from './__generated__/ContainerStixCyberObservables_container.graphql';
 import useCopy from '../../../../utils/hooks/useCopy';
 import { ContainerStixCyberObservablesLinesSearchQuery$data } from './__generated__/ContainerStixCyberObservablesLinesSearchQuery.graphql';
@@ -27,6 +26,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
+import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -331,7 +331,18 @@ ContainerStixCyberObservablesComponentProps
             >
               {queryRef && (
                 <React.Suspense
-                  fallback={<Loader variant={LoaderVariant.inElement} />}
+                  fallback={
+                    <>
+                      {Array(20)
+                        .fill(0)
+                        .map((idx) => (
+                          <ContainerStixCyberObservableLineDummy
+                            key={idx}
+                            dataColumns={buildColumns(platformModuleHelpers)}
+                          />
+                        ))}
+                    </>
+                  }
                 >
                   <ContainerStixCyberObservablesLines
                     queryRef={queryRef}

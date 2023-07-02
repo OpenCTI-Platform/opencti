@@ -6,6 +6,9 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Skeleton from '@mui/material/Skeleton';
+import IconButton from '@mui/material/IconButton';
+import MoreVert from '@mui/icons-material/MoreVert';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import { tasksDataColumns } from './TasksLine';
@@ -91,7 +94,7 @@ interface CaseTasksLineProps {
   paginationOptions: CaseTasksLinesQuery$variables;
 }
 
-const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
+export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
   node,
   entityId,
   paginationOptions,
@@ -136,4 +139,43 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
   );
 };
 
-export default CaseTasksLine;
+export const CaseTasksLineDummy = () => {
+  const classes = useStyles();
+  return (
+    <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(tasksDataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+            ))}
+          </div>
+        }
+      />
+      <ListItemSecondaryAction>
+        <IconButton
+          disabled={true}
+          aria-haspopup="true"
+          style={{ marginTop: 3 }}
+          size="large"
+        >
+          <MoreVert />
+        </IconButton>
+      </ListItemSecondaryAction>
+    </ListItem>
+  );
+};

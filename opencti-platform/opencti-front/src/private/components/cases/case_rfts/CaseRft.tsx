@@ -2,7 +2,8 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useRef } from 'react';
 import { useFragment } from 'react-relay';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -26,6 +27,9 @@ import CaseRftEdition from './CaseRftEdition';
 import CaseRftPopover from './CaseRftPopover';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import ListLines from '../../../../components/list_lines/ListLines';
+import { tasksDataColumns } from '../tasks/TasksLine';
+import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -33,6 +37,13 @@ const useStyles = makeStyles(() => ({
   },
   container: {
     margin: 0,
+  },
+  paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '10px 0 0 0',
+    padding: 0,
+    borderRadius: 6,
   },
 }));
 
@@ -92,7 +103,33 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
         <Grid item={true} xs={6} style={{ marginTop: 30 }} ref={ref}>
           {queryRef && (
             <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
+              fallback={
+                <div style={{ height: '100%' }}>
+                  <Typography
+                    variant="h4"
+                    gutterBottom={true}
+                    style={{ marginBottom: 10 }}
+                  >
+                    {t('Tasks')}
+                  </Typography>
+                  <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <ListLines
+                      sortBy={sortBy}
+                      orderAsc={orderAsc}
+                      handleSort={helpers.handleSort}
+                      dataColumns={tasksDataColumns}
+                      inline={true}
+                      secondaryAction={true}
+                    >
+                      {Array(20)
+                        .fill(0)
+                        .map((idx) => (
+                          <CaseTasksLineDummy key={idx} />
+                        ))}
+                    </ListLines>
+                  </Paper>
+                </div>
+              }
             >
               <CaseTasksLines
                 queryRef={queryRef}

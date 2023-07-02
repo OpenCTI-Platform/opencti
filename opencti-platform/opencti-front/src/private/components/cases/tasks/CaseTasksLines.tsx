@@ -27,7 +27,7 @@ import CaseTaskCreation from './CaseTaskCreation';
 import { caseSetTemplateQuery, generateConnectionId } from '../CaseUtils';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import ListLines from '../../../../components/list_lines/ListLines';
-import CaseTasksLine from './CaseTasksLine';
+import { CaseTasksLine } from './CaseTasksLine';
 import { tasksDataColumns } from './TasksLine';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
 import {

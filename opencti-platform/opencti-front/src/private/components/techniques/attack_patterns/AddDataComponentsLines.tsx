@@ -70,7 +70,6 @@ AddDataComponentsLinesContainerProps
     linesFragment: addDataComponentsLinesFragment,
     queryRef,
   });
-
   return (
     <StixCoreRelationshipCreationFromEntityList
       entity={attackPattern}
