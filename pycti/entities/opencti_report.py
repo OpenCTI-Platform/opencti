@@ -116,7 +116,7 @@ class Report:
             description
             report_types
             published
-            objects {
+            objects(all: true) {
                 edges {
                     node {
                         ... on BasicObject {
@@ -213,6 +213,9 @@ class Report:
                         ... on Case {
                             name
                         }
+                        ... on StixCyberObservable {
+                            observable_value
+                        }                        
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version

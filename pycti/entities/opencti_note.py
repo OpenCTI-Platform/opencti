@@ -116,7 +116,7 @@ class Note:
             authors
             note_types
             likelihood
-            objects {
+            objects(all: true) {
                 edges {
                     node {
                         ... on BasicObject {
@@ -213,6 +213,9 @@ class Note:
                         ... on Case {
                             name
                         }
+                        ... on StixCyberObservable {
+                            observable_value
+                        }                        
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -220,6 +223,12 @@ class Note:
                             updated_at
                             relationship_type
                         }
+                       ... on StixSightingRelationship {
+                            standard_id
+                            spec_version
+                            created_at
+                            updated_at
+                        }                        
                     }
                 }
             }

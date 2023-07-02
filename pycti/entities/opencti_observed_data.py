@@ -113,7 +113,7 @@ class ObservedData:
             first_observed
             last_observed
             number_observed
-            objects {
+            objects(all: true) {
                 edges {
                     node {
                         ... on BasicObject {
@@ -210,12 +210,21 @@ class ObservedData:
                         ... on Case {
                             name
                         }
+                        ... on StixCyberObservable {
+                            observable_value
+                        }                               
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
                             created_at
                             updated_at
                         }
+                       ... on StixSightingRelationship {
+                            standard_id
+                            spec_version
+                            created_at
+                            updated_at
+                        }                        
                     }
                 }
             }
