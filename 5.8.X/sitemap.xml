@@ -136,7 +136,17 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/5.8.X/development/environment/</loc>
+         <loc>https://docs.opencti.io/5.8.X/development/environment_ubuntu/</loc>
+         <lastmod>2023-07-02</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.8.X/development/environment_windows/</loc>
+         <lastmod>2023-07-02</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.8.X/development/platform/</loc>
          <lastmod>2023-07-02</lastmod>
          <changefreq>daily</changefreq>
     </url>

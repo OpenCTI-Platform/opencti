@@ -15,8 +15,10 @@
         <link rel="canonical" href="https://docs.opencti.io/5.8.X/development/connectors/">
       
       
-        <link rel="prev" href="../environment/">
+        <link rel="prev" href="../python/">
       
+      
+        <link rel="next" href="../api-usage/">
       
       
         
@@ -27,7 +29,7 @@
     
     
       
-        <title>Develop a connector - OpenCTI Documentation</title>
+        <title>Connectors - OpenCTI Documentation</title>
       
     
     
@@ -100,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#develop-a-connector" class="md-skip">
+        <a href="#connector-development" class="md-skip">
           Skip to content
         </a>
       
@@ -370,7 +372,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../api-usage/" class="md-tabs__link md-tabs__link--active">
+        <a href="../environment_ubuntu/" class="md-tabs__link md-tabs__link--active">
           
   
   Development
@@ -2947,7 +2949,7 @@
   <span class="md-ellipsis">
     
   
-    APIs and libraries
+    Prerequisites
   
 
     
@@ -2963,7 +2965,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    APIs and libraries
+    Prerequisites
   
 
           </label>
@@ -2975,13 +2977,73 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-usage/" class="md-nav__link">
+      <a href="../environment_ubuntu/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     
   
-    GraphQL API and playground
+    Ubuntu
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environment_windows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../platform/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform
   
 
     
@@ -3021,86 +3083,6 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_2" checked>
-        
-          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    
-  
-    Contributing
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Contributing
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../environment/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Environment setup
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
               
                 
   
@@ -3116,13 +3098,30 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Connectors
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
     
   
-    Develop a connector
+    Connectors
   
 
     
@@ -3132,14 +3131,318 @@
 
       </a>
       
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting started
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preparation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preparation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coding-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coding Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-the-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing the template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialize-the-opencti-connector-helper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialize the OpenCTI connector helper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-and-read-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write and Read Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Write and Read Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sending-data-to-the-opencti-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sending data to the OpenCTI platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-from-the-opencti-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading from the OpenCTI platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional implementations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opencti-triggered-connector-special-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenCTI triggered Connector - Special cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenCTI triggered Connector - Special cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-layout-of-dictionary-from-callback-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Layout of Dictionary from Callback function
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#self-triggered-connector-special-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self triggered Connector - Special cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Self triggered Connector - Special cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initiating-a-work-before-pushing-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initiating a 'Work' before pushing data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interval-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interval handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the connector
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running the connector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#final-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepare-for-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prepare for release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
               
             
-          </ul>
-        </nav>
-      
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-usage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Playground
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3171,6 +3474,281 @@
   
     
   
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting started
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preparation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preparation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coding-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coding Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#changing-the-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changing the template
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initialize-the-opencti-connector-helper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialize the OpenCTI connector helper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#write-and-read-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write and Read Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Write and Read Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sending-data-to-the-opencti-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sending data to the OpenCTI platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-from-the-opencti-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading from the OpenCTI platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional implementations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opencti-triggered-connector-special-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenCTI triggered Connector - Special cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenCTI triggered Connector - Special cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-layout-of-dictionary-from-callback-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Layout of Dictionary from Callback function
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#self-triggered-connector-special-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Self triggered Connector - Special cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Self triggered Connector - Special cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initiating-a-work-before-pushing-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initiating a 'Work' before pushing data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interval-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interval handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the connector
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Running the connector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#final-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepare-for-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prepare for release
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -3215,7 +3793,7 @@
     
     
       <li class="md-path__item">
-        <a href="../api-usage/" class="md-path__link">
+        <a href="../environment_ubuntu/" class="md-path__link">
           
   <span class="md-ellipsis">
     Development
@@ -3226,23 +3804,6 @@
     
   
 
-    
-  
-
-      
-        
-  
-    
-    
-      <li class="md-path__item">
-        <a href="../environment/" class="md-path__link">
-          
-  <span class="md-ellipsis">
-    Contributing
-  </span>
-
-        </a>
-      </li>
     
   
 
@@ -3272,13 +3833,386 @@
   
 
 
-<h1 id="develop-a-connector">Develop a connector</h1>
-<div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participae, dont hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
-</div>
+<h1 id="connector-development">Connector development</h1>
+<h2 id="introduction">Introduction</h2>
+<p>A connector in OpenCTI is a service that runs next to the platform and can be implemented in almost any programming language that has STIX2 support. Connectors are used to extend the functionality of OpenCTI and allow operators to shift some of the processing workload to external services. To use the conveniently provided <a href="https://github.com/OpenCTI-Platform/client-python">OpenCTI connector SDK</a> you need to use <strong>Python3</strong> at the moment.</p>
+<p>We choose to have a very decentralized approach on connectors, in order to bring a maximum freedom to developers and vendors. So a connector on OpenCTI can be defined by <strong>a standalone Python 3 process that pushes an understandable format of data to an ingestion queue of messages</strong>.</p>
+<p>Each connector must implement a long-running process that can be launched just by executing the main Python file. The only mandatory dependency is the <code>OpenCTIConnectorHelper</code> class that enables the connector to send data to OpenCTI.</p>
+<h2 id="getting-started">Getting started</h2>
+<p>In the beginning first think about your use-case to choose and appropriate connector type - what do want to achieve with your connector? The following table gives you an overview of the current connector types and some typical use-cases:</p>
+<p><strong>Connector types</strong></p>
+<p>After you've selected your connector type make yourself familiar with STIX2 and the supported relationships in OpenCTI. Having some knowledge about the internal data models with help you a lot with the implementation of your idea.</p>
+<h2 id="preparation">Preparation</h2>
+<h3 id="environment-setup">Environment Setup</h3>
+<p>To develop and test your connector, you need a running OpenCTI instance with the frontend and the messaging broker accessible. If you don't plan on developing anything for the OpenCTI platform or the frontend, the easiest setup for the connector development is using the docker setup, For more details see <a href="https://www.notion.so/Installation-and-upgrade-e59072a3d8d542a3a7c1439d1adfc75e?pvs=21">here</a>.</p>
+<h3 id="coding-setup">Coding Setup</h3>
+<p>To give you an easy starting point we prepared an example connector in the public repository you can use as template to bootstrap your development.</p>
+<p>Some prerequisites we recommend to follow this tutorial:</p>
+<ul>
+<li>Code editor with good Python3 support (e.g. <a href="https://code.visualstudio.com/">Visual Studio Code</a> with the <a href="https://marketplace.visualstudio.com/items?itemName=donjayamanne.python-extension-pack">Python extension pack</a>)</li>
+<li>Python3 + setuptools is installed and configured</li>
+<li>Command shell (either Linux/Mac terminal or <a href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">WSL</a> on Windows)</li>
+</ul>
+<p>In the terminal check out the connectors repository and copy the template connector to <code>$myconnector</code> (<em>replace it with your name throughout the following text examples</em>).</p>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>black<span class="w"> </span>flake8<span class="w"> </span>pycti
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># Fork the current repository, then clone your fork</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/YOUR-USERNAME/connectors.git
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>connectors
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>$<span class="w"> </span>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>upstream<span class="w"> </span>https://github.com/OpenCTI-Platform/connectors.git
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Create a branch for your feature/fix</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>$<span class="w"> </span>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span><span class="o">[</span>branch-name<span class="o">]</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>$<span class="w"> </span>cp<span class="w"> </span>-r<span class="w"> </span>template<span class="w"> </span><span class="nv">$connector_type</span>/<span class="nv">$myconnector</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span><span class="nv">$connector_type</span>/<span class="nv">$myconnector</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>$<span class="w"> </span>tree<span class="w"> </span>.
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>.
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>├──<span class="w"> </span>docker-compose.yml
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├──<span class="w"> </span>Dockerfile
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├──<span class="w"> </span>entrypoint.sh
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├──<span class="w"> </span>README.md
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>└──<span class="w"> </span>src
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span>├──<span class="w"> </span>config.yml.sample
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span>├──<span class="w"> </span>main.py
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span>└──<span class="w"> </span>requirements.txt
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="m">1</span><span class="w"> </span>directory,<span class="w"> </span><span class="m">7</span><span class="w"> </span>files
+</span></code></pre></div>
+<h3 id="changing-the-template">Changing the template</h3>
+<p>There are a few files in the template we need to change for our connector to be unique. You can check for all places you need to change you connector name with the following command (the output will look similar):</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>grep<span class="w"> </span>-Ri<span class="w"> </span>template<span class="w"> </span>.
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>README.md:#<span class="w"> </span>OpenCTI<span class="w"> </span>Template<span class="w"> </span>Connector
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>README.md:<span class="p">|</span><span class="w"> </span><span class="sb">`</span>connector_type<span class="sb">`</span><span class="w">                     </span><span class="p">|</span><span class="w"> </span><span class="sb">`</span>CONNECTOR_TYPE<span class="sb">`</span><span class="w">                    </span><span class="p">|</span><span class="w"> </span>Yes<span class="w">          </span><span class="p">|</span><span class="w"> </span>Must<span class="w"> </span>be<span class="w"> </span><span class="sb">`</span>Template_Type<span class="sb">`</span><span class="w"> </span><span class="o">(</span>this<span class="w"> </span>is<span class="w"> </span>the<span class="w"> </span>connector<span class="w"> </span><span class="nb">type</span><span class="o">)</span>.<span class="w">                                                                                                      </span><span class="p">|</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>README.md:<span class="p">|</span><span class="w"> </span><span class="sb">`</span>connector_name<span class="sb">`</span><span class="w">                     </span><span class="p">|</span><span class="w"> </span><span class="sb">`</span>CONNECTOR_NAME<span class="sb">`</span><span class="w">                    </span><span class="p">|</span><span class="w"> </span>Yes<span class="w">          </span><span class="p">|</span><span class="w"> </span>Option<span class="w"> </span><span class="sb">`</span>Template<span class="sb">`</span><span class="w">                                                                                                                                          </span><span class="p">|</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>README.md:<span class="p">|</span><span class="w"> </span><span class="sb">`</span>connector_scope<span class="sb">`</span><span class="w">                    </span><span class="p">|</span><span class="w"> </span><span class="sb">`</span>CONNECTOR_SCOPE<span class="sb">`</span><span class="w">                   </span><span class="p">|</span><span class="w"> </span>Yes<span class="w">          </span><span class="p">|</span><span class="w"> </span>Supported<span class="w"> </span>scope:<span class="w"> </span>Template<span class="w"> </span>Scope<span class="w"> </span><span class="o">(</span>MIME<span class="w"> </span>Type<span class="w"> </span>or<span class="w"> </span>Stix<span class="w"> </span>Object<span class="o">)</span><span class="w">                                                                                                 </span><span class="p">|</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>README.md:<span class="p">|</span><span class="w"> </span><span class="sb">`</span>template_attribute<span class="sb">`</span><span class="w">                 </span><span class="p">|</span><span class="w"> </span><span class="sb">`</span>TEMPLATE_ATTRIBUTE<span class="sb">`</span><span class="w">                </span><span class="p">|</span><span class="w"> </span>Yes<span class="w">          </span><span class="p">|</span><span class="w"> </span>Additional<span class="w"> </span>setting<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>connector<span class="w"> </span>itself<span class="w">                                                                                                                </span><span class="p">|</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>docker-compose.yml:<span class="w">  </span>connector-template:
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>docker-compose.yml:<span class="w">    </span>image:<span class="w"> </span>opencti/connector-template:4.5.5
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>docker-compose.yml:<span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_TYPE</span><span class="o">=</span>Template_Type
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>docker-compose.yml:<span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_NAME</span><span class="o">=</span>Template
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>docker-compose.yml:<span class="w">      </span>-<span class="w"> </span><span class="nv">CONNECTOR_SCOPE</span><span class="o">=</span>Template_Scope<span class="w"> </span><span class="c1"># MIME type or Stix Object</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>entrypoint.sh:cd<span class="w"> </span>/opt/opencti-connector-template
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>Dockerfile:COPY<span class="w"> </span>src<span class="w"> </span>/opt/opencti-template
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>Dockerfile:<span class="w">    </span><span class="nb">cd</span><span class="w"> </span>/opt/opencti-connector-template<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>src/main.py:class<span class="w"> </span>Template:
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>src/main.py:<span class="w">            </span><span class="s2">&quot;TEMPLATE_ATTRIBUTE&quot;</span>,<span class="w"> </span><span class="o">[</span><span class="s2">&quot;template&quot;</span>,<span class="w"> </span><span class="s2">&quot;attribute&quot;</span><span class="o">]</span>,<span class="w"> </span>config,<span class="w"> </span>True
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>src/main.py:<span class="w">        </span><span class="nv">connectorTemplate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>Template<span class="o">()</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>src/main.py:<span class="w">        </span>connectorTemplate.run<span class="o">()</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>src/config.yml.sample:<span class="w">  </span>type:<span class="w"> </span><span class="s1">&#39;Template_Type&#39;</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>src/config.yml.sample:<span class="w">  </span>name:<span class="w"> </span><span class="s1">&#39;Template&#39;</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>src/config.yml.sample:<span class="w">  </span>scope:<span class="w"> </span><span class="s1">&#39;Template_Scope&#39;</span><span class="w"> </span><span class="c1"># MIME type or SCO</span>
+</span></code></pre></div>
+<p>Required changes:</p>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Change <code>Template</code> or <code>template</code>mentions to your connector name e.g. <code>ImportCsv</code> or <code>importcsv</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Change <code>TEMPLATE</code> mentions to your connector name e.g. <code>IMPORTCSV</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Change <code>Template_Scope</code> mentions to the required scope of your connector. For processing imported files, that can be the Mime type e.g. <code>application/pdf</code> or for enriching existing information in OpenCTI, define the STIX object's name e.g. <code>Report</code>. Multiple scopes can be separated by a simple <code>,</code></li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> Change <code>Template_Type</code> to the connector type you wish to develop. The OpenCTI types (OpenCTI flags) are defined in this <a href="https://www.notion.so/6604ab4b1c3a484f9e3e545cfbad3d7a?pvs=21">table</a>.</li>
+</ul>
+<h2 id="development">Development</h2>
+<h3 id="initialize-the-opencti-connector-helper">Initialize the OpenCTI connector helper</h3>
+<p>After getting the configuration parameters of your connector, you have to initialize the OpenCTI connector helper by using the <code>pycti</code> Python library. This is shown in the following example:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">class</span> <span class="nc">TemplateConnector</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>                <span class="c1"># Instantiate the connector helper from config</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="n">config_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;/config.yml&quot;</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="n">config</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>            <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">config_file_path</span><span class="p">),</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">SafeLoader</span><span class="p">)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">config_file_path</span><span class="p">)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>            <span class="k">else</span> <span class="p">{}</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">helper</span> <span class="o">=</span> <span class="n">OpenCTIConnectorHelper</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">custom_attribute</span> <span class="o">=</span> <span class="n">get_config_variable</span><span class="p">(</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>            <span class="s2">&quot;TEMPLATE_ATTRIBUTE&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="s2">&quot;attribute&quot;</span><span class="p">],</span> <span class="n">config</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="p">)</span>
+</span></code></pre></div>
+<p>Since there are some basic differences in the tasks of the different connector classes, the structure is also a bit class dependent. While the external-import and the stream connector run independently in a regular interval or constantly, the other 3 connector classes only run when being requested by the OpenCTI platform.</p>
+<p>The self-triggered connectors run independently, but the OpenCTI need to define a callback function, which can be executed for the connector to start its work. This is done via         <code>self.helper.listen(self._process_message)</code> . In the appended examples, the difference of the setup can be seen.</p>
+<p>Self-triggered Connectors</p>
+<ul>
+<li>external-import</li>
+<li>stream</li>
+</ul>
+<p>OpenCTI triggered</p>
+<ul>
+<li>internal-enrichment</li>
+<li>internal-import</li>
+<li>internal-export</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span> <span class="nn">pycti</span> <span class="kn">import</span> <span class="n">OpenCTIConnectorHelper</span><span class="p">,</span> <span class="n">get_config_variable</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">class</span> <span class="nc">TemplateConnector</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>                <span class="c1"># Initialization procedures</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>                <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">template_interval</span> <span class="o">=</span> <span class="n">get_config_variable</span><span class="p">(</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>            <span class="s2">&quot;TEMPLATE_INTERVAL&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="s2">&quot;interval&quot;</span><span class="p">],</span> <span class="n">config</span><span class="p">,</span> <span class="kc">True</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="p">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="k">def</span> <span class="nf">get_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_interval</span><span class="p">)</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>                <span class="c1"># Main procedure</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        <span class="n">template_connector</span> <span class="o">=</span> <span class="n">TemplateConnector</span><span class="p">()</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>        <span class="n">template_connector</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">pycti</span> <span class="kn">import</span> <span class="n">OpenCTIConnectorHelper</span><span class="p">,</span> <span class="n">get_config_variable</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">class</span> <span class="nc">TemplateConnector</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>                <span class="c1"># Initialization procedures</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>                <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="k">def</span> <span class="nf">_process_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>                <span class="c1"># Main procedure                </span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="c1"># Start the main loop</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_process_message</span><span class="p">)</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="n">template_connector</span> <span class="o">=</span> <span class="n">TemplateConnector</span><span class="p">()</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>        <span class="n">template_connector</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>        <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="write-and-read-operations">Write and Read Operations</h3>
+<p>When using the <code>OpenCTIConnectorHelper</code> class, there are two way for reading from or writing data to the OpenCTI platform.</p>
+<ol>
+<li>via the OpenCTI API interface via <code>self.helper.api</code></li>
+<li>via the OpenCTI worker via <code>self.send_stix2_bundle</code></li>
+</ol>
+<h4 id="sending-data-to-the-opencti-platform"><strong>Sending data to the OpenCTI platform</strong></h4>
+<p>The recommended way for creating or updating data in the OpenCTI platform is via the OpenCTI worker. This enables the connector to just send and forget about thousands of entities at once to without having to think about the ingestion order, performance or error handling.</p>
+<aside>
+⚠️ **Please DO NOT use the api interface to create new objects in connectors.**
+
+</aside>
+
+<p>The OpenCTI connector helper method <code>send_stix2_bundle</code> must be used to send data to OpenCTI. The <code>send_stix2_bundle</code> function takes 2 arguments.</p>
+<ol>
+<li>A serialized STIX2 bundle as a <code>string</code> (mandatory)</li>
+<li>A <code>list</code> of entities types that should be ingested (optional)</li>
+</ol>
+<p>Here is an example using the STIX2 Python library:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span> <span class="nn">stix2</span> <span class="kn">import</span> <span class="n">Bundle</span><span class="p">,</span> <span class="n">AttackPattern</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">attack_pattern</span> <span class="o">=</span> <span class="n">AttackPattern</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Evil Pattern&#39;</span><span class="p">)</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">bundle_objects</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">bundle_objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attack_pattern</span><span class="p">)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="n">bundle</span> <span class="o">=</span> <span class="n">Bundle</span><span class="p">(</span><span class="n">objects</span><span class="o">=</span><span class="n">bundle_objects</span><span class="p">)</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="n">bundles_sent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opencti_connector_helper</span><span class="o">.</span><span class="n">send_stix2_bundle</span><span class="p">(</span><span class="n">bundle</span><span class="p">)</span>
+</span></code></pre></div>
+<h4 id="reading-from-the-opencti-platform"><strong>Reading from the OpenCTI platform</strong></h4>
+<p>Read queries to the OpenCTI platform can be achieved using the API and the STIX IDs can be attached to reports to create the relationship between those two entities.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">vulnerability</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">filters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;T1234&quot;</span><span class="p">]}</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>If you want to add the found entity via <code>objects_refs</code> to another SDO, simple add a list of <code>stix_ids</code> to the SDO. Here's an example using the entity from the code snippet above:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span> <span class="nn">stix2</span> <span class="kn">import</span> <span class="n">Report</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">report</span> <span class="o">=</span> <span class="n">Report</span><span class="p">(</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="nb">id</span><span class="o">=</span><span class="n">report</span><span class="p">[</span><span class="s2">&quot;standard_id&quot;</span><span class="p">],</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>  <span class="n">object_refs</span><span class="o">=</span><span class="p">[</span><span class="n">entity</span><span class="p">[</span><span class="s2">&quot;standard_id&quot;</span><span class="p">]],</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="logging">Logging</h3>
+<p>When something crashes at a user's, you as a developer want to know as much as possible about this incident to easily improve your code and remove this issue. To do so, it is very helpful if your connector documents what it does. Use <code>info</code> messages for big changes like the beginning or the finishing of an operation, but to facilitate your bug removal attempts, implement <code>debug</code> messages for minor operation changes to document different steps in your code.</p>
+<p>When encountering a crash, the connector's user can easily restart the troubling connector with the debug logging activated.</p>
+<ul>
+<li><code>CONNECTOR_LOG_LEVEL=debug</code></li>
+</ul>
+<p>Using those additional log messages, the bug report is more enriched with information about the possible cause of the problem. Here's an example of how the logging should be implemented:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>        <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s1">&#39;Template connector starts&#39;</span><span class="p">)</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>                <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ask_for_news</span><span class="p">()</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>                <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>        <span class="k">def</span> <span class="nf">_ask_for_news</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>                <span class="n">overall</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>                        <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Asking about news with count &#39;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>                        <span class="c1"># Do something</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>                        <span class="bp">self</span><span class="o">.</span><span class="n">log_debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resut: &#39;</span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>                        <span class="n">overall</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>                <span class="k">return</span> <span class="n">overall</span>
+</span></code></pre></div>
+<p>Please make sure that the debug messages rich of useful information, but that they are not redundant and that the user is not drowned by unnecessary information.</p>
+<h3 id="additional-implementations">Additional implementations</h3>
+<p>If you are still unsure about how to implement certain things in your connector, we advise you to have a look at the code of other connectors of the same type. Maybe they are already using approach which is suitable for addressing to your problem.</p>
+<h3 id="opencti-triggered-connector-special-cases">OpenCTI triggered Connector - Special cases</h3>
+<h4 id="data-layout-of-dictionary-from-callback-function">Data Layout of Dictionary from Callback function</h4>
+<p>OpenCTI sends the connector a few instructions via the <code>data</code> dictionary in the callback function. Depending on the connector type, the data dictionary content is a bit different. Here are a few examples for each connector type.</p>
+<p>Internal Import Connector</p>
+<p>Internal Enrichment Connector</p>
+<div class="highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span><span class="w"> </span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;file_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;fileId&gt;&quot;</span><span class="p">,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;file_mime&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;application/pdf&quot;</span><span class="p">,</span><span class="w"> </span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">&quot;file_fetch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;storage/get/&lt;file_id&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Path to get the file</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span><span class="nt">&quot;entity_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;report--82843863-6301-59da-b783-fe98249b464e&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Context of the upload</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="p">}</span>
+</span></code></pre></div>
+<div class="highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span><span class="w"> </span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&quot;entity_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;stixCoreObjectId&gt;&quot;</span><span class="w"> </span><span class="c1">// StixID of the object wanting to be enriched</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>Internal Export Connector</p>
+<div class="highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span><span class="w"> </span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;export_scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;single&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;single&#39; or &#39;list&#39;</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;export_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;simple&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// &#39;simple&#39; or &#39;full&#39;</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">&quot;file_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;fileName&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Export expected file name</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">&quot;max_marking&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;maxMarkingId&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Max marking id</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span><span class="nt">&quot;entity_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AttackPattern&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Exported entity type</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span><span class="c1">// ONLY for single entity export</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">  </span><span class="nt">&quot;entity_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;entity.id&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// Exported element</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span><span class="c1">// ONLY for list entity export</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span><span class="nt">&quot;list_params&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;[&lt;parameters&gt;]&quot;</span><span class="w"> </span><span class="c1">// Parameters for finding entities</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="self-triggered-connector-special-cases">Self triggered Connector - Special cases</h3>
+<h4 id="initiating-a-work-before-pushing-data">Initiating a 'Work' before pushing data</h4>
+<p>For self-triggered connectors, OpenCTI has to be told about new jobs to process and to import. This is done by registering a so called <code>work</code> before sending the stix bundle and signalling the end of a work. Here an example:</p>
+<p>By implementing the work registration, they will show up as shown in this screenshot for the MITRE ATT&amp;CK connector:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="k">def</span> <span class="nf">run</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>        <span class="c1"># Anounce upcoming work</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>        <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Template run @ &quot;</span> <span class="o">+</span> <span class="n">now</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">work_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">work</span><span class="o">.</span><span class="n">initiate_work</span><span class="p">(</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">connect_id</span><span class="p">,</span> <span class="n">friendly_name</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>        <span class="p">)</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="c1"># Send Stix bundle</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">send_stix2_bundle</span><span class="p">(</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>                <span class="n">bundle</span><span class="p">,</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>                <span class="n">entities_types</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">connect_scope</span><span class="p">,</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>                <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>                <span class="n">work_id</span><span class="o">=</span><span class="n">work_id</span><span class="p">,</span>
+</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>        <span class="p">)</span>
+</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>        <span class="c1"># Finish the work</span>
+</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>            <span class="sa">f</span><span class="s2">&quot;Connector successfully run, storing last_run as </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>    <span class="p">)</span>              
+</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Last_run stored, next run in: {str(round(self.get_interval() / 60 / 60 / 24, 2))} days&quot;</span>
+</span><span id="__span-12-23"><a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">work</span><span class="o">.</span><span class="n">to_processed</span><span class="p">(</span><span class="n">work_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+</span></code></pre></div>
+<p><a class="glightbox" href="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/038dc188-c23e-4742-ad66-80183fc3f996/screen4.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="screen4.png" src="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/038dc188-c23e-4742-ad66-80183fc3f996/screen4.png" /></a></p>
+<h4 id="interval-handling">Interval handling</h4>
+<p>The connector is also responsible for making sure that it runs in certain intervals. In most cases, the intervals are definable in the connector config and then only need to be set and updated during the runtime.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">class</span> <span class="nc">TemplateConnector</span><span class="p">:</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>                <span class="c1"># Initialization procedures</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>                <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">template_interval</span> <span class="o">=</span> <span class="n">get_config_variable</span><span class="p">(</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>            <span class="s2">&quot;TEMPLATE_INTERVAL&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="s2">&quot;interval&quot;</span><span class="p">],</span> <span class="n">config</span><span class="p">,</span> <span class="kc">True</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>        <span class="p">)</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="k">def</span> <span class="nf">get_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_interval</span><span class="p">)</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>        <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Fetching knowledge...&quot;</span><span class="p">)</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>            <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>                <span class="c1"># Get the current timestamp and check</span>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>                <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>                <span class="n">current_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>                <span class="k">if</span> <span class="n">current_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;last_run&quot;</span> <span class="ow">in</span> <span class="n">current_state</span><span class="p">:</span>
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>                    <span class="n">last_run</span> <span class="o">=</span> <span class="n">current_state</span><span class="p">[</span><span class="s2">&quot;last_run&quot;</span><span class="p">]</span>
+</span><span id="__span-13-21"><a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+</span><span id="__span-13-22"><a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a>                        <span class="s2">&quot;Connector last run: &quot;</span>
+</span><span id="__span-13-23"><a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a>                        <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">last_run</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+</span><span id="__span-13-24"><a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a>                            <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span>
+</span><span id="__span-13-25"><a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a>                        <span class="p">)</span>
+</span><span id="__span-13-26"><a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a>                    <span class="p">)</span>
+</span><span id="__span-13-27"><a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a>                <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-13-28"><a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a>                    <span class="n">last_run</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-13-29"><a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="s2">&quot;Connector has never run&quot;</span><span class="p">)</span>
+</span><span id="__span-13-30"><a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a>                <span class="c1"># If the last_run is more than interval-1 day</span>
+</span><span id="__span-13-31"><a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a>                <span class="k">if</span> <span class="n">last_run</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span>
+</span><span id="__span-13-32"><a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a>                    <span class="p">(</span><span class="n">timestamp</span> <span class="o">-</span> <span class="n">last_run</span><span class="p">)</span>
+</span><span id="__span-13-33"><a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a>                    <span class="o">&gt;</span> <span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_interval</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">)</span>
+</span><span id="__span-13-34"><a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a>                <span class="p">):</span>
+</span><span id="__span-13-35"><a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a>                    <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+</span><span id="__span-13-36"><a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a>                    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+</span><span id="__span-13-37"><a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a>                    <span class="n">friendly_name</span> <span class="o">=</span> <span class="s2">&quot;Connector run @ &quot;</span> <span class="o">+</span> <span class="n">now</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span>
+</span><span id="__span-13-38"><a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a>
+</span><span id="__span-13-39"><a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a>                                        <span class="c1">###</span>
+</span><span id="__span-13-40"><a id="__codelineno-13-40" name="__codelineno-13-40" href="#__codelineno-13-40"></a>                                        <span class="c1"># RUN CODE HERE     </span>
+</span><span id="__span-13-41"><a id="__codelineno-13-41" name="__codelineno-13-41" href="#__codelineno-13-41"></a>                                        <span class="c1">###</span>
+</span><span id="__span-13-42"><a id="__codelineno-13-42" name="__codelineno-13-42" href="#__codelineno-13-42"></a>
+</span><span id="__span-13-43"><a id="__codelineno-13-43" name="__codelineno-13-43" href="#__codelineno-13-43"></a>                    <span class="c1"># Store the current timestamp as a last run</span>
+</span><span id="__span-13-44"><a id="__codelineno-13-44" name="__codelineno-13-44" href="#__codelineno-13-44"></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+</span><span id="__span-13-45"><a id="__codelineno-13-45" name="__codelineno-13-45" href="#__codelineno-13-45"></a>                        <span class="s2">&quot;Connector successfully run, storing last_run as &quot;</span>
+</span><span id="__span-13-46"><a id="__codelineno-13-46" name="__codelineno-13-46" href="#__codelineno-13-46"></a>                        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+</span><span id="__span-13-47"><a id="__codelineno-13-47" name="__codelineno-13-47" href="#__codelineno-13-47"></a>                    <span class="p">)</span>
+</span><span id="__span-13-48"><a id="__codelineno-13-48" name="__codelineno-13-48" href="#__codelineno-13-48"></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">set_state</span><span class="p">({</span><span class="s2">&quot;last_run&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">})</span>
+</span><span id="__span-13-49"><a id="__codelineno-13-49" name="__codelineno-13-49" href="#__codelineno-13-49"></a>                    <span class="n">message</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="__span-13-50"><a id="__codelineno-13-50" name="__codelineno-13-50" href="#__codelineno-13-50"></a>                        <span class="s2">&quot;Last_run stored, next run in: &quot;</span>
+</span><span id="__span-13-51"><a id="__codelineno-13-51" name="__codelineno-13-51" href="#__codelineno-13-51"></a>                        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_interval</span><span class="p">()</span> <span class="o">/</span> <span class="mi">60</span> <span class="o">/</span> <span class="mi">60</span> <span class="o">/</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+</span><span id="__span-13-52"><a id="__codelineno-13-52" name="__codelineno-13-52" href="#__codelineno-13-52"></a>                        <span class="o">+</span> <span class="s2">&quot; days&quot;</span>
+</span><span id="__span-13-53"><a id="__codelineno-13-53" name="__codelineno-13-53" href="#__codelineno-13-53"></a>                    <span class="p">)</span>
+</span><span id="__span-13-54"><a id="__codelineno-13-54" name="__codelineno-13-54" href="#__codelineno-13-54"></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">work</span><span class="o">.</span><span class="n">to_processed</span><span class="p">(</span><span class="n">work_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+</span><span id="__span-13-55"><a id="__codelineno-13-55" name="__codelineno-13-55" href="#__codelineno-13-55"></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</span><span id="__span-13-56"><a id="__codelineno-13-56" name="__codelineno-13-56" href="#__codelineno-13-56"></a>                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+</span><span id="__span-13-57"><a id="__codelineno-13-57" name="__codelineno-13-57" href="#__codelineno-13-57"></a>                <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-13-58"><a id="__codelineno-13-58" name="__codelineno-13-58" href="#__codelineno-13-58"></a>                    <span class="n">new_interval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_interval</span><span class="p">()</span> <span class="o">-</span> <span class="p">(</span><span class="n">timestamp</span> <span class="o">-</span> <span class="n">last_run</span><span class="p">)</span>
+</span><span id="__span-13-59"><a id="__codelineno-13-59" name="__codelineno-13-59" href="#__codelineno-13-59"></a>                    <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">log_info</span><span class="p">(</span>
+</span><span id="__span-13-60"><a id="__codelineno-13-60" name="__codelineno-13-60" href="#__codelineno-13-60"></a>                        <span class="s2">&quot;Connector will not run, next run in: &quot;</span>
+</span><span id="__span-13-61"><a id="__codelineno-13-61" name="__codelineno-13-61" href="#__codelineno-13-61"></a>                        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">new_interval</span> <span class="o">/</span> <span class="mi">60</span> <span class="o">/</span> <span class="mi">60</span> <span class="o">/</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+</span><span id="__span-13-62"><a id="__codelineno-13-62" name="__codelineno-13-62" href="#__codelineno-13-62"></a>                        <span class="o">+</span> <span class="s2">&quot; days&quot;</span>
+</span><span id="__span-13-63"><a id="__codelineno-13-63" name="__codelineno-13-63" href="#__codelineno-13-63"></a>                    <span class="p">)</span>
+</span><span id="__span-13-64"><a id="__codelineno-13-64" name="__codelineno-13-64" href="#__codelineno-13-64"></a>                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="running-the-connector">Running the connector</h2>
+<p>For development purposes, it is easier to simply run the python script locally until everything works as it sould.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>$<span class="w"> </span>virtualenv<span class="w"> </span>env
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>$<span class="w"> </span><span class="nb">source</span><span class="w"> </span>./env/bin/activate
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>$<span class="w"> </span>pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>$<span class="w"> </span>cp<span class="w"> </span>config.yml.sample<span class="w"> </span>config.yml
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="c1"># Define the opencti url and token, as well as the connector&#39;s id</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>$<span class="w"> </span>vim<span class="w"> </span>config.yml
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>$<span class="w"> </span>python3<span class="w"> </span>main.py
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>INFO:root:Listing<span class="w"> </span>Threat-Actors<span class="w"> </span>with<span class="w"> </span>filters<span class="w"> </span>null.
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>INFO:root:Connector<span class="w"> </span>registered<span class="w"> </span>with<span class="w"> </span>ID:<span class="w"> </span>a2de809c-fbb9-491d-90c0-96c7d1766000
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>INFO:root:Starting<span class="w"> </span>ping<span class="w"> </span>alive<span class="w"> </span>thread
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>...
+</span></code></pre></div>
+<h3 id="final-testing">Final Testing</h3>
+<p>Before submitting a Pull Request, please test your code for different use cases and scenarios. We don't have an automatic testing suite for the connectors yet, thus we highly depend on developers thinking about creative scenarios their code could encounter.</p>
+<h3 id="prepare-for-release">Prepare for release</h3>
+<p>If you plan to provide your connector to be used by the community (❤️) your code should pass the following (minimum) criteria.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Linting with flake8 contains no errors or warnings</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>$<span class="w"> </span>flake8<span class="w"> </span>--ignore<span class="o">=</span>E,W
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="c1"># Verify formatting with black</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>$<span class="w"> </span>black<span class="w"> </span>.
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>All<span class="w"> </span><span class="k">done</span>!<span class="w"> </span>✨<span class="w"> </span>🍰<span class="w"> </span>✨
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="m">1</span><span class="w"> </span>file<span class="w"> </span>left<span class="w"> </span>unchanged.
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># Push you feature/fix on Github</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>$<span class="w"> </span>git<span class="w"> </span>add<span class="w"> </span><span class="o">[</span>file<span class="o">(</span>s<span class="o">)]</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>$<span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;[connector_name] descriptive message&quot;</span>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>$<span class="w"> </span>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span><span class="o">[</span>branch-name<span class="o">]</span>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="c1"># Open a pull request with the title &quot;[connector_name] message&quot;</span>
+</span></code></pre></div>
+<p>If you have any trouble with this just reach out to the OpenCTI core team. We are happy to assist with this.</p>
 
   
     
@@ -3294,7 +4228,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-30T13:25:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-30</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-02T17:14:46+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-02</span>
       </span>
     
     
@@ -3349,7 +4283,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../environment/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Environment setup" rel="prev">
+          <a href="../python/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Python library" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -3358,11 +4292,26 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
                 Previous
               </span>
               <div class="md-ellipsis">
-                Environment setup
+                Python library
               </div>
             </div>
           </a>
         
+        
+          
+          <a href="../api-usage/" class="md-footer__link md-footer__link--next" aria-label="Next: Playground" rel="next">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Playground
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
         
       </nav>
     
