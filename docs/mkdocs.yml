@@ -177,9 +177,9 @@ nav:
       - Knowledge graph: reference/graph.md
     - APIs and feeds:
       - GraphQL API: reference/api.md
-      - Events streaming: reference/streaming.md
-      - TAXII feeds: reference/taxii-feeds.md
-      - CSV feeds: reference/csv-feeds.md
+      - Data Streaming: reference/streaming.md
+      - TAXII Feeds: reference/taxii-feeds.md
+      - CSV Feeds: reference/csv-feeds.md
     - Security: reference/security.md
   - Development:
     - APIs and libraries:
