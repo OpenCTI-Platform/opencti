@@ -3841,6 +3841,42 @@
 <h2 id="getting-started">Getting started</h2>
 <p>In the beginning first think about your use-case to choose and appropriate connector type - what do want to achieve with your connector? The following table gives you an overview of the current connector types and some typical use-cases:</p>
 <p><strong>Connector types</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left">Type</th>
+<th align="left">Typical use cases</th>
+<th align="left">Example connector</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">EXTERNAL_IMPORT</td>
+<td align="left">Integrate external TI provider, Integrate external TI platform</td>
+<td align="left">AlienVault</td>
+</tr>
+<tr>
+<td align="left">INTERNAL_ENRICHMENT</td>
+<td align="left">Enhance existing data with additional knowledge</td>
+<td align="left">AbuseIP</td>
+</tr>
+<tr>
+<td align="left">INTERNAL_IMPORT_FILE</td>
+<td align="left">(Bulk) import knowledge from files</td>
+<td align="left">Import document</td>
+</tr>
+<tr>
+<td align="left">INTERNAL_EXPORT_FILE</td>
+<td align="left">(Bulk) export knowledge to files</td>
+<td align="left">STIX 2.1, CSV.</td>
+</tr>
+<tr>
+<td align="left">STREAM</td>
+<td align="left">Integrate external TI provider, Integrate external TI platform</td>
+<td align="left">Elastic Security</td>
+</tr>
+</tbody>
+</table>
 <p>After you've selected your connector type make yourself familiar with STIX2 and the supported relationships in OpenCTI. Having some knowledge about the internal data models with help you a lot with the implementation of your idea.</p>
 <h2 id="preparation">Preparation</h2>
 <h3 id="environment-setup">Environment Setup</h3>
@@ -4114,7 +4150,6 @@
 </span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Last_run stored, next run in: {str(round(self.get_interval() / 60 / 60 / 24, 2))} days&quot;</span>
 </span><span id="__span-12-23"><a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">helper</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">work</span><span class="o">.</span><span class="n">to_processed</span><span class="p">(</span><span class="n">work_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
 </span></code></pre></div>
-<p><a class="glightbox" href="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/038dc188-c23e-4742-ad66-80183fc3f996/screen4.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="screen4.png" src="https://s3-us-west-2.amazonaws.com/secure.notion-static.com/038dc188-c23e-4742-ad66-80183fc3f996/screen4.png" /></a></p>
 <h4 id="interval-handling">Interval handling</h4>
 <p>The connector is also responsible for making sure that it runs in certain intervals. In most cases, the intervals are definable in the connector config and then only need to be set and updated during the runtime.</p>
 <div class="highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">class</span> <span class="nc">TemplateConnector</span><span class="p">:</span>
@@ -4228,7 +4263,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-02T17:14:46+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-02</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-02T17:21:58+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-02</span>
       </span>
     
     
