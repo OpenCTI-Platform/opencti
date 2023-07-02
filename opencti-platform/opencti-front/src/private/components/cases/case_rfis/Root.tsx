@@ -132,7 +132,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
               path="/dashboard/cases/rfis/:caseId/knowledge"
               render={() => (
                 <Redirect
-                  to={`/dashboard/cases/rfis/${caseId}/knowledge/timeline`}
+                  to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`}
                 />
               )}
             />
