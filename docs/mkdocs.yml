@@ -182,10 +182,13 @@ nav:
       - CSV Feeds: reference/csv-feeds.md
     - Security: reference/security.md
   - Development:
-    - APIs and libraries:
-      - GraphQL API and playground: development/api-usage.md
-      - Python library: development/python.md
-    - Contributing:
-      - Environment Setup (Ubuntu VM): development/environment.md
-      - Environment Setup (Windows 10 Bare Metal): development/environment_windows.md
-      - Develop a connector: development/connectors.md
+    - Prerequisites:
+      - Ubuntu: development/environment_ubuntu.md
+      - Windows: development/environment_windows.md
+    - Platform: development/platform.md
+    - Python library: development/python.md
+    - Connectors: development/connectors.md
+    - Playground: development/api-usage.md
+
+
+
