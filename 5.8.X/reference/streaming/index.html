@@ -29,7 +29,7 @@
     
     
       
-        <title>Events streaming - OpenCTI Documentation</title>
+        <title>Data Streaming - OpenCTI Documentation</title>
       
     
     
@@ -102,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#events-streaming" class="md-skip">
+        <a href="#data-streaming" class="md-skip">
           Skip to content
         </a>
       
@@ -2775,13 +2775,30 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Streaming
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
     
   
-    Events streaming
+    Data Streaming
   
 
     
@@ -2790,6 +2807,214 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#presentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Presentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technology">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#redis-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sse-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSE protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#events-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Events format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stix-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STIX data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="STIX data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stream-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stream types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#base-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#live-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live stream
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Live stream">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-and-recover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From and Recover
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -2808,7 +3033,7 @@
   <span class="md-ellipsis">
     
   
-    TAXII feeds
+    TAXII Feeds
   
 
     
@@ -2834,7 +3059,7 @@
   <span class="md-ellipsis">
     
   
-    CSV feeds
+    CSV Feeds
   
 
     
@@ -3174,6 +3399,203 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#presentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Presentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technology">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#redis-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sse-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSE protocol
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#events-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Events format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stix-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STIX data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="STIX data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stream-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stream types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stream types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#base-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Base stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#live-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live stream
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Live stream">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-and-recover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From and Recover
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3274,13 +3696,117 @@
   
 
 
-<h1 id="events-streaming">Events streaming</h1>
+<h1 id="data-streaming">Data Streaming</h1>
+<h2 id="presentation">Presentation</h2>
+<p>In order to provide a real time way to consume STIX CTI information, OpenCTI provides data events in a stream that can be consume to react on creation, update, deletion and merge.
+This way of getting information out of OpenCTI is highly efficient and already use by some connectors.</p>
+<h2 id="technology">Technology</h2>
+<h3 id="redis-stream">Redis stream</h3>
+<p>OpenCTI is currently using REDIS Stream (See <a href="https://redis.io/topics/streams-intro">https://redis.io/topics/streams-intro</a>) as the technical layer.
+Each time something is modified in the OpenCTI database, a specific event is added in the stream.</p>
+<h3 id="sse-protocol">SSE protocol</h3>
+<p>In order to provides a really easy consuming protocol we decide to provide a SSE (<a href="https://fr.wikipedia.org/wiki/Server-sent_events">https://fr.wikipedia.org/wiki/Server-sent_events</a>) http URL linked to the standard login system of OpenCTI.
+Any user with the correct access rights can open and access http://opencti_instance/stream and open an SSE connection to start receiving live events. You can of course consume directly the stream in Redis but you will have to manage access and rights directly.</p>
+<h2 id="events-format">Events format</h2>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>id: {Event stream id} -&gt; Like 1620249512318-0
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>event: {Event type} -&gt; create / update / delete
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>data: { -&gt; The complete event data
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    version -&gt; The version number of the event
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    type -&gt; The inner type of the event
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    scope -&gt; The scope of the event [internal or external]
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    data: {STIX data} -&gt; The STIX representation of the data.
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    message -&gt; A simple string to easy understand the event
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    origin: {Data Origin} -&gt; Complex object with different information about the origin of the event
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    context: {Event context} -&gt; Complex object with meta information depending of the event type
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>}
+</span></code></pre></div>
+<p>Id can be used to consume the stream from this specific point.</p>
+<h2 id="stix-data">STIX data</h2>
+<p>The current stix data representation is based on the STIX 2.1 format using extension mechanism.
+Please take a look to <a href="https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html">https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html</a> for more information.</p>
+<h3 id="create">Create</h3>
+<p>Its simply the data created in STIX format.</p>
+<h3 id="delete">Delete</h3>
+<p>Its simply the data in STIX format <strong>just before his deletion</strong>.
+You will also find the automated deletions in context due to automatic dependency management.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;context&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">      </span><span class="nt">&quot;deletions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="err">STIX</span><span class="w"> </span><span class="err">da</span><span class="kc">ta</span><span class="p">}]</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="update">Update</h3>
+<p>This event type publish the complete STIX data information along with patches information.
+Thanks to the patches, its possible to rebuild the previous version and easily understand that happens in the update.
+patch and reverse_patch follow the official jsonpatch specification. You can find more information at <a href="https://jsonpatch.com/">https://jsonpatch.com/</a></p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;context&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">      </span><span class="nt">&quot;patch&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="cm">/* patch operation object */</span><span class="p">],</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">      </span><span class="nt">&quot;reverse_patch&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="cm">/* patch operation object */</span><span class="p">]</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="merge">Merge</h3>
+<p>Merge is a mix of an update of the merge targets and deletions of the sources.
+In this event you will find the same patch and reverse_patch as an update and the list of elements merged into the target in the "sources" attribute.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;context&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">      </span><span class="nt">&quot;patch&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="cm">/* patch operation object */</span><span class="p">],</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="nt">&quot;reverse_patch&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="cm">/* patch operation object */</span><span class="p">],</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="nt">&quot;sources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="err">STIX</span><span class="w"> </span><span class="err">da</span><span class="kc">ta</span><span class="p">}]</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<h2 id="stream-types">Stream types</h2>
+<p>In OpenCTI we propose 2 types of streams.</p>
+<h3 id="base-stream">Base stream</h3>
+<p>The stream hosted in /stream url contains all the raw events of the platform, <strong>always</strong> filtered by the user rights (marking based).
+It's a technical stream a bit complex to used but very useful for internal processing or some specific connectors like backup/restore.
+This stream is live by default but if you want to catchup you can simply add the from parameter to your query.
+This parameter accept a timestamp in millisecond and also an event id.
+Like http://localhost/stream?from=1620249512599</p>
 <div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participae, dont hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
+<p class="admonition-title">Stream size?</p>
+<p>The raw stream is really important in the platform and needs te be sized according to the period of retention you want to ensure.
+More retention you will have, more security about reprocessing the past information you will get.
+We usually recommand 1 month of retention, that usually match 2 000 000 of events.
+This limit can be configured with redis:trimming option, please check <a href="../../deployment/configuration/#redis">deployment configuration page</a>.</p>
 </div>
+<h3 id="live-stream">Live stream</h3>
+<p>This stream aims to simplify your usage of the stream through the connectors, providing a way to create stream with specific filters through the UI.
+After creating this stream, is simply accessible from /stream/{STREAM_ID}.</p>
+<p>It's very useful for various cases of data externalization, synchronization, like SPLUNK, TANIUM...</p>
+<p>This stream provides different interesting mechanics:</p>
+<ul>
+<li>Stream the initial list of instances matching your filters when connecting based on main database if you use the recover parameter</li>
+<li>Auto dependencies resolution to guarantee the consistency of the information distributed</li>
+<li>Automatic events translation depending on the element segregation</li>
+</ul>
+<p><strong>If you want to dig in about the internal behavior you can check this complete diagram:</strong></p>
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https://www.figma.com/file/Nar8HH9mfPP77NMA2LdyVi/OpenCTI---Stream-%26-Sync?type=whiteboard&node-id=0%3A1&t=YVQnLKlLAg1TdgBT-1" allowfullscreen></iframe>
+
+<h4 id="general-options">General options</h4>
+<ul>
+<li><strong>no-dependencies</strong> (query parameter or header, default false). Can be used to prevent the auto dependencies resolution. To be used with caution.</li>
+<li><strong>listen-delete</strong> (query parameter or header, default true). Can be used prevent receive deletion events. To be used with caution.</li>
+<li><strong>with-inferences</strong> (query parameter or header, default false). Can be used to add inferences events (from rule engine) in the stream.</li>
+</ul>
+<h4 id="from-and-recover">From and Recover</h4>
+<p>From and recover are 2 different options that need to be explains.</p>
+<ul>
+<li>
+<p><strong>from</strong> (query parameter) is always the parameter that describe the initial date/event_id you want to start from.
+Can also be setup with request header <strong>from</strong> or <strong>last-event-id</strong> </p>
+</li>
+<li>
+<p><strong>recover</strong> (query parameter) is an option that let you consume the initial event from the database and not from the stream. 
+Can also be setup with request header <strong>recover</strong> or <strong>recover-date</strong> </p>
+</li>
+</ul>
+<p>This difference will be transparent for the consumer but very important to get old information as an initial snapshot.
+This also let you consume information that is no longer in the stream retention period.</p>
+<p><strong>The next diagram will help you to understand the concept:</strong></p>
+<iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="250" src="https://www.figma.com/embed?embed_host=share&url=https://www.figma.com/file/khKEdn2uBcYqvp96EfwTgU/OpenCTI---Stream-live-options?type=whiteboard&node-id=0%3A1&t=5DyeKM6ppvlaIDIE-1" allowfullscreen></iframe>
 
   
     
@@ -3296,7 +3822,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-30T13:25:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-30</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-02T12:52:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-02</span>
       </span>
     
     
@@ -3367,13 +3893,13 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         
         
           
-          <a href="../taxii-feeds/" class="md-footer__link md-footer__link--next" aria-label="Next: TAXII feeds" rel="next">
+          <a href="../taxii-feeds/" class="md-footer__link md-footer__link--next" aria-label="Next: TAXII Feeds" rel="next">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                TAXII feeds
+                TAXII Feeds
               </div>
             </div>
             <div class="md-footer__button md-icon">
