@@ -73,6 +73,7 @@ const TopMenuDataSource: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!dataSourceId}
       >
         {t('Overview')}
       </Button>
@@ -94,6 +95,7 @@ const TopMenuDataSource: FunctionComponent = () => {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!dataSourceId}
         >
           {t('Data')}
         </Button>
@@ -115,6 +117,7 @@ const TopMenuDataSource: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!dataSourceId}
       >
         {t('History')}
       </Button>

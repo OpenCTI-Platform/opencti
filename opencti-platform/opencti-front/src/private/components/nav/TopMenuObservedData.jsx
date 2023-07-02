@@ -79,6 +79,7 @@ class TopMenuObservedData extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observedDataId}
         >
           {t('Overview')}
         </Button>
@@ -99,6 +100,7 @@ class TopMenuObservedData extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observedDataId}
         >
           {t('Entities')}
         </Button>
@@ -119,6 +121,7 @@ class TopMenuObservedData extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observedDataId}
         >
           {t('Observables')}
         </Button>
@@ -140,6 +143,7 @@ class TopMenuObservedData extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!observedDataId}
           >
             {t('Data')}
           </Button>
@@ -161,6 +165,7 @@ class TopMenuObservedData extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observedDataId}
         >
           {t('History')}
         </Button>

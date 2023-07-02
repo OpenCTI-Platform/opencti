@@ -67,6 +67,7 @@ const TopMenuCaseRft: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Overview')}
       </Button>
@@ -89,6 +90,7 @@ const TopMenuCaseRft: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Knowledge')}
       </Button>
@@ -107,6 +109,7 @@ const TopMenuCaseRft: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Content')}
       </Button>
@@ -125,6 +128,7 @@ const TopMenuCaseRft: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Entities')}
       </Button>
@@ -143,6 +147,7 @@ const TopMenuCaseRft: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Observables')}
       </Button>
@@ -161,6 +166,7 @@ const TopMenuCaseRft: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Data')}
       </Button>
@@ -179,6 +185,7 @@ const TopMenuCaseRft: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('History')}
       </Button>

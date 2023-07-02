@@ -73,6 +73,7 @@ const TopMenuReport = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!reportId}
       >
         {t('Overview')}
       </Button>
@@ -95,6 +96,7 @@ const TopMenuReport = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!reportId}
       >
         {t('Knowledge')}
       </Button>
@@ -115,6 +117,7 @@ const TopMenuReport = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!reportId}
       >
         {t('Content')}
       </Button>
@@ -135,6 +138,7 @@ const TopMenuReport = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!reportId}
       >
         {t('Entities')}
       </Button>
@@ -155,6 +159,7 @@ const TopMenuReport = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!reportId}
       >
         {t('Observables')}
       </Button>
@@ -176,6 +181,7 @@ const TopMenuReport = () => {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!reportId}
         >
           {t('Data')}
         </Button>

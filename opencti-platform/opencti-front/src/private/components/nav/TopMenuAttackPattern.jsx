@@ -77,6 +77,7 @@ class TopMenuAttackPattern extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!attackPatternId}
         >
           {t('Overview')}
         </Button>
@@ -99,6 +100,7 @@ class TopMenuAttackPattern extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!attackPatternId}
         >
           {t('Knowledge')}
         </Button>
@@ -119,6 +121,7 @@ class TopMenuAttackPattern extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!attackPatternId}
         >
           {t('Analysis')}
         </Button>
@@ -141,6 +144,7 @@ class TopMenuAttackPattern extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!attackPatternId}
         >
           {t('Indicators')}
         </Button>
@@ -162,6 +166,7 @@ class TopMenuAttackPattern extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!attackPatternId}
           >
             {t('Data')}
           </Button>
@@ -183,6 +188,7 @@ class TopMenuAttackPattern extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!attackPatternId}
         >
           {t('History')}
         </Button>

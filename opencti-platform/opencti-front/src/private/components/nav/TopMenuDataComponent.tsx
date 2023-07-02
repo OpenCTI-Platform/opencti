@@ -39,7 +39,6 @@ const TopMenuDataComponent: FunctionComponent = () => {
   const { t } = useFormatter();
   const classes = styles();
   const { dataComponentId } = useParams() as { dataComponentId: string };
-
   return (
     <div>
       <Button
@@ -74,6 +73,7 @@ const TopMenuDataComponent: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!dataComponentId}
       >
         {t('Overview')}
       </Button>
@@ -95,6 +95,7 @@ const TopMenuDataComponent: FunctionComponent = () => {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!dataComponentId}
         >
           {t('Data')}
         </Button>
@@ -116,6 +117,7 @@ const TopMenuDataComponent: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!dataComponentId}
       >
         {t('History')}
       </Button>

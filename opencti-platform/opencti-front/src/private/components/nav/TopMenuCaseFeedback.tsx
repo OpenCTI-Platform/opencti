@@ -67,6 +67,7 @@ const TopMenuCaseFeedback: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Overview')}
       </Button>
@@ -85,6 +86,7 @@ const TopMenuCaseFeedback: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Content')}
       </Button>
@@ -103,6 +105,7 @@ const TopMenuCaseFeedback: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('Data')}
       </Button>
@@ -121,6 +124,7 @@ const TopMenuCaseFeedback: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!caseId}
       >
         {t('History')}
       </Button>

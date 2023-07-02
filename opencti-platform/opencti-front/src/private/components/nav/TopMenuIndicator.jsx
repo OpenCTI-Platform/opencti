@@ -80,6 +80,7 @@ class TopMenuIndicator extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!indicatorId}
         >
           {t('Overview')}
         </Button>
@@ -102,6 +103,7 @@ class TopMenuIndicator extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!indicatorId}
         >
           {t('Knowledge')}
         </Button>
@@ -124,6 +126,7 @@ class TopMenuIndicator extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!indicatorId}
         >
           {t('Analysis')}
         </Button>
@@ -144,6 +147,7 @@ class TopMenuIndicator extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!indicatorId}
         >
           {t('Sightings')}
         </Button>
@@ -165,6 +169,7 @@ class TopMenuIndicator extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!indicatorId}
           >
             {t('Data')}
           </Button>
@@ -186,6 +191,7 @@ class TopMenuIndicator extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!indicatorId}
         >
           {t('History')}
         </Button>

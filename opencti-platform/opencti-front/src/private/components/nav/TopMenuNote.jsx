@@ -74,6 +74,7 @@ class TopMenuNote extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!noteId}
         >
           {t('Overview')}
         </Button>
@@ -93,6 +94,7 @@ class TopMenuNote extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!noteId}
           >
             {t('Data')}
           </Button>
@@ -112,6 +114,7 @@ class TopMenuNote extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!noteId}
         >
           {t('History')}
         </Button>

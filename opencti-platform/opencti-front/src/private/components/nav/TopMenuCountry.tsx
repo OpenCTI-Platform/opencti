@@ -39,7 +39,6 @@ const TopMenuCountry: FunctionComponent = () => {
   const { t } = useFormatter();
   const classes = styles();
   const { countryId } = useParams() as { countryId: string };
-
   return (
     <div>
       <Button
@@ -72,6 +71,7 @@ const TopMenuCountry: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!countryId}
       >
         {t('Overview')}
       </Button>
@@ -94,6 +94,7 @@ const TopMenuCountry: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!countryId}
       >
         {t('Knowledge')}
       </Button>
@@ -114,6 +115,7 @@ const TopMenuCountry: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!countryId}
       >
         {t('Analysis')}
       </Button>
@@ -134,6 +136,7 @@ const TopMenuCountry: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!countryId}
       >
         {t('Sightings')}
       </Button>
@@ -155,6 +158,7 @@ const TopMenuCountry: FunctionComponent = () => {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!countryId}
         >
           {t('Data')}
         </Button>
@@ -176,6 +180,7 @@ const TopMenuCountry: FunctionComponent = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!countryId}
       >
         {t('History')}
       </Button>

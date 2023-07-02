@@ -79,6 +79,7 @@ class TopMenuOrganization extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!organizationId}
         >
           {t('Overview')}
         </Button>
@@ -101,6 +102,7 @@ class TopMenuOrganization extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!organizationId}
         >
           {t('Knowledge')}
         </Button>
@@ -121,6 +123,7 @@ class TopMenuOrganization extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!organizationId}
         >
           {t('Analysis')}
         </Button>
@@ -141,6 +144,7 @@ class TopMenuOrganization extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!organizationId}
         >
           {t('Sightings')}
         </Button>
@@ -162,6 +166,7 @@ class TopMenuOrganization extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!organizationId}
           >
             {t('Data')}
           </Button>
@@ -183,6 +188,7 @@ class TopMenuOrganization extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!organizationId}
         >
           {t('History')}
         </Button>

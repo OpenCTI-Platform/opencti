@@ -77,6 +77,7 @@ class TopMenuCourseOfAction extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!courseOfActionId}
         >
           {t('Overview')}
         </Button>
@@ -98,6 +99,7 @@ class TopMenuCourseOfAction extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!courseOfActionId}
           >
             {t('Data')}
           </Button>
@@ -119,6 +121,7 @@ class TopMenuCourseOfAction extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!courseOfActionId}
         >
           {t('History')}
         </Button>

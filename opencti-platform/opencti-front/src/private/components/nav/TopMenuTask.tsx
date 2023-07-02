@@ -33,7 +33,7 @@ const TopMenuTask: FunctionComponent = () => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = styles();
-  const { caseId } = useParams() as { caseId: string };
+  const { taskId } = useParams() as { taskId: string };
   return (
     <div>
       <Button
@@ -53,55 +53,58 @@ const TopMenuTask: FunctionComponent = () => {
       />
       <Button
         component={Link}
-        to={`/dashboard/cases/tasks/${caseId}`}
+        to={`/dashboard/cases/tasks/${taskId}`}
         variant={
-          location.pathname === `/dashboard/cases/tasks/${caseId}`
+          location.pathname === `/dashboard/cases/tasks/${taskId}`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname === `/dashboard/cases/tasks/${caseId}`
+          location.pathname === `/dashboard/cases/tasks/${taskId}`
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!taskId}
       >
         {t('Overview')}
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/cases/tasks/${caseId}/files`}
+        to={`/dashboard/cases/tasks/${taskId}/files`}
         variant={
-          location.pathname === `/dashboard/cases/tasks/${caseId}/files`
+          location.pathname === `/dashboard/cases/tasks/${taskId}/files`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname === `/dashboard/cases/tasks/${caseId}/files`
+          location.pathname === `/dashboard/cases/tasks/${taskId}/files`
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!taskId}
       >
         {t('Data')}
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/cases/tasks/${caseId}/history`}
+        to={`/dashboard/cases/tasks/${taskId}/history`}
         variant={
-          location.pathname === `/dashboard/cases/tasks/${caseId}/history`
+          location.pathname === `/dashboard/cases/tasks/${taskId}/history`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname === `/dashboard/cases/tasks/${caseId}/history`
+          location.pathname === `/dashboard/cases/tasks/${taskId}/history`
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!taskId}
       >
         {t('History')}
       </Button>

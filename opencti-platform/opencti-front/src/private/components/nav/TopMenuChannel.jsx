@@ -10,7 +10,10 @@ import {
 } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -77,6 +80,7 @@ class TopMenuChannel extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!channelId}
         >
           {t('Overview')}
         </Button>
@@ -99,6 +103,7 @@ class TopMenuChannel extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!channelId}
         >
           {t('Knowledge')}
         </Button>
@@ -119,6 +124,7 @@ class TopMenuChannel extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!channelId}
         >
           {t('Analysis')}
         </Button>
@@ -141,6 +147,7 @@ class TopMenuChannel extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!channelId}
         >
           {t('Indicators')}
         </Button>
@@ -162,6 +169,7 @@ class TopMenuChannel extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!channelId}
           >
             {t('Data')}
           </Button>
@@ -183,6 +191,7 @@ class TopMenuChannel extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!channelId}
         >
           {t('History')}
         </Button>

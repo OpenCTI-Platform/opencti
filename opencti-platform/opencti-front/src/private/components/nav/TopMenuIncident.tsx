@@ -50,6 +50,7 @@ const TopMenuIncident = () => {
         variant={computeVariant(basePath)}
         color={computeColor(basePath)}
         classes={{ root: classes.button }}
+        disabled={!incidentId}
       >
         {t(title)}
       </Button>

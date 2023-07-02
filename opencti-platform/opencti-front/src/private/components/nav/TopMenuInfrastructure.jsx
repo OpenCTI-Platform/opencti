@@ -8,7 +8,10 @@ import { ArrowForwardIos } from '@mui/icons-material';
 import { ServerNetwork } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -74,6 +77,7 @@ class TopMenuInfrastructure extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!infrastructureId}
         >
           {t('Overview')}
         </Button>
@@ -96,6 +100,7 @@ class TopMenuInfrastructure extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!infrastructureId}
         >
           {t('Knowledge')}
         </Button>
@@ -116,6 +121,7 @@ class TopMenuInfrastructure extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!infrastructureId}
         >
           {t('Analysis')}
         </Button>
@@ -138,6 +144,7 @@ class TopMenuInfrastructure extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!infrastructureId}
         >
           {t('Indicators')}
         </Button>
@@ -159,6 +166,7 @@ class TopMenuInfrastructure extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!infrastructureId}
           >
             {t('Data')}
           </Button>
@@ -180,6 +188,7 @@ class TopMenuInfrastructure extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!infrastructureId}
         >
           {t('History')}
         </Button>

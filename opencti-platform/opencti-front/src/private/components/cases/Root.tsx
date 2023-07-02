@@ -71,7 +71,7 @@ const Root = () => {
       component={Tasks}
     />
     <BoundaryRoute
-      path="/dashboard/cases/tasks/:caseId"
+      path="/dashboard/cases/tasks/:taskId"
       component={RootTask}
     />
     <BoundaryRoute

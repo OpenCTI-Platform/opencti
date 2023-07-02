@@ -73,6 +73,7 @@ const TopMenuThreatActor = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!threatActorId}
       >
         {t('Overview')}
       </Button>
@@ -95,6 +96,7 @@ const TopMenuThreatActor = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!threatActorId}
       >
         {t('Knowledge')}
       </Button>
@@ -115,6 +117,7 @@ const TopMenuThreatActor = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!threatActorId}
       >
         {t('Analysis')}
       </Button>
@@ -137,6 +140,7 @@ const TopMenuThreatActor = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!threatActorId}
       >
         {t('Indicators')}
       </Button>
@@ -158,6 +162,7 @@ const TopMenuThreatActor = () => {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!threatActorId}
         >
           {t('Data')}
         </Button>
@@ -179,6 +184,7 @@ const TopMenuThreatActor = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
+        disabled={!threatActorId}
       >
         {t('History')}
       </Button>

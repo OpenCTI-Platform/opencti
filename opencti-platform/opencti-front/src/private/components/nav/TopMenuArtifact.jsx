@@ -72,6 +72,7 @@ class TopMenuArtifact extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observableId}
         >
           {t('Overview')}
         </Button>
@@ -94,6 +95,7 @@ class TopMenuArtifact extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observableId}
         >
           {t('Knowledge')}
         </Button>
@@ -114,6 +116,7 @@ class TopMenuArtifact extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observableId}
         >
           {t('Sightings')}
         </Button>
@@ -134,6 +137,7 @@ class TopMenuArtifact extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observableId}
         >
           {t('Data')}
         </Button>
@@ -154,6 +158,7 @@ class TopMenuArtifact extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!observableId}
         >
           {t('History')}
         </Button>

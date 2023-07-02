@@ -4,10 +4,16 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, SpeakerNotesOutlined } from '@mui/icons-material';
+import {
+  ArrowForwardIosOutlined,
+  SpeakerNotesOutlined,
+} from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -63,17 +69,20 @@ class TopMenuNarrative extends Component {
           component={Link}
           to={`/dashboard/techniques/narratives/${narrativeId}`}
           variant={
-            location.pathname === `/dashboard/techniques/narratives/${narrativeId}`
+            location.pathname
+            === `/dashboard/techniques/narratives/${narrativeId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/techniques/narratives/${narrativeId}`
+            location.pathname
+            === `/dashboard/techniques/narratives/${narrativeId}`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!narrativeId}
         >
           {t('Overview')}
         </Button>
@@ -96,6 +105,7 @@ class TopMenuNarrative extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!narrativeId}
         >
           {t('Knowledge')}
         </Button>
@@ -116,6 +126,7 @@ class TopMenuNarrative extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!narrativeId}
         >
           {t('Analysis')}
         </Button>
@@ -138,6 +149,7 @@ class TopMenuNarrative extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!narrativeId}
         >
           {t('Indicators')}
         </Button>
@@ -159,6 +171,7 @@ class TopMenuNarrative extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!narrativeId}
           >
             {t('Data')}
           </Button>
@@ -180,6 +193,7 @@ class TopMenuNarrative extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!narrativeId}
         >
           {t('History')}
         </Button>

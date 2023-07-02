@@ -77,6 +77,7 @@ class TopMenuExternalReference extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!externalReferenceId}
         >
           {t('Overview')}
         </Button>

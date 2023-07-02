@@ -7,7 +7,10 @@ import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined, WebAssetOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -74,6 +77,7 @@ class TopMenuTool extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!toolId}
         >
           {t('Overview')}
         </Button>
@@ -96,6 +100,7 @@ class TopMenuTool extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!toolId}
         >
           {t('Knowledge')}
         </Button>
@@ -114,6 +119,7 @@ class TopMenuTool extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!toolId}
         >
           {t('Analysis')}
         </Button>
@@ -136,6 +142,7 @@ class TopMenuTool extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!toolId}
         >
           {t('Indicators')}
         </Button>
@@ -155,6 +162,7 @@ class TopMenuTool extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!toolId}
           >
             {t('Data')}
           </Button>
@@ -174,6 +182,7 @@ class TopMenuTool extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!toolId}
         >
           {t('History')}
         </Button>

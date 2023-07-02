@@ -77,6 +77,7 @@ class TopMenuOpinion extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!opinionId}
         >
           {t('Overview')}
         </Button>
@@ -98,6 +99,7 @@ class TopMenuOpinion extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!opinionId}
           >
             {t('Data')}
           </Button>
@@ -119,6 +121,7 @@ class TopMenuOpinion extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!opinionId}
         >
           {t('History')}
         </Button>

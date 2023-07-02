@@ -7,7 +7,10 @@ import Button from '@mui/material/Button';
 import { PersonOutlined, ArrowForwardIosOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -76,6 +79,7 @@ class TopMenuIndividual extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!individualId}
         >
           {t('Overview')}
         </Button>
@@ -98,6 +102,7 @@ class TopMenuIndividual extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!individualId}
         >
           {t('Knowledge')}
         </Button>
@@ -118,6 +123,7 @@ class TopMenuIndividual extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!individualId}
         >
           {t('Analysis')}
         </Button>
@@ -138,6 +144,7 @@ class TopMenuIndividual extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!individualId}
         >
           {t('Sightings')}
         </Button>
@@ -159,6 +166,7 @@ class TopMenuIndividual extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!individualId}
           >
             {t('Data')}
           </Button>
@@ -180,6 +188,7 @@ class TopMenuIndividual extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!individualId}
         >
           {t('History')}
         </Button>

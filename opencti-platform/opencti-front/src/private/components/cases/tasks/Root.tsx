@@ -57,14 +57,14 @@ const TaskQuery = graphql`
   }
 `;
 
-const RootTaskComponent = ({ queryRef, caseId }) => {
+const RootTaskComponent = ({ queryRef, taskId }) => {
   const { me } = useAuth();
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootTaskSubscription>>(
     () => ({
       subscription,
-      variables: { id: caseId },
+      variables: { id: taskId },
     }),
-    [caseId],
+    [taskId],
   );
   useSubscription(subConfig);
   const {
@@ -80,12 +80,12 @@ const RootTaskComponent = ({ queryRef, caseId }) => {
           <Switch>
             <Route
               exact
-              path="/dashboard/cases/tasks/:caseId"
+              path="/dashboard/cases/tasks/:taskId"
               render={() => <CaseTask data={data} />}
             />
             <Route
               exact
-              path="/dashboard/cases/tasks/:caseId/content"
+              path="/dashboard/cases/tasks/:taskId/content"
               render={(routeProps) => (
                 <React.Fragment>
                   <ContainerHeader
@@ -102,7 +102,7 @@ const RootTaskComponent = ({ queryRef, caseId }) => {
             />
             <Route
               exact
-              path="/dashboard/cases/tasks/:caseId/files"
+              path="/dashboard/cases/tasks/:taskId/files"
               render={(routeProps) => (
                 <React.Fragment>
                   <ContainerHeader
@@ -112,7 +112,7 @@ const RootTaskComponent = ({ queryRef, caseId }) => {
                   />
                   <StixCoreObjectFilesAndHistory
                     {...routeProps}
-                    id={caseId}
+                    id={taskId}
                     connectorsExport={connectorsForExport}
                     connectorsImport={connectorsForImport}
                     entity={data}
@@ -124,7 +124,7 @@ const RootTaskComponent = ({ queryRef, caseId }) => {
             />
             <Route
               exact
-              path="/dashboard/cases/tasks/:caseId/history"
+              path="/dashboard/cases/tasks/:taskId/history"
               render={(routeProps: any) => (
                 <React.Fragment>
                   <ContainerHeader
@@ -135,7 +135,7 @@ const RootTaskComponent = ({ queryRef, caseId }) => {
                   />
                   <StixCoreObjectHistory
                     {...routeProps}
-                    stixCoreObjectId={caseId}
+                    stixCoreObjectId={taskId}
                   />
                 </React.Fragment>
               )}
@@ -150,13 +150,13 @@ const RootTaskComponent = ({ queryRef, caseId }) => {
 };
 
 const Root = () => {
-  const { caseId } = useParams() as { caseId: string };
+  const { taskId } = useParams() as { taskId: string };
   const queryRef = useQueryLoading<RootTaskQuery>(TaskQuery, {
-    id: caseId,
+    id: taskId,
   });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <RootTaskComponent queryRef={queryRef} caseId={caseId} />
+      <RootTaskComponent queryRef={queryRef} taskId={taskId} />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.container} />

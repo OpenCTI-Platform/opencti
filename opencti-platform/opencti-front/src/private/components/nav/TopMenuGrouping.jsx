@@ -77,6 +77,7 @@ class TopMenuGrouping extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!groupingId}
         >
           {t('Overview')}
         </Button>
@@ -99,6 +100,7 @@ class TopMenuGrouping extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!groupingId}
         >
           {t('Knowledge')}
         </Button>
@@ -119,6 +121,7 @@ class TopMenuGrouping extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!groupingId}
         >
           {t('Entities')}
         </Button>
@@ -139,6 +142,7 @@ class TopMenuGrouping extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!groupingId}
         >
           {t('Observables')}
         </Button>
@@ -160,6 +164,7 @@ class TopMenuGrouping extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!groupingId}
           >
             {t('Data')}
           </Button>

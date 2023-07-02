@@ -79,6 +79,7 @@ class TopMenuAdministrativeArea extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!administrativeAreaId}
         >
           {t('Overview')}
         </Button>
@@ -101,6 +102,7 @@ class TopMenuAdministrativeArea extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!administrativeAreaId}
         >
           {t('Knowledge')}
         </Button>
@@ -121,6 +123,7 @@ class TopMenuAdministrativeArea extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!administrativeAreaId}
         >
           {t('Analysis')}
         </Button>
@@ -141,6 +144,7 @@ class TopMenuAdministrativeArea extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!administrativeAreaId}
         >
           {t('Sightings')}
         </Button>
@@ -162,6 +166,7 @@ class TopMenuAdministrativeArea extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!administrativeAreaId}
           >
             {t('Data')}
           </Button>
@@ -183,6 +188,7 @@ class TopMenuAdministrativeArea extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!administrativeAreaId}
         >
           {t('History')}
         </Button>

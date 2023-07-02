@@ -75,6 +75,7 @@ class TopMenuCampaign extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!campaignId}
         >
           {t('Overview')}
         </Button>
@@ -97,6 +98,7 @@ class TopMenuCampaign extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!campaignId}
         >
           {t('Knowledge')}
         </Button>
@@ -117,6 +119,7 @@ class TopMenuCampaign extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!campaignId}
         >
           {t('Analysis')}
         </Button>
@@ -139,6 +142,7 @@ class TopMenuCampaign extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!campaignId}
         >
           {t('Indicators')}
         </Button>
@@ -160,6 +164,7 @@ class TopMenuCampaign extends Component {
                 : 'primary'
             }
             classes={{ root: classes.button }}
+            disabled={!campaignId}
           >
             {t('Data')}
           </Button>
@@ -181,6 +186,7 @@ class TopMenuCampaign extends Component {
               : 'primary'
           }
           classes={{ root: classes.button }}
+          disabled={!campaignId}
         >
           {t('History')}
         </Button>
