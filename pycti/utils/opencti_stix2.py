@@ -1558,27 +1558,27 @@ class OpenCTIStix2:
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
                 elif (
-                    entity["type"] == "case-incident"
+                    entity["type"] == "x-opencti-case-incident"
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
                 elif (
-                    entity["type"] == "feedback"
+                    entity["type"] == "x-opencti-feedback"
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
                 elif (
-                    entity["type"] == "case-rfi"
+                    entity["type"] == "x-opencti-case-rfi"
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
                 elif (
-                    entity["type"] == "case-rft"
+                    entity["type"] == "x-opencti-case-rft"
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
                 elif (
-                    entity["type"] == "task"
+                    entity["type"] == "x-opencti-task"
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
