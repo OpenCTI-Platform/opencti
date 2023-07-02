@@ -1,4 +1,4 @@
-# Environment setup
+# Environment Setup (Ubuntu VM)
 
 This summary should give you a detailed setup description for initiating the OpenCTI setup environment necessary for developing on the OpenCTI platform, a client library or the connectors.
 
