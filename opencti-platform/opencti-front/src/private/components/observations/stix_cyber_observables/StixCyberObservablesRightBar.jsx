@@ -36,64 +36,80 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-const StixCyberObservablesRightBar = ({ types = [], handleToggle, handleClear }) => {
+const StixCyberObservablesRightBar = ({
+  types = [],
+  handleToggle,
+  handleClear,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { bannerSettings } = useAuth();
   return (
-      <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawerPaper }}>
-        <div className={classes.toolbar} />
-        <QueryRenderer
-          query={stixCyberObservablesLinesSubTypesQuery}
-          variables={{ type: 'Stix-Cyber-Observable' }}
-          render={({ props }) => {
-            if (props && props.subTypes) {
-              const subTypesEdges = props.subTypes.edges;
-              const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
-              const translatedOrderedList = pipe(
-                map((n) => n.node),
-                map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
-                sortByLabel,
-              )(subTypesEdges);
-              return (
-                <List sx={{ marginTop: bannerSettings.bannerHeight, marginBottom: bannerSettings.bannerHeight }}
-                  subheader={
-                    <ListSubheader component="div">
-                      {t('Observable types')}
-                      <Tooltip title={t('Clear filters')}>
-                        <IconButton onClick={handleClear}
-                          disabled={types.length === 0}
-                          color="primary"
-                          size="large">
-                          <FilterOffOutline fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </ListSubheader>
-                  }
-                >
-                  {translatedOrderedList.map((subType) => (
-                    <ListItem
-                      key={subType.id}
-                      dense={true}
-                      button={true}
-                      onClick={() => handleToggle(subType.label)}
-                      classes={{ root: classes.item }}
-                    >
-                      <Checkbox
-                        checked={types.includes(subType.label)}
-                        disableRipple={true}
-                        size="small"
-                      />
-                      <ListItemText primary={subType.tlabel} />
-                    </ListItem>
-                  ))}
-                </List>
-              );
-            }
-            return <div />;
-          }}
-        />
-      </Drawer>
+    <Drawer
+      variant="permanent"
+      anchor="right"
+      classes={{ paper: classes.drawerPaper }}
+      PaperProps={{
+        style: {
+          paddingTop: bannerSettings.bannerHeight,
+          paddingBottom: bannerSettings.bannerHeight,
+        },
+      }}
+    >
+      <div className={classes.toolbar} />
+      <QueryRenderer
+        query={stixCyberObservablesLinesSubTypesQuery}
+        variables={{ type: 'Stix-Cyber-Observable' }}
+        render={({ props }) => {
+          if (props && props.subTypes) {
+            const subTypesEdges = props.subTypes.edges;
+            const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
+            const translatedOrderedList = pipe(
+              map((n) => n.node),
+              map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
+              sortByLabel,
+            )(subTypesEdges);
+            return (
+              <List
+                subheader={
+                  <ListSubheader component="div">
+                    {t('Observable types')}
+                    <Tooltip title={t('Clear filters')}>
+                      <IconButton
+                        onClick={handleClear}
+                        disabled={types.length === 0}
+                        color="primary"
+                        size="large"
+                      >
+                        <FilterOffOutline fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </ListSubheader>
+                }
+              >
+                {translatedOrderedList.map((subType) => (
+                  <ListItem
+                    key={subType.id}
+                    dense={true}
+                    button={true}
+                    onClick={() => handleToggle(subType.label)}
+                    classes={{ root: classes.item }}
+                  >
+                    <Checkbox
+                      checked={types.includes(subType.label)}
+                      disableRipple={true}
+                      size="small"
+                    />
+                    <ListItemText primary={subType.tlabel} />
+                  </ListItem>
+                ))}
+              </List>
+            );
+          }
+          return <div />;
+        }}
+      />
+    </Drawer>
   );
 };
 

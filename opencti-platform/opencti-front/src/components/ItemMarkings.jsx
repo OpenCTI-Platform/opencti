@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import EnrichedTooltip from './EnrichedTooltip';
+import { useFormatter } from './i18n';
 
 const useStyles = makeStyles(() => ({
   chip: {
@@ -97,6 +98,7 @@ const StyledBadge = styled(Badge)(() => ({
 const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
   const classes = useStyles();
   const theme = useTheme();
+  const { t } = useFormatter();
   const sortBy = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
     R.descend(R.propOr(0, 'x_opencti_order')),
@@ -192,7 +194,7 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
             key={markingDefinition.definition}
             className={className}
             style={inlineStyles.transparent}
-            label={markingDefinition.definition}
+            label={t(markingDefinition.definition)}
             variant="outlined"
           />
         );

@@ -5,7 +5,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
-import { FROM_START, UNTIL_END } from '../utils/format';
+import { FROM_START, now, UNTIL_END } from '../utils/format';
 
 export const findById = (context, user, incidentId) => {
   return storeLoadById(context, user, incidentId, ENTITY_TYPE_INCIDENT);
@@ -29,6 +29,7 @@ export const incidentsTimeSeries = (context, user, args) => {
 
 export const addIncident = async (context, user, incident) => {
   const incidentToCreate = pipe(
+    assoc('created', isNil(incident.created) ? now() : incident.created),
     assoc('first_seen', isNil(incident.first_seen) ? new Date(FROM_START) : incident.first_seen),
     assoc('last_seen', isNil(incident.last_seen) ? new Date(UNTIL_END) : incident.last_seen)
   )(incident);

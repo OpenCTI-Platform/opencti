@@ -71,13 +71,18 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   return (
     <Drawer
       variant="permanent"
       anchor="right"
       classes={{
         paper: openExports ? classes.drawerPaperExports : classes.drawerPaper,
+      }}
+      PaperProps={{
+        style: { paddingTop: bannerHeightNumber },
       }}
     >
       <div className={classes.toolbar} />
@@ -92,7 +97,6 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
           const patternTypes = props?.vocabularies?.edges;
           return (
             <List
-              sx={{ marginTop: bannerHeightNumber, marginBottom: bannerHeightNumber }}
               subheader={
                 <ListSubheader component="div">
                   {t('Pattern type')}

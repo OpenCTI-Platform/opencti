@@ -14,6 +14,7 @@ import {
   stixObjectOrRelationshipDeleteRefRelation
 } from '../../domain/stixObjectOrStixRelationship';
 import type { EditInput, StixRefRelationshipAddInput, TaskAddInput } from '../../generated/graphql';
+import { now } from '../../utils/format';
 
 export const findById: DomainFindById<BasicStoreEntityTask> = (context: AuthContext, user: AuthUser, templateId: string) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CONTAINER_TASK);
@@ -28,7 +29,8 @@ export const batchTasks = async (context: AuthContext, user: AuthUser, caseIds: 
 };
 
 export const taskAdd = async (context: AuthContext, user: AuthUser, input: TaskAddInput) => {
-  const created = await createEntity(context, user, input, ENTITY_TYPE_CONTAINER_TASK);
+  const taskToCreate = input.created ? input : { ...input, created: now() };
+  const created = await createEntity(context, user, taskToCreate, ENTITY_TYPE_CONTAINER_TASK);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

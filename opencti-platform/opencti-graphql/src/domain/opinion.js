@@ -15,6 +15,7 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 import { findAll as findIndividuals } from './individual';
+import { now } from '../utils/format';
 
 export const findById = (context, user, opinionId) => {
   return storeLoadById(context, user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
@@ -114,7 +115,7 @@ export const opinionsDistributionByEntity = async (context, user, args) => {
 
 // region mutations
 export const addOpinion = async (context, user, opinion) => {
-  const opinionToCreate = { ...opinion };
+  const opinionToCreate = opinion.created ? opinion : { ...opinion, created: now() };
   const created = await createEntity(context, user, opinionToCreate, ENTITY_TYPE_CONTAINER_OPINION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

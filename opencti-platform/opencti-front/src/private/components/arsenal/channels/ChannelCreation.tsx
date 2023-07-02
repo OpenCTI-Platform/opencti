@@ -33,6 +33,7 @@ import {
 } from './__generated__/ChannelCreationMutation.graphql';
 import { ChannelsLinesPaginationQuery$variables } from './__generated__/ChannelsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -59,11 +60,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   header: {
     backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
+    padding: '0 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
-    top: 12,
     left: 5,
     color: 'inherit',
   },
@@ -107,15 +107,15 @@ const channelMutation = graphql`
 const CHANNEL_TYPE = 'Channel';
 
 interface ChannelAddInput {
-  name: string
-  channel_types: string[]
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  confidence: number | undefined
-  file: File | undefined
+  name: string;
+  channel_types: string[];
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  confidence: number | undefined;
+  file: File | undefined;
 }
 
 interface ChannelFormProps {
@@ -145,10 +145,11 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
   };
-  const channelValidator = useSchemaCreationValidation(CHANNEL_TYPE, basicShape);
-
+  const channelValidator = useSchemaCreationValidation(
+    CHANNEL_TYPE,
+    basicShape,
+  );
   const [commit] = useMutation<ChannelCreationMutation>(channelMutation);
-
   const onSubmit: FormikConfig<ChannelAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -186,22 +187,17 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       },
     });
   };
-
-  const initialValues = useDefaultValues(
-    CHANNEL_TYPE,
-    {
-      name: inputValue ?? '',
-      channel_types: [],
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      confidence: defaultConfidence,
-      file: undefined,
-    },
-  );
-
+  const initialValues = useDefaultValues(CHANNEL_TYPE, {
+    name: inputValue ?? '',
+    channel_types: [],
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    confidence: defaultConfidence,
+    file: undefined,
+  });
   return (
     <Formik
       initialValues={initialValues}
@@ -313,14 +309,15 @@ const ChannelCreation = ({
   paginationOptions: ChannelsLinesPaginationQuery$variables;
 }) => {
   const classes = useStyles();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
-
   return (
     <div>
       <Fab
@@ -339,11 +336,15 @@ const ChannelCreation = ({
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        <div>
-          <div className={classes.header}>
+        <>
+          <div
+            className={classes.header}
+            style={{ paddingTop: bannerHeightNumber + 20 }}
+          >
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
+              style={{ top: bannerHeightNumber + 12 }}
               onClick={handleClose}
               size="large"
               color="primary"
@@ -359,7 +360,7 @@ const ChannelCreation = ({
               onReset={onReset}
             />
           </div>
-        </div>
+        </>
       </Drawer>
     </div>
   );

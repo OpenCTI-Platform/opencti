@@ -37,6 +37,7 @@ import {
 } from './__generated__/ReportCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -64,11 +65,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   header: {
     backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
+    padding: '0 20px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
-    top: 12,
     left: 5,
     color: 'inherit',
   },
@@ -164,7 +164,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     content: Yup.string().nullable(),
   };
   const reportValidator = useSchemaCreationValidation(REPORT_TYPE, basicShape);
-
   const [commit] = useMutation<ReportCreationMutation>(reportCreationMutation);
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
@@ -211,7 +210,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       },
     });
   };
-
   const initialValues = useDefaultValues<ReportAddInput>(REPORT_TYPE, {
     name: inputValue ?? '',
     published: null,
@@ -226,7 +224,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     externalReferences: [],
     file: undefined,
   });
-
   return (
     <Formik<ReportAddInput>
       initialValues={initialValues}
@@ -364,6 +361,9 @@ const ReportCreation = ({
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
   const classes = useStyles();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
@@ -386,10 +386,14 @@ const ReportCreation = ({
         onClose={() => setOpen(false)}
         disableEnforceFocus={true}
       >
-        <div className={classes.header}>
+        <div
+          className={classes.header}
+          style={{ paddingTop: bannerHeightNumber + 20 }}
+        >
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
+            style={{ top: bannerHeightNumber + 12 }}
             onClick={() => setOpen(false)}
             size="large"
             color="primary"
