@@ -115,8 +115,8 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.modeFixed) {
     finalParams.modeFixed = finalParams.modeFixed.toString() === 'true';
   }
-  if (finalParams.notes) {
-    finalParams.notes = finalParams.notes.toString() === 'true';
+  if (finalParams.nestedRelationships) {
+    finalParams.nestedRelationships = finalParams.nestedRelationships.toString() === 'true';
   }
   if (finalParams.timeLineDisplayRelationships) {
     finalParams.timeLineDisplayRelationships = finalParams.timeLineDisplayRelationships.toString() === 'true';

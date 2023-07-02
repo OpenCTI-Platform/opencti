@@ -29,12 +29,22 @@ const useStyles = makeStyles<Theme>(() => ({
 const EnterpriseEdition = () => {
   const classes = useStyles();
   const { t } = useFormatter();
-  return <Alert icon={false} classes={{ root: classes.alert, message: classes.message }}
-                  severity="warning" variant="outlined" style={{ position: 'relative' }}>
-        <AlertTitle style={{ marginBottom: 0 }}>
-            {t('You need to activate OpenCTI enterprise edition to use the activity feature')}<br/>
-        </AlertTitle>
-    </Alert>;
+  return (
+    <Alert
+      icon={false}
+      classes={{ root: classes.alert, message: classes.message }}
+      severity="warning"
+      variant="outlined"
+      style={{ position: 'relative' }}
+    >
+      <AlertTitle style={{ marginBottom: 0 }}>
+        {t(
+          'You need to activate OpenCTI enterprise edition to use the activity feature',
+        )}
+        <br />
+      </AlertTitle>
+    </Alert>
+  );
 };
 
 export default EnterpriseEdition;

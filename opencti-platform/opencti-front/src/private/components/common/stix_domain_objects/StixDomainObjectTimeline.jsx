@@ -63,7 +63,16 @@ class StixDomainObjectTimelineComponent extends Component {
         <div id="container">
           <Timeline position="alternate">
             {stixRelationships.map((stixRelationship) => {
-              const link = `${entityLink}/relations/${stixRelationship.id}`;
+              let link = null;
+              if (
+                stixRelationship.parent_types.includes('stix-core-relationship')
+              ) {
+                link = `${entityLink}/relations/${stixRelationship.id}`;
+              } else if (
+                stixRelationship.entity_type === 'stix-sighting-relationship'
+              ) {
+                link = `${entityLink}/sightings/${stixRelationship.id}`;
+              }
               const restricted = stixRelationship.targetEntity === null;
               return (
                 <TimelineItem key={stixRelationship.id}>
@@ -76,11 +85,41 @@ class StixDomainObjectTimelineComponent extends Component {
                         ? stixRelationship.created
                             || stixRelationship.created_at
                         : stixRelationship.start_time
+                            || stixRelationship.first_seen
                             || stixRelationship.created_at,
                     )}
                   </TimelineOppositeContent>
                   <TimelineSeparator>
-                    <Link to={link}>
+                    {link ? (
+                      <Link to={link}>
+                        <Tooltip
+                          title={
+                            !restricted
+                              ? defaultValue(stixRelationship.targetEntity)
+                              : t('Restricted')
+                          }
+                        >
+                          <TimelineDot
+                            sx={{
+                              borderColor: !restricted
+                                ? itemColor(
+                                  stixRelationship.targetEntity.entity_type,
+                                )
+                                : theme.palette.primary.main,
+                            }}
+                            variant="outlined"
+                          >
+                            <ItemIcon
+                              type={
+                                !restricted
+                                  ? stixRelationship.targetEntity.entity_type
+                                  : t('Restricted')
+                              }
+                            />
+                          </TimelineDot>
+                        </Tooltip>
+                      </Link>
+                    ) : (
                       <Tooltip
                         title={
                           !restricted
@@ -107,7 +146,7 @@ class StixDomainObjectTimelineComponent extends Component {
                           />
                         </TimelineDot>
                       </Tooltip>
-                    </Link>
+                    )}
                     <TimelineConnector />
                   </TimelineSeparator>
                   <TimelineContent>
@@ -174,6 +213,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
             node {
               id
               entity_type
+              parent_types
               ... on StixRefRelationship {
                 created_at
               }
@@ -191,6 +231,22 @@ const StixDomainObjectTimeline = createRefetchContainer(
                     }
                   }
                 }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition_type
+                      definition
+                      x_opencti_order
+                      x_opencti_color
+                    }
+                  }
+                }
+              }
+              ... on StixSightingRelationship {
+                created
+                first_seen
+                last_seen
                 objectMarking {
                   edges {
                     node {
@@ -328,50 +384,55 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   observable_value
                 }
                 ... on Event {
-                    name
-                    description
+                  name
+                  description
                 }
                 ... on Channel {
-                    name
-                    description
+                  name
+                  description
                 }
                 ... on Narrative {
-                    name
-                    description
+                  name
+                  description
                 }
                 ... on Language {
-                    name
+                  name
                 }
                 ... on DataComponent {
-                    name
+                  name
                 }
                 ... on DataSource {
-                    name
+                  name
                 }
                 ... on Case {
-                    name
+                  name
                 }
                 ... on Report {
-                    name
+                  name
                 }
                 ... on Grouping {
-                    name
+                  name
                 }
                 ... on Note {
-                    attribute_abstract
-                    content
+                  attribute_abstract
+                  content
                 }
                 ... on Opinion {
-                    opinion
+                  opinion
                 }
                 ... on ObservedData {
-                    name
+                  name
                 }
                 ... on Creator {
                   name
                 }
                 ... on MarkingDefinition {
                   definition
+                }
+                ... on ExternalReference {
+                  source_name
+                  url
+                  description
                 }
               }
               to {
@@ -499,50 +560,55 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   observable_value
                 }
                 ... on Event {
-                    name
-                    description
+                  name
+                  description
                 }
                 ... on Channel {
-                    name
-                    description
+                  name
+                  description
                 }
                 ... on Narrative {
-                    name
-                    description
+                  name
+                  description
                 }
                 ... on Language {
-                    name
+                  name
                 }
                 ... on DataComponent {
-                    name
+                  name
                 }
                 ... on DataSource {
-                    name
+                  name
                 }
                 ... on Case {
-                    name
+                  name
                 }
                 ... on Report {
-                    name
+                  name
                 }
                 ... on Grouping {
-                    name
+                  name
                 }
                 ... on Note {
-                    attribute_abstract
-                    content
+                  attribute_abstract
+                  content
                 }
                 ... on Opinion {
-                    opinion
+                  opinion
                 }
                 ... on ObservedData {
-                    name
+                  name
                 }
                 ... on Creator {
                   name
                 }
                 ... on MarkingDefinition {
                   definition
+                }
+                ... on ExternalReference {
+                  source_name
+                  url
+                  description
                 }
               }
             }

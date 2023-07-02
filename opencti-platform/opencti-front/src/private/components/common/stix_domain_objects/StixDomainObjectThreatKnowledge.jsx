@@ -160,7 +160,7 @@ class StixDomainObjectThreatKnowledge extends Component {
       viewType: R.propOr('timeline', 'viewType', params),
       filters: R.propOr({}, 'filters', params),
       timeField: R.propOr('technical', 'timeField', params),
-      notes: R.propOr(false, 'notes', params),
+      nestedRelationships: R.propOr(false, 'nestedRelationships', params),
       openExports: false,
       openTimeField: false,
       anchorEl: null,
@@ -184,11 +184,26 @@ class StixDomainObjectThreatKnowledge extends Component {
   }
 
   handleChangeTimeField(event) {
-    this.setState({ timeField: event.target.value }, () => this.saveView());
+    this.setState(
+      {
+        timeField: event.target.value,
+        nestedRelationships:
+          event.target.value === 'functional'
+            ? false
+            : this.state.nestedRelationships,
+      },
+      () => this.saveView(),
+    );
   }
 
-  handleChangeNotes(event) {
-    this.setState({ notes: event.target.checked }, () => this.saveView());
+  handleChangeNestedRelationships(event) {
+    this.setState(
+      {
+        nestedRelationships: event.target.checked,
+        timeField: event.target.checked ? 'technical' : this.state.timeField,
+      },
+      () => this.saveView(),
+    );
   }
 
   handleOpenTimeField(event) {
@@ -235,7 +250,14 @@ class StixDomainObjectThreatKnowledge extends Component {
   }
 
   render() {
-    const { viewType, filters, timeField, openTimeField, anchorEl, notes } = this.state;
+    const {
+      viewType,
+      filters,
+      timeField,
+      openTimeField,
+      anchorEl,
+      nestedRelationships,
+    } = this.state;
     const {
       t,
       n,
@@ -286,17 +308,14 @@ class StixDomainObjectThreatKnowledge extends Component {
       filters: finalFilters,
     };
     if (viewType === 'timeline') {
-      paginationOptions.relationship_type = 'stix-relationship';
-      // eslint-disable-next-line no-nested-ternary
-      paginationOptions.orderBy = timeField === 'technical'
-        ? notes
-          ? 'created_at'
-          : 'created'
-        : 'start_time';
+      paginationOptions.relationship_type = nestedRelationships
+        ? ['stix-relationship']
+        : ['stix-core-relationship', 'stix-sighting-relationship'];
+      paginationOptions.orderBy = timeField === 'technical' ? 'created_at' : 'start_time';
       paginationOptions.orderMode = 'desc';
       paginationOptions.orderMissing = true;
     } else {
-      paginationOptions.relationship_type = 'uses';
+      paginationOptions.relationship_type = ['uses'];
     }
     return (
       <div>
@@ -578,13 +597,13 @@ class StixDomainObjectThreatKnowledge extends Component {
                 style={{ marginTop: 20 }}
                 control={
                   <Switch
-                    checked={notes}
-                    onChange={this.handleChangeNotes.bind(this)}
-                    name="notes"
+                    checked={nestedRelationships}
+                    onChange={this.handleChangeNestedRelationships.bind(this)}
+                    name="nested-relationships"
                     color="primary"
                   />
                 }
-                label={t('Display notes')}
+                label={t('Display nested relationships')}
               />
             </Popover>
           </div>
