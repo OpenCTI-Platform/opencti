@@ -368,13 +368,30 @@ const WorkbenchFileContentComponent = ({
     }
     // update entity container objects_refs
     if (currentEntityId) {
-      const currentEntityContainer = containers.find((container) => container.x_opencti_id === currentEntityId);
+      const currentEntityContainer = containers.find(
+        (container) => container.x_opencti_id === currentEntityId,
+      );
       if (currentEntityContainer) {
-        const currentEntityObjectRefs = Array.isArray(currentEntityContainer.object_refs) ? currentEntityContainer.object_refs : [];
-        const objectIds = [...stixDomainObjects, ...stixCyberObservables].map((s) => s.id);
-        currentEntityContainer.object_refs = R.uniq([...currentEntityObjectRefs, ...objectIds]);
+        const currentEntityObjectRefs = Array.isArray(
+          currentEntityContainer.object_refs,
+        )
+          ? currentEntityContainer.object_refs
+          : [];
+        const objectIds = [...stixDomainObjects, ...stixCyberObservables].map(
+          (s) => s.id,
+        );
+        currentEntityContainer.object_refs = R.uniq([
+          ...currentEntityObjectRefs,
+          ...objectIds,
+        ]);
       }
     }
+    console.log([
+      ...stixDomainObjects,
+      ...stixCyberObservables,
+      ...stixCoreRelationships,
+      ...containers,
+    ]);
     const data = {
       id: `bundle--${uuid()}`,
       type: 'bundle',
@@ -3531,10 +3548,16 @@ const WorkbenchFileContentComponent = ({
         'report',
         'note',
         'grouping',
+        'x-opencti-feedback',
         'feedback',
+        'x-opencti-case-incident',
         'case-incident',
+        'x-opencti-case-rfi',
         'case-rfi',
         'case-rft',
+        'x-opencti-case-rft',
+        'task',
+        'x-opencti-task',
       ].includes(convertToStixType(n.label))),
       R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
       sortByLabel,
@@ -4031,6 +4054,9 @@ const WorkbenchFileContent = createFragmentContainer(
               name
             }
             ... on Case {
+              name
+            }
+            ... on Feedback {
               name
             }
             ... on Task {

@@ -29,6 +29,7 @@ const styles = () => ({
     fontSize: 12,
     height: 20,
     float: 'left',
+    margin: '0 7px 0 0',
   },
   labelInSearch: {
     height: 25,

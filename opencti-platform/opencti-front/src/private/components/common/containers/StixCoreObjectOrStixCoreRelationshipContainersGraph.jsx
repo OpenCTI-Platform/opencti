@@ -32,6 +32,7 @@ import inject18n from '../../../../components/i18n';
 import { stixDomainObjectMutationFieldPatch } from '../stix_domain_objects/StixDomainObjectEditionOverview';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -494,8 +495,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       selectedTimeRangeInterval,
       navOpen,
     } = this.state;
-    const width = window.innerWidth - (navOpen ? 210 : 70);
-    const height = window.innerHeight - 180;
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
       timeRangeInterval,
@@ -503,281 +502,289 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     );
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     return (
-      <div>
-        <div className={classes.views}>
-          <div style={{ float: 'right', marginTop: -20 }}>
-            {numberOfElements && (
-              <div style={{ float: 'left', padding: '16px 5px 0 0' }}>
-                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-                {t('entitie(s)')}
+      <UserContext.Consumer>
+        {({ bannerSettings }) => {
+          const graphWidth = window.innerWidth - (navOpen ? 210 : 70);
+          const graphHeight = window.innerHeight - 240 - bannerSettings.bannerHeightNumber * 2;
+          return (
+            <>
+              <div className={classes.views}>
+                <div style={{ float: 'right', marginTop: -20 }}>
+                  {numberOfElements && (
+                    <div style={{ float: 'left', padding: '16px 5px 0 0' }}>
+                      <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                      {t('entitie(s)')}
+                    </div>
+                  )}
+                  {(typeof handleChangeView === 'function'
+                    || typeof handleToggleExports === 'function') && (
+                    <ToggleButtonGroup
+                      size="small"
+                      color="secondary"
+                      value="graph"
+                      exclusive={true}
+                      onChange={(_, value) => {
+                        if (value && value === 'export') {
+                          handleToggleExports();
+                        } else if (value) {
+                          handleChangeView(value);
+                        }
+                      }}
+                      style={{ margin: '7px 0 0 5px' }}
+                    >
+                      <ToggleButton value="lines" aria-label="lines">
+                        <Tooltip title={t('Lines view')}>
+                          <ViewListOutlined fontSize="small" color="primary" />
+                        </Tooltip>
+                      </ToggleButton>
+                      <ToggleButton value="graph" aria-label="graph">
+                        <Tooltip title={t('Graph view')}>
+                          <GraphOutline fontSize="small" />
+                        </Tooltip>
+                      </ToggleButton>
+                      <ToggleButton
+                        value="export"
+                        aria-label="export"
+                        disabled={true}
+                      >
+                        <Tooltip title={t('Open export panel')}>
+                          <FileDownloadOutlined fontSize="small" />
+                        </Tooltip>
+                      </ToggleButton>
+                    </ToggleButtonGroup>
+                  )}
+                </div>
               </div>
-            )}
-            {(typeof handleChangeView === 'function'
-              || typeof handleToggleExports === 'function') && (
-              <ToggleButtonGroup
-                size="small"
-                color="secondary"
-                value="graph"
-                exclusive={true}
-                onChange={(_, value) => {
-                  if (value && value === 'export') {
-                    handleToggleExports();
-                  } else if (value) {
-                    handleChangeView(value);
+              <div className="clearfix" />
+              <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
+                handleToggle3DMode={this.handleToggle3DMode.bind(this)}
+                currentMode3D={mode3D}
+                handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
+                currentModeTree={modeTree}
+                handleToggleFixedMode={this.handleToggleFixedMode.bind(this)}
+                currentModeFixed={modeFixed}
+                handleZoomToFit={this.handleZoomToFit.bind(this)}
+                handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
+                handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
+                  this,
+                )}
+                handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
+                stixCoreObjectsTypes={allStixCoreObjectsTypes}
+                currentStixCoreObjectsTypes={stixCoreObjectsTypes}
+                markedBy={allMarkedBy}
+                currentMarkedBy={markedBy}
+                createdBy={allCreatedBy}
+                currentCreatedBy={createdBy}
+                handleSelectAll={this.handleSelectAll.bind(this)}
+                handleSelectByType={this.handleSelectByType.bind(this)}
+                selectedNodes={Array.from(this.selectedNodes)}
+                selectedLinks={Array.from(this.selectedLinks)}
+                numberOfSelectedNodes={numberOfSelectedNodes}
+                numberOfSelectedLinks={numberOfSelectedLinks}
+                handleResetLayout={this.handleResetLayout.bind(this)}
+                displayTimeRange={displayTimeRange}
+                handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
+                  this,
+                )}
+                timeRangeInterval={timeRangeInterval}
+                selectedTimeRangeInterval={selectedTimeRangeInterval}
+                handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
+                timeRangeValues={timeRangeValues}
+                handleChangeView={handleChangeView.bind(this)}
+                handleSearch={this.handleSearch.bind(this)}
+                navOpen={navOpen}
+              />
+              {selectedEntities.length > 0 && (
+                <EntitiesDetailsRightsBar
+                  selectedEntities={selectedEntities}
+                  navOpen={navOpen}
+                />
+              )}
+              {mode3D ? (
+                <ForceGraph3D
+                  ref={this.graph}
+                  width={graphWidth}
+                  height={graphHeight}
+                  backgroundColor={theme.palette.background.default}
+                  graphData={graphData}
+                  nodeThreeObjectExtend={true}
+                  nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
                   }
-                }}
-                style={{ margin: '7px 0 0 5px' }}
-              >
-                <ToggleButton value="lines" aria-label="lines">
-                  <Tooltip title={t('Lines view')}>
-                    <ViewListOutlined fontSize="small" color="primary" />
-                  </Tooltip>
-                </ToggleButton>
-                <ToggleButton value="graph" aria-label="graph">
-                  <Tooltip title={t('Graph view')}>
-                    <GraphOutline fontSize="small" />
-                  </Tooltip>
-                </ToggleButton>
-                <ToggleButton
-                  value="export"
-                  aria-label="export"
-                  disabled={true}
-                >
-                  <Tooltip title={t('Open export panel')}>
-                    <FileDownloadOutlined fontSize="small" />
-                  </Tooltip>
-                </ToggleButton>
-              </ToggleButtonGroup>
-            )}
-          </div>
-        </div>
-        <div className="clearfix" />
-        <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
-          handleToggle3DMode={this.handleToggle3DMode.bind(this)}
-          currentMode3D={mode3D}
-          handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
-          currentModeTree={modeTree}
-          handleToggleFixedMode={this.handleToggleFixedMode.bind(this)}
-          currentModeFixed={modeFixed}
-          handleZoomToFit={this.handleZoomToFit.bind(this)}
-          handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
-          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
-            this,
-          )}
-          handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-          stixCoreObjectsTypes={allStixCoreObjectsTypes}
-          currentStixCoreObjectsTypes={stixCoreObjectsTypes}
-          markedBy={allMarkedBy}
-          currentMarkedBy={markedBy}
-          createdBy={allCreatedBy}
-          currentCreatedBy={createdBy}
-          handleSelectAll={this.handleSelectAll.bind(this)}
-          handleSelectByType={this.handleSelectByType.bind(this)}
-          selectedNodes={Array.from(this.selectedNodes)}
-          selectedLinks={Array.from(this.selectedLinks)}
-          numberOfSelectedNodes={numberOfSelectedNodes}
-          numberOfSelectedLinks={numberOfSelectedLinks}
-          handleResetLayout={this.handleResetLayout.bind(this)}
-          displayTimeRange={displayTimeRange}
-          handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
-            this,
-          )}
-          timeRangeInterval={timeRangeInterval}
-          selectedTimeRangeInterval={selectedTimeRangeInterval}
-          handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
-          timeRangeValues={timeRangeValues}
-          handleChangeView={handleChangeView.bind(this)}
-          handleSearch={this.handleSearch.bind(this)}
-          navOpen={navOpen}
-        />
-        {selectedEntities.length > 0 && (
-          <EntitiesDetailsRightsBar
-            selectedEntities={selectedEntities}
-            navOpen={navOpen}
-          />
-        )}
-        {mode3D ? (
-          <ForceGraph3D
-            ref={this.graph}
-            width={width}
-            height={height}
-            backgroundColor={theme.palette.background.default}
-            graphData={graphData}
-            nodeThreeObjectExtend={true}
-            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
-            }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
-            }
-            linkWidth={0.2}
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={0.99}
-            linkThreeObjectExtend={true}
-            linkThreeObject={(link) => {
-              const sprite = new SpriteText(link.label);
-              sprite.color = 'lightgrey';
-              sprite.textHeight = 1.5;
-              return sprite;
-            }}
-            linkPositionUpdate={(sprite, { start, end }) => {
-              const middlePos = Object.assign(
-                ...['x', 'y', 'z'].map((c) => ({
-                  [c]: start[c] + (end[c] - start[c]) / 2,
-                })),
-              );
-              Object.assign(sprite.position, middlePos);
-            }}
-            onNodeClick={this.handleNodeClick.bind(this)}
-            onNodeRightClick={(node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.fx = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fz = undefined;
-              this.handleDragEnd();
-              this.forceUpdate();
-            }}
-            onNodeDrag={(node, translate) => {
-              if (this.selectedNodes.has(node)) {
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node)
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => ['x', 'y', 'z'].forEach(
-                    // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                  ));
-              }
-            }}
-            onNodeDragEnd={(node) => {
-              if (this.selectedNodes.has(node)) {
-                // finished moving a selected node
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node) // don't touch node being dragged
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => {
-                    ['x', 'y'].forEach(
-                      // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = undefined),
+                  linkColor={(link) => (this.selectedLinks.has(link)
+                    ? theme.palette.secondary.main
+                    : theme.palette.primary.main)
+                  }
+                  linkWidth={0.2}
+                  linkDirectionalArrowLength={3}
+                  linkDirectionalArrowRelPos={0.99}
+                  linkThreeObjectExtend={true}
+                  linkThreeObject={(link) => {
+                    const sprite = new SpriteText(link.label);
+                    sprite.color = 'lightgrey';
+                    sprite.textHeight = 1.5;
+                    return sprite;
+                  }}
+                  linkPositionUpdate={(sprite, { start, end }) => {
+                    const middlePos = Object.assign(
+                      ...['x', 'y', 'z'].map((c) => ({
+                        [c]: start[c] + (end[c] - start[c]) / 2,
+                      })),
                     );
+                    Object.assign(sprite.position, middlePos);
+                  }}
+                  onNodeClick={this.handleNodeClick.bind(this)}
+                  onNodeRightClick={(node) => {
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fx = selNode.x;
+                    node.fx = undefined;
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fy = selNode.y;
+                    node.fy = undefined;
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fz = selNode.z;
-                  });
-              }
-              // eslint-disable-next-line no-param-reassign
-              node.fx = node.x;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = node.y;
-              // eslint-disable-next-line no-param-reassign
-              node.fz = node.z;
-            }}
-            onLinkClick={this.handleLinkClick.bind(this)}
-            onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : undefined}
-            dagMode={
-              // eslint-disable-next-line no-nested-ternary
-              modeTree === 'horizontal'
-                ? 'lr'
-                : modeTree === 'vertical'
-                  ? 'td'
-                  : undefined
-            }
-          />
-        ) : (
-          <ForceGraph2D
-            ref={this.graph}
-            width={width}
-            height={height}
-            graphData={graphData}
-            onZoom={this.onZoom.bind(this)}
-            onZoomEnd={this.handleZoomEnd.bind(this)}
-            nodeRelSize={4}
-            nodeCanvasObject={(node, ctx) => nodePaint(
-              {
-                selected: theme.palette.secondary.main,
-                inferred: theme.palette.warning.main,
-              },
-              node,
-              node.color,
-              ctx,
-              this.selectedNodes.has(node),
-            )
-            }
-            nodePointerAreaPaint={nodeAreaPaint}
-            // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
-            // linkDirectionalParticleWidth={1}
-            // linkDirectionalParticleSpeed={() => 0.004}
-            linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
-            }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
-            }
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={0.99}
-            onNodeClick={this.handleNodeClick.bind(this)}
-            onNodeRightClick={(node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.fx = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = undefined;
-              this.handleDragEnd();
-              this.forceUpdate();
-            }}
-            onNodeDrag={(node, translate) => {
-              if (this.selectedNodes.has(node)) {
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node)
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => ['x', 'y'].forEach(
-                    // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                  ));
-              }
-            }}
-            onNodeDragEnd={(node) => {
-              if (this.selectedNodes.has(node)) {
-                // finished moving a selected node
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node) // don't touch node being dragged
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => {
-                    ['x', 'y'].forEach(
-                      // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = undefined),
-                    );
+                    node.fz = undefined;
+                    this.handleDragEnd();
+                    this.forceUpdate();
+                  }}
+                  onNodeDrag={(node, translate) => {
+                    if (this.selectedNodes.has(node)) {
+                      [...this.selectedNodes]
+                        .filter((selNode) => selNode !== node)
+                        // eslint-disable-next-line no-shadow
+                        .forEach((selNode) => ['x', 'y', 'z'].forEach(
+                          // eslint-disable-next-line no-param-reassign,no-return-assign
+                          (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                        ));
+                    }
+                  }}
+                  onNodeDragEnd={(node) => {
+                    if (this.selectedNodes.has(node)) {
+                      // finished moving a selected node
+                      [...this.selectedNodes]
+                        .filter((selNode) => selNode !== node) // don't touch node being dragged
+                        // eslint-disable-next-line no-shadow
+                        .forEach((selNode) => {
+                          ['x', 'y'].forEach(
+                            // eslint-disable-next-line no-param-reassign,no-return-assign
+                            (coord) => (selNode[`f${coord}`] = undefined),
+                          );
+                          // eslint-disable-next-line no-param-reassign
+                          selNode.fx = selNode.x;
+                          // eslint-disable-next-line no-param-reassign
+                          selNode.fy = selNode.y;
+                          // eslint-disable-next-line no-param-reassign
+                          selNode.fz = selNode.z;
+                        });
+                    }
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fx = selNode.x;
+                    node.fx = node.x;
                     // eslint-disable-next-line no-param-reassign
-                    selNode.fy = selNode.y;
-                  });
-              }
-              // eslint-disable-next-line no-param-reassign
-              node.fx = node.x;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = node.y;
-              this.handleDragEnd();
-            }}
-            onLinkClick={this.handleLinkClick.bind(this)}
-            onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : undefined}
-            dagMode={
-              // eslint-disable-next-line no-nested-ternary
-              modeTree === 'horizontal'
-                ? 'lr'
-                : modeTree === 'vertical'
-                  ? 'td'
-                  : undefined
-            }
-          />
-        )}
-      </div>
+                    node.fy = node.y;
+                    // eslint-disable-next-line no-param-reassign
+                    node.fz = node.z;
+                  }}
+                  onLinkClick={this.handleLinkClick.bind(this)}
+                  onBackgroundClick={this.handleBackgroundClick.bind(this)}
+                  cooldownTicks={modeFixed ? 0 : undefined}
+                  dagMode={
+                    // eslint-disable-next-line no-nested-ternary
+                    modeTree === 'horizontal'
+                      ? 'lr'
+                      : modeTree === 'vertical'
+                        ? 'td'
+                        : undefined
+                  }
+                />
+              ) : (
+                <ForceGraph2D
+                  ref={this.graph}
+                  width={graphWidth}
+                  height={graphHeight}
+                  graphData={graphData}
+                  onZoom={this.onZoom.bind(this)}
+                  onZoomEnd={this.handleZoomEnd.bind(this)}
+                  nodeRelSize={4}
+                  nodeCanvasObject={(node, ctx) => nodePaint(
+                    {
+                      selected: theme.palette.secondary.main,
+                      inferred: theme.palette.warning.main,
+                    },
+                    node,
+                    node.color,
+                    ctx,
+                    this.selectedNodes.has(node),
+                  )
+                  }
+                  nodePointerAreaPaint={nodeAreaPaint}
+                  // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
+                  // linkDirectionalParticleWidth={1}
+                  // linkDirectionalParticleSpeed={() => 0.004}
+                  linkCanvasObjectMode={() => 'after'}
+                  linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
+                  }
+                  linkColor={(link) => (this.selectedLinks.has(link)
+                    ? theme.palette.secondary.main
+                    : theme.palette.primary.main)
+                  }
+                  linkDirectionalArrowLength={3}
+                  linkDirectionalArrowRelPos={0.99}
+                  onNodeClick={this.handleNodeClick.bind(this)}
+                  onNodeRightClick={(node) => {
+                    // eslint-disable-next-line no-param-reassign
+                    node.fx = undefined;
+                    // eslint-disable-next-line no-param-reassign
+                    node.fy = undefined;
+                    this.handleDragEnd();
+                    this.forceUpdate();
+                  }}
+                  onNodeDrag={(node, translate) => {
+                    if (this.selectedNodes.has(node)) {
+                      [...this.selectedNodes]
+                        .filter((selNode) => selNode !== node)
+                        // eslint-disable-next-line no-shadow
+                        .forEach((selNode) => ['x', 'y'].forEach(
+                          // eslint-disable-next-line no-param-reassign,no-return-assign
+                          (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                        ));
+                    }
+                  }}
+                  onNodeDragEnd={(node) => {
+                    if (this.selectedNodes.has(node)) {
+                      // finished moving a selected node
+                      [...this.selectedNodes]
+                        .filter((selNode) => selNode !== node) // don't touch node being dragged
+                        // eslint-disable-next-line no-shadow
+                        .forEach((selNode) => {
+                          ['x', 'y'].forEach(
+                            // eslint-disable-next-line no-param-reassign,no-return-assign
+                            (coord) => (selNode[`f${coord}`] = undefined),
+                          );
+                          // eslint-disable-next-line no-param-reassign
+                          selNode.fx = selNode.x;
+                          // eslint-disable-next-line no-param-reassign
+                          selNode.fy = selNode.y;
+                        });
+                    }
+                    // eslint-disable-next-line no-param-reassign
+                    node.fx = node.x;
+                    // eslint-disable-next-line no-param-reassign
+                    node.fy = node.y;
+                    this.handleDragEnd();
+                  }}
+                  onLinkClick={this.handleLinkClick.bind(this)}
+                  onBackgroundClick={this.handleBackgroundClick.bind(this)}
+                  cooldownTicks={modeFixed ? 0 : undefined}
+                  dagMode={
+                    // eslint-disable-next-line no-nested-ternary
+                    modeTree === 'horizontal'
+                      ? 'lr'
+                      : modeTree === 'vertical'
+                        ? 'td'
+                        : undefined
+                  }
+                />
+              )}
+            </>
+          );
+        }}
+      </UserContext.Consumer>
     );
   }
 }

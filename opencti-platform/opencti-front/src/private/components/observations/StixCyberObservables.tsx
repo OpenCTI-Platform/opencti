@@ -224,7 +224,6 @@ const StixCyberObservables: FunctionComponent = () => {
           handleClearSelectedElements={handleClearSelectedElements}
           variant="large"
           handleCopy={handleCopy}
-          rightOffset={250 + 85}
         />
       </>
     );

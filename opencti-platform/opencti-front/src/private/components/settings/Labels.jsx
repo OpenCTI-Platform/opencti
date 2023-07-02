@@ -215,8 +215,7 @@ class Labels extends Component {
             this,
           )}
           type="Label"
-          variant="small"
-          rightOffset={200 + 85}
+          variant="medium"
         />
       </div>
     );

@@ -432,7 +432,6 @@ class EntityStixCoreRelationships extends Component {
                 this,
               )}
               variant="medium"
-              rightOffset={200 + 85}
             />
           </div>
         )}
@@ -626,7 +625,6 @@ class EntityStixCoreRelationships extends Component {
               warningMessage={t(
                 'Be careful, you are about to delete the selected entities (not the relationships!).',
               )}
-              rightOffset={200 + 85}
             />
           </div>
         )}

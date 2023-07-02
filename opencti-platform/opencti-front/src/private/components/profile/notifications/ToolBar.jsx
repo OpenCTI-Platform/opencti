@@ -48,21 +48,14 @@ const styles = (theme) => ({
   },
   bottomNavWithLargePadding: {
     zIndex: 1040,
-    padding: '0 230px 0 0',
+    padding: '0 250px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithMediumPadding: {
     zIndex: 1040,
-    padding: '0 200px 0 0',
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-  bottomNavWithSmallPadding: {
-    zIndex: 1040,
-    padding: '0 180px 0 0',
+    padding: '0 220px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -180,7 +173,9 @@ const toolBarListTaskAddMutation = graphql`
 `;
 
 const toolBarQueryTaskAddMutation = graphql`
-  mutation ToolBarNotificationsQueryTaskAddMutation($input: QueryTaskAddInput!) {
+  mutation ToolBarNotificationsQueryTaskAddMutation(
+    $input: QueryTaskAddInput!
+  ) {
     queryTaskAdd(input: $input) {
       id
       type
@@ -228,7 +223,11 @@ class ToolBar extends Component {
     const actions = [
       {
         type: 'REPLACE',
-        context: { field: 'is_read', type: 'ATTRIBUTE', values: [read ? 'true' : 'false'] },
+        context: {
+          field: 'is_read',
+          type: 'ATTRIBUTE',
+          values: [read ? 'true' : 'false'],
+        },
       },
     ];
     this.setState({ actions }, () => {
@@ -337,7 +336,6 @@ class ToolBar extends Component {
       theme,
       variant,
       deleteDisable,
-      rightOffset,
     } = this.props;
     const { actions, mergingElement, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -349,32 +347,119 @@ class ToolBar extends Component {
       case 'medium':
         paperClass = classes.bottomNavWithMediumPadding;
         break;
-      case 'small':
-        paperClass = classes.bottomNavWithSmallPadding;
-        break;
       default:
         paperClass = classes.bottomNav;
     }
     return (
-        <UserContext.Consumer>
-          {({ bannerSettings }) => (
-            <Drawer
-              anchor="bottom"
-              variant="persistent"
-              classes={{ paper: paperClass }}
-              open={isOpen}
-              PaperProps={{
-                variant: 'elevation',
-                elevation: 1,
-                style: { paddingLeft: navOpen ? 185 : 60, bottom: bannerSettings.bannerHeightNumber, paddingRight: rightOffset ?? 85 },
-              }}
-            >
-              <Toolbar style={{ minHeight: 54 }}>
-                <Typography
-                  className={classes.title}
-                  color="inherit"
-                  variant="subtitle1"
+      <UserContext.Consumer>
+        {({ bannerSettings }) => (
+          <Drawer
+            anchor="bottom"
+            variant="persistent"
+            classes={{ paper: paperClass }}
+            open={isOpen}
+            PaperProps={{
+              variant: 'elevation',
+              elevation: 1,
+              style: {
+                paddingLeft: navOpen ? 185 : 60,
+                bottom: bannerSettings.bannerHeightNumber,
+              },
+            }}
+          >
+            <Toolbar style={{ minHeight: 54 }}>
+              <Typography
+                className={classes.title}
+                color="inherit"
+                variant="subtitle1"
+              >
+                <span
+                  style={{
+                    padding: '2px 5px 2px 5px',
+                    marginRight: 5,
+                    backgroundColor: theme.palette.secondary.main,
+                    color: '#ffffff',
+                  }}
                 >
+                  {numberOfSelectedElements}
+                </span>{' '}
+                {t('selected')}{' '}
+                <IconButton
+                  aria-label="clear"
+                  disabled={
+                    numberOfSelectedElements === 0 || this.state.processing
+                  }
+                  onClick={handleClearSelectedElements.bind(this)}
+                  size="small"
+                >
+                  <ClearOutlined fontSize="small" />
+                </IconButton>
+              </Typography>
+              <Tooltip title={t('Mark as read')}>
+                <span>
+                  <IconButton
+                    aria-label="ack"
+                    disabled={
+                      numberOfSelectedElements === 0 || this.state.processing
+                    }
+                    onClick={this.handleLaunchRead.bind(this, true)}
+                    color="success"
+                    size="small"
+                  >
+                    <CheckCircleOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t('Mark as unread')}>
+                <span>
+                  <IconButton
+                    aria-label="ack"
+                    disabled={
+                      numberOfSelectedElements === 0 || this.state.processing
+                    }
+                    onClick={this.handleLaunchRead.bind(this, false)}
+                    color="warning"
+                    size="small"
+                  >
+                    <UnpublishedOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              {deleteDisable !== true && (
+                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <Tooltip title={t('Delete')}>
+                    <span>
+                      <IconButton
+                        aria-label="delete"
+                        disabled={
+                          numberOfSelectedElements === 0
+                          || this.state.processing
+                        }
+                        onClick={this.handleLaunchDelete.bind(this)}
+                        color="primary"
+                        size="small"
+                      >
+                        <DeleteOutlined fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </Security>
+              )}
+            </Toolbar>
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={this.state.displayTask}
+              keepMounted={true}
+              TransitionComponent={Transition}
+              onClose={this.handleCloseTask.bind(this)}
+              fullWidth={true}
+              maxWidth="md"
+            >
+              <DialogTitle>
+                <div style={{ float: 'left' }}>
+                  {t('Launch a background task')}
+                </div>
+                <div style={{ float: 'right' }}>
                   <span
                     style={{
                       padding: '2px 5px 2px 5px',
@@ -383,297 +468,219 @@ class ToolBar extends Component {
                       color: '#ffffff',
                     }}
                   >
-                    {numberOfSelectedElements}
+                    {n(numberOfSelectedElements)}
                   </span>{' '}
-                  {t('selected')}{' '}
-                  <IconButton
-                    aria-label="clear"
-                    disabled={numberOfSelectedElements === 0 || this.state.processing}
-                    onClick={handleClearSelectedElements.bind(this)}
-                    size="small"
-                  >
-                    <ClearOutlined fontSize="small" />
-                  </IconButton>
-                </Typography>
-                <Tooltip title={t('Mark as read')}>
-                  <span>
-                    <IconButton
-                      aria-label="ack"
-                      disabled={
-                        numberOfSelectedElements === 0 || this.state.processing
-                      }
-                      onClick={this.handleLaunchRead.bind(this, true)}
-                      color="success"
-                      size="small"
-                    >
-                      <CheckCircleOutlined fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t('Mark as unread')}>
-                  <span>
-                    <IconButton
-                      aria-label="ack"
-                      disabled={
-                        numberOfSelectedElements === 0 || this.state.processing
-                      }
-                      onClick={this.handleLaunchRead.bind(this, false)}
-                      color="warning"
-                      size="small"
-                    >
-                      <UnpublishedOutlined fontSize="small" />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                {deleteDisable !== true && (
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                    <Tooltip title={t('Delete')}>
-                      <span>
-                        <IconButton
-                          aria-label="delete"
-                          disabled={
-                            numberOfSelectedElements === 0 || this.state.processing
-                          }
-                          onClick={this.handleLaunchDelete.bind(this)}
-                          color="primary"
-                          size="small"
-                        >
-                          <DeleteOutlined fontSize="small" />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  </Security>
+                  {t('selected element(s)')}
+                </div>
+              </DialogTitle>
+              <DialogContent>
+                {numberOfSelectedElements > 1000 && (
+                  <Alert severity="warning">
+                    {t(
+                      "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
+                    )}
+                  </Alert>
                 )}
-              </Toolbar>
-              <Dialog
-                PaperProps={{ elevation: 1 }}
-                open={this.state.displayTask}
-                keepMounted={true}
-                TransitionComponent={Transition}
-                onClose={this.handleCloseTask.bind(this)}
-                fullWidth={true}
-                maxWidth="md"
-              >
-                <DialogTitle>
-                  <div style={{ float: 'left' }}>{t('Launch a background task')}</div>
-                  <div style={{ float: 'right' }}>
-                    <span
-                      style={{
-                        padding: '2px 5px 2px 5px',
-                        marginRight: 5,
-                        backgroundColor: theme.palette.secondary.main,
-                        color: '#ffffff',
-                      }}
-                    >
-                      {n(numberOfSelectedElements)}
-                    </span>{' '}
-                    {t('selected element(s)')}
-                  </div>
-                </DialogTitle>
-                <DialogContent>
-                  {numberOfSelectedElements > 1000 && (
-                    <Alert severity="warning">
-                      {t(
-                        "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
-                      )}
-                    </Alert>
-                  )}
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>#</TableCell>
-                          <TableCell>{t('Step')}</TableCell>
-                          <TableCell>{t('Field')}</TableCell>
-                          <TableCell>{t('Values')}</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell>
-                            {' '}
-                            <span
-                              style={{
-                                padding: '2px 5px 2px 5px',
-                                marginRight: 5,
-                                color:
-                                  theme.palette.mode === 'dark'
-                                    ? '#000000'
-                                    : '#ffffff',
-                                backgroundColor: theme.palette.primary.main,
-                              }}
-                            >
-                              1
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Chip label="SCOPE" />
-                          </TableCell>
-                          <TableCell>{t('N/A')}</TableCell>
-                          <TableCell>
-                            {selectAll ? (
-                              <div className={classes.filters}>
-                                {search && search.length > 0 && (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>#</TableCell>
+                        <TableCell>{t('Step')}</TableCell>
+                        <TableCell>{t('Field')}</TableCell>
+                        <TableCell>{t('Values')}</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>
+                          {' '}
+                          <span
+                            style={{
+                              padding: '2px 5px 2px 5px',
+                              marginRight: 5,
+                              color:
+                                theme.palette.mode === 'dark'
+                                  ? '#000000'
+                                  : '#ffffff',
+                              backgroundColor: theme.palette.primary.main,
+                            }}
+                          >
+                            1
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Chip label="SCOPE" />
+                        </TableCell>
+                        <TableCell>{t('N/A')}</TableCell>
+                        <TableCell>
+                          {selectAll ? (
+                            <div className={classes.filters}>
+                              {search && search.length > 0 && (
+                                <span>
+                                  <Chip
+                                    classes={{ root: classes.filter }}
+                                    label={
+                                      <div>
+                                        <strong>{t('Search')}</strong>: {search}
+                                      </div>
+                                    }
+                                  />
+                                  <Chip
+                                    classes={{ root: classes.operator }}
+                                    label={t('AND')}
+                                  />
+                                </span>
+                              )}
+                              {R.map((currentFilter) => {
+                                const label = `${truncate(
+                                  currentFilter[0].startsWith('rel_')
+                                    ? t(
+                                      `relationship_${currentFilter[0]
+                                        .replace('rel_', '')
+                                        .replace('.*', '')}`,
+                                    )
+                                    : t(`filter_${currentFilter[0]}`),
+                                  20,
+                                )}`;
+                                const localFilterMode = currentFilter[0].endsWith('not_eq')
+                                  ? t('AND')
+                                  : t('OR');
+                                const values = (
                                   <span>
+                                    {R.map(
+                                      (o) => (
+                                        <span
+                                          key={
+                                            typeof o === 'string' ? o : o.value
+                                          }
+                                        >
+                                          {/* eslint-disable-next-line no-nested-ternary */}
+                                          {typeof o === 'string'
+                                            ? o
+                                            : o.value && o.value.length > 0
+                                              ? truncate(o.value, 15)
+                                              : t('No label')}{' '}
+                                          {R.last(currentFilter[1]).value
+                                            !== o.value && (
+                                            <code>{localFilterMode}</code>
+                                          )}{' '}
+                                        </span>
+                                      ),
+                                      currentFilter[1],
+                                    )}
+                                  </span>
+                                );
+                                return (
+                                  <span key={currentFilter[0]}>
                                     <Chip
                                       classes={{ root: classes.filter }}
                                       label={
                                         <div>
-                                          <strong>{t('Search')}</strong>: {search}
+                                          <strong>{label}</strong>: {values}
                                         </div>
                                       }
                                     />
-                                    <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
-                                    />
-                                  </span>
-                                )}
-                                {R.map((currentFilter) => {
-                                  const label = `${truncate(
-                                    currentFilter[0].startsWith('rel_')
-                                      ? t(
-                                        `relationship_${currentFilter[0]
-                                          .replace('rel_', '')
-                                          .replace('.*', '')}`,
-                                      )
-                                      : t(`filter_${currentFilter[0]}`),
-                                    20,
-                                  )}`;
-                                  const localFilterMode = currentFilter[0].endsWith(
-                                    'not_eq',
-                                  )
-                                    ? t('AND')
-                                    : t('OR');
-                                  const values = (
-                                    <span>
-                                      {R.map(
-                                        (o) => (
-                                          <span
-                                            key={typeof o === 'string' ? o : o.value}
-                                          >
-                                            {/* eslint-disable-next-line no-nested-ternary */}
-                                            {typeof o === 'string'
-                                              ? o
-                                              : o.value && o.value.length > 0
-                                                ? truncate(o.value, 15)
-                                                : t('No label')}{' '}
-                                            {R.last(currentFilter[1]).value
-                                              !== o.value && (
-                                              <code>{localFilterMode}</code>
-                                            )}{' '}
-                                          </span>
-                                        ),
-                                        currentFilter[1],
-                                      )}
-                                    </span>
-                                  );
-                                  return (
-                                    <span key={currentFilter[0]}>
+                                    {R.last(R.toPairs(filters))[0]
+                                      !== currentFilter[0] && (
                                       <Chip
-                                        classes={{ root: classes.filter }}
-                                        label={
-                                          <div>
-                                            <strong>{label}</strong>: {values}
-                                          </div>
-                                        }
+                                        classes={{ root: classes.operator }}
+                                        label={t('AND')}
                                       />
-                                      {R.last(R.toPairs(filters))[0]
-                                        !== currentFilter[0] && (
-                                        <Chip
-                                          classes={{ root: classes.operator }}
-                                          label={t('AND')}
-                                        />
-                                      )}
-                                    </span>
-                                  );
-                                }, R.toPairs(filters))}
-                              </div>
-                            ) : (
-                              <span>
-                                {mergingElement
-                                  ? truncate(
-                                    R.join(', ', [defaultValue(mergingElement)]),
-                                    80,
-                                  )
-                                  : truncate(
-                                    R.join(
-                                      ', ',
-                                      R.map(
-                                        (o) => defaultValue(o),
-                                        R.values(selectedElements || {}),
-                                      ),
-                                    ),
-                                    80,
-                                  )}
-                              </span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                        {R.map((o) => {
-                          const number = actions.indexOf(o);
-                          return (
-                            <TableRow key={o.type}>
-                              <TableCell>
-                                {' '}
-                                <span
-                                  style={{
-                                    padding: '2px 5px 2px 5px',
-                                    marginRight: 5,
-                                    color:
-                                      theme.palette.mode === 'dark'
-                                        ? '#000000'
-                                        : '#ffffff',
-                                    backgroundColor: theme.palette.primary.main,
-                                  }}
-                                >
-                                  {number + 2}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <Chip label={o.type} />
-                              </TableCell>
-                              <TableCell>
-                                {R.pathOr(t('N/A'), ['context', 'field'], o)}
-                              </TableCell>
-                              <TableCell>
-                                {truncate(
+                                    )}
+                                  </span>
+                                );
+                              }, R.toPairs(filters))}
+                            </div>
+                          ) : (
+                            <span>
+                              {mergingElement
+                                ? truncate(
+                                  R.join(', ', [
+                                    defaultValue(mergingElement),
+                                  ]),
+                                  80,
+                                )
+                                : truncate(
                                   R.join(
                                     ', ',
                                     R.map(
-                                      (p) => (typeof p === 'string' ? p : defaultValue(p)),
-                                      R.pathOr([], ['context', 'values'], o),
+                                      (o) => defaultValue(o),
+                                      R.values(selectedElements || {}),
                                     ),
                                   ),
                                   80,
                                 )}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        }, actions)}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </DialogContent>
-                <DialogActions>
-                  <Button
-                    onClick={this.handleCloseTask.bind(this)}
-                    disabled={this.state.processing}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={this.submitTask.bind(this)}
-                    color="secondary"
-                    disabled={this.state.processing}
-                  >
-                    {t('Launch')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Drawer>
-          )}
-        </UserContext.Consumer>
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                      {R.map((o) => {
+                        const number = actions.indexOf(o);
+                        return (
+                          <TableRow key={o.type}>
+                            <TableCell>
+                              {' '}
+                              <span
+                                style={{
+                                  padding: '2px 5px 2px 5px',
+                                  marginRight: 5,
+                                  color:
+                                    theme.palette.mode === 'dark'
+                                      ? '#000000'
+                                      : '#ffffff',
+                                  backgroundColor: theme.palette.primary.main,
+                                }}
+                              >
+                                {number + 2}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Chip label={o.type} />
+                            </TableCell>
+                            <TableCell>
+                              {R.pathOr(t('N/A'), ['context', 'field'], o)}
+                            </TableCell>
+                            <TableCell>
+                              {truncate(
+                                R.join(
+                                  ', ',
+                                  R.map(
+                                    (p) => (typeof p === 'string'
+                                      ? p
+                                      : defaultValue(p)),
+                                    R.pathOr([], ['context', 'values'], o),
+                                  ),
+                                ),
+                                80,
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }, actions)}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={this.handleCloseTask.bind(this)}
+                  disabled={this.state.processing}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  onClick={this.submitTask.bind(this)}
+                  color="secondary"
+                  disabled={this.state.processing}
+                >
+                  {t('Launch')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Drawer>
+        )}
+      </UserContext.Consumer>
     );
   }
 }
@@ -693,7 +700,6 @@ ToolBar.propTypes = {
   container: PropTypes.object,
   type: PropTypes.string,
   handleCopy: PropTypes.func,
-  rightOffset: PropTypes.number,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);

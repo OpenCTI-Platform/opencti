@@ -18,6 +18,7 @@ import { computeLevel } from '../../../../utils/Number';
 import AttackPtternsMatrixBar from './AttackPtternsMatrixBar';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   container: {
@@ -26,11 +27,8 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 110px)',
-    minHeight: 'calc(100vh - 220px)',
     width: 'calc(100vw - 110px)',
-    height: 'calc(100vh - 220px)',
     maxWidth: 'calc(100vw - 110px)',
-    maxHeight: 'calc(100vh - 220px)',
     position: 'relative',
   },
   containerWithMarginRight: {
@@ -39,11 +37,8 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 305px)',
-    minHeight: 'calc(100vh - 200px)',
     width: 'calc(100vw - 305px)',
-    height: 'calc(100vh - 200px)',
     maxWidth: 'calc(100vw - 305px)',
-    maxHeight: 'calc(100vh - 200px)',
     position: 'relative',
   },
   containerWithMarginRightNoBar: {
@@ -52,11 +47,8 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 305px)',
-    minHeight: 'calc(100vh - 200px)',
     width: 'calc(100vw - 305px)',
-    height: 'calc(100vh - 200px)',
     maxWidth: 'calc(100vw - 305px)',
-    maxHeight: 'calc(100vh - 200px)',
     position: 'relative',
   },
   containerNavOpen: {
@@ -65,11 +57,8 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 235px)',
-    minHeight: 'calc(100vh - 220px)',
     width: 'calc(100vw - 235px)',
-    height: 'calc(100vh - 220px)',
     maxWidth: 'calc(100vw - 235px)',
-    maxHeight: 'calc(100vh - 220px)',
     position: 'relative',
   },
   containerWithMarginRightNavOpen: {
@@ -78,11 +67,8 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 430px)',
-    minHeight: 'calc(100vh - 200px)',
     width: 'calc(100vw - 430px)',
-    height: 'calc(100vh - 200px)',
     maxWidth: 'calc(100vw - 430px)',
-    maxHeight: 'calc(100vh - 200px)',
     position: 'relative',
   },
   containerWithMarginRightNoBarNavOpen: {
@@ -91,11 +77,8 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 430px)',
-    minHeight: 'calc(100vh - 200px)',
     width: 'calc(100vw - 430px)',
-    height: 'calc(100vh - 200px)',
     maxWidth: 'calc(100vw - 430px)',
-    maxHeight: 'calc(100vh - 200px)',
     position: 'relative',
   },
   header: {
@@ -141,7 +124,7 @@ const styles = (theme) => ({
   switchKillChain: {
     position: 'fixed',
     left: 75,
-    bottom: 40,
+    bottom: 60,
     backgroundColor: theme.palette.background.paper,
     padding: '0 10px 2px 10px',
     zIndex: 1000,
@@ -151,7 +134,7 @@ const styles = (theme) => ({
   switchKillChainNavOpen: {
     position: 'fixed',
     left: 200,
-    bottom: 40,
+    bottom: 60,
     backgroundColor: theme.palette.background.paper,
     padding: '0 10px 2px 10px',
     zIndex: 1000,
@@ -385,9 +368,11 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       }),
       killChainPhases,
     );
+    let heightCalc = 220;
     let className = navOpen ? classes.containerNavOpen : classes.container;
     if (marginRight) {
       if (hideBar) {
+        heightCalc = 200;
         className = navOpen
           ? classes.containerWithMarginRightNoBarNavOpen
           : classes.containerWithMarginRightNoBar;
@@ -398,121 +383,147 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       }
     }
     return (
-      <div className={className}>
-        {hideBar ? (
-          <div
-            className={
-              navOpen ? classes.switchKillChainNavOpen : classes.switchKillChain
-            }
-          >
-            <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
-              <InputLabel>{t('Kill chain')}</InputLabel>
-              <Select
-                size="small"
-                value={killChain}
-                onChange={changeKillChain.bind(this)}
-              >
-                {killChains.map((killChainName) => (
-                  <MenuItem key={killChainName} value={killChainName}>
-                    {killChainName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </div>
-        ) : (
-          <AttackPtternsMatrixBar
-            currentModeOnlyActive={modeOnlyActive}
-            handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
-            currentColorsReversed={modeColorsReversed}
-            handleToggleColorsReversed={toggleColorsReversed.bind(this)}
-            currentKillChain={killChain}
-            handleChangeKillChain={changeKillChain.bind(this)}
-            killChains={killChains}
-            navOpen={navOpen}
-          />
-        )}
-        <div
-          id="container"
-          style={{ width: attackPatternsOfPhases.length * 161 }}
-        >
-          <div className={classes.header}>
-            {attackPatternsOfPhases.map((k) => (
-              <div key={k.id} className={classes.headerElement}>
-                <div className={classes.title}>
-                  {truncate(k.phase_name, 18)}
-                </div>
-                <span className={classes.subtitle}>{`${
-                  k.attackPatterns.length
-                } ${t('techniques')}`}</span>
-              </div>
-            ))}
-          </div>
-          <div className={classes.body}>
-            {attackPatternsOfPhases.map((k) => (
-              <div key={k.id} className={classes.column}>
-                {k.attackPatterns.map((a) => {
-                  const isHover = hover[a.id] === true;
-                  const level = isHover && a.level !== 0 ? a.level - 1 : a.level;
-                  const position = isHover && level === 0 ? 2 : 1;
-                  return (
-                    <div
-                      key={a.id}
-                      className={classes.element}
-                      style={{
-                        border: `1px solid ${
-                          modeColorsReversed
-                            ? colorsReversed(theme.palette.background.accent)[
-                              level
-                            ][0]
-                            : colors(theme.palette.background.accent)[level][0]
-                        }`,
-                        backgroundColor: modeColorsReversed
-                          ? colorsReversed(theme.palette.background.accent)[
-                            level
-                          ][position]
-                          : colors(theme.palette.background.accent)[level][
-                            position
-                          ],
-                      }}
-                      onMouseEnter={this.handleToggleHover.bind(this, a.id)}
-                      onMouseLeave={this.handleToggleHover.bind(this, a.id)}
-                      onClick={this.handleOpen.bind(this, a)}
+      <UserContext.Consumer>
+        {({ bannerSettings }) => {
+          heightCalc += bannerSettings.bannerHeightNumber * 2;
+          return (
+            <div
+              className={className}
+              style={{
+                height: `calc(100vh - ${heightCalc}px)`,
+                minHeight: `calc(100vh - ${heightCalc}px)`,
+                maxHeight: `calc(100vh - ${heightCalc}px)`,
+              }}
+            >
+              {hideBar ? (
+                <div
+                  className={
+                    navOpen
+                      ? classes.switchKillChainNavOpen
+                      : classes.switchKillChain
+                  }
+                >
+                  <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+                    <InputLabel>{t('Kill chain')}</InputLabel>
+                    <Select
+                      size="small"
+                      value={killChain}
+                      onChange={changeKillChain.bind(this)}
                     >
-                      <div className={classes.name}>{a.name}</div>
+                      {killChains.map((killChainName) => (
+                        <MenuItem key={killChainName} value={killChainName}>
+                          {killChainName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </div>
+              ) : (
+                <AttackPtternsMatrixBar
+                  currentModeOnlyActive={modeOnlyActive}
+                  handleToggleModeOnlyActive={toggleModeOnlyActive.bind(this)}
+                  currentColorsReversed={modeColorsReversed}
+                  handleToggleColorsReversed={toggleColorsReversed.bind(this)}
+                  currentKillChain={killChain}
+                  handleChangeKillChain={changeKillChain.bind(this)}
+                  killChains={killChains}
+                  navOpen={navOpen}
+                />
+              )}
+              <div
+                id="container"
+                style={{ width: attackPatternsOfPhases.length * 161 }}
+              >
+                <div className={classes.header}>
+                  {attackPatternsOfPhases.map((k) => (
+                    <div key={k.id} className={classes.headerElement}>
+                      <div className={classes.title}>
+                        {truncate(k.phase_name, 18)}
+                      </div>
+                      <span className={classes.subtitle}>{`${
+                        k.attackPatterns.length
+                      } ${t('techniques')}`}</span>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+                <div className={classes.body}>
+                  {attackPatternsOfPhases.map((k) => (
+                    <div key={k.id} className={classes.column}>
+                      {k.attackPatterns.map((a) => {
+                        const isHover = hover[a.id] === true;
+                        const level = isHover && a.level !== 0 ? a.level - 1 : a.level;
+                        const position = isHover && level === 0 ? 2 : 1;
+                        return (
+                          <div
+                            key={a.id}
+                            className={classes.element}
+                            style={{
+                              border: `1px solid ${
+                                modeColorsReversed
+                                  ? colorsReversed(
+                                    theme.palette.background.accent,
+                                  )[level][0]
+                                  : colors(theme.palette.background.accent)[
+                                    level
+                                  ][0]
+                              }`,
+                              backgroundColor: modeColorsReversed
+                                ? colorsReversed(
+                                  theme.palette.background.accent,
+                                )[level][position]
+                                : colors(theme.palette.background.accent)[
+                                  level
+                                ][position],
+                            }}
+                            onMouseEnter={this.handleToggleHover.bind(
+                              this,
+                              a.id,
+                            )}
+                            onMouseLeave={this.handleToggleHover.bind(
+                              this,
+                              a.id,
+                            )}
+                            onClick={this.handleOpen.bind(this, a)}
+                          >
+                            <div className={classes.name}>{a.name}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-          disableAutoFocusItem={true}
-        >
-          <MenuItem
-            component={Link}
-            to={`/dashboard/techniques/attack_patterns/${menuElement?.id}`}
-            target="_blank"
-          >
-            <ListItemIcon>
-              <InfoOutlined fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>{t('View')}</ListItemText>
-          </MenuItem>
-          {handleAdd && (
-            <MenuItem onClick={this.localHandleAdd.bind(this, menuElement)}>
-              <ListItemIcon>
-                <AddCircleOutlineOutlined fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>{t('Add')}</ListItemText>
-            </MenuItem>
-          )}
-        </Menu>
-      </div>
+              <Menu
+                anchorEl={this.state.anchorEl}
+                open={Boolean(this.state.anchorEl)}
+                onClose={this.handleClose.bind(this)}
+                disableAutoFocusItem={true}
+              >
+                <MenuItem
+                  component={Link}
+                  to={`/dashboard/techniques/attack_patterns/${menuElement?.id}`}
+                  target="_blank"
+                >
+                  <ListItemIcon>
+                    <InfoOutlined fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>{t('View')}</ListItemText>
+                </MenuItem>
+                {handleAdd && (
+                  <MenuItem
+                    onClick={this.localHandleAdd.bind(this, menuElement)}
+                  >
+                    <ListItemIcon>
+                      <AddCircleOutlineOutlined fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>{t('Add')}</ListItemText>
+                  </MenuItem>
+                )}
+              </Menu>
+            </div>
+          );
+        }}
+      </UserContext.Consumer>
     );
   }
 }

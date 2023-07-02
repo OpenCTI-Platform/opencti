@@ -363,7 +363,6 @@ class StixDomainObjectIndicators extends Component {
               search={searchTerm}
               handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
               variant="large"
-              rightOffset={250 + 85}
             />
           </div>
         )}

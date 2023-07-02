@@ -228,7 +228,6 @@ const Indicators = () => {
           handleClearSelectedElements={handleClearSelectedElements}
           variant="large"
           type="Indicator"
-          rightOffset={250 + 85}
         />
       </>
     );

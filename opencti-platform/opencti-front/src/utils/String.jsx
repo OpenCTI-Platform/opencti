@@ -45,6 +45,9 @@ export const convertFromStixType = (s) => {
   if (type === 'File' || type === 'Stixfile') {
     return 'StixFile';
   }
+  if (type.startsWith('X-OpenCTI-')) {
+    type = type.replaceAll('X-OpenCTI-', '');
+  }
   return type;
 };
 

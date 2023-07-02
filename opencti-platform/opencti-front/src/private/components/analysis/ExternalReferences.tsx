@@ -18,7 +18,7 @@ import { Filters } from '../../../components/list_lines';
 import { ExternalReferenceLineDummy } from './external_references/ExternalReferenceLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
-const LOCAL_STORAGE_KEY = 'view-external-references';
+const LOCAL_STORAGE_KEY = 'view-externalReferences';
 
 interface ExternalReferencesProps {
   history: History;

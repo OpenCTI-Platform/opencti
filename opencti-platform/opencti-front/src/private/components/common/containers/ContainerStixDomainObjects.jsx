@@ -35,7 +35,7 @@ class ContainerStixDomainObjectsComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-container-${props.container.id}-stix-domain-entities`,
+      `view-container-${props.container.id}-stixDomainObjects`,
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -55,7 +55,7 @@ class ContainerStixDomainObjectsComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-container-${this.props.container.id}-stix-domain-entities`,
+      `view-container-${this.props.container.id}-stixDomainObjects`,
       this.state,
     );
   }
@@ -327,7 +327,6 @@ class ContainerStixDomainObjectsComponent extends Component {
                 variant="large"
                 container={container}
                 warning={true}
-                rightOffset={250 + 85}
               />
               <StixDomainObjectsRightBar
                 types={types}

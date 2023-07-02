@@ -78,7 +78,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
 ContainerStixCyberObservablesComponentProps
 > = ({ container }) => {
   const classes = useStyles();
-  const LOCAL_STORAGE_KEY = `view-container-${container.id}-stix-cyber-observables`;
+  const LOCAL_STORAGE_KEY = `view-container-${container.id}-stixCyberObservables`;
   const {
     viewStorage,
     paginationOptions: rawPaginationOptions,
@@ -113,7 +113,6 @@ ContainerStixCyberObservablesComponentProps
     handleSetNumberOfElements,
     handleAddProperty,
   } = helpers;
-
   const [selectedElements, setSelectedElements] = useState<
   Record<string, StixCyberObservableLine_node$data>
   >({});
@@ -121,7 +120,6 @@ ContainerStixCyberObservablesComponentProps
   Record<string, StixCyberObservableLine_node$data>
   >({});
   const [selectAll, setSelectAll] = useState<boolean>(false);
-
   // Format filters Front (object)
   const toolbarFilters = {
     objectContains: [{ id: container.id, value: defaultValue(container) }],
@@ -146,13 +144,11 @@ ContainerStixCyberObservablesComponentProps
       toolbarFilters,
     ) as unknown as StixObjectOrStixRelationshipsFiltering[],
   };
-
   let numberOfSelectedElements = Object.keys(selectedElements).length;
   if (selectAll) {
     numberOfSelectedElements = (numberOfElements?.original ?? 0)
       - Object.keys(deSelectedElements).length;
   }
-
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
       handleAddProperty(
@@ -163,7 +159,6 @@ ContainerStixCyberObservablesComponentProps
       handleAddProperty('types', types ? [...types, type] : [type]);
     }
   };
-
   const getValuesForCopy = (
     data: ContainerStixCyberObservablesLinesSearchQuery$data,
   ) => {
@@ -171,7 +166,6 @@ ContainerStixCyberObservablesComponentProps
       .map((o) => ({ id: o?.node.id, value: o?.node.observable_value }))
       .filter((o) => o.id) as { id: string; value: string }[];
   };
-
   const handleCopy = useCopy<ContainerStixCyberObservablesLinesSearchQuery$data>(
     {
       filters: toolbarFilters,
@@ -186,11 +180,9 @@ ContainerStixCyberObservablesComponentProps
     },
     selectAll,
   );
-
   const handleClear = () => {
     handleAddProperty('types', []);
   };
-
   const handleToggleSelectEntity = (
     entity:
     | StixCyberObservableLine_node$data
@@ -242,19 +234,16 @@ ContainerStixCyberObservablesComponentProps
       setSelectedElements(newSelectedElements);
     }
   };
-
   const handleToggleSelectAll = () => {
     setSelectAll(!selectAll);
     setSelectedElements({});
     setDeSelectedElements({});
   };
-
   const handleClearSelectedElements = () => {
     setSelectAll(false);
     setSelectedElements({});
     setDeSelectedElements({});
   };
-
   const buildColumns = (platformModuleHelpers: ModuleHelper | undefined) => {
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     return {
@@ -289,12 +278,10 @@ ContainerStixCyberObservablesComponentProps
       },
     };
   };
-
   const queryRef = useQueryLoading<ContainerStixCyberObservablesLinesQuery>(
     containerStixCyberObservablesLinesQuery,
     paginationOptions,
   );
-
   return (
     <UserContext.Consumer>
       {({ platformModuleHelpers }) => (
@@ -315,6 +302,7 @@ ContainerStixCyberObservablesComponentProps
               iconExtension={true}
               handleToggleExports={handleToggleExports}
               exportEntityType="Stix-Cyber-Observable"
+              keyword={searchTerm}
               openExports={openExports}
               exportContext={`of-container-${container.id}`}
               filters={filters}
@@ -372,7 +360,6 @@ ContainerStixCyberObservablesComponentProps
               container={container}
               handleCopy={handleCopy}
               warning={true}
-              rightOffset={250 + 85}
             />
             <StixCyberObservablesRightBar
               types={types}

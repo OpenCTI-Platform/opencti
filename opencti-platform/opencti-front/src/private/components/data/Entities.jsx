@@ -343,7 +343,6 @@ class Entities extends Component {
                 this,
               )}
               variant="large"
-              rightOffset={250}
             />
           </div>
         )}

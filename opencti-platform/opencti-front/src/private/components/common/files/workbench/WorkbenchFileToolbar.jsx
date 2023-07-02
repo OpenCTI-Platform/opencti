@@ -147,7 +147,6 @@ class WorkbenchFileToolbar extends Component {
       handleClearSelectedElements,
       submitDelete,
       theme,
-      rightOffset,
     } = this.props;
     const { displayDelete, displayApplyMarking } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -163,7 +162,7 @@ class WorkbenchFileToolbar extends Component {
                 paper: classes.bottomNav,
               }}
               open={isOpen}
-              PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: bannerSettings.bannerHeightNumber, paddingRight: rightOffset ?? 85 } }}
+              PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: bannerSettings.bannerHeightNumber } }}
             >
               <Toolbar style={{ minHeight: 54 }}>
                 <Typography
@@ -295,7 +294,6 @@ WorkbenchFileToolbar.propTypes = {
   handleClearSelectedElements: PropTypes.func,
   submitDelete: PropTypes.func,
   submitApplyMarking: PropTypes.func,
-  rightOffset: PropTypes.number,
 };
 
 export default R.compose(

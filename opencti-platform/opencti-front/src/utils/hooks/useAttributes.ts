@@ -226,9 +226,14 @@ export const typesContainers = [
   'observed-data',
   'grouping',
   'feedback',
+  'x-opencti-case-incident',
   'case-incident',
+  'x-opencti-case-rfi',
   'case-rfi',
+  'x-opencti-case-rft',
   'case-rft',
+  'x-opencti-task',
+  'task',
 ];
 
 const useAttributes = () => {

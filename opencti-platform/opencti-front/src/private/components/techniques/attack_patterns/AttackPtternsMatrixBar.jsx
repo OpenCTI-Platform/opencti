@@ -9,10 +9,10 @@ import {
   InvertColorsOffOutlined,
 } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
-import Slide from '@mui/material/Slide';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = () => ({
   bottomNav: {
@@ -27,11 +27,6 @@ const styles = () => ({
     margin: '0 5px 0 5px',
   },
 });
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 class AttackPtternsMatrixBar extends Component {
   render() {
@@ -48,91 +43,102 @@ class AttackPtternsMatrixBar extends Component {
       navOpen,
     } = this.props;
     return (
-      <Drawer
-        anchor="bottom"
-        variant="permanent"
-        classes={{ paper: classes.bottomNav }}
-        PaperProps={{ variant: 'elevation', elevation: 1 }}
-      >
-        <div
-          style={{
-            height: 54,
-            verticalAlign: 'top',
-            transition: 'height 0.2s linear',
-          }}
-        >
-          <div
-            style={{
-              verticalAlign: 'top',
-              width: '100%',
-              height: 54,
-              paddingTop: 3,
+      <UserContext.Consumer>
+        {({ bannerSettings }) => (
+          <Drawer
+            anchor="bottom"
+            variant="permanent"
+            classes={{ paper: classes.bottomNav }}
+            PaperProps={{
+              variant: 'elevation',
+              elevation: 1,
+              style: {
+                paddingLeft: navOpen ? 190 : 70,
+                bottom: bannerSettings.bannerHeightNumber,
+              },
             }}
           >
             <div
               style={{
-                float: 'left',
-                margin: navOpen ? '7px 10px 0 200px' : '7px 10px 0 70px',
-                display: 'flex',
+                height: 54,
+                verticalAlign: 'top',
+                transition: 'height 0.2s linear',
               }}
             >
-              <Select
-                size="small"
-                value={currentKillChain}
-                onChange={handleChangeKillChain.bind(this)}
+              <div
+                style={{
+                  verticalAlign: 'top',
+                  width: '100%',
+                  height: 54,
+                  paddingTop: 3,
+                }}
               >
-                {killChains.map((killChainName) => (
-                  <MenuItem key={killChainName} value={killChainName}>
-                    {killChainName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </div>
-            <div
-              style={{
-                float: 'left',
-                margin: '0 10px 0 10px',
-                display: 'flex',
-              }}
-            >
-              <Tooltip
-                title={
-                  currentModeOnlyActive
-                    ? t('Display the whole matrix')
-                    : t('Display only used techniques')
-                }
-              >
-                <span>
-                  <IconButton
-                    color={currentModeOnlyActive ? 'secondary' : 'primary'}
-                    onClick={handleToggleModeOnlyActive.bind(this)}
-                    size="large"
+                <div
+                  style={{
+                    float: 'left',
+                    margin: '7px 10px 0 0',
+                    display: 'flex',
+                  }}
+                >
+                  <Select
+                    size="small"
+                    value={currentKillChain}
+                    onChange={handleChangeKillChain.bind(this)}
                   >
-                    <FilterListOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip
-                title={
-                  currentColorsReversed
-                    ? t('Disable invert colors')
-                    : t('Enable invert colors')
-                }
-              >
-                <span>
-                  <IconButton
-                    color={currentColorsReversed ? 'secondary' : 'primary'}
-                    onClick={handleToggleColorsReversed.bind(this)}
-                    size="large"
+                    {killChains.map((killChainName) => (
+                      <MenuItem key={killChainName} value={killChainName}>
+                        {killChainName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </div>
+                <div
+                  style={{
+                    float: 'left',
+                    margin: '0 10px 0 10px',
+                    display: 'flex',
+                  }}
+                >
+                  <Tooltip
+                    title={
+                      currentModeOnlyActive
+                        ? t('Display the whole matrix')
+                        : t('Display only used techniques')
+                    }
                   >
-                    <InvertColorsOffOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
+                    <span>
+                      <IconButton
+                        color={currentModeOnlyActive ? 'secondary' : 'primary'}
+                        onClick={handleToggleModeOnlyActive.bind(this)}
+                        size="large"
+                      >
+                        <FilterListOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip
+                    title={
+                      currentColorsReversed
+                        ? t('Disable invert colors')
+                        : t('Enable invert colors')
+                    }
+                  >
+                    <span>
+                      <IconButton
+                        color={currentColorsReversed ? 'secondary' : 'primary'}
+                        onClick={handleToggleColorsReversed.bind(this)}
+                        size="large"
+                      >
+                        <InvertColorsOffOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </Drawer>
+          </Drawer>
+        )}
+      </UserContext.Consumer>
     );
   }
 }
