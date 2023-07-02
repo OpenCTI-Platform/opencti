@@ -301,7 +301,8 @@ const i18n = {
       Registration: 'Registro',
       'are updating...': 'se están modificando...',
       'is updating...': 'se está modificando...',
-      'You will be automatically logged out in': 'Se cerrará la sesión automáticamente',
+      'Session timeout in': 'Tiempo de espera de la sesión en',
+      'You will be automatically logged out at end of the timer.': 'Se cerrará la sesión automáticamente al final del temporizador.',
       'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
         'Seleccione CONTINUAR para seguir trabajando o seleccione CERRAR SESIÓN para terminar su sesión.',
       'Disable timeout on this page': 'Deshabilitar el tiempo de espera en esta página',
@@ -2316,7 +2317,8 @@ const i18n = {
       Registration: 'Inscription',
       'are updating...': 'modifient actuellement...',
       'is updating...': 'modifie actuellement...',
-      'You will be automatically logged out in': 'Vous serez automatiquement déconnecté',
+      'Session timeout in': 'Fin de session dans',
+      'You will be automatically logged out at end of the timer.': 'Vous serez automatiquement déconnecté à la fin du décompte.',
       'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
         'Sélectionnez CONTINUER pour continuer à travailler ou sélectionnez DÉCONNEXION pour mettre fin à votre session.',
       'Disable timeout on this page': 'Désactiver le délai d\'attente sur cette page',
@@ -4280,7 +4282,8 @@ const i18n = {
       Registration: '登録',
       'are updating...': 'がアップデート中',
       'is updating...': 'がアップデート中',
-      'You will be automatically logged out in': '自動的にログアウトされます',
+      'Session timeout in': 'セッションタイムアウト',
+      'You will be automatically logged out at end of the timer.': 'タイマーが終了すると自動的にログアウトされます',
       'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
         '[続行] を選択して作業を続行するか、[ログアウト] を選択してセッションを終了します。',
       'Disable timeout on this page': 'このページでタイムアウトを無効にする',
@@ -6166,7 +6169,8 @@ const i18n = {
       Registration: '注册',
       'are updating...': '正在更新...',
       'is updating...': '正在更新...',
-      'You will be automatically logged out in': '您将自动注销',
+      'Session timeout in': '會話超時時間為',
+      'You will be automatically logged out at end of the timer.': '計時器結束時您將自動註銷',
       'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
         '选择继续以继续工作或选择注销以终止您的会话。',
       'Disable timeout on this page': '在此页面上禁用超时',

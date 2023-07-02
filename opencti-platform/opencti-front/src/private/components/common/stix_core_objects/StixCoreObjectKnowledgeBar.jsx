@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
-import { compose, any, includes } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { Link, useLocation } from 'react-router-dom';
+import { any, includes } from 'ramda';
 import Drawer from '@mui/material/Drawer';
+import makeStyles from '@mui/styles/makeStyles';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -43,10 +43,10 @@ import {
   LaptopAccount,
   GlobeModel,
 } from 'mdi-material-ui';
-import inject18n from '../../../../components/i18n';
-import { getBannerSettings } from '../../../../utils/SystemBanners';
+import { useFormatter } from '../../../../components/i18n';
+import useAuth from '../../../../utils/hooks/useAuth';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 200,
@@ -59,28 +59,18 @@ const styles = (theme) => ({
     height: 38,
   },
   toolbar: theme.mixins.toolbar,
-});
+}));
 
-class StixCoreObjectKnowledgeBar extends Component {
-  constructor(props) {
-    super(props);
-    getBannerSettings(({ bannerHeight }) => {
-      this.bannerHeight = bannerHeight;
-    });
-  }
-
-  render() {
-    const { t, location, classes, stixCoreObjectLink, availableSections } = this.props;
-    // eslint-disable-next-line max-len
-    const isInAvailableSection = (sections) => any((filter) => includes(filter, sections), availableSections);
-    return (
-      <Drawer
-        variant="permanent"
-        anchor="right"
-        classes={{ paper: classes.drawer }}
-      >
+const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const location = useLocation();
+  const { bannerSettings } = useAuth();
+  const isInAvailableSection = (sections) => any((filter) => includes(filter, sections), availableSections);
+  return (
+      <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawer }}>
         <div className={classes.toolbar} />
-        <MenuList style={{ paddingBottom: 0 }} sx={{ marginTop: this.bannerHeight }} component="nav">
+        <MenuList style={{ paddingBottom: 0 }} sx={{ marginTop: bannerSettings.bannerHeightNumber }} component="nav">
           <MenuItem
             component={Link}
             to={`${stixCoreObjectLink}/overview`}
@@ -794,9 +784,8 @@ class StixCoreObjectKnowledgeBar extends Component {
           </MenuItem>
         </MenuList>
       </Drawer>
-    );
-  }
-}
+  );
+};
 
 StixCoreObjectKnowledgeBar.propTypes = {
   id: PropTypes.string,
@@ -807,8 +796,4 @@ StixCoreObjectKnowledgeBar.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(StixCoreObjectKnowledgeBar);
+export default StixCoreObjectKnowledgeBar;

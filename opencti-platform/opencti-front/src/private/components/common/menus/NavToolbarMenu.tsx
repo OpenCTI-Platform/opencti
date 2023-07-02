@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactElement, useEffect, useState } from 'react';
+import React, { FunctionComponent, ReactElement } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
 import MenuList from '@mui/material/MenuList';
@@ -8,7 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
-import { getBannerSettings } from '../../../../utils/SystemBanners';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawer: {
@@ -28,23 +28,14 @@ export interface MenuEntry {
   icon?: ReactElement;
 }
 
-const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({
-  entries,
-}) => {
+const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const location = useLocation();
-  const [bannerHeight, setBannerHeight] = useState('');
-  useEffect(() => {
-    getBannerSettings(({ bannerHeight: bH }) => setBannerHeight(bH));
-  }, []);
-
+  const { bannerSettings } = useAuth();
+  const bannerHeight = bannerSettings.bannerHeightNumber;
   return (
-    <Drawer
-      variant="permanent"
-      anchor="right"
-      classes={{ paper: classes.drawer }}
-    >
+    <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawer }}>
       <div className={classes.toolbar} />
       <MenuList component="nav" style={{ marginTop: bannerHeight, marginBottom: bannerHeight }}>
         {entries.map((entry, idx) => {

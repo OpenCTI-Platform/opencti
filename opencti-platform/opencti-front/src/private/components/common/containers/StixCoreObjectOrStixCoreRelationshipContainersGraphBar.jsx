@@ -43,7 +43,7 @@ import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
-import { getBannerSettings } from '../../../../utils/SystemBanners';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = () => ({
   bottomNav: {
@@ -82,9 +82,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       openEditEntity: false,
       displayRemove: false,
     };
-    getBannerSettings(({ bannerHeight }) => {
-      this.bannerHeight = bannerHeight;
-    });
   }
 
   handleOpenStixCoreObjectsTypes(event) {
@@ -191,181 +188,185 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
     } = this.state;
     if (disabled) {
       return (
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-          PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: this.bannerHeight } }}
-        >
-          <div
-            style={{
-              height: displayTimeRange ? 134 : 54,
-              verticalAlign: 'top',
-              transition: 'height 0.2s linear',
-            }}
-          >
-            <div
-              style={{
-                verticalAlign: 'top',
-                width: '100%',
-                height: 54,
-                paddingTop: 3,
-              }}
-            >
-              <div
-                style={{
-                  float: 'left',
-                  marginLeft: navOpen ? 185 : 60,
-                  height: '100%',
-                  display: 'flex',
-                }}
+          <UserContext.Consumer>
+            {({ bannerSettings }) => (
+              <Drawer
+                anchor="bottom"
+                variant="permanent"
+                classes={{ paper: classes.bottomNav }}
+                PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: bannerSettings.bannerHeightNumber } }}
               >
-                <Tooltip
-                  title={
-                    currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
-                  }
-                >
-                  <span>
-                    <IconButton
-                      color={currentMode3D ? 'secondary' : 'primary'}
-                      disabled={true}
-                      size="large"
-                    >
-                      <Video3d />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip
-                  title={
-                    currentModeTree
-                      ? t('Disable vertical tree mode')
-                      : t('Enable vertical tree mode')
-                  }
-                >
-                  <span>
-                    <IconButton
-                      color={
-                        currentModeTree === 'vertical' ? 'secondary' : 'primary'
-                      }
-                      disabled={true}
-                      size="large"
-                    >
-                      <FamilyTree />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip
-                  title={
-                    currentModeTree
-                      ? t('Disable horizontal tree mode')
-                      : t('Enable horizontal tree mode')
-                  }
-                >
-                  <span>
-                    <IconButton
-                      color={
-                        currentModeTree === 'horizontal'
-                          ? 'secondary'
-                          : 'primary'
-                      }
-                      disabled={true}
-                      size="large"
-                    >
-                      <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip
-                  title={
-                    currentModeFixed ? t('Enable forces') : t('Disable forces')
-                  }
-                >
-                  <span>
-                    <IconButton
-                      color={currentModeFixed ? 'primary' : 'secondary'}
-                      disabled={true}
-                      size="large"
-                    >
-                      <ScatterPlotOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t('Fit graph to canvas')}>
-                  <span>
-                    <IconButton color="primary" disabled={true} size="large">
-                      <AspectRatio />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t('Unfix the nodes and re-apply forces')}>
-                  <span>
-                    <IconButton color="primary" disabled={true} size="large">
-                      <AutoFix />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Divider className={classes.divider} orientation="vertical" />
-                <Tooltip title={t('Filter entity types')}>
-                  <span>
-                    <IconButton color="primary" disabled={true} size="large">
-                      <FilterListOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t('Display time range selector')}>
-                  <span>
-                    <IconButton
-                      color={displayTimeRange ? 'secondary' : 'primary'}
-                      disabled={true}
-                      size="large"
-                    >
-                      <DateRangeOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t('Filter marking definitions')}>
-                  <span>
-                    <IconButton color="primary" disabled={true} size="large">
-                      <CenterFocusStrongOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t('Filter authors (created by)')}>
-                  <span>
-                    <IconButton color="primary" disabled={true} size="large">
-                      <AccountBalanceOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Divider className={classes.divider} orientation="vertical" />
-                <Tooltip title={t('Select by entity type')}>
-                  <span>
-                    <IconButton color="primary" disabled={true} size="large">
-                      <SelectGroup />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip title={t('Select all nodes')}>
-                  <span>
-                    <IconButton color="primary" disabled={true} size="large">
-                      <SelectAll />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              </div>
-              {report && (
                 <div
                   style={{
-                    float: 'right',
-                    display: 'flex',
-                    height: '100%',
+                    height: displayTimeRange ? 134 : 54,
+                    verticalAlign: 'top',
+                    transition: 'height 0.2s linear',
                   }}
-                ></div>
-              )}
-              <div className="clearfix" />
-            </div>
-          </div>
-        </Drawer>
+                >
+                  <div
+                    style={{
+                      verticalAlign: 'top',
+                      width: '100%',
+                      height: 54,
+                      paddingTop: 3,
+                    }}
+                  >
+                    <div
+                      style={{
+                        float: 'left',
+                        marginLeft: navOpen ? 185 : 60,
+                        height: '100%',
+                        display: 'flex',
+                      }}
+                    >
+                      <Tooltip
+                        title={
+                          currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
+                        }
+                      >
+                        <span>
+                          <IconButton
+                            color={currentMode3D ? 'secondary' : 'primary'}
+                            disabled={true}
+                            size="large"
+                          >
+                            <Video3d />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip
+                        title={
+                          currentModeTree
+                            ? t('Disable vertical tree mode')
+                            : t('Enable vertical tree mode')
+                        }
+                      >
+                        <span>
+                          <IconButton
+                            color={
+                              currentModeTree === 'vertical' ? 'secondary' : 'primary'
+                            }
+                            disabled={true}
+                            size="large"
+                          >
+                            <FamilyTree />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip
+                        title={
+                          currentModeTree
+                            ? t('Disable horizontal tree mode')
+                            : t('Enable horizontal tree mode')
+                        }
+                      >
+                        <span>
+                          <IconButton
+                            color={
+                              currentModeTree === 'horizontal'
+                                ? 'secondary'
+                                : 'primary'
+                            }
+                            disabled={true}
+                            size="large"
+                          >
+                            <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip
+                        title={
+                          currentModeFixed ? t('Enable forces') : t('Disable forces')
+                        }
+                      >
+                        <span>
+                          <IconButton
+                            color={currentModeFixed ? 'primary' : 'secondary'}
+                            disabled={true}
+                            size="large"
+                          >
+                            <ScatterPlotOutlined />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('Fit graph to canvas')}>
+                        <span>
+                          <IconButton color="primary" disabled={true} size="large">
+                            <AspectRatio />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('Unfix the nodes and re-apply forces')}>
+                        <span>
+                          <IconButton color="primary" disabled={true} size="large">
+                            <AutoFix />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Divider className={classes.divider} orientation="vertical" />
+                      <Tooltip title={t('Filter entity types')}>
+                        <span>
+                          <IconButton color="primary" disabled={true} size="large">
+                            <FilterListOutlined />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('Display time range selector')}>
+                        <span>
+                          <IconButton
+                            color={displayTimeRange ? 'secondary' : 'primary'}
+                            disabled={true}
+                            size="large"
+                          >
+                            <DateRangeOutlined />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('Filter marking definitions')}>
+                        <span>
+                          <IconButton color="primary" disabled={true} size="large">
+                            <CenterFocusStrongOutlined />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('Filter authors (created by)')}>
+                        <span>
+                          <IconButton color="primary" disabled={true} size="large">
+                            <AccountBalanceOutlined />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Divider className={classes.divider} orientation="vertical" />
+                      <Tooltip title={t('Select by entity type')}>
+                        <span>
+                          <IconButton color="primary" disabled={true} size="large">
+                            <SelectGroup />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('Select all nodes')}>
+                        <span>
+                          <IconButton color="primary" disabled={true} size="large">
+                            <SelectAll />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </div>
+                    {report && (
+                      <div
+                        style={{
+                          float: 'right',
+                          display: 'flex',
+                          height: '100%',
+                        }}
+                      ></div>
+                    )}
+                    <div className="clearfix" />
+                  </div>
+                </div>
+              </Drawer>
+            )}
+          </UserContext.Consumer>
       );
     }
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
@@ -392,435 +393,439 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       }
     }
     return (
-      <Drawer
-        anchor="bottom"
-        variant="permanent"
-        classes={{ paper: classes.bottomNav }}
-        PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: this.bannerHeight } }}
-      >
-        <div
-          style={{
-            height: displayTimeRange ? 134 : 54,
-            verticalAlign: 'top',
-            transition: 'height 0.2s linear',
-          }}
-        >
-          <div
-            style={{
-              verticalAlign: 'top',
-              width: '100%',
-              height: 54,
-              paddingTop: 3,
-            }}
-          >
-            <div
-              style={{
-                float: 'left',
-                marginLeft: navOpen ? 185 : 60,
-                height: '100%',
-                display: 'flex',
-              }}
-            >
-              <Tooltip
-                title={
-                  currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
-                }
-              >
-                <span>
-                  <IconButton
-                    color={currentMode3D ? 'secondary' : 'primary'}
-                    onClick={handleToggle3DMode.bind(this)}
-                    size="large"
-                  >
-                    <Video3d />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip
-                title={
-                  currentModeTree
-                    ? t('Disable vertical tree mode')
-                    : t('Enable vertical tree mode')
-                }
-              >
-                <span>
-                  <IconButton
-                    color={
-                      currentModeTree === 'vertical' ? 'secondary' : 'primary'
-                    }
-                    onClick={handleToggleTreeMode.bind(this, 'vertical')}
-                    disabled={currentModeFixed}
-                    size="large"
-                  >
-                    <FamilyTree />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip
-                title={
-                  currentModeTree
-                    ? t('Disable horizontal tree mode')
-                    : t('Enable horizontal tree mode')
-                }
-              >
-                <span>
-                  <IconButton
-                    color={
-                      currentModeTree === 'horizontal' ? 'secondary' : 'primary'
-                    }
-                    onClick={handleToggleTreeMode.bind(this, 'horizontal')}
-                    disabled={currentModeFixed}
-                    size="large"
-                  >
-                    <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip
-                title={
-                  currentModeFixed ? t('Enable forces') : t('Disable forces')
-                }
-              >
-                <span>
-                  <IconButton
-                    color={currentModeFixed ? 'primary' : 'secondary'}
-                    onClick={handleToggleFixedMode.bind(this)}
-                    size="large"
-                  >
-                    <ScatterPlotOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip title={t('Display time range selector')}>
-                <span>
-                  <IconButton
-                    color={displayTimeRange ? 'secondary' : 'primary'}
-                    onClick={handleToggleDisplayTimeRange.bind(this)}
-                    size="large"
-                  >
-                    <DateRangeOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip title={t('Fit graph to canvas')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={handleZoomToFit.bind(this)}
-                    size="large"
-                  >
-                    <AspectRatio />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip title={t('Unfix the nodes and re-apply forces')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={handleResetLayout.bind(this)}
-                    disabled={currentModeFixed}
-                    size="large"
-                  >
-                    <AutoFix />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Divider className={classes.divider} orientation="vertical" />
-              <Tooltip title={t('Filter entity types')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
-                    size="large"
-                  >
-                    <FilterListOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Popover
-                classes={{ paper: classes.container }}
-                open={openStixCoreObjectsTypes}
-                anchorEl={anchorElStixCoreObjectsTypes}
-                onClose={this.handleCloseStixCoreObjectsTypes.bind(this)}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <List>
-                  {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                    <ListItem
-                      key={stixCoreObjectType}
-                      role={undefined}
-                      dense={true}
-                      button={true}
-                      onClick={handleToggleStixCoreObjectType.bind(
-                        this,
-                        stixCoreObjectType,
-                      )}
-                    >
-                      <ListItemIcon style={{ minWidth: 40 }}>
-                        <Checkbox
-                          edge="start"
-                          checked={currentStixCoreObjectsTypes.includes(
-                            stixCoreObjectType,
-                          )}
-                          disableRipple={true}
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={t(`entity_${stixCoreObjectType}`)}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Popover>
-              <Tooltip title={t('Filter marking definitions')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={this.handleOpenMarkedBy.bind(this)}
-                    size="large"
-                  >
-                    <CenterFocusStrongOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Popover
-                classes={{ paper: classes.container }}
-                open={openMarkedBy}
-                anchorEl={anchorElMarkedBy}
-                onClose={this.handleCloseMarkedBy.bind(this)}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <List>
-                  {markedBy.map((markingDefinition) => (
-                    <ListItem
-                      key={markingDefinition.id}
-                      role={undefined}
-                      dense={true}
-                      button={true}
-                      onClick={handleToggleMarkedBy.bind(
-                        this,
-                        markingDefinition.id,
-                      )}
-                    >
-                      <ListItemIcon style={{ minWidth: 40 }}>
-                        <Checkbox
-                          edge="start"
-                          checked={currentMarkedBy.includes(
-                            markingDefinition.id,
-                          )}
-                          disableRipple={true}
-                        />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={truncate(markingDefinition.definition, 20)}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Popover>
-              <Tooltip title={t('Filter authors (created by)')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={this.handleOpenCreatedBy.bind(this)}
-                    size="large"
-                  >
-                    <AccountBalanceOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Popover
-                classes={{ paper: classes.container }}
-                open={openCreatedBy}
-                anchorEl={anchorElCreatedBy}
-                onClose={this.handleCloseCreatedBy.bind(this)}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <List>
-                  {createdBy.map((createdByRef) => (
-                    <ListItem
-                      key={createdBy.id}
-                      role={undefined}
-                      dense={true}
-                      button={true}
-                      onClick={handleToggleCreatedBy.bind(
-                        this,
-                        createdByRef.id,
-                      )}
-                    >
-                      <ListItemIcon style={{ minWidth: 40 }}>
-                        <Checkbox
-                          edge="start"
-                          checked={currentCreatedBy.includes(createdByRef.id)}
-                          disableRipple={true}
-                        />
-                      </ListItemIcon>
-                      <ListItemText primary={createdByRef.name} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Popover>
-              <Divider className={classes.divider} orientation="vertical" />
-              <Tooltip title={t('Select by entity type')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={this.handleOpenSelectByType.bind(this)}
-                    size="large"
-                  >
-                    <SelectGroup />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Popover
-                classes={{ paper: classes.container }}
-                open={openSelectByType}
-                anchorEl={anchorElSelectByType}
-                onClose={this.handleCloseSelectByType.bind(this)}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <List>
-                  {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                    <ListItem
-                      key={stixCoreObjectType}
-                      role={undefined}
-                      dense={true}
-                      button={true}
-                      onClick={this.handleSelectByType.bind(
-                        this,
-                        stixCoreObjectType,
-                      )}
-                    >
-                      <ListItemText
-                        primary={t(`entity_${stixCoreObjectType}`)}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Popover>
-              <Tooltip title={t('Select all nodes')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={handleSelectAll.bind(this)}
-                    size="large"
-                  >
-                    <SelectAll />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </div>
-            <div
-              style={{
-                float: 'right',
-                display: 'flex',
-                height: '100%',
-              }}
-            >
-              <Tooltip title={t('View the item')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    component={Link}
-                    target="_blank"
-                    to={viewLink}
-                    disabled={!viewEnabled}
-                    size="large"
-                  ></IconButton>
-                </span>
-              </Tooltip>
-            </div>
-            <div className="clearfix" />
-            <div
-              style={{
-                height: '100%',
-                padding: navOpen ? '30px 10px 0px 190px' : '30px 10px 0px 65px',
-              }}
+        <UserContext.Consumer>
+          {({ bannerSettings }) => (
+            <Drawer
+              anchor="bottom"
+              variant="permanent"
+              classes={{ paper: classes.bottomNav }}
+              PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: bannerSettings.bannerHeightNumber } }}
             >
               <div
                 style={{
-                  position: 'absolute',
-                  width: '100%',
-                  height: '100%',
-                  bottom: -50,
-                  left: 120,
+                  height: displayTimeRange ? 134 : 54,
+                  verticalAlign: 'top',
+                  transition: 'height 0.2s linear',
                 }}
               >
-                <ResponsiveContainer width="100%" height={60}>
-                  <ScatterChart
-                    width="100%"
-                    height={60}
-                    margin={{
-                      top: 32,
-                      right: 150,
-                      bottom: 0,
-                      left: 0,
+                <div
+                  style={{
+                    verticalAlign: 'top',
+                    width: '100%',
+                    height: 54,
+                    paddingTop: 3,
+                  }}
+                >
+                  <div
+                    style={{
+                      float: 'left',
+                      marginLeft: navOpen ? 185 : 60,
+                      height: '100%',
+                      display: 'flex',
                     }}
                   >
-                    <YAxis
-                      type="number"
-                      dataKey="index"
-                      name="scatter"
-                      height={10}
-                      width={80}
-                      tick={false}
-                      tickLine={false}
-                      axisLine={false}
+                    <Tooltip
+                      title={
+                        currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
+                      }
+                    >
+                      <span>
+                        <IconButton
+                          color={currentMode3D ? 'secondary' : 'primary'}
+                          onClick={handleToggle3DMode.bind(this)}
+                          size="large"
+                        >
+                          <Video3d />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        currentModeTree
+                          ? t('Disable vertical tree mode')
+                          : t('Enable vertical tree mode')
+                      }
+                    >
+                      <span>
+                        <IconButton
+                          color={
+                            currentModeTree === 'vertical' ? 'secondary' : 'primary'
+                          }
+                          onClick={handleToggleTreeMode.bind(this, 'vertical')}
+                          disabled={currentModeFixed}
+                          size="large"
+                        >
+                          <FamilyTree />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        currentModeTree
+                          ? t('Disable horizontal tree mode')
+                          : t('Enable horizontal tree mode')
+                      }
+                    >
+                      <span>
+                        <IconButton
+                          color={
+                            currentModeTree === 'horizontal' ? 'secondary' : 'primary'
+                          }
+                          onClick={handleToggleTreeMode.bind(this, 'horizontal')}
+                          disabled={currentModeFixed}
+                          size="large"
+                        >
+                          <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        currentModeFixed ? t('Enable forces') : t('Disable forces')
+                      }
+                    >
+                      <span>
+                        <IconButton
+                          color={currentModeFixed ? 'primary' : 'secondary'}
+                          onClick={handleToggleFixedMode.bind(this)}
+                          size="large"
+                        >
+                          <ScatterPlotOutlined />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title={t('Display time range selector')}>
+                      <span>
+                        <IconButton
+                          color={displayTimeRange ? 'secondary' : 'primary'}
+                          onClick={handleToggleDisplayTimeRange.bind(this)}
+                          size="large"
+                        >
+                          <DateRangeOutlined />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title={t('Fit graph to canvas')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={handleZoomToFit.bind(this)}
+                          size="large"
+                        >
+                          <AspectRatio />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title={t('Unfix the nodes and re-apply forces')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={handleResetLayout.bind(this)}
+                          disabled={currentModeFixed}
+                          size="large"
+                        >
+                          <AutoFix />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Divider className={classes.divider} orientation="vertical" />
+                    <Tooltip title={t('Filter entity types')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
+                          size="large"
+                        >
+                          <FilterListOutlined />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Popover
+                      classes={{ paper: classes.container }}
+                      open={openStixCoreObjectsTypes}
+                      anchorEl={anchorElStixCoreObjectsTypes}
+                      onClose={this.handleCloseStixCoreObjectsTypes.bind(this)}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                      }}
+                    >
+                      <List>
+                        {stixCoreObjectsTypes.map((stixCoreObjectType) => (
+                          <ListItem
+                            key={stixCoreObjectType}
+                            role={undefined}
+                            dense={true}
+                            button={true}
+                            onClick={handleToggleStixCoreObjectType.bind(
+                              this,
+                              stixCoreObjectType,
+                            )}
+                          >
+                            <ListItemIcon style={{ minWidth: 40 }}>
+                              <Checkbox
+                                edge="start"
+                                checked={currentStixCoreObjectsTypes.includes(
+                                  stixCoreObjectType,
+                                )}
+                                disableRipple={true}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={t(`entity_${stixCoreObjectType}`)}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Popover>
+                    <Tooltip title={t('Filter marking definitions')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={this.handleOpenMarkedBy.bind(this)}
+                          size="large"
+                        >
+                          <CenterFocusStrongOutlined />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Popover
+                      classes={{ paper: classes.container }}
+                      open={openMarkedBy}
+                      anchorEl={anchorElMarkedBy}
+                      onClose={this.handleCloseMarkedBy.bind(this)}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                      }}
+                    >
+                      <List>
+                        {markedBy.map((markingDefinition) => (
+                          <ListItem
+                            key={markingDefinition.id}
+                            role={undefined}
+                            dense={true}
+                            button={true}
+                            onClick={handleToggleMarkedBy.bind(
+                              this,
+                              markingDefinition.id,
+                            )}
+                          >
+                            <ListItemIcon style={{ minWidth: 40 }}>
+                              <Checkbox
+                                edge="start"
+                                checked={currentMarkedBy.includes(
+                                  markingDefinition.id,
+                                )}
+                                disableRipple={true}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={truncate(markingDefinition.definition, 20)}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Popover>
+                    <Tooltip title={t('Filter authors (created by)')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={this.handleOpenCreatedBy.bind(this)}
+                          size="large"
+                        >
+                          <AccountBalanceOutlined />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Popover
+                      classes={{ paper: classes.container }}
+                      open={openCreatedBy}
+                      anchorEl={anchorElCreatedBy}
+                      onClose={this.handleCloseCreatedBy.bind(this)}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                      }}
+                    >
+                      <List>
+                        {createdBy.map((createdByRef) => (
+                          <ListItem
+                            key={createdBy.id}
+                            role={undefined}
+                            dense={true}
+                            button={true}
+                            onClick={handleToggleCreatedBy.bind(
+                              this,
+                              createdByRef.id,
+                            )}
+                          >
+                            <ListItemIcon style={{ minWidth: 40 }}>
+                              <Checkbox
+                                edge="start"
+                                checked={currentCreatedBy.includes(createdByRef.id)}
+                                disableRipple={true}
+                              />
+                            </ListItemIcon>
+                            <ListItemText primary={createdByRef.name} />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Popover>
+                    <Divider className={classes.divider} orientation="vertical" />
+                    <Tooltip title={t('Select by entity type')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={this.handleOpenSelectByType.bind(this)}
+                          size="large"
+                        >
+                          <SelectGroup />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Popover
+                      classes={{ paper: classes.container }}
+                      open={openSelectByType}
+                      anchorEl={anchorElSelectByType}
+                      onClose={this.handleCloseSelectByType.bind(this)}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'center',
+                      }}
+                    >
+                      <List>
+                        {stixCoreObjectsTypes.map((stixCoreObjectType) => (
+                          <ListItem
+                            key={stixCoreObjectType}
+                            role={undefined}
+                            dense={true}
+                            button={true}
+                            onClick={this.handleSelectByType.bind(
+                              this,
+                              stixCoreObjectType,
+                            )}
+                          >
+                            <ListItemText
+                              primary={t(`entity_${stixCoreObjectType}`)}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Popover>
+                    <Tooltip title={t('Select all nodes')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={handleSelectAll.bind(this)}
+                          size="large"
+                        >
+                          <SelectAll />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </div>
+                  <div
+                    style={{
+                      float: 'right',
+                      display: 'flex',
+                      height: '100%',
+                    }}
+                  >
+                    <Tooltip title={t('View the item')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          component={Link}
+                          target="_blank"
+                          to={viewLink}
+                          disabled={!viewEnabled}
+                          size="large"
+                        ></IconButton>
+                      </span>
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <div
+                    style={{
+                      height: '100%',
+                      padding: navOpen ? '30px 10px 0px 190px' : '30px 10px 0px 65px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        bottom: -50,
+                        left: 120,
+                      }}
+                    >
+                      <ResponsiveContainer width="100%" height={60}>
+                        <ScatterChart
+                          width="100%"
+                          height={60}
+                          margin={{
+                            top: 32,
+                            right: 150,
+                            bottom: 0,
+                            left: 0,
+                          }}
+                        >
+                          <YAxis
+                            type="number"
+                            dataKey="index"
+                            name="scatter"
+                            height={10}
+                            width={80}
+                            tick={false}
+                            tickLine={false}
+                            axisLine={false}
+                          />
+                          <ZAxis
+                            type="number"
+                            dataKey="value"
+                            range={[15, 200]}
+                            domain={parseDomain(timeRangeValues)}
+                          />
+                          <Scatter
+                            data={timeRangeValues}
+                            fill={theme.palette.primary.main}
+                          />
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <TimeRange
+                      ticksNumber={15}
+                      selectedInterval={selectedTimeRangeInterval}
+                      timelineInterval={timeRangeInterval}
+                      onUpdateCallback={() => null}
+                      onChangeCallback={handleTimeRangeChange}
+                      formatTick={dateFormat}
+                      containerClassName="timerange"
                     />
-                    <ZAxis
-                      type="number"
-                      dataKey="value"
-                      range={[15, 200]}
-                      domain={parseDomain(timeRangeValues)}
-                    />
-                    <Scatter
-                      data={timeRangeValues}
-                      fill={theme.palette.primary.main}
-                    />
-                  </ScatterChart>
-                </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
-              <TimeRange
-                ticksNumber={15}
-                selectedInterval={selectedTimeRangeInterval}
-                timelineInterval={timeRangeInterval}
-                onUpdateCallback={() => null}
-                onChangeCallback={handleTimeRangeChange}
-                formatTick={dateFormat}
-                containerClassName="timerange"
-              />
-            </div>
-          </div>
-        </div>
-      </Drawer>
+            </Drawer>
+          )}
+        </UserContext.Consumer>
     );
   }
 }

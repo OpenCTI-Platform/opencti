@@ -96,8 +96,7 @@ import TopMenuCaseRfi from './TopMenuCaseRfi';
 import TopMenuCaseRft from './TopMenuCaseRft';
 import TopMenuTask from './TopMenuTask';
 import TopMenuAudits from './TopMenuAudits';
-import SystemBanners from '../../../public/components/SystemBanners';
-import IdleTimeoutLockscreen, { getSettings } from '../IdleTimeoutLockscreen';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -151,6 +150,23 @@ const logoutMutation = graphql`
   }
 `;
 
+export const handleLogout = (redirect = '') => {
+  function redirectWindow() {
+    if (redirect === '' || redirect.length === undefined) window.location.reload();
+    else window.location.replace(redirect);
+  }
+  commitMutation({
+    mutation: logoutMutation,
+    variables: {},
+    onCompleted: redirectWindow,
+    updater: undefined,
+    optimisticUpdater: undefined,
+    optimisticResponse: undefined,
+    onError: redirectWindow,
+    setSubmitting: undefined,
+  });
+};
+
 const topBarNotificationNumberSubscription = graphql`
   subscription TopBarNotificationNumberSubscription {
     notificationsNumber {
@@ -185,21 +201,14 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
-  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
-    null,
-  );
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(null);
   const data = useLazyLoadQuery<TopBarQuery>(topBarQuery, {});
-  const handleNewNotificationsNumber = (
-    response: TopBarNotificationNumberSubscription$data | null | undefined,
-  ) => {
+  const handleNewNotificationsNumber = (response: TopBarNotificationNumberSubscription$data | null | undefined) => {
     return setNotificationsNumber(response?.notificationsNumber?.count ?? null);
   };
-  const isNewNotification = notificationsNumber !== null
-    ? notificationsNumber > 0
-    : (data.myUnreadNotificationsCount ?? 0) > 0;
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>
-  >(
+  const isNewNotification = notificationsNumber !== null ? notificationsNumber > 0 : (data.myUnreadNotificationsCount ?? 0) > 0;
+  const subConfig = useMemo<GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>>(
     () => ({
       subscription: topBarNotificationNumberSubscription,
       variables: {},
@@ -208,9 +217,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
     [topBarNotificationNumberSubscription],
   );
   useSubscription(subConfig);
-  const [navOpen, setNavOpen] = useState(
-    localStorage.getItem('navOpen') === 'true',
-  );
+  const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -219,36 +226,16 @@ const TopBar: FunctionComponent<TopBarProps> = ({
       sub.unsubscribe();
     };
   });
-  const [menuOpen, setMenuOpen] = useState<{
-    open: boolean;
-    anchorEl: HTMLButtonElement | null;
-  }>({ open: false, anchorEl: null });
+  const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [openDrawer, setOpenDrawer] = useState(false);
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
+  const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
   };
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-  const handleLogout = (redirect = '') => {
-    function redirectWindow() {
-      if (redirect === '' || redirect.length === undefined) window.location.reload();
-      else window.location.replace(redirect);
-    }
-    commitMutation({
-      mutation: logoutMutation,
-      variables: {},
-      onCompleted: redirectWindow,
-      updater: undefined,
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      onError: redirectWindow,
-      setSubmitting: undefined,
-    });
-  };
+
   const handleSearch = (searchKeyword: string) => {
     if (searchKeyword.length > 0) {
       // With need to double encode because of react router.
@@ -265,33 +252,14 @@ const TopBar: FunctionComponent<TopBarProps> = ({
     setOpenDrawer(false);
     handleCloseMenu();
   };
-  const [bannerHeight, setBannerHeight] = useState('');
-  const [idleTimeoutLimit, setIdleTimeoutLimit] = useState(0);
-  useEffect(() => {
-    getSettings(({ idleLimit }) => {
-      if (idleLimit > 0) {
-        setIdleTimeoutLimit(idleLimit);
-      }
-    });
-  }, []);
 
   return (
-    <AppBar
-      position="fixed"
-      className={classes.appBar}
-      variant="elevation"
-      elevation={1}
-    >
+    <AppBar position="fixed" className={classes.appBar} variant="elevation" elevation={1}>
       {/* Header and Footer Banners containing classification level of system */}
-      <SystemBanners handleBannerChange={setBannerHeight} handleLogout={handleLogout} />
-      <Toolbar style={{ marginTop: bannerHeight }}>
+      <Toolbar style={{ marginTop: bannerHeightNumber }}>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
-            <img
-              src={navOpen ? theme.logo : theme.logo_collapsed}
-              alt="logo"
-              className={navOpen ? classes.logo : classes.logoCollapsed}
-            />
+            <img src={navOpen ? theme.logo : theme.logo_collapsed} alt="logo" className={navOpen ? classes.logo : classes.logoCollapsed}/>
           </Link>
         </div>
         <div className={classes.menuContainer}>
@@ -643,11 +611,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           </div>
         </div>
       </Toolbar>
-      <FeedbackCreation
-        openDrawer={openDrawer}
-        handleCloseDrawer={handleCloseDrawer}
-      />
-      {idleTimeoutLimit > 0 && <IdleTimeoutLockscreen handleLogout={handleLogout} />}
+      <FeedbackCreation openDrawer={openDrawer} handleCloseDrawer={handleCloseDrawer}/>
     </AppBar>
   );
 };

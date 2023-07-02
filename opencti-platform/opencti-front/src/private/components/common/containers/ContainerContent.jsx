@@ -170,7 +170,6 @@ const ContainerContentComponent = ({ containerData }) => {
     }
   };
   const addMapping = (stixCoreObject) => {
-    console.log(stixCoreObject);
     const { content_mapping } = containerData;
     const contentMappingData = decodeMappingData(content_mapping);
     const newMappingData = {

@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { compose, pipe, sortBy, prop, toLower, map, assoc } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
 import ListItem from '@mui/material/ListItem';
@@ -11,12 +11,12 @@ import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { FilterOffOutline } from 'mdi-material-ui';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
-import { getBannerSettings } from '../../../../utils/SystemBanners';
+import useAuth from '../../../../utils/hooks/useAuth';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 250,
@@ -34,24 +34,15 @@ const styles = (theme) => ({
     padding: '0 15px 0 15px',
   },
   toolbar: theme.mixins.toolbar,
-});
+}));
 
-class StixCyberObservablesRightBar extends Component {
-  constructor(props) {
-    super(props);
-    getBannerSettings(({ bannerHeight }) => {
-      this.bannerHeight = bannerHeight;
-    });
-  }
-
-  render() {
-    const { classes, t, types = [], handleToggle, handleClear } = this.props;
-    return (
-      <Drawer
-        variant="permanent"
-        anchor="right"
-        classes={{ paper: classes.drawerPaper }}
-      >
+const StixCyberObservablesRightBar = ({ types = [], handleToggle, handleClear }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const { bannerSettings } = useAuth();
+  const bannerHeight = bannerSettings.bannerHeightNumber;
+  return (
+      <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawerPaper }}>
         <div className={classes.toolbar} />
         <QueryRenderer
           query={stixCyberObservablesLinesSubTypesQuery}
@@ -67,7 +58,7 @@ class StixCyberObservablesRightBar extends Component {
               )(subTypesEdges);
               return (
                 <List
-                  sx={{ marginTop: this.bannerHeight, marginBottom: this.bannerHeight }}
+                  sx={{ marginTop: bannerHeight, marginBottom: bannerHeight }}
                   subheader={
                     <ListSubheader component="div">
                       {t('Observable types')}
@@ -107,9 +98,8 @@ class StixCyberObservablesRightBar extends Component {
           }}
         />
       </Drawer>
-    );
-  }
-}
+  );
+};
 
 StixCyberObservablesRightBar.propTypes = {
   types: PropTypes.array,
@@ -120,7 +110,4 @@ StixCyberObservablesRightBar.propTypes = {
   openExports: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservablesRightBar);
+export default StixCyberObservablesRightBar;

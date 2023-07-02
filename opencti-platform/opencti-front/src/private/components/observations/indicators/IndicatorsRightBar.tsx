@@ -17,7 +17,7 @@ import { Theme } from '../../../../components/Theme';
 import { StixCyberObservablesLinesSubTypesQuery$data } from '../stix_cyber_observables/__generated__/StixCyberObservablesLinesSubTypesQuery.graphql';
 import { vocabularyQuery } from '../../common/form/OpenVocabField';
 import { OpenVocabFieldQuery$data } from '../../common/form/__generated__/OpenVocabFieldQuery.graphql';
-import { useBannerSettings } from '../../../../utils/SystemBanners';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -71,7 +71,7 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const { bannerHeight } = useBannerSettings();
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
   return (
     <Drawer
       variant="permanent"
@@ -92,7 +92,7 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
           const patternTypes = props?.vocabularies?.edges;
           return (
             <List
-              sx={{ marginTop: bannerHeight, marginBottom: bannerHeight }}
+              sx={{ marginTop: bannerHeightNumber, marginBottom: bannerHeightNumber }}
               subheader={
                 <ListSubheader component="div">
                   {t('Pattern type')}

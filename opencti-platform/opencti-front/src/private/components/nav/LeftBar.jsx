@@ -39,7 +39,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import {
   useIsHiddenEntities,
 } from '../../../utils/hooks/useEntitySettings';
-import { useBannerSettings } from '../../../utils/SystemBanners';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -161,7 +161,8 @@ const LeftBar = () => {
     'City',
     'Position',
   );
-  const { bannerHeight } = useBannerSettings();
+  const { bannerSettings: { bannerHeight } } = useAuth();
+  console.log('bannerHeightNumber', bannerHeight);
   return (
     <Drawer
       variant="permanent"

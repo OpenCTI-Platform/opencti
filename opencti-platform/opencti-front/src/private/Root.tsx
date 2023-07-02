@@ -5,8 +5,11 @@ import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import Index from './Index';
 import { UserContext } from '../utils/hooks/useAuth';
-import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
+import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
 import platformModuleHelper from '../utils/platformModulesHelper';
+import { ONE_SECOND } from '../utils/Time';
+import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
+import { isNotEmptyField } from '../utils/utils';
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
@@ -32,6 +35,8 @@ const rootPrivateQuery = graphql`
     }
     settings {
       platform_demo
+      platform_banner_text
+      platform_banner_level
       platform_map_tile_server_dark
       platform_map_tile_server_light
       platform_theme
@@ -84,6 +89,19 @@ const rootPrivateQuery = graphql`
   }
 `;
 
+const computeBannerSettings = (settings: RootPrivateQuery$data['settings']) => {
+  const bannerLevel = settings.platform_banner_level;
+  const bannerText = settings.platform_banner_text;
+  const isBannerActivated = isNotEmptyField(bannerLevel) && isNotEmptyField(bannerText);
+  const idleTimeout = settings.platform_session_idle_timeout ?? 0;
+  const sessionTimeout = settings.platform_session_timeout ?? 0;
+  const idleLimit = idleTimeout ? Math.floor(idleTimeout / ONE_SECOND) : 0;
+  const sessionLimit = sessionTimeout ? Math.floor(sessionTimeout / ONE_SECOND) : 0;
+  const bannerHeight = isBannerActivated ? `${SYSTEM_BANNER_HEIGHT}px` : '0';
+  const bannerHeightNumber = isBannerActivated ? SYSTEM_BANNER_HEIGHT : 0;
+  return { bannerText, bannerLevel, bannerHeight, bannerHeightNumber, idleLimit, sessionLimit };
+};
+
 const Root = () => {
   const data = useLazyLoadQuery<RootPrivateQuery>(rootPrivateQuery, {});
   const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSROs } = data;
@@ -93,13 +111,14 @@ const Root = () => {
     sros: schemaSROs.edges.map((sco) => sco.node),
   };
   // TODO : Use the hook useHelper when all project is pure function //
+  const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
   return (
-    <UserContext.Provider value={{ me, settings, entitySettings, platformModuleHelpers, schema }}>
+    <UserContext.Provider value={{ me, settings, bannerSettings, entitySettings, platformModuleHelpers, schema }}>
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <Index />
+            <Index settings={settings} />
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>

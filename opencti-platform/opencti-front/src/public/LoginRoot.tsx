@@ -14,6 +14,8 @@ export const rootPublicQuery = graphql`
       platform_theme
       platform_login_message
       platform_consent_message
+      platform_banner_text
+      platform_banner_level
       platform_consent_confirm_text
       platform_theme_dark_logo_login
       platform_theme_light_logo_login

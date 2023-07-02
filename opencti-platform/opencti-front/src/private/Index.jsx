@@ -27,7 +27,9 @@ import StixObjectOrStixRelationship from './components/StixObjectOrStixRelations
 import SearchBulk from './components/SearchBulk';
 import TopBar from './components/nav/TopBar';
 import RootCases from './components/cases/Root';
-import { useBannerSettings } from '../utils/SystemBanners';
+import SystemBanners from '../public/components/SystemBanners';
+import IdleTimeoutLockscreen from './components/IdleTimeoutLockscreen';
+import useAuth from '../utils/hooks/useAuth';
 
 const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
@@ -35,55 +37,57 @@ const useStyles = makeStyles((theme) => ({
 
 const noTopBarLocations = ['/dashboard'];
 
-const Index = () => {
+const Index = ({ settings }) => {
   const location = useLocation();
   const theme = useTheme();
   const classes = useStyles();
-  const { bannerHeight } = useBannerSettings();
+  const { bannerSettings: { bannerHeight } } = useAuth();
+  const boxSx = {
+    flexGrow: 1,
+    padding: 3,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.easeInOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    overflowX: 'hidden',
+  };
   return (
-    <Box sx={{ display: 'flex', minWidth: 1400, marginTop: bannerHeight, marginBottom: bannerHeight }}>
-      <CssBaseline />
-      {!noTopBarLocations.includes(location.pathname) && <TopBar />}
-      <LeftBar />
-      <Message />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          padding: 3,
-          transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.easeInOut,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-          overflowX: 'hidden',
-        }}
-      >
-        <div className={classes.toolbar} />
-        <Switch>
-          <BoundaryRoute exact path="/dashboard" component={Dashboard} />
-          <BoundaryRoute exact path="/dashboard/search" component={Search} />
-          <BoundaryRoute exact path="/dashboard/search/:keyword" component={Search} />
-          <BoundaryRoute exact path="/dashboard/id/:id" component={StixObjectOrStixRelationship} />
-          <BoundaryRoute exact path="/dashboard/search_bulk" component={SearchBulk} />
-          <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
-          <BoundaryRoute path="/dashboard/cases" component={RootCases} />
-          <BoundaryRoute path="/dashboard/events" component={RootEvents} />
-          <Route path="/dashboard/observations" component={RootObservations} />
-          <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
-          <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
-          <BoundaryRoute path="/dashboard/techniques" component={RootTechnique} />
-          <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
-          <BoundaryRoute path="/dashboard/locations" component={RootLocation} />
-          <BoundaryRoute path="/dashboard/data" render={RootData} />
-          <BoundaryRoute path="/dashboard/workspaces" component={RootWorkspaces} />
-          <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
-          <BoundaryRoute path="/dashboard/audits" component={RootActivity} />
-          <BoundaryRoute path="/dashboard/import" component={RootImport} />
-          <BoundaryRoute path="/dashboard/profile" component={RootNotifications} />
-          <Route component={NoMatch} />
-        </Switch>
+    <>
+      <SystemBanners settings={settings} />
+      {settings.platform_session_idle_timeout > 0 && <IdleTimeoutLockscreen />}
+      <Box sx={{ display: 'flex', minWidth: 1400, marginTop: bannerHeight, marginBottom: bannerHeight }}>
+        <CssBaseline/>
+        {!noTopBarLocations.includes(location.pathname) && <TopBar/>}
+        <LeftBar/>
+        <Message/>
+        <Box component="main" sx={boxSx}>
+          <div className={classes.toolbar}/>
+          <Switch>
+              <BoundaryRoute exact path="/dashboard" component={Dashboard}/>
+              <BoundaryRoute exact path="/dashboard/search" component={Search}/>
+              <BoundaryRoute exact path="/dashboard/search/:keyword" component={Search}/>
+              <BoundaryRoute exact path="/dashboard/id/:id" component={StixObjectOrStixRelationship}/>
+              <BoundaryRoute exact path="/dashboard/search_bulk" component={SearchBulk}/>
+              <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis}/>
+              <BoundaryRoute path="/dashboard/cases" component={RootCases}/>
+              <BoundaryRoute path="/dashboard/events" component={RootEvents}/>
+              <Route path="/dashboard/observations" component={RootObservations}/>
+              <BoundaryRoute path="/dashboard/threats" component={RootThreats}/>
+              <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal}/>
+              <BoundaryRoute path="/dashboard/techniques" component={RootTechnique}/>
+              <BoundaryRoute path="/dashboard/entities" component={RootEntities}/>
+              <BoundaryRoute path="/dashboard/locations" component={RootLocation}/>
+              <BoundaryRoute path="/dashboard/data" render={RootData}/>
+              <BoundaryRoute path="/dashboard/workspaces" component={RootWorkspaces}/>
+              <BoundaryRoute path="/dashboard/settings" component={RootSettings}/>
+              <BoundaryRoute path="/dashboard/audits" component={RootActivity}/>
+              <BoundaryRoute path="/dashboard/import" component={RootImport}/>
+              <BoundaryRoute path="/dashboard/profile" component={RootNotifications}/>
+              <Route component={NoMatch}/>
+          </Switch>
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

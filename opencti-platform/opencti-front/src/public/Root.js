@@ -16,6 +16,8 @@ const rootPublicQuery = graphql`
       platform_banner_level
       platform_theme_dark_logo_login
       platform_theme_light_logo_login
+      platform_banner_text
+      platform_banner_level
       platform_providers {
         name
         type

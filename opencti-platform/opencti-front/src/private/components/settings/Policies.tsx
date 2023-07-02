@@ -12,6 +12,7 @@ import { makeStyles } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import MenuItem from '@mui/material/MenuItem';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -27,6 +28,7 @@ import TextField from '../../../components/TextField';
 import { Policies$key } from './__generated__/Policies.graphql';
 import MarkdownField from '../../../components/MarkdownField';
 import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
+import SelectField from '../../../components/SelectField';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -56,6 +58,8 @@ const PoliciesFragment = graphql`
     platform_login_message
     platform_consent_message
     platform_consent_confirm_text
+    platform_banner_level
+    platform_banner_text
     password_policy_min_length
     password_policy_max_length
     password_policy_min_symbols
@@ -106,6 +110,8 @@ const policiesValidation = () => Yup.object().shape({
   platform_login_message: Yup.string().nullable(),
   platform_consent_message: Yup.string().nullable(),
   platform_consent_confirm_text: Yup.string().nullable(),
+  platform_banner_level: Yup.string().nullable(),
+  platform_banner_text: Yup.string().nullable(),
 });
 
 const Policies: FunctionComponent = () => {
@@ -128,12 +134,10 @@ const Policies: FunctionComponent = () => {
       .catch(() => false);
   };
   const initialValues = {
-    platform_organization: settings.platform_organization
-      ? {
-        label: settings.platform_organization?.name,
-        value: settings.platform_organization?.id,
-      }
-      : '',
+    platform_organization: settings.platform_organization ? {
+      label: settings.platform_organization?.name,
+      value: settings.platform_organization?.id,
+    } : '',
     platform_login_message: settings.platform_login_message,
     platform_consent_message: settings.platform_consent_message,
     platform_consent_confirm_text: settings.platform_consent_confirm_text,
@@ -144,6 +148,8 @@ const Policies: FunctionComponent = () => {
     password_policy_min_words: settings.password_policy_min_words,
     password_policy_min_lowercase: settings.password_policy_min_lowercase,
     password_policy_min_uppercase: settings.password_policy_min_uppercase,
+    platform_banner_level: settings.platform_banner_level,
+    platform_banner_text: settings.platform_banner_text,
     otp_mandatory: settings.otp_mandatory,
   };
   const authProviders = settings.platform_providers;
@@ -369,10 +375,43 @@ const Policies: FunctionComponent = () => {
                         name="platform_consent_confirm_text"
                         label={t('Platform consent confirm text')}
                         fullWidth
-                        style={{ marginTop: 14 }}
+                        style={{ marginTop: 20 }}
                         height={38}
                         onSubmit={handleSubmitField}
                         variant="standard"
+                      />
+                    </Paper>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <Typography variant="h4" gutterBottom={true} style={{ marginTop: '30px' }}>
+                      {t('Platform Banner Configuration')}
+                    </Typography>
+                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                      <Field
+                          component={SelectField}
+                          variant="standard"
+                          name="platform_banner_level"
+                          label={t('Platform Banner Level')}
+                          fullWidth={true}
+                          containerstyle={{ marginTop: 5, width: '100%' }}
+                          onSubmit={(name: string, value: string) => {
+                            return handleSubmitField(name, value);
+                          }}
+                      >
+                        <MenuItem value="">&nbsp;</MenuItem>
+                        <MenuItem value="GREEN">{t('GREEN')}</MenuItem>
+                        <MenuItem value="RED">{t('RED')}</MenuItem>
+                        <MenuItem value="YELLOW">{t('YELLOW')}</MenuItem>
+                      </Field>
+                      <Field
+                          component={MarkdownField}
+                          name="platform_banner_text"
+                          label={t('Platform Banner Text')}
+                          fullWidth={true}
+                          height={38}
+                          style={{ marginTop: 20 }}
+                          onSubmit={handleSubmitField}
+                          variant="standard"
                       />
                     </Paper>
                   </Grid>

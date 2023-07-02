@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { compose, pipe, sortBy, prop, toLower, map, assoc } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
+import makeStyles from '@mui/styles/makeStyles';
 import ListSubheader from '@mui/material/ListSubheader';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -11,12 +11,12 @@ import Drawer from '@mui/material/Drawer';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { FilterOffOutline } from 'mdi-material-ui';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSubTypesQuery } from './StixDomainObjectsLines';
-import { getBannerSettings } from '../../../../utils/SystemBanners';
+import useAuth from '../../../../utils/hooks/useAuth';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 250,
@@ -34,21 +34,15 @@ const styles = (theme) => ({
     padding: '0 15px 0 15px',
   },
   toolbar: theme.mixins.toolbar,
-});
+}));
 
-class StixDomainObjectsRightBar extends Component {
-  constructor(props) {
-    super(props);
-    getBannerSettings(({ bannerHeight }) => {
-      this.bannerHeight = bannerHeight;
-    });
-  }
-
-  render() {
-    const { classes, t, types = [], handleToggle, handleClear } = this.props;
-    return (
-      <Drawer
-        variant="permanent"
+const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const { bannerSettings } = useAuth();
+  const bannerHeight = bannerSettings.bannerHeightNumber;
+  return (
+      <Drawer variant="permanent"
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
@@ -69,7 +63,7 @@ class StixDomainObjectsRightBar extends Component {
               )(subTypesEdges);
               return (
                 <List
-                  sx={{ marginTop: this.bannerHeight, marginBottom: this.bannerHeight }}
+                  sx={{ marginTop: bannerHeight, marginBottom: bannerHeight }}
                   subheader={
                     <ListSubheader component="div">
                       {t('Entity types')}
@@ -111,9 +105,8 @@ class StixDomainObjectsRightBar extends Component {
           }}
         />
       </Drawer>
-    );
-  }
-}
+  );
+};
 
 StixDomainObjectsRightBar.propTypes = {
   types: PropTypes.array,
@@ -124,7 +117,4 @@ StixDomainObjectsRightBar.propTypes = {
   openExports: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectsRightBar);
+export default StixDomainObjectsRightBar;

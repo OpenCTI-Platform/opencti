@@ -17,9 +17,8 @@ import { LoginRootPublicQuery$data } from "../__generated__/LoginRootPublicQuery
 import { useFormatter } from "../../components/i18n";
 import { isNotEmptyField } from "../../utils/utils";
 import useDimensions from "../../utils/hooks/useDimensions";
-import SystemBanners from "./SystemBanners";
-import { useBannerSettings } from "../../utils/SystemBanners";
 import { Alert, AlertTitle } from "@mui/material";
+import SystemBanners from "./SystemBanners";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -274,8 +273,6 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     </div>
   );
 
-  const { bannerLevel, bannerText } = useBannerSettings();
-
   const authScreen = () => {
     if (type === "2FA_VALIDATION") {
       return (
@@ -299,7 +296,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
 
   return (
     <div>
-      <SystemBanners bannerLevel={bannerLevel} bannerText={bannerText} />
+      <SystemBanners settings={settings} />
       <div className={classes.container} style={{ marginTop }}>
         {authScreen()}
       </div>
