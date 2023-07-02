@@ -14,8 +14,9 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, MutableRefObject, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation } from 'react-relay';
+import { GridTypeMap } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -146,6 +147,7 @@ interface CaseTasksLinesProps {
   sortBy: string | undefined;
   orderAsc: boolean | undefined;
   handleSort?: (field: string, order: boolean) => void;
+  containerRef: MutableRefObject<GridTypeMap | null>;
 }
 
 const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
@@ -156,6 +158,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   sortBy,
   orderAsc,
   handleSort,
+  containerRef,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -319,6 +322,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             isLoading={() => false}
             entityId={caseId}
             paginationOptions={tasksFilters}
+            containerRef={containerRef}
           />
         </ListLines>
       </Paper>

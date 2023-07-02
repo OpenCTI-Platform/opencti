@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useRef } from 'react';
 import { useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -45,8 +45,8 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const ref = useRef(null);
   const caseIncidentData = useFragment(caseFragment, data);
-
   const tasksFilters = {
     filters: [
       {
@@ -55,26 +55,21 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
       },
     ],
   };
-
   const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseIncidentData.id}-caseTask`;
-
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
     {
       searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
+      sortBy: 'created',
+      orderAsc: false,
     },
     tasksFilters.filters,
   );
-
   const { sortBy, orderAsc } = viewStorage;
-
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
     paginationOptions,
   );
-
   return (
     <div className={classes.container}>
       <ContainerHeader
@@ -96,7 +91,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
             displayAssignees={true}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }} ref={ref}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -109,6 +104,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
                 orderAsc={orderAsc}
                 handleSort={helpers.handleSort}
                 defaultMarkings={convertMarkings(caseIncidentData)}
+                containerRef={ref}
               />
             </React.Suspense>
           )}

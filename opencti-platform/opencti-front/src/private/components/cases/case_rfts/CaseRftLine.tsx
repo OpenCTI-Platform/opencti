@@ -16,7 +16,10 @@ import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
-import { CaseRftLineCase_node$data, CaseRftLineCase_node$key } from './__generated__/CaseRftLineCase_node.graphql';
+import {
+  CaseRftLineCase_node$data,
+  CaseRftLineCase_node$key,
+} from './__generated__/CaseRftLineCase_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -281,6 +284,28 @@ export const CaseRftLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.priority.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.severity.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
               <Skeleton
@@ -341,7 +366,7 @@ export const CaseRftLineDummy = ({
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={100}
+                width="90%"
                 height="100%"
               />
             </div>

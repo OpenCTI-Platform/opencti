@@ -1,6 +1,5 @@
 import { graphql, useMutation } from 'react-relay';
 import DialogContent from '@mui/material/DialogContent';
-import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormGroup from '@mui/material/FormGroup';
@@ -12,10 +11,12 @@ import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom-v5-compat';
+import DialogContentText from '@mui/material/DialogContentText';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { ReportPopoverDeletionQuery$data } from './__generated__/ReportPopoverDeletionQuery.graphql';
 import { Theme } from '../../../../components/Theme';
+import Transition from '../../../../components/Transition';
 
 const reportPopoverDeletionQuery = graphql`
   query ReportPopoverDeletionQuery($id: String) {
@@ -51,9 +52,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   const navigate = useNavigate();
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
   const [commitMutation] = useMutation(reportPopoverDeletionMutation);
-
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
@@ -68,18 +67,19 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   return (
     <Dialog
       open={displayDelete}
+      TransitionComponent={Transition}
       PaperProps={{ elevation: 1 }}
       onClose={handleCloseDelete}
     >
       <DialogContent>
-        <Typography variant="body1">
+        <DialogContentText>
           {t('Do you want to delete this report?')}
-        </Typography>
+        </DialogContentText>
         <QueryRenderer
           query={reportPopoverDeletionQuery}
           variables={{ id: reportId }}
           render={(result: { props: ReportPopoverDeletionQuery$data }) => {
-            const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? '-';
+            const numberOfDeletions = result.props?.report?.deleteWithElementsCount ?? 0;
             if (numberOfDeletions === 0) return <div />;
             return (
               <Alert
@@ -100,6 +100,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
                   <FormControlLabel
                     control={
                       <Checkbox
+                        disableRipple={true}
                         checked={purgeElements}
                         onChange={() => setPurgeElements(!purgeElements)}
                       />

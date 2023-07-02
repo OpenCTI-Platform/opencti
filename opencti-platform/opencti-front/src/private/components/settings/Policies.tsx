@@ -134,10 +134,12 @@ const Policies: FunctionComponent = () => {
       .catch(() => false);
   };
   const initialValues = {
-    platform_organization: settings.platform_organization ? {
-      label: settings.platform_organization?.name,
-      value: settings.platform_organization?.id,
-    } : '',
+    platform_organization: settings.platform_organization
+      ? {
+        label: settings.platform_organization?.name,
+        value: settings.platform_organization?.id,
+      }
+      : '',
     platform_login_message: settings.platform_login_message,
     platform_consent_message: settings.platform_consent_message,
     platform_consent_confirm_text: settings.platform_consent_confirm_text,
@@ -383,20 +385,24 @@ const Policies: FunctionComponent = () => {
                     </Paper>
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <Typography variant="h4" gutterBottom={true} style={{ marginTop: '30px' }}>
+                    <Typography
+                      variant="h4"
+                      gutterBottom={true}
+                      style={{ marginTop: '30px' }}
+                    >
                       {t('Platform Banner Configuration')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="platform_banner_level"
-                          label={t('Platform Banner Level')}
-                          fullWidth={true}
-                          containerstyle={{ marginTop: 5, width: '100%' }}
-                          onSubmit={(name: string, value: string) => {
-                            return handleSubmitField(name, value);
-                          }}
+                        component={SelectField}
+                        variant="standard"
+                        name="platform_banner_level"
+                        label={t('Platform Banner Level')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 5, width: '100%' }}
+                        onSubmit={(name: string, value: string) => {
+                          return handleSubmitField(name, value);
+                        }}
                       >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="GREEN">{t('GREEN')}</MenuItem>
@@ -404,14 +410,14 @@ const Policies: FunctionComponent = () => {
                         <MenuItem value="YELLOW">{t('YELLOW')}</MenuItem>
                       </Field>
                       <Field
-                          component={MarkdownField}
-                          name="platform_banner_text"
-                          label={t('Platform Banner Text')}
-                          fullWidth={true}
-                          height={38}
-                          style={{ marginTop: 20 }}
-                          onSubmit={handleSubmitField}
-                          variant="standard"
+                        component={MarkdownField}
+                        name="platform_banner_text"
+                        label={t('Platform Banner Text')}
+                        fullWidth={true}
+                        height={38}
+                        style={{ marginTop: 20 }}
+                        onSubmit={handleSubmitField}
+                        variant="standard"
                       />
                     </Paper>
                   </Grid>

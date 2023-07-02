@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { convertMarkings } from '../../../../utils/edition';
@@ -43,8 +43,8 @@ interface CaseRfiProps {
 const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const ref = useRef(null);
   const caseRfiData = useFragment(caseFragment, data);
-
   const tasksFilters = {
     filters: [
       {
@@ -54,7 +54,6 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
     ],
   };
   const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseRfiData.id}-caseTask`;
-
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
     {
@@ -64,14 +63,11 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
     },
     tasksFilters.filters,
   );
-
   const { sortBy, orderAsc } = viewStorage;
-
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
     paginationOptions,
   );
-
   return (
     <div className={classes.container}>
       <ContainerHeader
@@ -93,7 +89,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
             displayAssignees={true}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }} ref={ref}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -106,6 +102,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
                 orderAsc={orderAsc}
                 handleSort={helpers.handleSort}
                 defaultMarkings={convertMarkings(caseRfiData)}
+                containerRef={ref}
               />
             </React.Suspense>
           )}

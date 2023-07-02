@@ -47,7 +47,7 @@ import AccessesMenu from '../AccessesMenu';
 import Chart from '../../common/charts/Chart';
 import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
-import Triggers from '../Triggers';
+import Triggers from '../common/Triggers';
 import { UserLogsTimeSeriesQuery$data } from './__generated__/UserLogsTimeSeriesQuery.graphql';
 import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
@@ -358,7 +358,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 10, marginBottom: 20 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Basic information')}
           </Typography>
@@ -419,7 +419,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10, marginBottom: 20 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Permissions')}
           </Typography>
@@ -470,7 +470,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                     ))}
                 </List>
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={6} style={{ marginTop: 30 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Organizations')}
                 </Typography>
@@ -564,7 +564,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Triggers recipientId={user.id} filter={'user_ids'}/>
+        <Triggers recipientId={user.id} filter='user_ids' />
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Operations')}

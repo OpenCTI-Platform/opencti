@@ -290,7 +290,7 @@ export const CaseIncidentLineDummy = ({
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>
@@ -301,7 +301,7 @@ export const CaseIncidentLineDummy = ({
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>
@@ -367,7 +367,7 @@ export const CaseIncidentLineDummy = ({
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={100}
+                width="90%"
                 height="100%"
               />
             </div>

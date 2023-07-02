@@ -4,19 +4,21 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { BackupTableOutlined, CampaignOutlined } from '@mui/icons-material';
 import Paper from '@mui/material/Paper';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import TriggerLiveCreation from '../profile/triggers/TriggerLiveCreation';
-import TriggerLineTitles from '../profile/TriggerLineTitles';
-import TriggersLines, { triggersLinesQuery } from '../profile/triggers/TriggersLines';
-import TriggerDigestCreation from '../profile/triggers/TriggerDigestCreation';
+import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
+import TriggerLineTitles from '../../profile/TriggerLineTitles';
+import TriggersLines, {
+  triggersLinesQuery,
+} from '../../profile/triggers/TriggersLines';
+import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation';
 
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useFormatter } from '../../../components/i18n';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { useFormatter } from '../../../../components/i18n';
 import {
   TriggerFilter,
   TriggersLinesPaginationQuery,
-} from '../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+} from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -33,8 +35,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TriggersProps {
-  recipientId: string,
-  filter: TriggerFilter,
+  recipientId: string;
+  filter: TriggerFilter;
 }
 const Triggers: FunctionComponent<TriggersProps> = ({
   recipientId,
@@ -42,17 +44,15 @@ const Triggers: FunctionComponent<TriggersProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
+  const ref = useRef(null);
   const paginationOptions = {
     count: 25,
     filters: [{ key: [filter], values: [recipientId] }],
   };
-
   const queryRef = useQueryLoading<TriggersLinesPaginationQuery>(
     triggersLinesQuery,
     paginationOptions,
   );
-
   const dataColumns = {
     trigger_type: {
       label: 'Type',
@@ -80,12 +80,10 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       isSortable: false,
     },
   };
-
   const [openLive, setOpenLive] = useState(false);
   const [openDigest, setOpenDigest] = useState(false);
-
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 10 }}>
+    <Grid item={true} xs={12} style={{ marginTop: 30 }} ref={ref}>
       <Typography
         variant="h4"
         gutterBottom={true}
@@ -110,7 +108,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         handleClose={() => setOpenLive(false)}
         recipientId={recipientId}
       />
-      <Tooltip title={t('Add a  regular digest')}>
+      <Tooltip title={t('Add a regular digest')}>
         <IconButton
           aria-label="Add"
           className={classes.createButton}
@@ -133,6 +131,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
             queryRef={queryRef}
             paginationOptions={paginationOptions}
             dataColumns={dataColumns}
+            containerRef={ref}
           />
         )}
       </Paper>

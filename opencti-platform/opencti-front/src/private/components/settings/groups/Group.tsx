@@ -29,7 +29,7 @@ import UserLineTitles from '../users/UserLineTitles';
 import GroupEdition from './GroupEdition';
 import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
-import Triggers from '../Triggers';
+import Triggers from '../common/Triggers';
 import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -321,34 +321,27 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 20, marginLeft: 0 }}
-        >
-          <Triggers recipientId={group.id} filter={filter}/>
-          <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Members')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} variant="outlined">
-              <Grid container={true} spacing={3}>
-                <Grid item={true} xs={12} style={{ paddingTop: 20 }}>
-                  <UserLineTitles dataColumns={userColumns} />
-                  <List>
-                    {members.map((member) => (
-                      <UserLine
-                        key={member?.node?.id}
-                        dataColumns={userColumns}
-                        node={member?.node}
-                      />
-                    ))}
-                  </List>
-                </Grid>
+        <Triggers recipientId={group.id} filter={filter} />
+        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t('Members')}
+          </Typography>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={12} style={{ paddingTop: 20 }}>
+                <UserLineTitles dataColumns={userColumns} />
+                <List>
+                  {members.map((member) => (
+                    <UserLine
+                      key={member?.node?.id}
+                      dataColumns={userColumns}
+                      node={member?.node}
+                    />
+                  ))}
+                </List>
               </Grid>
-            </Paper>
-          </Grid>
+            </Grid>
+          </Paper>
         </Grid>
       </Grid>
       <Fab

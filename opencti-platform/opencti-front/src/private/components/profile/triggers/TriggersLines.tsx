@@ -1,5 +1,6 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, MutableRefObject } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
+import { GridTypeMap } from '@mui/material';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
@@ -24,6 +25,7 @@ interface TriggerLinesProps {
     value: Record<string, unknown>,
     event: React.KeyboardEvent
   ) => void;
+  containerRef?: MutableRefObject<GridTypeMap | null>;
 }
 
 export const triggersLinesQuery = graphql`
@@ -89,6 +91,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
   dataColumns,
   paginationOptions,
   onLabelClick,
+  containerRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   TriggersLinesPaginationQuery,
@@ -114,6 +117,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
       onLabelClick={onLabelClick}
+      containerRef={containerRef}
     />
   );
 };
