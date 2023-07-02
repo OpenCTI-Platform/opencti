@@ -14,8 +14,16 @@ In the beginning first think about your use-case to choose and appropriate conne
 
 **Connector types**
 
-After you've selected your connector type make yourself familiar with STIX2 and the supported relationships in OpenCTI. Having some knowledge about the internal data models with help you a lot with the implementation of your idea.
+| Type                 | Typical use cases                                              | Example connector |
+| :------------------- |:---------------------------------------------------------------|:------------------|
+| EXTERNAL_IMPORT      | Integrate external TI provider, Integrate external TI platform | AlienVault        |
+| INTERNAL_ENRICHMENT  | Enhance existing data with additional knowledge                | AbuseIP           |
+| INTERNAL_IMPORT_FILE | (Bulk) import knowledge from files                             | Import document   |
+| INTERNAL_EXPORT_FILE | (Bulk) export knowledge to files                               | STIX 2.1, CSV.    |
+| STREAM               | Integrate external TI provider, Integrate external TI platform | Elastic Security  |
 
+
+After you've selected your connector type make yourself familiar with STIX2 and the supported relationships in OpenCTI. Having some knowledge about the internal data models with help you a lot with the implementation of your idea.
 
 ## Preparation
 
@@ -350,8 +358,6 @@ def run() -> None:
 		message = "Last_run stored, next run in: {str(round(self.get_interval() / 60 / 60 / 24, 2))} days"
 		self.helper.api.work.to_processed(work_id, message)
 ```
-
-![screen4.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/038dc188-c23e-4742-ad66-80183fc3f996/screen4.png)
 
 #### Interval handling
 
