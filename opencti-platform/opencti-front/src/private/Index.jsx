@@ -28,7 +28,7 @@ import SearchBulk from './components/SearchBulk';
 import TopBar from './components/nav/TopBar';
 import RootCases from './components/cases/Root';
 import SystemBanners from '../public/components/SystemBanners';
-import IdleTimeoutLockscreen from './components/IdleTimeoutLockscreen';
+import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
 
 const useStyles = makeStyles((theme) => ({
@@ -54,7 +54,7 @@ const Index = ({ settings }) => {
   return (
     <>
       <SystemBanners settings={settings} />
-      {settings.platform_session_idle_timeout > 0 && <IdleTimeoutLockscreen />}
+      {settings.platform_session_idle_timeout > 0 && <TimeoutLock />}
       <Box sx={{ display: 'flex', minWidth: 1400, marginTop: bannerHeight, marginBottom: bannerHeight }}>
         <CssBaseline/>
         {!noTopBarLocations.includes(location.pathname) && <TopBar/>}

@@ -4,9 +4,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Typography from '@mui/material/Typography';
+import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../components/i18n';
-import { ONE_SECOND, formatSeconds, secondsBetweenDates } from '../../utils/Time';
+import {
+  ONE_SECOND,
+  formatSeconds,
+  secondsBetweenDates,
+} from '../../utils/Time';
 import { handleLogout } from './nav/TopBar';
 import useAuth from '../../utils/hooks/useAuth';
 
@@ -34,7 +38,12 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
       }
       return state;
     case 'reset timeout':
-      return { idleLimit, sessionLimit, idleCount: sessionLimit, startDate: new Date() };
+      return {
+        idleLimit,
+        sessionLimit,
+        idleCount: sessionLimit,
+        startDate: new Date(),
+      };
     default:
       return state;
   }
@@ -48,15 +57,22 @@ const redirectToDashboard = () => {
   handleLogout(`${getUrl.protocol}//${getUrl.host}/dashboard?ExpiredSession=1`);
 };
 
-interface IdleTimeoutLockscreenProps {
+interface TimeoutLockProps {
   handleLogout: (url?: string) => void;
 }
 
-const IdleTimeoutLockscreen: React.FunctionComponent<IdleTimeoutLockscreenProps> = () => {
+const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
   const { t } = useFormatter();
-  const { bannerSettings: { bannerHeightNumber, idleLimit, sessionLimit } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber, idleLimit, sessionLimit },
+  } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [state, dispatch] = useReducer(timeoutReducer, { idleLimit, sessionLimit, idleCount: null, startDate: new Date() });
+  const [state, dispatch] = useReducer(timeoutReducer, {
+    idleLimit,
+    sessionLimit,
+    idleCount: null,
+    startDate: new Date(),
+  });
   const [resetCounter, triggerReset] = useState(false);
   const interval = useRef<NodeJS.Timer | null>(null);
 
@@ -137,7 +153,7 @@ const IdleTimeoutLockscreen: React.FunctionComponent<IdleTimeoutLockscreenProps>
    * Watches resetCounter trigger state, should only be called by the document.body click listener.
    */
   useEffect(() => {
-    if (resetCounter === true) {
+    if (resetCounter) {
       resetIdleTimeout();
       triggerReset(false);
     }
@@ -162,33 +178,47 @@ const IdleTimeoutLockscreen: React.FunctionComponent<IdleTimeoutLockscreenProps>
     }
     const secondsBetween = secondsBetweenDates(state.startDate, new Date());
     // Ensure that the user is logged out if the page has been open longer than the session allows
-    if (secondsBetween >= state.sessionLimit || (state.idleCount !== null && state.idleCount !== undefined && state.idleCount <= 0 && dialogOpen)) {
+    if (
+      secondsBetween >= state.sessionLimit
+      || (state.idleCount !== undefined && state.idleCount <= 0 && dialogOpen)
+    ) {
       redirectToDashboard();
     }
     // Lock the screen for the remaining session time
-    if (!dialogOpen && secondsBetween >= state.idleLimit && secondsBetween < state.sessionLimit) {
+    if (
+      !dialogOpen
+      && secondsBetween >= state.idleLimit
+      && secondsBetween < state.sessionLimit
+    ) {
       lockScreen();
     }
   }, [state.idleCount]);
 
-  return <Dialog open={dialogOpen} onClose={() => { }}
+  return (
+    <Dialog
+      open={dialogOpen}
+      onClose={() => {}}
       disableEscapeKeyDown={true}
-      maxWidth='sm' PaperProps={{ elevation: 1 }}
+      maxWidth="sm"
+      PaperProps={{ elevation: 1 }}
       sx={{
         backdropFilter: 'blur(15px)',
         marginTop: `${bannerHeightNumber}px`,
         height: `calc(100% - ${bannerHeightNumber * 2}px)`,
-      }}>
+      }}
+    >
       <DialogTitle sx={{ textAlign: 'center' }}>
-        {t('Session timeout in')}&nbsp;{formatSeconds(state.idleCount ?? 0)}
+        {t('Session timeout in')}&nbsp;
+        <strong>{formatSeconds(state.idleCount ?? 0)}</strong>
       </DialogTitle>
       <DialogContent>
-        <Typography variant='body1'>
+        <DialogContentText sx={{ textAlign: 'center' }}>
           {t('You will be automatically logged out at end of the timer.')}
-        </Typography>
-        <Typography variant='body1'>
-          {t('Select CONTINUE to keep working or select LOGOUT to terminate your session.')}
-        </Typography>
+          <br />
+          {t('Select')} <code>{t('CONTINUE')}</code>{' '}
+          {t('to keep working or select')} <code>{t('LOGOUT')}</code>{' '}
+          {t('to terminate your session.')}
+        </DialogContentText>
       </DialogContent>
       <DialogActions
         sx={{
@@ -197,14 +227,15 @@ const IdleTimeoutLockscreen: React.FunctionComponent<IdleTimeoutLockscreenProps>
           justifyContent: 'space-between',
         }}
       >
-        <Button color='secondary' onClick={() => handleLogout()}>
+        <Button color="secondary" onClick={() => handleLogout()}>
           {t('Logout')}
         </Button>
-        <Button color='primary' onClick={() => unlockScreen()}>
+        <Button color="primary" onClick={() => unlockScreen()}>
           {t('Continue')}
         </Button>
       </DialogActions>
-    </Dialog>;
+    </Dialog>
+  );
 };
 
-export default IdleTimeoutLockscreen;
+export default TimeoutLock;

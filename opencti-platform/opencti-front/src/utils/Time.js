@@ -102,18 +102,15 @@ export const secondsBetweenDates = (startDate, endDate) => {
 export const formatSeconds = (seconds) => {
   const ONE_MINUTE = 60;
   const ONE_HOUR = ONE_MINUTE * ONE_MINUTE;
-
   const leadingZero = (value) => {
     return value < 10 ? `0${value}` : String(value);
   };
-
   const hours = Math.floor(seconds / ONE_HOUR);
   let secondsLeft = seconds % ONE_HOUR;
   const minutes = Math.floor(secondsLeft / ONE_MINUTE);
   secondsLeft = Math.floor(secondsLeft % ONE_MINUTE);
-
   const formattedHours = hours ? `${leadingZero(hours)}:` : '';
-  const formattedMins = (minutes || hours) ? `${leadingZero(minutes)}:` : '';
+  const formattedMins = minutes || hours ? `${leadingZero(minutes)}:` : '';
   const formattedSecs = `${leadingZero(secondsLeft)}`;
   return `${formattedHours}${formattedMins}${formattedSecs}`;
 };
