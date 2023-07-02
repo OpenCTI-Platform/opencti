@@ -113,7 +113,7 @@ class CaseRft:
             name
             description
             takedown_types
-            objects {
+            objects(all: true) {
                 edges {
                     node {
                         ... on BasicObject {
@@ -207,6 +207,9 @@ class CaseRft:
                         ... on DataSource {
                             name
                         }
+                        ... on StixCyberObservable {
+                            observable_value
+                        }                        
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version

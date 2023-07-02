@@ -111,7 +111,7 @@ class Opinion:
             explanation
             authors
             opinion
-            objects {
+            objects(all: true) {
                 edges {
                     node {
                         ... on BasicObject {
@@ -190,6 +190,9 @@ class Opinion:
                         ... on Case {
                             name
                         }
+                        ... on StixCyberObservable {
+                            observable_value
+                        }                               
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -197,6 +200,12 @@ class Opinion:
                             updated_at
                             relationship_type
                         }
+                       ... on StixSightingRelationship {
+                            standard_id
+                            spec_version
+                            created_at
+                            updated_at
+                        }                         
                     }
                 }
             }

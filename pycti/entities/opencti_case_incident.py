@@ -116,7 +116,7 @@ class CaseIncident:
             severity
             priority
             response_types
-            objects {
+            objects(all: true) {
                 edges {
                     node {
                         ... on BasicObject {
@@ -209,6 +209,9 @@ class CaseIncident:
                         }
                         ... on DataSource {
                             name
+                        }
+                        ... on StixCyberObservable {
+                            observable_value
                         }
                         ... on StixCoreRelationship {
                             standard_id

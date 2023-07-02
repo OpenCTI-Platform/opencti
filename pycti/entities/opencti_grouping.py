@@ -114,7 +114,7 @@ class Grouping:
             description
             context
             x_opencti_aliases
-            objects {
+            objects(all: true) {
                 edges {
                     node {
                         ... on BasicObject {
@@ -190,6 +190,9 @@ class Grouping:
                         ... on Incident {
                             name
                         }
+                        ... on StixCyberObservable {
+                            observable_value
+                        }                        
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
