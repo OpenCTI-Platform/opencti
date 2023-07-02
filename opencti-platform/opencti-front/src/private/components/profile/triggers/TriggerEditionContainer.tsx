@@ -7,9 +7,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { TriggerEditionContainerQuery } from './__generated__/TriggerEditionContainerQuery.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggerEditionOverview from './TriggerEditionOverview';
+import { TriggerEditionContainerKnowledgeQuery } from './__generated__/TriggerEditionContainerKnowledgeQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -40,9 +40,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const triggerEditionQuery = graphql`
-  query TriggerEditionContainerQuery($id: String!) {
-    trigger(id: $id) {
+export const triggerKnowledgeEditionQuery = graphql`
+  query TriggerEditionContainerKnowledgeQuery($id: String!) {
+    triggerKnowledge(id: $id) {
+      ...TriggerEditionOverview_trigger
+    }
+  }
+`;
+
+export const triggerActivityEditionQuery = graphql`
+  query TriggerEditionContainerActivityQuery($id: String!) {
+    triggerActivity(id: $id) {
       ...TriggerEditionOverview_trigger
     }
   }
@@ -50,7 +58,7 @@ export const triggerEditionQuery = graphql`
 
 interface TriggerEditionContainerProps {
   handleClose: () => void;
-  queryRef: PreloadedQuery<TriggerEditionContainerQuery>;
+  queryRef: PreloadedQuery<TriggerEditionContainerKnowledgeQuery>;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
 
@@ -59,8 +67,8 @@ TriggerEditionContainerProps
 > = ({ handleClose, queryRef, paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const queryData = usePreloadedQuery(triggerEditionQuery, queryRef);
-  if (queryData.trigger) {
+  const queryData = usePreloadedQuery(triggerKnowledgeEditionQuery, queryRef);
+  if (queryData.triggerKnowledge) {
     return (
       <div>
         <div className={classes.header}>
@@ -80,7 +88,7 @@ TriggerEditionContainerProps
         </div>
         <div className={classes.container}>
           <TriggerEditionOverview
-            data={queryData.trigger}
+            data={queryData.triggerKnowledge}
             handleClose={handleClose}
             paginationOptions={paginationOptions}
           />

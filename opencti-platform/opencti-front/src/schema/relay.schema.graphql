@@ -7982,8 +7982,10 @@ type Query {
   groupingContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   narrative(id: String!): Narrative
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering!], filterMode: FilterMode, search: String): NarrativeConnection
-  trigger(id: String!): Trigger
-  triggers(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, adminBypassUserAccess: Boolean, search: String): TriggerConnection
+  triggerKnowledge(id: String!): Trigger
+  triggersKnowledge(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, adminBypassUserAccess: Boolean, search: String): TriggerConnection
+  triggerActivity(id: String!): Trigger
+  triggersActivity(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggerActivityFiltering!], filterMode: FilterMode, search: String): TriggerConnection
   notification(id: String!): Notification
   notifications(first: Int, after: ID, orderBy: NotificationsOrdering, orderMode: OrderingMode, filters: [NotificationsFiltering!], filterMode: FilterMode, search: String): NotificationConnection
   myNotifications(first: Int, after: ID, orderBy: NotificationsOrdering, orderMode: OrderingMode, filters: [NotificationsFiltering!], filterMode: FilterMode, search: String): NotificationConnection
@@ -8655,10 +8657,14 @@ type Mutation {
   narrativeContextClean(id: ID!): Narrative
   narrativeRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative
-  triggerDelete(id: ID!): ID
-  triggerFieldPatch(id: ID!, input: [EditInput!]!): Trigger
-  triggerLiveAdd(input: TriggerLiveAddInput!): Trigger
-  triggerDigestAdd(input: TriggerDigestAddInput!): Trigger
+  triggerKnowledgeDelete(id: ID!): ID
+  triggerKnowledgeFieldPatch(id: ID!, input: [EditInput!]!): Trigger
+  triggerKnowledgeLiveAdd(input: TriggerLiveAddInput!): Trigger
+  triggerKnowledgeDigestAdd(input: TriggerDigestAddInput!): Trigger
+  triggerActivityDelete(id: ID!): ID
+  triggerActivityFieldPatch(id: ID!, input: [EditInput!]!): Trigger
+  triggerActivityLiveAdd(input: TriggerActivityLiveAddInput!): Trigger
+  triggerActivityDigestAdd(input: TriggerActivityDigestAddInput!): Trigger
   notificationDelete(id: ID!): ID
   notificationMarkRead(id: ID!, read: Boolean!): Notification
   dataComponentAdd(input: DataComponentAddInput!): DataComponent
@@ -9321,6 +9327,27 @@ input NarrativeAddInput {
   file: Upload
 }
 
+type ResolvedInstanceFilter {
+  id: String!
+  valid: Boolean!
+  value: String
+}
+
+enum DigestPeriod {
+  hour
+  day
+  week
+  month
+}
+
+enum TriggersOrdering {
+  name
+  created
+  event_types
+  trigger_type
+  outcomes
+}
+
 enum TriggerType {
   live
   digest
@@ -9350,18 +9377,26 @@ input TriggersFiltering {
   filterMode: FilterMode
 }
 
-enum TriggersOrdering {
-  name
-  created
-  event_types
-  trigger_type
-  outcomes
+input TriggerLiveAddInput {
+  name: name_String_NotNull_minLength_1!
+  description: String
+  event_types: [TriggerEventType!]!
+  outcomes: [StixRef!]
+  instance_trigger: Boolean!
+  filters: String
+  recipients: [String!]
 }
 
-type ResolvedInstanceFilter {
-  id: String!
-  valid: Boolean!
-  value: String
+scalar name_String_NotNull_minLength_1
+
+input TriggerDigestAddInput {
+  name: name_String_NotNull_minLength_1!
+  description: String
+  trigger_ids: [String!]!
+  period: DigestPeriod!
+  trigger_time: String
+  outcomes: [StixRef!]!
+  recipients: [String!]
 }
 
 type Trigger implements InternalObject & BasicObject {
@@ -9374,7 +9409,7 @@ type Trigger implements InternalObject & BasicObject {
   name: String!
   description: String
   trigger_type: TriggerType!
-  event_types: [TriggerEventType!]
+  event_types: [String!]
   filters: String
   outcomes: [StixRef!]
   trigger_ids: [String]
@@ -9382,7 +9417,7 @@ type Trigger implements InternalObject & BasicObject {
   period: DigestPeriod
   trigger_time: String
   currentUserAccessRight: String
-  instance_trigger: Boolean!
+  instance_trigger: Boolean
   resolved_instance_filters: [ResolvedInstanceFilter!]
 }
 
@@ -9396,9 +9431,72 @@ type TriggerEdge {
   node: Trigger!
 }
 
+enum TriggerActivityFilter {
+  trigger_type
+  created
+  event_types
+  filters
+}
+
+enum TriggerActivityEventType {
+  authentication
+  read
+  mutation
+  file
+  command
+}
+
+input TriggerActivityLiveAddInput {
+  name: name_String_NotNull_minLength_1!
+  description: String
+  event_types: [TriggerActivityEventType!]!
+  outcomes: [StixRef!]
+  filters: String
+  recipients: [String!]!
+}
+
+input TriggerActivityDigestAddInput {
+  name: name_String_NotNull_minLength_1!
+  description: String
+  trigger_ids: [String!]!
+  period: DigestPeriod!
+  trigger_time: String
+  outcomes: [StixRef!]!
+  recipients: [String!]!
+}
+
+input TriggerActivityFiltering {
+  key: [TriggerActivityFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+enum NotificationsOrdering {
+  name
+  created
+}
+
+enum NotificationFilter {
+  created
+  is_read
+}
+
+input NotificationsFiltering {
+  key: [NotificationFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type NotificationCount {
+  user_id: String
+  count: Int
+}
+
 type NotificationEvent {
   message: String!
-  instance_id: String!
+  instance_id: String
   operation: String!
 }
 
@@ -9422,23 +9520,6 @@ type Notification implements InternalObject & BasicObject {
   updated_at: DateTime
 }
 
-enum NotificationsOrdering {
-  name
-  created
-}
-
-enum NotificationFilter {
-  created
-  is_read
-}
-
-input NotificationsFiltering {
-  key: [NotificationFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 type NotificationConnection {
   pageInfo: PageInfo!
   edges: [NotificationEdge]
@@ -9447,40 +9528,6 @@ type NotificationConnection {
 type NotificationEdge {
   cursor: String!
   node: Notification!
-}
-
-enum DigestPeriod {
-  hour
-  day
-  week
-  month
-}
-
-input TriggerLiveAddInput {
-  name: name_String_NotNull_minLength_1!
-  description: String
-  event_types: [TriggerEventType!]!
-  outcomes: [StixRef!]
-  instance_trigger: Boolean!
-  filters: String
-  recipients: [String!]
-}
-
-scalar name_String_NotNull_minLength_1
-
-input TriggerDigestAddInput {
-  name: name_String_NotNull_minLength_1!
-  description: String
-  trigger_ids: [String!]!
-  period: DigestPeriod!
-  trigger_time: String
-  outcomes: [StixRef!]!
-  recipients: [String!]
-}
-
-type NotificationCount {
-  user_id: String
-  count: Int
 }
 
 type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDomainObject {

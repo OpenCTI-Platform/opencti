@@ -5,11 +5,15 @@ const ActivityMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/settings/activity/audit',
-      label: 'Activity logs',
+      label: 'Events',
     },
     {
       path: '/dashboard/settings/activity/configuration',
       label: 'Configuration',
+    },
+    {
+      path: '/dashboard/settings/activity/alerting',
+      label: 'Alerting',
     },
   ];
 

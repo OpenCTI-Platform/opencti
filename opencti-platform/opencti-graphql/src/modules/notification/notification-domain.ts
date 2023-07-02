@@ -12,7 +12,10 @@ import { BUS_TOPICS } from '../../config/conf';
 import type {
   EditInput,
   QueryNotificationsArgs,
-  QueryTriggersArgs,
+  QueryTriggersActivityArgs,
+  QueryTriggersKnowledgeArgs,
+  TriggerActivityDigestAddInput,
+  TriggerActivityLiveAddInput,
   TriggerDigestAddInput,
   TriggerLiveAddInput,
   TriggerType
@@ -98,6 +101,7 @@ export const addTrigger = async (
     authorized_members: authorizedMembers,
     created: now(),
     updated: now(),
+    trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
   };
   const trigger = { ...triggerInput, ...defaultOpts };
@@ -110,6 +114,39 @@ export const addTrigger = async (
     event_access: isSelfTrigger ? 'extended' : 'administration',
     message: `creates ${type} trigger \`${created.name}\` for ${isSelfTrigger ? '`themselves`' : `user \`${recipient.name}\``}`,
     context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
+};
+
+export const addTriggerActivity = async (
+  context: AuthContext,
+  user: AuthUser,
+  triggerInput: TriggerActivityLiveAddInput | TriggerActivityDigestAddInput,
+  type: TriggerType
+): Promise<BasicStoreEntityTrigger> => {
+  const members = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, triggerInput.recipients);
+  const defaultOpts = {
+    created: now(),
+    updated: now(),
+    trigger_scope: 'activity',
+    trigger_type: type,
+    authorized_members: [{ id: SYSTEM_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }],
+    user_ids: members.filter((m) => m.entity_type === ENTITY_TYPE_USER).map((u) => u.internal_id),
+    group_ids: members.filter((m) => m.entity_type === ENTITY_TYPE_GROUP).map((u) => u.internal_id),
+    organization_ids: members.filter((m) => m.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).map((u) => u.internal_id),
+  };
+  const trigger = { ...triggerInput, ...defaultOpts };
+  if (type === TriggerTypeValue.Live && (trigger as TriggerActivityLiveAddInput).event_types.length === 0) {
+    throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
+  }
+  const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
+    message: `creates ${type} activity trigger \`${created.name}\` for ${members.map((m) => m.name).join(', ')}}`,
+    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
@@ -187,7 +224,7 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
   });
   return triggerId;
 };
-export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersArgs) => {
+export const triggersKnowledgeFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersKnowledgeArgs) => {
   let queryArgs = { ...opts };
   // key is a string[] because of the resolver, we have updated the keys
   const userIdFilter = opts.filters?.find((f) => (f.key as string[]).includes('authorized_members.id'));
@@ -200,6 +237,14 @@ export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTr
       adminBypassUserAccess: true
     };
   }
+  return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
+};
+
+export const triggersActivityFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersActivityArgs) => {
+  const finalFilter = [];
+  finalFilter.push(...(opts.filters ?? []));
+  finalFilter.push({ key: ['trigger_scope'], values: ['activity'] });
+  const queryArgs = { ...opts, adminBypassUserAccess: true, filters: finalFilter };
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 

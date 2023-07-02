@@ -18,18 +18,19 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
-import TriggersField from './TriggersField';
-import MarkdownField from '../../../../components/MarkdownField';
-import TextField from '../../../../components/TextField';
-import { handleErrorInForm } from '../../../../relay/environment';
-import { insertNode } from '../../../../utils/store';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import { useFormatter } from '../../../../components/i18n';
-import TimePickerField from '../../../../components/TimePickerField';
-import SelectField from '../../../../components/SelectField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { Theme } from '../../../../components/Theme';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import MarkdownField from '../../../../../components/MarkdownField';
+import { handleErrorInForm } from '../../../../../relay/environment';
+import { insertNode } from '../../../../../utils/store';
+import { dayStartDate, parse } from '../../../../../utils/Time';
+import { useFormatter } from '../../../../../components/i18n';
+import TimePickerField from '../../../../../components/TimePickerField';
+import SelectField from '../../../../../components/SelectField';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { Theme } from '../../../../../components/Theme';
+import TextField from '../../../../../components/TextField';
+import AlertsField from './AlertsField';
+import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import ObjectMembersField from '../../../common/form/ObjectMembersField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -68,13 +69,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const triggerDigestCreationMutation = graphql`
-    mutation TriggerDigestCreationMutation($input: TriggerDigestAddInput!) {
-        triggerKnowledgeDigestAdd(input: $input) {
-            ...TriggerLine_node
+    mutation AlertDigestCreationAddMutation($input: TriggerActivityDigestAddInput!) {
+        triggerActivityDigestAdd(input: $input) {
+            ...AlertingLine_node
         }
     }
 `;
-interface TriggerDigestAddInput {
+interface TriggerDigestActivityAddInput {
   name: string;
   description: string;
   period: string;
@@ -105,21 +106,20 @@ interface TriggerDigestCreationProps {
   handleClose?: () => void;
   inputValue?: string;
   recipientId?: string;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
+  paginationOptions?: AlertingPaginationQuery$variables;
 }
-const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
+const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   contextual,
   inputValue,
   paginationOptions,
   open,
   handleClose,
-  recipientId,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const onReset = () => handleClose && handleClose();
   const [commitDigest] = useMutation(triggerDigestCreationMutation);
-  const digestInitialValues: TriggerDigestAddInput = {
+  const digestInitialValues: TriggerDigestActivityAddInput = {
     name: inputValue || '',
     description: '',
     period: 'day',
@@ -127,20 +127,20 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     outcomes: [],
     day: '1',
     time: dayStartDate().toISOString(),
-    recipients: recipientId ? [recipientId] : [],
+    recipients: [],
   };
   const outcomesOptions: Record<string, string> = {
     'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
     '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
     webhook: t('Webhook'),
   };
-  const onDigestSubmit: FormikConfig<TriggerDigestAddInput>['onSubmit'] = (
-    values: TriggerDigestAddInput,
+  const onDigestSubmit: FormikConfig<TriggerDigestActivityAddInput>['onSubmit'] = (
+    values: TriggerDigestActivityAddInput,
     {
       setSubmitting,
       setErrors,
       resetForm,
-    }: FormikHelpers<TriggerDigestAddInput>,
+    }: FormikHelpers<TriggerDigestActivityAddInput>,
   ) => {
     // Important to translate to UTC before formatting
     let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
@@ -162,7 +162,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_triggers', paginationOptions, 'triggerDigestAdd');
+        insertNode(store, 'Pagination_triggersActivity', paginationOptions, 'triggerActivityDigestAdd');
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -183,7 +183,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       value: unknown,
       shouldValidate?: boolean | undefined
     ) => void,
-    values: TriggerDigestAddInput,
+    values: TriggerDigestActivityAddInput,
   ) => (
     <React.Fragment>
       <Field
@@ -202,14 +202,16 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         rows="4"
         style={{ marginTop: 20 }}
       />
-      <TriggersField
+      <AlertsField
         name="trigger_ids"
         setFieldValue={setFieldValue}
         values={values.trigger_ids}
         style={fieldSpacingContainerStyle}
         paginationOptions={paginationOptions}
-        recipientId={values.recipients[0]}
       />
+      <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
+                          onChange={setFieldValue}
+                          multiple={true} name={'recipients'} />
       <Field
         component={SelectField}
         variant="standard"
@@ -335,10 +337,10 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         >
           <Close fontSize="small" color="primary" />
         </IconButton>
-        <Typography variant="h6">{t('Create a regular digest')}</Typography>
+        <Typography variant="h6">{t('Create a regular activity digest')}</Typography>
       </div>
       <div className={classes.container}>
-        <Formik<TriggerDigestAddInput>
+        <Formik<TriggerDigestActivityAddInput>
           initialValues={digestInitialValues}
           validationSchema={digestTriggerValidation(t)}
           onSubmit={onDigestSubmit}
@@ -393,7 +395,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <div>
-            <DialogTitle>{t('Create a regular digest')}</DialogTitle>
+            <DialogTitle>{t('Create a regular activity digest')}</DialogTitle>
             <DialogContent>{digestFields(setFieldValue, values)}</DialogContent>
             <DialogActions classes={{ root: classes.dialogActions }}>
               <Button onClick={handleReset} disabled={isSubmitting}>
@@ -415,4 +417,4 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   return contextual ? renderContextual() : renderClassic();
 };
 
-export default TriggerDigestCreation;
+export default AlertDigestCreation;

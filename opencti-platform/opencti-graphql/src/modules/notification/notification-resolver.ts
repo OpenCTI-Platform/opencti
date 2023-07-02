@@ -3,6 +3,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { TriggerType } from '../../generated/graphql';
 import {
   addTrigger,
+  triggersActivityFind,
   myNotificationsFind,
   myUnreadNotificationsCount,
   notificationDelete,
@@ -13,8 +14,8 @@ import {
   triggerDelete,
   triggerEdit,
   triggerGet,
-  triggersFind,
-  triggersGet,
+  triggersKnowledgeFind,
+  triggersGet, addTriggerActivity,
 } from './notification-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -28,9 +29,12 @@ import { getUserAccessRight } from '../../utils/access';
 
 const notificationResolvers: Resolvers = {
   Query: {
-    // Triggers
-    trigger: (_, { id }, context) => triggerGet(context, context.user, id),
-    triggers: (_, args, context) => triggersFind(context, context.user, args),
+    // Knowledge trigger
+    triggerKnowledge: (_, { id }, context) => triggerGet(context, context.user, id),
+    triggersKnowledge: (_, args, context) => triggersKnowledgeFind(context, context.user, args),
+    // Activity trigger
+    triggerActivity: (_, { id }, context) => triggerGet(context, context.user, id),
+    triggersActivity: (_, args, context) => triggersActivityFind(context, context.user, args),
     // Notifications
     notification: (_, { id }, context) => notificationGet(context, context.user, id),
     notifications: (_, args, context) => notificationsFind(context, context.user, args),
@@ -40,7 +44,9 @@ const notificationResolvers: Resolvers = {
   Trigger: {
     triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids),
     currentUserAccessRight: (trigger, _, context) => getUserAccessRight(context.user, trigger),
-    resolved_instance_filters: (trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger, _, context) => resolvedInstanceFiltersGet(context, context.user, trigger),
+    resolved_instance_filters: (trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger, _, context) => {
+      return resolvedInstanceFiltersGet(context, context.user, trigger);
+    },
   },
   TriggerFilter: {
     user_ids: 'authorized_members.id',
@@ -48,10 +54,17 @@ const notificationResolvers: Resolvers = {
     organization_ids: 'authorized_members.id',
   },
   Mutation: {
-    triggerFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),
-    triggerDelete: (_, { id }, context) => triggerDelete(context, context.user, id),
-    triggerLiveAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Live),
-    triggerDigestAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Digest),
+    // Knowledge trigger
+    triggerKnowledgeFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),
+    triggerKnowledgeDelete: (_, { id }, context) => triggerDelete(context, context.user, id),
+    triggerKnowledgeLiveAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Live),
+    triggerKnowledgeDigestAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Digest),
+    // Activity trigger
+    triggerActivityFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),
+    triggerActivityDelete: (_, { id }, context) => triggerDelete(context, context.user, id),
+    triggerActivityLiveAdd: (_, { input }, context) => addTriggerActivity(context, context.user, input, TriggerType.Live),
+    triggerActivityDigestAdd: (_, { input }, context) => addTriggerActivity(context, context.user, input, TriggerType.Digest),
+    // Notification
     notificationDelete: (_, { id }, context) => notificationDelete(context, context.user, id),
     notificationMarkRead: (_, { id, read }, context) => notificationEditRead(context, context.user, id, read),
   },

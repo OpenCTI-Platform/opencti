@@ -7,6 +7,7 @@ interface BasicUserAction {
   status?: 'success' | 'error' // nothing = success
   event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
   event_access: 'extended' | 'administration'
+  prevent_indexing?: boolean
 }
 
 // region actions

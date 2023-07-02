@@ -20,6 +20,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import Audit from './audit/Root';
+import Alerting from './alerting/Root';
 import Configuration from './configuration/Configuration';
 
 const RootActivity = () => {
@@ -34,6 +35,11 @@ const RootActivity = () => {
         exact
         path="/dashboard/settings/activity/configuration"
         render={() => <Configuration />}
+      />
+      <Route
+        exact
+        path="/dashboard/settings/activity/alerting"
+        render={() => <Alerting />}
       />
     </Switch>
   );

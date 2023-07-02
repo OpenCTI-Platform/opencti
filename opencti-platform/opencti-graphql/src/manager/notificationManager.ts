@@ -44,16 +44,16 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
-const EVENT_NOTIFICATION_VERSION = '1';
+export const EVENT_NOTIFICATION_VERSION = '1';
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 
-interface ResolvedTrigger {
+export interface ResolvedTrigger {
   users: Array<AuthUser>
   trigger: BasicStoreEntityTrigger
 }
 
-interface ResolvedLive {
+export interface ResolvedLive {
   users: Array<AuthUser>
   trigger: BasicStoreEntityLiveTrigger
 }
@@ -69,10 +69,16 @@ export interface NotificationUser {
   outcomes: Array<string>
 }
 
-export interface NotificationEvent extends StreamNotifEvent {
+export interface KnowledgeNotificationEvent extends StreamNotifEvent {
   type: 'live'
   targets: Array<{ user: NotificationUser, type: string, message: string }>
   data: StixCoreObject
+}
+
+export interface ActivityNotificationEvent extends StreamNotifEvent {
+  type: 'live'
+  targets: Array<{ user: NotificationUser, type: string, message: string }>
+  data: Partial<{ id: string }>
 }
 
 export interface DigestEvent extends StreamNotifEvent {
@@ -313,7 +319,7 @@ export const getDigestNotifications = async (context: AuthContext, baseDate: Mom
   return notifications.filter(isDigest).filter((digest) => isTimeTrigger(digest, baseDate));
 };
 
-const convertToNotificationUser = (user: AuthUser, outcomes: Array<string>): NotificationUser => {
+export const convertToNotificationUser = (user: AuthUser, outcomes: Array<string>): NotificationUser => {
   return {
     user_id: user.internal_id,
     user_email: user.user_email,
@@ -630,7 +636,7 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
         const targets = await buildTargetEvents(context, users, streamEvent, trigger);
         if (targets.length > 0) {
           const version = EVENT_NOTIFICATION_VERSION;
-          const notificationEvent: NotificationEvent = { version, notification_id, type, targets, data };
+          const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets, data };
           await storeNotificationEvent(context, notificationEvent);
         }
         // search side events for instance_trigger
@@ -638,7 +644,7 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
           const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, true);
           if (sideTargets.length > 0) {
             const version = EVENT_NOTIFICATION_VERSION;
-            const notificationEvent: NotificationEvent = { version, notification_id, type, targets: sideTargets, data };
+            const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets: sideTargets, data };
             await storeNotificationEvent(context, notificationEvent);
           }
         }
@@ -663,7 +669,7 @@ const notificationDigestHandler = async () => {
       const { trigger, users } = digestNotifications[index];
       const { period, trigger_ids: triggerIds, outcomes, internal_id: notification_id, trigger_type: type } = trigger;
       const fromDate = baseDate.clone().subtract(1, period).toDate();
-      const rangeNotifications = await fetchRangeNotifications<NotificationEvent>(fromDate, baseDate.toDate());
+      const rangeNotifications = await fetchRangeNotifications<KnowledgeNotificationEvent>(fromDate, baseDate.toDate());
       const digestContent = rangeNotifications.filter((n) => triggerIds.includes(n.notification_id));
       if (digestContent.length > 0) {
         // Range of results must filtered to keep only data related to the digest

@@ -32,27 +32,26 @@ import {
   StixCoreObjectQuickSubscriptionContentPaginationQuery$data,
   StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
-import { TriggerEventType } from '../../profile/triggers/__generated__/TriggerEditionOverview_trigger.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { convertEventTypes, convertOutcomes } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { TriggerLine_node$data } from '../../profile/triggers/__generated__/TriggerLine_node.graphql';
-import { instanceTriggerDescription, triggerLiveCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
+import { instanceTriggerDescription, triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
 import {
   TriggerLiveAddInput,
-  TriggerLiveCreationMutation,
-} from '../../profile/triggers/__generated__/TriggerLiveCreationMutation.graphql';
+  TriggerLiveCreationKnowledgeMutation,
+} from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
     query StixCoreObjectQuickSubscriptionContentPaginationQuery(
         $filters: [TriggersFiltering!]
         $first: Int
     ) {
-        triggers(
+        triggersKnowledge(
             filters: $filters
             first: $first
-        ) @connection(key: "Pagination_triggers") {
+        ) @connection(key: "Pagination_triggersKnowledge") {
             edges {
                 node {
                     id
@@ -80,7 +79,7 @@ interface InstanceTriggerEditionFormValues {
   name: string;
   description: string | null;
   event_types: readonly {
-    label: TriggerEventType,
+    label: string,
     value: string
   }[];
   outcomes: readonly {
@@ -193,14 +192,14 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       stixCoreObjectQuickSubscriptionContentQuery,
       queryRef,
     );
-    return existingInstanceTriggersData?.triggers?.edges ?? [];
+    return existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
   };
   const [existingInstanceTriggersEdges, setExistingInstanceTriggersEdges] = useState(initialExistingInstanceTriggersEdges());
 
   const triggerUpdate = existingInstanceTriggersEdges.length > 0;
 
-  const [commitAddTrigger] = useMutation<TriggerLiveCreationMutation>(
-    triggerLiveCreationMutation,
+  const [commitAddTrigger] = useMutation<TriggerLiveCreationKnowledgeMutation>(
+    triggerLiveKnowledgeCreationMutation,
   );
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
   const [commitDeleteTrigger] = useMutation(TriggerPopoverDeletionMutation);
@@ -209,7 +208,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     fetchQuery(stixCoreObjectQuickSubscriptionContentQuery, paginationOptions)
       .toPromise()
       .then((data) => {
-        setExistingInstanceTriggersEdges((data as StixCoreObjectQuickSubscriptionContentPaginationQuery$data)?.triggers?.edges ?? []);
+        setExistingInstanceTriggersEdges((data as StixCoreObjectQuickSubscriptionContentPaginationQuery$data)?.triggersKnowledge?.edges ?? []);
       });
   };
 

@@ -46,12 +46,16 @@ interface OptionMember extends Option {
 
 interface ObjectMembersFieldProps {
   name: string;
-  onChange?: (name: string, value: OptionMember) => void;
+  label?: string;
+  multiple?: boolean;
+  onChange?: (name: string, value: string | string[]) => void;
   style?: Record<string, string | number>;
   helpertext?: string;
 }
 const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   name,
+  label,
+  multiple,
   style,
   onChange,
   helpertext,
@@ -89,13 +93,20 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
       <Field
         component={AutocompleteField}
         name={name}
+        multiple={multiple ?? false}
         textfieldprops={{
           variant: 'standard',
-          label: t('Users, groups or organizations'),
+          label: t(label ?? 'Users, groups or organizations'),
           helperText: helpertext,
           onFocus: searchMembers,
         }}
-        onChange={onChange}
+        onChange={(n: string, v: Option | Option[]) => {
+          if (onChange && Array.isArray(v)) {
+            onChange(n, v.map((nV) => nV?.value ?? nV));
+          } else if (onChange && !Array.isArray(v)) {
+            onChange(n, v?.value ?? v);
+          }
+        }}
         style={style}
         noOptionsText={t('No available options')}
         options={members}

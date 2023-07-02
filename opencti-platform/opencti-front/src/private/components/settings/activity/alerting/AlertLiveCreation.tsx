@@ -18,24 +18,27 @@ import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
-import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/MarkdownField';
-import { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
-import { insertNode } from '../../../../utils/store';
-import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import SwitchField from '../../../../components/SwitchField';
-import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { Theme } from '../../../../../components/Theme';
+import { useFormatter } from '../../../../../components/i18n';
+import { isUniqFilter } from '../../../../../utils/filters/filtersUtils';
+import { insertNode } from '../../../../../utils/store';
+import { handleErrorInForm } from '../../../../../relay/environment';
+import TextField from '../../../../../components/TextField';
+import MarkdownField from '../../../../../components/MarkdownField';
+import AutocompleteField from '../../../../../components/AutocompleteField';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import FilterIconButton from '../../../../../components/FilterIconButton';
 import {
-  TriggerEventType, TriggerLiveCreationKnowledgeMutation,
-  TriggerLiveCreationKnowledgeMutation$data,
-} from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+  TriggersLinesPaginationQuery$variables,
+} from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import {
+  AlertLiveCreationActivityMutation,
+  AlertLiveCreationActivityMutation$data,
+  TriggerActivityEventType,
+} from './__generated__/AlertLiveCreationActivityMutation.graphql';
+import ObjectMembersField from '../../../common/form/ObjectMembersField';
+import Filters from '../../../common/lists/Filters';
+import { Option } from '../../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -76,31 +79,28 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-// region live
-export const triggerLiveKnowledgeCreationMutation = graphql`
-  mutation TriggerLiveCreationKnowledgeMutation($input: TriggerLiveAddInput!) {
-    triggerKnowledgeLiveAdd(input: $input) {
+export const triggerLiveActivityCreationMutation = graphql`
+  mutation AlertLiveCreationActivityMutation($input: TriggerActivityLiveAddInput!) {
+    triggerActivityLiveAdd(input: $input) {
       id
       name
       event_types
-      ...TriggerLine_node
+      ...AlertingLine_node
     }
   }
 `;
 
-const liveTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
+const liveActivityTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   event_types: Yup.array().min(1, t('Minimum one event type')).required(t('This field is required')),
   outcomes: Yup.array().nullable(),
 });
 
-export const instanceTriggerDescription = 'An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.';
-
-interface TriggerLiveAddInput {
+interface TriggerActivityLiveAddInput {
   name: string;
   description: string;
-  event_types: { value: TriggerEventType, label: string }[];
+  event_types: { value: TriggerActivityEventType, label: string }[];
   outcomes: { value: string, label: string }[];
   recipients: string[];
 }
@@ -110,35 +110,29 @@ interface TriggerLiveCreationProps {
   open?: boolean;
   handleClose?: () => void;
   inputValue?: string;
-  recipientId?: string;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
-  creationCallback?: (data: TriggerLiveCreationKnowledgeMutation$data) => void;
+  creationCallback?: (data: AlertLiveCreationActivityMutation$data) => void;
 }
 
-const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
+const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   contextual,
   inputValue,
   paginationOptions,
   open,
   handleClose,
   creationCallback,
-  recipientId,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [filters, setFilters] = useState<
   Record<string, { id: string; value: string }[]>
   >({});
-  const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
-  const [instanceFilters, setInstanceFilters] = useState({});
-  const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
-    { value: 'create', label: t('Creation') },
-    { value: 'update', label: t('Modification') },
-    { value: 'delete', label: t('Deletion') },
-  ];
-  const instanceEventTypesOptions: { value: TriggerEventType, label: string }[] = [
-    { value: 'update', label: t('Modification') },
-    { value: 'delete', label: t('Deletion') },
+  const activityTypesOptions: { value: string, label: string }[] = [
+    { value: 'authentication', label: t('authentication') },
+    { value: 'read', label: t('read') },
+    { value: 'mutation', label: t('mutation') },
+    { value: 'file', label: t('file') },
+    { value: 'command', label: t('command') },
   ];
   const outcomesOptions = [
     {
@@ -150,14 +144,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       label: t('Email'),
     },
   ];
-
   const onReset = () => {
     handleClose?.();
-    setFilters({});
-  };
-  const onChangeInstanceTrigger = (setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
-    setFieldValue('event_types', instance_trigger ? eventTypesOptions : instanceEventTypesOptions);
-    setInstanceTrigger(!instance_trigger);
     setFilters({});
   };
   const handleAddFilter = (key: string, id: string, value: Record<string, unknown> | string) => {
@@ -184,18 +172,18 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const handleRemoveFilter = (key: string) => {
     setFilters(R.dissoc(key, filters));
   };
-  const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(triggerLiveKnowledgeCreationMutation);
-  const liveInitialValues: TriggerLiveAddInput = {
+  const [commitActivity] = useMutation<AlertLiveCreationActivityMutation>(triggerLiveActivityCreationMutation);
+  const liveInitialValues: TriggerActivityLiveAddInput = {
     name: inputValue || '',
     description: '',
-    event_types: instance_trigger ? instanceEventTypesOptions : eventTypesOptions,
+    event_types: [],
     outcomes: outcomesOptions,
-    recipients: recipientId ? [recipientId] : [],
+    recipients: [],
   };
 
-  const onLiveSubmit: FormikConfig<TriggerLiveAddInput>['onSubmit'] = (
-    values: TriggerLiveAddInput,
-    { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
+  const onLiveSubmit: FormikConfig<TriggerActivityLiveAddInput>['onSubmit'] = (
+    values: TriggerActivityLiveAddInput,
+    { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerActivityLiveAddInput>,
   ) => {
     const jsonFilters = JSON.stringify(filters);
     const finalValues = {
@@ -205,15 +193,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       description: values.description,
       filters: jsonFilters,
       recipients: values.recipients,
-      instance_trigger,
     };
-    commitLive({
+    commitActivity({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
         if (paginationOptions) {
-          insertNode(store, 'Pagination_triggersKnowledge', paginationOptions, 'triggerKnowledgeLiveAdd');
+          insertNode(store, 'Pagination_triggersActivity', paginationOptions, 'triggerActivityLiveAdd');
         }
       },
       onError: (error: Error) => {
@@ -230,19 +217,9 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     });
   };
 
-  const renderKnowledgeTrigger = (values: TriggerLiveAddInput, setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
+  const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: string | string[]) => void) => {
     return <>
-      <Field
-          component={SwitchField}
-          type="checkbox"
-          name="instance_trigger"
-          label={t('Instance trigger')}
-          tooltip={instanceTriggerDescription}
-        containerstyle={{ marginTop: 20 }}
-        onChange={() => onChangeInstanceTrigger(setFieldValue)}
-      />
-      <Field
-          component={AutocompleteField}
+      <Field component={AutocompleteField}
           name="event_types"
           style={fieldSpacingContainerStyle}
           multiple={true}
@@ -250,11 +227,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             variant: 'standard',
             label: t('Triggering on'),
           }}
-          options={instance_trigger ? instanceEventTypesOptions : eventTypesOptions}
+          options={activityTypesOptions}
           onChange={setFieldValue}
           renderOption={(
             props: React.HTMLAttributes<HTMLLIElement>,
-            option: { value: TriggerEventType, label: string },
+            option: { value: TriggerActivityEventType, label: string },
           ) => (
               <MenuItem value={option.value} {...props}>
                 <Checkbox checked={values.event_types.map((n) => n.value).includes(option.value)} />
@@ -262,66 +239,38 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
               </MenuItem>
           )}
       />
-      {instance_trigger
-        ? (<div style={fieldSpacingContainerStyle}>
-            <FilterAutocomplete
-                filterKey={'elementId'}
-                searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-                defaultHandleAddFilter={handleAddFilter}
-                inputValues={instanceFilters}
-                setInputValues={setInstanceFilters}
-                openOnFocus={true}
-            />
-          </div>)
-        : (
-              <span>
-            <div style={{ marginTop: 35 }}>
-              <Filters
-                  variant="text"
-                  availableFilterKeys={[
-                    'entity_type',
-                    'x_opencti_workflow_id',
-                    'assigneeTo',
-                    'objectContains',
-                    'markedBy',
-                    'labelledBy',
-                    'creator',
-                    'createdBy',
-                    'priority',
-                    'severity',
-                    'x_opencti_score',
-                    'x_opencti_detection',
-                    'revoked',
-                    'confidence',
-                    'indicator_types',
-                    'pattern_type',
-                    'fromId',
-                    'toId',
-                    'fromTypes',
-                    'toTypes',
-                  ]}
-                  handleAddFilter={handleAddFilter}
-                  handleRemoveFilter={undefined}
-                  handleSwitchFilter={undefined}
-                  noDirectFilters={true}
-                  disabled={undefined}
-                  size={undefined}
-                  fontSize={undefined}
-                  availableEntityTypes={undefined}
-                  availableRelationshipTypes={undefined}
-                  allEntityTypes={undefined}
-                  type={undefined}
-                  availableRelationFilterTypes={undefined}
-              />
-            </div>
-          <div className="clearfix" />
-        </span>
-        )
-      }
-      </>;
+      <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
+                          onChange={setFieldValue}
+                          multiple={true} name={'recipients'} />
+      <span>
+        <div style={{ marginTop: 35 }}>
+          <Filters
+              variant="text"
+              availableFilterKeys={[
+                'members_user',
+                'members_group',
+                'members_organization',
+              ]}
+              handleAddFilter={handleAddFilter}
+              handleRemoveFilter={undefined}
+              handleSwitchFilter={undefined}
+              noDirectFilters={true}
+              disabled={undefined}
+              size={undefined}
+              fontSize={undefined}
+              availableEntityTypes={undefined}
+              availableRelationshipTypes={undefined}
+              allEntityTypes={undefined}
+              type={undefined}
+              availableRelationFilterTypes={undefined}
+          />
+        </div>
+        <div className="clearfix" />
+      </span>
+    </>;
   };
 
-  const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerLiveAddInput) => (
+  const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerActivityLiveAddInput) => (
     <React.Fragment>
       <Field
         component={TextField}
@@ -344,10 +293,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         name="outcomes"
         style={fieldSpacingContainerStyle}
         multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: t('Notification'),
-        }}
+        textfieldprops={{ variant: 'standard', label: t('Notification') }}
         options={outcomesOptions}
         onChange={setFieldValue}
         renderOption={(
@@ -355,16 +301,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           option: { value: string, label: string },
         ) => (
           <MenuItem value={option.value} {...props}>
-            <Checkbox
-              checked={values.outcomes.map((n) => n.value).includes(option.value)}
-            />
-            <ListItemText
-              primary={option.label}
-            />
+            <Checkbox checked={values.outcomes.map((n: Option) => n.value).includes(option.value)}/>
+            <ListItemText primary={option.label}/>
           </MenuItem>
         )}
       />
-      {renderKnowledgeTrigger(values, setFieldValue)}
+      {renderActivityTrigger(values, setFieldValue)}
       <FilterIconButton
         filters={filters}
         handleRemoveFilter={handleRemoveFilter}
@@ -395,12 +337,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a live trigger')}</Typography>
+          <Typography variant="h6">{t('Create a live activity trigger')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<TriggerLiveAddInput>
+          <Formik<TriggerActivityLiveAddInput>
             initialValues={liveInitialValues}
-            validationSchema={liveTriggerValidation(t)}
+            validationSchema={liveActivityTriggerValidation(t)}
             onSubmit={onLiveSubmit}
             onReset={onReset}
           >
@@ -445,25 +387,19 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       open={open ?? false}
       onClose={handleClose}
       PaperProps={{ elevation: 1 }}>
-      <Formik
-        initialValues={liveInitialValues}
-        validationSchema={liveTriggerValidation(t)}
+      <Formik initialValues={liveInitialValues}
+        validationSchema={liveActivityTriggerValidation(t)}
         onSubmit={onLiveSubmit}
-        onReset={onReset}
-      >
+        onReset={onReset}>
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <div>
-            <DialogTitle>{t('Create a live trigger')}</DialogTitle>
+            <DialogTitle>{t('Create a live activity trigger')}</DialogTitle>
             <DialogContent>{liveFields(setFieldValue, values)}</DialogContent>
             <DialogActions classes={{ root: classes.dialogActions }}>
               <Button onClick={handleReset} disabled={isSubmitting}>
                 {t('Cancel')}
               </Button>
-              <Button
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
                 {t('Create')}
               </Button>
             </DialogActions>
@@ -477,4 +413,4 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 };
 // endregion
 
-export default TriggerLiveCreation;
+export default TriggerActivityLiveCreation;

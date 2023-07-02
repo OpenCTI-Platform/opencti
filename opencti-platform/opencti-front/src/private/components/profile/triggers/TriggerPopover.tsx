@@ -15,13 +15,13 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
-import { TriggerEditionContainerQuery } from './__generated__/TriggerEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
 import TriggerEditionContainer, {
-  triggerEditionQuery,
+  triggerKnowledgeEditionQuery,
 } from './TriggerEditionContainer';
+import { TriggerEditionContainerKnowledgeQuery } from './__generated__/TriggerEditionContainerKnowledgeQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -39,7 +39,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export const TriggerPopoverDeletionMutation = graphql`
   mutation TriggerPopoverDeletionMutation($id: ID!) {
-    triggerDelete(id: $id)
+    triggerKnowledgeDelete(id: $id)
   }
 `;
 
@@ -59,7 +59,7 @@ const TriggerPopover = ({
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const [commit] = useMutation(TriggerPopoverDeletionMutation);
-  const [queryRef, loadQuery] = useQueryLoader<TriggerEditionContainerQuery>(triggerEditionQuery);
+  const [queryRef, loadQuery] = useQueryLoader<TriggerEditionContainerKnowledgeQuery>(triggerKnowledgeEditionQuery);
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     loadQuery({ id }, { fetchPolicy: 'store-and-network' });
     setAnchorEl(event.currentTarget);
@@ -140,7 +140,8 @@ const TriggerPopover = ({
       >
         {queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <TriggerEditionContainer queryRef={queryRef} handleClose={handleCloseEdit} paginationOptions={paginationOptions}/>
+            <TriggerEditionContainer queryRef={queryRef} handleClose={handleCloseEdit}
+                                     paginationOptions={paginationOptions}/>
           </React.Suspense>
         )}
       </Drawer>

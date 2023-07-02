@@ -12,6 +12,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   name: string
   description: string
   trigger_type: string
+  trigger_scope: string
   event_types: string[]
   outcomes: string[]
   user_ids: string[]
@@ -24,6 +25,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
 
 export interface BasicStoreEntityLiveTrigger extends BasicStoreEntityTrigger {
   trigger_type: 'live'
+  trigger_scope: 'knowledge' | 'activity'
   filters: string
 }
 
@@ -62,11 +64,10 @@ export const NOTIFICATION_NUMBER = 'NotificationNumber';
 export interface NotificationContentEvent {
   operation: string
   message: string
-  instance_id: string
+  instance_id?: string
 }
 
 export interface NotificationAddInput {
-
   is_read: boolean
   name: string
   notification_type: string

@@ -357,6 +357,16 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
       const instance = { ...previous, x_opencti_files: files };
       await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
     }
+    // Add in activity only for notifications
+    const contextData = buildContextDataForFile(previous, filePath, up.name);
+    await publishUserAction({
+      user,
+      event_type: 'file',
+      event_access: 'extended',
+      event_scope: 'create',
+      prevent_indexing: true,
+      context_data: contextData
+    });
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -401,6 +411,16 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `removes \`${up.name}\` in \`files\``);
+    // Add in activity only for notifications
+    const contextData = buildContextDataForFile(previous, fileId, up.name);
+    await publishUserAction({
+      user,
+      event_type: 'file',
+      event_access: 'extended',
+      event_scope: 'delete',
+      prevent_indexing: true,
+      context_data: contextData
+    });
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {

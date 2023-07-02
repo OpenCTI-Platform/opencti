@@ -10,10 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  TriggerEditionOverview_trigger$key,
-  TriggerEventType,
-} from './__generated__/TriggerEditionOverview_trigger.graphql';
+import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
 import Filters from '../../common/lists/Filters';
@@ -27,13 +24,14 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput!]!
   ) {
-    triggerFieldPatch(id: $id, input: $input) {
+    triggerKnowledgeFieldPatch(id: $id, input: $input) {
       ...TriggerEditionOverview_trigger
     }
   }
