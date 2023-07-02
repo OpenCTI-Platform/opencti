@@ -76,7 +76,7 @@ const StixSightingRelationships = () => {
     {
       filters: {} as Filters,
       searchTerm: '',
-      sortBy: 'created',
+      sortBy: 'last_seen',
       orderAsc: false,
       openExports: false,
     },
@@ -115,7 +115,7 @@ const StixSightingRelationships = () => {
       ],
     };
     return (
-      <div>
+      <>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -180,7 +180,7 @@ const StixSightingRelationships = () => {
           handleClearSelectedElements={handleClearSelectedElements}
           type="Stix-Sighting-Relationship"
         />
-      </div>
+      </>
     );
   };
 
@@ -201,7 +201,7 @@ const StixSightingRelationships = () => {
   };
   return (
     <ExportContextProvider>
-      <div>{renderLines(enrichedPaginationOptions)}</div>
+      {renderLines(enrichedPaginationOptions)}
     </ExportContextProvider>
   );
 };

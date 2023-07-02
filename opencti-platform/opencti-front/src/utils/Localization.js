@@ -63,6 +63,8 @@ const i18n = {
       Progress: 'Progeso',
       errors: 'errores',
       State: 'Estado',
+      Vocabularies: 'Vocabularios',
+      'Used in': 'Utilizada en',
       'Status templates': 'Plantillas de estado',
       'Copied to clipboard': 'Copiado al portapapeles',
       'Advanced search': 'Búsqueda avanzada',
@@ -302,10 +304,15 @@ const i18n = {
       'are updating...': 'se están modificando...',
       'is updating...': 'se está modificando...',
       'Session timeout in': 'Tiempo de espera de la sesión en',
-      'You will be automatically logged out at end of the timer.': 'Se cerrará la sesión automáticamente al final del temporizador.',
-      'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
-        'Seleccione CONTINUAR para seguir trabajando o seleccione CERRAR SESIÓN para terminar su sesión.',
-      'Disable timeout on this page': 'Deshabilitar el tiempo de espera en esta página',
+      'You will be automatically logged out at end of the timer.':
+        'Se cerrará la sesión automáticamente al final del temporizador.',
+      Select: 'Seleccione',
+      CONTINUE: 'CONTINUAR',
+      'to keep working or select': 'para seguir trabajando o seleccione',
+      LOGOUT: 'CERRAR SESIÓN',
+      'to terminate your session.': 'para terminar su sesión.',
+      'Disable timeout on this page':
+        'Deshabilitar el tiempo de espera en esta página',
       // Form
       Yes: 'Sí',
       No: 'No',
@@ -1539,7 +1546,8 @@ const i18n = {
       'Triggers and Digests': 'Disparadores y resúmenes',
       'Add a live trigger': 'Añadir un Disparador',
       'Add a regular digest': 'Añadir un resumen',
-      'This trigger/digest has been shared with you and you are not able to modify or delete it': 'Este desencadenante/digerido ha sido compartido con usted y no puede modificarlo ni eliminarlo',
+      'This trigger/digest has been shared with you and you are not able to modify or delete it':
+        'Este desencadenante/digerido ha sido compartido con usted y no puede modificarlo ni eliminarlo',
       'to exclude items': 'Para excluir elementos',
       Trigger: 'Disparador',
       Triggers: 'Disparadores',
@@ -1548,18 +1556,26 @@ const i18n = {
       'Regular digest': 'Resumen regular',
       'Create a live trigger': 'Crear un desencadenador en vivo',
       'Update a trigger': 'Actualizar un desencadenador',
-      'Do you want to delete this trigger?': '¿Desea eliminar este desencadenador?',
+      'Do you want to delete this trigger?':
+        '¿Desea eliminar este desencadenador?',
       'Create a regular digest': 'Crear un resumen regular',
       'Triggering on': 'Activación de',
       'Minimum one trigger': 'Mínimo un disparador',
-      'Attribute "outcomes" of a trigger should have at least one outcome.': 'Los "resultados" de un desencadenante deben tener al menos un resultado.',
-      'Attribute "trigger_events" of a live trigger should have at least one event.': 'El atributo "eventos desencadenantes" de un desencadenador en vivo debe tener al menos un evento.',
-      'Instance trigger quick subscription': 'Activación de instancia de suscripción rápida',
-      'Instance trigger successfully created. You can click again on the bell to edit the options.': 'Desencadenador de instancia creado correctamente. Puede hacer clic de nuevo en la campana para editar las opciones.',
-      'Update instance triggers': 'Desencadenadores de instancias de actualización',
+      'Attribute "outcomes" of a trigger should have at least one outcome.':
+        'Los "resultados" de un desencadenante deben tener al menos un resultado.',
+      'Attribute "trigger_events" of a live trigger should have at least one event.':
+        'El atributo "eventos desencadenantes" de un desencadenador en vivo debe tener al menos un evento.',
+      'Instance trigger quick subscription':
+        'Activación de instancia de suscripción rápida',
+      'Instance trigger successfully created. You can click again on the bell to edit the options.':
+        'Desencadenador de instancia creado correctamente. Puede hacer clic de nuevo en la campana para editar las opciones.',
+      'Update instance triggers':
+        'Desencadenadores de instancias de actualización',
       'No direct instance trigger': 'Sin desencadenador directo de instancias',
-      'other trigger(s) related to this entity': 'otros desencadenantes relacionados con esta entidad',
-      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.': 'Un desencadenador de instancia notifica los siguientes eventos: actualización/eliminación de la entidad, creación/eliminación de una relación que involucra a la entidad, creación/eliminación de un contenedor que contiene la entidad, adición/eliminación de la entidad en un contenedor.',
+      'other trigger(s) related to this entity':
+        'otros desencadenantes relacionados con esta entidad',
+      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.':
+        'Un desencadenador de instancia notifica los siguientes eventos: actualización/eliminación de la entidad, creación/eliminación de una relación que involucra a la entidad, creación/eliminación de un contenedor que contiene la entidad, adición/eliminación de la entidad en un contenedor.',
       'User interface': 'Interfaz de usuario',
       Notification: 'Notificación',
       Creation: 'Creación',
@@ -2064,6 +2080,8 @@ const i18n = {
       Progress: 'Progression',
       errors: 'erreurs',
       State: 'Etat',
+      Vocabularies: 'Vocabulaires',
+      'Used in': 'Utilisé dans',
       'Status templates': 'Templates de statut',
       'Copied to clipboard': 'Copié dans le presse-papier',
       'Advanced search': 'Recherche avancée',
@@ -2318,10 +2336,16 @@ const i18n = {
       'are updating...': 'modifient actuellement...',
       'is updating...': 'modifie actuellement...',
       'Session timeout in': 'Fin de session dans',
-      'You will be automatically logged out at end of the timer.': 'Vous serez automatiquement déconnecté à la fin du décompte.',
-      'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
-        'Sélectionnez CONTINUER pour continuer à travailler ou sélectionnez DÉCONNEXION pour mettre fin à votre session.',
-      'Disable timeout on this page': 'Désactiver le délai d\'attente sur cette page',
+      'You will be automatically logged out at end of the timer.':
+        'Vous serez automatiquement déconnecté à la fin du décompte.',
+      Select: 'Sélectionnez',
+      CONTINUE: 'CONTINUER',
+      'to keep working or select':
+        'pour continuer à travailler ou sélectionnez',
+      LOGOUT: 'SE DECONNECTER',
+      'to terminate your session.': 'pour mettre fin à votre session.',
+      'Disable timeout on this page':
+        "Désactiver le délai d'attente sur cette page",
       // Form
       Yes: 'Oui',
       No: 'Non',
@@ -3554,27 +3578,36 @@ const i18n = {
       'Triggers and Digests': 'Déclencheurs et résumés',
       'Add a live trigger': 'Ajouter un déclencheur',
       'Add a regular digest': 'Ajouter un résumé',
-      'This trigger/digest has been shared with you and you are not able to modify or delete it': 'Ce déclencheur/digest a été partagé avec vous et vous n\'êtes pas en mesure de le modifier ou de le supprimer',
+      'This trigger/digest has been shared with you and you are not able to modify or delete it':
+        "Ce déclencheur/digest a été partagé avec vous et vous n'êtes pas en mesure de le modifier ou de le supprimer",
       'to exclude items': 'pour exclure des items',
       Trigger: 'Déclencheur',
       Triggers: 'Déclencheurs',
-      'Instance trigger': 'Déclencheur d\'instance',
+      'Instance trigger': "Déclencheur d'instance",
       'Live trigger': 'Déclencheur live',
       'Regular digest': 'Résumé régulier',
       'Create a live trigger': 'Créer un déclencheur live',
       'Update a trigger': 'Modifier un déclencheur',
-      'Do you want to delete this trigger?': 'Voulez-vous supprimer ce déclencheur ?',
+      'Do you want to delete this trigger?':
+        'Voulez-vous supprimer ce déclencheur ?',
       'Create a regular digest': 'Créer un résumé régulier',
       'Triggering on': 'Se déclenche sur',
       'Minimum one trigger': 'Minimum un trigger',
-      'Attribute "outcomes" of a trigger should have at least one outcome.': 'L\' attribut "notifications" d’un déclencheur doit contenir au moins un type de notification.',
-      'Attribute "trigger_events" of a live trigger should have at least one event.': 'L\' attribut "type d\'évènement" d’un déclencheur doit contenir au moins un type d\'évènement.',
-      'Instance trigger quick subscription': 'Activation rapide du déclencheur de l’instance',
-      'Instance trigger successfully created. You can click again on the bell to edit the options.': 'Déclencheur d’instance créé avec succès. Vous pouvez cliquer à nouveau sur la cloche pour modifier les options.',
-      'Update instance triggers': 'Mettre à jour les déclencheurs de l’instance',
-      'No direct instance trigger': 'Aucun déclencheur d\'instance direct',
-      'other trigger(s) related to this entity': 'autre(s) déclencheur(s) lié(s) à cette entité',
-      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.': 'Un déclencheur d’instance notifie les événements suivants : mise à jour/suppression de l’entité, création/suppression d’une relation impliquant l’entité, création/suppression d’un conteneur qui contient l’entité, ajout/suppression de l’entité dans un conteneur.',
+      'Attribute "outcomes" of a trigger should have at least one outcome.':
+        'L\' attribut "notifications" d’un déclencheur doit contenir au moins un type de notification.',
+      'Attribute "trigger_events" of a live trigger should have at least one event.':
+        "L' attribut \"type d'évènement\" d’un déclencheur doit contenir au moins un type d'évènement.",
+      'Instance trigger quick subscription':
+        'Activation rapide du déclencheur de l’instance',
+      'Instance trigger successfully created. You can click again on the bell to edit the options.':
+        'Déclencheur d’instance créé avec succès. Vous pouvez cliquer à nouveau sur la cloche pour modifier les options.',
+      'Update instance triggers':
+        'Mettre à jour les déclencheurs de l’instance',
+      'No direct instance trigger': "Aucun déclencheur d'instance direct",
+      'other trigger(s) related to this entity':
+        'autre(s) déclencheur(s) lié(s) à cette entité',
+      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.':
+        'Un déclencheur d’instance notifie les événements suivants : mise à jour/suppression de l’entité, création/suppression d’une relation impliquant l’entité, création/suppression d’un conteneur qui contient l’entité, ajout/suppression de l’entité dans un conteneur.',
       'User interface': 'Interface utilisateur',
       Notification: 'Notification',
       Creation: 'Création',
@@ -4062,6 +4095,8 @@ const i18n = {
       Progress: '進捗',
       errors: 'エラー',
       State: '状態',
+      Vocabularies: '語彙',
+      'Used in': 'で使われる',
       'Status templates': 'ステータス テンプレート',
       'Copied to clipboard': 'クリップボードにコピーしました',
       'Advanced search': '詳細検索',
@@ -4283,9 +4318,13 @@ const i18n = {
       'are updating...': 'がアップデート中',
       'is updating...': 'がアップデート中',
       'Session timeout in': 'セッションタイムアウト',
-      'You will be automatically logged out at end of the timer.': 'タイマーが終了すると自動的にログアウトされます',
-      'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
-        '[続行] を選択して作業を続行するか、[ログアウト] を選択してセッションを終了します。',
+      'You will be automatically logged out at end of the timer.':
+        'タイマーが終了すると自動的にログアウトされます',
+      Select: '選択する',
+      CONTINUE: '続く',
+      'to keep working or select': '作業を続けるか選択する',
+      LOGOUT: 'ログアウト',
+      'to terminate your session.': 'セッションを終了します。',
       'Disable timeout on this page': 'このページでタイムアウトを無効にする',
       // Form
       Yes: 'はい',
@@ -5496,7 +5535,8 @@ const i18n = {
       'Triggers and Digests': 'トリガーとダイジェスト',
       'Add a live trigger': 'ライブトリガーを追加する',
       'Add a regular digest': '通常のダイジェストを追加する',
-      'This trigger/digest has been shared with you and you are not able to modify or delete it': 'このトリガー/ダイジェストはあなたと共有され、あなたはそれを変更または削除することはできません。',
+      'This trigger/digest has been shared with you and you are not able to modify or delete it':
+        'このトリガー/ダイジェストはあなたと共有され、あなたはそれを変更または削除することはできません。',
       'to exclude items': 'アイテムを除外するには',
       Trigger: 'トリガー',
       Triggers: 'トリガー',
@@ -5509,14 +5549,20 @@ const i18n = {
       'Create a regular digest': '通常のダイジェストを作成する',
       'Triggering on': 'トリガーオン',
       'Minimum one trigger': '最小 1 つのトリガー',
-      'Attribute "outcomes" of a trigger should have at least one outcome.': 'トリガーの属性「結果」には、少なくとも 1 つの結果が必要です。',
-      'Attribute "trigger_events" of a live trigger should have at least one event.': '',
-      'Instance trigger quick subscription': 'ライブトリガーの属性「トリガーイベント」には、少なくとも1つのイベントが必要です。',
-      'Instance trigger successfully created. You can click again on the bell to edit the options.': 'インスタンス トリガーが正常に作成されました。ベルをもう一度クリックしてオプションを編集できます。',
+      'Attribute "outcomes" of a trigger should have at least one outcome.':
+        'トリガーの属性「結果」には、少なくとも 1 つの結果が必要です。',
+      'Attribute "trigger_events" of a live trigger should have at least one event.':
+        '',
+      'Instance trigger quick subscription':
+        'ライブトリガーの属性「トリガーイベント」には、少なくとも1つのイベントが必要です。',
+      'Instance trigger successfully created. You can click again on the bell to edit the options.':
+        'インスタンス トリガーが正常に作成されました。ベルをもう一度クリックしてオプションを編集できます。',
       'Update instance triggers': 'インスタンストリガーの更新',
       'No direct instance trigger': '直接インスタンストリガーなし',
-      'other trigger(s) related to this entity': 'このエンティティに関連するその他のトリガー',
-      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.': 'インスタンス トリガーは、エンティティの更新/削除、エンティティに関連するリレーションシップの作成/削除、エンティティを含むコンテナーの作成/削除、コンテナー内のエンティティの追加/削除のイベントを通知します。',
+      'other trigger(s) related to this entity':
+        'このエンティティに関連するその他のトリガー',
+      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.':
+        'インスタンス トリガーは、エンティティの更新/削除、エンティティに関連するリレーションシップの作成/削除、エンティティを含むコンテナーの作成/削除、コンテナー内のエンティティの追加/削除のイベントを通知します。',
       'User interface': 'ユーザーインターフェース',
       Notification: '通知',
       Creation: '創造',
@@ -5985,6 +6031,8 @@ const i18n = {
       Progress: '进展',
       errors: '错误',
       State: '状态',
+      Vocabularies: '词汇',
+      'Used in': '用于',
       'Status templates': '状态模板',
       'Copied to clipboard': '已復製到剪貼板',
       Infrastructures: '基础设施',
@@ -6170,9 +6218,13 @@ const i18n = {
       'are updating...': '正在更新...',
       'is updating...': '正在更新...',
       'Session timeout in': '會話超時時間為',
-      'You will be automatically logged out at end of the timer.': '計時器結束時您將自動註銷',
-      'Select CONTINUE to keep working or select LOGOUT to terminate your session.':
-        '选择继续以继续工作或选择注销以终止您的会话。',
+      'You will be automatically logged out at end of the timer.':
+        '計時器結束時您將自動註銷',
+      Select: '选择',
+      CONTINUE: '继续',
+      'to keep working or select': '继续工作或选择',
+      LOGOUT: '登出',
+      'to terminate your session.': '终止您的会话。',
       'Disable timeout on this page': '在此页面上禁用超时',
       // Form
       Yes: '是',
@@ -7326,7 +7378,8 @@ const i18n = {
       'Triggers and Digests': '觸發器和摘要',
       'Add a live trigger': '添加实时触发器',
       'Add a regular digest': '添加常规摘要',
-      'This trigger/digest has been shared with you and you are not able to modify or delete it': '这个触发器/摘要已经与你共享，你不能修改或删除它。',
+      'This trigger/digest has been shared with you and you are not able to modify or delete it':
+        '这个触发器/摘要已经与你共享，你不能修改或删除它。',
       'to exclude items': '排除專案',
       Trigger: '觸發',
       Triggers: '觸發器',
@@ -7339,14 +7392,18 @@ const i18n = {
       'Create a regular digest': '創建定期摘要',
       'Triggering on': '觸發時間',
       'Minimum one trigger': '最少一個觸發器',
-      'Attribute "outcomes" of a trigger should have at least one outcome.': '觸發器的屬性“結果”應至少有一個結果。',
-      'Attribute "trigger events" of a live trigger should have at least one event.': '即時觸發器的屬性「觸發器事件」應至少包含一個事件。',
+      'Attribute "outcomes" of a trigger should have at least one outcome.':
+        '觸發器的屬性“結果”應至少有一個結果。',
+      'Attribute "trigger events" of a live trigger should have at least one event.':
+        '即時觸發器的屬性「觸發器事件」應至少包含一個事件。',
       'Instance trigger quick subscription': '觸發快速包年月實例',
-      'Instance trigger successfully created. You can click again on the bell to edit the options.': '實例觸發器創建成功。您可以再次按兩下鈴鐺以編輯選項。',
+      'Instance trigger successfully created. You can click again on the bell to edit the options.':
+        '實例觸發器創建成功。您可以再次按兩下鈴鐺以編輯選項。',
       'Update instance triggers': '更新實例觸發器',
       'No direct instance trigger': '',
       'other trigger(s) related to this entity': '無直接實例觸發器',
-      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.': '實例觸發器通知以下事件：更新/刪除實體、創建/刪除涉及實體的關係、創建/刪除包含實體的容器、在容器中添加/刪除實體。',
+      'An instance trigger notify the following events: update/deletion of the entity, creation/deletion of a relationship involving the entity, creation/deletion of a container that contains the entity, adding/removing the entity in a container.':
+        '實例觸發器通知以下事件：更新/刪除實體、創建/刪除涉及實體的關係、創建/刪除包含實體的容器、在容器中添加/刪除實體。',
       'User interface': '用戶介面',
       Notification: '通知',
       Creation: '創造',

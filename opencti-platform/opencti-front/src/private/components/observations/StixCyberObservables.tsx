@@ -13,21 +13,15 @@ import StixCyberObservablesLines, {
 import ToolBar from '../data/ToolBar';
 import { Theme } from '../../../components/Theme';
 import { Filters } from '../../../components/list_lines';
-import {
-  StixCyberObservablesLinesPaginationQuery$data,
-} from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
+import { StixCyberObservablesLinesPaginationQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import useCopy from '../../../utils/hooks/useCopy';
-import {
-  StixCyberObservablesLinesSearchQuery$data,
-} from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
+import { StixCyberObservablesLinesSearchQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import {
-  StixCyberObservableLine_node$data,
-} from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
+import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -39,7 +33,9 @@ const LOCAL_STORAGE_KEY = 'view-stixCyberObservables';
 
 const StixCyberObservables: FunctionComponent = () => {
   const classes = useStyles();
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
@@ -164,7 +160,7 @@ const StixCyberObservables: FunctionComponent = () => {
     }
     const finalFilters = { ...viewStorage.filters, entity_type: finalType };
     return (
-      <div>
+      <>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -230,7 +226,7 @@ const StixCyberObservables: FunctionComponent = () => {
           handleCopy={handleCopy}
           rightOffset={250 + 85}
         />
-      </div>
+      </>
     );
   };
 

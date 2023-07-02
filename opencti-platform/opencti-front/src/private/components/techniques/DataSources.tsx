@@ -119,12 +119,12 @@ const DataSources: FunctionComponent = () => {
   };
 
   return (
-    <div>
+    <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataSourceCreation paginationOptions={paginationOptions} />
       </Security>
-    </div>
+    </>
   );
 };
 

@@ -29,9 +29,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  IncidentsCardsAndLinesPaginationQuery$variables,
-} from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
+import { IncidentsLinesPaginationQuery$variables } from './__generated__/IncidentsLinesPaginationQuery.graphql';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
@@ -93,18 +91,18 @@ const IncidentMutation = graphql`
 `;
 
 interface IncidentAddInput {
-  name: string
-  description: string
-  confidence: number | undefined
-  incident_type: string
-  severity: string
-  source: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  objectAssignee: Option[]
-  externalReferences: Option[]
-  file: File | undefined
+  name: string;
+  description: string;
+  confidence: number | undefined;
+  incident_type: string;
+  severity: string;
+  source: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  objectAssignee: Option[];
+  externalReferences: Option[];
+  file: File | undefined;
 }
 
 interface IncidentCreationProps {
@@ -130,9 +128,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const [commit] = useMutation(IncidentMutation);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     confidence: Yup.number().nullable(),
@@ -141,8 +137,10 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     source: Yup.string().nullable(),
     description: Yup.string().nullable(),
   };
-  const incidentValidator = useSchemaCreationValidation(INCIDENT_TYPE, basicShape);
-
+  const incidentValidator = useSchemaCreationValidation(
+    INCIDENT_TYPE,
+    basicShape,
+  );
   const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -184,25 +182,20 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       },
     });
   };
-
-  const initialValues = useDefaultValues<IncidentAddInput>(
-    INCIDENT_TYPE,
-    {
-      name: inputValue ?? '',
-      confidence: defaultConfidence,
-      incident_type: '',
-      severity: '',
-      source: '',
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectAssignee: [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
-
+  const initialValues = useDefaultValues<IncidentAddInput>(INCIDENT_TYPE, {
+    name: inputValue ?? '',
+    confidence: defaultConfidence,
+    incident_type: '',
+    severity: '',
+    source: '',
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectAssignee: [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
   return (
     <Formik<IncidentAddInput>
       initialValues={initialValues}
@@ -319,13 +312,12 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
 const IncidentCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: IncidentsCardsAndLinesPaginationQuery$variables;
+  paginationOptions: IncidentsLinesPaginationQuery$variables;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
   const onReset = () => setOpen(false);
-
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   return (
     <div>

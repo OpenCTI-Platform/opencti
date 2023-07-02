@@ -1,7 +1,9 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
-import IndicatorsLines, { indicatorsLinesQuery } from './indicators/IndicatorsLines';
+import IndicatorsLines, {
+  indicatorsLinesQuery,
+} from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import IndicatorsRightBar from './indicators/IndicatorsRightBar';
 import Security from '../../../utils/Security';
@@ -31,16 +33,22 @@ const LOCAL_STORAGE_KEY = 'view-indicators';
 const Indicators = () => {
   const classes = useStyles();
 
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage < IndicatorsLinesPaginationQuery$variables >(LOCAL_STORAGE_KEY, {
-    numberOfElements: { number: 0, symbol: '', original: 0 },
-    filters: {},
-    searchTerm: '',
-    sortBy: 'created',
-    orderAsc: false,
-    openExports: false,
-    count: 25,
-  });
-
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<IndicatorsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    {
+      numberOfElements: { number: 0, symbol: '', original: 0 },
+      filters: {},
+      searchTerm: '',
+      sortBy: 'created',
+      orderAsc: false,
+      openExports: false,
+      count: 25,
+    },
+  );
   const {
     numberOfElements,
     filters,
@@ -57,16 +65,13 @@ const Indicators = () => {
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle < IndicatorLine_node$data >('view-indicators');
-
-  const queryRef = useQueryLoading < IndicatorsLinesPaginationQuery >(
+  } = useEntityToggle<IndicatorLine_node$data>('view-indicators');
+  const queryRef = useQueryLoading<IndicatorsLinesPaginationQuery>(
     indicatorsLinesQuery,
     paginationOptions,
   );
-
   const patternType = filters?.pattern_type ?? [];
   const observableType = filters?.x_opencti_main_observable_type ?? [];
-
   const handleToggleIndicatorType = (type: string) => {
     if (patternType.map((t) => t.id)?.includes(type)) {
       storageHelpers.handleRemoveFilter('pattern_type', type);
@@ -74,19 +79,20 @@ const Indicators = () => {
       storageHelpers.handleAddFilter('pattern_type', type, type);
     }
   };
-
   const handleToggleObservableType = (type: string) => {
     if (observableType.map((t) => t.id)?.includes(type)) {
       storageHelpers.handleRemoveFilter('x_opencti_main_observable_type', type);
     } else {
-      storageHelpers.handleAddFilter('x_opencti_main_observable_type', type, type);
+      storageHelpers.handleAddFilter(
+        'x_opencti_main_observable_type',
+        type,
+        type,
+      );
     }
   };
-
   const handleClearObservableTypes = () => {
     storageHelpers.handleRemoveFilter('x_opencti_main_observable_type');
   };
-
   const renderLines = (platformModuleHelpers: ModuleHelper | undefined) => {
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -142,92 +148,91 @@ const Indicators = () => {
       },
     };
     return (
-          <div>
-            <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={dataColumns}
-              handleSort={storageHelpers.handleSort}
-              handleSearch={storageHelpers.handleSearch}
-              handleAddFilter={storageHelpers.handleAddFilter}
-              handleRemoveFilter={storageHelpers.handleRemoveFilter}
-              handleToggleExports={storageHelpers.handleToggleExports}
-              openExports={openExports}
-              handleToggleSelectAll={handleToggleSelectAll}
-              selectAll={selectAll}
-              exportEntityType="Indicator"
-              exportContext={null}
-              iconExtension={true}
-              keyword={searchTerm}
-              filters={filters}
-              paginationOptions={paginationOptions}
-              numberOfElements={numberOfElements}
-              availableFilterKeys={[
-                'labelledBy',
-                'markedBy',
-                'created_start_date',
-                'created_end_date',
-                'created_at_start_date',
-                'created_at_end_date',
-                'valid_from_start_date',
-                'valid_until_end_date',
-                'x_opencti_score',
-                'createdBy',
-                'indicates',
-                'sightedBy',
-                'x_opencti_detection',
-                'basedOn',
-                'revoked',
-                'creator',
-                'confidence',
-                'indicator_types',
-              ]}
+      <>
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={dataColumns}
+          handleSort={storageHelpers.handleSort}
+          handleSearch={storageHelpers.handleSearch}
+          handleAddFilter={storageHelpers.handleAddFilter}
+          handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleToggleExports={storageHelpers.handleToggleExports}
+          openExports={openExports}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
+          exportEntityType="Indicator"
+          exportContext={null}
+          iconExtension={true}
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'labelledBy',
+            'markedBy',
+            'created_start_date',
+            'created_end_date',
+            'created_at_start_date',
+            'created_at_end_date',
+            'valid_from_start_date',
+            'valid_until_end_date',
+            'x_opencti_score',
+            'createdBy',
+            'indicates',
+            'sightedBy',
+            'x_opencti_detection',
+            'basedOn',
+            'revoked',
+            'creator',
+            'confidence',
+            'indicator_types',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((idx) => (
+                      <IndicatorLineDummyComponent
+                        key={idx}
+                        dataColumns={dataColumns}
+                      />
+                    ))}
+                </>
+              }
             >
-              {queryRef && (
-                <React.Suspense
-                  fallback={
-                    <>
-                      {Array(20)
-                        .fill(0)
-                        .map((idx) => (
-                          <IndicatorLineDummyComponent
-                            key={idx}
-                            dataColumns={dataColumns}
-                          />
-                        ))}
-                    </>
-                  }
-                >
-                  <IndicatorsLines
-                    queryRef={queryRef}
-                    paginationOptions={paginationOptions}
-                    dataColumns={dataColumns}
-                    onLabelClick={storageHelpers.handleAddFilter}
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    onToggleEntity={onToggleEntity}
-                    selectAll={selectAll}
-                    setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                  />
-                </React.Suspense>
-              )}
-            </ListLines>
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              filters={toolBarFilters}
-              search={searchTerm}
-              handleClearSelectedElements={handleClearSelectedElements}
-              variant="large"
-              type="Indicator"
-              rightOffset={250 + 85}
-            />
-          </div>
+              <IndicatorsLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                onLabelClick={storageHelpers.handleAddFilter}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          filters={toolBarFilters}
+          search={searchTerm}
+          handleClearSelectedElements={handleClearSelectedElements}
+          variant="large"
+          type="Indicator"
+          rightOffset={250 + 85}
+        />
+      </>
     );
   };
-
   return (
     <UserContext.Consumer>
       {({ platformModuleHelpers }) => (
@@ -235,9 +240,7 @@ const Indicators = () => {
           <div className={classes.container}>
             {renderLines(platformModuleHelpers)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IndicatorCreation
-                paginationOptions={paginationOptions}
-              />
+              <IndicatorCreation paginationOptions={paginationOptions} />
             </Security>
             <IndicatorsRightBar
               indicatorTypes={patternType.map((t) => t.id as string) ?? []}

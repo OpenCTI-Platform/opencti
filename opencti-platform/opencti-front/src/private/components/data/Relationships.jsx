@@ -30,7 +30,6 @@ class Relationships extends Component {
       sortBy: R.propOr('created_at', 'sortBy', params),
       orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
@@ -47,10 +46,6 @@ class Relationships extends Component {
       'view-stix-core-relationships',
       this.state,
     );
-  }
-
-  handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
   }
 
   handleSearch(value) {
@@ -258,7 +253,6 @@ class Relationships extends Component {
               handleSearch={this.handleSearch.bind(this)}
               handleAddFilter={this.handleAddFilter.bind(this)}
               handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-              handleChangeView={this.handleChangeView.bind(this)}
               handleToggleExports={this.handleToggleExports.bind(this)}
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               openExports={openExports}
@@ -332,7 +326,7 @@ class Relationships extends Component {
   }
 
   render() {
-    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
+    const { sortBy, orderAsc, searchTerm, filters } = this.state;
     let finalFilters = convertFilters(filters);
     const fromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
     const toId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
@@ -353,7 +347,7 @@ class Relationships extends Component {
     };
     return (
       <ExportContextProvider>
-        <div>{view === 'lines' ? this.renderLines(paginationOptions) : ''}</div>
+        {this.renderLines(paginationOptions)}
       </ExportContextProvider>
     );
   }

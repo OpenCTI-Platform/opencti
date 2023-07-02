@@ -143,7 +143,11 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
   );
 };
 
-export const CountryLineDummy = () => {
+export const CountryLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -153,7 +157,10 @@ export const CountryLineDummy = () => {
       <ListItemText
         primary={
           <div>
-            <div className={classes.name}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -161,19 +168,25 @@ export const CountryLineDummy = () => {
                 height="100%"
               />
             </div>
-            <div className={classes.createdAt}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>
-            <div className={classes.modifiedAt}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified.width }}
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>

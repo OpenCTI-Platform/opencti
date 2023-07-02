@@ -141,7 +141,7 @@ interface NarrativeAddInput {
 }
 
 interface NarrativeFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater?: (store: RecordSourceSelectorProxy, key: string) => void;
   paginationOptions?: NarrativesLinesPaginationQuery$variables;
   display?: boolean;
   contextual?: boolean;
@@ -315,7 +315,6 @@ const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
@@ -324,7 +323,6 @@ const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
     paginationOptions,
     'narrativeAdd',
   );
-
   const renderClassic = () => {
     return (
       <div>

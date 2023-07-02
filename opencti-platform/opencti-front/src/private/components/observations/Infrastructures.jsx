@@ -28,8 +28,8 @@ class Infrastructures extends Component {
       'view-infrastructures',
     );
     this.state = {
-      sortBy: R.propOr('name', 'sortBy', params),
-      orderAsc: R.propOr(true, 'orderAsc', params),
+      sortBy: R.propOr('created', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),

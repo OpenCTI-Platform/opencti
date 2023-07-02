@@ -57,8 +57,8 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
-      sortBy: 'created',
-      orderAsc: true,
+      sortBy: 'last_observed',
+      orderAsc: false,
       openExports: false,
       filters: {},
     },

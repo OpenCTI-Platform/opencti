@@ -222,7 +222,7 @@ const RootAdministrativeArea = () => {
         />
       </Route>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootAdministrativeAreaComponent
             queryRef={queryRef}
             administrativeAreaId={administrativeAreaId}
@@ -230,7 +230,7 @@ const RootAdministrativeArea = () => {
           />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <Loader variant={LoaderVariant.container} />
       )}
     </div>
   );

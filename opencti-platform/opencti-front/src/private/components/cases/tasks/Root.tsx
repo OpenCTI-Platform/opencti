@@ -155,11 +155,11 @@ const Root = () => {
     id: caseId,
   });
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootTaskComponent queryRef={queryRef} caseId={caseId}/>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <RootTaskComponent queryRef={queryRef} caseId={caseId} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.container} />
   );
 };
 

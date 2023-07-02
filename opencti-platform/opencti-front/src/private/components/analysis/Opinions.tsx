@@ -3,7 +3,10 @@ import ListLines from '../../../components/list_lines/ListLines';
 import OpinionsLines, { opinionsLinesQuery } from './opinions/OpinionsLines';
 import OpinionCreation from './opinions/OpinionCreation';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -29,7 +32,9 @@ interface OpinionsProps {
 const Opinions: FunctionComponent<OpinionsProps> = ({
   onChangeOpenExports,
 }) => {
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const {
     viewStorage,
     paginationOptions,
@@ -112,7 +117,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
       },
     };
     return (
-      <div>
+      <>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -179,19 +184,17 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           handleClearSelectedElements={handleClearSelectedElements}
           type="Opinion"
         />
-      </div>
+      </>
     );
   };
 
   return (
-        <ExportContextProvider>
-          <div>
-            {renderLines()}
-            <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-              <OpinionCreation paginationOptions={paginationOptions}/>
-            </Security>
-          </div>
-        </ExportContextProvider>
+    <ExportContextProvider>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+        <OpinionCreation paginationOptions={paginationOptions} />
+      </Security>
+    </ExportContextProvider>
   );
 };
 export default Opinions;

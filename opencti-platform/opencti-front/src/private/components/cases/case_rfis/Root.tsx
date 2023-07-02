@@ -66,7 +66,9 @@ const caseRfiQuery = graphql`
 
 const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   const { me } = useAuth();
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>
+  >(
     () => ({
       subscription,
       variables: { id: caseId },
@@ -84,7 +86,8 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
       <TopBar me={me} />
       <>
         {caseData ? (
-          <Switch>ya
+          <Switch>
+            ya
             <Route
               exact
               path="/dashboard/cases/rfis/:caseId"
@@ -212,11 +215,11 @@ const Root = () => {
     id: caseId,
   });
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootCaseRfiComponent queryRef={queryRef} caseId={caseId}/>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <RootCaseRfiComponent queryRef={queryRef} caseId={caseId} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.container} />
   );
 };
 

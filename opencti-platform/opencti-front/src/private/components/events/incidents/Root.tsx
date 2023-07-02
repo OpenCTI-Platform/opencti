@@ -206,11 +206,11 @@ const RootIncident = () => {
         />
       </Route>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootIncidentComponent queryRef={queryRef} />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <Loader variant={LoaderVariant.container} />
       )}
     </div>
   );

@@ -5,23 +5,29 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { RegionsLinesPaginationQuery, RegionsLinesPaginationQuery$variables } from './regions/__generated__/RegionsLinesPaginationQuery.graphql';
+import {
+  RegionsLinesPaginationQuery,
+  RegionsLinesPaginationQuery$variables,
+} from './regions/__generated__/RegionsLinesPaginationQuery.graphql';
 import RegionCreation from './regions/RegionCreation';
 import { Filters } from '../../../components/list_lines';
 import { RegionLineDummy } from './regions/RegionLine';
 
 const Regions: FunctionComponent = () => {
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<RegionsLinesPaginationQuery$variables>('view-regions', {
-    searchTerm: '',
-    sortBy: 'name',
-    orderAsc: true,
-    openExports: false,
-    filters: {} as Filters,
-    numberOfElements: {
-      number: 0,
-      symbol: '',
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<RegionsLinesPaginationQuery$variables>(
+    'view-regions',
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      openExports: false,
+      filters: {} as Filters,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
     },
-  });
+  );
 
   const renderLines = () => {
     const {
@@ -49,8 +55,10 @@ const Regions: FunctionComponent = () => {
         isSortable: true,
       },
     };
-    const queryRef = useQueryLoading<RegionsLinesPaginationQuery>(regionsLinesQuery, paginationOptions);
-
+    const queryRef = useQueryLoading<RegionsLinesPaginationQuery>(
+      regionsLinesQuery,
+      paginationOptions,
+    );
     return (
       <ListLines
         sortBy={sortBy}
@@ -74,9 +82,17 @@ const Regions: FunctionComponent = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense fallback={
-            <>{Array(20).fill(0).map((idx) => (<RegionLineDummy key={idx} />))}</>
-          }>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <RegionLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
             <RegionsLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
@@ -90,12 +106,12 @@ const Regions: FunctionComponent = () => {
   };
 
   return (
-    <div>
+    <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <RegionCreation paginationOptions={paginationOptions} />
       </Security>
-    </div>
+    </>
   );
 };
 

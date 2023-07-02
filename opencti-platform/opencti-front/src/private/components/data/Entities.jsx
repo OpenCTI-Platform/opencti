@@ -38,7 +38,6 @@ class Entities extends Component {
       sortBy: R.propOr('created_at', 'sortBy', params),
       orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('lines', 'view', params),
       filters: R.propOr({}, 'filters', params),
       types: R.propOr([], 'types', params),
       numberOfElements: { number: 0, symbol: '' },
@@ -56,10 +55,6 @@ class Entities extends Component {
       'view-stix-domain-objects',
       this.state,
     );
-  }
-
-  handleChangeView(mode) {
-    this.setState({ view: mode }, () => this.saveView());
   }
 
   handleSearch(value) {
@@ -281,7 +276,6 @@ class Entities extends Component {
               handleSearch={this.handleSearch.bind(this)}
               handleAddFilter={this.handleAddFilter.bind(this)}
               handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-              handleChangeView={this.handleChangeView.bind(this)}
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               handleToggleExports={this.handleToggleExports.bind(this)}
               openExports={openExports}
@@ -359,7 +353,7 @@ class Entities extends Component {
 
   render() {
     const { classes } = this.props;
-    const { view, types, sortBy, orderAsc, searchTerm, filters } = this.state;
+    const { types, sortBy, orderAsc, searchTerm, filters } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       types: types.length > 0 ? types : null,
@@ -371,7 +365,7 @@ class Entities extends Component {
     return (
       <ExportContextProvider>
         <div className={classes.container}>
-          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+          {this.renderLines(paginationOptions)}
           <StixDomainObjectsRightBar
             types={types}
             handleToggle={this.handleToggle.bind(this)}

@@ -187,12 +187,12 @@ class AttackPatterns extends Component {
       filters: finalFilters,
     };
     return (
-      <div>
+      <>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AttackPatternCreation paginationOptions={paginationOptions} />
         </Security>
-      </div>
+      </>
     );
   }
 }

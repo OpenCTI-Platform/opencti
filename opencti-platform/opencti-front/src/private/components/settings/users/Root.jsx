@@ -96,11 +96,11 @@ const RootUser = () => {
     <div>
       <TopBar />
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootUserComponent queryRef={queryRef} userId={userId} refetch={refetch}/>
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <Loader variant={LoaderVariant.container} />
       )}
     </div>
   );

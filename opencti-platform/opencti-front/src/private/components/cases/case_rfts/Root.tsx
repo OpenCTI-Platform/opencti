@@ -64,7 +64,9 @@ const caseRftQuery = graphql`
 
 const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const { me } = useAuth();
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>
+  >(
     () => ({
       subscription,
       variables: { id: caseId },
@@ -210,11 +212,11 @@ const Root = () => {
     id: caseId,
   });
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootCaseRftComponent queryRef={queryRef} caseId={caseId}/>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <RootCaseRftComponent queryRef={queryRef} caseId={caseId} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.container} />
   );
 };
 

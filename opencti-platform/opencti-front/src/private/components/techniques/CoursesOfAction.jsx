@@ -175,12 +175,12 @@ class CoursesOfAction extends Component {
       filters: finalFilters,
     };
     return (
-      <div>
+      <>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CourseOfActionCreation paginationOptions={paginationOptions} />
         </Security>
-      </div>
+      </>
     );
   }
 }

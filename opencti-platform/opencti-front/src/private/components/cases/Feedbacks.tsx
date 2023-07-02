@@ -1,23 +1,21 @@
 import React, { FunctionComponent, Suspense } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Filters } from '../../../components/list_lines';
-import FeedbacksLines, { feedbacksLinesQuery } from './feedbacks/FeedbacksLines';
+import FeedbacksLines, {
+  feedbacksLinesQuery,
+} from './feedbacks/FeedbacksLines';
 import { FeedbackLineDummy } from './feedbacks/FeedbackLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
+import {
+  FeedbacksLinesPaginationQuery,
+  FeedbacksLinesPaginationQuery$variables,
+} from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 interface FeedbacksProps {
   inputValue?: string;
@@ -26,8 +24,9 @@ interface FeedbacksProps {
 export const LOCAL_STORAGE_KEY_FEEDBACK = 'view-feedbacks';
 
 const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
-  const classes = useStyles();
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_FEEDBACK,
     {
@@ -177,14 +176,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
       </ListLines>
     );
   };
-
-  return (
-    <ExportContextProvider>
-    <div className={classes.container}>
-      {renderLines()}
-    </div>
-    </ExportContextProvider>
-  );
+  return <ExportContextProvider>{renderLines()}</ExportContextProvider>;
 };
 
 export default Feedbacks;

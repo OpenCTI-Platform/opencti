@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import GroupingsLines, { groupingsLinesQuery } from './groupings/GroupingsLines';
+import GroupingsLines, {
+  groupingsLinesQuery,
+} from './groupings/GroupingsLines';
 import GroupingCreation from './groupings/GroupingCreation';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
@@ -30,7 +32,9 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -146,7 +150,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       },
     };
     return (
-      <div>
+      <>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -215,16 +219,16 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
           handleClearSelectedElements={handleClearSelectedElements}
           type="Grouping"
         />
-      </div>
+      </>
     );
   };
   return (
-    <div>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <GroupingCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
+    <>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <GroupingCreation paginationOptions={paginationOptions} />
+      </Security>
+    </>
   );
 };
 

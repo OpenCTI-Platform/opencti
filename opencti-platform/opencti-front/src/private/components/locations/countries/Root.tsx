@@ -211,11 +211,15 @@ const RootCountry = () => {
         />
       </Route>
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <RootCountryComponent queryRef={queryRef} countryId={countryId} link={link} />
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <RootCountryComponent
+            queryRef={queryRef}
+            countryId={countryId}
+            link={link}
+          />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <Loader variant={LoaderVariant.container} />
       )}
     </div>
   );

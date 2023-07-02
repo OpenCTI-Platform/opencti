@@ -145,7 +145,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
       },
     };
     return (
-      <div>
+      <>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -221,17 +221,15 @@ const Reports: FunctionComponent<ReportsProps> = ({
             </React.Suspense>
           )}
         </ListLines>
-      </div>
+      </>
     );
   };
   return (
     <ExportContextProvider>
-      <div>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ReportCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <ReportCreation paginationOptions={paginationOptions} />
+      </Security>
     </ExportContextProvider>
   );
 };

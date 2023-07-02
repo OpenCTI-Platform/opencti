@@ -1,10 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Filters } from '../../../components/list_lines';
-import CaseIncidentsLines, { caseIncidentsLinesQuery } from './case_incidents/CaseIncidentsLines';
+import CaseIncidentsLines, {
+  caseIncidentsLinesQuery,
+} from './case_incidents/CaseIncidentsLines';
 import { CaseIncidentLineDummy } from './case_incidents/CaseIncidentLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
@@ -14,15 +15,10 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CaseIncidentCreation from './case_incidents/CaseIncidentCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import {
-  CaseIncidentsLinesCasesPaginationQuery, CaseIncidentsLinesCasesPaginationQuery$variables,
+  CaseIncidentsLinesCasesPaginationQuery,
+  CaseIncidentsLinesCasesPaginationQuery$variables,
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -31,8 +27,9 @@ interface CaseIncidentsProps {
 export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'view-caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
-  const classes = useStyles();
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseIncidentsLinesCasesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_INCIDENT,
     {
@@ -55,7 +52,9 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<CaseIncidentLineCase_node$data>(LOCAL_STORAGE_KEY_CASE_INCIDENT);
+  } = useEntityToggle<CaseIncidentLineCase_node$data>(
+    LOCAL_STORAGE_KEY_CASE_INCIDENT,
+  );
   const renderLines = () => {
     const {
       sortBy,
@@ -156,7 +155,10 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
                 {Array(20)
                   .fill(0)
                   .map((idx) => (
-                    <CaseIncidentLineDummy key={idx} dataColumns={dataColumns} />
+                    <CaseIncidentLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
                   ))}
               </>
             }
@@ -189,12 +191,10 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   };
   return (
     <ExportContextProvider>
-      <div className={classes.container}>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CaseIncidentCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <CaseIncidentCreation paginationOptions={paginationOptions} />
+      </Security>
     </ExportContextProvider>
   );
 };

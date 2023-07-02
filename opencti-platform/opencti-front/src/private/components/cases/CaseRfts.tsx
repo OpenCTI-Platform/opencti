@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -19,12 +18,6 @@ import { CaseRftLineCase_node$data } from './case_rfts/__generated__/CaseRftLine
 import { CaseRftLineDummy } from './case_rfts/CaseRftLine';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
 interface CaseRftsProps {
   inputValue?: string;
 }
@@ -32,8 +25,9 @@ interface CaseRftsProps {
 export const LOCAL_STORAGE_KEY_CASE_RFT = 'view-caseRfts';
 
 const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
-  const classes = useStyles();
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseRftLinesCasesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_RFT,
     {
@@ -190,12 +184,10 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   };
   return (
     <ExportContextProvider>
-      <div className={classes.container}>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CaseRftCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <CaseRftCreation paginationOptions={paginationOptions} />
+      </Security>
     </ExportContextProvider>
   );
 };

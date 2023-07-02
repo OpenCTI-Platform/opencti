@@ -130,7 +130,7 @@ RegionLineComponentProps
   );
 };
 
-export const RegionLineDummy = () => {
+export const RegionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -140,7 +140,10 @@ export const RegionLineDummy = () => {
       <ListItemText
         primary={
           <div>
-            <div className={classes.name}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -148,19 +151,25 @@ export const RegionLineDummy = () => {
                 height="100%"
               />
             </div>
-            <div className={classes.createdAt}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>
-            <div className={classes.modifiedAt}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified.width }}
+            >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>

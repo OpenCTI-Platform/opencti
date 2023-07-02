@@ -1,5 +1,4 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -15,16 +14,9 @@ import {
 } from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
 export const LOCAL_STORAGE_KEY_TASKS = 'view-cases-casesTasks';
 
 const Tasks = () => {
-  const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<TasksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_TASKS,
     {
@@ -39,7 +31,6 @@ const Tasks = () => {
       filters: {} as Filters,
     },
   );
-
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -132,13 +123,11 @@ const Tasks = () => {
   };
   return (
     <ExportContextProvider>
-      <div className={classes.container}>
-        {renderLines()}
-        {/* TODO Add task creation when it will be possible to assign a task to something
+      {renderLines()}
+      {/* TODO Add task creation when it will be possible to assign a task to something
            <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <TaskCreation paginationOptions={paginationOptions} />
         </Security> */}
-      </div>
     </ExportContextProvider>
   );
 };

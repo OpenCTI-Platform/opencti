@@ -31,7 +31,6 @@ const Vulnerabilities = () => {
       filters: {} as Filters,
     },
   );
-
   const renderLines = () => {
     const {
       sortBy,
@@ -73,7 +72,6 @@ const Vulnerabilities = () => {
         isSortable: isRuntimeSort,
       },
     };
-
     const queryRef = useQueryLoading<VulnerabilitiesLinesPaginationQuery>(
       vulnerabilitiesLinesQuery,
       paginationOptions,
@@ -136,12 +134,12 @@ const Vulnerabilities = () => {
   };
 
   return (
-    <div>
+    <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <VulnerabilityCreation paginationOptions={paginationOptions} />
       </Security>
-    </div>
+    </>
   );
 };
 

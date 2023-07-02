@@ -64,12 +64,10 @@ const DataComponents: FunctionComponent = () => {
         isSortable: true,
       },
     };
-
     const queryRef = useQueryLoading<DataComponentsLinesPaginationQuery>(
       dataComponentsLinesQuery,
       paginationOptions,
     );
-
     return (
       <ListLines
         sortBy={sortBy}
@@ -123,14 +121,13 @@ const DataComponents: FunctionComponent = () => {
       </ListLines>
     );
   };
-
   return (
-    <div>
+    <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataComponentCreation paginationOptions={paginationOptions} />
       </Security>
-    </div>
+    </>
   );
 };
 

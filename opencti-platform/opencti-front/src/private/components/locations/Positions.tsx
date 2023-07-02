@@ -31,7 +31,6 @@ const Positions: FunctionComponent = () => {
       symbol: '',
     },
   });
-
   const {
     searchTerm,
     sortBy,
@@ -40,7 +39,6 @@ const Positions: FunctionComponent = () => {
     openExports,
     numberOfElements,
   } = viewStorage;
-
   const renderLines = () => {
     const dataColumns = {
       name: {
@@ -100,12 +98,12 @@ const Positions: FunctionComponent = () => {
   };
 
   return (
-    <div>
+    <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <PositionCreation paginationOptions={paginationOptions} />
       </Security>
-    </div>
+    </>
   );
 };
 

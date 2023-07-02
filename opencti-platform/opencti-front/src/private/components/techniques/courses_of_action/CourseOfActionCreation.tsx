@@ -115,7 +115,7 @@ interface CourseOfActionAddInput {
 }
 
 interface CourseOfActionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater?: (store: RecordSourceSelectorProxy, key: string) => void;
   paginationOptions?: CoursesOfActionLinesPaginationQuery$variables;
   display?: boolean;
   contextual?: boolean;

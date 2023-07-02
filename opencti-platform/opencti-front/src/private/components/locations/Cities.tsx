@@ -7,22 +7,27 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { CityLineDummy } from './cities/CityLine';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { CitiesLinesPaginationQuery, CitiesLinesPaginationQuery$variables } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
+import {
+  CitiesLinesPaginationQuery,
+  CitiesLinesPaginationQuery$variables,
+} from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
 import { Filters } from '../../../components/list_lines';
 
 const Cities: FunctionComponent = () => {
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>('view-cities', {
-    searchTerm: '',
-    sortBy: 'name',
-    orderAsc: true,
-    openExports: false,
-    filters: {} as Filters,
-    numberOfElements: {
-      number: 0,
-      symbol: '',
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>(
+    'view-cities',
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      openExports: false,
+      filters: {} as Filters,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
     },
-  });
-
+  );
   const renderLines = () => {
     const {
       sortBy,
@@ -49,9 +54,10 @@ const Cities: FunctionComponent = () => {
         isSortable: true,
       },
     };
-
-    const queryRef = useQueryLoading<CitiesLinesPaginationQuery>(citiesLinesQuery, paginationOptions);
-
+    const queryRef = useQueryLoading<CitiesLinesPaginationQuery>(
+      citiesLinesQuery,
+      paginationOptions,
+    );
     return (
       <ListLines
         sortBy={sortBy}
@@ -75,9 +81,17 @@ const Cities: FunctionComponent = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense fallback={
-            <>{Array(20).fill(0).map((idx) => (<CityLineDummy key={idx} dataColumns={dataColumns} />))}</>
-          }>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <CityLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
             <CitiesLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
@@ -89,14 +103,13 @@ const Cities: FunctionComponent = () => {
       </ListLines>
     );
   };
-
   return (
-    <div>
+    <>
       {renderLines()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CityCreation paginationOptions={paginationOptions} />
       </Security>
-    </div>
+    </>
   );
 };
 

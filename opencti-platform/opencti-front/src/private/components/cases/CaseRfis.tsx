@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -19,12 +18,6 @@ import {
 } from './case_rfis/__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 import { CaseRfiLineCase_node$data } from './case_rfis/__generated__/CaseRfiLineCase_node.graphql';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
-
 interface CaseRfisProps {
   inputValue?: string;
 }
@@ -32,8 +25,9 @@ interface CaseRfisProps {
 export const LOCAL_STORAGE_KEY_CASE_RFI = 'view-caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
-  const classes = useStyles();
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseRfiLinesCasesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_RFI,
     {
@@ -190,12 +184,10 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   };
   return (
     <ExportContextProvider>
-      <div className={classes.container}>
-        {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CaseRfiCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
+      {renderLines()}
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <CaseRfiCreation paginationOptions={paginationOptions} />
+      </Security>
     </ExportContextProvider>
   );
 };

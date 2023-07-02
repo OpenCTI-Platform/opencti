@@ -160,7 +160,7 @@ export const AdministrativeAreaLineDummy = ({
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>
@@ -171,7 +171,7 @@ export const AdministrativeAreaLineDummy = ({
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={140}
+                width="90%"
                 height="100%"
               />
             </div>

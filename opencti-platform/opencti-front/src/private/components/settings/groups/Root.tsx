@@ -89,11 +89,11 @@ const RootGroup = () => {
     <div>
       <TopBar />
       {queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootGroupComponent queryRef={queryRef} groupId={groupId} />
         </React.Suspense>
       ) : (
-        <Loader variant={LoaderVariant.inElement} />
+        <Loader variant={LoaderVariant.container} />
       )}
     </div>
   );
