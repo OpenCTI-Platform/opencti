@@ -40,7 +40,6 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
   const { t } = useFormatter();
   const classes = useStyles();
   const { bannerSettings } = useAuth();
-  const bannerHeight = bannerSettings.bannerHeightNumber;
   return (
       <Drawer variant="permanent"
         anchor="right"
@@ -62,19 +61,16 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
                 sortByLabel,
               )(subTypesEdges);
               return (
-                <List
-                  sx={{ marginTop: bannerHeight, marginBottom: bannerHeight }}
+                <List sx={{ marginTop: bannerSettings.bannerHeight, marginBottom: bannerSettings.bannerHeight }}
                   subheader={
                     <ListSubheader component="div">
                       {t('Entity types')}
                       <Tooltip title={t('Clear filters')}>
                         <span>
-                          <IconButton
-                            onClick={handleClear.bind(this)}
+                          <IconButton onClick={handleClear}
                             disabled={types.length === 0}
                             color="primary"
-                            size="large"
-                          >
+                            size="large">
                             <FilterOffOutline fontSize="small" />
                           </IconButton>
                         </span>
@@ -83,13 +79,11 @@ const StixDomainObjectsRightBar = ({ types = [], handleToggle, handleClear }) =>
                   }
                 >
                   {translatedOrderedList.map((subType) => (
-                    <ListItem
-                      key={subType.id}
+                    <ListItem key={subType.id}
                       dense={true}
                       button={true}
-                      onClick={handleToggle.bind(this, subType.label)}
-                      classes={{ root: classes.item }}
-                    >
+                      onClick={() => handleToggle(subType.label)}
+                      classes={{ root: classes.item }}>
                       <Checkbox
                         checked={types.includes(subType.label)}
                         disableRipple={true}

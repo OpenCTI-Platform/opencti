@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { compose, pipe, sortBy, prop, toLower, map, assoc } from 'ramda';
+import { assoc, compose, map, pipe, prop, sortBy, toLower } from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -40,7 +40,6 @@ const StixCyberObservablesRightBar = ({ types = [], handleToggle, handleClear })
   const classes = useStyles();
   const { t } = useFormatter();
   const { bannerSettings } = useAuth();
-  const bannerHeight = bannerSettings.bannerHeightNumber;
   return (
       <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawerPaper }}>
         <div className={classes.toolbar} />
@@ -57,18 +56,15 @@ const StixCyberObservablesRightBar = ({ types = [], handleToggle, handleClear })
                 sortByLabel,
               )(subTypesEdges);
               return (
-                <List
-                  sx={{ marginTop: bannerHeight, marginBottom: bannerHeight }}
+                <List sx={{ marginTop: bannerSettings.bannerHeight, marginBottom: bannerSettings.bannerHeight }}
                   subheader={
                     <ListSubheader component="div">
                       {t('Observable types')}
                       <Tooltip title={t('Clear filters')}>
-                        <IconButton
-                          onClick={handleClear.bind(this)}
+                        <IconButton onClick={handleClear}
                           disabled={types.length === 0}
                           color="primary"
-                          size="large"
-                        >
+                          size="large">
                           <FilterOffOutline fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -80,7 +76,7 @@ const StixCyberObservablesRightBar = ({ types = [], handleToggle, handleClear })
                       key={subType.id}
                       dense={true}
                       button={true}
-                      onClick={handleToggle.bind(this, subType.label)}
+                      onClick={() => handleToggle(subType.label)}
                       classes={{ root: classes.item }}
                     >
                       <Checkbox

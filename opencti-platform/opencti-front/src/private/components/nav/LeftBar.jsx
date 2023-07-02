@@ -162,7 +162,6 @@ const LeftBar = () => {
     'Position',
   );
   const { bannerSettings: { bannerHeight } } = useAuth();
-  console.log('bannerHeightNumber', bannerHeight);
   return (
     <Drawer
       variant="permanent"

@@ -70,7 +70,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
   return (
       <Drawer variant="permanent" anchor="right" classes={{ paper: classes.drawer }}>
         <div className={classes.toolbar} />
-        <MenuList style={{ paddingBottom: 0 }} sx={{ marginTop: bannerSettings.bannerHeightNumber }} component="nav">
+        <MenuList style={{ paddingBottom: 0 }} sx={{ marginTop: bannerSettings.bannerHeight }} component="nav">
           <MenuItem
             component={Link}
             to={`${stixCoreObjectLink}/overview`}
@@ -762,9 +762,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
             )}
           </MenuList>
         )}
-        <MenuList
-          style={{ paddingBottom: 0 }}
-          sx={{ marginBottom: this.bannerHeight }}
+        <MenuList style={{ paddingBottom: 0 }} sx={{ marginBottom: bannerSettings.bannerHeight }}
           component="nav"
           subheader={
             <ListSubheader style={{ height: 35 }}>{t('Other')}</ListSubheader>

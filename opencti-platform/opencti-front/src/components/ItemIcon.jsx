@@ -42,7 +42,6 @@ import {
   MapOutlined,
   RouterOutlined,
   TaskAltOutlined,
-  CasesOutlined,
   SettingsOutlined,
 } from '@mui/icons-material';
 import {
