@@ -21,6 +21,8 @@ const Filters = ({
   availableRelationFilterTypes,
   allEntityTypes,
   handleAddFilter,
+  handleRemoveFilter,
+  handleSwitchFilter,
   searchContext = {},
   type,
 }) => {
@@ -56,7 +58,7 @@ const Filters = ({
         setFilters((c) => ({ ...c, [key]: [{ id, value }] }));
       }
     });
-  const handleRemoveFilter = (key) => setFilters((c) => R.dissoc(key, c));
+  const defaultHandleRemoveFilter = handleRemoveFilter || ((key) => setFilters((c) => R.dissoc(key, c)));
   const handleSearch = () => {
     handleCloseFilters();
     const urlParams = { filters: JSON.stringify(filters) };
@@ -95,7 +97,7 @@ const Filters = ({
         open={open}
         filters={filters}
         handleCloseFilters={handleCloseFilters}
-        handleRemoveFilter={handleRemoveFilter}
+        defaultHandleRemoveFilter={defaultHandleRemoveFilter}
         handleSearch={handleSearch}
         filterElement={filterElement}
         type={type}
@@ -119,6 +121,8 @@ const Filters = ({
       inputValues={inputValues}
       setInputValues={setInputValues}
       defaultHandleAddFilter={defaultHandleAddFilter}
+      defaultHandleRemoveFilter={defaultHandleRemoveFilter}
+      handleSwitchFilter={handleSwitchFilter}
       availableEntityTypes={availableEntityTypes}
       availableRelationshipTypes={availableRelationshipTypes}
       availableRelationFilterTypes={availableRelationFilterTypes}

@@ -73,7 +73,7 @@ export const STATIC_MARKING_IDS = [
   MARKING_TLP_AMBER_STRICT,
   MARKING_TLP_RED
 ];
-export const STATIC_STANDARD_IDS = [
+const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_CLEAR_ID, data: { definition_type: 'TLP', definition: 'TLP:WHITE' } },
   { id: MARKING_TLP_CLEAR_ID, data: { definition_type: 'TLP', definition: 'TLP:CLEAR' } },
   { id: MARKING_TLP_GREEN_ID, data: { definition_type: 'TLP', definition: 'TLP:GREEN' } },

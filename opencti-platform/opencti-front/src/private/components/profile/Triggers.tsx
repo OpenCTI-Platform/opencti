@@ -69,11 +69,17 @@ const Triggers: FunctionComponent = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchFilter={helpers.handleSwitchFilter}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[]}
+        availableFilterKeys={[
+          'trigger_type',
+          'instance_trigger',
+          'created_start_date',
+          'created_end_date',
+        ]}
       >
         {queryRef && (
           <React.Suspense

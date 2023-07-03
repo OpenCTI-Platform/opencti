@@ -147,6 +147,7 @@ class ListLines extends Component {
       extraFields,
       handleAddFilter,
       handleRemoveFilter,
+      handleSwitchFilter,
       handleToggleExports,
       handleToggleSelectAll,
       selectAll,
@@ -216,23 +217,24 @@ class ListLines extends Component {
                     <Filters
                       searchContext={{
                         entityTypes: exportEntityType ? [exportEntityType] : [],
-                      }}
-                      availableFilterKeys={availableFilterKeys}
-                      handleAddFilter={handleAddFilter}
+                      }}availableFilterKeys={availableFilterKeys}
+                    handleAddFilter={handleAddFilter}
+                    handleSwitchFilter={handleSwitchFilter}
+                    handleRemoveFilter={handleRemoveFilter}
                       availableEntityTypes={availableEntityTypes}
                       availableRelationshipTypes={availableRelationshipTypes}
                       availableRelationFilterTypes={
                         availableRelationFilterTypes
                       }
                     />
-                  )}
-                  {(!availableFilterKeys || availableFilterKeys.length === 0)
-                    && !noHeaders
-                    && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
-                  <FilterIconButton
-                    availableFilterKeys={availableFilterKeys}
-                    filters={filters}
-                    handleRemoveFilter={handleRemoveFilter}
+                  )}{(!availableFilterKeys || availableFilterKeys.length === 0)
+                  && !noHeaders
+                  && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
+                <FilterIconButton
+                  availableFilterKeys={availableFilterKeys}
+                  filters={filters}
+                  handleRemoveFilter={handleRemoveFilter}
+                  redirection
                   />
                 </div>
               )}
@@ -588,6 +590,7 @@ ListLines.propTypes = {
   disableCards: PropTypes.bool,
   handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
+  handleSwitchFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   handleToggleSelectAll: PropTypes.func,
   selectAll: PropTypes.bool,

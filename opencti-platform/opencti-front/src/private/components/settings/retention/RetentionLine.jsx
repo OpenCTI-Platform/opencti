@@ -72,6 +72,7 @@ class RetentionLineComponent extends Component {
                   dataColumns={dataColumns}
                   classNameNumber={3}
                   styleNumber={3}
+                  redirection
                 />
               ) : (
                 <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>

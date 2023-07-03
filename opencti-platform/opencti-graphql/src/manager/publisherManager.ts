@@ -22,7 +22,6 @@ import type { AuthContext } from '../types/user';
 import type { StixCoreObject, StixRelationshipObject } from '../types/stix-common';
 import { now } from '../utils/format';
 import type { NotificationContentEvent } from '../modules/notification/notification-types';
-import { extractStixRepresentative } from '../database/stix-representative';
 
 const DOC_URI = 'https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -35,7 +34,12 @@ const processNotificationEvent = async (
   context: AuthContext,
   notificationId: string,
   user: NotificationUser,
-  data: Array<{ notification_id: string, instance: StixCoreObject | StixRelationshipObject, type: string }>
+  data: Array<{
+    notification_id: string,
+    instance: StixCoreObject | StixRelationshipObject,
+    type: string,
+    message: string,
+  }>
 ) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const outcomeMap = new Map(STATIC_OUTCOMES.map((n) => [n.internal_id, n]));
@@ -52,9 +56,12 @@ const processNotificationEvent = async (
     const { outcome_type, configuration } = outcomeMap.get(outcome) ?? {};
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {
-      const { notification_id, instance, type } = data[index];
-      const instanceRepresentative = extractStixRepresentative(instance);
-      const event = { operation: type, message: `[${instance.type}] ${instanceRepresentative}`, instance_id: instance.id };
+      const { notification_id, instance, type, message } = data[index];
+      const event = {
+        operation: type,
+        message,
+        instance_id: instance.id
+      };
       const eventNotification = notificationMap.get(notification_id);
       if (eventNotification) {
         const notificationName = eventNotification.name;
@@ -109,8 +116,8 @@ const processNotificationEvent = async (
 const processLiveNotificationEvent = async (context: AuthContext, event: NotificationEvent) => {
   const { targets, data: instance } = event;
   for (let index = 0; index < targets.length; index += 1) {
-    const { user, type } = targets[index];
-    const data = [{ notification_id: event.notification_id, instance, type }];
+    const { user, type, message } = targets[index];
+    const data = [{ notification_id: event.notification_id, instance, type, message }];
     await processNotificationEvent(context, event.notification_id, user, data);
   }
 };

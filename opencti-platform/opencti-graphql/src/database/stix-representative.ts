@@ -10,16 +10,23 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR,
-  ENTITY_TYPE_INFRASTRUCTURE, ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_COURSE_OF_ACTION,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INDICATOR,
+  ENTITY_TYPE_INFRASTRUCTURE,
+  ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_TOOL, ENTITY_TYPE_VULNERABILITY,
+  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation
 } from '../schema/stixDomainObject';
 import type * as SDO from '../types/stix-sdo';
 import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION
 } from '../schema/stixMetaObject';
@@ -34,23 +41,33 @@ import {
   ENTITY_EMAIL_MESSAGE,
   ENTITY_EMAIL_MIME_PART_TYPE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+  ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
   ENTITY_HOSTNAME,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
   ENTITY_MAC_ADDR,
   ENTITY_MEDIA_CONTENT,
   ENTITY_MUTEX,
-  ENTITY_NETWORK_TRAFFIC, ENTITY_PAYMENT_CARD, ENTITY_PHONE_NUMBER,
+  ENTITY_NETWORK_TRAFFIC,
+  ENTITY_PAYMENT_CARD,
+  ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
-  ENTITY_SOFTWARE, ENTITY_TEXT, ENTITY_URL, ENTITY_USER_ACCOUNT, ENTITY_WINDOWS_REGISTRY_KEY,
+  ENTITY_SOFTWARE,
+  ENTITY_TEXT,
+  ENTITY_URL,
+  ENTITY_USER_ACCOUNT,
+  ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../schema/stixCyberObservable';
 import type * as SCO from '../types/stix-sco';
 import { hashValue } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 
-export const extractStixRepresentative = (stix: StixObject): string => {
+export const extractStixRepresentative = (
+  stix: StixObject,
+  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean, toRestricted: boolean } = { fromRestricted: false, toRestricted: false }
+): string => {
   const entityType = stix.extensions[STIX_EXT_OCTI].type;
   // region Modules
   const convertFn = getStixRepresentativeConverters(entityType);
@@ -61,16 +78,16 @@ export const extractStixRepresentative = (stix: StixObject): string => {
   // region Sighting
   if (isStixSightingRelationship(entityType)) {
     const sighting = stix as SRO.StixSighting;
-    const fromValue = sighting.extensions[STIX_EXT_OCTI].sighting_of_value;
-    const targetValues = sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
-    return `${fromValue} sighted in/at ${targetValues.join(', ')}`;
+    const fromValue = fromRestricted ? 'Restricted' : sighting.extensions[STIX_EXT_OCTI].sighting_of_value;
+    const targetValue = toRestricted ? 'Restricted' : sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
+    return `${fromValue} sighted in/at ${targetValue}`;
   }
   // endregion
   // region Relationship
   if (isBasicRelationship(entityType)) {
     const relation = stix as SRO.StixRelation;
-    const fromValue = relation.extensions[STIX_EXT_OCTI].source_value;
-    const targetValue = relation.extensions[STIX_EXT_OCTI].target_value;
+    const fromValue = fromRestricted ? 'Restricted' : relation.extensions[STIX_EXT_OCTI].source_value;
+    const targetValue = toRestricted ? 'Restricted' : relation.extensions[STIX_EXT_OCTI].target_value;
     return `${fromValue} ${relation.relationship_type} ${targetValue}`;
   }
   // endregion

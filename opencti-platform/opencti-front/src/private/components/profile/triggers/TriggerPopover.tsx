@@ -37,7 +37,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TriggerPopoverDeletionMutation = graphql`
+export const TriggerPopoverDeletionMutation = graphql`
   mutation TriggerPopoverDeletionMutation($id: ID!) {
     triggerDelete(id: $id)
   }
@@ -140,7 +140,7 @@ const TriggerPopover = ({
       >
         {queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <TriggerEditionContainer queryRef={queryRef} handleClose={handleClose} paginationOptions={paginationOptions}/>
+            <TriggerEditionContainer queryRef={queryRef} handleClose={handleCloseEdit} paginationOptions={paginationOptions}/>
           </React.Suspense>
         )}
       </Drawer>

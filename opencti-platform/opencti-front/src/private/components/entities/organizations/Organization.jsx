@@ -43,6 +43,7 @@ class OrganizationComponent extends Component {
           PopoverComponent={<OrganizationPopover />}
           onViewAs={onViewAs.bind(this)}
           viewAs={viewAs}
+          enableQuickSubscription
         />
         <Grid
           container={true}

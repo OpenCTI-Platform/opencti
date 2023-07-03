@@ -34,6 +34,7 @@ import {
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
   INPUT_VALUES,
+  RELATION_GRANTED_TO,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import {
@@ -1158,10 +1159,12 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         source_ref: instance.from.internal_id,
         source_type: instance.from.entity_type,
         source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
+        source_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
         target_value: extractEntityRepresentative(instance.to),
         target_ref: instance.to.internal_id,
         target_type: instance.to.entity_type,
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
+        target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
         kill_chain_phases: buildKillChainPhases(instance)
       })
     }
@@ -1187,10 +1190,12 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
         sighting_of_ref: instance.from.internal_id,
         sighting_of_type: instance.from.entity_type,
         sighting_of_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
+        sighting_of_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
         where_sighted_values: [extractEntityRepresentative(instance.to)],
         where_sighted_refs: [instance.to.internal_id],
         where_sighted_types: [instance.to.entity_type],
         where_sighted_refs_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
+        where_sighted_refs_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
         negative: instance.x_opencti_negative,
       })
     }

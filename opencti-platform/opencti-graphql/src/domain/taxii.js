@@ -104,7 +104,7 @@ const collectionQuery = async (context, user, collectionId, args) => {
     throw ResourceNotFoundError({ id: collectionId });
   }
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
-  const options = await convertFiltersToQueryOptions(context, filters, { after: added_after });
+  const options = await convertFiltersToQueryOptions(context, user, filters, { after: added_after });
   options.after = next;
   let maxSize = 100;
   if (limit) {

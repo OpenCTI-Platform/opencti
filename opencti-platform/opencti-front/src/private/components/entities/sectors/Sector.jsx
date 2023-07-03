@@ -38,6 +38,7 @@ class SectorComponent extends Component {
           stixDomainObject={sector}
           isOpenctiAlias={true}
           PopoverComponent={<SectorPopover />}
+          enableQuickSubscription
         />
         <Grid
           container={true}

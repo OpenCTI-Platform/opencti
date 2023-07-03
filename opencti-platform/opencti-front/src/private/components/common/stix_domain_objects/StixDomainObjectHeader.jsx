@@ -35,6 +35,7 @@ import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import { defaultValue } from '../../../../utils/Graph';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -191,6 +192,7 @@ const StixDomainObjectHeader = (props) => {
     disableSharing,
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
+    enableQuickSubscription,
   } = props;
 
   const openAliasesCreate = false;
@@ -465,6 +467,12 @@ const StixDomainObjectHeader = (props) => {
             <StixCoreObjectSharing
               elementId={stixDomainObject.id}
               variant="header"
+            />
+          )}
+          {enableQuickSubscription && (
+            <StixCoreObjectQuickSubscription
+              instanceId={stixDomainObject.id}
+              instanceName={defaultValue(stixDomainObject)}
             />
           )}
           <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />

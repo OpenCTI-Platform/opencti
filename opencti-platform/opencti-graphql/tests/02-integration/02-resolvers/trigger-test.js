@@ -79,9 +79,10 @@ describe('Trigger resolver standard behavior', () => {
       input: {
         name: 'live trigger',
         description: '',
-        event_types: EVENT_TYPE_CREATE,
+        event_types: [EVENT_TYPE_CREATE],
         outcomes: [],
         filters: '',
+        instance_trigger: false,
       },
     };
     const trigger = await queryAsAdmin({
@@ -131,6 +132,7 @@ describe('Trigger resolver standard behavior', () => {
         outcomes: [],
         filters: '',
         recipients: [AMBER_GROUP.id],
+        instance_trigger: false,
       },
     };
     const trigger = await securityQuery({
@@ -173,10 +175,11 @@ describe('Trigger resolver standard behavior', () => {
       input: {
         name: 'trigger',
         description: '',
-        event_types: EVENT_TYPE_CREATE,
+        event_types: [EVENT_TYPE_CREATE],
         outcomes: [],
         filters: '',
         recipients: [ADMIN_USER.id],
+        instance_trigger: false,
       },
     };
     const trigger = await securityQuery({

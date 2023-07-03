@@ -194,7 +194,7 @@ class ContainerStixCoreObjectPopover extends Component {
         this.submitDeleteMapping();
         this.handleCloseRemove();
         const newSelectedElements = R.omit([toId], selectedElements);
-        setSelectedElements(newSelectedElements);
+        setSelectedElements?.(newSelectedElements);
       },
     });
   }
@@ -232,7 +232,7 @@ class ContainerStixCoreObjectPopover extends Component {
         this.submitDeleteMapping();
         this.handleCloseDelete();
         const newSelectedElements = R.omit([toId], selectedElements);
-        setSelectedElements(newSelectedElements);
+        setSelectedElements?.(newSelectedElements);
       },
     });
   }

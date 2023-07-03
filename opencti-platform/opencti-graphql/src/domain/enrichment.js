@@ -4,11 +4,11 @@ import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { connectorsEnrichment } from '../database/repository';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { getEntitiesFromCache } from '../database/cache';
+import { getEntitiesListFromCache } from '../database/cache';
 
 export const createEntityAutoEnrichment = async (context, user, stixCoreObjectId, scope) => {
   // Get the list of compatible connectors
-  const connectors = await getEntitiesFromCache(context, user, ENTITY_TYPE_CONNECTOR);
+  const connectors = await getEntitiesListFromCache(context, user, ENTITY_TYPE_CONNECTOR);
   const targetConnectors = connectorsEnrichment(connectors, scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(

@@ -79,6 +79,7 @@ const Notifications: FunctionComponent = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchFilter={helpers.handleSwitchFilter}
         handleToggleSelectAll={handleToggleSelectAll}
         keyword={searchTerm}
         filters={filters}

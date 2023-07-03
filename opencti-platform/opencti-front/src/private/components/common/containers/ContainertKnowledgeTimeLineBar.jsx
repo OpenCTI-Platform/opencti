@@ -87,84 +87,83 @@ const ContentKnowledgeTimeLineBar = ({
               <div
                 style={{
                   float: 'left',
-                  height: '100%',
-                  display: 'flex',
-                }}
-              >
-                <Tooltip
-                  title={
-                    timeLineDisplayRelationships
-                      ? t('Do not display relationships')
-                      : t('Display relationships')
-                  }
+
+              height: '100%',
+              display: 'flex',
+            }}
+          >
+            <Tooltip
+              title={
+                timeLineDisplayRelationships
+                  ? t('Do not display relationships')
+                  : t('Display relationships')
+              }
+            >
+              <span>
+                <IconButton
+                  color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
+                  size="large"
+                  onClick={() => handleToggleTimeLineDisplayRelationships()}
                 >
-                  <span>
-                    <IconButton
-                      color={
-                        timeLineDisplayRelationships ? 'secondary' : 'primary'
-                      }
-                      size="large"
-                      onClick={() => handleToggleTimeLineDisplayRelationships()}
-                    >
-                      <RelationManyToMany />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Tooltip
-                  title={
-                    timeLineFunctionalDate
-                      ? t('Use technical dates')
-                      : t('Use functional dates')
-                  }
+                  <RelationManyToMany />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip
+              title={
+                timeLineFunctionalDate
+                  ? t('Use technical dates')
+                  : t('Use functional dates')
+              }
+            >
+              <span>
+                <IconButton
+                  color={timeLineFunctionalDate ? 'secondary' : 'primary'}
+                  size="large"
+                  onClick={() => handleToggleTimeLineFunctionalDate()}
                 >
-                  <span>
-                    <IconButton
-                      color={timeLineFunctionalDate ? 'secondary' : 'primary'}
-                      size="large"
-                      onClick={() => handleToggleTimeLineFunctionalDate()}
-                    >
-                      <CalendarMultiselectOutline />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Divider className={classes.divider} orientation="vertical" />
-                <div style={{ margin: '9px 10px 0 10px' }}>
-                  <SearchInput
-                    variant="thin"
-                    onSubmit={handleTimeLineSearch}
-                    keyword={timeLineSearchTerm}
-                  />
-                </div>
-                <Divider className={classes.divider} orientation="vertical" />
-                <div style={{ paddingTop: 4 }}>
-                  <Filters
-                    availableFilterKeys={[
-                      'entity_type',
-                      'markedBy',
-                      'labelledBy',
-                      'createdBy',
-                      'relationship_type',
-                    ]}
-                    availableEntityTypes={[
-                      'Stix-Domain-Object',
-                      'Stix-Cyber-Observable',
-                    ]}
-                    handleAddFilter={handleAddTimeLineFilter}
-                    noDirectFilters={true}
-                  />
-                </div>
-                <div style={{ paddingTop: 3 }}>
-                  <FilterIconButton
-                    filters={timeLineFilters}
-                    handleRemoveFilter={handleRemoveTimeLineFilter}
-                    classNameNumber={1}
-                  />
-                </div>
-              </div>
+                  <CalendarMultiselectOutline />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Divider className={classes.divider} orientation="vertical" />
+            <div style={{ margin: '9px 10px 0 10px' }}>
+              <SearchInput
+                variant="thin"
+                onSubmit={handleTimeLineSearch}
+                keyword={timeLineSearchTerm}
+              />
+            </div>
+            <Divider className={classes.divider} orientation="vertical" />
+            <div style={{ paddingTop: 4 }}>
+              <Filters
+                availableFilterKeys={[
+                  'entity_type',
+                  'markedBy',
+                  'labelledBy',
+                  'createdBy',
+                  'relationship_type',
+                ]}
+                availableEntityTypes={[
+                  'Stix-Domain-Object',
+                  'Stix-Cyber-Observable',
+                ]}
+                handleAddFilter={handleAddTimeLineFilter}
+                noDirectFilters={true}
+              />
+            </div>
+            <div style={{ paddingTop: 3 }}>
+              <FilterIconButton
+                filters={timeLineFilters}
+                handleRemoveFilter={handleRemoveTimeLineFilter}
+                classNameNumber={1}
+                redirection
+              />
             </div>
           </div>
-        </Drawer>
-      )}
+        </div>
+      </div>
+    </Drawer>)}
     </UserContext.Consumer>
   );
 };

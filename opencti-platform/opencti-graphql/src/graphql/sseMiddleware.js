@@ -31,12 +31,12 @@ import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
+import { convertFiltersFrontendFormat, convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { getEntitiesFromCache } from '../database/cache';
+import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -93,7 +93,7 @@ const isUserGlobalCapabilityGranted = (user) => {
 };
 
 const computeUserAndCollection = async (res, { context, user, id }) => {
-  const collections = await getEntitiesFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
+  const collections = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
   const collection = collections.find((c) => c.id === id);
 
   if (collection && !collection.stream_live) {
@@ -455,8 +455,9 @@ const createSseMiddleware = () => {
     if (fromStix && toStix) {
       // As we resolved at now, data can be deleted now.
       // We are force to resolve because stream cannot contain all dependencies on each event.
-      const isFromVisible = await isStixMatchFilters(context, user, fromStix, streamFilters);
-      const isToVisible = await isStixMatchFilters(context, user, toStix, streamFilters);
+      const adaptedFilters = await convertFiltersFrontendFormat(context, user, streamFilters);
+      const isFromVisible = await isStixMatchFilters(context, user, fromStix, adaptedFilters);
+      const isToVisible = await isStixMatchFilters(context, user, toStix, adaptedFilters);
       if (isFromVisible || isToVisible) {
         await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
         // From or to are visible, consider it as a dependency
@@ -554,10 +555,11 @@ const createSseMiddleware = () => {
               const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
               const elementType = stix.extensions[STIX_EXT_OCTI].type;
               if (!isInferredData || (isInferredData && withInferences)) {
-                const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, streamFilters);
+                const adaptedFilters = await convertFiltersFrontendFormat(context, user, streamFilters);
+                const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, adaptedFilters);
                 if (type === EVENT_TYPE_UPDATE) {
                   const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), evenContext.reverse_patch);
-                  const isPreviouslyVisible = await isStixMatchFilters(context, user, previous, streamFilters);
+                  const isPreviouslyVisible = await isStixMatchFilters(context, user, previous, adaptedFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                   } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
@@ -580,7 +582,7 @@ const createSseMiddleware = () => {
                     for (let containerIndex = 0; containerIndex < containers.length; containerIndex += 1) {
                       const container = containers[containerIndex];
                       const stixContainer = convertStoreToStix(container);
-                      const containerMatch = await isStixMatchFilters(context, user, stixContainer, streamFilters);
+                      const containerMatch = await isStixMatchFilters(context, user, stixContainer, adaptedFilters);
                       if (containerMatch) {
                         isContainerMatching = true;
                         break;
@@ -653,7 +655,7 @@ const createSseMiddleware = () => {
           await wait(channel.delay);
           return channel.connected();
         };
-        const queryOptions = await convertFiltersToQueryOptions(context, streamFilters, {
+        const queryOptions = await convertFiltersToQueryOptions(context, user, streamFilters, {
           after: startIsoDate,
           before: recoverIsoDate
         });

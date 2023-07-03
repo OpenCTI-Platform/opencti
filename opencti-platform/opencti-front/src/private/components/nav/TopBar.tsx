@@ -481,6 +481,8 @@ const TopBar: FunctionComponent<TopBarProps> = ({
                   availableRelationshipTypes={undefined}
                   allEntityTypes={undefined}
                   handleAddFilter={undefined}
+                  handleRemoveFilter={undefined}
+                  handleSwitchFilter={undefined}
                   type={undefined}
                   availableRelationFilterTypes={undefined}
                 />

@@ -9180,6 +9180,8 @@ enum TriggerFilter {
   event_types
   user_ids
   group_ids
+  filters
+  instance_trigger
 }
 
 input TriggersFiltering {
@@ -9197,6 +9199,12 @@ enum TriggersOrdering {
   outcomes
 }
 
+type ResolvedInstanceFilter {
+  id: String!
+  valid: Boolean!
+  value: String
+}
+
 type Trigger implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -9209,12 +9217,14 @@ type Trigger implements InternalObject & BasicObject {
   trigger_type: TriggerType!
   event_types: [TriggerEventType!]
   filters: String
-  outcomes: [StixRef!]!
+  outcomes: [StixRef!]
   trigger_ids: [String]
   triggers: [Trigger]
   period: DigestPeriod
   trigger_time: String
   currentUserAccessRight: String
+  instance_trigger: Boolean!
+  resolved_instance_filters: [ResolvedInstanceFilter!]
 }
 
 type TriggerConnection {
@@ -9291,7 +9301,8 @@ input TriggerLiveAddInput {
   name: name_String_NotNull_minLength_1!
   description: String
   event_types: [TriggerEventType!]!
-  outcomes: [StixRef!]!
+  outcomes: [StixRef!]
+  instance_trigger: Boolean!
   filters: String
   recipients: [String!]
 }

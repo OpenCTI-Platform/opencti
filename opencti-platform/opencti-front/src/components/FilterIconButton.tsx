@@ -6,6 +6,9 @@ import { truncate } from '../utils/String';
 import { DataColumns, Filters } from './list_lines';
 import { useFormatter } from './i18n';
 import { Theme } from './Theme';
+import FilterIconButtonContentWithRedirectionContainer from './FilterIconButtonContentWithRedirectionContainer';
+import { entityFilters } from '../utils/filters/filtersUtils';
+import { TriggerLine_node$data } from '../private/components/profile/triggers/__generated__/TriggerLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   filters1: {
@@ -90,6 +93,8 @@ interface FilterIconButtonProps {
   styleNumber?: number;
   dataColumns?: DataColumns;
   disabledPossible?: boolean;
+  redirection?: boolean;
+  resolvedInstanceFilters?: TriggerLine_node$data['resolved_instance_filters'];
 }
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
@@ -100,6 +105,8 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   styleNumber,
   dataColumns,
   disabledPossible,
+  redirection,
+  resolvedInstanceFilters,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -128,7 +135,6 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   }
 
   const filterPairs = toPairs(filters).filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((k) => currentFilter[0].startsWith(k)));
-
   const lastKey = last(filterPairs)?.[0];
 
   return (
@@ -143,11 +149,17 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
           <span>
             {filterContent.map((n) => (
               <span key={n.value}>
-                <span>
-                  {n.value && n.value.length > 0
-                    ? truncate(n.value, 15)
-                    : t('No label')}{' '}
-                </span>
+                {(redirection && entityFilters.includes(filterKey))
+                  ? <FilterIconButtonContentWithRedirectionContainer
+                    filter={n}
+                    resolvedInstanceFilters={resolvedInstanceFilters}
+                  />
+                  : <span>
+                    {n.value && n.value.length > 0
+                      ? truncate(n.value, 15)
+                      : t('No label')}{' '}
+                  </span>
+                }
                 {last(filterContent)?.value !== n.value && (
                   <div className={classes.inlineOperator}>
                     {localFilterMode}
@@ -174,7 +186,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
               }
             />
             {lastKey !== filterKey && (
-              <Chip classes={{ root: classOperator }} label={t('AND')} />
+              <Chip classes={{ root: classOperator }} label={t('AND')}/>
             )}
           </span>
         );

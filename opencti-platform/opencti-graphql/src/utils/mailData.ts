@@ -28,7 +28,7 @@ export const truncate = (str: string, limit = DEFAULT_TRUNCATE_LIMIT) => {
   return `${trimmedStr.substr(0, Math.min(trimmedStr.length, trimmedStr.lastIndexOf(' ')))}...`;
 };
 
-export const defaultValue = (element: BasicStoreObject) => {
+const mailDataDefaultValue = (element: BasicStoreObject) => { // TODO should be replaced by extractEntityRepresentative
   if (!element) return '';
   const entityType = element.entity_type;
   if (isStixDomainObject(entityType)) {
@@ -323,7 +323,7 @@ export const relationshipToHtml = (url: string, entry: StoreRelation) => {
             <tr>
                 <td bgcolor="#ffffff" style="padding:0; width: 35%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
                   <span style="color: #999999">${entry.from.entity_type}</span><br>
-                  ${defaultValue(entry.from)}
+                  ${mailDataDefaultValue(entry.from)}
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
                     <i>${entry.relationship_type}</i><br>
@@ -331,7 +331,7 @@ export const relationshipToHtml = (url: string, entry: StoreRelation) => {
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 35%; text-align:center; background:#ffffff;background-color:#ffffff;" valign="top">
                     <span style="color: #999999">${entry.to.entity_type}</span><br>
-                    ${defaultValue(entry.to)}
+                    ${mailDataDefaultValue(entry.to)}
                 </td>
             </tr>
         </table>
@@ -350,7 +350,7 @@ export const entityToHtml = (url: string, entry: StoreEntity | StoreCyberObserva
         <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse:collapse; margin-top: 10pt; font-size: 10pt;">
             <tr>
                 <td bgcolor="#ffffff" style="padding:0; width: 100%; text-align:center; background:#ffffff; background-color:#ffffff;" valign="top">
-                    <strong>${defaultValue(entry)}</strong>
+                    <strong>${mailDataDefaultValue(entry)}</strong>
                 </td>
             </tr>
             <tr>
@@ -369,10 +369,10 @@ export const technicalRelationToHtml = (url: string, entry: StoreRelation) => {
   return `
             <tr>
                 <td bgcolor="#ffffff" style="padding:0; width: 40%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
-                    <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">${truncate(defaultValue(entry.from), 80)}.</a>
+                    <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">${truncate(mailDataDefaultValue(entry.from), 80)}.</a>
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
-                    ${truncate(defaultValue(entry.from), 60)}
+                    ${truncate(mailDataDefaultValue(entry.from), 60)}
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:left; background: #ffffff;background-color: #ffffff;" valign="top">
                     <span style="color: #999999; margin: 0;">By ${author}, ${prepareDate(entry.created_at)}</span>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isStixMatchFilters } from '../../../src/utils/filtering';
+import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../../src/utils/filtering';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import { isEmptyField } from '../../../src/database/utils';
@@ -11,7 +11,8 @@ const applyFilters = async (filters, user = ADMIN_USER) => {
   const filteredObjects = [];
   for (let i = 0; i < data.objects.length; i += 1) {
     const stix = data.objects[i];
-    const isCurrentlyVisible = await isStixMatchFilters(testContext, user, stix, filters);
+    const adaptedFilters = await convertFiltersFrontendFormat(testContext, user, filters);
+    const isCurrentlyVisible = await isStixMatchFilters(testContext, user, stix, adaptedFilters);
     if (isCurrentlyVisible) {
       filteredObjects.push(stix);
     }

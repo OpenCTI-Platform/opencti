@@ -410,6 +410,7 @@ const FeedEditionContainer = (props) => {
                         handleRemoveFilter={handleRemoveFilter}
                         classNameNumber={2}
                         styleNumber={2}
+                        redirection
                       />
                       {selectedTypes.length > 0 && (
                         <div

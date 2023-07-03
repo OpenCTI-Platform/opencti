@@ -20,6 +20,8 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { Theme } from '../../../../components/Theme';
@@ -29,13 +31,15 @@ import { insertNode } from '../../../../utils/store';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import SelectField from '../../../../components/SelectField';
 import {
   TriggerLiveCreationMutation,
   TriggerLiveCreationMutation$data,
   TriggerEventType,
 } from './__generated__/TriggerLiveCreationMutation.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import SwitchField from '../../../../components/SwitchField';
+import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -78,7 +82,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 // region live
-const triggerLiveCreationMutation = graphql`
+export const triggerLiveCreationMutation = graphql`
   mutation TriggerLiveCreationMutation($input: TriggerLiveAddInput!) {
     triggerLiveAdd(input: $input) {
       id
@@ -92,15 +96,25 @@ const triggerLiveCreationMutation = graphql`
 const liveTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
-  event_types: Yup.array().required(t('This field is required')),
-  outcomes: Yup.array().required(t('This field is required')),
+  event_types: Yup.array()
+    .min(1, t('Minimum one event type'))
+    .required(t('This field is required')),
+  outcomes: Yup.array().nullable(),
 });
+
+export const instanceTriggerDescription = 'An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.';
 
 interface TriggerLiveAddInput {
   name: string;
   description: string;
-  event_types: Array<TriggerEventType>;
-  outcomes: string[];
+  event_types: {
+    value: TriggerEventType,
+    label: string
+  }[];
+  outcomes: {
+    value: string,
+    label: string
+  }[];
   recipients: string[];
 }
 
@@ -128,8 +142,36 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const [filters, setFilters] = useState<
   Record<string, { id: string; value: string }[]>
   >({});
+  const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
+  const [instanceFilters, setInstanceFilters] = useState({});
+
+  const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
+    { value: 'create', label: t('Creation') },
+    { value: 'update', label: t('Modification') },
+    { value: 'delete', label: t('Deletion') },
+  ];
+  const instanceEventTypesOptions: { value: TriggerEventType, label: string }[] = [
+    { value: 'update', label: t('Modification') },
+    { value: 'delete', label: t('Deletion') },
+  ];
+  const outcomesOptions = [
+    {
+      value: 'f4ee7b33-006a-4b0d-b57d-411ad288653d',
+      label: t('User interface'),
+    },
+    {
+      value: '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
+      label: t('Email'),
+    },
+  ];
+
   const onReset = () => {
     handleClose?.();
+    setFilters({});
+  };
+  const onChangeInstanceTrigger = (setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
+    setFieldValue('event_types', instance_trigger ? eventTypesOptions : instanceEventTypesOptions);
+    setInstanceTrigger(!instance_trigger);
     setFilters({});
   };
   const handleAddFilter = (
@@ -166,20 +208,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const liveInitialValues: TriggerLiveAddInput = {
     name: inputValue || '',
     description: '',
-    event_types: ['create'],
-    outcomes: [],
+    event_types: instance_trigger ? instanceEventTypesOptions : eventTypesOptions,
+    outcomes: outcomesOptions,
     recipients: recipientId ? [recipientId] : [],
   };
-  const eventTypesOptions: Record<string, string> = {
-    create: t('Creation'),
-    update: t('Modification'),
-    delete: t('Deletion'),
-  };
-  const outcomesOptions: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
-    webhook: t('Webhook'),
-  };
+
   const onLiveSubmit: FormikConfig<TriggerLiveAddInput>['onSubmit'] = (
     values: TriggerLiveAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
@@ -187,11 +220,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     const jsonFilters = JSON.stringify(filters);
     const finalValues = {
       name: values.name,
-      event_types: values.event_types,
-      outcomes: values.outcomes,
+      event_types: values.event_types.map((n) => n.value),
+      outcomes: values.outcomes.map((n) => n.value),
       description: values.description,
       filters: jsonFilters,
       recipients: values.recipients,
+      instance_trigger,
     };
     commitLive({
       variables: {
@@ -246,125 +280,121 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         style={{ marginTop: 20 }}
       />
       <Field
-        component={SelectField}
-        variant="standard"
-        name="event_types"
-        label={t('Triggering on')}
-        fullWidth={true}
-        multiple={true}
-        onChange={(name: string, value: string[]) => setFieldValue('event_types', value)
-        }
-        inputProps={{ name: 'event_types', id: 'event_types' }}
-        containerstyle={fieldSpacingContainerStyle}
-        renderValue={(selected: Array<string>) => (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {selected.map((value) => (
-              <Chip key={value} label={eventTypesOptions[value]} />
-            ))}
-          </Box>
-        )}
-      >
-        <MenuItem value="create">
-          <Checkbox checked={values.event_types.indexOf('create') > -1} />
-          <ListItemText primary={eventTypesOptions.create} />
-        </MenuItem>
-        <MenuItem value="update">
-          <Checkbox checked={values.event_types.indexOf('update') > -1} />
-          <ListItemText primary={eventTypesOptions.update} />
-        </MenuItem>
-        <MenuItem value="delete">
-          <Checkbox checked={values.event_types.indexOf('delete') > -1} />
-          <ListItemText primary={eventTypesOptions.delete} />
-        </MenuItem>
-      </Field>
-      <Field
-        component={SelectField}
-        variant="standard"
+        component={AutocompleteField}
         name="outcomes"
-        label={t('Notification')}
-        fullWidth={true}
+        style={fieldSpacingContainerStyle}
         multiple={true}
-        onChange={(name: string, value: string[]) => setFieldValue('outcomes', value)
-        }
-        inputProps={{ name: 'outcomes', id: 'outcomes' }}
-        containerstyle={fieldSpacingContainerStyle}
-        renderValue={(selected: Array<string>) => (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {selected.map((value) => (
-              <Chip key={value} label={outcomesOptions[value]} />
-            ))}
-          </Box>
+        textfieldprops={{
+          variant: 'standard',
+          label: t('Notification'),
+        }}
+        options={outcomesOptions}
+        onChange={setFieldValue}
+        renderOption={(
+          props: React.HTMLAttributes<HTMLLIElement>,
+          option: { value: string, label: string },
+        ) => (
+          <MenuItem value={option.value} {...props}>
+            <Checkbox
+              checked={values.outcomes.map((n) => n.value).includes(option.value)}
+            />
+            <ListItemText
+              primary={option.label}
+            />
+          </MenuItem>
         )}
-      >
-        <MenuItem value="f4ee7b33-006a-4b0d-b57d-411ad288653d">
-          <Checkbox
-            checked={
-              values.outcomes.indexOf('f4ee7b33-006a-4b0d-b57d-411ad288653d')
-              > -1
-            }
+      />
+      <Field
+        component={SwitchField}
+        type="checkbox"
+        name="instance_trigger"
+        label={t('Instance trigger')}
+        tooltip={instanceTriggerDescription}
+        containerstyle={{ marginTop: 20 }}
+        onChange={() => onChangeInstanceTrigger(setFieldValue)}
+      />
+      <Field
+        component={AutocompleteField}
+        name="event_types"
+        style={fieldSpacingContainerStyle}
+        multiple={true}
+        textfieldprops={{
+          variant: 'standard',
+          label: t('Triggering on'),
+        }}
+        options={instance_trigger ? instanceEventTypesOptions : eventTypesOptions}
+        onChange={setFieldValue}
+        renderOption={(
+          props: React.HTMLAttributes<HTMLLIElement>,
+          option: { value: TriggerEventType, label: string },
+        ) => (
+          <MenuItem value={option.value} {...props}>
+            <Checkbox checked={values.event_types.map((n) => n.value).includes(option.value)} />
+            <ListItemText primary={option.label} />
+          </MenuItem>
+        )}
+      />
+      {instance_trigger
+        ? (<div style={fieldSpacingContainerStyle}>
+          <FilterAutocomplete
+            filterKey={'elementId'}
+            searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+            defaultHandleAddFilter={handleAddFilter}
+            inputValues={instanceFilters}
+            setInputValues={setInstanceFilters}
+            openOnFocus={true}
           />
-          <ListItemText
-            primary={outcomesOptions['f4ee7b33-006a-4b0d-b57d-411ad288653d']}
-          />
-        </MenuItem>
-        <MenuItem value="44fcf1f4-8e31-4b31-8dbc-cd6993e1b822">
-          <Checkbox
-            checked={
-              values.outcomes.indexOf('44fcf1f4-8e31-4b31-8dbc-cd6993e1b822')
-              > -1
-            }
-          />
-          <ListItemText
-            primary={outcomesOptions['44fcf1f4-8e31-4b31-8dbc-cd6993e1b822']}
-          />
-        </MenuItem>
-        <MenuItem value="webhook" disabled={true}>
-          <Checkbox checked={values.outcomes.indexOf('webhook') > -1} />
-          <ListItemText primary={outcomesOptions.webhook} />
-        </MenuItem>
-      </Field>
-      <div style={{ marginTop: 35 }}>
-        <Filters
-          variant="text"
-          availableFilterKeys={[
-            'entity_type',
-            'x_opencti_workflow_id',
-            'assigneeTo',
-            'objectContains',
-            'markedBy',
-            'labelledBy',
-            'creator',
-            'createdBy',
-            'priority',
-            'severity',
-            'x_opencti_score',
-            'x_opencti_detection',
-            'revoked',
-            'confidence',
-            'indicator_types',
-            'pattern_type',
-            'fromId',
-            'toId',
-            'fromTypes',
-            'toTypes',
-          ]}
-          handleAddFilter={handleAddFilter}
-          noDirectFilters={true}
-          disabled={undefined}
-          size={undefined}
-          fontSize={undefined}
-          availableEntityTypes={undefined}
-          availableRelationshipTypes={undefined}
-          allEntityTypes={undefined}
-          type={undefined}
-          availableRelationFilterTypes={undefined}
-        />
-      </div>
-      <div className="clearfix" />
+        </div>)
+        : (
+          <span>
+            <div style={{ marginTop: 35 }}>
+              <Filters
+                variant="text"
+                availableFilterKeys={[
+                  'entity_type',
+                  'x_opencti_workflow_id',
+                  'assigneeTo',
+                  'objectContains',
+                  'markedBy',
+                  'labelledBy',
+                  'creator',
+                  'createdBy',
+                  'priority',
+                  'severity',
+                  'x_opencti_score',
+                  'x_opencti_detection',
+                  'revoked',
+                  'confidence',
+                  'indicator_types',
+                  'pattern_type',
+                  'fromId',
+                  'toId',
+                  'fromTypes',
+                  'toTypes',
+                ]}
+                handleAddFilter={handleAddFilter}
+                handleRemoveFilter={undefined}
+                handleSwitchFilter={undefined}
+                noDirectFilters={true}
+                disabled={undefined}
+                size={undefined}
+                fontSize={undefined}
+                availableEntityTypes={undefined}
+                availableRelationshipTypes={undefined}
+                allEntityTypes={undefined}
+                type={undefined}
+                availableRelationFilterTypes={undefined}
+              />
+            </div>
+          <div className="clearfix" />
+        </span>
+        )
+      }
       <FilterIconButton
         filters={filters}
         handleRemoveFilter={handleRemoveFilter}
         classNameNumber={2}
+        redirection
       />
     </React.Fragment>
   );

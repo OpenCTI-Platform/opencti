@@ -1,19 +1,29 @@
 import * as R from 'ramda';
 import { Promise as Bluebird } from 'bluebird';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_USER } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_RULE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_STATUS_TEMPLATE,
+  ENTITY_TYPE_STREAM_COLLECTION,
+  ENTITY_TYPE_USER
+} from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { connectors as findConnectors } from '../database/repository';
 import type {
-  BasicStoreEntity, BasicStoreRelation, BasicStoreSettings,
   BasicStreamEntity,
+  BasicStoreRelation, BasicStoreSettings,
   BasicTriggerEntity,
   BasicWorkflowStatusEntity,
+  StoreEntity,
+  StoreRelation,
   BasicWorkflowTemplateEntity,
 } from '../types/store';
-import { EntityOptions, internalFindByIds, listAllEntities, listAllRelations } from '../database/middleware-loader';
+import { EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
+import { dynamicCacheUpdater, resetCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -23,6 +33,9 @@ import { BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notific
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { resolveUserById } from '../domain/user';
 import { pubSubSubscription } from '../database/redis';
+import { stixLoadByIds } from '../database/middleware';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import type { StixObject } from '../types/stix-common';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 const workflowStatuses = (context: AuthContext) => {
@@ -46,10 +59,10 @@ const platformResolvedFilters = (context: AuthContext) => {
     filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
-      const loadedDependencies = await internalFindByIds(context, SYSTEM_USER, resolvingIds);
-      return loadedDependencies.map((l) => ({ internal_id: l.internal_id, standard_id: l.standard_id }));
+      const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
+      return new Map(loadedDependencies.map((l: StixObject) => [l.extensions[STIX_EXT_OCTI].id, l]));
     }
-    return [];
+    return new Map();
   };
   return { values: null, fn: reloadFilters };
 };
@@ -140,15 +153,21 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
     writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));
   };
+  const resetCacheContent = async (event: { instance: StoreEntity | StoreRelation }) => {
+    const { instance } = event;
+    const context = executionContext('cache_manager');
+    // Invalid cache if any entity has changed.
+    resetCacheForEntity(instance.entity_type);
+    // Smart dynamic cache loading (for filtering ...)
+    dynamicCacheUpdater(context, SYSTEM_USER, instance);
+  };
   return {
     init: () => initCacheContent(), // Use for testing
     start: async () => {
       initCacheContent();
       // Listen pub/sub configuration events
-      subscribeIdentifier = await pubSubSubscription<{ instance: BasicStoreEntity }>(`${TOPIC_PREFIX}*`, (event) => {
-        const { instance } = event;
-        // Invalid cache if any entity has changed.
-        resetCacheForEntity(instance.entity_type);
+      subscribeIdentifier = await pubSubSubscription<{ instance: StoreEntity | StoreRelation }>(`${TOPIC_PREFIX}*`, async (event) => {
+        await resetCacheContent(event);
       });
       logApp.info('[OPENCTI-MODULE] Cache manager pub sub listener initialized');
     },

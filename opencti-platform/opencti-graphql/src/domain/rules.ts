@@ -27,7 +27,7 @@ import { UnsupportedError } from '../config/errors';
 import { createEntity } from '../database/middleware';
 import { createRuleTask, deleteRuleTasks } from './backgroundTask';
 import { notify } from '../database/redis';
-import { getEntitiesFromCache } from '../database/cache';
+import { getEntitiesListFromCache } from '../database/cache';
 import { isModuleActivated } from './settings';
 import { publishUserAction } from '../listener/UserActionListener';
 
@@ -56,7 +56,7 @@ if (DEV_MODE) {
 }
 
 export const getRules = async (context: AuthContext, user: AuthUser): Promise<Array<RuleRuntime>> => {
-  const rules = await getEntitiesFromCache<BasicRuleEntity>(context, user, ENTITY_TYPE_RULE);
+  const rules = await getEntitiesListFromCache<BasicRuleEntity>(context, user, ENTITY_TYPE_RULE);
   return RULES_DECLARATION.map((def: RuleRuntime) => {
     const esRule = rules.find((e) => e.internal_id === def.id);
     const isActivated = esRule?.active === true;

@@ -2,11 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  BackupTableOutlined,
-  CampaignOutlined,
-  MoreVert,
-} from '@mui/icons-material';
+import { BackupTableOutlined, CampaignOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -104,6 +100,12 @@ const triggerLineFragment = graphql`
       name
     }
     currentUserAccessRight
+    instance_trigger
+    resolved_instance_filters {
+      id
+      valid
+      value
+    }
   }
 `;
 
@@ -119,7 +121,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   const outcomesOptions: Record<string, string> = {
     'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
     '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
-    webhook: t('Webhook'),
   };
   const eventTypes: Record<string, string> = {
     create: t('Creation'),
@@ -172,12 +173,11 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.outcomes.width }}
             >
-              {data.outcomes.length > 0
-                && data.outcomes
-                  .map<React.ReactNode>((n) => (
+              {data.outcomes && data.outcomes.length > 0
+                  && data.outcomes.map<React.ReactNode>((n) => (
                     <code>{outcomesOptions[n]}</code>
-                ))
-                  .reduce((prev, curr) => [prev, ', ', curr])}
+                  ))
+                    .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
             <div
               className={classes.bodyItem}
@@ -210,6 +210,8 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                 dataColumns={dataColumns}
                 classNameNumber={3}
                 styleNumber={3}
+                redirection
+                resolvedInstanceFilters={data.resolved_instance_filters ?? []}
               />
             )}
             {data.trigger_type === 'digest' && (
