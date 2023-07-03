@@ -166,9 +166,16 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
             </Paper>
           </div>
         </Grid>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 0, marginLeft: 0 }}
+        >
+          <MembersList members={members} />
         </Grid>
+      </Grid>
 
-      <MembersList members={members} />
     </div>
   );
 };

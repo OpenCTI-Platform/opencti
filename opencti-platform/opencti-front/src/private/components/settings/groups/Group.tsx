@@ -289,7 +289,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 20, marginLeft: 0 }}
+          style={{ marginTop: 10, marginLeft: 0 }}
         >
           <Triggers recipientId={group.id} filter={filter}/>
           <MembersList members={members} />
