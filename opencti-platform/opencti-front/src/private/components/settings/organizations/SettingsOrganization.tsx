@@ -1,7 +1,7 @@
-import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
+import React from 'react';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
@@ -48,7 +48,14 @@ const settingsOrganizationFragment = graphql`
     members {
       edges {
         node {
-          ...UserLine_node
+          id
+          user_email
+          name
+          firstname
+          lastname
+          external
+          otp_activated
+          created_at
         }
       }
     }
