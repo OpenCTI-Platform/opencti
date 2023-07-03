@@ -1170,6 +1170,11 @@ type AssigneeConnection {
   edges: [AssigneeEdge!]!
 }
 
+type ParticipantConnection {
+  pageInfo: PageInfo!
+  edges: [ParticipantEdge!]!
+}
+
 type MemberConnection {
   pageInfo: PageInfo!
   edges: [MemberEdge!]!
@@ -1190,12 +1195,23 @@ type AssigneeEdge {
   node: Assignee!
 }
 
+type ParticipantEdge {
+  cursor: String!
+  node: Participant!
+}
+
 type MemberEdge {
   cursor: String!
   node: Member!
 }
 
 type Assignee {
+  id: ID!
+  name: String!
+  entity_type: String!
+}
+
+type Participant {
   id: ID!
   name: String!
   entity_type: String!
@@ -10122,6 +10138,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  objectParticipant: ParticipantConnection
   representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10174,6 +10191,7 @@ enum CaseIncidentsFilter {
   markedBy
   labelledBy
   assigneeTo
+  participants
   x_opencti_workflow_id
   severity
   priority
@@ -10213,6 +10231,7 @@ input CaseIncidentAddInput {
   createdBy: String
   objectMarking: [String]
   objectAssignee: [String]
+  objectParticipant: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]

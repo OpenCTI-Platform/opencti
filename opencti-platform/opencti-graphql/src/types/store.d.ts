@@ -33,7 +33,7 @@ import {
   RELATION_GRANTED_TO,
   RELATION_OBJECT,
   RELATION_OBJECT_ASSIGNEE,
-  RELATION_OBJECT_MARKING
+  RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT
 } from '../schema/stixRefRelationship';
 import {
   INPUT_ASSIGNEE,
@@ -45,7 +45,7 @@ import {
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_OBJECTS
+  INPUT_OBJECTS, INPUT_PARTICIPANT
 } from '../schema/general';
 import type { OrganizationReliability, StixId } from './stix-common';
 import type { PageInfo } from '../generated/graphql';
@@ -139,6 +139,7 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_GRANTED_TO]?: Array<string>;
   [RELATION_OBJECT_MARKING]?: Array<string>;
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
+  [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
 }
 
@@ -147,6 +148,7 @@ interface StoreCommon {
   [INPUT_LINKED]?: Array<BasicStoreObject>;
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
   [INPUT_ASSIGNEE]?: Array<BasicStoreObject>;
+  [INPUT_PARTICIPANT]?: Array<BasicStoreObject>;
   [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
   [INPUT_GRANTED_REFS]?: Array<BasicStoreObject>;
 }

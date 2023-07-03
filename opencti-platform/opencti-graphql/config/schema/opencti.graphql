@@ -1108,6 +1108,10 @@ type AssigneeConnection {
   pageInfo: PageInfo!
   edges: [AssigneeEdge!]!
 }
+type ParticipantConnection {
+  pageInfo: PageInfo!
+  edges: [ParticipantEdge!]!
+}
 type MemberConnection {
   pageInfo: PageInfo!
   edges: [MemberEdge!]!
@@ -1124,11 +1128,20 @@ type AssigneeEdge {
   cursor: String!
   node: Assignee!
 }
+type ParticipantEdge {
+  cursor: String!
+  node: Participant!
+}
 type MemberEdge {
   cursor: String!
   node: Member!
 }
 type Assignee {
+  id: ID! # internal_id
+  name: String!
+  entity_type: String!
+}
+type Participant {
   id: ID! # internal_id
   name: String!
   entity_type: String!

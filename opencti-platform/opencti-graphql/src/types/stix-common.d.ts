@@ -45,6 +45,7 @@ interface StixOpenctiExtension {
   is_inferred: boolean;
   workflow_id: string | undefined;
   assignee_ids: string[];
+  participant_ids: string[];
   creator_ids: string[];
 }
 

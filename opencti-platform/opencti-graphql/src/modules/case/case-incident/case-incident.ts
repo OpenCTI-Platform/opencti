@@ -6,7 +6,7 @@ import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
 import caseIncidentResolvers from './case-incident-resolvers';
 import convertCaseIncidentToStix from './case-incident-converter';
-import { createdBy, objectAssignee, objectMarking } from '../../../schema/stixRefRelationship';
+import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
 
 const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCaseIncident> = {
   type: {
@@ -36,7 +36,7 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
     { name: 'response_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Incident type' },
   ],
   relations: [],
-  relationsRefs: [createdBy, objectMarking, objectAssignee],
+  relationsRefs: [createdBy, objectMarking, objectAssignee, objectParticipant],
   representative: (stix: StixCaseIncident) => {
     return stix.name;
   },

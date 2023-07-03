@@ -113,7 +113,7 @@ import {
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_OBJECTS
+  INPUT_OBJECTS, INPUT_PARTICIPANT
 } from '../schema/general';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin } from './stix';
@@ -231,6 +231,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     // Internals
     creator_ids: builtCreatorIds,
     assignee_ids: (instance[INPUT_ASSIGNEE] ?? []).map((m) => m.internal_id),
+    participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
     workflow_id: instance.x_opencti_workflow_id,
   };
   return cleanObject(octiExtensions);
