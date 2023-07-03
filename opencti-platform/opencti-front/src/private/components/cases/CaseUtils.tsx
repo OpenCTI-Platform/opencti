@@ -133,6 +133,15 @@ export const caseFragment = graphql`
         }
       }
     }
+    objectParticipant {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
     x_opencti_stix_ids
     status {
       id
