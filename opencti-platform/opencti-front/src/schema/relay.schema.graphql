@@ -2350,6 +2350,8 @@ enum ContainersOrdering {
   createdBy
   objectMarking
   x_opencti_workflow_id
+  creator
+  entity_type
 }
 
 enum ContainersFilter {

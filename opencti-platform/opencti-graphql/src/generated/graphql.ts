@@ -3668,6 +3668,8 @@ export enum ContainersOrdering {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
+  EntityType = 'entity_type',
   Modified = 'modified',
   Name = 'name',
   ObjectMarking = 'objectMarking',
