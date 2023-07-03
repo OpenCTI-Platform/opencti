@@ -74,7 +74,7 @@ const TopMenuThreatActorGroup = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('Overview')}
       </Button>
@@ -97,7 +97,7 @@ const TopMenuThreatActorGroup = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('Knowledge')}
       </Button>
@@ -118,7 +118,7 @@ const TopMenuThreatActorGroup = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('Analysis')}
       </Button>
@@ -141,7 +141,7 @@ const TopMenuThreatActorGroup = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('Indicators')}
       </Button>
@@ -163,7 +163,7 @@ const TopMenuThreatActorGroup = () => {
               : 'primary'
           }
           classes={{ root: classes.button }}
-          disabled={!threatActorId}
+          disabled={!threatActorGroupId}
         >
           {t('Data')}
         </Button>
@@ -185,7 +185,7 @@ const TopMenuThreatActorGroup = () => {
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('History')}
       </Button>
