@@ -1,7 +1,7 @@
+import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
-import React from 'react';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { AccountBalanceOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
+import * as R from 'ramda';
 import { Theme } from '../../../../components/Theme';
 import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
 import AccessesMenu from '../AccessesMenu';
@@ -48,14 +49,7 @@ const settingsOrganizationFragment = graphql`
     members {
       edges {
         node {
-          id
-          user_email
-          name
-          firstname
-          lastname
-          external
-          otp_activated
-          created_at
+          ...UserLine_node
         }
       }
     }
@@ -83,7 +77,8 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
   const classes = useStyles();
   const { t } = useFormatter();
   const organization = useFragment<SettingsOrganization_organization$key>(settingsOrganizationFragment, organizationData);
-  const members = organization.members?.edges ?? [];
+  const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
+  const members = usersSort(organization.members?.edges ?? []);
   const subOrganizations = organization.subOrganizations?.edges ?? [];
   const parentOrganizations = organization.parentOrganizations?.edges ?? [];
 

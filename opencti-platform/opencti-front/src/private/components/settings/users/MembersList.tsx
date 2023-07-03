@@ -23,7 +23,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 interface MemberObject {
-  node: Omit<UserLine_node$data, ' $fragmentType'>
+  node: UserLine_node$data
 }
 interface MembersListProps {
   members: ReadonlyArray<MemberObject>;
