@@ -491,27 +491,27 @@ describe('Notification manager behaviors test', async () => {
   };
 
   it('Should generate a notification message for an instance with refs', async () => {
-    let result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixRedOrganization], true);
+    let result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'in' }, { instance: stixRedOrganization, action: 'in' }], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name,[organization] redOrganization_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'in' }], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixMalware], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'in' }, { instance: stixMalware, action: 'in' }], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name,[malware] malware_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'in' }, { instance: stixMalware, action: 'in' }], true);
     expect(result).toEqual('[relationship] attack-pattern_entity delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'in' }, { instance: stixMalware, action: 'in' }], true);
     expect(result).toEqual('[relationship] Restricted delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
 
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixRedOrganization], false);
-    expect(result).toEqual('[organization] greenOrganization_name,[organization] redOrganization_name in [report] report_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization], false);
-    expect(result).toEqual('[organization] greenOrganization_name in [report] report_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixMalware], false);
-    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name in [report] report_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], false);
-    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name in [relationship] attack-pattern_entity delivers malware_entity');
-    result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], false);
-    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name in [relationship] Restricted delivers malware_entity');
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixRedOrganization, action: 'added in' }], false);
+    expect(result).toEqual('[organization] greenOrganization_name,[organization] redOrganization_name added in [report] report_name');
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }], false);
+    expect(result).toEqual('[organization] greenOrganization_name added in [report] report_name');
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixMalware, action: 'removed from' }], false);
+    expect(result).toEqual('[organization] greenOrganization_name added in [report] report_name,[malware] malware_name removed from [report] report_name');
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixMalware, action: 'added in' }], false);
+    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name added in [relationship] attack-pattern_entity delivers malware_entity');
+    result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'removed from' }, { instance: stixMalware, action: 'removed from' }], false);
+    expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name removed from [relationship] Restricted delivers malware_entity');
   });
 
   it('Should generate a notification message for an instance', async () => {
@@ -621,17 +621,19 @@ describe('Notification manager behaviors test', async () => {
 
     result = filterUpdateInstanceIdsFromUpdatePatch(instancesMap, dataContextAdd2);
     expect(result.length).toEqual(1);
-    expect(result[0].id).toEqual(greenOrganizationStandardId);
+    expect(result[0].instance.id).toEqual(greenOrganizationStandardId);
+    expect(result[0].action).toEqual('added in');
 
     result = filterUpdateInstanceIdsFromUpdatePatch(instancesMap, dataContextRemove);
     expect(result.length).toEqual(1);
-    expect(result[0].id).toEqual(greenOrganizationStandardId);
+    expect(result[0].instance.id).toEqual(greenOrganizationStandardId);
+    expect(result[0].action).toEqual('removed from');
 
     result = filterUpdateInstanceIdsFromUpdatePatch(instancesMap, dataContextMultiple);
     expect(result.length).toEqual(2);
-    expect(result.map((n) => n.id).includes(reportStandardId)).toEqual(true);
-    expect(result.map((n) => n.id).includes(greenOrganizationStandardId)).toEqual(true);
-    expect(result.map((n) => n.id).includes(redOrganizationStandardId)).toEqual(false);
+    expect(result.map((n) => n.instance.id).includes(reportStandardId)).toEqual(true);
+    expect(result.map((n) => n.instance.id).includes(greenOrganizationStandardId)).toEqual(true);
+    expect(result.map((n) => n.instance.id).includes(redOrganizationStandardId)).toEqual(false);
   });
 
   it('Should build a target event for notification, these tests enable to protect the code from bad modifications', async () => {
@@ -1394,45 +1396,45 @@ describe('Notification manager behaviors test', async () => {
     // trigger on M, side events only
     result = await buildTargetEvents(context, users, streamEventAddMalwareInRedReport, triggerMalwareAllEvents, true);
     expect(result.length).toEqual(1);
-    expect(result[0].message).toEqual('[malware] malware_name in [report] redReport_name');
+    expect(result[0].message).toEqual('[malware] malware_name added in [report] redReport_name');
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
 
     // -- 07. remove a malware M in a report marked red
     // trigger on M, side events only
     result = await buildTargetEvents(context, users, streamEventRemoveMalwareInRedReport, triggerMalwareAllEvents, true);
     expect(result.length).toEqual(1);
-    expect(result[0].message).toEqual('[malware] malware_name in [report] redReport_name');
+    expect(result[0].message).toEqual('[malware] malware_name removed from [report] redReport_name');
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
 
     // -- 08. remove a malware M in a report containing a green organization O
     // trigger on M, side events only
     result = await buildTargetEvents(context, users, streamEventRemoveMalwareInReportWithRefs, triggerMalwareAllEvents, true);
     expect(result.length).toEqual(2);
-    expect(result[0].message).toEqual('[malware] malware_name in [report] report_name');
+    expect(result[0].message).toEqual('[malware] malware_name removed from [report] report_name');
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
 
     // trigger on M and O
     result = await buildTargetEvents(context, users, streamEventRemoveMalwareInReportWithRefs, triggerMalwareAndGreenOrganizationAllEvents, true);
     expect(result.length).toEqual(2);
-    expect(result[0].message).toEqual('[malware] malware_name in [report] report_name');
+    expect(result[0].message).toEqual('[malware] malware_name removed from [report] report_name');
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
 
     // -- 09. add a red attackPattern A and a malware M in a report
     // trigger on A and M, side events only
     result = await buildTargetEvents(context, users, streamEventAddRedAttackPatternAndMalwareInReport, triggerMalwareAndRedAttackPatternAllEvents, true);
     expect(result.length).toEqual(2);
-    expect(result[0].message).toEqual('[attack-pattern] redAttackPattern_name,[malware] malware_name in [report] report_name');
+    expect(result[0].message).toEqual('[attack-pattern] redAttackPattern_name,[malware] malware_name added in [report] report_name');
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
     expect(result[0].user.user_id).toEqual(adminUser.id);
-    expect(result[1].message).toEqual('[malware] malware_name in [report] report_name');
+    expect(result[1].message).toEqual('[malware] malware_name added in [report] report_name');
 
     // -- 10. add a malware M in a report created by a red organization O and containing a red attack pattern
     // trigger on M and O
     result = await buildTargetEvents(context, users, streamEventAddMalwareInReportWithOtherRefs, triggerMalwareAndRedOrganizationAllEvents, true);
     expect(result.length).toEqual(2);
-    expect(result[0].message).toEqual('[malware] malware_name in [report] report_name');
+    expect(result[0].message).toEqual('[malware] malware_name added in [report] report_name');
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[1].message).toEqual('[malware] malware_name in [report] report_name');
+    expect(result[1].message).toEqual('[malware] malware_name added in [report] report_name');
 
     // -- 11. update a report containing a malware M
     // trigger on M (no notif)
@@ -1444,13 +1446,13 @@ describe('Notification manager behaviors test', async () => {
     result = await buildTargetEvents(context, users, streamEventAddRedOrganizationInAuthorOfRelationship, triggerRedOrganizationAllEvents, true);
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] redOrganization_name in [relationship] attack-pattern_entity delivers malware_entity');
+    expect(result[0].message).toEqual('[identity] redOrganization_name added in [relationship] attack-pattern_entity delivers malware_entity');
 
     // trigger on O and M
     result = await buildTargetEvents(context, users, streamEventAddRedOrganizationInAuthorOfRelationship, triggerMalwareAndRedOrganizationAllEvents, true);
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] redOrganization_name in [relationship] attack-pattern_entity delivers malware_entity');
+    expect(result[0].message).toEqual('[identity] redOrganization_name added in [relationship] attack-pattern_entity delivers malware_entity');
 
     // -- 13. update a sighting from malware M to red report R, by adding a green organization O in its creators
     // trigger on M
@@ -1461,9 +1463,9 @@ describe('Notification manager behaviors test', async () => {
     result = await buildTargetEvents(context, users, streamEventAddGreenOrganizationInAuthorOfSighting, triggerOrganizationsAllEvents, true);
     expect(result.length).toEqual(2);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] greenOrganization_name in [sighting] malware_entity sighted in/at report_entity');
+    expect(result[0].message).toEqual('[identity] greenOrganization_name added in [sighting] malware_entity sighted in/at report_entity');
     expect(result[0].user.user_id).toEqual(adminUser.id);
-    expect(result[1].message).toEqual('[identity] greenOrganization_name in [sighting] malware_entity sighted in/at Restricted');
+    expect(result[1].message).toEqual('[identity] greenOrganization_name added in [sighting] malware_entity sighted in/at Restricted');
 
     // -- 14. delete a report that contains a malware M and a red attack pattern A and that is created by a red orga O
     // trigger on M, A and O
@@ -1479,21 +1481,21 @@ describe('Notification manager behaviors test', async () => {
     result = await buildTargetEvents(context, users, streamEventShareMalwareWithRedOrganization, triggerMalwareAndRedOrganizationAllEvents, true);
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] redOrganization_name in [malware] malware_name');
+    expect(result[0].message).toEqual('[identity] redOrganization_name added in [malware] malware_name');
 
     // O is a green organization, trigger on O and another organization
     result = await buildTargetEvents(context, users, streamEventShareMalwareWithGreenOrganization, triggerOrganizationsAllEvents, true);
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] greenOrganization_name in [malware] malware_name');
+    expect(result[0].message).toEqual('[identity] greenOrganization_name added in [malware] malware_name');
 
     // 0 is an organization and the user has access to this organization, trigger on O
     result = await buildTargetEvents(context, users, streamEventShareMalwareWithUserOrganization, triggerOrganizationsAllEvents, true);
     expect(result.length).toEqual(2);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] userOrganization_name in [malware] malware_name');
+    expect(result[0].message).toEqual('[identity] userOrganization_name added in [malware] malware_name');
     expect(result[1].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[1].message).toEqual('[identity] userOrganization_name in [malware] malware_name');
+    expect(result[1].message).toEqual('[identity] userOrganization_name added in [malware] malware_name');
 
     // -- 16. create a report created by a red organization O
     // trigger on O
@@ -1581,14 +1583,14 @@ describe('Notification manager behaviors test', async () => {
     result = await buildTargetEvents(context, users, streamEventAddRedMarkingAndAuthorInRelationship, triggerOrganizationsAllEvents, true);
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] greenOrganization_name in [relationship] attack-pattern_entity delivers malware_entity');
+    expect(result[0].message).toEqual('[identity] greenOrganization_name added in [relationship] attack-pattern_entity delivers malware_entity');
     expect(result[0].user.user_id).toEqual(adminUser.id);
 
     // trigger on O and M
     result = await buildTargetEvents(context, users, streamEventAddRedMarkingAndAuthorInRelationship, triggerMalwareAndGreenOrganizationAllEvents, true);
     expect(result.length).toEqual(2);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] greenOrganization_name in [relationship] attack-pattern_entity delivers malware_entity');
+    expect(result[0].message).toEqual('[identity] greenOrganization_name added in [relationship] attack-pattern_entity delivers malware_entity');
     expect(result[0].user.user_id).toEqual(adminUser.id);
     expect(result[1].type).toEqual(EVENT_TYPE_DELETE);
     expect(result[1].message).toEqual('[relationship] Restricted delivers malware_entity');
@@ -1618,14 +1620,14 @@ describe('Notification manager behaviors test', async () => {
     result = await buildTargetEvents(context, users, streamEventAddRedMarkingAndModifyRefsInReport, triggerMalwareAllEvents, true);
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[malware] malware_name in [report] report_name');
+    expect(result[0].message).toEqual('[malware] malware_name added in [report] report_name');
     expect(result[0].user.user_id).toEqual(adminUser.id);
 
     // trigger on O1 and 02
     result = await buildTargetEvents(context, users, streamEventAddRedMarkingAndModifyRefsInReport, triggerOrganizationsAllEvents, true);
     expect(result.length).toEqual(2);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[identity] greenOrganization_name in [report] report_name');
+    expect(result[0].message).toEqual('[identity] greenOrganization_name removed from [report] report_name');
     expect(result[0].user.user_id).toEqual(adminUser.id);
     expect(result[1].type).toEqual(EVENT_TYPE_DELETE);
     expect(result[1].message).toEqual('[report] report_name containing [identity] greenOrganization_name');
@@ -1635,7 +1637,7 @@ describe('Notification manager behaviors test', async () => {
     result = await buildTargetEvents(context, users, streamEventAddRedMarkingAndModifyRefsInReport, triggerMalwareAndGreenOrganizationAllEvents, true);
     expect(result.length).toEqual(2);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
-    expect(result[0].message).toEqual('[malware] malware_name,[identity] greenOrganization_name in [report] report_name');
+    expect(result[0].message).toEqual('[malware] malware_name added in [report] report_name,[identity] greenOrganization_name removed from [report] report_name');
     expect(result[0].user.user_id).toEqual(adminUser.id);
     expect(result[1].type).toEqual(EVENT_TYPE_DELETE);
     expect(result[1].message).toEqual('[report] report_name containing [identity] greenOrganization_name');

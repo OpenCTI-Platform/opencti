@@ -344,17 +344,21 @@ const filterInstancesByRefEventIds = (
   listenedInstanceIdsMap: Map<string, StixObject>,
   refsEventIds: string[],
 ) => {
-  const instances: StixObject[] = [];
+  const instances: { instance: StixObject, action: string }[] = [];
   refsEventIds.forEach((refId) => {
     const instance = listenedInstanceIdsMap.get(refId);
     if (instance) {
-      instances.push(instance);
+      instances.push({
+        instance,
+        action: 'in',
+      });
     }
   });
   return instances;
 };
 
-// keep only the instances that are in patch/reverse_patch and in the map of the listened instances
+// generate an array of the instances that are in patch/reverse_patch and in the map of the listened instances
+// with the indication, for each instance, if there are in the patch ('added in') or in the reverse_patch ('removed from')
 export const filterUpdateInstanceIdsFromUpdatePatch = (
   listenedInstanceIdsMap: Map<string, StixObject>,
   updatePatch: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
@@ -367,10 +371,21 @@ export const filterUpdateInstanceIdsFromUpdatePatch = (
     .map((n) => (n as { path: string, value: string[] }).value)
     .flat()
     .filter((n) => n);
-  const instances: StixCoreObject[] = [];
-  [...addedIds, ...removedIds].forEach((id) => {
+  const instances: { instance: StixCoreObject, action: string }[] = [];
+  addedIds.forEach((id) => {
     if (listenedInstanceIdsMap.has(id)) {
-      instances.push(listenedInstanceIdsMap.get(id) as StixCoreObject);
+      instances.push({
+        instance: listenedInstanceIdsMap.get(id) as StixCoreObject,
+        action: 'added in',
+      });
+    }
+  });
+  removedIds.forEach((id) => {
+    if (listenedInstanceIdsMap.has(id)) {
+      instances.push({
+        instance: listenedInstanceIdsMap.get(id) as StixCoreObject,
+        action: 'removed from',
+      });
     }
   });
   return instances;
@@ -443,15 +458,22 @@ export const generateNotificationMessageForInstanceWithRefs = async (
   context: AuthContext,
   user: AuthUser,
   instance: StixCoreObject | StixRelationshipObject,
-  refsInstances: StixObject[],
+  refsInstances: { instance: StixObject, action: string }[],
   displayedTypeIsUpdate?: boolean,
 ) => {
   const mainInstanceMessage = await generateNotificationMessageForInstance(context, user, instance);
+  const groupedRefsInstances = Object.values(R.groupBy((ref) => ref.action, refsInstances)); // refs instances grouped by notification message
   switch (displayedTypeIsUpdate) {
     case true:
-      return `${mainInstanceMessage} containing ${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)}`;
+      return `${mainInstanceMessage} containing ${refsInstances.map((ref) => `[${ref.instance.type.toLowerCase()}] ${extractStixRepresentative(ref.instance)}`)}`;
     default:
-      return `${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)} in ${mainInstanceMessage}`;
+      return `${
+        groupedRefsInstances
+          .map((refsGroup) => `${
+            refsGroup
+              .map((ref) => `[${ref.instance.type.toLowerCase()}] ${extractStixRepresentative(ref.instance)}`)
+          } ${refsGroup[0].action} ${mainInstanceMessage}`)
+      }`;
   }
 };
 
