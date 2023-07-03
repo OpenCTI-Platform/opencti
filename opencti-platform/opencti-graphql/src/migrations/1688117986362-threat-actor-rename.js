@@ -11,12 +11,21 @@ const entityTypeChange = (fromType, toType, indices) => {
   const updateQuery = {
     script: {
       params: { toType },
-      source: 'ctx._source.entity_type = params.toType; ctx._source.fromType = params.toType; ctx_source.target_type = params.toType',
+      source: 'ctx._source.entity_type = params.toType; '
+        + 'ctx_source.target_type = params.toType'
+        + 'for(def connection: ctx._source.connections) {'
+        + 'if (connections.types.contains("Threat-Actor")) {'
+        + ' connection.name = "Threat-Actor-Group";'
+        + '}'
+        + '}'
+        + 'ctx.source.fromType = "Threat-Actor-Group'
     },
     query: {
       bool: {
         must: [
           { term: { 'entity_type.keyword': { value: fromType } } },
+          { term: { 'fromType.keyword': { value: fromType } } },
+          { term: { 'target_type.keyword': { value: fromType } } },
         ],
       },
     },
