@@ -77,8 +77,8 @@ const relationshipTypeChange = (fromType, toType, indices) => {
 export const up = async (next) => {
   // Change Threat Actor type to Threat Actor Group
   await entityTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_STIX_DOMAIN_OBJECTS);
-  await targetTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS);
-  await relationshipTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS);
+  await targetTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS]);
+  await relationshipTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS]);
   next();
 };
 
