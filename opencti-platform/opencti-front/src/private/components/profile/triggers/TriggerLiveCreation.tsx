@@ -102,11 +102,7 @@ const liveTriggerValidation = (t: (message: string) => string) => Yup.object().s
   outcomes: Yup.array().nullable(),
 });
 
-export const instanceTriggerDescription = 'An instance trigger on an entity X notifies the following events: '
-  + 'update/deletion of X, '
-  + 'creation/deletion of a relationship from/to X, '
-  + 'creation/deletion of an entity that has X in its refs (i.e. contains X, is shared with X, is created by X...), '
-  + 'adding/removing X in the ref of an entity.';
+export const instanceTriggerDescription = 'An instance trigger on an entity X notifies the following events: update/deletion of X, creation/deletion of a relationship from/to X, creation/deletion of an entity that has X in its refs (for instance contains X, is shared with X, is created by X...), adding/removing X in the ref of an entity.';
 
 interface TriggerLiveAddInput {
   name: string;
