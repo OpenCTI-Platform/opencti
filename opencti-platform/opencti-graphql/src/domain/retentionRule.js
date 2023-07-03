@@ -47,7 +47,7 @@ export const createRetentionRule = async (context, user, input) => {
     event_scope: 'create',
     event_access: 'administration',
     message: `creates retention rule \`${retentionRule.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, input }
+    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input }
   });
   return retentionRule;
 };
@@ -60,7 +60,7 @@ export const retentionRuleEditField = async (context, user, retentionRuleId, inp
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for retention rule \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, input }
+    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input }
   });
   return element;
 };
@@ -73,7 +73,7 @@ export const deleteRetentionRule = async (context, user, retentionRuleId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes retention rule \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, input: deleted }
+    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input: deleted }
   });
   return retentionRuleId;
 };

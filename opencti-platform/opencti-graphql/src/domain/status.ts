@@ -59,7 +59,7 @@ export const createStatusTemplate = async (context: AuthContext, user: AuthUser,
     event_scope: 'create',
     event_access: 'administration',
     message: `creates status template \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STATUS_TEMPLATE, input }
+    context_data: { id: element.id, entity_type: ENTITY_TYPE_STATUS_TEMPLATE, input }
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, element, user);
 };
@@ -71,7 +71,7 @@ export const createStatus = async (context: AuthContext, user: AuthUser, subType
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`workflow\` for entity setting \`${subTypeId}\``,
-    context_data: { entity_type: subTypeId, input: { type: subTypeId, ...input } }
+    context_data: { id: data.id, entity_type: subTypeId, input: { type: subTypeId, ...input } }
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
 };
@@ -83,7 +83,7 @@ export const statusEditField = async (context: AuthContext, user: AuthUser, subT
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`workflow\` for entity setting \`${subTypeId}\``,
-    context_data: { entity_type: subTypeId, input: { type: subTypeId, ...input } }
+    context_data: { id: element.id, entity_type: subTypeId, input: { type: subTypeId, ...input } }
   });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return findSubTypeById(subTypeId);
@@ -96,7 +96,7 @@ export const statusTemplateEditField = async (context: AuthContext, user: AuthUs
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for status template \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STATUS_TEMPLATE, input }
+    context_data: { id: statusTemplateId, entity_type: ENTITY_TYPE_STATUS_TEMPLATE, input }
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
@@ -108,7 +108,7 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`workflow\` for entity setting \`${subTypeId}\``,
-    context_data: { entity_type: subTypeId, input: { id: subTypeId } }
+    context_data: { id: statusId, entity_type: subTypeId, input: { id: subTypeId } }
   });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, user);
   return findSubTypeById(subTypeId);
@@ -125,7 +125,7 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes status template \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STATUS_TEMPLATE, input: deleted }
+    context_data: { id: statusTemplateId, entity_type: ENTITY_TYPE_STATUS_TEMPLATE, input: deleted }
   });
   return statusTemplateId;
 };

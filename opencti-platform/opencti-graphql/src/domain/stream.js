@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { elIndex } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { extractEntityRepresentative, INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import {
@@ -42,7 +42,7 @@ export const createStreamCollection = async (context, user, input) => {
     event_scope: 'create',
     event_access: 'administration',
     message: `creates live stream \`${data.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
+    context_data: { id: collectionId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
   // Create groups relations
   const relBuilder = (g) => ({ fromId: g, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
@@ -55,29 +55,31 @@ export const streamCollectionGroups = async (context, user, collection) => {
 export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
 };
-export const deleteGroupRelation = async (context, user, collectionId, groupId) => {
-  const { to } = await deleteRelationsByFromAndTo(context, user, groupId, collectionId, RELATION_ACCESSES_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
+export const deleteGroupRelation = async (context, user, streamId, groupId) => {
+  const { from, to } = await deleteRelationsByFromAndTo(context, user, groupId, streamId, RELATION_ACCESSES_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const input = { fromId: groupId, toId: streamId, relationship_type: RELATION_ACCESSES_TO };
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`groups\` for live stream \`${to.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: { id: groupId, operation: 'remove' } }
+    message: `removes ${from.entity_type} \`${extractEntityRepresentative(from)}\` for live stream \`${to.name}\``,
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
-  return findById(context, user, collectionId);
+  return findById(context, user, streamId);
 };
-export const createGroupRelation = async (context, user, collectionId, groupId) => {
-  const { to } = await createRelation(context, user, { fromId: groupId, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
+export const createGroupRelation = async (context, user, streamId, groupId) => {
+  const input = { fromId: groupId, toId: streamId, relationship_type: RELATION_ACCESSES_TO };
+  const { from, to } = await createRelation(context, user, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`groups\` for live stream \`${to.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: { id: groupId, operation: 'add' } }
+    message: `adds ${from.entity_type} \`${extractEntityRepresentative(from)}\` for live stream \`${to.name}\``,
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
-  return findById(context, user, collectionId);
+  return findById(context, user, streamId);
 };
 export const findAll = (context, user, args) => {
   // If user is logged, list all streams where the user have access.
@@ -105,7 +107,7 @@ export const streamCollectionEditField = async (context, user, collectionId, inp
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for live stream \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
+    context_data: { id: collectionId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, element, user);
 };
@@ -117,7 +119,7 @@ export const streamCollectionDelete = async (context, user, collectionId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes live stream \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: deleted }
+    context_data: { id: collectionId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: deleted }
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].DELETE_TOPIC, deleted, user);
   return collectionId;

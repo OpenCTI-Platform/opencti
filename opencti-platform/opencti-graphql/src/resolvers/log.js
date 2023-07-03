@@ -31,9 +31,9 @@ const logResolvers = {
     },
   },
   LogsFilter: {
-    entity_id: 'context_data.*id',
+    entity_id: 'context_data.id',
     elementId: 'context_data.*id', // Compatibility with standard filters
-    connection_id: 'context_data.*id', // Compatibility with standard filters
+    connection_id: 'context_data.*_id', // Compatibility with standard filters
     created: 'timestamp',
     user_id: 'user_id',
     members_user: 'user_id',

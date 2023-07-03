@@ -29,7 +29,7 @@ export const taskTemplateAdd = async (context: AuthContext, user: AuthUser, inpu
     event_scope: 'create',
     event_access: 'administration',
     message: `creates Task \`${input.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_TASK_TEMPLATE, input }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_TASK_TEMPLATE, input }
   });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
@@ -43,7 +43,7 @@ export const taskTemplateDelete = async (context: AuthContext, user: AuthUser, i
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes Task \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_TASK_TEMPLATE, input: element }
+    context_data: { id, entity_type: ENTITY_TYPE_TASK_TEMPLATE, input: element }
   });
   return id;
 };
@@ -56,7 +56,7 @@ export const taskTemplateEdit = async (context: AuthContext, user: AuthUser, id:
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for Task \`${updatedElem.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_TASK_TEMPLATE, input }
+    context_data: { id, entity_type: ENTITY_TYPE_TASK_TEMPLATE, input }
   });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
 };

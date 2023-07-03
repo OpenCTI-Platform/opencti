@@ -38,7 +38,7 @@ export const caseTemplateAdd = async (context: AuthContext, user: AuthUser, inpu
     event_scope: 'create',
     event_access: 'administration',
     message: `creates case template \`${input.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CASE_TEMPLATE, input }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_CASE_TEMPLATE, input }
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
 };
@@ -51,7 +51,7 @@ export const caseTemplateDelete = async (context: AuthContext, user: AuthUser, c
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes case template \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CASE_TEMPLATE, input: element }
+    context_data: { id: caseTemplateId, entity_type: ENTITY_TYPE_CASE_TEMPLATE, input: element }
   });
   return caseTemplateId;
 };
@@ -63,7 +63,7 @@ export const caseTemplateEdit = async (context: AuthContext, user: AuthUser, cas
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for case template \`${updatedElem.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CASE_TEMPLATE, input }
+    context_data: { id: caseTemplateId, entity_type: ENTITY_TYPE_CASE_TEMPLATE, input }
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
@@ -75,7 +75,7 @@ export const caseTemplateAddRelation = async (context: AuthContext, user: AuthUs
     event_scope: 'update',
     event_access: 'administration',
     message: `adds Task template \`${extractEntityRepresentative(relation.from)}\` for case template \`${relation.to.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CASE_TEMPLATE, input }
+    context_data: { id: caseTemplateId, entity_type: ENTITY_TYPE_CASE_TEMPLATE, input }
   });
   return relation.to;
 };
@@ -87,7 +87,7 @@ export const caseTemplateDeleteRelation = async (context: AuthContext, user: Aut
     event_scope: 'delete',
     event_access: 'administration',
     message: `removes Task template \`${extractEntityRepresentative(relation.from)}\` for case template \`${relation.to.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CASE_TEMPLATE, input: { caseTemplateId, toId, relationshipType } }
+    context_data: { id: caseTemplateId, entity_type: ENTITY_TYPE_CASE_TEMPLATE, input: { caseTemplateId, toId, relationshipType } }
   });
   return relation.to;
 };

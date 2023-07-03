@@ -35,7 +35,7 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for entity setting \`${element.target_type}\``,
-    context_data: { entity_type: element.target_type, input }
+    context_data: { id: entitySettingId, entity_type: element.target_type, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };

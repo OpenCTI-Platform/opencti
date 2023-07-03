@@ -91,7 +91,7 @@ export const addWorkspace = async (context: AuthContext, user: AuthUser, input: 
     event_scope: 'create',
     event_access: 'extended',
     message: `creates ${created.type} workspace \`${created.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_WORKSPACE, input }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
@@ -104,7 +104,7 @@ export const workspaceDelete = async (context: AuthContext, user: AuthUser, work
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes ${deleted.type} workspace \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_WORKSPACE, input: deleted }
+    context_data: { id: workspaceId, entity_type: ENTITY_TYPE_WORKSPACE, input: deleted }
   });
   return workspaceId;
 };

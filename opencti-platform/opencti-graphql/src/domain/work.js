@@ -99,7 +99,7 @@ export const deleteWork = async (context, user, workId) => {
       event_scope: 'delete',
       event_access: 'administration',
       message: `deletes Connector Work \`${work.name}\``,
-      context_data: { entity_type: ENTITY_TYPE_WORK, input: work }
+      context_data: { id: workId, entity_type: ENTITY_TYPE_WORK, input: work }
     });
   }
   return workId;
@@ -124,10 +124,10 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
   await publishUserAction({
     user,
     event_type: 'mutation',
-    event_scope: 'create',
+    event_scope: 'update',
     event_access: 'administration',
     message: `cleans \`all works\` for connector \`${connector.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CONNECTOR, input: connector }
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: connector }
   });
   return true;
 };

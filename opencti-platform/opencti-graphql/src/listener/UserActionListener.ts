@@ -93,9 +93,10 @@ export interface UserForbiddenAction extends BasicUserAction {
 }
 export interface UserModificationAction extends BasicUserAction {
   event_type: 'mutation'
-  event_scope: 'create' | 'update' | 'delete' | 'merge'
+  event_scope: 'create' | 'update' | 'delete'
   message: string
   context_data: {
+    id: string
     entity_type: string
     input: unknown
   }

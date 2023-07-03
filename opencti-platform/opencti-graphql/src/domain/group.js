@@ -119,7 +119,7 @@ export const groupDelete = async (context, user, groupId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_GROUP, input: group }
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input: group }
   });
   return groupId;
 };
@@ -132,7 +132,7 @@ export const groupEditField = async (context, user, groupId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_GROUP, input }
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
@@ -161,7 +161,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${created.entity_type} \`${extractEntityRepresentative(created)}\` for group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_GROUP, input }
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, createdRelation, user);
@@ -183,17 +183,14 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     const deleted = await deleteRelationsByFromAndTo(context, user, groupId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
     target = deleted.to;
   }
+  const input = { fromId, toId, relationship_type: relationshipType };
   await publishUserAction({
     user,
     event_type: 'mutation',
-    event_scope: 'delete',
+    event_scope: 'update',
     event_access: 'administration',
     message: `removes ${target.entity_type} \`${extractEntityRepresentative(target)}\` for group \`${group.name}\``,
-    context_data: {
-      entity_type: ENTITY_TYPE_GROUP,
-
-      input: { groupId, fromId, toId, relationshipType }
-    }
+    context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);

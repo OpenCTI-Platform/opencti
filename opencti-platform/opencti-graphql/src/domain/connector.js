@@ -72,7 +72,7 @@ export const resetStateConnector = async (context, user, id) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `resets \`state\` for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CONNECTOR, input: { id } }
+    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: patch }
   });
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
@@ -114,7 +114,7 @@ export const registerConnector = async (context, user, connectorData) => {
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData }
+    context_data: { id, entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData }
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
@@ -131,7 +131,7 @@ export const connectorDelete = async (context, user, connectorId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_CONNECTOR, input: element }
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: element }
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
@@ -231,7 +231,7 @@ export const registerSync = async (context, user, syncData) => {
       event_scope: 'create',
       event_access: 'administration',
       message: `creates synchronizer \`${syncData.name}\``,
-      context_data: { entity_type: ENTITY_TYPE_SYNC, input: data }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_SYNC, input: data }
     });
   }
   return element;
@@ -244,7 +244,7 @@ export const syncEditField = async (context, user, syncId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for synchronizer \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_SYNC, input }
+    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, element, user);
 };
@@ -256,7 +256,7 @@ export const syncDelete = async (context, user, syncId) => {
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes synchronizer \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_SYNC, input: deleted }
+    context_data: { id: syncId, entity_type: ENTITY_TYPE_SYNC, input: deleted }
   });
   return syncId;
 };

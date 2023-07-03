@@ -148,7 +148,7 @@ export const deleteTask = async (context, user, taskId) => {
     event_scope: 'delete',
     event_access: 'extended',
     message: 'deletes `background task`',
-    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: deleted }
+    context_data: { id: deleted.id, entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: deleted }
   });
   return taskId;
 };

@@ -28,7 +28,7 @@ export const addRole = async (context, user, role) => {
       event_scope: 'create',
       event_access: 'administration',
       message: `creates role \`${role.name}\``,
-      context_data: { entity_type: ENTITY_TYPE_ROLE, input: role }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_ROLE, input: role }
     });
   }
   return element;
@@ -48,7 +48,7 @@ export const addGroup = async (context, user, group) => {
       event_scope: 'create',
       event_access: 'administration',
       message: `creates group \`${group.name}\``,
-      context_data: { entity_type: ENTITY_TYPE_GROUP, input: group }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_GROUP, input: group }
     });
   }
   return element;

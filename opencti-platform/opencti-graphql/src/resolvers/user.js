@@ -156,10 +156,10 @@ const userResolvers = {
       await publishUserAction({
         user: context.user,
         event_type: 'mutation',
-        event_scope: 'delete',
+        event_scope: 'update',
         event_access: 'administration',
         message: `kills \`specific session\` for user \`${ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email}\``,
-        context_data: { entity_type: ENTITY_TYPE_USER, input: { user_id: user.id, session_id: kill.sessionId } }
+        context_data: { id: user.id, entity_type: ENTITY_TYPE_USER, input: { user_id: user.id, session_id: kill.sessionId } }
       });
       return id;
     },
@@ -171,10 +171,10 @@ const userResolvers = {
       await publishUserAction({
         user: context.user,
         event_type: 'mutation',
-        event_scope: 'delete',
+        event_scope: 'update',
         event_access: 'administration',
         message: `kills \`all sessions\` for user \`${ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email}\``,
-        context_data: { entity_type: ENTITY_TYPE_USER, input: { user_id: id } }
+        context_data: { id: user.id, entity_type: ENTITY_TYPE_USER, input: { user_id: id } }
       });
       return sessionIds;
     },

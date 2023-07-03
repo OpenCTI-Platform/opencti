@@ -47,7 +47,7 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
       event_scope: 'create',
       event_access: 'administration',
       message: `creates csv feed \`${element.name}\``,
-      context_data: { entity_type: ENTITY_TYPE_FEED, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_FEED, input }
     });
   }
   return element;
@@ -68,7 +68,7 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`configuration\` for csv feed \`${feed.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_FEED, input }
+    context_data: { id, entity_type: ENTITY_TYPE_FEED, input }
   });
   return findById(context, user, id);
 };
@@ -83,7 +83,7 @@ export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: s
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes csv feed \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_FEED, input: deleted }
+    context_data: { id: feedId, entity_type: ENTITY_TYPE_FEED, input: deleted }
   });
   return feedId;
 };

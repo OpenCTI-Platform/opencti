@@ -90,7 +90,7 @@ export const addTrigger = async (
     event_scope: 'create',
     event_access: isSelfTrigger ? 'extended' : 'administration',
     message: `creates ${type} trigger \`${created.name}\` for ${isSelfTrigger ? '`themselves`' : `user \`${recipient.name}\``}`,
-    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
@@ -127,7 +127,7 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
     event_scope: 'delete',
     event_access: isSelfTrigger ? 'extended' : 'administration',
     message: `deletes trigger \`${deleted.name}\` for ${isSelfTrigger ? '`themselves`' : `user \`${recipientNames.join(', ')}\``}`,
-    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input: deleted }
+    context_data: { id: triggerId, entity_type: ENTITY_TYPE_TRIGGER, input: deleted }
   });
   return triggerId;
 };
