@@ -63,14 +63,14 @@ describe('Settings Messages', () => {
         },
       });
     });
-    localStorage.setItem('BANNER', JSON.stringify([{ ...message, dismiss: false }])); // Mocking local storage
+    localStorage.setItem('banner', JSON.stringify({ messages: [{ ...message, dismiss: false }] })); // Mocking local storage
     environment.mock.queuePendingOperation(settingsMessagesQuery, {});
     act(() => {
       if (container !== null) {
         createComponent(container, environment);
       }
     });
-    const loader = container?.querySelector('#BANNER_DIV');
+    const loader = container?.querySelector('#banner_div');
     expect(loader).not.toBeNull();
   });
   it('Renders component with datas - activated message and dismiss', async () => {
@@ -80,6 +80,7 @@ describe('Settings Messages', () => {
       activated: true,
       dismissible: false,
       updated_at: new Date().toString(),
+      dismiss: true,
     };
     const environment = createMockEnvironment();
     environment.mock.queueOperationResolver((operation) => {
@@ -91,14 +92,14 @@ describe('Settings Messages', () => {
         },
       });
     });
-    localStorage.setItem('BANNER', JSON.stringify([{ ...message, dismiss: true }])); // Mocking local storage
+    localStorage.setItem('banner', JSON.stringify({ messages: [{ ...message, dismiss: true }] })); // Mocking local storage
     environment.mock.queuePendingOperation(settingsMessagesQuery, {});
     act(() => {
       if (container !== null) {
         createComponent(container, environment);
       }
     });
-    const loader = container?.querySelector('#BANNER_DIV');
+    const loader = container?.querySelector('#banner_div');
     expect(loader).toBeNull();
   });
   it('Renders component with datas - not activated message', async () => {
@@ -119,14 +120,14 @@ describe('Settings Messages', () => {
         },
       });
     });
-    localStorage.setItem('BANNER', JSON.stringify([{ ...message, dismiss: false }])); // Mocking local storage
+    localStorage.setItem('banner', JSON.stringify({ messages: [{ ...message, dismiss: false }] })); // Mocking local storage
     environment.mock.queuePendingOperation(settingsMessagesQuery, {});
     act(() => {
       if (container !== null) {
         createComponent(container, environment);
       }
     });
-    const loader = container?.querySelector('#BANNER_DIV');
+    const loader = container?.querySelector('#banner_div');
     expect(loader).toBeNull();
   });
 });

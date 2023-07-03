@@ -1,13 +1,18 @@
-import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import * as R from 'ramda';
-import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
-import {
-  Filters,
-  OrderMode,
-  PaginationOptions,
-} from '../../components/list_lines';
+import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
+import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
 import { BackendFilters, isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
+import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
+
+export interface MessageFromLocalStorage {
+  id: string
+  message: string
+  activated: boolean
+  dismissible: boolean
+  updated_at: Date
+  dismiss: boolean
+}
 
 export interface LocalStorage {
   numberOfElements?: {
@@ -31,6 +36,7 @@ export interface LocalStorage {
   selectAll?: boolean;
   selectedElements?: Record<string, unknown>;
   deSelectedElements?: Record<string, unknown>;
+  messages?: MessageFromLocalStorage[]
 }
 
 export interface UseLocalStorageHelpers {
@@ -116,7 +122,7 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
 };
 
 const setStoredValueToHistory = (
-  initialValue: LocalStorage,
+  initialValue: LocalStorage | undefined,
   valueToStore: LocalStorage,
 ) => {
   const searchParams = new URLSearchParams(window.location.search);
@@ -126,7 +132,7 @@ const setStoredValueToHistory = (
     const effectiveParams = new URLSearchParams(urlParams);
     if (
       Object.entries(urlParams)
-        .some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)
+        .some(([k, v]) => initialValue?.[k as keyof LocalStorage] !== v)
     ) {
       window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
     } else {
@@ -137,7 +143,7 @@ const setStoredValueToHistory = (
 
 const useLocalStorage = (
   key: string,
-  initialValue: LocalStorage,
+  initialValue?: LocalStorage,
 ): UseLocalStorage => {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
@@ -151,7 +157,7 @@ const useLocalStorage = (
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
       // Parse stored json or if none return initialValue
-      let value: LocalStorage = item ? JSON.parse(item) : null;
+      let value = item ? JSON.parse(item) : null;
       if (isEmptyField(value)) {
         value = initialValue;
       }

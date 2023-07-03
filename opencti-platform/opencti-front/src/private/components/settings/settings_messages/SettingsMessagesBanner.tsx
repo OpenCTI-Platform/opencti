@@ -1,15 +1,17 @@
-import makeStyles from '@mui/styles/makeStyles';
-import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import React, { useEffect, useMemo, useState } from 'react';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { Close } from '@mui/icons-material';
-import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
-import { SettingsMessagesBannerSubscription } from './__generated__/SettingsMessagesBannerSubscription.graphql';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import makeStyles from '@mui/styles/makeStyles';
+import * as R from 'ramda';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { SettingsMessagesBannerQuery } from './__generated__/SettingsMessagesBannerQuery.graphql';
 import { Theme } from '../../../../components/Theme';
+import useBus, { dispatch } from '../../../../utils/hooks/useBus';
+import useLocalStorage, { MessageFromLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { SettingsMessagesBannerQuery } from './__generated__/SettingsMessagesBannerQuery.graphql';
+import { SettingsMessagesBannerSubscription } from './__generated__/SettingsMessagesBannerSubscription.graphql';
 
 export const settingsMessagesQuery = graphql`
   query SettingsMessagesBannerQuery {
@@ -64,22 +66,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const BANNER_LOCAL_STORAGE_KEY = 'BANNER';
-const BANNER_DIV_KEY = 'BANNER_DIV';
-const BANNER_EVENT_KEY = 'BANNER_EVENT';
-
-// -- LOCAL STORAGE --
-
-const getMessagesFromLocalStorage = () => {
-  const item = window.localStorage.getItem(BANNER_LOCAL_STORAGE_KEY);
-  return item ? JSON.parse(item) : [];
-};
-const setMessagesToLocalStorage = (messages: MessageFromLocalStorage[]) => {
-  window.localStorage.setItem(BANNER_LOCAL_STORAGE_KEY, JSON.stringify(messages));
-};
-const dispatchEvent = () => {
-  window.dispatchEvent(new Event(BANNER_EVENT_KEY));
-};
+const BANNER_LOCAL_STORAGE_KEY = 'banner';
+const BANNER_DIV = 'banner_div';
 
 // -- UTILS --
 
@@ -102,41 +90,19 @@ const extractMessagesToDisplay = (messagesFromLocalStorage: MessageFromLocalStor
     });
 };
 
-// Use windows event to react with local storage update
 export const useSettingsMessagesBannerHeight = () => {
-  const computeBannerHeight = () => {
-    const [messageToDisplay] = extractMessagesToDisplay(getMessagesFromLocalStorage());
-    if (!messageToDisplay) {
-      return 0;
-    }
-    return document.getElementById(BANNER_DIV_KEY)?.clientHeight ?? 0;
-  };
-
-  const [bannerHeight, setBannerHeight] = useState(computeBannerHeight());
-  window.addEventListener(BANNER_EVENT_KEY, () => {
-    const newBannerHeight = computeBannerHeight();
-    if (newBannerHeight !== bannerHeight) {
-      setBannerHeight(computeBannerHeight());
-    }
-  });
+  const [bannerHeight, setBannerHeight] = useState(0);
+  useBus(BANNER_LOCAL_STORAGE_KEY, (size: number) => setBannerHeight(size ?? 0));
   return bannerHeight;
 };
 
 // -- FUNCTION COMPONENT --
 
-interface MessageFromLocalStorage {
-  id: string
-  message: string
-  activated: boolean
-  dismissible: boolean
-  updated_at: Date
-  dismiss: boolean
-}
-
 const SettingsMessagesBannerComponent = ({
   queryRef,
 }: { queryRef: PreloadedQuery<SettingsMessagesBannerQuery> }) => {
   const classes = useStyles();
+  const ref = useRef<HTMLDivElement>(null);
 
   const { settings } = usePreloadedQuery<SettingsMessagesBannerQuery>(settingsMessagesQuery, queryRef);
   const config = useMemo<GraphQLSubscriptionConfig<SettingsMessagesBannerSubscription>>(() => ({
@@ -145,41 +111,44 @@ const SettingsMessagesBannerComponent = ({
   }), [settings, settingsSubscription]);
   useSubscription(config);
 
-  const messagesSettings = settings.messages ?? [];
-  const [messagesLocalStorage, setMessagesLocalStorage] = useState<MessageFromLocalStorage[]>(getMessagesFromLocalStorage());
+  const messagesSettings = (settings.messages ?? []) as MessageFromLocalStorage[];
+  const [
+    { messages: messagesLocalStorage },
+    setMessages,
+  ] = useLocalStorage(BANNER_LOCAL_STORAGE_KEY, { messages: messagesSettings });
 
-  useEffect((() => {
-    dispatchEvent();
-  }), [messagesLocalStorage]);
-
-  // 1. No message
-  if ((messagesSettings.length ?? 0) === 0) {
-    // Reset local storage
-    if (messagesLocalStorage.length > 0) {
-      setMessagesToLocalStorage([]);
-      setMessagesLocalStorage(getMessagesFromLocalStorage());
+  let messageToDisplay: MessageFromLocalStorage;
+  // Update the local storage when new items are found
+  useEffect(() => {
+    // 1. New message -> Update local storage
+    const messagesUpdated = messagesSettings.map((message) => {
+      const messageLocalStorage = messagesLocalStorage?.find((m) => m.id === message.id);
+      if (messageLocalStorage) {
+        if (messageLocalStorage.updated_at < message.updated_at || messageLocalStorage?.dismissible !== message.dismissible) {
+          return { ...message, dismiss: false };
+        }
+        return messageLocalStorage;
+      }
+      return { ...message, dismiss: false };
+    });
+    if (!R.equals(messagesUpdated, messagesLocalStorage)) {
+      setMessages({ messages: messagesUpdated });
     }
+    [messageToDisplay] = extractMessagesToDisplay(messagesUpdated);
+  }, [JSON.stringify(messagesSettings)]);
+
+  // Tell everyone that the new message is displayed
+  useLayoutEffect(() => {
+    dispatch(BANNER_LOCAL_STORAGE_KEY, ref.current?.clientHeight);
+  }, [JSON.stringify(messagesLocalStorage)]);
+
+  // 2. No message
+  if (!messagesLocalStorage || messagesLocalStorage.length === 0) {
     return (<></>);
   }
 
-  // 2. New message -> Update local storage
-  const messagesUpdated = messagesSettings.map((message) => {
-    const messageLocalStorage = messagesLocalStorage.find((m) => m.id === message.id);
-    if (messageLocalStorage) {
-      if (messageLocalStorage.updated_at < message.updated_at || messageLocalStorage?.dismissible !== message.dismissible) {
-        return { ...message, dismiss: false };
-      }
-      return messageLocalStorage;
-    }
-    return { ...message, dismiss: false };
-  });
-  if (!R.equals(messagesUpdated, messagesLocalStorage)) {
-    setMessagesToLocalStorage(messagesUpdated);
-    setMessagesLocalStorage(getMessagesFromLocalStorage());
-  }
   // 3. Retrieve message to display
-  const [messageToDisplay] = extractMessagesToDisplay(messagesLocalStorage);
-
+  [messageToDisplay] = extractMessagesToDisplay(messagesLocalStorage);
   // 4. Message not activated or dismiss
   if (!messageToDisplay) {
     return (<></>);
@@ -187,14 +156,12 @@ const SettingsMessagesBannerComponent = ({
 
   // 5. Message activated and not dismiss
   const handleDismiss = () => {
-    const idx = messagesLocalStorage.findIndex((m) => m.id === messageToDisplay.id);
-    messagesLocalStorage.splice(idx, 1);
-    setMessagesToLocalStorage([...messagesLocalStorage, { ...messageToDisplay, dismiss: true }]);
-    setMessagesLocalStorage(getMessagesFromLocalStorage());
+    const otherMessages = messagesLocalStorage.filter((m) => m.id !== messageToDisplay.id);
+    setMessages({ messages: [...otherMessages, { ...messageToDisplay, dismiss: true }] });
   };
 
   return (
-    <div id={BANNER_DIV_KEY} className={classes.container}>
+    <div ref={ref} id={BANNER_DIV} className={classes.container}>
       <div className={classes.message}>{messageToDisplay.message}</div>
       {messageToDisplay.dismissible
         && (
@@ -209,7 +176,7 @@ const SettingsMessagesBannerComponent = ({
           </IconButton>
         )
       }
-      </div>
+    </div>
   );
 };
 
