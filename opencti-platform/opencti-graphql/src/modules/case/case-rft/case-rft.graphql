@@ -132,7 +132,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  # Request For Information
+  objectParticipant: ParticipantConnection
+  # Request For Takedown
   takedown_types: [String!]
   severity: String
   priority: String

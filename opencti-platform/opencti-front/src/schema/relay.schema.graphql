@@ -10004,6 +10004,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  objectParticipant: ParticipantConnection
   representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10050,6 +10051,7 @@ enum CasesFilter {
   markedBy
   labelledBy
   assigneeTo
+  participant
   x_opencti_workflow_id
   confidence
 }
@@ -10138,7 +10140,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  objectParticipant: ParticipantConnection
   representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
@@ -10157,6 +10158,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  objectParticipant: ParticipantConnection
   rating: Int
   response_types: [String!]
   severity: String
@@ -10191,7 +10193,7 @@ enum CaseIncidentsFilter {
   markedBy
   labelledBy
   assigneeTo
-  participants
+  participant
   x_opencti_workflow_id
   severity
   priority
@@ -10294,6 +10296,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  objectParticipant: ParticipantConnection
   information_types: [String!]
   severity: String
   priority: String
@@ -10426,6 +10429,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  objectParticipant: ParticipantConnection
   takedown_types: [String!]
   severity: String
   priority: String
@@ -10560,6 +10564,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  objectParticipant: ParticipantConnection
   rating: Int
 }
 

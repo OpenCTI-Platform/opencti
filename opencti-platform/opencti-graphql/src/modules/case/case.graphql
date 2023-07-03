@@ -91,6 +91,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  objectParticipant: ParticipantConnection
   # Container
   representative: String!
   objects(
@@ -162,6 +163,7 @@ enum CasesFilter {
   markedBy
   labelledBy
   assigneeTo
+  participant
   x_opencti_workflow_id
   confidence
 }
