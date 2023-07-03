@@ -1,5 +1,5 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 
 const splitThreatActorsByCategory = async (indices) => {
@@ -26,7 +26,7 @@ const splitThreatActorsByCategory = async (indices) => {
 };
 
 export const up = async (next) => {
-  await splitThreatActorsByCategory(READ_INDEX_INTERNAL_OBJECTS);
+  await splitThreatActorsByCategory(READ_INDEX_STIX_DOMAIN_OBJECTS);
   next();
 };
 
