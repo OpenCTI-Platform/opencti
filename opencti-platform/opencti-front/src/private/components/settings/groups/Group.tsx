@@ -83,13 +83,7 @@ const groupFragment = graphql`
     members {
       edges {
         node {
-          id
-          user_email
-          name
-          firstname
-          lastname
-          external
-          created_at
+          ...UserLine_node
         }
       }
     }
@@ -289,7 +283,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 10, marginLeft: 0 }}
+          style={{ marginTop: 0, marginLeft: 0 }}
         >
           <Triggers recipientId={group.id} filter={filter}/>
           <MembersList members={members} />
