@@ -91,7 +91,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  objectParticipant: ParticipantConnection
   # Container
   representative: String!
   objects(
@@ -133,6 +132,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  objectParticipant: ParticipantConnection
 }
 
 # Ordering
