@@ -35,6 +35,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemAssignees from '../../../../components/ItemAssignees';
+import ItemParticipants from '../../../../components/ItemParticipants';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -110,6 +111,7 @@ class StixDomainObjectOverview extends Component {
       withoutMarking,
       withPattern,
       displayAssignees,
+      displayParticipants,
     } = this.props;
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
@@ -207,6 +209,22 @@ class StixDomainObjectOverview extends Component {
                   <ItemAssignees
                     assigneesEdges={
                       stixDomainObject.objectAssignee?.edges ?? []
+                    }
+                  />
+                </div>
+              )}
+              {displayParticipants && (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Participants')}
+                  </Typography>
+                  <ItemParticipants
+                    participantsEdges={
+                      stixDomainObject.objectParticipant?.edges ?? []
                     }
                   />
                 </div>
@@ -356,6 +374,7 @@ StixDomainObjectOverview.propTypes = {
   fldt: PropTypes.func,
   withoutMarking: PropTypes.bool,
   displayAssignees: PropTypes.bool,
+  displayParticipants: PropTypes.bool,
 };
 
 export default R.compose(
