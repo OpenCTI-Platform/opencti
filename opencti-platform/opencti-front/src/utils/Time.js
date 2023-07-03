@@ -45,6 +45,8 @@ export const dayEndDate = (date = null) => {
 
 export const now = () => moment().format();
 
+export const nowUTC = () => moment().utc().format();
+
 export const dayAgo = () => moment().subtract(1, 'days').format();
 
 export const daysAgo = (number, date = null, fromStart = true) => moment(dayStartDate(date, fromStart)).subtract(number, 'days').format();

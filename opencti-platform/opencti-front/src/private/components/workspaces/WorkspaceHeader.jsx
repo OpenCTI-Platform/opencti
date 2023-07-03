@@ -24,6 +24,7 @@ import PropTypes from 'prop-types';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import Security from '../../../utils/Security';
+import { nowUTC } from '../../../utils/Time';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
@@ -156,7 +157,7 @@ const WorkspaceHeader = ({
         const toStixBundleData = data?.workspace?.toStixReportBundle;
         if (toStixBundleData) {
           const blob = new Blob([toStixBundleData], { type: 'text/json' });
-          const fileName = `${workspace.name}-export-stix-report`;
+          const fileName = `${nowUTC()}_(export-stix-report)_${workspace.name}`;
           fileDownload(blob, fileName, 'application/json');
         }
       });

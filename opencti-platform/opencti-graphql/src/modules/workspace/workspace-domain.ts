@@ -36,6 +36,7 @@ import {
 } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { STIX_SPEC_VERSION } from '../../database/stix';
+import { convertTypeToStixType } from '../../database/stix-converter';
 import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 
@@ -82,17 +83,17 @@ export const objects = async (context: AuthContext, user: AuthUser, workspaceId:
   return listThings(context, user, types, finalArgs);
 };
 
-export const exportObjectsAsStixReportBundle = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace): Promise<string> => {
+export const toStixReportBundle = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace): Promise<string> => {
   if (workspace.type !== 'investigation') {
     throw FunctionalError('You can only export investigation objects as a stix report bundle');
   }
-  const types = ['Stix-Core-Object', 'Stix-Core-Relationship', 'Stix-Sighting-Relationship'];
+  const stixTypes = ['Stix-Core-Object', 'Stix-Core-Relationship', 'Stix-Sighting-Relationship'];
   const filters = [{ key: buildRefRelationKey(RELATION_HAS_REFERENCE), values: [workspace.id] }];
-  const stixObjects = await stixLoadByFilters(context, user, types, { filters });
+  const stixObjects = await stixLoadByFilters(context, user, stixTypes, { filters });
   const reportData = {
     name: workspace.name,
     published: workspace.created_at,
-    type: 'report',
+    type: convertTypeToStixType(ENTITY_TYPE_CONTAINER_REPORT),
     object_refs: stixObjects.map((s) => s.id),
     spec_version: STIX_SPEC_VERSION,
   };
