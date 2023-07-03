@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
-import { HiddenInRolesQuery } from './__generated__/HiddenInRolesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import { HiddenInRolesQuery } from './__generated__/HiddenInRolesQuery.graphql';
 
 export const hiddenInRolesQuery = graphql`
     query HiddenInRolesQuery($search: String) {
@@ -26,46 +26,43 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface HiddenInRolesProps {
+interface HiddenInRolesContentProps {
+  queryRef: PreloadedQuery<HiddenInRolesQuery>,
   targetTypes: string[],
   platformHiddenTargetType: string,
 }
 
-const HiddenInRoles: FunctionComponent<HiddenInRolesProps> = ({ targetTypes, platformHiddenTargetType }) => {
+const HiddenInRoles: FunctionComponent<HiddenInRolesContentProps> = ({ queryRef, targetTypes, platformHiddenTargetType }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const hiddenTypesWithRoles = () => {
-    let result = {} as Record<string, string[]>;
-    const data = useLazyLoadQuery<HiddenInRolesQuery>(hiddenInRolesQuery, {});
-    const rolesData = data.roles?.edges;
-    for (const entity_type of targetTypes) {
-      result = {
-        ...result,
-        [entity_type]: [],
-      };
-    }
-    if (rolesData) {
-      for (const r of rolesData) {
-        if (r && r.node.default_hidden_types) {
-          for (const hidden_type of r.node.default_hidden_types) {
-            if (hidden_type) {
-              result[hidden_type].push(r.node.name);
-            }
+  let hiddenTypesWithRoles = {} as Record<string, string[]>;
+  const data = usePreloadedQuery<HiddenInRolesQuery>(hiddenInRolesQuery, queryRef);
+  const rolesData = data.roles?.edges;
+  for (const entity_type of targetTypes) {
+    hiddenTypesWithRoles = {
+      ...hiddenTypesWithRoles,
+      [entity_type]: [],
+    };
+  }
+  if (rolesData) {
+    for (const r of rolesData) {
+      if (r && r.node.default_hidden_types) {
+        for (const hidden_type of r.node.default_hidden_types) {
+          if (hidden_type) {
+            hiddenTypesWithRoles[hidden_type].push(r.node.name);
           }
         }
       }
     }
-    return result;
-  };
+  }
 
-  const rolesHiddenTypes = hiddenTypesWithRoles();
   return (
     <span>
-      {rolesHiddenTypes[platformHiddenTargetType].length > 0
+      {hiddenTypesWithRoles[platformHiddenTargetType].length > 0
         && (<span className={classes.roleIndication}>
               &emsp;
-          {`(${t('Hidden in roles')} : ${rolesHiddenTypes[platformHiddenTargetType]})`}
+          {`(${t('Hidden in roles')} : ${hiddenTypesWithRoles[platformHiddenTargetType]})`}
             </span>)
       }
     </span>

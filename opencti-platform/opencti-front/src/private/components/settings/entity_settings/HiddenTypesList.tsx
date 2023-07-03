@@ -12,7 +12,7 @@ import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { RoleEditionOverview_role$data } from '../roles/__generated__/RoleEditionOverview_role.graphql';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import HiddenInRoles from './HiddenInRoles';
+import HiddenInRolesContainer from './HiddenInRolesContainer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const hiddenTypesListRoleMutationFieldPatch = graphql`
@@ -219,10 +219,10 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
           />
           {t(`entity_${platformHiddenType.target_type}`)}
           <Security needs={[SETTINGS_SETACCESSES]}>
-            <HiddenInRoles
+            <HiddenInRolesContainer
               targetTypes={entitySettings.map((n) => n.target_type)}
               platformHiddenTargetType={platformHiddenType.target_type}
-            ></HiddenInRoles>
+            ></HiddenInRolesContainer>
           </Security>
         </MenuItem>,
       ));
