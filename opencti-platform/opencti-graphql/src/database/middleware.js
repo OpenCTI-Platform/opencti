@@ -3052,7 +3052,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     data.x_opencti_files = [storeFileConverter(user, file)];
     // Add external references from files if necessary
     const entitySetting = await getEntitySettingFromCache(context, type);
-    if (entitySetting.platform_entity_files_ref) {
+    if (entitySetting?.platform_entity_files_ref) {
       // Create external ref + link to current entity
       const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
       const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
