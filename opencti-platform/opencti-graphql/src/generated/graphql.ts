@@ -1943,6 +1943,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -2141,6 +2142,7 @@ export type CaseIncidentAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   priority?: InputMaybe<Scalars['String']>;
   response_types?: InputMaybe<Array<Scalars['String']>>;
@@ -2175,6 +2177,7 @@ export enum CaseIncidentsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participants = 'participants',
   Priority = 'priority',
   Severity = 'severity',
   UpdatedAt = 'updated_at',
@@ -15559,6 +15562,25 @@ export type PageInfo = {
   startCursor: Scalars['String'];
 };
 
+export type Participant = {
+  __typename?: 'Participant';
+  entity_type: Scalars['String'];
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
+export type ParticipantConnection = {
+  __typename?: 'ParticipantConnection';
+  edges: Array<ParticipantEdge>;
+  pageInfo: PageInfo;
+};
+
+export type ParticipantEdge = {
+  __typename?: 'ParticipantEdge';
+  cursor: Scalars['String'];
+  node: Participant;
+};
+
 export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'PaymentCard';
   card_number?: Maybe<Scalars['String']>;
@@ -27103,6 +27125,9 @@ export type ResolversTypes = ResolversObject<{
   OtpElement: ResolverTypeWrapper<OtpElement>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
+  Participant: ResolverTypeWrapper<Participant>;
+  ParticipantConnection: ResolverTypeWrapper<ParticipantConnection>;
+  ParticipantEdge: ResolverTypeWrapper<ParticipantEdge>;
   PaymentCard: ResolverTypeWrapper<Omit<PaymentCard, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   PaymentCardAddInput: PaymentCardAddInput;
   PhoneNumber: ResolverTypeWrapper<Omit<PhoneNumber, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
@@ -27787,6 +27812,9 @@ export type ResolversParentTypes = ResolversObject<{
   OtpElement: OtpElement;
   OverviewMetrics: OverviewMetrics;
   PageInfo: PageInfo;
+  Participant: Participant;
+  ParticipantConnection: ParticipantConnection;
+  ParticipantEdge: ParticipantEdge;
   PaymentCard: Omit<PaymentCard, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PaymentCardAddInput: PaymentCardAddInput;
   PhoneNumber: Omit<PhoneNumber, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
@@ -28692,6 +28720,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<CaseIncidentObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseIncidentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseIncidentOpinionsArgs>>;
@@ -32350,6 +32379,25 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ParticipantResolvers<ContextType = any, ParentType extends ResolversParentTypes['Participant'] = ResolversParentTypes['Participant']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ParticipantConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ParticipantConnection'] = ResolversParentTypes['ParticipantConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['ParticipantEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ParticipantEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ParticipantEdge'] = ResolversParentTypes['ParticipantEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Participant'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PaymentCardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaymentCard'] = ResolversParentTypes['PaymentCard']> = ResolversObject<{
   card_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<PaymentCardCasesArgs>>;
@@ -35550,6 +35598,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   OtpElement?: OtpElementResolvers<ContextType>;
   OverviewMetrics?: OverviewMetricsResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
+  Participant?: ParticipantResolvers<ContextType>;
+  ParticipantConnection?: ParticipantConnectionResolvers<ContextType>;
+  ParticipantEdge?: ParticipantEdgeResolvers<ContextType>;
   PaymentCard?: PaymentCardResolvers<ContextType>;
   PhoneNumber?: PhoneNumberResolvers<ContextType>;
   Position?: PositionResolvers<ContextType>;
