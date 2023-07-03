@@ -66,13 +66,7 @@ const MembersList: FunctionComponent<MembersListProps> = ({ members }) => {
   };
 
   return (
-    <Grid
-      container={true}
-      spacing={3}
-      classes={{ container: classes.gridContainer }}
-      style={{ marginTop: 20 }}
-    >
-      <Grid item={true} xs={12}>
+      <Grid item={true} xs={12} style={{ marginTop: 30 }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Members')}
         </Typography>
@@ -93,7 +87,6 @@ const MembersList: FunctionComponent<MembersListProps> = ({ members }) => {
           </Grid>
         </Paper>
       </Grid>
-    </Grid>
   );
 };
 

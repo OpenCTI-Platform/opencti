@@ -292,11 +292,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           style={{ marginTop: 20, marginLeft: 0 }}
         >
           <Triggers recipientId={group.id} filter={filter}/>
+          <MembersList members={members} />
         </Grid>
       </Grid>
-
-
-      <MembersList members={members} />
 
       <Fab
         onClick={handleOpenUpdate}
