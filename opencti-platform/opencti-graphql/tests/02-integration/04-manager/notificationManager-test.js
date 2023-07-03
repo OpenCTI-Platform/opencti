@@ -13,7 +13,7 @@ import {
   buildTargetEvents,
   filterUpdateInstanceIdsFromUpdatePatch,
   generateNotificationMessageForInstance,
-  generateNotificationMessageForInstanceWithRefs,
+  generateNotificationMessageForInstanceWithRefs, generateNotificationMessageForInstanceWithRefsUpdate,
   isRelationFromOrToMatchFilters
 } from '../../../src/manager/notificationManager';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
@@ -491,26 +491,26 @@ describe('Notification manager behaviors test', async () => {
   };
 
   it('Should generate a notification message for an instance with refs', async () => {
-    let result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'in' }, { instance: stixRedOrganization, action: 'in' }], true);
+    let result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixRedOrganization], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name,[organization] redOrganization_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'in' }], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'in' }, { instance: stixMalware, action: 'in' }], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [stixGreenOrganization, stixMalware], true);
     expect(result).toEqual('[report] report_name containing [organization] greenOrganization_name,[malware] malware_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'in' }, { instance: stixMalware, action: 'in' }], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], true);
     expect(result).toEqual('[relationship] attack-pattern_entity delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'in' }, { instance: stixMalware, action: 'in' }], true);
+    result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [stixGreenOrganization, stixMalware], true);
     expect(result).toEqual('[relationship] Restricted delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
 
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixRedOrganization, action: 'added in' }], false);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixRedOrganization, action: 'added in' }], false);
     expect(result).toEqual('[organization] greenOrganization_name,[organization] redOrganization_name added in [report] report_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }], false);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }], false);
     expect(result).toEqual('[organization] greenOrganization_name added in [report] report_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixMalware, action: 'removed from' }], false);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixMalware, action: 'removed from' }], false);
     expect(result).toEqual('[organization] greenOrganization_name added in [report] report_name,[malware] malware_name removed from [report] report_name');
-    result = await generateNotificationMessageForInstanceWithRefs(context, adminUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixMalware, action: 'added in' }], false);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixMalware, action: 'added in' }], false);
     expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name added in [relationship] attack-pattern_entity delivers malware_entity');
-    result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'removed from' }, { instance: stixMalware, action: 'removed from' }], false);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, greenUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'removed from' }, { instance: stixMalware, action: 'removed from' }], false);
     expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name removed from [relationship] Restricted delivers malware_entity');
   });
 

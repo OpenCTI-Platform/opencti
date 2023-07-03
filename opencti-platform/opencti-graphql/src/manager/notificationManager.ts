@@ -344,14 +344,11 @@ const filterInstancesByRefEventIds = (
   listenedInstanceIdsMap: Map<string, StixObject>,
   refsEventIds: string[],
 ) => {
-  const instances: { instance: StixObject, action: string }[] = [];
+  const instances: StixObject[] = [];
   refsEventIds.forEach((refId) => {
     const instance = listenedInstanceIdsMap.get(refId);
     if (instance) {
-      instances.push({
-        instance,
-        action: 'in',
-      });
+      instances.push(instance);
     }
   });
   return instances;
@@ -451,30 +448,33 @@ export const generateNotificationMessageForInstance = async (
   return `[${instance.type.toLowerCase()}] ${instanceRepresentative}`;
 };
 
-// generate a notification message with an instance and refs
-// taking the user rights into account in case of a relationship (from/to restricted or not)
-// but not for the refs (the refs should already have been filtered with the user rights)
+// generate a notification message with an instance and refs - case creation/deletion
 export const generateNotificationMessageForInstanceWithRefs = async (
   context: AuthContext,
   user: AuthUser,
   instance: StixCoreObject | StixRelationshipObject,
+  refsInstances: StixObject[],
+) => {
+  const mainInstanceMessage = await generateNotificationMessageForInstance(context, user, instance);
+  return `${mainInstanceMessage} containing ${refsInstances.map((ref) => `[${ref.type.toLowerCase()}] ${extractStixRepresentative(ref)}`)}`;
+};
+
+// generate a notification message with an instance and refs - case update
+export const generateNotificationMessageForInstanceWithRefsUpdate = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StixCoreObject | StixRelationshipObject,
   refsInstances: { instance: StixObject, action: string }[],
-  displayedTypeIsUpdate?: boolean,
 ) => {
   const mainInstanceMessage = await generateNotificationMessageForInstance(context, user, instance);
   const groupedRefsInstances = Object.values(R.groupBy((ref) => ref.action, refsInstances)); // refs instances grouped by notification message
-  switch (displayedTypeIsUpdate) {
-    case true:
-      return `${mainInstanceMessage} containing ${refsInstances.map((ref) => `[${ref.instance.type.toLowerCase()}] ${extractStixRepresentative(ref.instance)}`)}`;
-    default:
-      return `${
-        groupedRefsInstances
-          .map((refsGroup) => `${
-            refsGroup
-              .map((ref) => `[${ref.instance.type.toLowerCase()}] ${extractStixRepresentative(ref.instance)}`)
-          } ${refsGroup[0].action} ${mainInstanceMessage}`)
-      }`;
-  }
+  return `${
+    groupedRefsInstances
+      .map((refsGroup) => `${
+        refsGroup
+          .map((ref) => `[${ref.instance.type.toLowerCase()}] ${extractStixRepresentative(ref.instance)}`)
+      } ${refsGroup[0].action} ${mainInstanceMessage}`)
+  }`;
 };
 
 // generate the message to display in the notification for filtered instance trigger side events
@@ -505,7 +505,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
     }
     const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch);
     if (listenedInstancesInPatchIds.length > 0) { // 2.a.--> It's the patch that contains instance(s) of the trigger filters
-      const message = await generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInPatchIds, false);
+      const message = await generateNotificationMessageForInstanceWithRefsUpdate(context, user, data, listenedInstancesInPatchIds);
       return message;
     }
     // the modification may be a modification of rights (the instance is newly/no-more visible) -> we go in case 3.
@@ -521,7 +521,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
     // We need to filter these instances to keep those that are part of the event refs or of the relationship from/to
     const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
     if (listenedInstancesInRefsEventIds.length > 0) {
-      const message = await generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds, true);
+      const message = await generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds);
       return message;
     }
   }
