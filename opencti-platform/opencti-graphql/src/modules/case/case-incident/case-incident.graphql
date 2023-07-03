@@ -91,7 +91,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  objectParticipant: ParticipantConnection
   # Container
   representative: String!
   objects(
@@ -133,6 +132,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  objectParticipant: ParticipantConnection
   # Incident Response
   rating: Int
   response_types: [String!]
@@ -171,7 +171,7 @@ enum CaseIncidentsFilter {
   markedBy
   labelledBy
   assigneeTo
-  participants
+  participant
   x_opencti_workflow_id
   severity
   priority

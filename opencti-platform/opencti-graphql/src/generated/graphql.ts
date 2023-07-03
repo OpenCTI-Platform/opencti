@@ -1726,6 +1726,7 @@ export type Case = {
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -2177,7 +2178,7 @@ export enum CaseIncidentsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  Participants = 'participants',
+  Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
   UpdatedAt = 'updated_at',
@@ -2237,6 +2238,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -2523,6 +2525,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -2833,6 +2836,7 @@ export enum CasesFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participant = 'participant',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -6690,6 +6694,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -28656,6 +28661,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<CaseObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseOpinionsArgs>>;
@@ -28791,6 +28797,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<CaseRfiObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseRfiObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseRfiOpinionsArgs>>;
@@ -28858,6 +28865,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<CaseRftObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseRftObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseRftOpinionsArgs>>;
@@ -30069,6 +30077,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<FeedbackObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<FeedbackObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<FeedbackOpinionsArgs>>;
