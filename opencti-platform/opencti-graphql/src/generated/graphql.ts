@@ -16597,6 +16597,7 @@ export type Query = {
   organization?: Maybe<Organization>;
   organizations?: Maybe<OrganizationConnection>;
   otpGeneration?: Maybe<OtpElement>;
+  participants?: Maybe<ParticipantConnection>;
   pendingFiles?: Maybe<FileConnection>;
   platform_theme?: Maybe<Scalars['String']>;
   position?: Maybe<Position>;
@@ -17787,6 +17788,11 @@ export type QueryOrganizationsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryParticipantsArgs = {
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
 };
 
 
@@ -32778,6 +32784,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<QueryOrganizationArgs>>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;
   otpGeneration?: Resolver<Maybe<ResolversTypes['OtpElement']>, ParentType, ContextType>;
+  participants?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType, Partial<QueryParticipantsArgs>>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryPendingFilesArgs>>;
   platform_theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;

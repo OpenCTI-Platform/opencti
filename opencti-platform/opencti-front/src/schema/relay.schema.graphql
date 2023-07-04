@@ -7783,6 +7783,7 @@ type Query {
   user(id: String!): User
   creators(entityTypes: [String!]): CreatorConnection
   assignees(entityTypes: [String!]): AssigneeConnection
+  participants(entityTypes: [String!]): ParticipantConnection
   members(first: Int, search: String, entityTypes: [MemberType!]): MemberConnection
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: [UsersFiltering], filterMode: FilterMode, search: String, toStix: Boolean): UserConnection
   sessions: [UserSession]
