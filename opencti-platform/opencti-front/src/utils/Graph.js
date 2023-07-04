@@ -26,7 +26,7 @@ import Country from '../static/images/entities/country.svg';
 import Region from '../static/images/entities/region.svg';
 import Position from '../static/images/entities/position.svg';
 import Malware from '../static/images/entities/malware.svg';
-import ThreatActorGroup from '../static/images/entities/threat-actor.svg';
+import ThreatActorGroup from '../static/images/entities/threat-actor-group.svg';
 import Tool from '../static/images/entities/tool.svg';
 import Vulnerability from '../static/images/entities/vulnerability.svg';
 import Incident from '../static/images/entities/incident.svg';
