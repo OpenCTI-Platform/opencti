@@ -68,7 +68,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '25%',
+        width: '22%',
         isSortable: true,
       },
       priority: {
@@ -81,9 +81,9 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         width: '5%',
         isSortable: true,
       },
-      createdBy: {
-        label: 'Author',
-        width: '11%',
+      objectParticipant: {
+        label: 'Participants',
+        width: '14%',
         isSortable: isRuntimeSort,
       },
       creator: {
@@ -142,7 +142,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           'severity',
           'markedBy',
           'labelledBy',
-          'createdBy',
+          'objectParticipant',
           'creator',
           'created_start_date',
           'created_end_date',
