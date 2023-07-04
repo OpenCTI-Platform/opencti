@@ -41,7 +41,7 @@ import {
   userIdDeleteRelation,
   userRenewToken,
   userWithOrigin,
-  batchRolesForUsers,
+  batchRolesForUsers, findParticipants,
 } from '../domain/user';
 import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -72,6 +72,7 @@ const userResolvers = {
     roles: (_, args, context) => findRoles(context, context.user, args),
     creators: (_, args, context) => findCreators(context, context.user, args),
     assignees: (_, args, context) => findAssignees(context, context.user, args),
+    participants: (_, args, context) => findParticipants(context, context.user, args),
     members: (_, args, context) => findAllMembers(context, context.user, args),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),

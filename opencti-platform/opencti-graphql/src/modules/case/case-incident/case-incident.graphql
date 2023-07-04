@@ -158,7 +158,6 @@ enum CaseIncidentsOrdering {
 }
 
 # Filtering
-# TODO Check participant filter
 enum CaseIncidentsFilter {
   name
   created

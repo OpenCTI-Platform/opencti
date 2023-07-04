@@ -4,10 +4,7 @@ import { Dispatch, useState } from 'react';
 import { graphql } from 'react-relay';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { fetchQuery } from '../../relay/environment';
-import {
-  identitySearchCreatorsSearchQuery,
-  identitySearchIdentitiesSearchQuery,
-} from '../../private/components/common/identities/IdentitySearch';
+import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '../../private/components/common/identities/IdentitySearch';
 import { stixDomainObjectsLinesSearchQuery } from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue } from '../Graph';
 import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/marking_definitions/MarkingDefinitionsLines';
@@ -18,10 +15,7 @@ import { statusFieldStatusesSearchQuery } from '../../private/components/common/
 import { useFormatter } from '../../components/i18n';
 import { vocabCategoriesQuery } from '../hooks/useVocabularyCategory';
 import { vocabularySearchQuery } from '../../private/components/settings/VocabularyQuery';
-import {
-  objectAssigneeFieldAssigneesSearchQuery,
-  objectAssigneeFieldMembersSearchQuery,
-} from '../../private/components/common/form/ObjectAssigneeField';
+import { objectAssigneeFieldAssigneesSearchQuery, objectAssigneeFieldMembersSearchQuery } from '../../private/components/common/form/ObjectAssigneeField';
 import { IdentitySearchIdentitiesSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
 import { IdentitySearchCreatorsSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
 import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
@@ -37,6 +31,8 @@ import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocab
 import { Theme } from '../../components/Theme';
 import useAuth from '../hooks/useAuth';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
+import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
+import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -406,6 +402,29 @@ const useSearchEntities = ({
                 [filterKey]: assigneeToEntities,
               });
               unionSetEntities('assigneeTo', assigneeToEntities);
+            });
+        }
+        break;
+      case 'participant': // only used
+        if (!cacheEntities[filterKey]) {
+          fetchQuery(objectParticipantFieldParticipantsSearchQuery, {
+            entityTypes: searchContext?.entityTypes ?? [],
+          })
+            .toPromise()
+            .then((data) => {
+              const participantToEntities = (
+                (data as ObjectParticipantFieldParticipantsSearchQuery$data)
+                  ?.participants?.edges ?? []
+              ).map((n) => ({
+                label: n?.node.name ?? '',
+                value: n?.node.id ?? '',
+                type: 'User',
+              }));
+              setCacheEntities({
+                ...cacheEntities,
+                [filterKey]: participantToEntities,
+              });
+              unionSetEntities('participant', participantToEntities);
             });
         }
         break;
