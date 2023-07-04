@@ -7027,6 +7027,11 @@ export type Group = BasicObject & InternalObject & {
 };
 
 
+export type GroupMembersArgs = {
+  search?: InputMaybe<Scalars['String']>;
+};
+
+
 export type GroupRolesArgs = {
   orderBy?: InputMaybe<RolesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -30218,7 +30223,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType>;
+  members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<GroupMembersArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['Role']>>>, ParentType, ContextType, Partial<GroupRolesArgs>>;

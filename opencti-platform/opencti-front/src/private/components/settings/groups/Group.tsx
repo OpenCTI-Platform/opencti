@@ -132,16 +132,21 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [membersSearchTerm, setMembersSearchTerm] = useState('');
+
   const group = useFragment<Group_group$key>(groupFragment, groupData);
+  const groupMembersQueryRef = useQueryLoading<GroupMembersContainerQuery>(groupMembersContainerQuery, { id: group.id, search: membersSearchTerm });
   const filter: TriggerFilter = 'group_ids';
+
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
   };
-  const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
-  const members = usersSort(group.members?.edges ?? []);
+  const handleSearchMembers = (value: string) => {
+    setMembersSearchTerm(value);
+  };
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
     R.descend(R.propOr(0, 'x_opencti_order')),
