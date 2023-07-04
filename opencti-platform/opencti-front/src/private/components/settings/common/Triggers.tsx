@@ -19,6 +19,7 @@ import {
   TriggerFilter,
   TriggersLinesPaginationQuery,
 } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import SearchInput from '../../../../components/SearchInput';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -45,9 +46,15 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const ref = useRef(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearchTriggers = (value: string) => {
+    setSearchTerm(value);
+  };
   const paginationOptions = {
     count: 25,
     filters: [{ key: [filter], values: [recipientId] }],
+    search: searchTerm,
   };
   const queryRef = useQueryLoading<TriggersLinesPaginationQuery>(
     triggersLinesQuery,
@@ -91,6 +98,13 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       >
         {t('Triggers and Digests')}
       </Typography>
+      <div style={{ float: 'right', marginTop: -12 }}>
+        <SearchInput
+          variant="thin"
+          onSubmit={handleSearchTriggers}
+          keyword={searchTerm}
+        />
+      </div>
       <Tooltip title={t('Add a live trigger')}>
         <IconButton
           aria-label="Add"
