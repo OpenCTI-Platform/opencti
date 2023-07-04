@@ -6,7 +6,7 @@ import type { DomainFindById } from '../../domain/domainTypes';
 
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
 import { isStixId } from '../../schema/schemaUtils';
-import { RELATION_OBJECT, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
+import { RELATION_OBJECT, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { BasicStoreEntityTask, ENTITY_TYPE_CONTAINER_TASK } from './task-types';
 import {
