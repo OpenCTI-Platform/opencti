@@ -1,4 +1,4 @@
-# Data model
+# Export in structured format
 
 !!! tip "Under construction"
 

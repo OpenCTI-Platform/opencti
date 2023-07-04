@@ -1,4 +1,4 @@
-# Notifications
+# Notifications and alerting
 It is possible to receive `notifications` via email or directly on the platform interface triggered by events such as entity `creation`, `modification` or `deletion`.
 
 ![notifications](assets/notifications.png)  

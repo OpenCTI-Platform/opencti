@@ -1,4 +1,4 @@
-# Data model
+# Import from files
 
 !!! tip "Under construction"
 

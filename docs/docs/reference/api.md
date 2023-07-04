@@ -1,4 +1,4 @@
-# Data model
+# Knowledge graph
 
 !!! tip "Under construction"
 

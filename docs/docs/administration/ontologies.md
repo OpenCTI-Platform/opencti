@@ -1,4 +1,4 @@
-# Data model
+# Custom taxonomies
 
 !!! tip "Under construction"
 

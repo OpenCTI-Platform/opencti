@@ -1,4 +1,4 @@
-# Dashboards
+# Custom dashboards
 
 ## Sharing and access restriction
 

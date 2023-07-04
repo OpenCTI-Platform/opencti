@@ -1,4 +1,4 @@
-# Data model
+# Enrichment connectors
 
 !!! tip "Under construction"
 

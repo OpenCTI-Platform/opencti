@@ -1,4 +1,4 @@
-# Data model
+# Automate import
 
 !!! tip "Under construction"
 

@@ -1,12 +1,7 @@
-# API Usage
+# GraphQL API and playground
 
-Under construction.
+!!! tip "Under construction"
 
-
-
-marking:MARKING_TYPE=MARKING_NAME
-
-ie:
-
-marking:TLP=TLP:CLEAR
-marking:CLASSIFICATION=NP
+    We are doing our best to complete this page. 
+    If you want to participae, dont hesitate to join the [Filigran Community on Slack](https://community.filigran.io) 
+    or submit your pull request on the [Github doc repository](https://github.com/OpenCTI-Platform/docs).

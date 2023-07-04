@@ -1,4 +1,4 @@
-# Data model
+# Taxonomy
 
 !!! tip "Under construction"
 

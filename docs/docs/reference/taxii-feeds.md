@@ -1,4 +1,4 @@
-# Data model
+# Taxii feeds
 
 !!! tip "Under construction"
 

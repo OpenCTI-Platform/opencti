@@ -1,4 +1,4 @@
-# Data model
+# Data intelligence
 
 !!! tip "Under construction"
 

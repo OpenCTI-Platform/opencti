@@ -1,4 +1,4 @@
-# Data model
+# Inferences and reasoning
 
 !!! tip "Under construction"
 
