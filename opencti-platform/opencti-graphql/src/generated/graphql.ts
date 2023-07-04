@@ -2436,6 +2436,7 @@ export type CaseRfiAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   priority?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
@@ -2468,6 +2469,7 @@ export enum CaseRfisFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
   UpdatedAt = 'updated_at',

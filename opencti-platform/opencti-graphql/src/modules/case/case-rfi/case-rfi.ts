@@ -3,7 +3,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
-import { createdBy, objectAssignee, objectMarking } from '../../../schema/stixRefRelationship';
+import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
 import type { StixCaseRfi, StoreEntityCaseRfi } from './case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
 import convertCaseRfiToStix from './case-rfi-converter';
@@ -38,7 +38,7 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
     { name: 'priority', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
   ],
   relations: [],
-  relationsRefs: [createdBy, objectMarking, objectAssignee],
+  relationsRefs: [createdBy, objectMarking, objectAssignee, objectParticipant],
   representative: (stix: StixCaseRfi) => {
     return stix.name;
   },

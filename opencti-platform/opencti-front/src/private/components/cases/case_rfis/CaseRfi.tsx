@@ -99,6 +99,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
           <StixDomainObjectOverview
             stixDomainObject={caseRfiData}
             displayAssignees={true}
+            displayParticipants={true}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }} ref={ref}>
