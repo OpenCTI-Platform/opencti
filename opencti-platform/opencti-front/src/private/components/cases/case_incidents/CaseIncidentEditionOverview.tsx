@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
@@ -24,6 +24,7 @@ import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import { TasksFiltering } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -111,6 +112,15 @@ const caseIncidentEditionOverviewFragment = graphql`
         }
       }
     }
+    objectParticipant {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
   }
 `;
 
@@ -162,6 +172,7 @@ interface CaseIncidentEditionFormValues {
   createdBy?: Option
   objectMarking?: Option[]
   objectAssignee?: Option[]
+  objectParticipant?: Option[]
   x_opencti_workflow_id: Option
   references: ExternalReferencesValues | undefined
 }
@@ -205,6 +216,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
+      objectParticipant: (values.objectParticipant ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
@@ -250,6 +262,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     createdBy: convertCreatedBy(caseData),
     objectMarking: convertMarkings(caseData),
     objectAssignee: convertAssignees(caseData),
+    objectParticipant: convertParticipants(caseData),
     x_opencti_workflow_id: convertStatus(t, caseData) as Option,
     references: [],
   };
@@ -359,6 +372,14 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
             }
             onChange={editor.changeAssignee}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectParticipant" />
+            }
+            onChange={editor.changeParticipant}
           />
           {caseData.workflowEnabled && (
             <StatusField

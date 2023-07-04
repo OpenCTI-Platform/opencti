@@ -6,7 +6,7 @@ import {
   convertAssignees,
   convertExternalReferences,
   convertKillChainPhases,
-  convertMarkings,
+  convertMarkings, convertParticipants,
 } from '../edition';
 
 interface GenericData {
@@ -122,6 +122,9 @@ const useFormEditor = (
   const changeAssignee = (name: string, values: Option[]) => {
     changeMultiple(name, values, 'object-assignee', convertAssignees);
   };
+  const changeParticipant = (name: string, values: Option[]) => {
+    changeMultiple(name, values, 'object-participant', convertParticipants);
+  };
   const changeKillChainPhases = (name: string, values: Option[]) => {
     changeMultiple(name, values, 'kill-chain-phase', convertKillChainPhases);
   };
@@ -182,6 +185,7 @@ const useFormEditor = (
   return {
     changeMarking,
     changeAssignee,
+    changeParticipant,
     changeCreated,
     changeKillChainPhases,
     changeExternalReferences,
