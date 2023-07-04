@@ -264,11 +264,17 @@ const CaseTemplateTasks = () => {
   return (
     <div className={classes.container}>
       {caseTemplateQueryRef && (
-        <CaseHeaderMenu
-          caseTemplateId={caseTemplateId}
-          paginationOptions={paginationOptions}
-          queryRef={caseTemplateQueryRef}
-        />
+        <>
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <CaseHeaderMenu
+              caseTemplateId={caseTemplateId}
+              paginationOptions={paginationOptions}
+              queryRef={caseTemplateQueryRef}
+            />
+          </React.Suspense>
+        </>
       )}
       <div className="clearfix" style={{ paddingTop: 16 }} />
       <LabelsVocabulariesMenu />
