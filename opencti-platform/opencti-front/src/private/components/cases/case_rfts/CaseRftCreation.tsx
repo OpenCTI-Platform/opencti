@@ -37,6 +37,7 @@ import {
 import { CaseRftLinesCasesPaginationQuery$variables } from './__generated__/CaseRftLinesCasesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -104,6 +105,7 @@ interface FormikCaseRftAddInput {
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectAssignee: Option[];
+  objectParticipant: Option[];
   objectLabel: Option[];
   externalReferences: Option[];
   created: Date | null;
@@ -166,6 +168,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       caseTemplates: values.caseTemplates?.map(({ value }) => value),
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
+      objectParticipant: values.objectParticipant.map(({ value }) => value),
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -209,6 +212,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectAssignee: [],
+    objectParticipant: [],
     objectLabel: [],
     externalReferences: [],
     file: undefined,
@@ -293,6 +297,10 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField

@@ -85,11 +85,13 @@ const caseFragment = graphql`
     takedown_types
     priority
     severity
-    createdBy {
-      ... on Identity {
-        id
-        name
-        entity_type
+    objectAssignee {
+      edges {
+        node {
+          entity_type
+          id
+          name
+        }
       }
     }
     objectMarking {
@@ -195,9 +197,10 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
+              style={{ width: dataColumns.objectAssignee.width }}
             >
-              {data.createdBy?.name}
+              {(data.objectAssignee?.edges ?? []).map((p) => p?.node.name).join(', ')}
+
             </div>
             <div
               className={classes.bodyItem}
@@ -306,7 +309,7 @@ export const CaseRftLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
+              style={{ width: dataColumns.objectAssignee.width }}
             >
               <Skeleton
                 animation="wave"

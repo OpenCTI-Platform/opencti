@@ -99,6 +99,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
           <StixDomainObjectOverview
             stixDomainObject={caseRftData}
             displayAssignees={true}
+            displayParticipants={true}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }} ref={ref}>

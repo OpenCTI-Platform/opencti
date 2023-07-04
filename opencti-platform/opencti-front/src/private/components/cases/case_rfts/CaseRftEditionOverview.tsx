@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
@@ -23,6 +23,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { CaseRftEditionOverview_case$key } from './__generated__/CaseRftEditionOverview_case.graphql';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 export const caseRftMutationFieldPatch = graphql`
   mutation CaseRftEditionOverviewCaseFieldPatchMutation(
@@ -109,6 +110,15 @@ const caseRftEditionOverviewFragment = graphql`
         }
       }
     }
+    objectParticipant {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
   }
 `;
 
@@ -159,6 +169,7 @@ interface CaseRftEditionFormValues {
   createdBy?: Option
   objectMarking?: Option[]
   objectAssignee?: Option[]
+  objectParticipant?: Option[]
   x_opencti_workflow_id: Option
   references: ExternalReferencesValues | undefined
 }
@@ -202,6 +213,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
+      objectParticipant: (values.objectParticipant ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
@@ -247,6 +259,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
     createdBy: convertCreatedBy(caseData),
     objectMarking: convertMarkings(caseData),
     objectAssignee: convertAssignees(caseData),
+    objectParticipant: convertParticipants(caseData),
     x_opencti_workflow_id: convertStatus(t, caseData) as Option,
     references: [],
   };
@@ -355,6 +368,14 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
             }
             onChange={editor.changeAssignee}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectParticipant" />
+            }
+            onChange={editor.changeParticipant}
           />
           {caseData.workflowEnabled && (
             <StatusField

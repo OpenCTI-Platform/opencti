@@ -10586,6 +10586,7 @@ enum CaseRftsFilter {
   markedBy
   labelledBy
   assigneeTo
+  participant
   x_opencti_workflow_id
   confidence
   severity
@@ -10625,6 +10626,7 @@ input CaseRftAddInput {
   createdBy: String
   objectMarking: [String]
   objectAssignee: [String]
+  objectParticipant: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
