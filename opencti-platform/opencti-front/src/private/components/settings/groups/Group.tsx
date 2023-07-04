@@ -4,11 +4,7 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import {
-  CenterFocusStrongOutlined,
-  Edit,
-  SecurityOutlined,
-} from '@mui/icons-material';
+import { CenterFocusStrongOutlined, Edit, SecurityOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -24,13 +20,12 @@ import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupPopover from './GroupPopover';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { UserLine } from '../users/UserLine';
-import UserLineTitles from '../users/UserLineTitles';
 import GroupEdition from './GroupEdition';
 import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
 import Triggers from '../common/Triggers';
 import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import MembersList from '../users/MembersList';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -88,12 +83,7 @@ const groupFragment = graphql`
     members {
       edges {
         node {
-          id
-          user_email
-          name
-          firstname
-          lastname
-          external
+          ...UserLine_node
         }
       }
     }
@@ -131,38 +121,6 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   };
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
-  };
-  const userColumns = {
-    name: {
-      label: 'Name',
-      width: '20%',
-      isSortable: true,
-    },
-    user_email: {
-      label: 'Email',
-      width: '30%',
-      isSortable: true,
-    },
-    firstname: {
-      label: 'Firstname',
-      width: '15%',
-      isSortable: true,
-    },
-    lastname: {
-      label: 'Lastname',
-      width: '15%',
-      isSortable: true,
-    },
-    otp: {
-      label: '2FA',
-      width: '5%',
-      isSortable: false,
-    },
-    created_at: {
-      label: 'Creation date',
-      width: '10%',
-      isSortable: true,
-    },
   };
   const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
   const members = usersSort(group.members?.edges ?? []);
@@ -321,29 +279,17 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             </Grid>
           </Paper>
         </Grid>
-        <Triggers recipientId={group.id} filter={filter} />
-        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t('Members')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12} style={{ paddingTop: 20 }}>
-                <UserLineTitles dataColumns={userColumns} />
-                <List>
-                  {members.map((member) => (
-                    <UserLine
-                      key={member?.node?.id}
-                      dataColumns={userColumns}
-                      node={member?.node}
-                    />
-                  ))}
-                </List>
-              </Grid>
-            </Grid>
-          </Paper>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 10, marginLeft: 0 }}
+        >
+          <Triggers recipientId={group.id} filter={filter}/>
+          <MembersList members={members} />
         </Grid>
       </Grid>
+
       <Fab
         onClick={handleOpenUpdate}
         color="secondary"

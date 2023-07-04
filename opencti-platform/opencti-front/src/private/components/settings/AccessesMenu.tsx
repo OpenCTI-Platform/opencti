@@ -5,7 +5,7 @@ import {
   PermIdentityOutlined,
   ReceiptOutlined,
   LocalPoliceOutlined,
-  Security as SecurityIcon,
+  Security as SecurityIcon, AccountBalanceOutlined,
 } from '@mui/icons-material';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, {
@@ -30,6 +30,11 @@ const AccessesMenu: FunctionComponent = () => {
       path: '/dashboard/settings/accesses/users',
       label: 'Users',
       icon: <PermIdentityOutlined fontSize="medium" />,
+    },
+    {
+      path: '/dashboard/settings/accesses/organizations',
+      label: 'Organizations',
+      icon: <AccountBalanceOutlined fontSize="medium" />,
     },
     {
       path: '/dashboard/settings/accesses/sessions',

@@ -1,4 +1,4 @@
-import { addOrganization, findAll, findById, batchSectors } from '../domain/organization';
+import { addOrganization, findAll, findById, batchSectors, batchMembers, batchSubOrganizations, batchParentOrganizations } from '../domain/organization';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -12,6 +12,9 @@ import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
 
 const sectorsLoader = batchLoader(batchSectors);
+const membersLoader = batchLoader(batchMembers);
+const subOrganizationsLoader = batchLoader(batchSubOrganizations);
+const parentOrganizationsLoader = batchLoader(batchParentOrganizations);
 
 const organizationResolvers = {
   Query: {
@@ -20,6 +23,9 @@ const organizationResolvers = {
   },
   Organization: {
     sectors: (organization, _, context) => sectorsLoader.load(organization.id, context, context.user),
+    members: (organization, _, context) => membersLoader.load(organization.id, context, context.user),
+    subOrganizations: (organization, _, context) => subOrganizationsLoader.load(organization.id, context, context.user),
+    parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
   },
   OrganizationsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

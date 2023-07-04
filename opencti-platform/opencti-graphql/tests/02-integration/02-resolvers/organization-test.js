@@ -48,6 +48,15 @@ const READ_QUERY = gql`
           }
         }
       }
+      subOrganizations {
+        edges {
+          node {
+            id
+            standard_id
+            name
+          }
+        }
+      }
       toStix
     }
   }
@@ -110,9 +119,22 @@ describe('Organization resolver standard behavior', () => {
       'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff'
     );
   });
+  it('should organization sub-organizations be accurate', async () => {
+    const organization = await elLoadById(testContext, ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: organization.internal_id },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.organization).not.toBeNull();
+    expect(queryResult.data.organization.subOrganizations.edges.length).toEqual(1);
+    expect(queryResult.data.organization.subOrganizations.edges[0].node.standard_id).toEqual(
+      'identity--8c641a55-16b5-503d-9cc3-bf68ef0c40cc'
+    );
+  });
   it('should list organizations', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.organizations.edges.length).toEqual(6);
+    expect(queryResult.data.organizations.edges.length).toEqual(7);
   });
   it('should update organization', async () => {
     const UPDATE_QUERY = gql`

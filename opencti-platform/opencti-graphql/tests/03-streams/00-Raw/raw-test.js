@@ -16,14 +16,14 @@ describe('Raw streams tests', () => {
       expect(events.length).toBe(RAW_EVENTS_SIZE);
       // 01 - CHECK CREATE EVENTS
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
-      expect(createEvents.length).toBe(599);
+      expect(createEvents.length).toBe(601);
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
       expect(createEventsByTypes['marking-definition'].length).toBe(8);
       expect(createEventsByTypes['external-reference'].length).toBe(17);
       expect(createEventsByTypes.label.length).toBe(15);
-      expect(createEventsByTypes.identity.length).toBe(18);
-      expect(createEventsByTypes.relationship.length).toBe(122);
+      expect(createEventsByTypes.identity.length).toBe(19);
+      expect(createEventsByTypes.relationship.length).toBe(123);
       expect(createEventsByTypes.indicator.length).toBe(30);
       expect(createEventsByTypes['attack-pattern'].length).toBe(7);
       expect(createEventsByTypes.report.length).toBe(5);

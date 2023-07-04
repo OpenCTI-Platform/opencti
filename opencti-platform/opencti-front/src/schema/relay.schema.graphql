@@ -1157,7 +1157,7 @@ input UsersFiltering {
 
 type UserConnection {
   pageInfo: PageInfo!
-  edges: [UserEdge]
+  edges: [UserEdge!]!
 }
 
 type CreatorConnection {
@@ -3449,6 +3449,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_organization_type: String
   x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
+  members: UserConnection
+  subOrganizations: OrganizationConnection
+  parentOrganizations: OrganizationConnection
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection

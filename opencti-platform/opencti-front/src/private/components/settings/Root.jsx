@@ -30,6 +30,8 @@ import RootUser from './users/Root';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
 import RootActivity from './activity/Root';
+import SettingsOrganizations from './SettingsOrganizations';
+import RootSettingsOrganization from './organizations/Root';
 
 const Root = () => (
   <Switch>
@@ -82,6 +84,22 @@ const Root = () => (
             <RootUser />
           </Security>
         )}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/accesses/organizations"
+        render={() => (
+          <Security
+            needs={[SETTINGS_SETACCESSES]}
+            placeholder={<Redirect to={'/dashboard/settings'} />}
+          >
+            <SettingsOrganizations />
+          </Security>
+        )}
+      />
+      <BoundaryRoute
+        path="/dashboard/settings/accesses/organizations/:organizationId"
+        component={RootSettingsOrganization}
       />
       <BoundaryRoute
         exact

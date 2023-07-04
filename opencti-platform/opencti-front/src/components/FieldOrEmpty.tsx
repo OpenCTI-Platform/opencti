@@ -2,7 +2,9 @@ import React, { FunctionComponent } from 'react';
 import { isNotEmptyField } from '../utils/utils';
 
 interface FieldOrEmptyProps {
-  source: string | null | ReadonlyArray<string | null>;
+  // Had to use 'any' to allow the component to accept arrays of any type as a source
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  source: string | null | ReadonlyArray<any>;
   children: React.ReactNode;
 }
 
