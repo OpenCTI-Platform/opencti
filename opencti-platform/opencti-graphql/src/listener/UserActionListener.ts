@@ -1,5 +1,5 @@
 import type { AuthUser } from '../types/user';
-import { extractEntityRepresentative } from '../database/utils';
+import { extractEntityRepresentativeName } from '../database/utils';
 import type { BasicStoreObject } from '../types/store';
 
 interface BasicUserAction {
@@ -151,7 +151,7 @@ export const buildContextDataForFile = (entity: BasicStoreObject, path: string, 
   return {
     path,
     id: entity?.internal_id,
-    entity_name: entity ? extractEntityRepresentative(entity) : 'global',
+    entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type: entity?.entity_type ?? 'global',
     file_name: filename
   };

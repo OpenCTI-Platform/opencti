@@ -17,7 +17,7 @@ import {
   stixObjectOrRelationshipAddRefRelation,
   stixObjectOrRelationshipDeleteRefRelation
 } from '../../../domain/stixObjectOrStixRelationship';
-import { extractEntityRepresentative } from '../../../database/utils';
+import { extractEntityRepresentativeName } from '../../../database/utils';
 import { ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 
 export const findById: DomainFindById<BasicStoreEntityCaseTemplate> = (context: AuthContext, user: AuthUser, templateId: string) => {
@@ -74,7 +74,7 @@ export const caseTemplateAddRelation = async (context: AuthContext, user: AuthUs
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `adds Task template \`${extractEntityRepresentative(relation.from)}\` for case template \`${relation.to.name}\``,
+    message: `adds Task template \`${extractEntityRepresentativeName(relation.from)}\` for case template \`${relation.to.name}\``,
     context_data: { id: caseTemplateId, entity_type: ENTITY_TYPE_CASE_TEMPLATE, input }
   });
   return relation.to;
@@ -86,7 +86,7 @@ export const caseTemplateDeleteRelation = async (context: AuthContext, user: Aut
     event_type: 'mutation',
     event_scope: 'delete',
     event_access: 'administration',
-    message: `removes Task template \`${extractEntityRepresentative(relation.from)}\` for case template \`${relation.to.name}\``,
+    message: `removes Task template \`${extractEntityRepresentativeName(relation.from)}\` for case template \`${relation.to.name}\``,
     context_data: { id: caseTemplateId, entity_type: ENTITY_TYPE_CASE_TEMPLATE, input: { caseTemplateId, toId, relationshipType } }
   });
   return relation.to;

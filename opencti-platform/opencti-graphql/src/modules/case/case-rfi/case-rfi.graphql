@@ -95,7 +95,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
+  representative: Representative!
   objects(
     first: Int
     after: ID

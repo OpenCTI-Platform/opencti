@@ -9,7 +9,7 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
-  extractEntityRepresentative,
+  extractEntityRepresentativeName,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
@@ -1740,7 +1740,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   if (resolveToRepresentative) {
     const baseFields = ['internal_id', 'name', 'entity_type']; // Needs to take elements required to fill extractEntityRepresentative function
     const aggsElements = await elFindByIds(context, user, aggsValues, { baseData: true, baseFields });
-    const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: extractEntityRepresentative(element) })));
+    const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: extractEntityRepresentativeName(element) })));
     return aggsMap.map((agg) => {
       const values = data.aggregations[agg].buckets?.map((b) => ({ label: aggsElementsCache[b.key], value: b.key }))?.filter((v) => !!v.label);
       return { name: agg, values };

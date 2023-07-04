@@ -5,7 +5,7 @@ import {
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
-  extractEntityRepresentative,
+  extractEntityRepresentativeName,
 } from './utils';
 import { elAggregationsList, elCount, elFindByIds, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
@@ -472,7 +472,7 @@ export const storeLoadById = async <T extends BasicStoreBase>(context: AuthConte
       event_scope: 'read',
       context_data: {
         id,
-        entity_name: extractEntityRepresentative(data),
+        entity_name: extractEntityRepresentativeName(data),
         entity_type: data.entity_type
       }
     });

@@ -30,7 +30,6 @@ const containerResolvers = {
       }
       return 'Unknown';
     },
-    representative: (container, _, __) => extractEntityRepresentative(container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
   },

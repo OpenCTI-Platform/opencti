@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { v4 as uuidv4, version as uuidVersion } from 'uuid';
-import { extractEntityRepresentative, isEmptyField, isInferredIndex } from './utils';
+import { extractEntityRepresentativeName, isEmptyField, isInferredIndex } from './utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
@@ -1167,12 +1167,12 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
         extension_type: isBuiltin ? 'property-extension' : 'new-sro',
-        source_value: extractEntityRepresentative(instance.from),
+        source_value: extractEntityRepresentativeName(instance.from),
         source_ref: instance.from.internal_id,
         source_type: instance.from.entity_type,
         source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
         source_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
-        target_value: extractEntityRepresentative(instance.to),
+        target_value: extractEntityRepresentativeName(instance.to),
         target_ref: instance.to.internal_id,
         target_type: instance.to.entity_type,
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
@@ -1198,12 +1198,12 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
-        sighting_of_value: extractEntityRepresentative(instance.from),
+        sighting_of_value: extractEntityRepresentativeName(instance.from),
         sighting_of_ref: instance.from.internal_id,
         sighting_of_type: instance.from.entity_type,
         sighting_of_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
         sighting_of_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
-        where_sighted_values: [extractEntityRepresentative(instance.to)],
+        where_sighted_values: [extractEntityRepresentativeName(instance.to)],
         where_sighted_refs: [instance.to.internal_id],
         where_sighted_types: [instance.to.entity_type],
         where_sighted_refs_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],

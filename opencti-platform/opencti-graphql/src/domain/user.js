@@ -29,7 +29,7 @@ import {
 } from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { buildPagination, extractEntityRepresentative, isEmptyField, isNotEmptyField } from '../database/utils';
+import { buildPagination, extractEntityRepresentativeName, isEmptyField, isNotEmptyField } from '../database/utils';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
@@ -329,7 +329,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `adds ${created.toType} \`${extractEntityRepresentative(created.to)}\` to user \`${actionEmail}\``,
+    message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
     context_data: { id: organizationId, entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(userId);
@@ -500,7 +500,7 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentative(relationData.to)}\` for role \`${role.name}\``,
+    message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentativeName(relationData.to)}\` for role \`${role.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: finalInput }
   });
   await roleSessionRefresh(context, user, roleId);
@@ -522,7 +522,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `removes ${deleted.to.entity_type} \`${extractEntityRepresentative(deleted.to)}\` for role \`${role.name}\``,
+    message: `removes ${deleted.to.entity_type} \`${extractEntityRepresentativeName(deleted.to)}\` for role \`${role.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input }
   });
   await roleSessionRefresh(context, user, roleId);
@@ -670,7 +670,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `adds ${relationData.toType} \`${extractEntityRepresentative(relationData.to)}\` for user \`${actionEmail}\``,
+    message: `adds ${relationData.toType} \`${extractEntityRepresentativeName(relationData.to)}\` for user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: finalInput }
   });
   await userSessionRefresh(userId);
@@ -689,7 +689,7 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${actionEmail}\``,
+    message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
     context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(targetUser.id);
@@ -720,7 +720,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${actionEmail}\``,
+    message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(userId);

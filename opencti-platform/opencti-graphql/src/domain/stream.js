@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { elIndex } from '../database/engine';
-import { extractEntityRepresentative, INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { extractEntityRepresentativeName, INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import {
@@ -63,7 +63,7 @@ export const deleteGroupRelation = async (context, user, streamId, groupId) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `removes ${from.entity_type} \`${extractEntityRepresentative(from)}\` for live stream \`${to.name}\``,
+    message: `removes ${from.entity_type} \`${extractEntityRepresentativeName(from)}\` for live stream \`${to.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
   return findById(context, user, streamId);
@@ -76,7 +76,7 @@ export const createGroupRelation = async (context, user, streamId, groupId) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `adds ${from.entity_type} \`${extractEntityRepresentative(from)}\` for live stream \`${to.name}\``,
+    message: `adds ${from.entity_type} \`${extractEntityRepresentativeName(from)}\` for live stream \`${to.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
   return findById(context, user, streamId);
