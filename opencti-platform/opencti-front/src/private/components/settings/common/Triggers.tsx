@@ -17,9 +17,12 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import {
   TriggerFilter,
-  TriggersLinesPaginationQuery,
+  TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables,
 } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { Filters } from '../../../../components/list_lines';
+import { LOCAL_STORAGE_KEY_DATA_SOURCES } from '../../profile/Triggers';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -46,15 +49,25 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const ref = useRef(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY_DATA_SOURCES,
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      filters: {} as Filters,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
+    },
+  );
+  const { searchTerm, sortBy, orderAsc } = viewStorage;
 
-  const handleSearchTriggers = (value: string) => {
-    setSearchTerm(value);
-  };
   const paginationOptions = {
+    ...paginationOptionsFromStorage,
     count: 25,
     filters: [{ key: [filter], values: [recipientId] }],
-    search: searchTerm,
   };
   const queryRef = useQueryLoading<TriggersLinesPaginationQuery>(
     triggersLinesQuery,
@@ -101,7 +114,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       <div style={{ float: 'right', marginTop: -12 }}>
         <SearchInput
           variant="thin"
-          onSubmit={handleSearchTriggers}
+          onSubmit={helpers.handleSearch}
           keyword={searchTerm}
         />
       </div>
@@ -140,7 +153,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         variant="outlined"
         style={{ marginTop: 0, maxHeight: 500, overflow: 'auto' }}
       >
-        <TriggerLineTitles dataColumns={dataColumns} />
+        <TriggerLineTitles dataColumns={dataColumns} sortBy={sortBy} orderAsc={orderAsc} handleSort={helpers.handleSort} />
         {queryRef && (
           <TriggersLines
             adminByPass
