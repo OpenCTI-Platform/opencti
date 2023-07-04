@@ -557,28 +557,30 @@ const TopBar: FunctionComponent<TopBarProps> = ({
                 </IconButton>
               </Tooltip>
             </Security>
-            <Tooltip title={t('Notifications and triggers')}>
-              <IconButton
-                size="medium"
-                classes={{ root: classes.button }}
-                aria-haspopup="true"
-                component={Link}
-                to="/dashboard/profile/notifications"
-                color={
-                  location.pathname === '/dashboard/profile/notifications'
-                    ? 'secondary'
-                    : 'default'
-                }
-              >
-                <Badge
-                  color="warning"
-                  variant="dot"
-                  invisible={!isNewNotification}
+            <Security needs={[KNOWLEDGE]}>
+              <Tooltip title={t('Notifications and triggers')}>
+                <IconButton
+                  size="medium"
+                  classes={{ root: classes.button }}
+                  aria-haspopup="true"
+                  component={Link}
+                  to="/dashboard/profile/notifications"
+                  color={
+                    location.pathname === '/dashboard/profile/notifications'
+                      ? 'secondary'
+                      : 'default'
+                  }
                 >
-                  <NotificationsOutlined fontSize="medium" />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+                  <Badge
+                    color="warning"
+                    variant="dot"
+                    invisible={!isNewNotification}
+                  >
+                    <NotificationsOutlined fontSize="medium" />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            </Security>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}

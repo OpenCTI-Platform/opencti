@@ -110,7 +110,7 @@ type VocabularyEdge {
 # Queries
 type Query {
   vocabulary(id: String!): Vocabulary @auth(for: [KNOWLEDGE])
-  vocabularyCategories: [VocabularyDefinition!]! @auth(for: [KNOWLEDGE])
+  vocabularyCategories: [VocabularyDefinition!]! @auth
   vocabularies(
     category: VocabularyCategory
     first: Int
