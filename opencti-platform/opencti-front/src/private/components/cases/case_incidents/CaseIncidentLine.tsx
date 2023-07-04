@@ -86,7 +86,7 @@ const caseIncidentFragment = graphql`
     severity
     created
     response_types
-    objectParticipant {
+    objectAssignee {
       edges {
         node {
           entity_type
@@ -198,9 +198,9 @@ export const CaseIncidentLine: FunctionComponent<CaseIncidentLineComponentProps>
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.objectParticipant.width }}
+              style={{ width: dataColumns.objectAssignee.width }}
             >
-              {(data.objectParticipant?.edges ?? []).map((p) => p?.node.name).join(', ')}
+              {(data.objectAssignee?.edges ?? []).map((p) => p?.node.name).join(', ')}
 
             </div>
             <div
@@ -310,7 +310,7 @@ export const CaseIncidentLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.objectParticipant.width }}
+              style={{ width: dataColumns.objectAssignee.width }}
             >
               <Skeleton
                 animation="wave"
