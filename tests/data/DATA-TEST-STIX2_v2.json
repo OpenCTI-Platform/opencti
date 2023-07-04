@@ -413,6 +413,30 @@
       "stop_time": "1900-03-01T00:00:00.000Z"
     },
     {
+      "id": "identity--ae876e2d-4927-43df-af22-e36c9487fd8d",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "ANSSI - Sous-direction Opérations",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "created": "2020-02-23T23:40:53.575Z",
+      "modified": "2020-02-27T08:45:39.351Z",
+      "x_opencti_organization_type": "CSIRT"
+    },
+    {
+      "id": "relationship--261688c1-0468-4be4-be8f-f70e463ab6ed",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "part-of",
+      "description": "ANSSI - Sous-direction Opérations is part of ANSSI",
+      "source_ref": "identity--ae876e2d-4927-43df-af22-e36c9487fd8d",
+      "target_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "created": "2020-02-25T23:42:53.582Z",
+      "modified": "2020-02-25T23:42:53.582Z",
+      "start_time": "1900-03-01T00:00:00.000Z",
+      "stop_time": "1900-03-01T00:00:00.000Z"
+    },
+    {
       "id": "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",
       "type": "identity",
       "spec_version": "2.1",
