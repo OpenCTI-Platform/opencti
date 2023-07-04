@@ -9,7 +9,7 @@ const LIST_QUERY = gql`
         $filters: [TriggersFiltering!]
         $adminBypassUserAccess: Boolean
     ) {
-        triggers(search: $search, filters: $filters, adminBypassUserAccess: $adminBypassUserAccess) {
+        triggersKnowledge(search: $search, filters: $filters, adminBypassUserAccess: $adminBypassUserAccess) {
             edges {
                 node {
                     id
@@ -28,7 +28,7 @@ const LIST_QUERY = gql`
 
 const READ_QUERY = gql`
     query trigger($id: String!) {
-        trigger(id: $id) {
+        triggerKnowledge(id: $id) {
             id
             name
         }
@@ -36,8 +36,8 @@ const READ_QUERY = gql`
 `;
 
 const CREATE_LIVE_QUERY = gql`
-    mutation TriggerLiveAdd($input: TriggerLiveAddInput!) {
-        triggerLiveAdd(input: $input) {
+    mutation TriggerKnowledgeLiveAdd($input: TriggerLiveAddInput!) {
+        triggerKnowledgeLiveAdd(input: $input) {
             id
             name
         }
@@ -45,8 +45,8 @@ const CREATE_LIVE_QUERY = gql`
 `;
 
 const CREATE_DIGEST_QUERY = gql`
-    mutation TriggerDigestAdd($input: TriggerDigestAddInput!) {
-        triggerDigestAdd(input: $input) {
+    mutation TriggerKnowledgeDigestAdd($input: TriggerDigestAddInput!) {
+        triggerKnowledgeDigestAdd(input: $input) {
             id
             name
         }
@@ -54,8 +54,8 @@ const CREATE_DIGEST_QUERY = gql`
 `;
 
 const UPDATE_QUERY = gql`
-    mutation TriggerEdit($id: ID!, $input: [EditInput!]!) {
-        triggerFieldPatch(id: $id, input: $input) {
+    mutation TriggerKnowledgeEdit($id: ID!, $input: [EditInput!]!) {
+        triggerKnowledgeFieldPatch(id: $id, input: $input) {
             id
             name
         }
@@ -92,9 +92,9 @@ describe('Trigger resolver standard behavior', () => {
       variables: TRIGGER_TO_CREATE,
     });
     expect(trigger).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd.name).toEqual('live trigger');
-    triggerInternalId = trigger.data.triggerLiveAdd.id;
+    expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('live trigger');
+    triggerInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('should regular digest created', async () => {
     // Create the digest
@@ -113,15 +113,15 @@ describe('Trigger resolver standard behavior', () => {
       variables: DIGEST_TO_CREATE,
     });
     expect(digest).not.toBeNull();
-    expect(digest.data.triggerDigestAdd).not.toBeNull();
-    expect(digest.data.triggerDigestAdd.name).toEqual('regular digest');
-    digestInternalId = digest.data.triggerDigestAdd.id;
+    expect(digest.data.triggerKnowledgeDigestAdd).not.toBeNull();
+    expect(digest.data.triggerKnowledgeDigestAdd.name).toEqual('regular digest');
+    digestInternalId = digest.data.triggerKnowledgeDigestAdd.id;
   });
   it('should trigger loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: triggerInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).not.toBeNull();
-    expect(queryResult.data.trigger.id).toEqual(triggerInternalId);
+    expect(queryResult.data.triggerKnowledge).not.toBeNull();
+    expect(queryResult.data.triggerKnowledge.id).toEqual(triggerInternalId);
   });
   it('security user should create trigger for Admin user', async () => {
     // Create the trigger
@@ -219,7 +219,7 @@ describe('Trigger resolver standard behavior', () => {
   });
   it('editor user should list group trigger', async () => {
     const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(1);
+    expect(queryResult.data.triggersKnowledge.edges.length).toEqual(1);
   });
   it('editor user should not update group trigger', async () => {
     const queryResult = await editorQuery({
@@ -239,7 +239,7 @@ describe('Trigger resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerGroupInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   // endregion
   // region Organization trigger
@@ -261,13 +261,13 @@ describe('Trigger resolver standard behavior', () => {
       variables: ORGANIZATION_TRIGGER_TO_CREATE,
     });
     expect(trigger).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd.name).toEqual('organization trigger');
-    triggerOrganizationInternalId = trigger.data.triggerLiveAdd.id;
+    expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('organization trigger');
+    triggerOrganizationInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('editor user should list organization trigger', async () => {
     const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(1);
+    expect(queryResult.data.triggersKnowledge.edges.length).toEqual(1);
   });
   it('editor user should not update organization trigger', async () => {
     const queryResult = await editorQuery({
@@ -287,7 +287,7 @@ describe('Trigger resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerOrganizationInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   // endregion
 });
