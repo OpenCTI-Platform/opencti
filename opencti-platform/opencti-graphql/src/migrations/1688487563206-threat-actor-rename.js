@@ -1,9 +1,9 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
 import {
-  READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS,
-  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_INTERNAL_RELATIONSHIPS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 
@@ -14,12 +14,7 @@ const entityTypeChange = (fromType, toType, indices) => {
       source: 'ctx._source.entity_type = params.toType;'
     },
     query: {
-      bool: {
-        should: [
-          { term: { 'entity_type.keyword': { value: fromType } } },
-        ],
-        minimum_should_match: 1
-      },
+      term: { 'entity_type.keyword': { value: fromType } }
     },
   };
   const message = `[MIGRATION] Rewriting entity type from ${fromType} to ${toType}`;
@@ -35,12 +30,7 @@ const targetTypeChange = (fromType, toType, indices) => {
       source: 'ctx._source.target_type = params.toType;'
     },
     query: {
-      bool: {
-        should: [
-          { term: { 'target_type.keyword': { value: fromType } } }
-        ],
-        minimum_should_match: 1
-      },
+      term: { 'target_type.keyword': { value: fromType } }
     },
   };
   const message = `[MIGRATION] Rewriting target type from ${fromType} to ${toType}`;
@@ -60,12 +50,7 @@ const relationshipFromTypeChange = (fromType, toType, indices) => {
         + 'ctx._source.fromType = params.toType'
     },
     query: {
-      bool: {
-        should: [
-          { term: { 'fromType.keyword': { value: fromType } } }
-        ],
-        minimum_should_match: 1
-      },
+      term: { 'fromType.keyword': { value: fromType } }
     },
   };
   const message = `[MIGRATION] Rewriting relationship fromType types from ${fromType} to ${toType}`;
@@ -85,12 +70,7 @@ const relationshipToTypeChange = (fromType, toType, indices) => {
         + 'ctx._source.toType = params.toType'
     },
     query: {
-      bool: {
-        should: [
-          { term: { 'toType.keyword': { value: fromType } } }
-        ],
-        minimum_should_match: 1
-      },
+      term: { 'toType.keyword': { value: fromType } }
     },
   };
   const message = `[MIGRATION] Rewriting relationship toType types from ${fromType} to ${toType}`;
@@ -103,8 +83,8 @@ export const up = async (next) => {
   // Change Threat Actor type to Threat Actor Group
   await entityTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_STIX_DOMAIN_OBJECTS);
   await targetTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS]);
-  await relationshipFromTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS]);
-  await relationshipToTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS]);
+  await relationshipFromTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
+  await relationshipToTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
   next();
 };
 
