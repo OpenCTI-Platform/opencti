@@ -246,7 +246,7 @@ class StixDomainObjectKnowledge extends Component {
             <EntityStixCoreRelationshipsHorizontalBars
               toId={stixDomainObjectId}
               fromTypes={[
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
                 'Malware',

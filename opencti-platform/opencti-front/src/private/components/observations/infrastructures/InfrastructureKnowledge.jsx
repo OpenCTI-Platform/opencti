@@ -90,7 +90,7 @@ class InfrastructureKnowledgeComponent extends Component {
               entityId={infrastructure.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
                 'Incident',
@@ -174,7 +174,7 @@ class InfrastructureKnowledgeComponent extends Component {
               relationshipTypes={['compromises', 'uses']}
               entityLink={link}
               stixCoreObjectTypes={[
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
                 'Incident',
@@ -192,7 +192,7 @@ class InfrastructureKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
-              stixCoreObjectTypes={['Threat-Actor']}
+              stixCoreObjectTypes={['Theat-Actor-Group']}
               relationshipTypes={['compromises', 'uses']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}

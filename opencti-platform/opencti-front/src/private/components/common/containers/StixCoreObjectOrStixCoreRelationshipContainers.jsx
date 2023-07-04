@@ -337,7 +337,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
           variables={{
             id: stixDomainObjectOrStixCoreRelationship.id,
             types: [
-              'Threat-Actor',
+              'Theat-Actor-Group',
               'Intrusion-Set',
               'Campaign',
               'Incident',

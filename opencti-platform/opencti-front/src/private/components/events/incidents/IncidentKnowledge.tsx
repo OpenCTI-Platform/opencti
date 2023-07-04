@@ -111,7 +111,7 @@ const IncidentKnowledge = ({
               entityId={incident.id}
               relationshipTypes={['attributed-to']}
               stixCoreObjectTypes={[
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
               ]}

@@ -77,7 +77,7 @@ class PositionKnowledgeComponent extends Component {
                 entityLink={link}
                 stixCoreObjectTypes={[
                   'Attack-Pattern',
-                  'Threat-Actor',
+                  'Theat-Actor-Group',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',
@@ -96,7 +96,7 @@ class PositionKnowledgeComponent extends Component {
                 entityId={position.id}
                 relationshipTypes={['related-to']}
                 stixCoreObjectTypes={[
-                  'Threat-Actor',
+                  'Theat-Actor-Group',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',
@@ -194,7 +194,7 @@ class PositionKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={position.id}
                 relationshipTypes={['targets']}
-                stixCoreObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Theat-Actor-Group']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

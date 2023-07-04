@@ -90,7 +90,7 @@ class SystemKnowledgeComponent extends Component {
                 entityLink={link}
                 stixCoreObjectTypes={[
                   'Attack-Pattern',
-                  'Threat-Actor',
+                  'Theat-Actor-Group',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',
@@ -148,7 +148,7 @@ class SystemKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={system.id}
-                stixCoreObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Theat-Actor-Group']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
