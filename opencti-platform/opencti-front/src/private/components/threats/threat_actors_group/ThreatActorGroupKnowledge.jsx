@@ -96,7 +96,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge/threat_actors_group"
+          path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge/threat_actors"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActorGroup.id}

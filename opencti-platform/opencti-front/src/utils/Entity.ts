@@ -176,6 +176,13 @@ export const resolveLocationType = (entity: Record<string, string>): string => {
   return 'Position';
 };
 
+export const resolveThreatActorType = (entity: Record<string, string>): string => {
+  if (entity.x_opencti_type) {
+    return entity.x_opencti_type;
+  }
+  return 'Threat-Actor-Group';
+};
+
 const hashes = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
 export const hashValue = (stixCyberObservable: Record<string, never>) => {
   if (stixCyberObservable.hashes) {

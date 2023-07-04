@@ -60,6 +60,7 @@ import {
   resolveIdentityType,
   resolveLink,
   resolveLocationType,
+  resolveThreatActorType,
 } from '../../../../../utils/Entity';
 import { defaultKey, defaultValue } from '../../../../../utils/Graph';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
@@ -326,6 +327,7 @@ const WorkbenchFileContentComponent = ({
   const computeState = (objects) => {
     const sdoTypes = [
       ...stixDomainObjectTypes.edges.map((n) => convertToStixType(n.node.id)),
+      'threat-actor',
       'marking-definition',
       'identity',
       'location',
@@ -1581,6 +1583,8 @@ const WorkbenchFileContentComponent = ({
       type = resolveIdentityType(entity.identity_class);
     } else if (type === 'Location') {
       type = resolveLocationType(entity);
+    } else if (type === 'Threat-Actor') {
+      type = resolveThreatActorType(entity);
     }
     return (
       <QueryRenderer
