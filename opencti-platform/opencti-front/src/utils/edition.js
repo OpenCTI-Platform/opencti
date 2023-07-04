@@ -27,6 +27,10 @@ export const convertAssignees = (element) => (element?.objectAssignee?.edges ?? 
   label: n.node.name,
   value: n.node.id,
 }));
+export const convertParticipants = (element) => (element?.objectParticipant?.edges ?? []).map((n) => ({
+  label: n.node.name,
+  value: n.node.id,
+}));
 
 export const convertOrganizations = (element) => (element?.objectOrganization?.edges ?? []).map((n) => ({
   label: n.node.name,
