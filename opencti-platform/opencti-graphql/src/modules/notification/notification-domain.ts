@@ -146,7 +146,7 @@ export const addTriggerActivity = async (
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${type} activity trigger \`${created.name}\` for ${members.map((m) => m.name).join(', ')}}`,
-    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
