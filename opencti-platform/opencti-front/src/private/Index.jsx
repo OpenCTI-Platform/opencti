@@ -52,14 +52,15 @@ const Index = ({ settings }) => {
     }),
     overflowX: 'hidden',
   };
+
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   return (
     <>
       <SystemBanners settings={settings} />
       {settings.platform_session_idle_timeout > 0 && <TimeoutLock />}
+      <SettingsMessagesBanner />
       <Box sx={{ display: 'flex', minWidth: 1400, marginTop: bannerHeight, marginBottom: bannerHeight }}>
         <CssBaseline/>
-        <SettingsMessagesBanner />
         {!noTopBarLocations.includes(location.pathname) && <TopBar/>}
         <LeftBar/>
         <Message/>

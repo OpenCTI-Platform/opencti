@@ -1081,6 +1081,7 @@ type Group implements InternalObject & BasicObject {
   default_assignation: Boolean
   auto_new_marking: Boolean
   description: String
+  default_dashboard: Workspace
   members: UserConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime
   updated_at: DateTime
@@ -1233,6 +1234,7 @@ type User implements BasicObject & InternalObject {
   created_at: DateTime!
   updated_at: DateTime!
   sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES])
+  default_time_field: String
   # Technical
   editContext: [EditUserContext!]
 }
@@ -1253,14 +1255,19 @@ type MeUser implements BasicObject & InternalObject {
   external: Boolean
   individual_id: String
   api_token: String!
-  dashboard_id: ID
-  dashboard: Workspace
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
   default_hidden_types: [String]!
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   otp_mandatory: Boolean
+  groups(
+    orderBy: GroupsOrdering
+    orderMode: OrderingMode
+  ): GroupConnection
+  default_dashboards: [Workspace!]!
+  default_dashboard: Workspace
+  default_time_field: String
 }
 type SessionDetail {
   id: ID!
@@ -4282,6 +4289,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   members: UserConnection @auth(for: [SETTINGS_SETACCESSES])
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
+  default_dashboard: Workspace
   # Technical
   creators: [Creator!]
   toStix: String
@@ -11103,8 +11111,8 @@ union StixObjectOrStixRelationship =
   | EntitySetting
   | Workspace
 union StixCoreObjectOrStixCoreRelationship =
-    #### Stix Core Objects
-  ## Stix Domain Objects
+#### Stix Core Objects
+## Stix Domain Objects
   AttackPattern
   | Campaign
   | Channel
@@ -11728,9 +11736,9 @@ type Query {
   settings: Settings!
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
-    @auth(for: [SETTINGS_SETACCESSES])
+  @auth(for: [SETTINGS_SETACCESSES])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
-    @auth(for: [SETTINGS_SETACCESSES])
+  @auth(for: [SETTINGS_SETACCESSES])
   me: MeUser! @auth
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
@@ -12140,7 +12148,7 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   observedDataContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
+  @auth(for: [KNOWLEDGE])
   opinion(id: String): Opinion @auth(for: [KNOWLEDGE])
   opinions(
     first: Int
@@ -12171,7 +12179,7 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
+  @auth(for: [KNOWLEDGE])
   myOpinion(id: String!): Opinion @auth(for: [KNOWLEDGE])
   report(id: String): Report @auth(for: [KNOWLEDGE])
   reports(
@@ -12221,7 +12229,7 @@ type Query {
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-    @auth(for: [KNOWLEDGE])
+  @auth(for: [KNOWLEDGE])
   courseOfAction(id: String): CourseOfAction @auth(for: [KNOWLEDGE])
   coursesOfAction(
     first: Int
@@ -12788,7 +12796,7 @@ type Query {
   ####### ALL
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
-    @auth(for: [KNOWLEDGE, EXPLORE])
+  @auth(for: [KNOWLEDGE, EXPLORE])
 }
 
 ### SUBSCRIPTIONS
@@ -12941,7 +12949,7 @@ type StixCoreObjectEditMutations {
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 
@@ -12951,7 +12959,7 @@ type StixDomainObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   changeType(newType: String!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixDomainObject
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -12959,13 +12967,13 @@ type StixDomainObjectEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): AttackPattern
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -12974,7 +12982,7 @@ type AttackPatternEditMutations {
 type CampaignEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Campaign
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -12984,7 +12992,7 @@ type CampaignEditMutations {
 type ContainerEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Container
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Container @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Container @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13001,7 +13009,7 @@ type NoteEditMutations {
 type ObservedDataEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ObservedData
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13026,7 +13034,7 @@ type ReportEditMutations {
 type CourseOfActionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): CourseOfAction
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13036,7 +13044,7 @@ type CourseOfActionEditMutations {
 type IdentityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Identity
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13053,7 +13061,7 @@ type IndividualEditMutations {
 type OrganizationEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Organization
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13078,7 +13086,7 @@ type SystemEditMutations {
 type IndicatorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13087,7 +13095,7 @@ type IndicatorEditMutations {
 type InfrastructureEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Infrastructure
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13096,7 +13104,7 @@ type InfrastructureEditMutations {
 type IntrusionSetEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): IntrusionSet
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13106,7 +13114,7 @@ type IntrusionSetEditMutations {
 type LocationEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Location
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Location @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Location @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13139,7 +13147,7 @@ type RegionEditMutations {
 type PositionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Position
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Position @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Position @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13156,7 +13164,7 @@ type MalwareEditMutations {
 type ThreatActorGroupEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorGroup
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): ThreatActorGroup @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ThreatActorGroup @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13173,7 +13181,7 @@ type ToolEditMutations {
 type VulnerabilityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13182,7 +13190,7 @@ type VulnerabilityEditMutations {
 type IncidentEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Incident
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13194,7 +13202,7 @@ type IncidentEditMutations {
 type StixCyberObservableEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixCyberObservable
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13203,7 +13211,7 @@ type StixCyberObservableEditMutations {
   promote: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 
@@ -13257,7 +13265,7 @@ type Mutation {
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String, bypassValidation: Boolean): File
-    @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  @auth(for: [KNOWLEDGE_KNASKIMPORT])
 
   ### SYNC
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer @auth(for: [CONNECTORAPI])
@@ -13268,7 +13276,7 @@ type Mutation {
 
   ### WORK
   workAdd(connectorId: String!, friendlyName: String): Work!
-    @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   workDelete(connectorId: String!): Boolean
 
@@ -13511,7 +13519,7 @@ type Mutation {
 
   ######## STIX CORE RELATIONSHIPS
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipsExportAsk(
     type: String!
@@ -13527,17 +13535,17 @@ type Mutation {
     selectedIds: [String]
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX REF RELATIONSHIPS
   stixRefRelationshipAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX SIGHTING RELATIONSHIPS
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  @auth(for: [KNOWLEDGE_KNUPDATE])
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 }

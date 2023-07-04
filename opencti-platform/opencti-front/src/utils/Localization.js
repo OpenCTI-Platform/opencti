@@ -8356,6 +8356,7 @@ const i18n = {
         'Create `uses` relationships between the selected threat and arsenal objects (TTPs, tools, channels, etc.), then add all relations to the container.',
       'suggestion_threats-targets':
         'Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.',
+      dashboard: 'Dashboard',
     },
   },
 };

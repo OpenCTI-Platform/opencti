@@ -1,26 +1,14 @@
 import { withFilter } from 'graphql-subscriptions';
-import {
-  batchMarkingDefinitions,
-  batchMembers,
-  batchRoles,
-  defaultMarkingDefinitions,
-  findAll,
-  findById,
-  groupAddRelation,
-  groupCleanContext,
-  groupDelete,
-  groupDeleteRelation,
-  groupEditContext,
-  groupEditDefaultMarking,
-  groupEditField,
-} from '../domain/group';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
+import { elBatchIds } from '../database/engine';
+import { batchLoader } from '../database/middleware';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
+import { addGroup } from '../domain/grant';
+import { batchMarkingDefinitions, batchMembers, batchRoles, defaultMarkingDefinitions, findAll, findById, groupAddRelation, groupCleanContext, groupDelete, groupDeleteRelation, groupEditContext, groupEditDefaultMarking, groupEditField, } from '../domain/group';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
-import { batchLoader } from '../database/middleware';
-import { addGroup } from '../domain/grant';
 
+const loadByIdLoader = batchLoader(elBatchIds);
 const markingsLoader = batchLoader(batchMarkingDefinitions);
 const membersLoader = batchLoader(batchMembers);
 const rolesLoader = batchLoader(batchRoles);
@@ -36,6 +24,7 @@ const groupResolvers = {
     roles: (stixCoreObject, _, context) => rolesLoader.load(stixCoreObject.id, context, context.user),
     members: (group, _, context) => membersLoader.load(group.id, context, context.user),
     editContext: (group) => fetchEditContext(group.id),
+    default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
   },
   Mutation: {
     groupEdit: (_, { id }, context) => ({

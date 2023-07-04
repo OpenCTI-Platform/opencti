@@ -1,15 +1,15 @@
+import { StyledEngineProvider } from '@mui/material/styles';
 import React from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { StyledEngineProvider } from '@mui/material/styles';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
-import Index from './Index';
+import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { UserContext } from '../utils/hooks/useAuth';
-import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
-import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { isNotEmptyField } from '../utils/utils';
+import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
+import Index from './Index';
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
@@ -22,6 +22,10 @@ const rootPrivateQuery = graphql`
       user_email
       individual_id
       capabilities {
+        name
+      }
+      default_dashboards {
+        id
         name
       }
       default_hidden_types
@@ -112,6 +116,7 @@ const Root = () => {
     sdos: schemaSDOs.edges.map((sco) => sco.node),
     sros: schemaSROs.edges.map((sco) => sco.node),
   };
+
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);

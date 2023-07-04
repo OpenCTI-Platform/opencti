@@ -1144,6 +1144,7 @@ type Group implements InternalObject & BasicObject {
   default_assignation: Boolean
   auto_new_marking: Boolean
   description: String
+  default_dashboard: Workspace
   members: UserConnection
   created_at: DateTime
   updated_at: DateTime
@@ -1302,6 +1303,7 @@ type User implements BasicObject & InternalObject {
   created_at: DateTime!
   updated_at: DateTime!
   sessions: [SessionDetail]
+  default_time_field: String
   editContext: [EditUserContext!]
 }
 
@@ -1322,14 +1324,16 @@ type MeUser implements BasicObject & InternalObject {
   external: Boolean
   individual_id: String
   api_token: String!
-  dashboard_id: ID
-  dashboard: Workspace
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
   default_hidden_types: [String]!
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   otp_mandatory: Boolean
+  groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
+  default_dashboards: [Workspace!]!
+  default_dashboard: Workspace
+  default_time_field: String
 }
 
 type SessionDetail {
@@ -3504,6 +3508,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   members: UserConnection
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
+  default_dashboard: Workspace
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection
@@ -10901,7 +10906,7 @@ input WorkspacesFiltering {
 
 type WorkspaceConnection {
   pageInfo: PageInfo!
-  edges: [WorkspaceEdge]
+  edges: [WorkspaceEdge!]!
 }
 
 type WorkspaceEdge {

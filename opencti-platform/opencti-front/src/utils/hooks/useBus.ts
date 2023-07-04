@@ -23,7 +23,7 @@ export const dispatch = (channel: string, event: any) => {
     });
 };
 
-const useBus = (channel: string, callback: useBusCallback, deps = []) => {
+const useBus = (channel: string, callback: useBusCallback, deps: any[] = []) => {
   useEffect(() => subscribe(channel, callback), deps);
 
   return dispatch;

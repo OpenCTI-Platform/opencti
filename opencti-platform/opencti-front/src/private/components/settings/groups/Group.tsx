@@ -1,31 +1,33 @@
-import React, { useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { CenterFocusStrongOutlined, Edit, SecurityOutlined, Warning } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
+import Drawer from '@mui/material/Drawer';
+import Fab from '@mui/material/Fab';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
-import { CenterFocusStrongOutlined, Edit, SecurityOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Link } from 'react-router-dom';
-import Fab from '@mui/material/Fab';
-import Drawer from '@mui/material/Drawer';
-import * as R from 'ramda';
-import { InformationOutline } from 'mdi-material-ui';
+import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
-import AccessesMenu from '../AccessesMenu';
-import { Group_group$key } from './__generated__/Group_group.graphql';
-import GroupPopover from './GroupPopover';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import { InformationOutline } from 'mdi-material-ui';
+import * as R from 'ramda';
+import React, { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import GroupEdition from './GroupEdition';
 import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
-import Triggers from '../common/Triggers';
 import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import AccessesMenu from '../AccessesMenu';
+import Triggers from '../common/Triggers';
 import MembersList from '../users/MembersList';
+import { Group_group$key } from './__generated__/Group_group.graphql';
+import GroupEdition from './GroupEdition';
+import GroupPopover from './GroupPopover';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -66,6 +68,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
     }),
     padding: 0,
   },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: theme.palette.background.accent,
+    color: theme.palette.text?.primary,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    margin: '0 5px 5px 0',
+  },
 }));
 
 const groupFragment = graphql`
@@ -85,6 +96,13 @@ const groupFragment = graphql`
         node {
           ...UserLine_node
         }
+      }
+    }
+    default_dashboard {
+      id
+      name
+      authorizedMembers {
+        id
       }
     }
     roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
@@ -109,7 +127,6 @@ const groupFragment = graphql`
     }
   }
 `;
-
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -134,6 +151,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
     (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')
       ?.values ?? [],
   );
+
+  const canAccessDashboard = group.default_dashboard?.authorizedMembers.some(({ id }) => ['ALL', group.id].includes(id));
 
   return (
     <div className={classes.container}>
@@ -278,6 +297,23 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   ))}
                 </List>
               </Grid>
+              <Grid item={true} xs={12}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Dashboard')}
+                </Typography>
+                <FieldOrEmpty source={group.default_dashboard}>
+                  <Tooltip
+                    title={!canAccessDashboard ? t('You need to add the group in view mode for this dashboard') : undefined}
+                  >
+                    <Chip
+                      key={group.default_dashboard?.name}
+                      classes={{ root: classes.chip }}
+                      label={group.default_dashboard?.name}
+                      icon={!canAccessDashboard ? <Warning /> : undefined}
+                    />
+                  </Tooltip>
+                </FieldOrEmpty>
+              </Grid>
             </Grid>
           </Paper>
         </Grid>
@@ -287,7 +323,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 10, marginLeft: 0 }}
         >
-          <Triggers recipientId={group.id} filter={filter}/>
+          <Triggers recipientId={group.id} filter={filter} />
           <MembersList members={members} />
         </Grid>
       </Grid>

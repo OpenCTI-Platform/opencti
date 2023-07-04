@@ -79,6 +79,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'default_assignation', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'auto_new_marking', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_marking', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_TYPE_USER]: [
     { name: 'user_email', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
@@ -94,7 +95,9 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'api_token', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'otp_secret', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'otp_qr', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'otp_activated', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false }
+    { name: 'otp_activated', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'default_time_field', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },

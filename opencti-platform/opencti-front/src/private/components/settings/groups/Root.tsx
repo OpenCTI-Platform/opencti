@@ -24,26 +24,26 @@ const subscription = graphql`
 `;
 
 const groupQuery = graphql`
-    query RootGroupQuery(
-        $id: String!
-        $rolesOrderBy: RolesOrdering
-        $rolesOrderMode: OrderingMode
-    ) {
-        group(id: $id) {
-            id
-            name
-            ...Group_group
-            @arguments(
-                rolesOrderBy: $rolesOrderBy
-                rolesOrderMode: $rolesOrderMode
-            )
-            ...GroupEditionContainer_group
-            @arguments(
-                rolesOrderBy: $rolesOrderBy
-                rolesOrderMode: $rolesOrderMode
-            )
-        }
+  query RootGroupQuery(
+    $id: String!
+    $rolesOrderBy: RolesOrdering
+    $rolesOrderMode: OrderingMode
+  ) {
+    group(id: $id) {
+      id
+      name
+      ...Group_group
+      @arguments(
+        rolesOrderBy: $rolesOrderBy
+        rolesOrderMode: $rolesOrderMode
+      )
+      ...GroupEditionContainer_group
+      @arguments(
+        rolesOrderBy: $rolesOrderBy
+        rolesOrderMode: $rolesOrderMode
+      )
     }
+  }
 `;
 
 interface RootGroupComponentProps {

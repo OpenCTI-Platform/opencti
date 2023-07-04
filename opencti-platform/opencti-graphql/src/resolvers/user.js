@@ -1,6 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
 import * as R from 'ramda';
-import { addBookmark, addUser, assignOrganizationToUser, authenticateUser, batchCreator, batchGroups, batchOrganizations, batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks, deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities, findCreators, findParticipants, findRoleById, findRoles, logout, meEditField, otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation, roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation, userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField, userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
 import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import passport, { PROVIDERS } from '../config/providers';
@@ -9,8 +8,10 @@ import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { addRole } from '../domain/grant';
+import { addBookmark, addUser, assignOrganizationToUser, authenticateUser, batchCreator, batchGroups, batchOrganizations, batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks, deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities, findCreators, findDefaultDashboards, findParticipants, findRoleById, findRoles, logout, meEditField, otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation, roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation, userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField, userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
 import withCancel from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
+import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
 
@@ -53,7 +54,10 @@ const userResolvers = {
     },
   },
   MeUser: {
+    groups: (current, args, context) => groupsLoader.load(current.id, context, context.user, args),
     objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
+    default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
+    default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
   },
   UserSession: {
     user: (session, _, context) => creatorLoader.load(session.user_id, context, context.user),

@@ -15,9 +15,8 @@ import { makeStyles, useTheme } from '@mui/styles';
 import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
 import { assoc, head, last, map, pathOr, pluck } from 'ramda';
 import React, { Suspense } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
-import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
 import ItemIcon from '../../components/ItemIcon';
 import ItemMarkings from '../../components/ItemMarkings';
@@ -27,6 +26,7 @@ import { areaChartOptions, polarAreaChartOptions } from '../../utils/Charts';
 import { hexToRGB } from '../../utils/Colors';
 import { resolveLink } from '../../utils/Entity';
 import { defaultValue } from '../../utils/Graph';
+import useAuth, { UserContext } from '../../utils/hooks/useAuth';
 import { EXPLORE, KNOWLEDGE } from '../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { computeLevel, simpleNumberFormat } from '../../utils/Number';
@@ -671,34 +671,7 @@ const ObservablesDistribution = () => {
     </div>
   );
 };
-const WorkspaceDashboard = ({ dashboard, timeField }) => {
-  const dashboardCustomDashboardQuery = graphql`
-    query DashboardCustomDashboardQuery($id: String!) {
-      workspace(id: $id) {
-        id
-        name
-        ...Dashboard_workspace
-      }
-    }
-  `;
-  const data = useLazyLoadQuery(
-    dashboardCustomDashboardQuery,
-    {
-      id: dashboard,
-    },
-    { fetchPolicy: 'network-only' },
-  );
-  if (data.workspace) {
-    return (
-      <DashboardView
-        workspace={data.workspace}
-        noToolbar={true}
-        timeField={timeField}
-      />
-    );
-  }
-  return <ErrorNotFound />;
-};
+
 // endregion
 
 const DefaultDashboard = ({ timeField }) => {
@@ -889,6 +862,34 @@ const DefaultDashboard = ({ timeField }) => {
     </Security>
   );
 };
+const WorkspaceDashboard = ({ dashboard, timeField }) => {
+  const dashboardCustomDashboardQuery = graphql`
+    query DashboardCustomDashboardQuery($id: String!) {
+      workspace(id: $id) {
+        id
+        name
+        ...Dashboard_workspace
+      }
+    }
+  `;
+  const data = useLazyLoadQuery(
+    dashboardCustomDashboardQuery,
+    {
+      id: dashboard,
+    },
+    { fetchPolicy: 'network-only' },
+  );
+  if (data.workspace) {
+    return (
+      <DashboardView
+        workspace={data.workspace}
+        noToolbar={true}
+        timeField={timeField}
+      />
+    );
+  }
+  return <DefaultDashboard timeField={timeField} />;
+};
 const CustomDashboard = ({ dashboard, timeField }) => {
   const { t } = useFormatter();
   return (
@@ -905,29 +906,54 @@ const CustomDashboard = ({ dashboard, timeField }) => {
   );
 };
 
+const dashboardQuery = graphql`
+  query DashboardQuery {
+    me {
+      ...DashboardMeFragment
+    }
+  }
+`;
+
+const dashboardMeFragment = graphql`
+  fragment DashboardMeFragment on MeUser {
+    id
+    default_dashboard {
+      id
+    }
+    default_time_field
+  }
+`;
+
 const Dashboard = () => {
   const classes = useStyles();
+  const { me: currentMe, ...context } = useAuth();
+  const { me: meData } = useLazyLoadQuery(dashboardQuery);
+  const me = useFragment(dashboardMeFragment, meData);
+  const { default_dashboards: dashboards } = currentMe;
+  const { default_time_field, default_dashboard } = me;
   const {
     viewStorage: localTimeFieldPreferences,
-    helpers: { handleAddProperty },
   } = usePaginationLocalStorage('view-dashboard', {});
-  const { timeField = 'technical', dashboard } = localTimeFieldPreferences;
-  const handleChangeTimeField = (event) => handleAddProperty('timeField', event.target.value);
-  const handleChangeDashboard = (event) => handleAddProperty('dashboard', event.target.value);
+  const { dashboard } = localTimeFieldPreferences;
+
+  let defaultDashboard = default_dashboard?.id;
+  if (!defaultDashboard) {
+    defaultDashboard = dashboards[0]?.id;
+  } else if (dashboard && dashboard !== 'default') {
+    // Handle old conf
+    defaultDashboard = dashboard;
+  }
 
   return (
-    <div className={classes.root}>
-      <TopBar
-        handleChangeTimeField={handleChangeTimeField}
-        timeField={timeField}
-        handleChangeDashboard={handleChangeDashboard}
-        dashboard={dashboard}
-      />
-      {(dashboard && dashboard !== 'b9bea5e1-027d-47ef-9a12-02beaae6ba9d')
-        ? <CustomDashboard dashboard={dashboard} timeField={timeField} />
-        : <DefaultDashboard timeField={timeField} />
-      }
-    </div>
+    <UserContext.Provider value={{ me: { ...currentMe, ...me }, ...context }}>
+      <div className={classes.root}>
+        <TopBar />
+        {(defaultDashboard)
+          ? <CustomDashboard dashboard={defaultDashboard} timeField={default_time_field} />
+          : <DefaultDashboard timeField={default_time_field} />
+        }
+      </div>
+    </UserContext.Provider>
   );
 };
 

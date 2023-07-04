@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import GroupEditionContainer, { groupEditionContainerQuery } from './GroupEditionContainer';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { GroupEditionContainerQuery } from './__generated__/GroupEditionContainerQuery.graphql';
+import GroupEditionContainer, { groupEditionContainerQuery } from './GroupEditionContainer';
 
 interface GroupEditionProps {
   handleClose: () => void,

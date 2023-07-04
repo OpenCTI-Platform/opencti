@@ -1,13 +1,13 @@
+import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import { pick } from 'ramda';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import SwitchField from '../../../../components/SwitchField';
+import TextField from '../../../../components/TextField';
+import DashboardField from '../../common/form/DashboardField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
 
 export const groupMutationFieldPatch = graphql`
@@ -38,6 +38,7 @@ const groupValidation = (t: (value: string) => string) => Yup.object().shape({
   description: Yup.string().nullable(),
   default_assignation: Yup.bool(),
   auto_new_marking: Yup.bool(),
+  default_dashboard: Yup.object().nullable(),
 });
 
 interface GroupEditionOverviewComponentProps {
@@ -55,10 +56,16 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
   const [commitFocus] = useMutation(groupEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(groupMutationFieldPatch);
 
-  const initialValues = pick(
-    ['name', 'description', 'default_assignation', 'auto_new_marking'],
-    group,
-  );
+  const initialValues = {
+    name: group.name,
+    description: group.description,
+    default_assignation: group.default_assignation,
+    auto_new_marking: group.auto_new_marking,
+    default_dashboard: group.default_dashboard ? {
+      value: group.default_dashboard.id,
+      label: group.default_dashboard.name,
+    } : null,
+  };
 
   const handleChangeFocus = (name: string) => {
     commitFocus({
@@ -76,7 +83,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
       .validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
-          variables: { id: group.id, input: { key: name, value } },
+          variables: { id: group.id, input: { key: name, value: value ?? '' } },
         });
       })
       .catch(() => false);
@@ -88,7 +95,8 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={groupValidation(t)}
-        onSubmit={() => {}}
+        onSubmit={() => {
+        }}
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -120,6 +128,10 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                   fieldName="description"
                 />
               }
+            />
+            <DashboardField
+              onChange={handleSubmitField}
+              context={context}
             />
             <Field
               component={SwitchField}
@@ -168,6 +180,13 @@ const GroupEditionOverview = createFragmentContainer(
         description
         default_assignation
         auto_new_marking
+        default_dashboard {
+          id
+          name
+          authorizedMembers {
+            id
+          }
+        }
       }
     `,
   },

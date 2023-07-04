@@ -1444,7 +1444,7 @@ const checkAttributeConsistency = (entityType, key) => {
   }
   const entityAttributes = schemaAttributesDefinition.getAttributeNames(entityType);
   if (!R.includes(masterKey, entityAttributes)) {
-    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}`);
+    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}, please check your registration attribute name`);
   }
 };
 const innerUpdateAttribute = (instance, rawInput) => {

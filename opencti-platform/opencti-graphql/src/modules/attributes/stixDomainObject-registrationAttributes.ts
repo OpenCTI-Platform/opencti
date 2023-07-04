@@ -192,6 +192,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
   [ENTITY_TYPE_IDENTITY_ORGANIZATION]: [
     xOpenctiAliases,
     iAliasedIds,
+    { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     {
       name: 'x_opencti_organization_type',
       type: 'string',

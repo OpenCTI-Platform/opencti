@@ -9,7 +9,7 @@ import {
   convertMarkings, convertParticipants,
 } from '../edition';
 
-interface GenericData {
+export interface GenericData {
   id: string;
   readonly objectMarking: {
     readonly edges: ReadonlyArray<{

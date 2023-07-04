@@ -179,10 +179,6 @@ const topBarNotificationNumberSubscription = graphql`
 
 interface TopBarProps {
   keyword?: string;
-  handleChangeTimeField?: (event: React.MouseEvent) => void;
-  handleChangeDashboard?: (event: React.MouseEvent) => void;
-  timeField?: 'technical' | 'functional';
-  dashboard?: string;
 }
 
 const topBarQuery = graphql`
@@ -193,10 +189,6 @@ const topBarQuery = graphql`
 
 const TopBar: FunctionComponent<TopBarProps> = ({
   keyword,
-  handleChangeTimeField,
-  timeField,
-  handleChangeDashboard,
-  dashboard,
 }) => {
   const theme = useTheme<Theme>();
   const history = useHistory();
@@ -267,12 +259,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
         </div>
         <div className={classes.menuContainer}>
           {location.pathname === '/dashboard' && (
-            <TopMenuDashboard
-              handleChangeTimeField={handleChangeTimeField}
-              timeField={timeField}
-              handleChangeDashboard={handleChangeDashboard}
-              dashboard={dashboard}
-            />
+            <TopMenuDashboard />
           )}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {location.pathname.includes('/dashboard/import') && <TopMenuImport />}
