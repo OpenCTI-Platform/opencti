@@ -97,7 +97,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={channel.id}
                 relationshipTypes={['uses']}
-                stixCoreObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Threat-Actor-Group']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

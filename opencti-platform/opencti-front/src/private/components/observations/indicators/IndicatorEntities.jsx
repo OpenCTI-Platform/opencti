@@ -145,7 +145,7 @@ class IndicatorEntities extends Component {
                   entityId={indicatorId}
                   isRelationReversed={false}
                   targetStixDomainObjectTypes={[
-                    'Threat-Actor',
+                    'Theat-Actor-Group',
                     'Intrusion-Set',
                     'Campaign',
                     'Incident',

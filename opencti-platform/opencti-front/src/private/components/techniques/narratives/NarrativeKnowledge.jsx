@@ -74,7 +74,7 @@ class NarrativeKnowledgeComponent extends Component {
                 entityId={narrative.id}
                 relationshipTypes={['related-to']}
                 stixCoreObjectTypes={[
-                  'Threat-Actor',
+                  'Theat-Actor-Group',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',
@@ -102,7 +102,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={narrative.id}
                 relationshipTypes={['uses']}
-                stixCoreObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Theat-Actor-Group']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

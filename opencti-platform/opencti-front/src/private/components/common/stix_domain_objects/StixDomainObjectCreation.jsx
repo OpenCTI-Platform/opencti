@@ -597,8 +597,8 @@ const StixDomainPanel = ({
         />
       );
     }
-    if (type === 'Threat-Actor') {
-      // Threat-Actor
+    if (type === 'Theat-Actor-Group') {
+      // Threat-Actor-Group
       return (
         <ThreatActorGroupCreationForm
           inputValue={inputValue}

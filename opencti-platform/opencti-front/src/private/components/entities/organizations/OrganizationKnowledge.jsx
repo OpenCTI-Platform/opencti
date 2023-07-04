@@ -89,7 +89,7 @@ class OrganizationKnowledgeComponent extends Component {
                 entityLink={link}
                 stixCoreObjectTypes={[
                   'Attack-Pattern',
-                  'Threat-Actor',
+                  'Theat-Actor-Group',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',
@@ -191,7 +191,7 @@ class OrganizationKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={organization.id}
                 relationshipTypes={['targets']}
-                stixCoreObjectTypes={['Threat-Actor']}
+                stixCoreObjectTypes={['Theat-Actor-Group']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

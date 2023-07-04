@@ -199,7 +199,7 @@ IntrusionSetFormProps
             label={t('Name')}
             fullWidth={true}
             detectDuplicate={[
-              'Threat-Actor',
+              'Theat-Actor-Group',
               'Intrusion-Set',
               'Campaign',
               'Malware',

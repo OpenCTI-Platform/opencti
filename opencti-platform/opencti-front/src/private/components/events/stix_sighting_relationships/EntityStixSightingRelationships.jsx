@@ -237,7 +237,7 @@ class EntityStixSightingRelationships extends Component {
               entityId={entityId}
               isTo={true}
               stixCoreObjectTypes={[
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
                 'Malware',

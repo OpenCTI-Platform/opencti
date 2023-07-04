@@ -96,7 +96,7 @@ const AdministrativeAreaKnowledge = ({
               entityLink={link}
               stixCoreObjectTypes={[
                 'Attack-Pattern',
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
                 'Incident',
@@ -115,7 +115,7 @@ const AdministrativeAreaKnowledge = ({
               entityId={administrativeArea.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
                 'Incident',
@@ -199,7 +199,7 @@ const AdministrativeAreaKnowledge = ({
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Threat-Actor']}
+              stixCoreObjectTypes={['Theat-Actor-Group']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}

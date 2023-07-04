@@ -211,7 +211,7 @@ class StixCyberObservableEntities extends Component {
             variant="inLine"
             isRelationReversed={relationReversed}
             targetStixDomainObjectTypes={[
-              'Threat-Actor',
+              'Theat-Actor-Group',
               'Intrusion-Set',
               'Campaign',
               'Incident',

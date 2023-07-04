@@ -124,7 +124,7 @@ const LeftBar = () => {
   }
 
   const hideThreats = useIsHiddenEntities(
-    'Threat-Actor',
+    'Theat-Actor-Group',
     'Intrusion-Set',
     'Campaign',
   );

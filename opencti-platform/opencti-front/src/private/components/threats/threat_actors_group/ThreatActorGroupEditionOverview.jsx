@@ -241,7 +241,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
           {threatActorGroup.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Threat-Actor"
+              type="Threat-Actor-Group"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}

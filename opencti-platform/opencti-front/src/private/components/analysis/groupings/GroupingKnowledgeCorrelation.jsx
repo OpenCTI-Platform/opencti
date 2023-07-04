@@ -1092,7 +1092,7 @@ const GroupingKnowledgeCorrelation = createFragmentContainer(
         }
         objects(
           types: [
-            "Threat-Actor"
+            "Threat-Actor-Group"
             "Intrusion-Set"
             "Campaign"
             "Incident"

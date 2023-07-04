@@ -94,7 +94,7 @@ const CountryKnowledgeComponent = ({
               entityLink={link}
               stixCoreObjectTypes={[
                 'Attack-Pattern',
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
                 'Incident',
@@ -113,7 +113,7 @@ const CountryKnowledgeComponent = ({
               entityId={country.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
-                'Threat-Actor',
+                'Theat-Actor-Group',
                 'Intrusion-Set',
                 'Campaign',
                 'Incident',
@@ -197,7 +197,7 @@ const CountryKnowledgeComponent = ({
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Threat-Actor']}
+              stixCoreObjectTypes={['Theat-Actor-Group']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
