@@ -49,7 +49,7 @@ const targetTypeChange = (fromType, toType, indices) => {
   });
 };
 
-const relationshipTypeChange = (fromType, toType, indices) => {
+const relationshipFromTypeChange = (fromType, toType, indices) => {
   const updateQuery = {
     script: {
       params: { toType },
@@ -68,7 +68,32 @@ const relationshipTypeChange = (fromType, toType, indices) => {
       },
     },
   };
-  const message = `[MIGRATION] Rewriting relationship types from ${fromType} to ${toType}`;
+  const message = `[MIGRATION] Rewriting relationship fromType types from ${fromType} to ${toType}`;
+  return elUpdateByQueryForMigration(message, indices, updateQuery).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
+};
+
+const relationshipToTypeChange = (fromType, toType, indices) => {
+  const updateQuery = {
+    script: {
+      params: { toType },
+      source: 'for(def connection : ctx._source.connections) {'
+        + 'if (connection.types.contains("Threat-Actor")) { '
+        + 'connection.types = params.toType; '
+        + '} } '
+        + 'ctx._source.toType = params.toType'
+    },
+    query: {
+      bool: {
+        should: [
+          { term: { 'toType.keyword': { value: fromType } } }
+        ],
+        minimum_should_match: 1
+      },
+    },
+  };
+  const message = `[MIGRATION] Rewriting relationship toType types from ${fromType} to ${toType}`;
   return elUpdateByQueryForMigration(message, indices, updateQuery).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
@@ -78,7 +103,8 @@ export const up = async (next) => {
   // Change Threat Actor type to Threat Actor Group
   await entityTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_STIX_DOMAIN_OBJECTS);
   await targetTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS]);
-  await relationshipTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS]);
+  await relationshipFromTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS]);
+  await relationshipToTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS]);
   next();
 };
 
