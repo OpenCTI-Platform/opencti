@@ -6604,8 +6604,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  ## Threat Actor group
-  personal_motivations: [String]
 }
 
 input ThreatActorGroupAddInput {
@@ -6623,7 +6621,6 @@ input ThreatActorGroupAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
-  personal_motivations: [String]
   confidence: Int
   revoked: Boolean
   lang: String
