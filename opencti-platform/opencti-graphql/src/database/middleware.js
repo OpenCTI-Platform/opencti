@@ -3435,7 +3435,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   const fromThing = await internalLoadById(context, user, fromId, opts);
   // Check mandatory attribute
   const entitySetting = await getEntitySettingFromCache(context, fromThing.entity_type);
-  const attributesMandatory = await getMandatoryAttributesForSetting(context, context.user, entitySetting);
+  const attributesMandatory = await getMandatoryAttributesForSetting(context, user, entitySetting);
   if (attributesMandatory.length > 0) {
     const attribute = attributesMandatory.find((attr) => attr === schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromThing.entity_type, relationshipType));
     if (attribute && fromThing[buildRefRelationKey(relationshipType)].length === 1) {

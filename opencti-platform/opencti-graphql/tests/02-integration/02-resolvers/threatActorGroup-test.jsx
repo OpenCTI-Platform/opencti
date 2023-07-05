@@ -6,9 +6,9 @@ const LIST_QUERY = gql`
   query threatActorsGroup(
     $first: Int
     $after: ID
-    $orderBy: ThreatActorsGroupOrdering
+    $orderBy: ThreatActorsOrdering
     $orderMode: OrderingMode
-    $filters: [ThreatActorsGroupFiltering]
+    $filters: [ThreatActorsFiltering]
     $filterMode: FilterMode
     $search: String
   ) {
@@ -45,7 +45,7 @@ const READ_QUERY = gql`
 
 describe('Threat actor group resolver standard behavior', () => {
   let threatActorGroupInternalId;
-  const threatActorsGroupStixId = 'threat-actor-group--16978493-d5fb-4b28-a39a-eca332f53189';
+  const threatActorsGroupStixId = 'threat-actor--16978493-d5fb-4b28-a39a-eca332f53189';
   it('should threat actor group created', async () => {
     const CREATE_QUERY = gql`
       mutation threatActorGroupAdd($input: ThreatActorGroupAddInput!) {
@@ -74,25 +74,24 @@ describe('Threat actor group resolver standard behavior', () => {
     threatActorGroupInternalId = threatActorGroup.data.threatActorGroupAdd.id;
   });
   it('should threat actor group loaded by internal id', async () => {
-    it('should threat actor group loaded by internal id', async () => {
-      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorGroupInternalId } });
-      expect(queryResult).not.toBeNull();
-      expect(queryResult.data.threatActorGroup).not.toBeNull();
-      expect(queryResult.data.threatActorGroup.id).toEqual(threatActorGroupInternalId);
-      expect(queryResult.data.threatActorGroup.toStix.length).toBeGreaterThan(5);
-    });
-    it('should threat actor group loaded by stix id', async () => {
-      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorsGroupStixId } });
-      expect(queryResult).not.toBeNull();
-      expect(queryResult.data.threatActorGroup).not.toBeNull();
-      expect(queryResult.data.threatActorGroup.id).toEqual(threatActorGroupInternalId);
-    });
-    it('should list threat actors group', async () => {
-      const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 1 } });
-      expect(queryResult.data.threatActorsGroup.edges.length).toEqual(1);
-    });
-    it('should update threat actor group', async () => {
-      const UPDATE_QUERY = gql`
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorGroupInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.threatActorGroup).not.toBeNull();
+    expect(queryResult.data.threatActorGroup.id).toEqual(threatActorGroupInternalId);
+    expect(queryResult.data.threatActorGroup.toStix.length).toBeGreaterThan(5);
+  });
+  it('should threat actor group loaded by stix id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorsGroupStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.threatActorGroup).not.toBeNull();
+    expect(queryResult.data.threatActorGroup.id).toEqual(threatActorGroupInternalId);
+  });
+  it('should list threat actors group', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 1 } });
+    expect(queryResult.data.threatActorsGroup.edges.length).toEqual(1);
+  });
+  it('should update threat actor group', async () => {
+    const UPDATE_QUERY = gql`
         mutation threatActorGroupEdit($id: ID!, $input: [EditInput]!) {
           threatActorGroupEdit(id: $id) {
             fieldPatch(input: $input) {
@@ -102,14 +101,14 @@ describe('Threat actor group resolver standard behavior', () => {
           }
         }
       `;
-      const queryResult = await queryAsAdmin({
-        query: UPDATE_QUERY,
-        variables: { id: threatActorGroupInternalId, input: { key: 'name', value: ['Threat actor group - test'] } },
-      });
-      expect(queryResult.data.threatActorGroupEdit.fieldPatch.name).toEqual('Threat actor group- test');
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: threatActorGroupInternalId, input: { key: 'name', value: ['Threat actor group - test'] } },
     });
-    it('should context patch threat actor group', async () => {
-      const CONTEXT_PATCH_QUERY = gql`
+    expect(queryResult.data.threatActorGroupEdit.fieldPatch.name).toEqual('Threat actor group - test');
+  });
+  it('should context patch threat actor group', async () => {
+    const CONTEXT_PATCH_QUERY = gql`
         mutation threatActorGroupEdit($id: ID!, $input: EditContext) {
           threatActorGroupEdit(id: $id) {
             contextPatch(input: $input) {
@@ -118,14 +117,14 @@ describe('Threat actor group resolver standard behavior', () => {
           }
         }
       `;
-      const queryResult = await queryAsAdmin({
-        query: CONTEXT_PATCH_QUERY,
-        variables: { id: threatActorGroupInternalId, input: { focusOn: 'description' } },
-      });
-      expect(queryResult.data.threatActorGroupEdit.contextPatch.id).toEqual(threatActorGroupInternalId);
+    const queryResult = await queryAsAdmin({
+      query: CONTEXT_PATCH_QUERY,
+      variables: { id: threatActorGroupInternalId, input: { focusOn: 'description' } },
     });
-    it('should context clean threat actor group', async () => {
-      const CONTEXT_PATCH_QUERY = gql`
+    expect(queryResult.data.threatActorGroupEdit.contextPatch.id).toEqual(threatActorGroupInternalId);
+  });
+  it('should context clean threat actor group', async () => {
+    const CONTEXT_PATCH_QUERY = gql`
         mutation threatActorGroupEdit($id: ID!) {
           threatActorGroupEdit(id: $id) {
             contextClean {
@@ -134,14 +133,14 @@ describe('Threat actor group resolver standard behavior', () => {
           }
         }
       `;
-      const queryResult = await queryAsAdmin({
-        query: CONTEXT_PATCH_QUERY,
-        variables: { id: threatActorGroupInternalId },
-      });
-      expect(queryResult.data.threatActorGroupEdit.contextClean.id).toEqual(threatActorGroupInternalId);
+    const queryResult = await queryAsAdmin({
+      query: CONTEXT_PATCH_QUERY,
+      variables: { id: threatActorGroupInternalId },
     });
-    it('should add relation in threat actor group', async () => {
-      const RELATION_ADD_QUERY = gql`
+    expect(queryResult.data.threatActorGroupEdit.contextClean.id).toEqual(threatActorGroupInternalId);
+  });
+  it('should add relation in threat actor group', async () => {
+    const RELATION_ADD_QUERY = gql`
         mutation threatActorGroupEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
           threatActorGroupEdit(id: $id) {
             relationAdd(input: $input) {
@@ -161,20 +160,20 @@ describe('Threat actor group resolver standard behavior', () => {
           }
         }
       `;
-      const queryResult = await queryAsAdmin({
-        query: RELATION_ADD_QUERY,
-        variables: {
-          id: threatActorGroupInternalId,
-          input: {
-            toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
-            relationship_type: 'object-marking',
-          },
+    const queryResult = await queryAsAdmin({
+      query: RELATION_ADD_QUERY,
+      variables: {
+        id: threatActorGroupInternalId,
+        input: {
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
-      });
-      expect(queryResult.data.threatActorGroupEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+      },
     });
-    it('should delete relation in threat actor group', async () => {
-      const RELATION_DELETE_QUERY = gql`
+    expect(queryResult.data.threatActorGroupEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+  });
+  it('should delete relation in threat actor group', async () => {
+    const RELATION_DELETE_QUERY = gql`
         mutation threatActorGroupEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
           threatActorGroupEdit(id: $id) {
             relationDelete(toId: $toId, relationship_type: $relationship_type) {
@@ -190,18 +189,18 @@ describe('Threat actor group resolver standard behavior', () => {
           }
         }
       `;
-      const queryResult = await queryAsAdmin({
-        query: RELATION_DELETE_QUERY,
-        variables: {
-          id: threatActorGroupInternalId,
-          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
-          relationship_type: 'object-marking',
-        },
-      });
-      expect(queryResult.data.threatActorGroupEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    const queryResult = await queryAsAdmin({
+      query: RELATION_DELETE_QUERY,
+      variables: {
+        id: threatActorGroupInternalId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
+      },
     });
-    it('should threat actor group deleted', async () => {
-      const DELETE_QUERY = gql`
+    expect(queryResult.data.threatActorGroupEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+  });
+  it('should threat actor group deleted', async () => {
+    const DELETE_QUERY = gql`
         mutation threatActorGroupDelete($id: ID!) {
           threatActorGroupEdit(id: $id) {
             delete
@@ -209,14 +208,13 @@ describe('Threat actor group resolver standard behavior', () => {
         }
       `;
       // Delete the threat actor group
-      await queryAsAdmin({
-        query: DELETE_QUERY,
-        variables: { id: threatActorGroupInternalId },
-      });
-      // Verify is no longer found
-      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorsGroupStixId } });
-      expect(queryResult).not.toBeNull();
-      expect(queryResult.data.threatActorGroup).toBeNull();
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: threatActorGroupInternalId },
     });
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorsGroupStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.threatActorGroup).toBeNull();
   });
 });
