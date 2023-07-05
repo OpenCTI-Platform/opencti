@@ -14,6 +14,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import {
   executionContext,
+  INTERNAL_USERS,
   isUserCanAccessStixElement,
   isUserCanAccessStoreElement,
   SYSTEM_USER
@@ -274,7 +275,9 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
     const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
-    const users = R.uniqBy(R.prop('id'), [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]);
+    const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
+      .filter((u) => INTERNAL_USERS[u.id] === undefined);
+    const users = R.uniqBy(R.prop('id'), withoutInternalUsers);
     return { users, trigger };
   });
 };
