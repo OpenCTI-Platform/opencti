@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-import { pathOr, pipe, map, union } from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
-import * as PropTypes from 'prop-types';
 import { makeStyles } from '@mui/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import { Theme } from '../../../../components/Theme';
+import { Option } from './ReferenceField';
+import {
+  ObjectParticipantFieldMembersSearchQuery$data,
+} from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
 
 export const objectParticipantFieldMembersSearchQuery = graphql`
   query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
@@ -37,7 +40,7 @@ export const objectParticipantFieldParticipantsSearchQuery = graphql`
   }
 `;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -53,8 +56,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ObjectParticipantField = (props) => {
-  const { defaultObjectParticipant, name, style, label, onChange, helpertext, disabled } = props;
+interface Participant extends Option {
+  type: string;
+}
+interface ObjectParticipantFieldProps {
+  name: string;
+  onChange?: (name: string, values: Participant[]) => void;
+  style?: Record<string, string | number>;
+  helpertext?: string;
+  defaultObjectParticipant?: Participant,
+  label?: string,
+  disabled?: boolean,
+}
+const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = ({
+  defaultObjectParticipant,
+  name,
+  style,
+  label,
+  onChange,
+  helpertext,
+  disabled,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const defaultStateObjectParticipant = defaultObjectParticipant
@@ -67,9 +89,9 @@ const ObjectParticipantField = (props) => {
       },
     ]
     : [];
-  const [participants, setParticipants] = useState(defaultStateObjectParticipant);
+  const [participants, setParticipants] = useState<Participant>(defaultStateObjectParticipant);
 
-  const searchParticipants = (event) => {
+  const searchParticipants = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectParticipantFieldMembersSearchQuery, {
       search: (event && event.target && event.target.value) ?? '',
       entityTypes: ['User'],
@@ -77,19 +99,17 @@ const ObjectParticipantField = (props) => {
     })
       .toPromise()
       .then((data) => {
-        const newParticipants = pipe(
-          pathOr([], ['members', 'edges']),
-          map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-            type: n.node.entity_type,
-            entity: n.node,
-          })),
-        )(data);
-        setParticipants(union(newParticipants, participants));
+        const newParticipants = (
+          (data as ObjectParticipantFieldMembersSearchQuery$data)?.members?.edges ?? []
+        ).map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+          type: n.node.entity_type,
+          entity: n.node,
+        })).sort((a, b) => a.label.localeCompare(b.label));
+        setParticipants(newParticipants);
       });
   };
-
   return (
       <Field
         component={AutocompleteField}
@@ -104,10 +124,13 @@ const ObjectParticipantField = (props) => {
           onFocus: searchParticipants,
         }}
         noOptionsText={t('No available options')}
-        options={participants.sort((a, b) => a.label.localeCompare(b.label))}
+        options={participants}
         onInputChange={searchParticipants}
         onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(fieldProps, option) => (
+        renderOption={(
+          fieldProps: React.HTMLAttributes<HTMLLIElement>,
+          option: { type: string; label: string },
+        ) => (
            <li {...fieldProps}>
              <div className={classes.icon}>
                <ItemIcon type={option.type} />
@@ -118,18 +141,6 @@ const ObjectParticipantField = (props) => {
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
   );
-};
-
-ObjectParticipantField.propTypes = {
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  defaultObjectParticipant: PropTypes.object,
-  name: PropTypes.string,
-  style: PropTypes.object,
-  label: PropTypes.string,
-  onChange: PropTypes.func,
-  helpertext: PropTypes.object,
-  disabled: PropTypes.bool,
 };
 
 export default ObjectParticipantField;
