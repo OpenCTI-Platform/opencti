@@ -2,7 +2,7 @@ import { Close } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -89,9 +89,9 @@ const extractMessagesToDisplay = (messagesFromLocalStorage: MessageFromLocalStor
       return m1.dismissible ? -1 : 1;
     });
 };
-
+const ref = React.createRef<HTMLDivElement>();
 export const useSettingsMessagesBannerHeight = () => {
-  const [bannerHeight, setBannerHeight] = useState(0);
+  const [bannerHeight, setBannerHeight] = useState(ref.current?.clientHeight ?? 0);
   useBus(BANNER_LOCAL_STORAGE_KEY, (size: number) => setBannerHeight(size ?? 0));
   return bannerHeight;
 };
@@ -102,7 +102,6 @@ const SettingsMessagesBannerComponent = ({
   queryRef,
 }: { queryRef: PreloadedQuery<SettingsMessagesBannerQuery> }) => {
   const classes = useStyles();
-  const ref = useRef<HTMLDivElement>(null);
 
   const { settings } = usePreloadedQuery<SettingsMessagesBannerQuery>(settingsMessagesQuery, queryRef);
   const config = useMemo<GraphQLSubscriptionConfig<SettingsMessagesBannerSubscription>>(() => ({
