@@ -500,7 +500,7 @@ const ContainerHeader = (props) => {
   // Suggestions
   const resolveThreats = (objects) => objects.filter(
     (o) => [
-      'Theat-Actor-Group',
+      'Threat-Actor',
       'Intrusion-Set',
       'Campaign',
       'Incident',

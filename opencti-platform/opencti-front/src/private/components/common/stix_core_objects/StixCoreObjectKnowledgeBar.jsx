@@ -460,7 +460,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <LaptopAccount />
                 </ListItemIcon>
-                <ListItemText primary={t('Threat actors group')} />
+                <ListItemText primary={t('Threat actors')} />
               </MenuItem>
             )}
             {includes('intrusion_sets', availableSections) && (

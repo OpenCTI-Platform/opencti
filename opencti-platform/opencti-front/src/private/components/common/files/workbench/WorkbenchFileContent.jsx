@@ -1804,7 +1804,7 @@ const WorkbenchFileContentComponent = ({
       type = resolveThreatActorType(entity);
     }
     const targetsFrom = [
-      'Theat-Actor-Group',
+      'Threat-Actor',
       'Intrusion-Set',
       'Campaign',
       'Incident',
@@ -1813,7 +1813,7 @@ const WorkbenchFileContentComponent = ({
       'Channel',
     ];
     const usesFrom = [
-      'Theat-Actor-Group',
+      'Threat-Actor',
       'Intrusion-Set',
       'Campaign',
       'Incident',
@@ -1822,7 +1822,7 @@ const WorkbenchFileContentComponent = ({
       'Channel',
     ];
     const attributedToFrom = [
-      'Theat-Actor-Group',
+      'Threat-Actor',
       'Intrusion-Set',
       'Campaign',
       'Incident',
@@ -1839,7 +1839,7 @@ const WorkbenchFileContentComponent = ({
       'Position',
       'Event',
     ];
-    const attributedToTo = ['Theat-Actor-Group', 'Intrusion-Set', 'Campaign'];
+    const attributedToTo = ['Threat-Actor', 'Intrusion-Set', 'Campaign'];
     const usesTo = ['Attack-Pattern', 'Malware', 'Tool'];
     const initialValues = {};
     const resolveObjects = (relationshipType, source, target) => stixCoreRelationships
@@ -1973,7 +1973,7 @@ const WorkbenchFileContentComponent = ({
                 name="attributed-to_from"
                 title={t('relationship_attributed-to')}
                 fullWidth
-                types={['Theat-Actor-Group', 'Intrusion-Set', 'Campaign']}
+                types={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
                 stixDomainObjects={stixDomainObjects}
                 style={{ marginTop: 20 }}
               />
@@ -1986,7 +1986,7 @@ const WorkbenchFileContentComponent = ({
                 title={t('relationship_targets')}
                 fullWidth
                 types={[
-                  'Theat-Actor-Group',
+                  'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',
@@ -2017,7 +2017,7 @@ const WorkbenchFileContentComponent = ({
                 title={t('relationship_uses') + t(' (reversed)')}
                 fullWidth
                 types={[
-                  'Theat-Actor-Group',
+                  'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',

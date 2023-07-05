@@ -89,7 +89,7 @@ class IntrusionSetKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={intrusionSet.id}
                 relationshipTypes={['attributed-to']}
-                stixCoreObjectTypes={['Theat-Actor-Group']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}

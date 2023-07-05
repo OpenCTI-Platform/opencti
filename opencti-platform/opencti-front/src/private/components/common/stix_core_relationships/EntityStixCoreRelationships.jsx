@@ -579,7 +579,7 @@ class EntityStixCoreRelationships extends Component {
                     'Vulnerability',
                   ]
                   : [
-                    'Threat-Actor-Group',
+                    'Threat-Actor',
                     'Intrusion-Set',
                     'Campaign',
                     'Incident',
