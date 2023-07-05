@@ -1231,7 +1231,7 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
         }
         objects(
           types: [
-            "Threat-Actor-Group"
+            "Threat-Actor"
             "Intrusion-Set"
             "Campaign"
             "Incident"
