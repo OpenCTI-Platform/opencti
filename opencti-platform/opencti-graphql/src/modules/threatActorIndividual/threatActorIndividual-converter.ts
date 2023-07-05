@@ -25,14 +25,14 @@ const convertThreatActorIndividualToStix = (instance: StoreEntityThreatActorIndi
     primary_motivations: instance.primary_motivations,
     secondary_motivations: instance.secondary_motivations,
     personal_motivations: instance.personal_motivations,
-    eye_color: instance.eye_color,
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...threatActor.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-        object_refs_inferred: convertObjectReferences(instance, true)
+        object_refs_inferred: convertObjectReferences(instance, true),
+        eye_color: instance.eye_color,
       })
     }
   };

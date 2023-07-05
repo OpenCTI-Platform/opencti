@@ -1,4 +1,4 @@
-import type { StixDate, StixOpenctiExtensionSDO } from '../../types/stix-common';
+import type { StixDate, StixOpenctiExtension } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixContainer } from '../../types/stix-sdo';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
@@ -39,6 +39,10 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
   eye_color: string
 }
 
+export interface StixThreatActorIndividualExtension extends StixOpenctiExtension {
+  eye_color: string
+}
+
 export interface StixThreatActorIndividual extends StixContainer {
   name: string
   description: string
@@ -53,8 +57,7 @@ export interface StixThreatActorIndividual extends StixContainer {
   primary_motivations: string
   secondary_motivations: string[]
   personal_motivations: string[]
-  eye_color: string
   extensions: {
-    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
+    [STIX_EXT_OCTI]: StixThreatActorIndividualExtension
   }
 }

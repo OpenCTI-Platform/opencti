@@ -28,7 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   cardDummy: {
     width: '100%',
     height: 320,
-    color: theme.palette.grey[700],
+    color: theme.palette?.grey?.[700],
     borderRadius: 6,
   },
   avatar: {
@@ -181,15 +181,13 @@ export const ThreatActorIndividualCard: FunctionComponent<ThreatActorIndividualC
     .map((n) => n?.entity?.name)
     .join(', ');
 
-  const handleBookmarksIds = () => {
+  const handleBookmarksIds = (e: React.MouseEvent<HTMLElement>) => {
     if (bookmarksIds?.includes(data.id)) {
       deleteBookMark(data.id, 'Threat-Actor-Individual');
     } else {
+      e.preventDefault();
       addBookmark(data.id, 'Threat-Actor-Individual');
     }
-  };
-  const bookMarksIdsColor = () => {
-    return bookmarksIds?.includes(data.id) ? 'secondary' : 'primary';
   };
   return (
     <Card classes={{ root: classes.card }} variant="outlined">
@@ -200,14 +198,14 @@ export const ThreatActorIndividualCard: FunctionComponent<ThreatActorIndividualC
       >
         <CardHeader
           classes={{ root: classes.header, title: classes.title }}
-          avatar={<ItemIcon type="Threat-Actor" size="large" />}
+          avatar={<ItemIcon type="Threat-Actor-Individual" size="large" />}
           title={data.name}
           subheader={fld(data.modified)}
           action={
             <IconButton
               size="small"
               onClick={handleBookmarksIds}
-              color={bookMarksIdsColor()}
+              color={bookmarksIds?.includes(data.id) ? 'secondary' : 'primary'}
             >
               <StarBorderOutlined />
             </IconButton>
@@ -220,6 +218,7 @@ export const ThreatActorIndividualCard: FunctionComponent<ThreatActorIndividualC
               remarkGfmPlugin={true}
               commonmark={true}
               removeLinks={true}
+              removeLineBreaks={true}
               limit={260}
             />
           </div>

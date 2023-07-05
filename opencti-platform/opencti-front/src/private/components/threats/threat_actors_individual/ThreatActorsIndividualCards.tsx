@@ -47,17 +47,7 @@ export const ThreatActorsIndividualCardsFragment = graphql`
     orderBy: { type: "ThreatActorsIndividualOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "[ThreatActorsIndividualFiltering]" }
-  ) 
-  @refetchable(queryName: "ThreatActorsIndividualRefetchQuery") {
-    bookmarks(
-      types: ["Threat-Actor-Individual"]
-    ) {
-      edges {
-        node {
-          ...StixDomainObjectBookmark_node
-        }
-      }
-    }
+  ) @refetchable(queryName: "ThreatActorsIndividualRefetchQuery") {
     threatActorsIndividuals(
       search: $search
       first: $count
@@ -110,27 +100,33 @@ const ThreatActorsIndividualCards: FunctionComponent<ThreatActorsIndividualCards
   };
 
   return (
-    <div>
-      <StixDomainObjectBookmarks
-        data={data}
-        onLabelClick={onLabelClick}
-        setBookmarkList={handleSetBookmarkList}
-      />
-      <ListCardsContent
-        initialLoading={!data}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        isLoading={isLoadingMore}
-        dataList={data?.threatActorsIndividuals?.edges ?? []}
-        globalCount={data?.threatActorsIndividuals?.pageInfo?.globalCount ?? nbOfCardsToLoad}
-        CardComponent={ThreatActorIndividualCard}
-        DummyCardComponent={ThreatActorIndividualCardDummy}
-        nbOfCardsToLoad={nbOfCardsToLoad}
-        onLabelClick={onLabelClick}
-        bookmarkList={bookmarks}
-        rowHeight={340}
-      />
-    </div>
+    <QueryRenderer
+      query={stixDomainObjectBookmarksQuery}
+      variables={{ types: ['Threat-Actor-Individual'] }}
+      render={({ props }: { props : StixDomainObjectBookmarksQuery$data }) => (
+        <div>
+          <StixDomainObjectBookmarks
+            data={props}
+            onLabelClick={onLabelClick}
+            setBookmarkList={handleSetBookmarkList}
+          />
+          <ListCardsContent
+            initialLoading={!data}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            isLoading={isLoadingMore}
+            dataList={data?.threatActorsIndividuals?.edges ?? []}
+            globalCount={data?.threatActorsIndividuals?.pageInfo?.globalCount ?? nbOfCardsToLoad}
+            CardComponent={ThreatActorIndividualCard}
+            DummyCardComponent={ThreatActorIndividualCardDummy}
+            nbOfCardsToLoad={nbOfCardsToLoad}
+            onLabelClick={onLabelClick}
+            bookmarkList={bookmarks}
+            rowHeight={340}
+          />
+        </div>
+      )}
+    />
   );
 };
 

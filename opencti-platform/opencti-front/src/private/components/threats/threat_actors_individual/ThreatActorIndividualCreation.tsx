@@ -303,7 +303,7 @@ const ThreatActorIndividualCreation = ({
   const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_threatActorsIndividual',
+    'Pagination_threatActorsIndividuals',
     paginationOptions,
     'threatActorIndividualAdd',
   );

@@ -97,6 +97,7 @@ import TopMenuCaseRft from './TopMenuCaseRft';
 import TopMenuTask from './TopMenuTask';
 import TopMenuAudits from './TopMenuAudits';
 import useAuth from '../../../utils/hooks/useAuth';
+import TopMenuThreatActorIndividual from './TopMenuThreatActorIndividual';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -356,6 +357,9 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {location.pathname.includes('/dashboard/threats/threat_actors_group/') && (
             <TopMenuThreatActorGroup />
+          )}
+          {location.pathname.includes('/dashboard/threats/threat_actors_individual/') && (
+            <TopMenuThreatActorIndividual />
           )}
           {location.pathname.includes('/dashboard/threats/intrusion_sets/') && (
             <TopMenuIntrusionSet />

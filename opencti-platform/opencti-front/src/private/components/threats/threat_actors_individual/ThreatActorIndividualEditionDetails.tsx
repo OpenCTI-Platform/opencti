@@ -240,7 +240,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
                 />
                 <OpenVocabField
                   label={t('Sophistication')}
-                  type="threat-actor-sophistication-ov"
+                  type="threat_actor_individual_sophistication_ov"
                   name="sophistication"
                   onFocus={handleChangeFocus}
                   onChange={(name, value) => setFieldValue(name, value)}
