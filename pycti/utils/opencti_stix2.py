@@ -182,7 +182,7 @@ class OpenCTIStix2:
         if not os.path.isfile(file_path):
             API_LOGGER.error("The bundle file does not exists")
             return None
-        with open(os.path.join(file_path)) as file:
+        with open(os.path.join(file_path), encoding="utf-8") as file:
             data = json.load(file)
         return self.import_bundle(data, update, types)
 
