@@ -51,8 +51,8 @@ const relationshipFromTypeChange = (toType, indices) => {
         + 'if (connection.types.contains("Threat-Actor")) { '
         + 'connection.types.add(params.toType);'
         + '} } '
-        + 'if (ctx._source.fromType.equals("Threat-Actor") { ctx._source.fromType = params.toType; };'
-        + 'if (ctx._source.toType.equals("Threat-Actor") { ctx._source.toType = params.toType; };'
+        + 'if (ctx._source.fromType == "Threat-Actor") { ctx._source.fromType = params.toType; }'
+        + 'if (ctx._source.toType == "Threat-Actor") { ctx._source.toType = params.toType; }'
     },
     query: {
       bool: {
