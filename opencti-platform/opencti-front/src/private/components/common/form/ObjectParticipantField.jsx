@@ -1,16 +1,13 @@
-import React, { Component } from 'react';
-import { compose, pathOr, pipe, map, union } from 'ramda';
-import { debounce } from 'rxjs/operators';
-import { Subject, timer } from 'rxjs';
+import React, { useState } from 'react';
+import { pathOr, pipe, map, union } from 'ramda';
 import { Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
+import * as PropTypes from 'prop-types';
+import { makeStyles } from '@mui/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-
-const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
 export const objectParticipantFieldMembersSearchQuery = graphql`
   query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
@@ -40,7 +37,7 @@ export const objectParticipantFieldParticipantsSearchQuery = graphql`
   }
 `;
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -54,53 +51,33 @@ const styles = (theme) => ({
   autoCompleteIndicator: {
     display: 'none',
   },
-});
+}));
 
-class ObjectParticipantField extends Component {
-  constructor(props) {
-    super(props);
-    const { defaultObjectParticipant } = props;
-    this.state = {
-      keyword: '',
-      participants: defaultObjectParticipant
-        ? [
-          {
-            label: defaultObjectParticipant.name,
-            value: defaultObjectParticipant.id,
-            type: defaultObjectParticipant.entity_type,
-            entity: defaultObjectParticipant,
-          },
-        ]
-        : [],
-    };
-  }
+const ObjectParticipantField = (props) => {
+  const { defaultObjectParticipant, name, style, label, onChange, helpertext, disabled } = props;
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const defaultStateObjectParticipant = defaultObjectParticipant
+    ? [
+      {
+        label: defaultObjectParticipant.name,
+        value: defaultObjectParticipant.id,
+        type: defaultObjectParticipant.entity_type,
+        entity: defaultObjectParticipant,
+      },
+    ]
+    : [];
+  const [participants, setParticipants] = useState(defaultStateObjectParticipant);
 
-  componentDidMount() {
-    this.subscription = SEARCH$.subscribe({
-      next: () => this.searchParticipants(),
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
-
-  handleSearch(event) {
-    if (event && event.target && event.target.value) {
-      this.setState({ keyword: event.target.value });
-      SEARCH$.next({ action: 'Search' });
-    }
-  }
-
-  searchParticipants() {
+  const searchParticipants = (event) => {
     fetchQuery(objectParticipantFieldMembersSearchQuery, {
-      search: this.state.keyword,
+      search: (event && event.target && event.target.value) ?? '',
       entityTypes: ['User'],
       first: 10,
     })
       .toPromise()
       .then((data) => {
-        const participants = pipe(
+        const newParticipants = pipe(
           pathOr([], ['members', 'edges']),
           map((n) => ({
             label: n.node.name,
@@ -109,40 +86,50 @@ class ObjectParticipantField extends Component {
             entity: n.node,
           })),
         )(data);
-        this.setState({ participants: union(this.state.participants, participants) });
+        setParticipants(union(newParticipants, participants));
       });
-  }
+  };
 
-  render() {
-    const { t, name, style, label, classes, onChange, helpertext, disabled } = this.props;
-    return (
-      <Field component={AutocompleteField}
-             style={style}
-             name={name}
-             disabled={disabled}
-             multiple={true}
-             textfieldprops={{
-               variant: 'standard',
-               label: label ?? t('Participant(s)'),
-               helperText: helpertext,
-               onFocus: this.searchParticipants.bind(this),
-             }}
-             noOptionsText={t('No available options')}
-             options={this.state.participants.sort((a, b) => a.label.localeCompare(b.label))}
-             onInputChange={this.handleSearch.bind(this)}
-             onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-             renderOption={(props, option) => (
-               <li {...props}>
-                 <div className={classes.icon}>
-                   <ItemIcon type={option.type} />
-                 </div>
-                 <div className={classes.text}>{option.label}</div>
-               </li>
-             )}
-             classes={{ clearIndicator: classes.autoCompleteIndicator }}
+  return (
+      <Field
+        component={AutocompleteField}
+        style={style}
+        name={name}
+        disabled={disabled}
+        multiple={true}
+        textfieldprops={{
+          variant: 'standard',
+          label: label ?? t('Participant(s)'),
+          helperText: helpertext,
+          onFocus: searchParticipants,
+        }}
+        noOptionsText={t('No available options')}
+        options={participants.sort((a, b) => a.label.localeCompare(b.label))}
+        onInputChange={searchParticipants}
+        onChange={typeof onChange === 'function' ? onChange : null}
+        renderOption={(fieldProps, option) => (
+           <li {...fieldProps}>
+             <div className={classes.icon}>
+               <ItemIcon type={option.type} />
+             </div>
+             <div className={classes.text}>{option.label}</div>
+           </li>
+        )}
+        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
-    );
-  }
-}
+  );
+};
 
-export default compose(inject18n, withStyles(styles))(ObjectParticipantField);
+ObjectParticipantField.propTypes = {
+  classes: PropTypes.object,
+  t: PropTypes.func,
+  defaultObjectParticipant: PropTypes.object,
+  name: PropTypes.string,
+  style: PropTypes.object,
+  label: PropTypes.string,
+  onChange: PropTypes.func,
+  helpertext: PropTypes.object,
+  disabled: PropTypes.bool,
+};
+
+export default ObjectParticipantField;
