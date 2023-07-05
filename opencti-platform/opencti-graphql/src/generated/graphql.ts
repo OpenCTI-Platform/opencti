@@ -23616,6 +23616,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
+  personal_motivations?: Maybe<Array<Maybe<Scalars['String']>>>;
   primary_motivation?: Maybe<Scalars['String']>;
   reports?: Maybe<ReportConnection>;
   resource_level?: Maybe<Scalars['String']>;
@@ -23783,6 +23784,7 @@ export type ThreatActorGroupAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  personal_motivations?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   primary_motivation?: InputMaybe<Scalars['String']>;
   resource_level?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
@@ -34055,6 +34057,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorGroupOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorGroupPendingFilesArgs>>;
+  personal_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ThreatActorGroupReportsArgs>>;
   resource_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
