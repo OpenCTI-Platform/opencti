@@ -1057,7 +1057,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 routing_key=self.connector_config["push_routing"],
                 body=json.dumps(message),
                 properties=pika.BasicProperties(
-                    delivery_mode=2,  # make message persistent
+                    delivery_mode=2, content_encoding="utf-8"  # make message persistent
                 ),
             )
         except (UnroutableError, NackError) as e:
