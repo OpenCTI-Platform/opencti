@@ -162,7 +162,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_triggers', paginationOptions, 'triggerDigestAdd');
+        insertNode(store, 'Pagination_triggersKnowledge', paginationOptions, 'triggerKnowledgeDigestAdd');
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);

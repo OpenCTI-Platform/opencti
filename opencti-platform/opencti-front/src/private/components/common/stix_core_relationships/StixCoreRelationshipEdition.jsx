@@ -30,7 +30,7 @@ export const stixCoreRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
-const StixCoreRelationshipEdition = (props) => {
+const StixCoreRelationshipEditionInner = (props) => {
   const {
     stixCoreRelationshipId,
     open,
@@ -39,37 +39,34 @@ const StixCoreRelationshipEdition = (props) => {
     noStoreUpdate,
   } = props;
   const classes = useStyles();
-  const queryRef = useQueryLoading(
-    stixCoreRelationshipEditionOverviewQuery,
-    { id: stixCoreRelationshipId },
-  );
+  const queryRef = useQueryLoading(stixCoreRelationshipEditionOverviewQuery, { id: stixCoreRelationshipId });
   return (
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixCoreRelationshipEditionOverview
               queryRef={queryRef}
               handleClose={handleClose}
-              handleDelete={
-                typeof handleDelete === 'function'
-                  ? handleDelete
-                  : null
-              }
+              handleDelete={typeof handleDelete === 'function' ? handleDelete : null}
               noStoreUpdate={noStoreUpdate}
             />
           </React.Suspense>
         )}
       </Drawer>
   );
+};
+
+const StixCoreRelationshipEdition = ({ stixCoreRelationshipId, open, handleClose, handleDelete, noStoreUpdate }) => {
+  if (stixCoreRelationshipId && open) {
+    return <StixCoreRelationshipEditionInner open={open} stixCoreRelationshipId={stixCoreRelationshipId}
+                                             handleClose={handleClose} handleDelete={handleDelete} noStoreUpdate={noStoreUpdate} />;
+  }
+  return <></>;
 };
 
 export default StixCoreRelationshipEdition;

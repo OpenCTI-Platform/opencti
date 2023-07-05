@@ -100,13 +100,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
           helperText: helpertext,
           onFocus: searchMembers,
         }}
-        onChange={(n: string, v: Option | Option[]) => {
-          if (onChange && Array.isArray(v)) {
-            onChange(n, v.map((nV) => nV?.value ?? nV));
-          } else if (onChange && !Array.isArray(v)) {
-            onChange(n, v?.value ?? v);
-          }
-        }}
+        onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
         style={style}
         noOptionsText={t('No available options')}
         options={members}

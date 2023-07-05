@@ -274,7 +274,8 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
     const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
-    return { users: [...usersFromGroups, ...usersFromIds, ...usersFromOrganizations], trigger };
+    const users = R.uniqBy(R.prop('id'), [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]);
+    return { users, trigger };
   });
 };
 

@@ -102,7 +102,7 @@ interface TriggerActivityLiveAddInput {
   description: string;
   event_types: { value: TriggerActivityEventType, label: string }[];
   outcomes: { value: string, label: string }[];
-  recipients: string[];
+  recipients: { value: string, label: string }[];
 }
 
 interface TriggerLiveCreationProps {
@@ -192,7 +192,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       outcomes: values.outcomes.map((n) => n.value),
       description: values.description,
       filters: jsonFilters,
-      recipients: values.recipients,
+      recipients: values.recipients.map((n) => n.value),
     };
     commitActivity({
       variables: {

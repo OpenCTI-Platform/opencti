@@ -30,54 +30,39 @@ export const stixSightingRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
-const StixSightingRelationshipEdition = (props) => {
-  const {
-    stixSightingRelationshipId,
-    open,
-    handleClose,
-    handleDelete,
-    inferred,
-    noStoreUpdate,
-  } = props;
-  if (!stixSightingRelationshipId) {
-    return <></>;
-  }
-
+const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate }) => {
   const classes = useStyles();
-  const queryRef = useQueryLoading(
-    stixSightingRelationshipEditionOverviewQuery,
-    { id: stixSightingRelationshipId },
-  );
-
+  const queryRef = useQueryLoading(stixSightingRelationshipEditionOverviewQuery, { id: stixSightingRelationshipId });
   return (
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-
-        {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <StixSightingRelationshipEditionOverview
-              queryRef={queryRef}
-              handleClose={handleClose}
-              handleDelete={
-                typeof handleDelete === 'function'
-                  ? handleDelete
-                  : null
-              }
-              inferred={inferred}
-              noStoreUpdate={noStoreUpdate}
-            />
-          </React.Suspense>
-        )}
+        onClose={handleClose}>
+          {queryRef && (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <StixSightingRelationshipEditionOverview
+                queryRef={queryRef}
+                handleClose={handleClose}
+                handleDelete={typeof handleDelete === 'function' ? handleDelete : null}
+                inferred={inferred}
+                noStoreUpdate={noStoreUpdate}
+              />
+            </React.Suspense>
+          )}
       </Drawer>
   );
+};
+
+// Workaround to prevent direct loading
+const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate }) => {
+  if (stixSightingRelationshipId && open) {
+    return <StixSightingRelationshipEditionInner open={open} stixSightingRelationshipId={stixSightingRelationshipId}
+                                                 handleClose={handleClose} handleDelete={handleDelete}
+                                                 inferred={inferred} noStoreUpdate={noStoreUpdate} />;
+  }
+  return <></>;
 };
 
 export default StixSightingRelationshipEdition;

@@ -254,7 +254,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_triggers', paginationOptions, 'triggerLiveAdd');
+        insertNode(store, 'Pagination_triggersKnowledge', paginationOptions, 'triggerKnowledgeLiveAdd');
       },
       onCompleted: () => {
         searchInstanceTriggers();
@@ -301,7 +301,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         id: triggerIdToDelete,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_triggers', paginationOptions, triggerIdToDelete);
+        deleteNode(store, 'Pagination_triggersKnowledge', paginationOptions, triggerIdToDelete);
       },
       onCompleted: () => {
         searchInstanceTriggers();
@@ -325,7 +325,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         ],
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_triggers', paginationOptions, triggerIdToUpdate);
+        deleteNode(store, 'Pagination_triggersKnowledge', paginationOptions, triggerIdToUpdate);
       },
       onCompleted: () => {
         searchInstanceTriggers();

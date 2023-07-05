@@ -83,7 +83,7 @@ interface TriggerDigestActivityAddInput {
   trigger_ids: { value: string }[];
   day: string;
   time: string;
-  recipients: string[];
+  recipients: { value: string }[];
 }
 
 const digestTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
@@ -155,7 +155,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       trigger_ids: values.trigger_ids.map(({ value }) => value),
       period: values.period,
       trigger_time: triggerTime,
-      recipients: values.recipients,
+      recipients: values.recipients.map(({ value }) => value),
     };
     commitDigest({
       variables: {

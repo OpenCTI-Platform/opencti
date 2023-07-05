@@ -51,7 +51,6 @@ import {
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../schema/stixDomainObject';
 
 // Outcomes
 
@@ -125,15 +124,14 @@ export const addTriggerActivity = async (
   type: TriggerType
 ): Promise<BasicStoreEntityTrigger> => {
   const members = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, triggerInput.recipients);
+  const authorized_members = [{ id: SYSTEM_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+  authorized_members.push(...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW })));
   const defaultOpts = {
     created: now(),
     updated: now(),
     trigger_scope: 'activity',
     trigger_type: type,
-    authorized_members: [{ id: SYSTEM_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }],
-    user_ids: members.filter((m) => m.entity_type === ENTITY_TYPE_USER).map((u) => u.internal_id),
-    group_ids: members.filter((m) => m.entity_type === ENTITY_TYPE_GROUP).map((u) => u.internal_id),
-    organization_ids: members.filter((m) => m.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).map((u) => u.internal_id),
+    authorized_members,
   };
   const trigger = { ...triggerInput, ...defaultOpts };
   if (type === TriggerTypeValue.Live && (trigger as TriggerActivityLiveAddInput).event_types.length === 0) {
