@@ -214,6 +214,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     </ListItem>
                   ))}
                 </List>
+              </Grid>
+              <Grid item={true} xs={6}>
                 <Typography
                   variant="h3"
                   gutterBottom={true}

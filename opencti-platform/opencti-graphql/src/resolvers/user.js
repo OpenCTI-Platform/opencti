@@ -1,60 +1,18 @@
-import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
-import {
-  addBookmark,
-  addUser,
-  assignOrganizationToUser,
-  authenticateUser,
-  batchGroups,
-  batchOrganizations,
-  batchRoleCapabilities,
-  batchRolesForGroups,
-  batchCreator,
-  bookmarks,
-  deleteBookmark,
-  findAll,
-  findAllMembers,
-  findAssignees,
-  findById,
-  findCapabilities,
-  findCreators,
-  findRoleById,
-  findRoles,
-  logout,
-  meEditField,
-  otpUserActivation,
-  otpUserDeactivation,
-  otpUserGeneration,
-  otpUserLogin,
-  roleAddRelation,
-  roleCleanContext,
-  roleDelete,
-  roleDeleteRelation,
-  roleEditContext,
-  roleEditField,
-  userAddRelation,
-  userCleanContext,
-  userDelete,
-  userDeleteOrganizationRelation,
-  userEditContext,
-  userEditField,
-  userIdDeleteRelation,
-  userRenewToken,
-  userWithOrigin,
-  batchRolesForUsers,
-} from '../domain/user';
+import * as R from 'ramda';
 import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
-import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
-import { addRole } from '../domain/grant';
-import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
-import withCancel from '../graphql/subscriptionWrapper';
-import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import passport, { PROVIDERS } from '../config/providers';
 import { batchLoader } from '../database/middleware';
-import { executionContext, REDACTED_USER } from '../utils/access';
-import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
-import { publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
+import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
+import { addRole } from '../domain/grant';
+import { addBookmark, addUser, assignOrganizationToUser, authenticateUser, batchCreator, batchGroups, batchOrganizations, batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks, deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities, findCreators, findRoleById, findRoles, logout, meEditField, otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation, roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation, userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField, userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
+import withCancel from '../graphql/subscriptionWrapper';
+import { publishUserAction } from '../listener/UserActionListener';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { executionContext, REDACTED_USER } from '../utils/access';
 
 const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);

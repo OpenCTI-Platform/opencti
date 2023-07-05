@@ -5,15 +5,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
-import {
-  AccountBalanceOutlined,
-  Delete,
-  DeleteForeverOutlined,
-  Edit,
-  GroupOutlined,
-  ReceiptOutlined,
-  SecurityOutlined,
-} from '@mui/icons-material';
+import { AccountBalanceOutlined, Delete, DeleteForeverOutlined, Edit, GroupOutlined, ReceiptOutlined, SecurityOutlined } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -31,6 +23,7 @@ import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
 import UserPopover, { userEditionQuery } from './UserPopover';
@@ -451,9 +444,9 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Groups')}
                 </Typography>
-                <List>
-                  {user.groups?.edges
-                    && user.groups.edges.map((groupEdge) => (
+                <FieldOrEmpty source={user.groups?.edges}>
+                  <List>
+                    {(user.groups?.edges ?? []).map((groupEdge) => (
                       <ListItem
                         key={groupEdge?.node.id}
                         dense={true}
@@ -468,29 +461,32 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         <ListItemText primary={groupEdge?.node.name} />
                       </ListItem>
                     ))}
-                </List>
+                  </List>
+                </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={6} style={{ marginTop: 30 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Organizations')}
                 </Typography>
-                <List>
-                  {user.objectOrganization?.edges.map((organizationEdge) => (
-                    <ListItem
-                      key={organizationEdge.node.id}
-                      dense={true}
-                      divider={true}
-                      button={true}
-                      component={Link}
-                      to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
-                    >
-                      <ListItemIcon>
-                        <AccountBalanceOutlined color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary={organizationEdge.node.name} />
-                    </ListItem>
-                  ))}
-                </List>
+                <FieldOrEmpty source={user.objectOrganization?.edges}>
+                  <List>
+                    {user.objectOrganization?.edges.map((organizationEdge) => (
+                      <ListItem
+                        key={organizationEdge.node.id}
+                        dense={true}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
+                      >
+                        <ListItemIcon>
+                          <AccountBalanceOutlined color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary={organizationEdge.node.name} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography
@@ -552,19 +548,20 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Hidden entity types')}
                 </Typography>
-                {user.default_hidden_types
-                  && user.default_hidden_types.map((name) => (
+                <FieldOrEmpty source={user.default_hidden_types}>
+                  {user.default_hidden_types.map((name) => (
                     <Chip
                       key={name}
                       classes={{ root: classes.chip }}
                       label={name}
                     />
                   ))}
+                </FieldOrEmpty>
               </Grid>
             </Grid>
           </Paper>
         </Grid>
-        <Triggers recipientId={user.id} filter='user_ids' />
+        <Triggers recipientId={user.id} filter="user_ids" />
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Operations')}
@@ -730,14 +727,14 @@ export const userQuery = graphql`
       id
       name
       ...User_user
-        @arguments(
-          rolesOrderBy: $rolesOrderBy
-          rolesOrderMode: $rolesOrderMode
-          groupsOrderBy: $groupsOrderBy
-          groupsOrderMode: $groupsOrderMode
-          organizationsOrderBy: $organizationsOrderBy
-          organizationsOrderMode: $organizationsOrderMode
-        )
+      @arguments(
+        rolesOrderBy: $rolesOrderBy
+        rolesOrderMode: $rolesOrderMode
+        groupsOrderBy: $groupsOrderBy
+        groupsOrderMode: $groupsOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
+      )
     }
   }
 `;

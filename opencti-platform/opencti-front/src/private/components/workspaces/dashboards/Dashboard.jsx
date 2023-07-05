@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
@@ -83,6 +83,11 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       ? JSON.parse(fromB64(workspace.manifest))
       : { widgets: {}, config: {} },
   );
+  useEffect(() => {
+    setManifest(workspace.manifest && workspace.manifest.length > 0
+      ? JSON.parse(fromB64(workspace.manifest))
+      : { widgets: {}, config: {} });
+  }, [workspace]);
   const [deleting, setDeleting] = useState(false);
   const userCanEdit = workspace.currentUserAccessRight === 'admin'
     || workspace.currentUserAccessRight === 'edit';

@@ -9,7 +9,6 @@ import {
   last,
   assoc,
 } from 'ramda';
-import { useHistory, useLocation } from 'react-router-dom';
 import { APP_BASE_PATH } from '../relay/environment';
 
 const buildParamsFromHistory = (params) => {
@@ -193,16 +192,6 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;
-};
-
-export const useViewStorage = (storageKey) => {
-  const history = useHistory();
-  const location = useLocation();
-  const view = buildViewParamsFromUrlAndStorage(history, location, storageKey);
-  const saveView = (saveParams) => {
-    saveViewParameters(history, location, storageKey, saveParams, true);
-  };
-  return [view, saveView];
 };
 
 export const convertFilters = (filters) => pipe(

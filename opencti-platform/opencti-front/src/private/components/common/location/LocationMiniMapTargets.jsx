@@ -1,19 +1,9 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  flatten,
-  propOr,
-  pluck,
-  includes,
-  uniq,
-  pipe,
-  filter,
-  head,
-} from 'ramda';
+import { compose, filter, flatten, head, includes, pipe, pluck, propOr, uniq } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
-import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
+import { GeoJSON, MapContainer, Marker, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../static/geo/countries.json';
 import inject18n from '../../../../components/i18n';
@@ -82,9 +72,16 @@ const LocationMiniMapTargets = (props) => {
   const locatedCities = cities
     ? filter((n) => n.latitude && n.longitude, cities)
     : [];
+
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <MapContainer
+        // introducing uniqueness in component rendering
+        // it is a bug workaround that prevents the component from rendering
+        //
+        // to be removed when bug is fixed
+        // more info on the bug and its fix: https://github.com/PaulLeCam/react-leaflet/pull/1073
+        key={new Date().getTime()}
         center={center}
         zoom={zoom}
         attributionControl={false}

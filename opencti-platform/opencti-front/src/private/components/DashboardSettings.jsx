@@ -97,11 +97,12 @@ class DashboardSettings extends Component {
               placeholder={
                 <div>
                   <FormControl style={{ width: '100%' }}>
-                    <InputLabel id="timeField">
+                    <InputLabel id="timeField" variant="standard">
                       {t('Date reference')}
                     </InputLabel>
                     <Select
                       labelId="timeField"
+                      variant="standard"
                       value={timeField === null ? '' : timeField}
                       onChange={handleChangeTimeField.bind(this)}
                       fullWidth={true}
@@ -159,8 +160,13 @@ class DashboardSettings extends Component {
                             onChange={handleChangeDashboard.bind(this)}
                             fullWidth={true}
                           >
-                            <MenuItem value="default">{t('Default')}</MenuItem>
-                            {props.workspaces.edges.map((workspaceEdge) => {
+                            {[
+                              ...(props.workspaces?.edges ?? []),
+                              { node: {
+                                id: 'b9bea5e1-027d-47ef-9a12-02beaae6ba9d',
+                                name: 'Default',
+                              } },
+                            ].map((workspaceEdge) => {
                               const workspace = workspaceEdge.node;
                               return (
                                 <MenuItem

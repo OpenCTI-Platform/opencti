@@ -1,47 +1,43 @@
-import React, { Suspense } from 'react';
-import { Link } from 'react-router-dom';
-import { assoc, head, last, map, pathOr, pluck } from 'ramda';
-import { makeStyles, useTheme } from '@mui/styles';
+import { DescriptionOutlined } from '@mui/icons-material';
 import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import CardContent from '@mui/material/CardContent';
-import { DescriptionOutlined } from '@mui/icons-material';
-import {
-  Database,
-  GraphOutline,
-  HexagonMultipleOutline,
-} from 'mdi-material-ui';
+import Paper from '@mui/material/Paper';
 import Slide from '@mui/material/Slide';
-import { graphql, useLazyLoadQuery } from 'react-relay';
-import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import { dayAgo, monthsAgo, yearsAgo } from '../../utils/Time';
+import Typography from '@mui/material/Typography';
+import { makeStyles, useTheme } from '@mui/styles';
+import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
+import { assoc, head, last, map, pathOr, pluck } from 'ramda';
+import React, { Suspense } from 'react';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+import { Link } from 'react-router-dom';
+import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
+import ItemIcon from '../../components/ItemIcon';
+import ItemMarkings from '../../components/ItemMarkings';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
 import Loader from '../../components/Loader';
-import Security from '../../utils/Security';
-import { EXPLORE, KNOWLEDGE } from '../../utils/hooks/useGranted';
-import { resolveLink } from '../../utils/Entity';
-import ItemIcon from '../../components/ItemIcon';
-import { hexToRGB } from '../../utils/Colors';
-import { truncate } from '../../utils/String';
-import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
-import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
-import { computeLevel, simpleNumberFormat } from '../../utils/Number';
-import ItemMarkings from '../../components/ItemMarkings';
-import DashboardView from './workspaces/dashboards/Dashboard';
-import { useViewStorage } from '../../utils/ListParameters';
-import TopBar from './nav/TopBar';
-import ErrorNotFound from '../../components/ErrorNotFound';
 import { areaChartOptions, polarAreaChartOptions } from '../../utils/Charts';
+import { hexToRGB } from '../../utils/Colors';
+import { resolveLink } from '../../utils/Entity';
 import { defaultValue } from '../../utils/Graph';
+import { EXPLORE, KNOWLEDGE } from '../../utils/hooks/useGranted';
+import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { computeLevel, simpleNumberFormat } from '../../utils/Number';
+import Security from '../../utils/Security';
+import { truncate } from '../../utils/String';
+import { dayAgo, monthsAgo, yearsAgo } from '../../utils/Time';
 import Chart from './common/charts/Chart';
+import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
+import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
+import TopBar from './nav/TopBar';
+import DashboardView from './workspaces/dashboards/Dashboard';
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
@@ -908,12 +904,17 @@ const CustomDashboard = ({ dashboard, timeField }) => {
     </Security>
   );
 };
+
 const Dashboard = () => {
   const classes = useStyles();
-  const [view, saveView] = useViewStorage('view-dashboard');
-  const { dashboard = 'default', timeField = 'technical' } = view;
-  const handleChangeTimeField = (event) => saveView({ dashboard, timeField: event.target.value });
-  const handleChangeDashboard = (event) => saveView({ dashboard: event.target.value, timeField });
+  const {
+    viewStorage: localTimeFieldPreferences,
+    helpers: { handleAddProperty },
+  } = usePaginationLocalStorage('view-dashboard', {});
+  const { timeField = 'technical', dashboard } = localTimeFieldPreferences;
+  const handleChangeTimeField = (event) => handleAddProperty('timeField', event.target.value);
+  const handleChangeDashboard = (event) => handleAddProperty('dashboard', event.target.value);
+
   return (
     <div className={classes.root}>
       <TopBar
@@ -922,11 +923,10 @@ const Dashboard = () => {
         handleChangeDashboard={handleChangeDashboard}
         dashboard={dashboard}
       />
-      {dashboard === 'default' ? (
-        <DefaultDashboard timeField={timeField} />
-      ) : (
-        <CustomDashboard dashboard={dashboard} timeField={timeField} />
-      )}
+      {(dashboard && dashboard !== 'b9bea5e1-027d-47ef-9a12-02beaae6ba9d')
+        ? <CustomDashboard dashboard={dashboard} timeField={timeField} />
+        : <DefaultDashboard timeField={timeField} />
+      }
     </div>
   );
 };
