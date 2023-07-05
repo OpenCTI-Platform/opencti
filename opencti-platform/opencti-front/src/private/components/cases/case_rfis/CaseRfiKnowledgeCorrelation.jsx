@@ -1236,7 +1236,7 @@ const CaseRfiKnowledgeCorrelation = createFragmentContainer(
         }
         objects(
           types: [
-            "Threat-Actor-Group"
+            "Threat-Actor"
             "Intrusion-Set"
             "Campaign"
             "Incident"
