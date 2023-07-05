@@ -22,6 +22,7 @@ const caseIncidentResolvers: Resolvers = {
   },
   CaseIncidentsOrdering: {
     creator: 'creator_id',
+    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
   },
   Mutation: {
     caseIncidentAdd: (_, { input }, context) => {

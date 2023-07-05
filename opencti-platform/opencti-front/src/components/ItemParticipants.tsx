@@ -1,8 +1,9 @@
 import { FunctionComponent } from 'react';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
 
 interface ItemParticipantsProps {
+  // TODO To fix tomorrow :)
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   participantsEdges: any[];
 }
 

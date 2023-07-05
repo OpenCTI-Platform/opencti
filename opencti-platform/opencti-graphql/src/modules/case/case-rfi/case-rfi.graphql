@@ -148,6 +148,7 @@ enum CaseRfisOrdering {
   updated_at
   creator
   createdBy
+  objectAssignee
   x_opencti_workflow_id
   confidence
   objectMarking

@@ -22,6 +22,7 @@ const caseRfiResolvers: Resolvers = {
   },
   CaseRfisOrdering: {
     creator: 'creator_id',
+    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
   },
   Mutation: {
     caseRfiAdd: (_, { input }, context) => {
