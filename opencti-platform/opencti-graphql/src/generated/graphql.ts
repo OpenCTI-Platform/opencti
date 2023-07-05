@@ -19241,6 +19241,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -19435,6 +19436,7 @@ export type ReportAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   published: Scalars['DateTime'];
   report_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -19506,6 +19508,7 @@ export enum ReportsFilter {
   Name = 'name',
   ObjectContains = 'objectContains',
   ObjectLabel = 'objectLabel',
+  Participant = 'participant',
   Published = 'published',
   PublishedDay = 'published_day',
   ReportTypes = 'report_types',
@@ -33078,6 +33081,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<ReportObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ReportObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ReportOpinionsArgs>>;

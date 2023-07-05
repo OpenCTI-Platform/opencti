@@ -171,6 +171,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
           availableFilterKeys={[
             'x_opencti_workflow_id',
             'assigneeTo',
+            'participant',
             'labelledBy',
             'createdBy',
             'creator',

@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import {
+  batchListThroughGetTo,
   createEntity,
   distributionEntities,
   internalDeleteElementById,
@@ -11,7 +12,7 @@ import { countAllThings, internalLoadById, listEntities, storeLoadById } from '.
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_PARTICIPANT } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -22,6 +23,7 @@ import { elCount, ES_MAX_CONCURRENCY } from '../database/engine';
 import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 import { stixDomainObjectDelete } from './stixDomainObject';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
 export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
@@ -29,6 +31,9 @@ export const findById = (context, user, reportId) => {
 
 export const findAll = async (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
+};
+export const batchParticipants = (context, user, reportIds) => {
+  return batchListThroughGetTo(context, user, reportIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
 };
 
 export const findReportsForObject = async (context, user, objectId, args) => {

@@ -28,8 +28,8 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
 export const batchTasks = async (context: AuthContext, user: AuthUser, caseIds: string[], args = {}) => {
   return batchListThroughGetFrom(context, user, caseIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_TASK, args);
 };
-export const batchParticipants = (context: AuthContext, user: AuthUser, caseIds: string[]) => {
-  return batchListThroughGetTo(context, user, caseIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
+export const batchParticipants = (context: AuthContext, user: AuthUser, taskIds: string[]) => {
+  return batchListThroughGetTo(context, user, taskIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
 };
 
 export const taskAdd = async (context: AuthContext, user: AuthUser, input: TaskAddInput) => {

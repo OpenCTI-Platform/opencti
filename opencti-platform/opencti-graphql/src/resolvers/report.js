@@ -1,5 +1,5 @@
 import {
-  addReport,
+  addReport, batchParticipants,
   findAll,
   findById,
   reportContainsStixObjectOrStixRelationship,
@@ -28,8 +28,10 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
-import { distributionEntities } from '../database/middleware';
+import { batchLoader, distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
+
+const participantLoader = batchLoader(batchParticipants);
 
 const reportResolvers = {
   Query: {
@@ -64,7 +66,8 @@ const reportResolvers = {
     },
   },
   Report: {
-    deleteWithElementsCount: (report, args, context) => reportDeleteElementsCount(context, context.user, report.id)
+    deleteWithElementsCount: (report, args, context) => reportDeleteElementsCount(context, context.user, report.id),
+    objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
   },
   ReportsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

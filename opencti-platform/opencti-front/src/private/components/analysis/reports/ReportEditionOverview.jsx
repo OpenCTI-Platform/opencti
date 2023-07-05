@@ -17,7 +17,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import {
   convertAssignees,
   convertCreatedBy,
-  convertMarkings,
+  convertMarkings, convertParticipants,
   convertStatus,
 } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -26,6 +26,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 export const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
@@ -126,6 +127,7 @@ const ReportEditionOverviewComponent = (props) => {
       R.assoc('published', parse(values.published).format()),
       R.assoc('report_types', values.report_types),
       R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
+      R.assoc('objectParticipant', R.pluck('value', values.objectParticipant)),
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -174,6 +176,7 @@ const ReportEditionOverviewComponent = (props) => {
     R.assoc('published', buildDate(report.published)),
     R.assoc('report_types', report.report_types ?? []),
     R.assoc('objectAssignee', convertAssignees(report)),
+    R.assoc('objectParticipant', convertParticipants(report)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, report)),
     R.assoc('createdBy', convertCreatedBy(report)),
     R.assoc('objectMarking', convertMarkings(report)),
@@ -187,6 +190,7 @@ const ReportEditionOverviewComponent = (props) => {
       'createdBy',
       'objectMarking',
       'objectAssignee',
+      'objectParticipant',
       'confidence',
       'x_opencti_workflow_id',
     ]),
@@ -273,6 +277,14 @@ const ReportEditionOverviewComponent = (props) => {
             }
             onChange={editor.changeAssignee}
           />
+          <ObjectParticipantField
+            name="objectParticipant"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectParticipant" />
+            }
+            onChange={editor.changeParticipant}
+          />
           {report.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
@@ -350,6 +362,15 @@ export default createFragmentContainer(ReportEditionOverviewComponent, {
         }
       }
       objectAssignee {
+        edges {
+          node {
+            id
+            name
+            entity_type
+          }
+        }
+      }
+      objectParticipant {
         edges {
           node {
             id

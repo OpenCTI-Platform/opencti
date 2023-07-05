@@ -7,7 +7,7 @@ import {
   objectAssignee,
   objectLabel,
   objectMarking,
-  objectOrganization,
+  objectOrganization, objectParticipant,
   objects,
   operatingSystems,
   samples,
@@ -54,7 +54,7 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [{
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_TOOL, [killChainPhases, objectOrganization]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CAMPAIGN, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_REPORT, [objectAssignee, objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_REPORT, [objectAssignee, objectOrganization, objectParticipant]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INTRUSION_SET, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_THREAT_ACTOR_GROUP, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INCIDENT, [objectAssignee, objectOrganization]);

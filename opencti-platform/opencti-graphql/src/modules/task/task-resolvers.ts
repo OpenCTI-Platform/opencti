@@ -30,7 +30,6 @@ const taskResolvers: Resolvers = {
   },
   Task: {
     objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
-
   },
   TasksFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
