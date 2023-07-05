@@ -35,9 +35,9 @@ const styles = (theme) => ({
   },
 });
 
-class ThreatActorDetailsComponent extends Component {
+class ThreatActorGroupDetailsComponent extends Component {
   render() {
-    const { t, classes, threatActor, fldt } = this.props;
+    const { t, classes, threatActorGroup, fldt } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -50,7 +50,7 @@ class ThreatActorDetailsComponent extends Component {
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown
-                source={threatActor.description}
+                source={threatActorGroup.description}
                 limit={400}
               />
               <Typography
@@ -62,7 +62,7 @@ class ThreatActorDetailsComponent extends Component {
               </Typography>
               <ItemOpenVocab
                 type="threat-actor-sophistication-ov"
-                value={threatActor.sophistication}
+                value={threatActorGroup.sophistication}
               />
               <Typography
                 variant="h3"
@@ -73,7 +73,7 @@ class ThreatActorDetailsComponent extends Component {
               </Typography>
               <ItemOpenVocab
                 type="attack-resource-level-ov"
-                value={threatActor.resource_level}
+                value={threatActorGroup.resource_level}
               />
               <Typography
                 variant="h3"
@@ -82,9 +82,9 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Roles')}
               </Typography>
-              {threatActor.roles && (
+              {threatActorGroup.roles && (
                 <List>
-                  {threatActor.roles.map((role) => (
+                  {threatActorGroup.roles.map((role) => (
                     <ListItem key={role} dense={true} divider={true}>
                       <ListItemIcon>
                         <DramaMasks />
@@ -108,9 +108,9 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Goals')}
               </Typography>
-              {threatActor.goals && (
+              {threatActorGroup.goals && (
                 <List>
-                  {threatActor.goals.map((goal) => (
+                  {threatActorGroup.goals.map((goal) => (
                     <ListItem key={goal} dense={true} divider={true}>
                       <ListItemIcon>
                         <BullseyeArrow />
@@ -123,14 +123,14 @@ class ThreatActorDetailsComponent extends Component {
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Threat actor types')}
+                {t('Threat actor group types')}
               </Typography>
-              {threatActor.threat_actor_types
-                && threatActor.threat_actor_types.map((threatActorType) => (
+              {threatActorGroup.threat_actor_types
+                && threatActorGroup.threat_actor_types.map((threatActorGroupType) => (
                   <Chip
-                    key={threatActorType}
+                    key={threatActorGroupType}
                     classes={{ root: classes.chip }}
-                    label={threatActorType}
+                    label={threatActorGroupType}
                   />
                 ))}
               <Typography
@@ -140,7 +140,7 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('First seen')}
               </Typography>
-              {fldt(threatActor.first_seen)}
+              {fldt(threatActorGroup.first_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -148,7 +148,7 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Last seen')}
               </Typography>
-              {fldt(threatActor.last_seen)}
+              {fldt(threatActorGroup.last_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -158,7 +158,7 @@ class ThreatActorDetailsComponent extends Component {
               </Typography>
               <ItemOpenVocab
                 type="attack-motivation-ov"
-                value={threatActor.primary_motivation}
+                value={threatActorGroup.primary_motivation}
               />
               <Typography
                 variant="h3"
@@ -167,9 +167,9 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Secondary motivations')}
               </Typography>
-              {threatActor.secondary_motivations && (
+              {threatActorGroup.secondary_motivations && (
                 <List>
-                  {threatActor.secondary_motivations.map(
+                  {threatActorGroup.secondary_motivations.map(
                     (secondaryMotivation) => (
                       <ListItem
                         key={secondaryMotivation}
@@ -200,18 +200,18 @@ class ThreatActorDetailsComponent extends Component {
   }
 }
 
-ThreatActorDetailsComponent.propTypes = {
-  threatActor: PropTypes.object,
+ThreatActorGroupDetailsComponent.propTypes = {
+  threatActorGroup: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
 };
 
-const ThreatActorDetails = createFragmentContainer(
-  ThreatActorDetailsComponent,
+const ThreatActorGroupDetails = createFragmentContainer(
+  ThreatActorGroupDetailsComponent,
   {
-    threatActor: graphql`
-      fragment ThreatActorDetails_threatActor on ThreatActor {
+    threatActorGroup: graphql`
+      fragment ThreatActorGroupDetails_ThreatActorGroup on ThreatActorGroup {
         id
         first_seen
         last_seen
@@ -228,4 +228,4 @@ const ThreatActorDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(ThreatActorDetails);
+export default compose(inject18n, withStyles(styles))(ThreatActorGroupDetails);

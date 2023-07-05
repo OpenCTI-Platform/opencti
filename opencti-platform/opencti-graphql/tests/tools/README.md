@@ -42,7 +42,7 @@ $ python3 stix_documentation_parser.py
 | `system`                   | `belongs-to`                    | `organization`                              | OpenCTI SRO        |
 | `system`                   | `located-at`                    | `region`                                    | OpenCTI SRO        |
 | `targets`                  | `located-at`                    | `location`                                  | OpenCTI SRO of SRO |
-| `threat-actor`             | `part-of`                       | `threat-actor`                              | OpenCTI SRO        |
+| `threat-actor-group`             | `part-of`                       | `threat-actor-group`                              | OpenCTI SRO        |
 | `tool`                     | `uses` or `drops` or `delivers` | `attack-attern`                             | OpenCTI SRO        |
 | `x-opencti-hostname`       | `uses`                          | `attack-pattern`                            | OpenCTI SRO        |
 | `x-opencti-hostname`       | `drops`                         | `artifact`                                  | OpenCTI SRO        |

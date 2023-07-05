@@ -9,8 +9,8 @@ import { Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import ThreatActorEditionOverview from './ThreatActorEditionOverview';
-import ThreatActorEditionDetails from './ThreatActorEditionDetails';
+import ThreatActorGroupEditionOverview from './ThreatActorGroupEditionOverview';
+import ThreatActorGroupEditionDetails from './ThreatActorGroupEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
@@ -37,10 +37,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ThreatActorEditionContainer = ({ handleClose, threatActor }) => {
+const ThreatActorGroupEditionContainer = ({ handleClose, threatActorGroup }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const { editContext } = threatActor;
+  const { editContext } = threatActorGroup;
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
   return (
@@ -56,7 +56,7 @@ const ThreatActorEditionContainer = ({ handleClose, threatActor }) => {
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a threat actor')}
+          {t('Update a threat actor group')}
         </Typography>
         <SubscriptionAvatars context={editContext} />
         <div className="clearfix" />
@@ -69,17 +69,17 @@ const ThreatActorEditionContainer = ({ handleClose, threatActor }) => {
           </Tabs>
         </Box>
         {currentTab === 0 && (
-          <ThreatActorEditionOverview
-            threatActor={threatActor}
-            enableReferences={useIsEnforceReference('Threat-Actor')}
+          <ThreatActorGroupEditionOverview
+            threatActorGroup={threatActorGroup}
+            enableReferences={useIsEnforceReference('Threat-Actor-Group')}
             context={editContext}
             handleClose={handleClose}
           />
         )}
         {currentTab === 1 && (
-          <ThreatActorEditionDetails
-            threatActor={threatActor}
-            enableReferences={useIsEnforceReference('Threat-Actor')}
+          <ThreatActorGroupEditionDetails
+            threatActorGroup={threatActorGroup}
+            enableReferences={useIsEnforceReference('Threat-Actor-Group')}
             context={editContext}
             handleClose={handleClose}
           />
@@ -89,14 +89,14 @@ const ThreatActorEditionContainer = ({ handleClose, threatActor }) => {
   );
 };
 
-const ThreatActorEditionFragment = createFragmentContainer(
-  ThreatActorEditionContainer,
+const ThreatActorGroupEditionFragment = createFragmentContainer(
+  ThreatActorGroupEditionContainer,
   {
-    threatActor: graphql`
-      fragment ThreatActorEditionContainer_threatActor on ThreatActor {
+    threatActorGroup: graphql`
+      fragment ThreatActorGroupEditionContainer_ThreatActorGroup on ThreatActorGroup {
         id
-        ...ThreatActorEditionOverview_threatActor
-        ...ThreatActorEditionDetails_threatActor
+        ...ThreatActorGroupEditionOverview_ThreatActorGroup
+        ...ThreatActorGroupEditionDetails_ThreatActorGroup
         editContext {
           name
           focusOn
@@ -106,4 +106,4 @@ const ThreatActorEditionFragment = createFragmentContainer(
   },
 );
 
-export default ThreatActorEditionFragment;
+export default ThreatActorGroupEditionFragment;

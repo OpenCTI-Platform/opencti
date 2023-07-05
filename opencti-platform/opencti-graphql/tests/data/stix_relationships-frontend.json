@@ -24,7 +24,7 @@
         "intrusion-set": [
             "attributed-to"
         ],
-        "threat-actor": [
+        "threat-actor-group": [
             "attributed-to"
         ],
         "infrastructure": [
@@ -95,7 +95,7 @@
         "malware": [
             "indicates"
         ],
-        "threat-actor": [
+        "threat-actor-group": [
             "indicates"
         ],
         "tool": [
@@ -402,7 +402,7 @@
         ]
     },
     "intrusion-set": {
-        "threat-actor": [
+        "threat-actor-group": [
             "attributed-to"
         ],
         "infrastructure": [
@@ -595,7 +595,7 @@
         ]
     },
     "malware": {
-        "threat-actor": [
+        "threat-actor-group": [
             "authored-by"
         ],
         "intrusion-set": [
@@ -797,7 +797,7 @@
             "encapsulated-by"
         ]
     },
-    "threat-actor": {
+    "threat-actor-group": {
         "identity": [
             "attributed-to",
             "impersonates",
@@ -825,7 +825,7 @@
         "tool": [
             "uses"
         ],
-        "threat-actor": [
+        "threat-actor-group": [
             "part-of"
         ]
     },

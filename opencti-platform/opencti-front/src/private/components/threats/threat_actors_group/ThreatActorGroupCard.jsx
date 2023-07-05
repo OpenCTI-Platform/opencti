@@ -91,7 +91,7 @@ const styles = (theme) => ({
   },
 });
 
-class ThreatActorCardComponent extends Component {
+class ThreatActorGroupCardComponent extends Component {
   render() {
     const { t, fld, classes, node, bookmarksIds, onLabelClick } = this.props;
     const usedMalware = node.usedMalware.map((n) => n.entity.name).join(', ');
@@ -106,7 +106,7 @@ class ThreatActorCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/threat_actors/${node.id}`}
+          to={`/dashboard/threats/threat_actors_group/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header, title: classes.title }}
@@ -118,8 +118,8 @@ class ThreatActorCardComponent extends Component {
                 size="small"
                 onClick={
                   bookmarksIds.includes(node.id)
-                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor')
-                    : addBookmark.bind(this, node.id, 'Threat-Actor')
+                    ? deleteBookMark.bind(this, node.id, 'Threat-Actor-Group')
+                    : addBookmark.bind(this, node.id, 'Threat-Actor-Group')
                 }
                 color={bookmarksIds.includes(node.id) ? 'secondary' : 'primary'}
               >
@@ -181,7 +181,7 @@ class ThreatActorCardComponent extends Component {
   }
 }
 
-ThreatActorCardComponent.propTypes = {
+ThreatActorGroupCardComponent.propTypes = {
   node: PropTypes.object,
   bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
@@ -191,11 +191,11 @@ ThreatActorCardComponent.propTypes = {
   onBookmarkClick: PropTypes.func,
 };
 
-const ThreatActorCardFragment = createFragmentContainer(
-  ThreatActorCardComponent,
+const ThreatActorGroupCardFragment = createFragmentContainer(
+  ThreatActorGroupCardComponent,
   {
     node: graphql`
-      fragment ThreatActorCard_node on ThreatActor {
+      fragment ThreatActorGroupCard_node on ThreatActorGroup {
         id
         name
         aliases
@@ -272,12 +272,12 @@ const ThreatActorCardFragment = createFragmentContainer(
   },
 );
 
-export const ThreatActorCard = compose(
+export const ThreatActorGroupCard = compose(
   inject18n,
   withStyles(styles),
-)(ThreatActorCardFragment);
+)(ThreatActorGroupCardFragment);
 
-class ThreatActorCardDummyComponent extends Component {
+class ThreatActorGroupCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
@@ -377,11 +377,11 @@ class ThreatActorCardDummyComponent extends Component {
   }
 }
 
-ThreatActorCardDummyComponent.propTypes = {
+ThreatActorGroupCardDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const ThreatActorCardDummy = compose(
+export const ThreatActorGroupCardDummy = compose(
   inject18n,
   withStyles(styles),
-)(ThreatActorCardDummyComponent);
+)(ThreatActorGroupCardDummyComponent);

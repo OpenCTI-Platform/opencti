@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
-import { ThreatActorCard, ThreatActorCardDummy } from './ThreatActorCard';
+import { ThreatActorGroupCard, ThreatActorGroupCardDummy } from './ThreatActorGroupCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 import StixDomainObjectBookmarks, {
   stixDomainObjectBookmarksQuery,
@@ -12,7 +12,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 
 const nbOfCardsToLoad = 12;
 
-class ThreatActorsCards extends Component {
+class ThreatActorsGroupCards extends Component {
   constructor(props) {
     super(props);
     this.state = { bookmarks: [] };
@@ -22,7 +22,7 @@ class ThreatActorsCards extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'threatActors',
+      'ThreatActorsGroup',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -37,7 +37,7 @@ class ThreatActorsCards extends Component {
     return (
       <QueryRenderer
         query={stixDomainObjectBookmarksQuery}
-        variables={{ types: ['Threat-Actor'] }}
+        variables={{ types: ['Threat-Actor-Group'] }}
         render={({ props }) => (
           <div>
             <StixDomainObjectBookmarks
@@ -50,14 +50,14 @@ class ThreatActorsCards extends Component {
               loadMore={relay.loadMore.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
-              dataList={pathOr([], ['threatActors', 'edges'], this.props.data)}
+              dataList={pathOr([], ['threatActorsGroup', 'edges'], this.props.data)}
               globalCount={pathOr(
                 nbOfCardsToLoad,
-                ['threatActors', 'pageInfo', 'globalCount'],
+                ['threatActorsGroup', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
-              CardComponent={<ThreatActorCard />}
-              DummyCardComponent={<ThreatActorCardDummy />}
+              CardComponent={<ThreatActorGroupCard />}
+              DummyCardComponent={<ThreatActorGroupCardDummy />}
               nbOfCardsToLoad={nbOfCardsToLoad}
               onLabelClick={onLabelClick.bind(this)}
               bookmarkList={bookmarks}
@@ -70,7 +70,7 @@ class ThreatActorsCards extends Component {
   }
 }
 
-ThreatActorsCards.propTypes = {
+ThreatActorsGroupCards.propTypes = {
   data: PropTypes.object,
   extra: PropTypes.object,
   connectorsExport: PropTypes.array,
@@ -80,8 +80,8 @@ ThreatActorsCards.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const threatActorsCardsQuery = graphql`
-  query ThreatActorsCardsPaginationQuery(
+export const threatActorsGroupCardsQuery = graphql`
+  query ThreatActorsGroupCardsPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
@@ -89,7 +89,7 @@ export const threatActorsCardsQuery = graphql`
     $orderMode: OrderingMode
     $filters: [ThreatActorsFiltering]
   ) {
-    ...ThreatActorsCards_data
+    ...ThreatActorsGroupCards_data
       @arguments(
         search: $search
         count: $count
@@ -102,10 +102,10 @@ export const threatActorsCardsQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  ThreatActorsCards,
+  ThreatActorsGroupCards,
   {
     data: graphql`
-      fragment ThreatActorsCards_data on Query
+      fragment ThreatActorsGroupCards_data on Query
       @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
@@ -114,20 +114,20 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[ThreatActorsFiltering]" }
       ) {
-        threatActors(
+        threatActorsGroup(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_threatActors") {
+        ) @connection(key: "Pagination_threatActorsGroup") {
           edges {
             node {
               id
               name
               description
-              ...ThreatActorCard_node
+              ...ThreatActorGroupCard_node
             }
           }
           pageInfo {
@@ -142,7 +142,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.threatActors;
+      return props.data && props.data.threatActorsGroup;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -160,6 +160,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: threatActorsCardsQuery,
+    query: threatActorsGroupCardsQuery,
   },
 );

@@ -5,8 +5,8 @@
 import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
-import ThreatActors from './ThreatActors';
-import RootThreatActor from './threat_actors/Root';
+import ThreatActorsGroup from './ThreatActorsGroup';
+import RootThreatActorGroup from './threat_actors_group/Root';
 import IntrusionSets from './IntrusionSets';
 import RootIntrusionSet from './intrusion_sets/Root';
 import Campaigns from './Campaigns';
@@ -15,8 +15,8 @@ import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const Root = () => {
   let redirect: string | null = null;
-  if (!useIsHiddenEntity('Threat-Actor')) {
-    redirect = 'threat_actors';
+  if (!useIsHiddenEntity('Threat-Actor-Group')) {
+    redirect = 'threat_actors_group';
   } else if (!useIsHiddenEntity('Intrusion-Set')) {
     redirect = 'intrusion_sets';
   } else if (!useIsHiddenEntity('Campaign')) {
@@ -31,12 +31,12 @@ const Root = () => {
       />
       <BoundaryRoute
         exact
-        path="/dashboard/threats/threat_actors"
-        component={ThreatActors}
+        path="/dashboard/threats/threat_actors_group"
+        component={ThreatActorsGroup}
       />
       <BoundaryRoute
-        path="/dashboard/threats/threat_actors/:threatActorId"
-        component={RootThreatActor}
+        path="/dashboard/threats/threat_actors_group/:threatActorGroupId"
+        component={RootThreatActorGroup}
       />
       <BoundaryRoute
         exact

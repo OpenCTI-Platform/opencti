@@ -6,6 +6,7 @@ import {
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
+  ENTITY_TYPE_THREAT_ACTOR,
 } from './general';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
@@ -40,7 +41,8 @@ export const ENTITY_TYPE_LOCATION_COUNTRY = 'Country';
 export const ENTITY_TYPE_LOCATION_REGION = 'Region';
 export const ENTITY_TYPE_LOCATION_POSITION = 'Position';
 export const ENTITY_TYPE_MALWARE = 'Malware';
-export const ENTITY_TYPE_THREAT_ACTOR = 'Threat-Actor';
+export const ENTITY_TYPE_THREAT_ACTOR_GROUP = 'Threat-Actor-Group';
+export const ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL = 'Threat-Actor-Individual';
 export const ENTITY_TYPE_TOOL = 'Tool';
 export const ENTITY_TYPE_VULNERABILITY = 'Vulnerability';
 export const ENTITY_TYPE_INCIDENT = 'Incident';
@@ -91,6 +93,14 @@ schemaTypesDefinition.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATION
 export const isStixDomainObjectLocation = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_LOCATION)
   || type === ENTITY_TYPE_LOCATION;
 
+const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL
+];
+schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THREAT_ACTORS);
+export const isStixDomainObjectThreatActor = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)
+    || type === ENTITY_TYPE_THREAT_ACTOR;
+
 const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -111,7 +121,7 @@ const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
   ENTITY_TYPE_INCIDENT,
@@ -136,7 +146,7 @@ const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
-  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_VULNERABILITY,

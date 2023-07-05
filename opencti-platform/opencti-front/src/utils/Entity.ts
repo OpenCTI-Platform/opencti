@@ -44,8 +44,8 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/locations/positions';
     case 'Malware':
       return '/dashboard/arsenal/malwares';
-    case 'Threat-Actor':
-      return '/dashboard/threats/threat_actors';
+    case 'Threat-Actor-Group':
+      return '/dashboard/threats/threat_actors_group';
     case 'Tool':
       return '/dashboard/arsenal/tools';
     case 'Channel':
@@ -174,6 +174,13 @@ export const resolveLocationType = (entity: Record<string, string>): string => {
     return 'Region';
   }
   return 'Position';
+};
+
+export const resolveThreatActorType = (entity: Record<string, string>): string => {
+  if (entity.x_opencti_type) {
+    return entity.x_opencti_type;
+  }
+  return 'Threat-Actor-Group';
 };
 
 const hashes = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];

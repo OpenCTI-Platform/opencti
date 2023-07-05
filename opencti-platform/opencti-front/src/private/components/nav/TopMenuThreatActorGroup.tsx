@@ -10,8 +10,9 @@ import {
   KNOWLEDGE_KNGETEXPORT,
   KNOWLEDGE_KNUPLOAD,
 } from '../../../utils/hooks/useGranted';
+import { Theme } from '../../../components/Theme';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '0 5px 0 5px',
@@ -34,23 +35,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TopMenuThreatActor = () => {
+const TopMenuThreatActorGroup = () => {
   const classes = useStyles();
   const location = useLocation();
   const { t } = useFormatter();
-  const { threatActorId } = useParams();
+  const { threatActorGroupId } = useParams();
   return (
     <div>
       <Button
         component={Link}
-        to="/dashboard/threats/threat_actors"
+        to="/dashboard/threats/threat_actors_group"
         variant="contained"
         size="small"
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
         <LaptopAccount className={classes.icon} fontSize="small" />
-        {t('Threat actors')}
+        {t('Threat actors group')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"
@@ -58,31 +59,31 @@ const TopMenuThreatActor = () => {
       />
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}`}
         variant={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('Overview')}
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`}
         variant={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActorId}/knowledge`,
+            `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`,
           )
             ? 'contained'
             : 'text'
@@ -90,43 +91,43 @@ const TopMenuThreatActor = () => {
         size="small"
         color={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActorId}/knowledge`,
+            `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`,
           )
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('Knowledge')}
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}/analysis`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/analysis`}
         variant={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/analysis`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/analysis`
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('Analysis')}
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}/indicators`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/indicators`}
         variant={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActorId}/indicators`,
+            `/dashboard/threats/threat_actors_group/${threatActorGroupId}/indicators`,
           )
             ? 'contained'
             : 'text'
@@ -134,57 +135,57 @@ const TopMenuThreatActor = () => {
         size="small"
         color={
           location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActorId}/indicators`,
+            `/dashboard/threats/threat_actors_group/${threatActorGroupId}/indicators`,
           )
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('Indicators')}
       </Button>
       <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
         <Button
           component={Link}
-          to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
+          to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/files`}
           variant={
             location.pathname
-            === `/dashboard/threats/threat_actors/${threatActorId}/files`
+            === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/files`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/threat_actors/${threatActorId}/files`
+            === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/files`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
-          disabled={!threatActorId}
+          disabled={!threatActorGroupId}
         >
           {t('Data')}
         </Button>
       </Security>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors/${threatActorId}/history`}
+        to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/history`}
         variant={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}/history`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/history`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/threats/threat_actors/${threatActorId}/history`
+          === `/dashboard/threats/threat_actors_group/${threatActorGroupId}/history`
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
-        disabled={!threatActorId}
+        disabled={!threatActorGroupId}
       >
         {t('History')}
       </Button>
@@ -192,4 +193,4 @@ const TopMenuThreatActor = () => {
   );
 };
 
-export default TopMenuThreatActor;
+export default TopMenuThreatActorGroup;

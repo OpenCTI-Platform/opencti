@@ -10,21 +10,21 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
-import ThreatActorsCards, {
-  threatActorsCardsQuery,
-} from './threat_actors/ThreatActorsCards';
-import ThreatActorCreation from './threat_actors/ThreatActorCreation';
+import ThreatActorsGroupCards, {
+  threatActorsGroupCardsQuery,
+} from './threat_actors_group/ThreatActorsGroupCards';
+import ThreatActorGroupCreation from './threat_actors_group/ThreatActorGroupCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 
-class ThreatActors extends Component {
+class ThreatActorGroups extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-threatActors',
+      'view-threat_actors_group',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -40,7 +40,7 @@ class ThreatActors extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-threatActors',
+      'view-threat_actors_group',
       this.state,
     );
   }
@@ -127,7 +127,7 @@ class ThreatActors extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="Threat-Actor"
+        exportEntityType="Threat-Actor-Group"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -146,10 +146,10 @@ class ThreatActors extends Component {
         ]}
       >
         <QueryRenderer
-          query={threatActorsCardsQuery}
+          query={threatActorsGroupCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <ThreatActorsCards
+            <ThreatActorsGroupCards
               data={props}
               extra={props}
               paginationOptions={paginationOptions}
@@ -176,17 +176,17 @@ class ThreatActors extends Component {
       <div>
         {this.renderCards(paginationOptions)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ThreatActorCreation paginationOptions={paginationOptions} />
+          <ThreatActorGroupCreation paginationOptions={paginationOptions} />
         </Security>
       </div>
     );
   }
 }
 
-ThreatActors.propTypes = {
+ThreatActorGroups.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(ThreatActors);
+export default R.compose(inject18n, withRouter)(ThreatActorGroups);

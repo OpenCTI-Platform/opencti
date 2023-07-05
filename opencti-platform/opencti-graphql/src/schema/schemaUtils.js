@@ -2,11 +2,13 @@ import crypto from 'node:crypto';
 import validator from 'validator';
 import { isStixCyberObservable } from './stixCyberObservable';
 import {
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
   isStixDomainObject,
   isStixDomainObjectCase,
   isStixDomainObjectContainer,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
+  isStixDomainObjectLocation, isStixDomainObjectThreatActor,
 } from './stixDomainObject';
 import { DatabaseError } from '../config/errors';
 import { isStixMetaObject } from './stixMetaObject';
@@ -25,7 +27,7 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LOCATION,
+  ENTITY_TYPE_LOCATION, ENTITY_TYPE_THREAT_ACTOR,
   STIX_TYPE_RELATION,
   STIX_TYPE_SIGHTING,
 } from './general';
@@ -58,6 +60,7 @@ const pascalize = (str) => {
     .join('-');
 };
 
+// Generate internal type from stix entity
 export const generateInternalType = (entity) => {
   switch (entity.type) {
     case STIX_TYPE_SIGHTING:
@@ -72,6 +75,13 @@ export const generateInternalType = (entity) => {
           return 'Sector';
         default:
           return pascalize(entity.identity_class);
+      }
+    case 'threat-actor':
+      switch (entity.resource_level) {
+        case 'individual':
+          return ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL;
+        default:
+          return ENTITY_TYPE_THREAT_ACTOR_GROUP;
       }
     case 'location':
       return entity.x_opencti_location_type;
@@ -111,6 +121,9 @@ export const getParentTypes = (type) => {
           }
           if (isStixDomainObjectCase(type)) {
             parentTypes.push(ENTITY_TYPE_CONTAINER_CASE);
+          }
+          if (isStixDomainObjectThreatActor(type)) {
+            parentTypes.push(ENTITY_TYPE_THREAT_ACTOR);
           }
         }
         if (isStixCyberObservable(type)) {

@@ -60,6 +60,7 @@ import {
   resolveIdentityType,
   resolveLink,
   resolveLocationType,
+  resolveThreatActorType,
 } from '../../../../../utils/Entity';
 import { defaultKey, defaultValue } from '../../../../../utils/Graph';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
@@ -169,7 +170,7 @@ const useStyles = makeStyles((theme) => ({
 const inlineStylesHeaders = {
   ttype: {
     float: 'left',
-    width: '15%',
+    width: '18%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -181,7 +182,7 @@ const inlineStylesHeaders = {
   },
   labels: {
     float: 'left',
-    width: '25%',
+    width: '22%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -193,7 +194,7 @@ const inlineStylesHeaders = {
   },
   in_platform: {
     float: 'left',
-    width: '8%',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -202,7 +203,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   ttype: {
     float: 'left',
-    width: '15%',
+    width: '18%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -218,7 +219,7 @@ const inlineStyles = {
   },
   labels: {
     float: 'left',
-    width: '25%',
+    width: '22%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -326,6 +327,7 @@ const WorkbenchFileContentComponent = ({
   const computeState = (objects) => {
     const sdoTypes = [
       ...stixDomainObjectTypes.edges.map((n) => convertToStixType(n.node.id)),
+      'threat-actor',
       'marking-definition',
       'identity',
       'location',
@@ -1581,6 +1583,8 @@ const WorkbenchFileContentComponent = ({
       type = resolveIdentityType(entity.identity_class);
     } else if (type === 'Location') {
       type = resolveLocationType(entity);
+    } else if (type === 'Threat-Actor') {
+      type = resolveThreatActorType(entity);
     }
     return (
       <QueryRenderer
@@ -1796,6 +1800,8 @@ const WorkbenchFileContentComponent = ({
       type = resolveIdentityType(entity.identity_class);
     } else if (type === 'Location') {
       type = resolveLocationType(entity);
+    } else if (type === 'Threat-Actor') {
+      type = resolveThreatActorType(entity);
     }
     const targetsFrom = [
       'Threat-Actor',
@@ -1848,6 +1854,8 @@ const WorkbenchFileContentComponent = ({
             objectType = resolveIdentityType(object.identity_class);
           } else if (objectType === 'Location') {
             objectType = resolveLocationType(object);
+          } else if (type === 'Threat-Actor') {
+            type = resolveThreatActorType(entity);
           }
           return {
             id: object.id,
@@ -2791,6 +2799,11 @@ const WorkbenchFileContentComponent = ({
                 `entity_${resolveLocationType(object)}`,
               )})`;
             }
+            if (type === 'Threat-Actor') {
+              secondaryType = ` (${t(
+                `entity_${resolveThreatActorType(object)}`,
+              )})`;
+            }
             return (
               <ListItem
                 key={object.id}
@@ -2942,6 +2955,11 @@ const WorkbenchFileContentComponent = ({
             if (type === 'Location') {
               secondaryType = ` (${t(
                 `entity_${resolveLocationType(object)}`,
+              )})`;
+            }
+            if (type === 'Threat-Actor') {
+              secondaryType = ` (${t(
+                `entity_${resolveThreatActorType(object)}`,
               )})`;
             }
             return (

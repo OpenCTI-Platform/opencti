@@ -176,7 +176,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#00838f';
       }
       return '#00bcd4';
-    case 'Threat-Actor':
+    case 'Theat-Actor-Group':
       if (dark) {
         return '#880e4f';
       }

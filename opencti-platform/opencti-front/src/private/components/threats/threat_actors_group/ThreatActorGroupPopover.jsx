@@ -17,8 +17,8 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import { threatActorEditionQuery } from './ThreatActorEdition';
-import ThreatActorEditionContainer from './ThreatActorEditionContainer';
+import { ThreatActorGroupEditionQuery } from './ThreatActorGroupEdition';
+import ThreatActorGroupEditionContainer from './ThreatActorGroupEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -45,15 +45,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const ThreatActorPopoverDeletionMutation = graphql`
-  mutation ThreatActorPopoverDeletionMutation($id: ID!) {
-    threatActorEdit(id: $id) {
+const ThreatActorGroupPopoverDeletionMutation = graphql`
+  mutation ThreatActorGroupPopoverDeletionMutation($id: ID!) {
+    threatActorGroupEdit(id: $id) {
       delete
     }
   }
 `;
 
-class ThreatActorPopover extends Component {
+class ThreatActorGroupPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -84,7 +84,7 @@ class ThreatActorPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: ThreatActorPopoverDeletionMutation,
+      mutation: ThreatActorGroupPopoverDeletionMutation,
       variables: {
         id: this.props.id,
       },
@@ -97,7 +97,7 @@ class ThreatActorPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/threats/threat_actors');
+        this.props.history.push('/dashboard/threats/threat_actors_group');
       },
     });
   }
@@ -146,7 +146,7 @@ class ThreatActorPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this threat actor?')}
+              {t('Do you want to delete this threat actor group?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -174,13 +174,13 @@ class ThreatActorPopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={threatActorEditionQuery}
+            query={ThreatActorGroupEditionQuery}
             variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <ThreatActorEditionContainer
-                    threatActor={props.threatActor}
+                  <ThreatActorGroupEditionContainer
+                    threatActorGroup={props.threatActorGroup}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -194,7 +194,7 @@ class ThreatActorPopover extends Component {
   }
 }
 
-ThreatActorPopover.propTypes = {
+ThreatActorGroupPopover.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -206,4 +206,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(ThreatActorPopover);
+)(ThreatActorGroupPopover);
