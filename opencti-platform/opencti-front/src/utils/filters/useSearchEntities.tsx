@@ -31,8 +31,8 @@ import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocab
 import { Theme } from '../../components/Theme';
 import useAuth from '../hooks/useAuth';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
-import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
+import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(

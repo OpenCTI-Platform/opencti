@@ -1,47 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
-import {
-  addBookmark,
-  addUser,
-  assignOrganizationToUser,
-  authenticateUser,
-  batchGroups,
-  batchOrganizations,
-  batchRoleCapabilities,
-  batchRolesForGroups,
-  batchCreator,
-  bookmarks,
-  deleteBookmark,
-  findAll,
-  findAllMembers,
-  findAssignees,
-  findById,
-  findCapabilities,
-  findCreators,
-  findRoleById,
-  findRoles,
-  logout,
-  meEditField,
-  otpUserActivation,
-  otpUserDeactivation,
-  otpUserGeneration,
-  otpUserLogin,
-  roleAddRelation,
-  roleCleanContext,
-  roleDelete,
-  roleDeleteRelation,
-  roleEditContext,
-  roleEditField,
-  userAddRelation,
-  userCleanContext,
-  userDelete,
-  userDeleteOrganizationRelation,
-  userEditContext,
-  userEditField,
-  userIdDeleteRelation,
-  userRenewToken,
-  userWithOrigin,
-  batchRolesForUsers, findParticipants,
-} from '../domain/user';
+import { addBookmark, addUser, assignOrganizationToUser, authenticateUser, batchCreator, batchGroups, batchOrganizations, batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks, deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities, findCreators, findParticipants, findRoleById, findRoles, logout, meEditField, otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation, roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation, userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField, userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
 import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import passport, { PROVIDERS } from '../config/providers';
@@ -50,7 +8,6 @@ import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { addRole } from '../domain/grant';
-import { addBookmark, addUser, assignOrganizationToUser, authenticateUser, batchCreator, batchGroups, batchOrganizations, batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks, deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities, findCreators, findRoleById, findRoles, logout, meEditField, otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation, roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation, userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField, userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
 import withCancel from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';

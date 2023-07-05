@@ -30,6 +30,7 @@ import ObjectAssigneeField from '../../../common/form/ObjectAssigneeField';
 import RichTextField from '../../../../../components/RichTextField';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../../common/form/KillChainPhasesField';
+import ObjectParticipantField from '../../../common/form/ObjectParticipantField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -247,6 +248,16 @@ const EntitySettingAttributeEdition = ({
     if (attribute.name === 'objectAssignee') {
       return (
         <ObjectAssigneeField
+          label={label}
+          name="default_values"
+          style={fieldSpacingContainerStyle}
+        />
+      );
+    }
+    // Handle objectParticipant
+    if (attribute.name === 'objectParticipant') {
+      return (
+        <ObjectParticipantField
           label={label}
           name="default_values"
           style={fieldSpacingContainerStyle}
