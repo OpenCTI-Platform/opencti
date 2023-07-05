@@ -124,8 +124,8 @@ class EntityTestCases:
         return StixSightingRelationshipTest(api_client)
 
     @staticmethod
-    def case_threat_actor(api_client):
-        return ThreatActorTest(api_client)
+    def case_threat_actor_group(api_client):
+        return ThreatActorGroupTest(api_client)
 
     @staticmethod
     def case_tool(api_client):
@@ -898,10 +898,10 @@ class StixCyberObservableASTest(StixCyberObservableTest):
         return {}
 
 
-class ThreatActorTest(EntityTest):
+class ThreatActorGroupTest(EntityTest):
     def data(self) -> Dict:
         return {
-            "type": "ThreatActor",
+            "type": "ThreatActorGroup",
             "threat_actor_types": ["crime-syndicate"],
             "name": "Evil Org",
             "description": "The Evil Org threat actor group",
@@ -914,7 +914,7 @@ class ThreatActorTest(EntityTest):
         }
 
     def own_class(self):
-        return self.api_client.threat_actor
+        return self.api_client.threat_actor_group
 
 
 class ToolTest(EntityTest):

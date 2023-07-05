@@ -288,7 +288,9 @@ class StixObjectOrStixRelationship:
                 resource_level
                 primary_motivation
                 secondary_motivations
-                personal_motivations
+                ... on ThreatActorGroup {
+                    personal_motivations
+                }
             }
             ... on Tool {
                 name

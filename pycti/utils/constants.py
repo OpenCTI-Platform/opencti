@@ -63,6 +63,15 @@ class IdentityTypes(Enum):
         return value.lower() in lower_attr
 
 
+class ThreatActorTypes(Enum):
+    THREAT_ACTOR_GROUP = "Threat-Actor-Group"
+
+    @classmethod
+    def has_value(cls, value):
+        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
+        return value.lower() in lower_attr
+
+
 class LocationTypes(Enum):
     REGION = "Region"
     COUNTRY = "Country"
