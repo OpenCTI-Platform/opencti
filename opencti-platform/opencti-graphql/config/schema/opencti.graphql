@@ -6722,6 +6722,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
   # Technical
@@ -6752,6 +6753,7 @@ input ThreatActorGroupAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  personal_motivations: [String]
   confidence: Int
   revoked: Boolean
   lang: String
