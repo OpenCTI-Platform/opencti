@@ -5,8 +5,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { toPairs } from 'ramda';
-import { useFormatter } from '../../../components/i18n';
-import { DataColumns } from '../../../components/list_lines';
+import { useFormatter } from './i18n';
+import { DataColumns } from './list_lines';
 
 const useStyles = makeStyles(() => ({
   item: {
@@ -38,7 +38,7 @@ interface TriggerLineTitlesProps {
   handleSort: (field: string, orderAsc: boolean) => void;
 }
 
-const TriggerLineTitles: FunctionComponent<TriggerLineTitlesProps> = ({
+const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
   dataColumns,
   sortBy,
   orderAsc,
@@ -99,4 +99,4 @@ const TriggerLineTitles: FunctionComponent<TriggerLineTitlesProps> = ({
   );
 };
 
-export default TriggerLineTitles;
+export default ColumnsLinesTitles;

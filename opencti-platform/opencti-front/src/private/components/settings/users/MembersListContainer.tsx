@@ -6,11 +6,15 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import MembersList, { membersListQuery } from './MembersList';
+import MembersList, { membersListForGroupQuery } from './MembersList';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { MembersListQuery, MembersListQuery$variables } from './__generated__/MembersListQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import {
+  MembersListForGroupQuery,
+  MembersListForGroupQuery$variables,
+} from './__generated__/MembersListForGroupQuery.graphql';
+import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -23,22 +27,69 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 interface MembersListContainerProps {
-  groupId: string;
+  containerId: string;
+  containerType: string;
 }
 
-const MembersListContainer: FunctionComponent<MembersListContainerProps> = ({ groupId }) => {
+const MembersListContainer: FunctionComponent<MembersListContainerProps> = ({ containerId, containerType }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const { viewStorage, helpers } = usePaginationLocalStorage<MembersListQuery$variables>(
-    `view-${groupId}-members`,
-    { searchTerm: '' },
+  const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<MembersListForGroupQuery$variables>(
+    `view-${containerId}-members`,
+    {
+      id: containerId,
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      count: 25,
+    },
   );
-  const { searchTerm } = viewStorage;
-  const groupMembersQueryRef = useQueryLoading<MembersListQuery>(
-    membersListQuery,
-    { id: groupId, search: searchTerm },
-  );
+  const { searchTerm, sortBy, orderAsc } = viewStorage;
+  const paginationOptions = {
+    ...paginationOptionsFromStorage,
+    count: 25,
+  };
+  let membersQueryRef;
+  if (containerType === 'group') { // can be extended with containerType='organization' when organization overview have a member tab
+    membersQueryRef = useQueryLoading<MembersListForGroupQuery>(
+      membersListForGroupQuery,
+      paginationOptions,
+    );
+  }
+
+  const userColumns = {
+    name: {
+      label: 'Name',
+      width: '20%',
+      isSortable: true,
+    },
+    user_email: {
+      label: 'Email',
+      width: '30%',
+      isSortable: true,
+    },
+    firstname: {
+      label: 'Firstname',
+      width: '15%',
+      isSortable: true,
+    },
+    lastname: {
+      label: 'Lastname',
+      width: '15%',
+      isSortable: true,
+    },
+    otp: {
+      label: '2FA',
+      width: '5%',
+      isSortable: false,
+    },
+    created_at: {
+      label: 'Creation date',
+      width: '10%',
+      isSortable: false,
+    },
+  };
 
   return (
     <Grid item={true} xs={12} style={{ marginTop: 40 }}>
@@ -60,11 +111,12 @@ const MembersListContainer: FunctionComponent<MembersListContainerProps> = ({ gr
         classes={{ root: classes.paper }}
         variant="outlined"
       >
-        {groupMembersQueryRef && (
+        <ColumnsLinesTitles dataColumns={userColumns} sortBy={sortBy} orderAsc={orderAsc} handleSort={helpers.handleSort} />
+        {membersQueryRef && (
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <MembersList queryRef={groupMembersQueryRef} />
+            <MembersList userColumns={userColumns} queryRef={membersQueryRef} />
           </React.Suspense>
         )}
       </Paper>

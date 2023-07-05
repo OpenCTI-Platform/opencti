@@ -7028,6 +7028,10 @@ export type Group = BasicObject & InternalObject & {
 
 
 export type GroupMembersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<UsersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
 };
 

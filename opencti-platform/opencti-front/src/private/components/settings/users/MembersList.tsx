@@ -1,17 +1,54 @@
 import List from '@mui/material/List';
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, PreloadedQuery } from 'react-relay';
 import { UserLine } from './UserLine';
-import UserLineTitles from './UserLineTitles';
-import { MembersListQuery } from './__generated__/MembersListQuery.graphql';
+import { MembersListForGroupQuery } from './__generated__/MembersListForGroupQuery.graphql';
+import { DataColumns } from '../../../../components/list_lines';
+import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import { MembersList_data$key } from './__generated__/MembersList_data.graphql';
 
-export const membersListQuery = graphql`
-    query MembersListQuery($id: String!, $search: String) {
+export const membersListForGroupQuery = graphql`
+    query MembersListForGroupQuery(
+        $id: String!
+        $search: String
+        $count: Int!
+        $cursor: ID
+        $orderBy: UsersOrdering
+        $orderMode: OrderingMode
+    ) {
+        ...MembersList_data
+        @arguments(
+            id: $id
+            search: $search
+            count: $count
+            cursor: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+        )
+    }
+`;
+
+const membersListFragment = graphql`
+    fragment MembersList_data on Query
+    @argumentDefinitions(
+        id: { type: "String!" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "UsersOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+    )
+    @refetchable(queryName: "MembersListRefetchQuery") {
         group(id: $id) {
             id
             name
-            members(search: $search) {
+            members(
+                search: $search
+                first: $count
+                after: $cursor
+                orderBy: $orderBy
+                orderMode: $orderMode
+            ) @connection(key: "Pagination_members") {
                 edges {
                     node {
                         id
@@ -20,7 +57,13 @@ export const membersListQuery = graphql`
                         firstname
                         lastname
                         external
+                        created_at
                     }
+                }
+                pageInfo {
+                    endCursor
+                    hasNextPage
+                    globalCount
                 }
             }
         }
@@ -28,49 +71,26 @@ export const membersListQuery = graphql`
 `;
 
 interface MembersListProps {
-  queryRef: PreloadedQuery<MembersListQuery>;
+  userColumns: DataColumns,
+  queryRef: PreloadedQuery<MembersListForGroupQuery>;
 }
 
-const MembersList: FunctionComponent<MembersListProps> = ({ queryRef }) => {
-  const groupWithMembersData = usePreloadedQuery<MembersListQuery>(membersListQuery, queryRef);
-  const membersData = groupWithMembersData.group?.members;
-  const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
-  const members = usersSort(membersData?.edges ?? []);
-  const userColumns = {
-    name: {
-      label: 'Name',
-      width: '20%',
-      isSortable: true,
-    },
-    user_email: {
-      label: 'Email',
-      width: '30%',
-      isSortable: true,
-    },
-    firstname: {
-      label: 'Firstname',
-      width: '15%',
-      isSortable: true,
-    },
-    lastname: {
-      label: 'Lastname',
-      width: '15%',
-      isSortable: true,
-    },
-    otp: {
-      label: '2FA',
-      width: '5%',
-      isSortable: false,
-    },
-    created_at: {
-      label: 'Creation date',
-      width: '10%',
-      isSortable: true,
-    },
-  };
+const MembersList: FunctionComponent<MembersListProps> = ({
+  userColumns,
+  queryRef,
+}) => {
+  const { data } = usePreloadedPaginationFragment<
+  MembersListForGroupQuery,
+  MembersList_data$key
+  >({
+    linesQuery: membersListForGroupQuery,
+    linesFragment: membersListFragment,
+    queryRef,
+  });
+  const membersData = data.group?.members;
+  const members = membersData?.edges ?? [];
   return (
     <div>
-      <UserLineTitles dataColumns={userColumns} />
       <List>
         {members.map((member) => (
           <UserLine

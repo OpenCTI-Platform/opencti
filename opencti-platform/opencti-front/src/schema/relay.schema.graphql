@@ -1145,7 +1145,7 @@ type Group implements InternalObject & BasicObject {
   auto_new_marking: Boolean
   description: String
   default_dashboard: Workspace
-  members(search: String): UserConnection
+  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   created_at: DateTime
   updated_at: DateTime
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]

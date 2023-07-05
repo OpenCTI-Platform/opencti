@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import React, { FunctionComponent, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
-import TriggerLineTitles from '../../profile/TriggerLineTitles';
+import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import TriggersLines, {
   triggersLinesQuery,
 } from '../../profile/triggers/TriggersLines';
@@ -22,7 +22,7 @@ import {
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../../components/list_lines';
-import { LOCAL_STORAGE_KEY_DATA_SOURCES } from '../../profile/Triggers';
+import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -50,7 +50,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const { t } = useFormatter();
   const ref = useRef(null);
   const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_DATA_SOURCES,
+    LOCAL_STORAGE_KEY_TRIGGERS,
     {
       searchTerm: '',
       sortBy: 'name',
@@ -153,7 +153,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         variant="outlined"
         style={{ marginTop: 0, maxHeight: 500, overflow: 'auto' }}
       >
-        <TriggerLineTitles dataColumns={dataColumns} sortBy={sortBy} orderAsc={orderAsc} handleSort={helpers.handleSort} />
+        <ColumnsLinesTitles dataColumns={dataColumns} sortBy={sortBy} orderAsc={orderAsc} handleSort={helpers.handleSort} />
         {queryRef && (
           <TriggersLines
             adminByPass

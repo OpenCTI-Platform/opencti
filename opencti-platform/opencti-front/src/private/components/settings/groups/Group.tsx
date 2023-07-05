@@ -345,7 +345,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           style={{ marginTop: 10, marginLeft: 0 }}
         >
           <Triggers recipientId={group.id} filter={filter} />
-          <MembersListContainer groupId={group.id} />
+          <MembersListContainer containerId={group.id} containerType={'group'} />
         </Grid>
       </Grid>
       <Fab
