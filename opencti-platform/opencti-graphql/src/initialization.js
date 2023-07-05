@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { logApp, PLATFORM_VERSION } from './config/conf';
-import { elCreateIndexes, elIndexExists, searchEngineInit } from './database/engine';
+import { elCreateIndices, elIndexExists, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, isStorageAlive } from './database/file-storage';
 import { rabbitMQIsAlive, registerConnectorQueues } from './database/rabbitmq';
@@ -158,7 +158,7 @@ const initializeSchema = async () => {
       + 'elastic/opensearch data and restart.');
   }
   // Create default indexes
-  await elCreateIndexes();
+  await elCreateIndices();
   logApp.info('[INIT] Search engine indexes loaded');
   return true;
 };

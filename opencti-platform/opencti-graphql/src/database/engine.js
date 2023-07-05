@@ -98,6 +98,10 @@ const ES_MAX_SHARDS_FAILURE = conf.get('elasticsearch:max_shards_failure') || 0;
 const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
+const ES_PRIMARY_SHARD_SIZE = conf.get('elasticsearch:max_primary_shard_size') || '40gb';
+const ES_MAX_AGE = conf.get('elasticsearch:max_age') || '365d';
+const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 50000000;
+
 const ES_RETRY_ON_CONFLICT = 5;
 export const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 export const MAX_BULK_OPERATIONS = 250;
@@ -418,7 +422,33 @@ export const elPlatformIndices = async () => {
   const listIndices = await engine.cat.indices({ index: `${ES_INDEX_PREFIX}*`, format: 'JSON' });
   return oebp(listIndices);
 };
-const elCreateIndexTemplate = async () => {
+const elCreateLifecyclePolicy = async () => {
+  await engine.ilm.putLifecycle({
+    name: `${ES_INDEX_PREFIX}-ilm-policy`,
+    body: {
+      policy: {
+        phases: {
+          hot: {
+            min_age: '0ms',
+            actions: {
+              rollover: {
+                max_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
+                max_age: ES_MAX_AGE,
+                max_docs: ES_MAX_DOCS
+              },
+              set_priority: {
+                priority: 100
+              }
+            }
+          }
+        }
+      }
+    }
+  }).catch((e) => {
+    throw DatabaseError('[SEARCH] Error creating lifecycle policy', { error: e });
+  });
+};
+const elCreateCoreSettings = async () => {
   await engine.cluster.putComponentTemplate({
     name: `${ES_INDEX_PREFIX}-core-settings`,
     create: false,
@@ -444,12 +474,22 @@ const elCreateIndexTemplate = async () => {
   }).catch((e) => {
     throw DatabaseError('[SEARCH] Error creating component template', { error: e });
   });
+};
+const elCreateIndexTemplate = async (index) => {
   await engine.indices.putIndexTemplate({
-    name: `${ES_INDEX_PREFIX}-index-template`,
+    name: index,
     create: false,
     body: {
-      index_patterns: [`${ES_INDEX_PREFIX}*`],
+      index_patterns: [`${index}*`],
       template: {
+        settings: {
+          index: {
+            lifecycle: {
+              name: `${ES_INDEX_PREFIX}-ilm-policy`,
+              rollover_alias: index,
+            }
+          }
+        },
         mappings: {
           dynamic_templates: [
             {
@@ -599,11 +639,13 @@ const elCreateIndexTemplate = async () => {
     throw DatabaseError('[SEARCH] Error creating index template', { error: e });
   });
 };
-export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
-  await elCreateIndexTemplate();
+export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
+  await elCreateCoreSettings();
+  await elCreateLifecyclePolicy();
   const createdIndices = [];
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
+    await elCreateIndexTemplate(index);
     const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
     const isExist = await engine.indices.exists({ index: indexName }).then((r) => oebp(r));
     if (!isExist) {
