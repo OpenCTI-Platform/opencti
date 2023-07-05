@@ -225,7 +225,7 @@ const entityDetailsQuery = graphql`
         last_seen
         description
       }
-      ... on ThreatActorGroup {
+      ... on ThreatActor {
         name
         first_seen
         last_seen

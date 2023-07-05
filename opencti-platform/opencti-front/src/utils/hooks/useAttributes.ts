@@ -154,6 +154,7 @@ export const typesWithoutAliases = [
 // TODO replace this by a proper hook using backend information
 export const stixDomainObjectTypes = [
   'Stix-Domain-Object',
+  'Threat-Actor',
   'Threat-Actor-Group',
   'Intrusion-Set',
   'Campaign',

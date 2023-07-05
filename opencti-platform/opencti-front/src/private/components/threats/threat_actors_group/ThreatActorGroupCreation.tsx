@@ -25,7 +25,9 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
-import { ThreatActorsGroupCardsPaginationQuery$variables } from './__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
+import {
+  ThreatActorsGroupCardsPaginationQuery$variables,
+} from './__generated__/ThreatActorsGroupCardsPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -91,8 +93,6 @@ const ThreatActorGroupMutation = graphql`
   }
 `;
 
-const THREAT_ACTOR_GROUP_TYPE = 'Threat-Actor-Group';
-
 interface ThreatActorGroupAddInput {
   name: string;
   threat_actor_types: string[];
@@ -135,7 +135,7 @@ ThreatActorGroupFormProps
     description: Yup.string().nullable(),
   };
   const threatActorGroupValidator = useSchemaCreationValidation(
-    THREAT_ACTOR_GROUP_TYPE,
+    'Threat-Actor-Group',
     basicShape,
   );
 
@@ -179,7 +179,7 @@ ThreatActorGroupFormProps
     });
   };
 
-  const initialValues = useDefaultValues(THREAT_ACTOR_GROUP_TYPE, {
+  const initialValues = useDefaultValues('Threat-Actor-Group', {
     name: inputValue ?? '',
     threat_actor_types: [],
     confidence: defaultConfidence,
