@@ -84,6 +84,8 @@ const i18n = {
       'Do you want to delete this group?': '¿Quieres borrar este grupo?',
       'Do you want to delete this threat actor group?':
         '¿Desea eliminar este grupo de actores de amenazas?',
+      'Do you want to delete this threat actor individual?':
+        '¿Desea eliminar a este actor de amenazas individual?',
       'Do you want to delete this intrusion set?':
         '¿Quieres borrar este set de intrusión?',
       'Do you want to delete this campaign?': '¿Quieres borrar esta campaña?',
@@ -397,6 +399,8 @@ const i18n = {
       'Update an infrastructure': 'Actualizar una infrastructura',
       'Create a threat actor group': 'Crear un grupo de actores de amenazas',
       'Update a threat actor group': 'Actualizar un grupo de actor de amenazas',
+      'Create a threat actor individual': 'Crear un actor de amenazas individual',
+      'Update a threat actor individual': 'Actualizar a un actor de amenazas individual',
       'Create an intrusion set': 'Crear un set de intrusión',
       'Update an intrusion set': 'Actualizar un set de intrusión',
       'Create a campaign': 'Crear una campaña',
@@ -708,6 +712,7 @@ const i18n = {
       'Data import': 'Importación de datos',
       'Threat actors group': 'Grupo de actores de amenazas',
       'Threat actor': 'Actor de amenazas',
+      'Threat actors individual': 'Actores de amenazas individuales',
       Sectors: 'Sectores',
       Systems: 'Sistemas',
       System: 'Sistema',
@@ -2120,6 +2125,8 @@ const i18n = {
         'Souahitez-vous supprimer ce groupe ?',
       'Do you want to delete this threat actor group?':
         'Souhaitez-vous supprimer ce groupe d\'acteurs ?',
+      'Do you want to delete this threat actor individual?':
+        'Souhaitez-vous supprimer cet acteur ?',
       'Do you want to delete this intrusion set?':
         'Souhaitez-vous supprimer ce mode opératoire ?',
       'Do you want to delete this campaign?':
@@ -2445,6 +2452,8 @@ const i18n = {
       'Update an infrastructure': 'Modifier une infrastructure',
       'Create a threat actor group': 'Créer un groupe d\'acteurs',
       'Update a threat actor group': 'Modifier un groupe d\'acteurs',
+      'Create a threat actor individual': 'Créer un acteur',
+      'Update a threat actor individual': 'Modifier un acteur',
       'Create an intrusion set': 'Créer un mode opératoire',
       'Update an intrusion set': 'Modifier un mode opératoire',
       'Create a campaign': 'Créer une campagne',
@@ -2753,6 +2762,7 @@ const i18n = {
       'Data import': 'Importation de données',
       'Threat actors group': 'Groupe d\'acteurs',
       'Threat actor': 'Acteur',
+      'Threat actors individual': 'Acteur',
       Sectors: 'Secteurs',
       Systems: 'Systèmes',
       System: 'Système',
@@ -4145,6 +4155,8 @@ const i18n = {
       'Do you want to delete this group?': 'このグループを削除しますか？',
       'Do you want to delete this threat actor group?':
         'この脅威アクター グループを削除しますか?',
+      'Do you want to delete this threat actor individual?':
+        'この脅威アクター個人を削除しますか?',
       'Do you want to delete this intrusion set?':
         'この侵入セットを削除しますか？',
       'Do you want to delete this campaign?':
@@ -4439,6 +4451,8 @@ const i18n = {
       'Update an infrastructure': 'インフラストラクチャを更新',
       'Create a threat actor group': '脅威アクターグループを作成する',
       'Update a threat actor group': '脅威アクターグループを更新する',
+      'Create a threat actor individual': '脅威アクター個人を作成する',
+      'Update a threat actor individual': '脅威アクターの個人を更新する',
       'Create an intrusion set': '侵入セットを作成',
       'Update an intrusion set': '侵入セットを更新',
       'Create a campaign': 'キャンペーンを作成',
@@ -4742,6 +4756,7 @@ const i18n = {
       'Data import': 'データインポート',
       'Threat actors group': '脅威アクターグループ',
       'Threat actor': '脅威アクター',
+      'Threat actors individual': '脅威アクター',
       Sectors: 'セクター',
       Systems: 'システム',
       System: 'システム',
@@ -6093,6 +6108,7 @@ const i18n = {
       'Do you want to delete this user?': '是否要删除此用户？',
       'Do you want to delete this group?': '是否要删除此组？',
       'Do you want to delete this threat actor group?': '您想删除该威胁组织吗？',
+      'Do you want to delete this threat actor individual?': '您想删除此威胁行为者个人吗？',
       'Do you want to delete this intrusion set?': '是否要删除此入侵集合？',
       'Do you want to delete this campaign?': '是否要删除此攻击活动？',
       'Do you want to delete this incident?': '是否要删除此安全事件？',
@@ -6349,6 +6365,8 @@ const i18n = {
       'Update an infrastructure': '更新基础设施',
       'Create a threat actor group': '创建威胁参与者组',
       'Update a threat actor group': '更新威胁参与者组',
+      'Create a threat actor individual': '创建威胁行为者个人',
+      'Update a threat actor individual': '更新威胁行为者个人',
       'Create an intrusion set': '创建入侵集合',
       'Update an intrusion set': '更新入侵集合',
       'Create a campaign': '创建攻击活动',
@@ -6634,6 +6652,7 @@ const i18n = {
       'Data import': '数据导入',
       'Threat actors group': '威胁行为者团体',
       'Threat actor': '威胁主体',
+      'Threat actors individual': '威胁主体',
       Sectors: '部门',
       Systems: '系统',
       System: '系统',
@@ -7938,6 +7957,7 @@ const i18n = {
       'entity_Threat-Actor': 'Threat Actor',
       'entity_Threat-Actor-Group': 'Threat Actor Group',
       'entity_Threat-Actor-Group': 'Threat Actor Group',
+      'entity_Threat-Actor-Individual': 'Threat Actor Individual',
       entity_Tool: 'Tool',
       entity_Channel: 'Channel',
       entity_Narrative: 'Narrative',
