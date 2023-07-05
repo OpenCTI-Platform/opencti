@@ -1,37 +1,41 @@
-import React, { FunctionComponent } from 'react';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
-import makeStyles from '@mui/styles/makeStyles';
-import UserLineTitles from './UserLineTitles';
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import * as R from 'ramda';
 import { UserLine } from './UserLine';
-import { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import { UserLine_node$data } from './__generated__/UserLine_node.graphql';
+import UserLineTitles from './UserLineTitles';
+import { MembersListQuery } from './__generated__/MembersListQuery.graphql';
 
-const useStyles = makeStyles<Theme>(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 6,
-  },
-}));
-interface MemberObject {
-  node: UserLine_node$data;
-}
+export const membersListQuery = graphql`
+    query MembersListQuery($id: String!, $search: String) {
+        group(id: $id) {
+            id
+            name
+            members(search: $search) {
+                edges {
+                    node {
+                        id
+                        user_email
+                        name
+                        firstname
+                        lastname
+                        external
+                    }
+                }
+            }
+        }
+    }
+`;
+
 interface MembersListProps {
-  members: ReadonlyArray<MemberObject>;
+  queryRef: PreloadedQuery<MembersListQuery>;
 }
 
-const MembersList: FunctionComponent<MembersListProps> = ({ members }) => {
-  const classes = useStyles();
-  const { t } = useFormatter();
+const MembersList: FunctionComponent<MembersListProps> = ({ queryRef }) => {
+  const groupWithMembersData = usePreloadedQuery<MembersListQuery>(membersListQuery, queryRef);
+  const membersData = groupWithMembersData.group?.members;
+  const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
+  const members = usersSort(membersData?.edges ?? []);
   const userColumns = {
     name: {
       label: 'Name',
@@ -65,27 +69,18 @@ const MembersList: FunctionComponent<MembersListProps> = ({ members }) => {
     },
   };
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-      <Typography variant="h4" gutterBottom={true}>
-        {t('Members')}
-      </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
-        <Grid container={true} spacing={3}>
-          <Grid item={true} xs={12} style={{ paddingTop: 20 }}>
-            <UserLineTitles dataColumns={userColumns} />
-            <List>
-              {members.map((member) => (
-                <UserLine
-                  key={member?.node.id}
-                  dataColumns={userColumns}
-                  node={member?.node}
-                />
-              ))}
-            </List>
-          </Grid>
-        </Grid>
-      </Paper>
-    </Grid>
+    <div>
+      <UserLineTitles dataColumns={userColumns} />
+      <List>
+        {members.map((member) => (
+          <UserLine
+            key={member?.node.id}
+            dataColumns={userColumns}
+            node={member?.node}
+          />
+        ))}
+      </List>
+    </div>
   );
 };
 

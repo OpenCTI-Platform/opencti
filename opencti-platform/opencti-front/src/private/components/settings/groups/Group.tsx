@@ -24,7 +24,8 @@ import { truncate } from '../../../../utils/String';
 import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import AccessesMenu from '../AccessesMenu';
 import Triggers from '../common/Triggers';
-import MembersList from '../users/MembersList';
+import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import MembersListContainer from '../users/MembersListContainer';
 import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupEdition from './GroupEdition';
 import GroupPopover from './GroupPopover';
@@ -132,10 +133,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [displayUpdate, setDisplayUpdate] = useState(false);
-  const [membersSearchTerm, setMembersSearchTerm] = useState('');
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const groupMembersQueryRef = useQueryLoading<GroupMembersContainerQuery>(groupMembersContainerQuery, { id: group.id, search: membersSearchTerm });
   const filter: TriggerFilter = 'group_ids';
 
   const handleOpenUpdate = () => {
@@ -143,9 +142,6 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   };
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
-  };
-  const handleSearchMembers = (value: string) => {
-    setMembersSearchTerm(value);
   };
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
@@ -349,7 +345,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           style={{ marginTop: 10, marginLeft: 0 }}
         >
           <Triggers recipientId={group.id} filter={filter} />
-          <MembersList members={members} />
+          <MembersListContainer groupId={group.id} />
         </Grid>
       </Grid>
       <Fab

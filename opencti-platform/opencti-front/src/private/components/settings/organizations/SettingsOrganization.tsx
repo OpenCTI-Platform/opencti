@@ -18,10 +18,10 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import AccessesMenu from '../AccessesMenu';
-import MembersList from '../users/MembersList';
-import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationDetails from './SettingsOrganizationDetails';
-import SettingsOrganizationEdition from './SettingsOrganizationEdition';
+import { useFormatter } from '../../../../components/i18n';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import MembersListContainer from '../users/MembersListContainer';
 import Triggers from '../common/Triggers';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
@@ -239,7 +239,7 @@ const SettingsOrganization = ({
           </div>
         </Grid>
         <Triggers recipientId={organization.id} filter="organization_ids" />
-        <MembersList members={members} />
+        <MembersListContainer members={members} />
       </Grid>
     </div>
   );
