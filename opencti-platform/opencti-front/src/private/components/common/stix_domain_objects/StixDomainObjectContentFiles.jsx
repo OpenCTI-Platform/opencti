@@ -32,6 +32,7 @@ import FileUploader from '../files/FileUploader';
 import { FileLineDeleteMutation } from '../files/FileLine';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import withHooksSettingsMessagesBannerHeight from '../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -204,6 +205,7 @@ class StixDomainObjectContentFiles extends Component {
       fld,
       currentFileId,
       onFileChange,
+      settingsMessagesBannerHeight,
     } = this.props;
     const { deleting, displayCreate } = this.state;
     const textFiles = files.filter((n) => n.metaData.mimetype === 'text/plain');
@@ -224,7 +226,7 @@ class StixDomainObjectContentFiles extends Component {
       >
         <div className={classes.toolbar} />
         <List
-          style={{ marginBottom: 30 }}
+          style={{ marginBottom: 30, marginTop: settingsMessagesBannerHeight }}
           subheader={
             <ListSubheader component="div">
               <div style={{ float: 'left', margin: '5px 5px 0 0' }}>
@@ -500,4 +502,5 @@ StixDomainObjectContentFiles.propTypes = {
 export default R.compose(
   inject18n,
   withStyles(styles),
+  withHooksSettingsMessagesBannerHeight,
 )(StixDomainObjectContentFiles);

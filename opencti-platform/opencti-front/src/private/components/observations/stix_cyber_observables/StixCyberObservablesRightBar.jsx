@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -44,6 +45,8 @@ const StixCyberObservablesRightBar = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const { bannerSettings } = useAuth();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+
   return (
     <Drawer
       variant="permanent"
@@ -70,7 +73,7 @@ const StixCyberObservablesRightBar = ({
               sortByLabel,
             )(subTypesEdges);
             return (
-              <List
+              <List style={{ marginTop: settingsMessagesBannerHeight }}
                 subheader={
                   <ListSubheader component="div">
                     {t('Observable types')}
@@ -117,8 +120,6 @@ StixCyberObservablesRightBar.propTypes = {
   types: PropTypes.array,
   handleToggle: PropTypes.func,
   handleClear: PropTypes.func,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   openExports: PropTypes.bool,
 };
 

@@ -23,7 +23,7 @@ import {
 } from '../listener/UserActionListener';
 import conf, { logAudit } from '../config/conf';
 import { isEmptyField } from '../database/utils';
-import type { BasicStoreSettings } from '../types/store';
+import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_ACTIVITY_VERSION, storeActivityEvent } from '../database/redis';
 import type { UserOrigin } from '../types/user';
 import { getEntityFromCache } from '../database/cache';

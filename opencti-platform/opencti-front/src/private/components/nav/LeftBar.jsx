@@ -40,6 +40,7 @@ import {
   useIsHiddenEntities,
 } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
+import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -161,7 +162,8 @@ const LeftBar = () => {
     'City',
     'Position',
   );
-  const { bannerSettings: { bannerHeight } } = useAuth();
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   return (
     <Drawer
       variant="permanent"
@@ -177,7 +179,7 @@ const LeftBar = () => {
       }}
     >
       <Toolbar />
-      <MenuList component="nav" sx={{ marginTop: bannerHeight }}>
+      <MenuList component="nav" style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }} >
         <StyledTooltip title={!navOpen && t('Dashboard')} placement="right">
           <MenuItem
             component={Link}
@@ -445,7 +447,7 @@ const LeftBar = () => {
       </Security>
       <MenuItem
         dense={true}
-        sx={{ marginBottom: bannerHeight }}
+        style={{ marginBottom: bannerHeightNumber }}
         classes={{
           root: navOpen ? classes.menuCollapseOpen : classes.menuCollapse,
         }}

@@ -1,7 +1,7 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
-import { createEntity, loadEntity, updateAttribute } from '../database/middleware';
+import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { BUS_TOPICS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
@@ -11,6 +11,10 @@ import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../util
 import { storeLoadById } from '../database/middleware-loader';
 import { PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
+import { getEntityFromCache } from '../database/cache';
+import { now } from '../utils/format';
+import { generateInternalId } from '../schema/identifier';
+import { UnsupportedError } from '../config/errors';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -105,4 +109,65 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   });
   const updatedSettings = await getSettings(context);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
+};
+
+export const getMessages = (settings) => {
+  return JSON.parse(settings.messages ?? '[]');
+};
+
+export const settingEditMessage = async (context, user, settingsId, message) => {
+  const messageToStore = {
+    ...message,
+    updated_at: now()
+  };
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const messages = getMessages(settings);
+
+  const existingIdx = messages.findIndex((m) => m.id === message.id);
+  if (existingIdx > -1) {
+    messages[existingIdx] = messageToStore;
+  } else {
+    messages.push({
+      ...messageToStore,
+      id: generateInternalId()
+    });
+  }
+  const patch = { messages: JSON.stringify(messages) };
+  const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+};
+
+export const settingDeleteMessage = async (context, user, settingsId, messageId) => {
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const messages = getMessages(settings);
+
+  const existingIdx = messages.findIndex((m) => m.id === messageId);
+  if (existingIdx > -1) {
+    messages.splice(existingIdx, 1);
+  } else {
+    throw UnsupportedError('This message does not exist', { messageId });
+  }
+  const patch = { messages: JSON.stringify(messages) };
+  const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+};
+
+// -- AJV --
+
+export const settingsMessages = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        minLength: 1
+      },
+      message: { type: 'string' },
+      activated: { type: 'boolean' },
+      updated_at: { type: 'string' },
+      dismissible: { type: 'boolean' },
+    },
+    required: ['id', 'message', 'activated', 'updated_at', 'dismissible']
+  },
 };

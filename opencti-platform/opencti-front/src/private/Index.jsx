@@ -30,6 +30,7 @@ import RootCases from './components/cases/Root';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
+import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
@@ -51,17 +52,19 @@ const Index = ({ settings }) => {
     }),
     overflowX: 'hidden',
   };
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   return (
     <>
       <SystemBanners settings={settings} />
       {settings.platform_session_idle_timeout > 0 && <TimeoutLock />}
       <Box sx={{ display: 'flex', minWidth: 1400, marginTop: bannerHeight, marginBottom: bannerHeight }}>
         <CssBaseline/>
+        <SettingsMessagesBanner />
         {!noTopBarLocations.includes(location.pathname) && <TopBar/>}
         <LeftBar/>
         <Message/>
         <Box component="main" sx={boxSx}>
-          <div className={classes.toolbar}/>
+          <div className={classes.toolbar} style={{ marginTop: settingsMessagesBannerHeight }}/>
           <Switch>
               <BoundaryRoute exact path="/dashboard" component={Dashboard}/>
               <BoundaryRoute exact path="/dashboard/search" component={Search}/>

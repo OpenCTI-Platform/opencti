@@ -97,6 +97,7 @@ import TopMenuCaseRft from './TopMenuCaseRft';
 import TopMenuTask from './TopMenuTask';
 import TopMenuAudits from './TopMenuAudits';
 import useAuth from '../../../utils/hooks/useAuth';
+import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -252,11 +253,12 @@ const TopBar: FunctionComponent<TopBarProps> = ({
     setOpenDrawer(false);
     handleCloseMenu();
   };
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   return (
     <AppBar position="fixed" className={classes.appBar} variant="elevation" elevation={1}>
       {/* Header and Footer Banners containing classification level of system */}
-      <Toolbar style={{ marginTop: bannerHeightNumber }}>
+      <Toolbar style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
             <img src={navOpen ? theme.logo : theme.logo_collapsed} alt="logo" className={navOpen ? classes.logo : classes.logoCollapsed}/>

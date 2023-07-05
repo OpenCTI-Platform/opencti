@@ -23,6 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../../components/i18n';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
+import withHooksSettingsMessagesBannerHeight from '../../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -147,6 +148,7 @@ class WorkbenchFileToolbar extends Component {
       handleClearSelectedElements,
       submitDelete,
       theme,
+      settingsMessagesBannerHeight,
     } = this.props;
     const { displayDelete, displayApplyMarking } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -162,7 +164,7 @@ class WorkbenchFileToolbar extends Component {
                 paper: classes.bottomNav,
               }}
               open={isOpen}
-              PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: bannerSettings.bannerHeightNumber } }}
+              PaperProps={{ variant: 'elevation', elevation: 1, style: { marginTop: settingsMessagesBannerHeight, bottom: bannerSettings.bannerHeightNumber } }}
             >
               <Toolbar style={{ minHeight: 54 }}>
                 <Typography
@@ -300,4 +302,5 @@ export default R.compose(
   inject18n,
   withTheme,
   withStyles(styles),
+  withHooksSettingsMessagesBannerHeight,
 )(WorkbenchFileToolbar);

@@ -958,6 +958,19 @@ type Provider {
   strategy: String
   provider: String
 }
+input SettingsMessageInput {
+  id: ID
+  message: String!
+  activated: Boolean!
+  dismissible: Boolean!
+}
+type SettingsMessage {
+  id: ID!
+  message: String!
+  activated: Boolean!
+  dismissible: Boolean!
+  updated_at: DateTime!
+}
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -1016,6 +1029,7 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_words: Int @auth
   password_policy_min_lowercase: Int @auth
   password_policy_min_uppercase: Int @auth
+  messages: [SettingsMessage!] @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS])
 }
@@ -12553,6 +12567,7 @@ type Query {
 
 type Subscription {
   settings(id: ID!): Settings @auth(for: [SETTINGS])
+  settingsMessages(id: ID!): Settings @auth
   group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])
   user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
   label(id: ID!): Label @auth(for: [SETTINGS])
@@ -12587,6 +12602,8 @@ type SettingsEditMutations {
   fieldPatch(input: [EditInput]!): Settings
   contextPatch(input: EditContext): Settings
   contextClean: Settings
+  editMessage(input: SettingsMessageInput!): Settings
+  deleteMessage(input: String!): Settings
 }
 type SubTypeEditMutations {
   statusAdd(input: StatusAddInput!): SubType

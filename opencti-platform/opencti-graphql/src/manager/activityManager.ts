@@ -30,7 +30,7 @@ import type { ActivityStreamEvent } from './activityListener';
 import { BASE_TYPE_ENTITY } from '../schema/general';
 import { elIndexElements } from '../database/engine';
 import { getEntityFromCache } from '../database/cache';
-import type { BasicStoreSettings } from '../types/store';
+import type { BasicStoreSettings } from '../types/settings';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;

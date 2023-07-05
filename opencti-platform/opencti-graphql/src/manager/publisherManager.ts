@@ -16,7 +16,7 @@ import type { SseEvent, StreamNotifEvent } from '../types/event';
 import { sendMail, smtpIsAlive } from '../database/smtp';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import type { BasicStoreSettings } from '../types/store';
+import type { BasicStoreSettings } from '../types/settings';
 import { addNotification } from '../modules/notification/notification-domain';
 import type { AuthContext } from '../types/user';
 import type { StixCoreObject, StixRelationshipObject } from '../types/stix-common';
