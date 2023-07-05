@@ -5074,6 +5074,7 @@ input ThreatActorGroupAddInput {
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  personal_motivations: [String]
   confidence: Int
   revoked: Boolean
   lang: String
