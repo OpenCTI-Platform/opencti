@@ -16596,7 +16596,9 @@ export type Query = {
   tasks?: Maybe<TaskConnection>;
   taxiiCollection?: Maybe<TaxiiCollection>;
   taxiiCollections?: Maybe<TaxiiCollectionConnection>;
+  threatActor?: Maybe<ThreatActor>;
   threatActorGroup?: Maybe<ThreatActorGroup>;
+  threatActors?: Maybe<ThreatActorConnection>;
   threatActorsGroup?: Maybe<ThreatActorGroupConnection>;
   tool?: Maybe<Tool>;
   tools?: Maybe<ToolConnection>;
@@ -18534,17 +18536,34 @@ export type QueryTaxiiCollectionsArgs = {
 };
 
 
+export type QueryThreatActorArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryThreatActorGroupArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryThreatActorsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ThreatActorsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<ThreatActorsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  toStix?: InputMaybe<Scalars['Boolean']>;
 };
 
 
 export type QueryThreatActorsGroupArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<ThreatActorsGroupFiltering>>>;
+  filters?: InputMaybe<Array<InputMaybe<ThreatActorsFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
-  orderBy?: InputMaybe<ThreatActorsGroupOrdering>;
+  orderBy?: InputMaybe<ThreatActorsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
@@ -23364,7 +23383,203 @@ export type TextAddInput = {
   value?: InputMaybe<Scalars['String']>;
 };
 
-export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
+export type ThreatActor = {
+  aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
+  cases?: Maybe<CaseConnection>;
+  confidence?: Maybe<Scalars['Int']>;
+  connectors?: Maybe<Array<Maybe<Connector>>>;
+  countries?: Maybe<CountryConnection>;
+  created?: Maybe<Scalars['DateTime']>;
+  createdBy?: Maybe<Identity>;
+  created_at: Scalars['DateTime'];
+  creators?: Maybe<Array<Creator>>;
+  description?: Maybe<Scalars['String']>;
+  editContext?: Maybe<Array<EditUserContext>>;
+  entity_type: Scalars['String'];
+  exportFiles?: Maybe<FileConnection>;
+  externalReferences?: Maybe<ExternalReferenceConnection>;
+  first_seen?: Maybe<Scalars['DateTime']>;
+  goals?: Maybe<Array<Maybe<Scalars['String']>>>;
+  groupings?: Maybe<GroupingConnection>;
+  id: Scalars['ID'];
+  importFiles?: Maybe<FileConnection>;
+  is_inferred: Scalars['Boolean'];
+  jobs?: Maybe<Array<Maybe<Work>>>;
+  lang?: Maybe<Scalars['String']>;
+  last_seen?: Maybe<Scalars['DateTime']>;
+  locations?: Maybe<LocationConnection>;
+  modified?: Maybe<Scalars['DateTime']>;
+  name: Scalars['String'];
+  notes?: Maybe<NoteConnection>;
+  objectAssignee?: Maybe<AssigneeConnection>;
+  objectLabel?: Maybe<LabelConnection>;
+  objectMarking?: Maybe<MarkingDefinitionConnection>;
+  objectOrganization?: Maybe<OrganizationConnection>;
+  observedData?: Maybe<ObservedDataConnection>;
+  opinions?: Maybe<OpinionConnection>;
+  parent_types: Array<Maybe<Scalars['String']>>;
+  pendingFiles?: Maybe<FileConnection>;
+  primary_motivation?: Maybe<Scalars['String']>;
+  reports?: Maybe<ReportConnection>;
+  resource_level?: Maybe<Scalars['String']>;
+  revoked: Scalars['Boolean'];
+  roles?: Maybe<Array<Maybe<Scalars['String']>>>;
+  secondary_motivations?: Maybe<Array<Maybe<Scalars['String']>>>;
+  sophistication?: Maybe<Scalars['String']>;
+  spec_version: Scalars['String'];
+  standard_id: Scalars['String'];
+  status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  threat_actor_types?: Maybe<Array<Maybe<Scalars['String']>>>;
+  toStix?: Maybe<Scalars['String']>;
+  updated_at: Scalars['DateTime'];
+  workflowEnabled?: Maybe<Scalars['Boolean']>;
+  x_opencti_graph_data?: Maybe<Scalars['String']>;
+  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
+};
+
+
+export type ThreatActorCasesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorConnectorsArgs = {
+  onlyAlive?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type ThreatActorExportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorExternalReferencesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorGroupingsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorJobsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorObservedDataArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorOpinionsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorPendingFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorReportsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type ThreatActorStixCoreRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type ThreatActorStixCoreRelationshipsDistributionArgs = {
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  fromRole?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  isTo?: InputMaybe<Scalars['Boolean']>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  toRole?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type ThreatActorConnection = {
+  __typename?: 'ThreatActorConnection';
+  edges?: Maybe<Array<Maybe<ThreatActorEdge>>>;
+  pageInfo: PageInfo;
+};
+
+export type ThreatActorEdge = {
+  __typename?: 'ThreatActorEdge';
+  cursor: Scalars['String'];
+  node: ThreatActor;
+};
+
+export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject & StixObject & ThreatActor & {
   __typename?: 'ThreatActorGroup';
   aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   cases?: Maybe<CaseConnection>;
@@ -23627,7 +23842,7 @@ export type ThreatActorGroupEditMutationsRelationDeleteArgs = {
   toId: Scalars['StixRef'];
 };
 
-export enum ThreatActorsGroupFilter {
+export enum ThreatActorsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
@@ -23644,14 +23859,14 @@ export enum ThreatActorsGroupFilter {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
-export type ThreatActorsGroupFiltering = {
+export type ThreatActorsFiltering = {
   filterMode?: InputMaybe<FilterMode>;
-  key: Array<ThreatActorsGroupFilter>;
+  key: Array<ThreatActorsFilter>;
   operator?: InputMaybe<Scalars['String']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-export enum ThreatActorsGroupOrdering {
+export enum ThreatActorsOrdering {
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
@@ -26710,14 +26925,17 @@ export type ResolversTypes = ResolversObject<{
   TaxiiCollectionOrdering: TaxiiCollectionOrdering;
   Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   TextAddInput: TextAddInput;
+  ThreatActor: ResolversTypes['ThreatActorGroup'];
+  ThreatActorConnection: ResolverTypeWrapper<Omit<ThreatActorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ThreatActorEdge']>>> }>;
+  ThreatActorEdge: ResolverTypeWrapper<Omit<ThreatActorEdge, 'node'> & { node: ResolversTypes['ThreatActor'] }>;
   ThreatActorGroup: ResolverTypeWrapper<Omit<ThreatActorGroup, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'locations' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, countries?: Maybe<ResolversTypes['CountryConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, locations?: Maybe<ResolversTypes['LocationConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   ThreatActorGroupAddInput: ThreatActorGroupAddInput;
   ThreatActorGroupConnection: ResolverTypeWrapper<Omit<ThreatActorGroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ThreatActorGroupEdge']>>> }>;
   ThreatActorGroupEdge: ResolverTypeWrapper<Omit<ThreatActorGroupEdge, 'node'> & { node: ResolversTypes['ThreatActorGroup'] }>;
   ThreatActorGroupEditMutations: ResolverTypeWrapper<Omit<ThreatActorGroupEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['ThreatActorGroup']>, contextPatch?: Maybe<ResolversTypes['ThreatActorGroup']>, fieldPatch?: Maybe<ResolversTypes['ThreatActorGroup']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['ThreatActorGroup']> }>;
-  ThreatActorsGroupFilter: ThreatActorsGroupFilter;
-  ThreatActorsGroupFiltering: ThreatActorsGroupFiltering;
-  ThreatActorsGroupOrdering: ThreatActorsGroupOrdering;
+  ThreatActorsFilter: ThreatActorsFilter;
+  ThreatActorsFiltering: ThreatActorsFiltering;
+  ThreatActorsOrdering: ThreatActorsOrdering;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
   Tool: ResolverTypeWrapper<Omit<Tool, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   ToolAddInput: ToolAddInput;
@@ -27342,12 +27560,15 @@ export type ResolversParentTypes = ResolversObject<{
   TaxiiCollectionEditMutations: TaxiiCollectionEditMutations;
   Text: Omit<Text, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   TextAddInput: TextAddInput;
+  ThreatActor: ResolversParentTypes['ThreatActorGroup'];
+  ThreatActorConnection: Omit<ThreatActorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ThreatActorEdge']>>> };
+  ThreatActorEdge: Omit<ThreatActorEdge, 'node'> & { node: ResolversParentTypes['ThreatActor'] };
   ThreatActorGroup: Omit<ThreatActorGroup, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'locations' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, countries?: Maybe<ResolversParentTypes['CountryConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, locations?: Maybe<ResolversParentTypes['LocationConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   ThreatActorGroupAddInput: ThreatActorGroupAddInput;
   ThreatActorGroupConnection: Omit<ThreatActorGroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ThreatActorGroupEdge']>>> };
   ThreatActorGroupEdge: Omit<ThreatActorGroupEdge, 'node'> & { node: ResolversParentTypes['ThreatActorGroup'] };
   ThreatActorGroupEditMutations: Omit<ThreatActorGroupEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['ThreatActorGroup']>, contextPatch?: Maybe<ResolversParentTypes['ThreatActorGroup']>, fieldPatch?: Maybe<ResolversParentTypes['ThreatActorGroup']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['ThreatActorGroup']> };
-  ThreatActorsGroupFiltering: ThreatActorsGroupFiltering;
+  ThreatActorsFiltering: ThreatActorsFiltering;
   TimeSeries: TimeSeries;
   Tool: Omit<Tool, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   ToolAddInput: ToolAddInput;
@@ -32169,7 +32390,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   tasks?: Resolver<Maybe<ResolversTypes['TaskConnection']>, ParentType, ContextType, Partial<QueryTasksArgs>>;
   taxiiCollection?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<QueryTaxiiCollectionArgs, 'id'>>;
   taxiiCollections?: Resolver<Maybe<ResolversTypes['TaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryTaxiiCollectionsArgs>>;
+  threatActor?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, Partial<QueryThreatActorArgs>>;
   threatActorGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, Partial<QueryThreatActorGroupArgs>>;
+  threatActors?: Resolver<Maybe<ResolversTypes['ThreatActorConnection']>, ParentType, ContextType, Partial<QueryThreatActorsArgs>>;
   threatActorsGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroupConnection']>, ParentType, ContextType, Partial<QueryThreatActorsGroupArgs>>;
   tool?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<QueryToolArgs>>;
   tools?: Resolver<Maybe<ResolversTypes['ToolConnection']>, ParentType, ContextType, Partial<QueryToolsArgs>>;
@@ -33727,6 +33950,77 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ThreatActorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActor'] = ResolversParentTypes['ThreatActor']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'ThreatActorGroup', ParentType, ContextType>;
+  aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ThreatActorCasesArgs>>;
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorConnectorsArgs>>;
+  countries?: Resolver<Maybe<ResolversTypes['CountryConnection']>, ParentType, ContextType>;
+  created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorExportFilesArgs>>;
+  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ThreatActorExternalReferencesArgs>>;
+  first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorGroupingsArgs>>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorImportFilesArgs>>;
+  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorJobsArgs>>;
+  lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
+  modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorNotesArgs>>;
+  objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
+  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ThreatActorObservedDataArgs>>;
+  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorOpinionsArgs>>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorPendingFilesArgs>>;
+  primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ThreatActorReportsArgs>>;
+  resource_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  secondary_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  sophistication?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
+  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorStixCoreRelationshipsArgs>>;
+  stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+}>;
+
+export type ThreatActorConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorConnection'] = ResolversParentTypes['ThreatActorConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ThreatActorEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ThreatActorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorEdge'] = ResolversParentTypes['ThreatActorEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['ThreatActor'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ThreatActorGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorGroup'] = ResolversParentTypes['ThreatActorGroup']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ThreatActorGroupCasesArgs>>;
@@ -34884,6 +35178,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   TaxiiCollectionEdge?: TaxiiCollectionEdgeResolvers<ContextType>;
   TaxiiCollectionEditMutations?: TaxiiCollectionEditMutationsResolvers<ContextType>;
   Text?: TextResolvers<ContextType>;
+  ThreatActor?: ThreatActorResolvers<ContextType>;
+  ThreatActorConnection?: ThreatActorConnectionResolvers<ContextType>;
+  ThreatActorEdge?: ThreatActorEdgeResolvers<ContextType>;
   ThreatActorGroup?: ThreatActorGroupResolvers<ContextType>;
   ThreatActorGroupConnection?: ThreatActorGroupConnectionResolvers<ContextType>;
   ThreatActorGroupEdge?: ThreatActorGroupEdgeResolvers<ContextType>;

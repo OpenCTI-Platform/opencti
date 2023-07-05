@@ -276,7 +276,7 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
               first_seen
               last_seen
             }
-            ... on ThreatActorGroup {
+            ... on ThreatActor {
               name
               description
               first_seen
@@ -442,7 +442,7 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                   first_seen
                   last_seen
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                   description
                   first_seen
@@ -600,7 +600,7 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                   first_seen
                   last_seen
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                   description
                   first_seen

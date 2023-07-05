@@ -549,7 +549,7 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
           description
           aliases
         }
-        ... on ThreatActorGroup {
+        ... on ThreatActor {
           name
           description
           aliases

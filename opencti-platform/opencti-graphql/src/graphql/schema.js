@@ -41,7 +41,7 @@ import externalReferenceResolvers from '../resolvers/externalReference';
 import killChainPhaseResolvers from '../resolvers/killChainPhase';
 import attackPatternResolvers from '../resolvers/attackPattern';
 import courseOfActionResolvers from '../resolvers/courseOfAction';
-import threatActorGroupResolvers from '../resolvers/threatActorGroup';
+import threatActorResolvers from '../resolvers/threatActor';
 import intrusionSetResolvers from '../resolvers/intrusionSet';
 import infrastructureResolvers from '../resolvers/infrastructure';
 import campaignResolvers from '../resolvers/campaign';
@@ -197,7 +197,7 @@ const schemaResolvers = [
   positionResolvers,
   // Others
   malwareResolvers,
-  threatActorGroupResolvers,
+  threatActorResolvers,
   toolResolvers,
   vulnerabilityResolvers,
   incidentResolvers,

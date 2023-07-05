@@ -67,10 +67,11 @@ export const ABSTRACT_STIX_CYBER_OBSERVABLE = 'Stix-Cyber-Observable';
 export const ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE = 'Hashed-Observable';
 export const ABSTRACT_INTERNAL_OBJECT = 'Internal-Object';
 
-// Internal
+// Abstract types
 export const ENTITY_TYPE_CONTAINER = 'Container';
 export const ENTITY_TYPE_IDENTITY = 'Identity';
 export const ENTITY_TYPE_LOCATION = 'Location';
+export const ENTITY_TYPE_THREAT_ACTOR = 'Threat-Actor';
 
 // Abstract
 export const ABSTRACT_TYPES = [
@@ -81,6 +82,7 @@ export const ABSTRACT_TYPES = [
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_THREAT_ACTOR,
   ENTITY_TYPE_LOCATION,
   ABSTRACT_STIX_META_OBJECT,
   ABSTRACT_STIX_CYBER_OBSERVABLE,

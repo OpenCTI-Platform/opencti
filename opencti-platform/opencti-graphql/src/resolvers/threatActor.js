@@ -1,4 +1,5 @@
-import { addThreatActorGroup, findAll, findById, batchLocations, batchCountries } from '../domain/threatActorGroup';
+import { findAll as genericFindAll, findById as genericFindById, batchCountries, batchLocations } from '../domain/threatActor';
+import { addThreatActorGroup, findAll as groupFindAll, findById as groupFindById } from '../domain/threatActorGroup';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -21,14 +22,22 @@ const countriesLoader = batchLoader(batchCountries);
 
 const threatActorGroupResolvers = {
   Query: {
-    threatActorGroup: (_, { id }, context) => findById(context, context.user, id),
-    threatActorsGroup: (_, args, context) => findAll(context, context.user, args),
+    threatActor: (_, { id }, context) => genericFindById(context, context.user, id),
+    threatActors: (_, args, context) => genericFindAll(context, context.user, args),
+    threatActorGroup: (_, { id }, context) => groupFindById(context, context.user, id),
+    threatActorsGroup: (_, args, context) => groupFindAll(context, context.user, args),
   },
-  threatActorGroup: {
+  ThreatActor: {
     locations: (threatActorGroup, _, context) => locationsLoader.load(threatActorGroup.id, context, context.user),
     countries: (threatActorGroup, _, context) => countriesLoader.load(threatActorGroup.id, context, context.user),
+    __resolveType(obj) {
+      if (obj.entity_type) {
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+      }
+      return 'Unknown';
+    },
   },
-  threatActorsGroupFilter: {
+  ThreatActorsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
@@ -36,6 +45,7 @@ const threatActorGroupResolvers = {
     creator: 'creator_id',
   },
   Mutation: {
+    threatActorGroupAdd: (_, { input }, context) => addThreatActorGroup(context, context.user, input),
     threatActorGroupEdit: (_, { id }, context) => ({
       delete: () => stixDomainObjectDelete(context, context.user, id),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
@@ -44,7 +54,6 @@ const threatActorGroupResolvers = {
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    threatActorGroupAdd: (_, { input }, context) => addThreatActorGroup(context, context.user, input),
   },
 };
 

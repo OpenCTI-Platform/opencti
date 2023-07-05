@@ -16,10 +16,11 @@ import {
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_TOOL, ENTITY_TYPE_VULNERABILITY,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
+  isStixDomainObjectLocation, isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import type * as SDO from '../types/stix-sdo';
 import {
@@ -96,7 +97,7 @@ export const extractStixRepresentative = (
   if (isStixDomainObjectLocation(entityType)) {
     return (stix as SDO.StixLocation).name;
   }
-  if (entityType === ENTITY_TYPE_THREAT_ACTOR_GROUP) {
+  if (isStixDomainObjectThreatActor(entityType)) {
     return (stix as SDO.StixThreatActor).name;
   }
   if (entityType === ENTITY_TYPE_CONTAINER_REPORT) {

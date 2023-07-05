@@ -4888,7 +4888,7 @@ input MalwareAddInput {
   file: Upload
 }
 
-enum ThreatActorsGroupOrdering {
+enum ThreatActorsOrdering {
   name
   created
   modified
@@ -4898,7 +4898,7 @@ enum ThreatActorsGroupOrdering {
   confidence
 }
 
-enum ThreatActorsGroupFilter {
+enum ThreatActorsFilter {
   name
   aliases
   created
@@ -4915,8 +4915,8 @@ enum ThreatActorsGroupFilter {
   creator
 }
 
-input ThreatActorsGroupFiltering {
-  key: [ThreatActorsGroupFilter!]!
+input ThreatActorsFiltering {
+  key: [ThreatActorsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4932,7 +4932,17 @@ type ThreatActorGroupEdge {
   node: ThreatActorGroup!
 }
 
-type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type ThreatActorEdge {
+  cursor: String!
+  node: ThreatActor!
+}
+
+type ThreatActorConnection {
+  pageInfo: PageInfo!
+  edges: [ThreatActorEdge]
+}
+
+interface ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -4976,7 +4986,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
-  personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
   creators: [Creator!]
@@ -4989,6 +4998,65 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+}
+
+type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  name: String!
+  description: String
+  aliases: [String]
+  threat_actor_types: [String]
+  first_seen: DateTime
+  last_seen: DateTime
+  roles: [String]
+  goals: [String]
+  sophistication: String
+  resource_level: String
+  primary_motivation: String
+  secondary_motivations: [String]
+  locations: LocationConnection
+  countries: CountryConnection
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  personal_motivations: [String]
 }
 
 input ThreatActorGroupAddInput {
@@ -7808,8 +7876,10 @@ type Query {
   positions(first: Int, after: ID, orderBy: PositionsOrdering, orderMode: OrderingMode, filters: [PositionsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): PositionConnection
   malware(id: String): Malware
   malwares(first: Int, after: ID, orderBy: MalwaresOrdering, orderMode: OrderingMode, filters: [MalwaresFiltering], filterMode: FilterMode, search: String, toStix: Boolean): MalwareConnection
+  threatActor(id: String): ThreatActor
+  threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, filters: [ThreatActorsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorConnection
   threatActorGroup(id: String): ThreatActorGroup
-  threatActorsGroup(first: Int, after: ID, orderBy: ThreatActorsGroupOrdering, orderMode: OrderingMode, filters: [ThreatActorsGroupFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorGroupConnection
+  threatActorsGroup(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, filters: [ThreatActorsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorGroupConnection
   tool(id: String): Tool
   tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, filters: [ToolsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ToolConnection
   vulnerability(id: String): Vulnerability

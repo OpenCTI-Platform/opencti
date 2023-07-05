@@ -294,7 +294,7 @@ export const SearchStixCoreObjectLine = createFragmentContainer(
           aliases
           description
         }
-        ... on ThreatActorGroup {
+        ... on ThreatActor {
           name
           aliases
           description

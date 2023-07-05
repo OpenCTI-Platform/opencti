@@ -67,7 +67,7 @@ import {
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
+  isStixDomainObjectLocation, isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -140,7 +140,7 @@ export const convertTypeToStixType = (type: string): string => {
   if (isStixSightingRelationship(type)) {
     return 'sighting';
   }
-  if (type === ENTITY_TYPE_THREAT_ACTOR_GROUP) {
+  if (isStixDomainObjectThreatActor(type)) {
     return 'threat-actor';
   }
   return type.toLowerCase();

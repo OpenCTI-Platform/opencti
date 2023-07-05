@@ -318,7 +318,7 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                   name
                   description
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                   description
                 }
@@ -498,7 +498,7 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                           first_seen
                           last_seen
                         }
-                        ... on ThreatActorGroup {
+                        ... on ThreatActor {
                           name
                           description
                           first_seen

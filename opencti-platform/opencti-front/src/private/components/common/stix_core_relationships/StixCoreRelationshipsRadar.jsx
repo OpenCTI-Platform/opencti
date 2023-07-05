@@ -142,7 +142,7 @@ const stixCoreRelationshipsRadarsDistributionQuery = graphql`
           name
           description
         }
-        ... on ThreatActorGroup {
+        ... on ThreatActor {
           name
           description
         }

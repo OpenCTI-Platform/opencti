@@ -132,7 +132,7 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
         ... on MalwareAnalysis {
           result_name
         }
-        ... on ThreatActorGroup {
+        ... on ThreatActor {
           name
           description
         }

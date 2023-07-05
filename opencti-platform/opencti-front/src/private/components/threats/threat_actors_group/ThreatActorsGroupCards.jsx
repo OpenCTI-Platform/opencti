@@ -85,9 +85,9 @@ export const threatActorsGroupCardsQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: ThreatActorsGroupOrdering
+    $orderBy: ThreatActorsOrdering
     $orderMode: OrderingMode
-    $filters: [ThreatActorsGroupFiltering]
+    $filters: [ThreatActorsFiltering]
   ) {
     ...ThreatActorsGroupCards_data
       @arguments(
@@ -110,9 +110,9 @@ export default createPaginationContainer(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "ThreatActorsGroupOrdering", defaultValue: name }
+        orderBy: { type: "ThreatActorsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[ThreatActorsGroupFiltering]" }
+        filters: { type: "[ThreatActorsFiltering]" }
       ) {
         threatActorsGroup(
           search: $search

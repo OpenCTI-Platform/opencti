@@ -139,7 +139,7 @@ export const stixDomainObjectMutation = graphql`
         ... on Malware {
           aliases
         }
-        ... on ThreatActorGroup {
+        ... on ThreatActor {
           aliases
         }
         ... on Tool {

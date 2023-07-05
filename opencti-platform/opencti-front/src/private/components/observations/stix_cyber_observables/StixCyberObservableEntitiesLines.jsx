@@ -492,7 +492,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                   name
                   description
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                   description
                 }
@@ -612,7 +612,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                       description
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                       description
                     }
@@ -732,7 +732,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                       description
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                       description
                     }
@@ -854,7 +854,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                   name
                   description
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                   description
                 }
@@ -974,7 +974,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                       description
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                       description
                     }
@@ -1091,7 +1091,7 @@ const StixCyberObservableEntitiesLines = createPaginationContainer(
                       name
                       description
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                       description
                     }

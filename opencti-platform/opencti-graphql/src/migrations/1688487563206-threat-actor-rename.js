@@ -1,90 +1,83 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
 import {
   READ_INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_INTERNAL_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
 } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 
-const entityTypeChange = (fromType, toType, indices) => {
+const entityTypeChange = (toType, indices) => {
   const updateQuery = {
     script: {
-      params: { toType },
-      source: 'ctx._source.entity_type = params.toType;'
+      params: { toType, initial: 'Threat-Actor' },
+      source: 'ctx._source.entity_type = params.toType; ctx._source.parent_types.add(params.initial);'
     },
     query: {
-      term: { 'entity_type.keyword': { value: fromType } }
+      term: { 'entity_type.keyword': { value: 'Threat-Actor' } }
     },
   };
-  const message = `[MIGRATION] Rewriting entity type from ${fromType} to ${toType}`;
+  const message = `[MIGRATION] Rewriting entity type from Threat-Actor to ${toType}`;
   return elUpdateByQueryForMigration(message, indices, updateQuery).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
 };
 
-const targetTypeChange = (fromType, toType, indices) => {
+const targetTypeChange = (toType, indices) => {
   const updateQuery = {
     script: {
       params: { toType },
       source: 'ctx._source.target_type = params.toType;'
     },
     query: {
-      term: { 'target_type.keyword': { value: fromType } }
+      bool: {
+        must: [
+          { term: { 'entity_type.keyword': { value: 'EntitySetting' } } },
+          { term: { 'target_type.keyword': { value: 'Threat-Actor' } } }
+        ],
+      },
     },
   };
-  const message = `[MIGRATION] Rewriting target type from ${fromType} to ${toType}`;
+  const message = `[MIGRATION] Rewriting target type from Threat-Actor to ${toType}`;
   return elUpdateByQueryForMigration(message, indices, updateQuery).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
 };
 
-const relationshipFromTypeChange = (fromType, toType, indices) => {
+const relationshipFromTypeChange = (toType, indices) => {
   const updateQuery = {
     script: {
       params: { toType },
       source: 'for(def connection : ctx._source.connections) {'
         + 'if (connection.types.contains("Threat-Actor")) { '
-        + 'connection.types = params.toType; '
+        + 'connection.types.add(params.toType);'
         + '} } '
-        + 'ctx._source.fromType = params.toType'
+        + 'if (ctx._source.fromType.equals("Threat-Actor") { ctx._source.fromType = params.toType; };'
+        + 'if (ctx._source.toType.equals("Threat-Actor") { ctx._source.toType = params.toType; };'
     },
     query: {
-      term: { 'fromType.keyword': { value: fromType } }
+      bool: {
+        should: [
+          { term: { 'fromType.keyword': { value: 'Threat-Actor' } } },
+          { term: { 'toType.keyword': { value: 'Threat-Actor' } } }
+        ],
+      }
     },
   };
-  const message = `[MIGRATION] Rewriting relationship fromType types from ${fromType} to ${toType}`;
-  return elUpdateByQueryForMigration(message, indices, updateQuery).catch((err) => {
-    throw DatabaseError('Error updating elastic', { error: err });
-  });
-};
-
-const relationshipToTypeChange = (fromType, toType, indices) => {
-  const updateQuery = {
-    script: {
-      params: { toType },
-      source: 'for(def connection : ctx._source.connections) {'
-        + 'if (connection.types.contains("Threat-Actor")) { '
-        + 'connection.types = params.toType; '
-        + '} } '
-        + 'ctx._source.toType = params.toType'
-    },
-    query: {
-      term: { 'toType.keyword': { value: fromType } }
-    },
-  };
-  const message = `[MIGRATION] Rewriting relationship toType types from ${fromType} to ${toType}`;
+  const message = `[MIGRATION] Rewriting relationship fromType types from Threat-Actor to ${toType}`;
   return elUpdateByQueryForMigration(message, indices, updateQuery).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
 };
 
 export const up = async (next) => {
+  // Entity settings
+  await targetTypeChange('Threat-Actor-Group', [READ_INDEX_INTERNAL_OBJECTS]);
   // Change Threat Actor type to Threat Actor Group
-  await entityTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_INDEX_STIX_DOMAIN_OBJECTS);
-  await targetTypeChange('Threat-Actor', 'Threat-Actor-Group', [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS]);
-  await relationshipFromTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
-  await relationshipToTypeChange('Threat-Actor', 'Threat-Actor-Group', READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
+  const promiseEntities = entityTypeChange('Threat-Actor-Group', READ_INDEX_STIX_DOMAIN_OBJECTS);
+  // Relationships
+  const promiseRelations = relationshipFromTypeChange('Threat-Actor-Group', READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
+  // Execute both in parallel as they used different indices
+  await Promise.all([promiseEntities, promiseRelations]);
   next();
 };
 

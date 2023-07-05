@@ -299,7 +299,7 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
         ... on MalwareAnalysis {
           result_name
         }
-        ... on ThreatActorGroup {
+        ... on ThreatActor {
           name
           aliases
           description
