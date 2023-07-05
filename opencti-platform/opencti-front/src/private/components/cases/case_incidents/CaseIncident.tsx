@@ -100,8 +100,8 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview
             stixDomainObject={caseIncidentData}
-            displayAssignees={true}
-            displayParticipants={true}
+            displayAssignees
+            displayParticipants
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }} ref={ref}>
