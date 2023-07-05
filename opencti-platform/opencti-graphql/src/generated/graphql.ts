@@ -20054,6 +20054,7 @@ export type SettingsEditMutationsFieldPatchArgs = {
 export type SettingsMessage = {
   __typename?: 'SettingsMessage';
   activated: Scalars['Boolean'];
+  color?: Maybe<Scalars['String']>;
   dismissible: Scalars['Boolean'];
   id: Scalars['ID'];
   message: Scalars['String'];
@@ -20062,6 +20063,7 @@ export type SettingsMessage = {
 
 export type SettingsMessageInput = {
   activated: Scalars['Boolean'];
+  color?: InputMaybe<Scalars['String']>;
   dismissible: Scalars['Boolean'];
   id?: InputMaybe<Scalars['ID']>;
   message: Scalars['String'];
@@ -33341,6 +33343,7 @@ export type SettingsEditMutationsResolvers<ContextType = any, ParentType extends
 
 export type SettingsMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettingsMessage'] = ResolversParentTypes['SettingsMessage']> = ResolversObject<{
   activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   dismissible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

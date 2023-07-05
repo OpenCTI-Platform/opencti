@@ -1,15 +1,15 @@
-import React from 'react';
-import { makeStyles } from '@mui/styles';
-import { graphql, useFragment } from 'react-relay';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import { MessageOutlined, MoreVert } from '@mui/icons-material';
-import ListItemText from '@mui/material/ListItemText/ListItemText';
-import ListItem from '@mui/material/ListItem';
-import Skeleton from '@mui/material/Skeleton';
 import { ListItemSecondaryAction } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
+import { makeStyles } from '@mui/styles';
+import React from 'react';
+import { graphql, useFragment } from 'react-relay';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { SettingsMessagesLine_settingsMessage$key } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import SettingsMessagesPopover from './SettingsMessagesPopover';
 
@@ -56,6 +56,7 @@ const settingsMessageFragment = graphql`
     activated
     dismissible
     updated_at
+    color
   }
 `;
 

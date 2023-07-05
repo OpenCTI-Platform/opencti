@@ -12,6 +12,7 @@ export interface MessageFromLocalStorage {
   dismissible: boolean
   updated_at: Date
   dismiss: boolean
+  color: string
 }
 
 export interface LocalStorage {

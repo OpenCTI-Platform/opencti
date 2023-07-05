@@ -6,6 +6,7 @@ export interface BasicStoreSettingsMessage {
   activated: boolean
   updated_at: Date
   dismissible: boolean
+  color: string
 }
 
 export interface BasicStoreSettings extends BasicStoreEntity {

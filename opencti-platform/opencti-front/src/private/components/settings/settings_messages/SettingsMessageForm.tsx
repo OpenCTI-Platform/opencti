@@ -8,6 +8,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Button from '@mui/material/Button';
+import ColorPickerField from '../../../../components/ColorPickerField';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -55,6 +56,7 @@ const messageValidation = () => Yup.object().shape({
   message: Yup.string().required(),
   activated: Yup.boolean().required(),
   dismissible: Yup.boolean().required(),
+  color: Yup.string().nullable(),
 });
 
 type SettingsMessageInput = Partial<Pick<SettingsMessagesLine_settingsMessage$data, 'id' | 'activated' | 'message' | 'dismissible'>>;
@@ -92,10 +94,12 @@ const SettingsMessageForm = ({
     message: message.message,
     activated: message.activated,
     dismissible: message.dismissible,
+    color: message.color,
   } : {
     message: '',
     activated: false,
     dismissible: false,
+    color: undefined,
   };
 
   return (
@@ -133,6 +137,16 @@ const SettingsMessageForm = ({
                 name="message"
                 label={t('Message')}
                 fullWidth={true}
+              />
+              <Field
+                component={ColorPickerField}
+                name="color"
+                label={t('Color')}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
               />
               <Field
                 component={SwitchField}

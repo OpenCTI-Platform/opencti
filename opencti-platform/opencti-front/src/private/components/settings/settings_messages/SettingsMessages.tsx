@@ -1,19 +1,20 @@
-import Typography from '@mui/material/Typography';
-import React, { useState } from 'react';
-import { makeStyles } from '@mui/styles';
-import Paper from '@mui/material/Paper';
-import { graphql, useFragment } from 'react-relay';
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
 import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
+import React, { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
+import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
-import SettingsMessagesLines from './SettingsMessagesLines';
 import { Theme } from '../../../../components/Theme';
-import { SettingsMessagesLine_settingsMessage$data } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
+import { generateBannerMessageColors } from '../../../../utils/Colors';
 import { SettingsMessages_settingsMessages$key } from './__generated__/SettingsMessages_settingsMessages.graphql';
 import SettingsMessageCreation from './SettingsMessageCreation';
+import SettingsMessagesLines from './SettingsMessagesLines';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -64,18 +65,44 @@ const SettingsMessages = ({
 
   const messages = useFragment<SettingsMessages_settingsMessages$key>(settingsMessagesFragment, settings)?.messages ?? [];
 
-  const dataColumns = {
+  const dataColumns: DataColumns = {
+    color: {
+      label: 'Color',
+      width: '15%',
+      isSortable: false,
+      render: (data) => {
+        const {
+          backgroundColor,
+          borderLeft,
+          color,
+        } = generateBannerMessageColors(data?.color);
+        return (
+          <div
+            style={{
+              backgroundColor,
+              borderLeft,
+              color,
+              textAlign: 'center',
+              fontWeight: 500,
+              width: '70%',
+            }}
+          >
+            {t('Sample')}
+          </div>
+        );
+      },
+    },
     message: {
       label: 'Message',
-      width: '70%',
+      width: '50%',
       isSortable: false,
-      render: (data: SettingsMessagesLine_settingsMessage$data) => data.message,
+      render: (data) => <div>{data.message}</div>,
     },
     status: {
       label: 'Status',
       width: '15%',
       isSortable: false,
-      render: (data: SettingsMessagesLine_settingsMessage$data) => {
+      render: (data) => {
         const color = data.activated ? 'primary' : 'secondary';
         const label = data.activated ? 'Active' : 'Inactive';
         return (
@@ -92,7 +119,7 @@ const SettingsMessages = ({
       label: 'Dismissible',
       width: '15%',
       isSortable: false,
-      render: (data: SettingsMessagesLine_settingsMessage$data) => {
+      render: (data) => {
         const color = data.dismissible ? 'primary' : 'secondary';
         const label = data.dismissible ? 'Yes' : 'No';
         return (
@@ -119,11 +146,12 @@ const SettingsMessages = ({
         <Typography variant="h4" gutterBottom={true}>
           {t('Platform announcement')}
         </Typography>
-        <IconButton style={{ marginTop: -5 }}
-                    color="secondary"
-                    aria-label="Add"
-                    onClick={handleOpenCreate}
-                    size="large"
+        <IconButton
+          style={{ marginTop: -5 }}
+          color="secondary"
+          aria-label="Add"
+          onClick={handleOpenCreate}
+          size="large"
         >
           <Add fontSize="small" />
         </IconButton>
@@ -142,8 +170,13 @@ const SettingsMessages = ({
         />
       </Drawer>
       <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 0 }}>
-        <ListLines dataColumns={dataColumns} noFilters={true} noPadding={true}>
-        <SettingsMessagesLines settingsId={settings.id} datas={datas} dataColumns={dataColumns} />
+        <ListLines
+          dataColumns={dataColumns}
+          noFilters
+          noPadding
+          secondaryAction
+        >
+          <SettingsMessagesLines settingsId={settings.id} datas={datas} dataColumns={dataColumns} />
         </ListLines>
       </Paper>
     </>

@@ -167,6 +167,7 @@ export const settingsMessages = {
       activated: { type: 'boolean' },
       updated_at: { type: 'string' },
       dismissible: { type: 'boolean' },
+      color: { type: 'string' },
     },
     required: ['id', 'message', 'activated', 'updated_at', 'dismissible']
   },
