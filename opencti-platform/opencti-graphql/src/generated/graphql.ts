@@ -25657,6 +25657,7 @@ export type Workspace = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']>;
   standard_id: Scalars['String'];
   tags?: Maybe<Array<Maybe<Scalars['String']>>>;
+  toStixReportBundle?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['DateTime']>;
 };
@@ -34420,6 +34421,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  toStixReportBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

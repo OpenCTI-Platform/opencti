@@ -10727,6 +10727,7 @@ type Workspace implements InternalObject & BasicObject {
   graph_data: String
   authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
+  toStixReportBundle: String
 }
 
 enum WorkspacesOrdering {

@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import {
   createEntity,
   createRelation,
@@ -7,6 +8,7 @@ import {
   listThings,
   paginateAllThings,
   patchAttribute,
+  stixLoadByFilters,
   updateAttribute,
 } from '../../database/middleware';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
@@ -33,6 +35,10 @@ import {
   getUserAccessRight
 } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { STIX_SPEC_VERSION } from '../../database/stix';
+import { convertTypeToStixType } from '../../database/stix-converter';
+import { generateStandardId } from '../../schema/identifier';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 
 export const DEFAULT_DASHBOARD = {
   id: 'b9bea5e1-027d-47ef-9a12-02beaae6ba9d',
@@ -83,6 +89,30 @@ export const objects = async (context: AuthContext, user: AuthUser, workspaceId:
     return paginateAllThings(context, user, types, finalArgs);
   }
   return listThings(context, user, types, finalArgs);
+};
+
+export const toStixReportBundle = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace): Promise<string> => {
+  if (workspace.type !== 'investigation') {
+    throw FunctionalError('You can only export investigation objects as a stix report bundle');
+  }
+  const stixTypes = ['Stix-Core-Object', 'Stix-Core-Relationship', 'Stix-Sighting-Relationship'];
+  const filters = [{ key: buildRefRelationKey(RELATION_HAS_REFERENCE), values: [workspace.id] }];
+  const stixObjects = await stixLoadByFilters(context, user, stixTypes, { filters });
+  const reportData = {
+    name: workspace.name,
+    published: workspace.created_at,
+    type: convertTypeToStixType(ENTITY_TYPE_CONTAINER_REPORT),
+    object_refs: stixObjects.map((s) => s.id),
+    spec_version: STIX_SPEC_VERSION,
+  };
+  const report = { ...reportData, id: generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, reportData) };
+  const allObjects = [...stixObjects, report];
+  const bundle = {
+    id: `bundle--${uuidv4()}`,
+    type: 'bundle',
+    objects: allObjects,
+  };
+  return JSON.stringify(bundle);
 };
 
 export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {

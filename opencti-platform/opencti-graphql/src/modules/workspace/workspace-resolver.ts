@@ -7,6 +7,7 @@ import {
   getCurrentUserAccessRight,
   getOwnerId,
   objects,
+  toStixReportBundle,
   workspaceAddRelation,
   workspaceAddRelations,
   workspaceCleanContext,
@@ -37,6 +38,7 @@ const workspaceResolvers: Resolvers = {
     owner: (workspace, _, context) => creatorLoader.load(getOwnerId(workspace), context, context.user),
     objects: (workspace, args, context) => objects(context, context.user, workspace.id, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
+    toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {

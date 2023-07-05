@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
+import fileDownload from 'js-file-download';
 import { Field, Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -15,14 +16,15 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import { Add, Close, LockPersonOutlined } from '@mui/icons-material';
+import { Add, Close, GetAppOutlined, LockPersonOutlined } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
-import { commitMutation, MESSAGING$ } from '../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import Security from '../../../utils/Security';
+import { nowUTC } from '../../../utils/Time';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
@@ -50,6 +52,7 @@ const useStyles = makeStyles(() => ({
   export: {
     float: 'right',
     margin: '-8px 0 0 0',
+    display: 'flex',
   },
   tags: {
     float: 'right',
@@ -77,6 +80,14 @@ const workspaceMutation = graphql`
   mutation WorkspaceHeaderFieldMutation($id: ID!, $input: [EditInput!]!) {
     workspaceFieldPatch(id: $id, input: $input) {
       tags
+    }
+  }
+`;
+
+const workspaceHeaderToStixReportBundleQuery = graphql`
+  query WorkspaceHeaderToStixReportBundleQuery($id: String!) {
+    workspace(id: $id) {
+      toStixReportBundle
     }
   }
 `;
@@ -138,6 +149,19 @@ const WorkspaceHeader = ({
   const [displayManageAccess, setDisplayManageAccess] = useState(false);
   const handleOpenManageAccess = () => setDisplayManageAccess(true);
   const handleCloseManageAccess = () => setDisplayManageAccess(false);
+
+  const handleDownloadAsStixReport = () => {
+    fetchQuery(workspaceHeaderToStixReportBundleQuery, { id: workspace.id })
+      .toPromise()
+      .then((data) => {
+        const toStixBundleData = data?.workspace?.toStixReportBundle;
+        if (toStixBundleData) {
+          const blob = new Blob([toStixBundleData], { type: 'text/json' });
+          const fileName = `${nowUTC()}_(export-stix-report)_${workspace.name}`;
+          fileDownload(blob, fileName, 'application/json');
+        }
+      });
+  };
 
   return (
     <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
@@ -275,6 +299,15 @@ const WorkspaceHeader = ({
         </Security>
       )}
       <div className={classes.export}>
+        {workspace.type === 'investigation' && (
+          <div style={{ marginRight: '4px' }}>
+            <Tooltip title={t('Download as STIX report')}>
+              <ToggleButton size="small" onClick={handleDownloadAsStixReport}>
+                <GetAppOutlined fontSize="small" color="primary" />
+              </ToggleButton>
+            </Tooltip>
+          </div>
+        )}
         <ExportButtons
           domElementId="container"
           name={workspace.name}
