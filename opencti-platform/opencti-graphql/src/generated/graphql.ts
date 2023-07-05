@@ -8404,6 +8404,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objective?: Maybe<Scalars['String']>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -8572,6 +8573,7 @@ export type IncidentAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objective?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   severity?: InputMaybe<Scalars['String']>;
@@ -8639,6 +8641,7 @@ export enum IncidentsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participant = 'participant',
   Severity = 'severity',
   Source = 'source',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -30559,6 +30562,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objective?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IncidentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IncidentOpinionsArgs>>;

@@ -200,7 +200,6 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
               style={{ width: dataColumns.objectAssignee.width }}
             >
               {(data.objectAssignee?.edges ?? []).map((p) => p?.node.name).join(', ')}
-
             </div>
             <div
               className={classes.bodyItem}

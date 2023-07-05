@@ -16,7 +16,7 @@ import StatusField from '../../common/form/StatusField';
 import {
   convertAssignees,
   convertCreatedBy,
-  convertMarkings,
+  convertMarkings, convertParticipants,
   convertStatus,
 } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -26,6 +26,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -125,6 +126,15 @@ const incidentEditionOverviewFragment = graphql`
         }
       }
     }
+    objectParticipant {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
     status {
       id
       order
@@ -157,6 +167,8 @@ interface IncidentEditionFormValues {
   x_opencti_workflow_id: Option;
   objectMarking?: Option[];
   objectAssignee?: Option[];
+  objectParticipant?: Option[];
+
 }
 
 const IncidentEditionOverviewComponent: FunctionComponent<
@@ -199,6 +211,7 @@ IncidentEditionOverviewProps
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
+      objectParticipant: (values.objectParticipant ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
@@ -242,6 +255,7 @@ IncidentEditionOverviewProps
     createdBy: convertCreatedBy(incident) as Option,
     objectMarking: convertMarkings(incident),
     objectAssignee: convertAssignees(incident),
+    objectParticipant: convertParticipants(incident),
     x_opencti_workflow_id: convertStatus(t, incident) as Option,
     confidence: incident.confidence,
     references: [],
@@ -330,6 +344,14 @@ IncidentEditionOverviewProps
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
             }
             onChange={editor.changeAssignee}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectParticipant" />
+            }
+            onChange={editor.changeParticipant}
           />
           {incident?.workflowEnabled && (
             <StatusField

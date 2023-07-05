@@ -77,6 +77,15 @@ const incidentFragment = graphql`
         }
       }
     }
+    objectParticipant {
+      edges {
+        node {
+          entity_type
+          id
+          name
+        }
+      }
+    }
     name
     aliases
     status {
@@ -123,7 +132,8 @@ const Incident = ({
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview
             stixDomainObject={incident}
-            displayAssignees={true}
+            displayAssignees
+            displayParticipants
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

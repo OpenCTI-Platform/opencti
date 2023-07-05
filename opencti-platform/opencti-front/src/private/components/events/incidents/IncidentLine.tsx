@@ -80,11 +80,13 @@ const IncidentLineFragment = graphql`
     created
     modified
     confidence
-    createdBy {
-      ... on Identity {
-        id
-        name
-        entity_type
+    objectAssignee {
+      edges {
+        node {
+          entity_type
+          id
+          name
+        }
       }
     }
     objectMarking {
@@ -193,9 +195,9 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
+              style={{ width: dataColumns.objectAssignee.width }}
             >
-              {data.createdBy?.name}
+              {(data.objectAssignee?.edges ?? []).map((p) => p?.node.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}

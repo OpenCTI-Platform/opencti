@@ -5395,6 +5395,7 @@ enum IncidentsFilter {
   createdBy
   markedBy
   assigneeTo
+  participant
   labelledBy
   x_opencti_workflow_id
   confidence
@@ -5459,6 +5460,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: String
   source: String
+  objectParticipant: ParticipantConnection
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection
@@ -5490,6 +5492,7 @@ input IncidentAddInput {
   objectOrganization: [String]
   objectMarking: [String]
   objectAssignee: [String]
+  objectParticipant: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime

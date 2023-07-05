@@ -32,6 +32,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { IncidentsLinesPaginationQuery$variables } from './__generated__/IncidentsLinesPaginationQuery.graphql';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -101,6 +102,8 @@ interface IncidentAddInput {
   objectMarking: Option[];
   objectLabel: Option[];
   objectAssignee: Option[];
+  objectParticipant: Option[];
+
   externalReferences: Option[];
   file: File | undefined;
 }
@@ -154,6 +157,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       createdBy: cleanedValues.createdBy?.value,
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
+      objectParticipant: cleanedValues.objectParticipant.map(({ value }) => value),
       objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
       externalReferences: cleanedValues.externalReferences.map(
         ({ value }) => value,
@@ -192,6 +196,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectAssignee: [],
+    objectParticipant: [],
     objectLabel: [],
     externalReferences: [],
     file: undefined,
@@ -252,6 +257,10 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
