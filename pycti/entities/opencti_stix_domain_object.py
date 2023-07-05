@@ -815,7 +815,7 @@ class StixDomainObject:
                 }
              """
             if data is None:
-                data = open(file_name, "rb", encoding="utf-8")
+                data = open(file_name, "rb")
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
