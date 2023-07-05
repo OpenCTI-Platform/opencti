@@ -7972,8 +7972,8 @@ type Query {
   workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: [WorkspacesFiltering!], filterMode: FilterMode, adminBypassUserAccess: Boolean, search: String): WorkspaceConnection
   malwareAnalysis(id: String!): MalwareAnalysis
   malwareAnalyses(first: Int, after: ID, orderBy: MalwareAnalysesOrdering, orderMode: OrderingMode, filters: [MalwareAnalysesFiltering!], filterMode: FilterMode, search: String): MalwareAnalysisConnection
-  threatActorIndividual(id: String): ThreatActorIndividual
-  threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
+  threatActorIndividual(id: String!): ThreatActorIndividual
+  threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
   threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
 }
 
@@ -11000,7 +11000,7 @@ input MalwareAnalysisAddInput {
   file: Upload
 }
 
-type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -11044,7 +11044,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
-  personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
   photo: File
@@ -11058,6 +11057,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  personal_motivations: [String]
 }
 
 enum ThreatActorsIndividualOrdering {

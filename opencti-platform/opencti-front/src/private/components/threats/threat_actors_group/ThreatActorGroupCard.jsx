@@ -110,7 +110,7 @@ class ThreatActorGroupCardComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header, title: classes.title }}
-            avatar={<ItemIcon type="Threat-Actor" size="large" />}
+            avatar={<ItemIcon type="Threat-Actor-Group" size="large" />}
             title={node.name}
             subheader={fld(node.modified)}
             action={

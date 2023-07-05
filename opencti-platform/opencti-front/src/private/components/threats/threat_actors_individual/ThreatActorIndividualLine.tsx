@@ -14,7 +14,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import ItemIcon from '../../../../components/ItemIcon';
 import {
   ThreatActorIndividualLine_node$data,
-  ThreatActorIndividualLine_node$key
+  ThreatActorIndividualLine_node$key,
 } from './__generated__/ThreatActorIndividualLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({

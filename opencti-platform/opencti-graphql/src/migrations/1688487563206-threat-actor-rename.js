@@ -23,6 +23,7 @@ const entityTypeChange = (toType, indices) => {
 };
 
 const targetTypeChange = (toType, indices) => {
+  // TODO JRI standard_id must be regenerated, need to change this method
   const updateQuery = {
     script: {
       params: { toType },

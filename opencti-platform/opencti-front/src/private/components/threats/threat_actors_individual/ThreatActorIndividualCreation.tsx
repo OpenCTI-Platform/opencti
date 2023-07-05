@@ -208,8 +208,7 @@ ThreatActorIndividualFormProps
             label={t('Name')}
             fullWidth={true}
             detectDuplicate={[
-              'Threat-Actor-Individual',
-              'Threat-Actor-Group',
+              'Threat-Actor',
               'Intrusion-Set',
               'Campaign',
               'Malware',

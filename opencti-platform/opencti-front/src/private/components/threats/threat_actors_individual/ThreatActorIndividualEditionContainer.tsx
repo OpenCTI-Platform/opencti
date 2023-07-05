@@ -85,7 +85,7 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<ThreatActorIndivi
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a threat actor group')}
+          {t('Update a threat actor individual')}
         </Typography>
         <SubscriptionAvatars context={queryData.threatActorIndividual.editContext} />
         <div className="clearfix" />
@@ -117,17 +117,5 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<ThreatActorIndivi
     </div>
   );
 };
-
-export const threatActorIndividualEditionContainerFragment = graphql`
-  fragment ThreatActorIndividualEditionContainer_ThreatActorIndividual on ThreatActorIndividual {
-    id
-    ...ThreatActorIndividualEditionOverview_ThreatActorIndividual
-    ...ThreatActorIndividualEditionDetails_ThreatActorIndividual
-    editContext {
-      name
-      focusOn
-    }
-  }
-`;
 
 export default ThreatActorIndividualEditionContainer;

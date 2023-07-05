@@ -1,15 +1,13 @@
 import {
-  addThreatActorIndividual, batchCountries, batchLocations,
+  addThreatActorIndividual,
   findAll, findById,
 } from './threatActorIndividual-domain';
-import { batchLoader } from '../../database/middleware';
 import { buildRefRelationKey } from '../../schema/general';
 import {
   RELATION_CREATED_BY,
   RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from '../../schema/stixRefRelationship';
-import type { BasicStoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -19,19 +17,12 @@ import {
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 
-const locationsLoader = batchLoader(batchLocations);
-const countriesLoader = batchLoader(batchCountries);
-
 const threatActorIndividualResolvers: Resolvers = {
   Query: {
     threatActorIndividual: (_, { id }, context) => findById(context, context.user, id),
     threatActorsIndividuals: (_, args, context) => findAll(context, context.user, args),
   },
-  threatActorIndividual: {
-    locations: (threatActorIndividual: BasicStoreEntityThreatActorIndividual, _, context) => locationsLoader.load(threatActorIndividual.id, context, context.user),
-    countries: (threatActorIndividual: BasicStoreEntityThreatActorIndividual, _, context) => countriesLoader.load(threatActorIndividual.id, context, context.user),
-  },
-  threatActorsIndividualFilter: {
+  ThreatActorsIndividualFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),

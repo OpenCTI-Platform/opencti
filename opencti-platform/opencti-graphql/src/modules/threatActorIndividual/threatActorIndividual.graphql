@@ -1,4 +1,4 @@
-type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -104,7 +104,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
-  personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
   photo: File
@@ -119,6 +118,8 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  # Individual
+  personal_motivations: [String]
 }
 
 enum ThreatActorsIndividualOrdering {
@@ -194,13 +195,13 @@ input ThreatActorIndividualAddInput {
 }
 
 type Query {
-  threatActorIndividual(id: String): ThreatActorIndividual @auth(for: [KNOWLEDGE])
+  threatActorIndividual(id: String!): ThreatActorIndividual @auth(for: [KNOWLEDGE])
   threatActorsIndividuals(
     first: Int
     after: ID
     orderBy: ThreatActorsIndividualOrdering
     orderMode: OrderingMode
-    filters: [ThreatActorsIndividualFiltering]
+    filters: [ThreatActorsIndividualFiltering!]
     filterMode: FilterMode
     search: String
     toStix: Boolean
@@ -211,8 +212,7 @@ type Query {
 type Mutation {
   threatActorIndividualAdd(input: ThreatActorIndividualAddInput!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  threatActorIndividualFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorIndividual
-  @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualContextPatch(id: ID!, input: EditContext): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualContextClean(id: ID!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
