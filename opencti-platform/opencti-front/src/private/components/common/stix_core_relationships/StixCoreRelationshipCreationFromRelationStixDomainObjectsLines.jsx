@@ -316,7 +316,7 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
                 ... on MalwareAnalysis {
                   result_name
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                   description
                 }

@@ -192,7 +192,7 @@ const stixDomainObjectBookmarksListQuery = graphql`
             name
             description
           }
-          ... on ThreatActorGroup {
+          ... on ThreatActor {
             name
             description
           }

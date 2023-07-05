@@ -71,6 +71,7 @@ export const ABSTRACT_INTERNAL_OBJECT = 'Internal-Object';
 export const ENTITY_TYPE_CONTAINER = 'Container';
 export const ENTITY_TYPE_IDENTITY = 'Identity';
 export const ENTITY_TYPE_LOCATION = 'Location';
+export const ENTITY_TYPE_THREAT_ACTOR = 'Threat-Actor';
 
 // Abstract
 export const ABSTRACT_TYPES = [

@@ -124,7 +124,7 @@ const caseRftKnowledgeCorrelationStixCoreObjectQuery = graphql`
         first_seen
         last_seen
       }
-      ... on ThreatActorGroup {
+      ... on ThreatActor {
         name
         first_seen
         last_seen
@@ -1359,7 +1359,7 @@ const CaseRftKnowledgeCorrelation = createFragmentContainer(
                 first_seen
                 last_seen
               }
-              ... on ThreatActorGroup {
+              ... on ThreatActor {
                 name
                 first_seen
                 last_seen

@@ -881,7 +881,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       first_seen
                       last_seen
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                       description
                       first_seen
@@ -942,7 +942,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
             ... on Malware {
               name
             }
-            ... on ThreatActorGroup {
+            ... on ThreatActor {
               name
             }
             ... on Tool {
@@ -1023,7 +1023,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on Malware {
                   name
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                 }
                 ... on Tool {
@@ -1106,7 +1106,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                     }
                     ... on Tool {
@@ -1183,7 +1183,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                     }
                     ... on Tool {
@@ -1266,7 +1266,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on Malware {
                   name
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                 }
                 ... on Tool {
@@ -1351,7 +1351,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                     }
                     ... on Tool {
@@ -1433,7 +1433,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                     }
                     ... on Tool {
@@ -1526,7 +1526,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on Malware {
                   name
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                 }
                 ... on Tool {
@@ -1662,7 +1662,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           first_seen
                           last_seen
                         }
-                        ... on ThreatActorGroup {
+                        ... on ThreatActor {
                           name
                           description
                           first_seen
@@ -1763,7 +1763,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                     }
                     ... on Tool {
@@ -1842,7 +1842,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                     }
                     ... on Tool {
@@ -1975,7 +1975,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActorGroup {
+                            ... on ThreatActor {
                               name
                               description
                               first_seen
@@ -2077,7 +2077,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                 ... on Malware {
                   name
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                 }
                 ... on Tool {
@@ -2213,7 +2213,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           first_seen
                           last_seen
                         }
-                        ... on ThreatActorGroup {
+                        ... on ThreatActor {
                           name
                           description
                           first_seen
@@ -2316,7 +2316,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                     }
                     ... on Tool {
@@ -2452,7 +2452,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActorGroup {
+                            ... on ThreatActor {
                               name
                               description
                               first_seen
@@ -2549,7 +2549,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
-                    ... on ThreatActorGroup {
+                    ... on ThreatActor {
                       name
                     }
                     ... on Tool {
@@ -2685,7 +2685,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               first_seen
                               last_seen
                             }
-                            ... on ThreatActorGroup {
+                            ... on ThreatActor {
                               name
                               description
                               first_seen
@@ -2901,7 +2901,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     first_seen
                     last_seen
                   }
-                  ... on ThreatActorGroup {
+                  ... on ThreatActor {
                     name
                     description
                     first_seen
@@ -2962,7 +2962,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
           ... on Malware {
             name
           }
-          ... on ThreatActorGroup {
+          ... on ThreatActor {
             name
           }
           ... on Tool {
@@ -3044,7 +3044,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActorGroup {
+              ... on ThreatActor {
                 name
               }
               ... on Tool {
@@ -3120,7 +3120,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActorGroup {
+              ... on ThreatActor {
                 name
               }
               ... on Tool {
@@ -3202,7 +3202,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
           ... on Malware {
             name
           }
-          ... on ThreatActorGroup {
+          ... on ThreatActor {
             name
           }
           ... on Tool {
@@ -3279,7 +3279,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActorGroup {
+              ... on ThreatActor {
                 name
               }
               ... on Tool {
@@ -3354,7 +3354,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActorGroup {
+              ... on ThreatActor {
                 name
               }
               ... on Tool {

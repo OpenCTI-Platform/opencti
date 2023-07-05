@@ -277,7 +277,7 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
               first_seen
               last_seen
             }
-            ... on ThreatActorGroup {
+            ... on ThreatActor {
               name
               description
               first_seen
@@ -462,7 +462,7 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                   first_seen
                   last_seen
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                   description
                   first_seen
@@ -639,7 +639,7 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                   first_seen
                   last_seen
                 }
-                ... on ThreatActorGroup {
+                ... on ThreatActor {
                   name
                   description
                   first_seen

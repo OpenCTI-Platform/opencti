@@ -168,7 +168,7 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
               ... on MalwareAnalysis {
                 result_name
               }
-              ... on ThreatActorGroup {
+              ... on ThreatActor {
                 name
                 description
               }
@@ -301,7 +301,7 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         ... on MalwareAnalysis {
           result_name
         }
-        ... on ThreatActorGroup {
+        ... on ThreatActor {
           name
           description
         }

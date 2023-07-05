@@ -209,7 +209,7 @@ export const searchStixCoreObjectsLinesSearchQuery = graphql`
             aliases
             description
           }
-          ... on ThreatActorGroup {
+          ... on ThreatActor {
             name
             aliases
             description

@@ -362,7 +362,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on ThreatActorGroup {
+          ... on ThreatActor {
             name
             description
           }
@@ -431,7 +431,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActorGroup {
+              ... on ThreatActor {
                 name
               }
               ... on Tool {
@@ -496,7 +496,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on Malware {
                 name
               }
-              ... on ThreatActorGroup {
+              ... on ThreatActor {
                 name
               }
               ... on Tool {
