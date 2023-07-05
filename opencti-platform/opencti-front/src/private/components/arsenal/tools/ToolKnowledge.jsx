@@ -85,7 +85,7 @@ class ToolKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={tool.id}
                 relationshipTypes={['uses']}
-                stixCoreObjectTypes={['Threat-Actor-Group']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

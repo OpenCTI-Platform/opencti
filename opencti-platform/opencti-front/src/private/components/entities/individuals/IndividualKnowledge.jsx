@@ -89,7 +89,7 @@ class IndividualKnowledgeComponent extends Component {
                 entityLink={link}
                 stixCoreObjectTypes={[
                   'Attack-Pattern',
-                  'Theat-Actor-Group',
+                  'Threat-Actor',
                   'Intrusion-Set',
                   'Campaign',
                   'Incident',
@@ -148,7 +148,7 @@ class IndividualKnowledgeComponent extends Component {
               <EntityStixCoreRelationships
                 entityId={individual.id}
                 relationshipTypes={['targets']}
-                stixCoreObjectTypes={['Theat-Actor-Group']}
+                stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}

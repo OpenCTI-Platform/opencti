@@ -168,7 +168,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
             isSupportParticipation={false}
             container={caseIncidentData}
             types={[
-              'Threat-Actor-Group',
+              'Threat-Actor',
               'Intrusion-Set',
               'Campaign',
               'Malware',
