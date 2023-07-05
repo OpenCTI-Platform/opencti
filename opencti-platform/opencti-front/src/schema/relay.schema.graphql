@@ -9974,6 +9974,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   name: String!
   description: String
   due_date: DateTime
+  objectParticipant: ParticipantConnection
 }
 
 enum TasksOrdering {
@@ -10004,6 +10005,7 @@ enum TasksFilter {
   markedBy
   labelledBy
   assigneeTo
+  participant
   objectContains
   x_opencti_workflow_id
   due_date
@@ -10032,6 +10034,7 @@ input TaskAddInput {
   created: DateTime
   due_date: DateTime
   objectAssignee: [String]
+  objectParticipant: [String]
   objectLabel: [String]
   objectMarking: [String]
   objectOrganization: [String]

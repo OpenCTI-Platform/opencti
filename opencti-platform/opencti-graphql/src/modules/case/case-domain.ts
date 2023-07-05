@@ -7,8 +7,10 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { BasicStoreEntityCase, ENTITY_TYPE_CONTAINER_CASE, } from './case-types';
 import { BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../task/task-template/task-template-types';
 import { TEMPLATE_TASK_RELATION } from './case-template/case-template-types';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
 import { taskAdd } from '../task/task-domain';
+import { batchListThroughGetTo } from '../../database/middleware';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 export const findById = (context: AuthContext, user: AuthUser, caseId: string): BasicStoreEntityCase => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE) as unknown as BasicStoreEntityCase;
@@ -16,6 +18,10 @@ export const findById = (context: AuthContext, user: AuthUser, caseId: string): 
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCase>) => {
   return listEntitiesPaginated<BasicStoreEntityCase>(context, user, [ENTITY_TYPE_CONTAINER_CASE], opts);
+};
+
+export const batchParticipants = (context: AuthContext, user: AuthUser, caseIds: string[]) => {
+  return batchListThroughGetTo(context, user, caseIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
 };
 
 export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser, id: string, caseTemplateId: string) => {

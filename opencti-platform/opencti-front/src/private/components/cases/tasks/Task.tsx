@@ -71,6 +71,15 @@ export const taskFragment = graphql`
         }
       }
     }
+    objectParticipant {
+      edges {
+        node {
+          entity_type
+          id
+          name
+        }
+      }
+    }
     status {
       template {
         name
@@ -105,7 +114,8 @@ const TaskComponent = ({ data }: { data: Tasks_tasks$key }) => {
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview
             stixDomainObject={task}
-            displayAssignees={true}
+            displayAssignees
+            displayParticipants
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>

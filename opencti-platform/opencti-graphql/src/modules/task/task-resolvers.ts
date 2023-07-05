@@ -4,7 +4,7 @@ import {
   RELATION_CREATED_BY, RELATION_OBJECT,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
+  RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT
 } from '../../schema/stixRefRelationship';
 import {
   taskAdd,
@@ -14,8 +14,11 @@ import {
   taskDelete,
   taskEdit,
   findAll,
-  findById
+  findById, batchParticipants
 } from './task-domain';
+import { batchLoader } from '../../database/middleware';
+
+const participantLoader = batchLoader(batchParticipants);
 
 const taskResolvers: Resolvers = {
   Query: {
@@ -25,9 +28,14 @@ const taskResolvers: Resolvers = {
       return taskContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
+  Task: {
+    objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
+
+  },
   TasksFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
+    participant: buildRefRelationKey(RELATION_OBJECT_PARTICIPANT),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     objectContains: buildRefRelationKey(RELATION_OBJECT)

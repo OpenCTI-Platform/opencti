@@ -1,7 +1,7 @@
 import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ModuleDefinition, registerDefinition } from '../../schema/module';
-import { objectAssignee, objectOrganization } from '../../schema/stixRefRelationship';
+import { objectAssignee, objectOrganization, objectParticipant } from '../../schema/stixRefRelationship';
 import convertCaseTaskToStix from './task-converter';
 import taskResolvers from './task-resolvers';
 import type { StixTask, StoreEntityTask } from './task-types';
@@ -38,6 +38,7 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
   relationsRefs: [
     objectOrganization,
     { ...objectAssignee, mandatoryType: 'no' },
+    objectParticipant
   ],
   representative: (stix: StixTask) => {
     return stix.name;

@@ -11,7 +11,7 @@ import TextField from '../../../../components/TextField';
 import {
   convertAssignees,
   convertCreatedBy,
-  convertMarkings,
+  convertMarkings, convertParticipants,
   convertStatus,
 } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -26,6 +26,7 @@ import StatusField from '../../common/form/StatusField';
 import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverview_task.graphql';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { TasksFiltering } from './__generated__/TasksRefetch.graphql';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 export const tasksMutationFieldPatch = graphql`
   mutation TasksEditionOverviewFieldPatchMutation(
@@ -100,6 +101,15 @@ const tasksEditionOverviewFragment = graphql`
         }
       }
     }
+    objectParticipant {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
   }
 `;
 
@@ -151,6 +161,7 @@ interface TasksEditionFormValues {
   createdBy?: Option;
   objectMarking?: Option[];
   objectAssignee?: Option[];
+  objectParticipant?: Option[]
   x_opencti_workflow_id: Option;
 }
 
@@ -196,6 +207,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
+      objectParticipant: (values.objectParticipant ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
@@ -218,6 +230,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     createdBy: convertCreatedBy(taskData) as Option,
     objectMarking: convertMarkings(taskData),
     objectAssignee: convertAssignees(taskData),
+    objectParticipant: convertParticipants(taskData),
     x_opencti_workflow_id: convertStatus(t, taskData) as Option,
   };
   return (
@@ -278,6 +291,14 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
             }
             onChange={editor.changeAssignee}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectParticipant" />
+            }
+            onChange={editor.changeParticipant}
           />
           {taskData.workflowEnabled && (
             <StatusField
