@@ -7,20 +7,18 @@ from typing import Union
 from stix2.canonicalization.Canonicalize import canonicalize
 
 from pycti.entities import LOGGER
-from pycti.entities.opencti_threat_actor_group import ThreatActorGroup
 
 
-class ThreatActor:
-    """Main ThreatActor class for OpenCTI
+class ThreatActorGroup:
+    """Main ThreatActorGroup class for OpenCTI
 
     :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
     """
 
     def __init__(self, opencti):
-        """Create an instance of ThreatActor"""
+        """Create an instance of ThreatActorGroup"""
 
         self.opencti = opencti
-        self.threat_actor_group = ThreatActorGroup(opencti)
         self.properties = """
             id
             standard_id
@@ -156,7 +154,7 @@ class ThreatActor:
         return "threat-actor--" + id
 
     def list(self, **kwargs) -> dict:
-        """List Threat-Actor objects
+        """List Threat-Actor-Group objects
 
         The list method accepts the following kwargs:
 
@@ -183,11 +181,11 @@ class ThreatActor:
         if get_all:
             first = 500
 
-        LOGGER.info("Listing Threat-Actors with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Threat-Actors-Group with filters %s.", json.dumps(filters))
         query = (
             """
-            query ThreatActors($filters: [ThreatActorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
-                threatActors(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query ThreatActorsGroup($filters: [ThreatActorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
+                threatActorsGroup(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -218,20 +216,20 @@ class ThreatActor:
             },
         )
         return self.opencti.process_multiple(
-            result["data"]["threatActors"], with_pagination
+            result["data"]["threatActorsGroup"], with_pagination
         )
 
     def read(self, **kwargs) -> Union[dict, None]:
-        """Read a Threat-Actor object
+        """Read a Threat-Actor-Group object
 
         read can be either used with a known OpenCTI entity `id` or by using a
-        valid filter to search and return a single Threat-Actor entity or None.
+        valid filter to search and return a single Threat-Actor-Group entity or None.
 
         The list method accepts the following kwargs.
 
         Note: either `id` or `filters` is required.
 
-        :param str id: the id of the Threat-Actor
+        :param str id: the id of the Threat-Actor-Group
         :param list filters: the filters to apply if no id provided
         """
 
@@ -239,11 +237,11 @@ class ThreatActor:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            LOGGER.info("Reading Threat-Actor {%s}.", id)
+            LOGGER.info("Reading Threat-Actor-Group {%s}.", id)
             query = (
                 """
-                query ThreatActor($id: String!) {
-                    threatActor(id: $id) {
+                query ThreatActorGroup($id: String!) {
+                    threatActorGroup(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -256,7 +254,9 @@ class ThreatActor:
              """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["threatActor"])
+            return self.opencti.process_multiple_fields(
+                result["data"]["threatActorGroup"]
+            )
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -264,21 +264,23 @@ class ThreatActor:
             else:
                 return None
         else:
-            LOGGER.error("[opencti_threat_actor] Missing parameters: id or filters")
+            LOGGER.error(
+                "[opencti_threat_actor_group] Missing parameters: id or filters"
+            )
             return None
 
     def create(self, **kwargs):
-        """Create a Threat-Actor object
+        """Create a Threat-Actor-Group object
 
-        The Threat-Actor entity will only be created if it doesn't exists
+        The Threat-Actor-Group entity will only be created if it doesn't exists
         By setting `update` to `True` it acts like an upsert and updates
-        fields of an existing Threat-Actor entity.
+        fields of an existing Threat-Actor-Group entity.
 
         The create method accepts the following kwargs.
 
         Note: `name` and `description` or `stix_id` is required.
 
-        :param str stix_id: stix2 id reference for the Threat-Actor entity
+        :param str stix_id: stix2 id reference for the Threat-Actor-Group entity
         :param str createdBy: (optional) id of the organization that created the knowledge
         :param list objectMarking: (optional) list of OpenCTI markin definition ids
         :param list objectLabel: (optional) list of OpenCTI label ids
@@ -288,9 +290,9 @@ class ThreatActor:
         :param str lang: language
         :param str created: (optional) date in OpenCTI date format
         :param str modified: (optional) date in OpenCTI date format
-        :param str name: name of the threat actor
-        :param str description: description of the threat actor
-        :param list aliases: (optional) list of alias names for the Threat-Actor
+        :param str name: name of the threat actor group
+        :param str description: description of the threat actor group
+        :param list aliases: (optional) list of alias names for the Threat-Actor-Group
         :param list threat_actor_types: (optional) list of threat actor types
         :param str first_seen: (optional) date in OpenCTI date format
         :param str last_seen: (optional) date in OpenCTI date format
@@ -300,16 +302,164 @@ class ThreatActor:
         :param str resource_level: (optional) describe the actors resource_level in text
         :param str primary_motivation: (optional) describe the actors primary_motivation in text
         :param list secondary_motivations: (optional) describe the actors secondary_motivations in list of string
-        :param bool update: (optional) choose to updated an existing Threat-Actor entity, default `False`
+        :param bool update: (optional) choose to updated an existing Threat-Actor-Group entity, default `False`
         """
-        return self.threat_actor_group.create(**kwargs)
+
+        stix_id = kwargs.get("stix_id", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
+        revoked = kwargs.get("revoked", None)
+        confidence = kwargs.get("confidence", None)
+        lang = kwargs.get("lang", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
+        name = kwargs.get("name", None)
+        description = kwargs.get("description", None)
+        aliases = kwargs.get("aliases", None)
+        threat_actor_types = kwargs.get("threat_actor_types", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        goals = kwargs.get("goals", None)
+        sophistication = kwargs.get("sophistication", None)
+        resource_level = kwargs.get("resource_level", None)
+        primary_motivation = kwargs.get("primary_motivation", None)
+        secondary_motivations = kwargs.get("secondary_motivations", None)
+        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        granted_refs = kwargs.get("objectOrganization", None)
+        update = kwargs.get("update", False)
+
+        if name is not None:
+            LOGGER.info("Creating Threat-Actor-Group {%s}.", name)
+            query = """
+                mutation ThreatActorGroupAdd($input: ThreatActorGroupAddInput!) {
+                    threatActorGroupAdd(input: $input) {
+                        id
+                        standard_id
+                        entity_type
+                        parent_types
+                    }
+                }
+            """
+            result = self.opencti.query(
+                query,
+                {
+                    "input": {
+                        "stix_id": stix_id,
+                        "createdBy": created_by,
+                        "objectMarking": object_marking,
+                        "objectLabel": object_label,
+                        "objectOrganization": granted_refs,
+                        "externalReferences": external_references,
+                        "revoked": revoked,
+                        "confidence": confidence,
+                        "lang": lang,
+                        "created": created,
+                        "modified": modified,
+                        "name": name,
+                        "description": description,
+                        "aliases": aliases,
+                        "threat_actor_types": threat_actor_types,
+                        "first_seen": first_seen,
+                        "last_seen": last_seen,
+                        "goals": goals,
+                        "sophistication": sophistication,
+                        "resource_level": resource_level,
+                        "primary_motivation": primary_motivation,
+                        "secondary_motivations": secondary_motivations,
+                        "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "update": update,
+                    }
+                },
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["threatActorGroupAdd"]
+            )
+        else:
+            LOGGER.error(
+                "[opencti_threat_actor_group] Missing parameters: name and description"
+            )
 
     """
-        Import an Threat-Actor object from a STIX2 object
+        Import an Threat-Actor-Group object from a STIX2 object
 
         :param stixObject: the Stix-Object Intrusion-Set
         :return Intrusion-Set object
     """
 
     def import_from_stix2(self, **kwargs):
-        return self.threat_actor_group.import_from_stix2(**kwargs)
+        stix_object = kwargs.get("stixObject", None)
+        extras = kwargs.get("extras", {})
+        update = kwargs.get("update", False)
+        if stix_object is not None:
+            # Search in extensions
+            if "x_opencti_stix_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+            if "granted_refs" not in stix_object:
+                stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
+                    "granted_refs", stix_object
+                )
+
+            return self.create(
+                stix_id=stix_object["id"],
+                createdBy=extras["created_by_id"]
+                if "created_by_id" in extras
+                else None,
+                objectMarking=extras["object_marking_ids"]
+                if "object_marking_ids" in extras
+                else None,
+                objectLabel=extras["object_label_ids"]
+                if "object_label_ids" in extras
+                else None,
+                externalReferences=extras["external_references_ids"]
+                if "external_references_ids" in extras
+                else None,
+                revoked=stix_object["revoked"] if "revoked" in stix_object else None,
+                confidence=stix_object["confidence"]
+                if "confidence" in stix_object
+                else None,
+                lang=stix_object["lang"] if "lang" in stix_object else None,
+                created=stix_object["created"] if "created" in stix_object else None,
+                modified=stix_object["modified"] if "modified" in stix_object else None,
+                name=stix_object["name"],
+                description=self.opencti.stix2.convert_markdown(
+                    stix_object["description"]
+                )
+                if "description" in stix_object
+                else None,
+                aliases=self.opencti.stix2.pick_aliases(stix_object),
+                threat_actor_types=stix_object["threat_actor_types"]
+                if "threat_actor_types" in stix_object
+                else None,
+                first_seen=stix_object["first_seen"]
+                if "first_seen" in stix_object
+                else None,
+                last_seen=stix_object["last_seen"]
+                if "last_seen" in stix_object
+                else None,
+                goals=stix_object["goals"] if "goals" in stix_object else None,
+                sophistication=stix_object["sophistication"]
+                if "sophistication" in stix_object
+                else None,
+                resource_level=stix_object["resource_level"]
+                if "resource_level" in stix_object
+                else None,
+                primary_motivation=stix_object["primary_motivation"]
+                if "primary_motivation" in stix_object
+                else None,
+                secondary_motivations=stix_object["secondary_motivations"]
+                if "secondary_motivations" in stix_object
+                else None,
+                x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
+                if "x_opencti_stix_ids" in stix_object
+                else None,
+                objectOrganization=stix_object["granted_refs"]
+                if "granted_refs" in stix_object
+                else None,
+                update=update,
+            )
+        else:
+            LOGGER.error("[opencti_threat_actor_group] Missing parameters: stixObject")
