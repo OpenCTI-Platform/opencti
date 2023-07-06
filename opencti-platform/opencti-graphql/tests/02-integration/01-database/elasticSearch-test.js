@@ -346,7 +346,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: 1000 });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(421);
+    expect(data.edges.length).toEqual(448);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -356,7 +356,7 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     // external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5 | url
     // intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 | description
-    expect(data.edges.length).toEqual(47);
+    expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
@@ -391,11 +391,11 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with classic search', async () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'malicious' });
-    expect(data.edges.length).toEqual(24);
+    expect(data.edges.length).toEqual(28);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(48);
+    expect(data.edges.length).toEqual(54);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
-    expect(data.edges.length).toEqual(47);
+    expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with escaped search', async () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '(Citation:' });
@@ -406,21 +406,19 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with http and https', async () => {
-    let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
-      search: '"http://attack.mitre.org/groups/G0096"',
-    });
-    expect(data.edges.length).toEqual(47);
+    let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"http://attack.mitre.org/groups/G0096"' });
+    expect(data.edges.length).toEqual(2);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"https://attack.mitre.org/groups/G0096"' });
-    expect(data.edges.length).toEqual(47);
+    expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with incorrect encoding', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"ATT%"' });
-    expect(data.edges.length).toEqual(47);
+    expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
-    expect(data.edges.length).toEqual(414);
+    expect(data.edges.length).toEqual(441);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
@@ -455,7 +453,7 @@ describe('Elasticsearch pagination', () => {
       { key: 'color', operator: undefined, values: [null] },
     ];
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
-    expect(data.edges.length).toEqual(286);
+    expect(data.edges.length).toEqual(312);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
@@ -469,7 +467,7 @@ describe('Elasticsearch pagination', () => {
       orderMode: 'asc',
       first: 1000
     });
-    expect(data.edges.length).toEqual(421);
+    expect(data.edges.length).toEqual(448);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
