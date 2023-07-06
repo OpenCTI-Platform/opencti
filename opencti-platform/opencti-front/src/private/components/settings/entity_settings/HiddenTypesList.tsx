@@ -35,7 +35,7 @@ export const groups = new Map<string, string[]>([
   ['Cases', ['Case-Incident', 'Feedback', 'Case-Rfi', 'Case-Rft', 'Task']],
   ['Events', ['Incident', 'Observed-Data']],
   ['Observations', ['Indicator', 'Infrastructure']],
-  ['Threats', ['Threat-Actor-Group', 'Intrusion-Set', 'Campaign']],
+  ['Threats', ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign']],
   ['Arsenal', ['Malware', 'Channel', 'Tool', 'Vulnerability']],
   [
     'Techniques',

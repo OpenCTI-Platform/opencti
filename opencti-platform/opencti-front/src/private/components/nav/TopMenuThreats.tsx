@@ -49,7 +49,7 @@ const TopMenuThreats = () => {
           classes={{ root: classes.button }}
         >
           <LaptopAccount className={classes.icon} fontSize="small" />
-          {t('Threat actors group')}
+          {t('Threat actors (group)')}
         </Button>
       )}
       {!useIsHiddenEntity('Threat-Actor-Individual') && (
@@ -74,7 +74,7 @@ const TopMenuThreats = () => {
           classes={{ root: classes.button }}
         >
           <LaptopAccount className={classes.icon} fontSize="small" />
-          {t('Threat actors individual')}
+          {t('Threat actors (individual)')}
         </Button>
       )}
       {!useIsHiddenEntity('Intrusion-Set') && (

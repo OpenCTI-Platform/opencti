@@ -51,7 +51,7 @@ const TopMenuThreatActorIndividual = () => {
         classes={{ root: classes.buttonHome }}
       >
         <LaptopAccount className={classes.icon} fontSize="small" />
-        {t('Threat actors individual')}
+        {t('Threat actors (individual)')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"
