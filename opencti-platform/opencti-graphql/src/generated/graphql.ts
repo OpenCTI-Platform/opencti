@@ -23495,6 +23495,7 @@ export type ThreatActor = {
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
+  personal_motivations?: Maybe<Array<Maybe<Scalars['String']>>>;
   primary_motivation?: Maybe<Scalars['String']>;
   reports?: Maybe<ReportConnection>;
   resource_level?: Maybe<Scalars['String']>;
@@ -34354,6 +34355,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ThreatActorOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorPendingFilesArgs>>;
+  personal_motivations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   primary_motivation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ThreatActorReportsArgs>>;
   resource_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -1,6 +1,6 @@
 import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
-import { NAME_FIELD, normalizeName } from '../../schema/identifier';
+import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
@@ -50,7 +50,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: INNER_TYPE }]
     },
     resolvers: {
       name(data: object) {

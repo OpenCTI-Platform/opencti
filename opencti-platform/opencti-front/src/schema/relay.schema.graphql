@@ -4982,6 +4982,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
   creators: [Creator!]
@@ -11045,6 +11046,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
   photo: File
@@ -11058,7 +11060,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  personal_motivations: [String]
 }
 
 enum ThreatActorsIndividualOrdering {

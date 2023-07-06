@@ -86,14 +86,21 @@ export const up = async (next) => {
   await createIndividualThreatCategories(context);
   // Iterator over all threat actors
   // Some must be converted to group and some to individual
-  const filters = [{ key: 'entity_type', values: [ENTITY_TYPE_THREAT_ACTOR] }];
-  const threatCount = await elCount(context, SYSTEM_USER, READ_ENTITIES_INDICES, { filters });
+  const threatCount = await elCount(context, SYSTEM_USER, READ_ENTITIES_INDICES, { types: [ENTITY_TYPE_THREAT_ACTOR] });
   logApp.info(`${message} > Migrating threat actors 0/${threatCount}`);
   let processNumber = 0;
   const callback = async (threatActors) => {
     processNumber += threatActors.length;
-    for (let index = 0; index < threatActors.length; index += 1) {
-      const threatActor = threatActors[index];
+    const workingActors = threatActors.filter((t) => {
+      // If not yet migrated
+      if (t.entity_type === ENTITY_TYPE_THREAT_ACTOR) return true;
+      // If migrated but needs to be changed to individual
+      const isIndividualTarget = t.resource_level === 'individual';
+      const toType = isIndividualTarget ? ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL : ENTITY_TYPE_THREAT_ACTOR_GROUP;
+      return t.entity_type === ENTITY_TYPE_THREAT_ACTOR_GROUP && toType === ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL;
+    });
+    for (let index = 0; index < workingActors.length; index += 1) {
+      const threatActor = workingActors[index];
       const isIndividualTarget = threatActor.resource_level === 'individual';
       const toType = isIndividualTarget ? ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL : ENTITY_TYPE_THREAT_ACTOR_GROUP;
       const standardId = generateStandardId(toType, threatActor);
@@ -146,7 +153,7 @@ export const up = async (next) => {
     }
     logApp.info(`${message} > Migrating threat actors ${processNumber}/${threatCount}`);
   };
-  await elList(context, SYSTEM_USER, [READ_INDEX_STIX_DOMAIN_OBJECTS], { filters, callback });
+  await elList(context, SYSTEM_USER, [READ_INDEX_STIX_DOMAIN_OBJECTS], { types: [ENTITY_TYPE_THREAT_ACTOR], callback });
   // Done with the migration
   logApp.info(`${message} > done`);
   next();
