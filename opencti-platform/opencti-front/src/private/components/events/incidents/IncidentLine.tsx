@@ -306,7 +306,7 @@ export const IncidentLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
+              style={{ width: dataColumns.objectAssignee.width }}
             >
               <Skeleton
                 animation="wave"

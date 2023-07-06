@@ -1,23 +1,23 @@
 import { FunctionComponent } from 'react';
 import Button from '@mui/material/Button';
+import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 
+type Participants = ObjectParticipantFieldParticipantsSearchQuery$data['participants'];
 interface ItemParticipantsProps {
-  // TODO To fix tomorrow :)
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  participantsEdges: any[];
+  participants: Participants;
 }
 
 const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({
-  participantsEdges,
+  participants,
 }) => {
-  const participants = participantsEdges.slice()
+  const participantsData = (participants?.edges ?? []).slice()
     .sort((a, b) => a.node.name.localeCompare(b.node.name))
     .map((n) => n.node);
 
   return (
     <div>
-      {participants.length > 0
-        ? participants.map((assignee) => (
+      {participantsData.length > 0
+        ? participantsData.map((assignee) => (
           <Button
             key={assignee.id}
             variant="outlined"

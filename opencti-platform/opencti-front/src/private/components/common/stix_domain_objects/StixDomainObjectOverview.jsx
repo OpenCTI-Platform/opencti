@@ -223,8 +223,8 @@ class StixDomainObjectOverview extends Component {
                     {t('Participants')}
                   </Typography>
                   <ItemParticipants
-                    participantsEdges={
-                      stixDomainObject.objectParticipant?.edges ?? []
+                    participants={
+                      stixDomainObject.objectParticipant
                     }
                   />
                 </div>
