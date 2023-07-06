@@ -1,7 +1,6 @@
-import { v4 as uuid } from 'uuid';
 import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
-import { normalizeName } from '../../schema/identifier';
+import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
@@ -21,7 +20,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: () => uuid(),
+      [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: [{ src: NAME_FIELD }]
     },
     resolvers: {
       name(data: object) {
