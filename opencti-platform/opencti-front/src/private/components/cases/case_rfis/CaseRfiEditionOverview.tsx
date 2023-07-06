@@ -372,9 +372,6 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
           <ObjectParticipantField
             name="objectParticipant"
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectParticipant" />
-            }
             onChange={editor.changeParticipant}
           />
           {caseData.workflowEnabled && (

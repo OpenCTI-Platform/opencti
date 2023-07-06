@@ -17,15 +17,15 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({
   return (
     <div>
       {participantsData.length > 0
-        ? participantsData.map((assignee) => (
+        ? participantsData.map((participant) => (
           <Button
-            key={assignee.id}
+            key={participant.id}
             variant="outlined"
             color="primary"
             size="small"
             style={{ margin: '0 7px 7px 0', cursor: 'default' }}
           >
-            {assignee.name}
+            {participant.name}
           </Button>
         ))
         : '-'}
