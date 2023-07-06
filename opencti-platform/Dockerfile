@@ -9,7 +9,7 @@ COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yar
 COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
 RUN set -ex \
-    ; apk add --no-cache git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre \
+    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && npm install -g node-gyp \
     && yarn install --frozen-lockfile && yarn cache clean --all
 
@@ -21,7 +21,7 @@ COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yar
 COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
 RUN set -ex \
-    ; apk add --no-cache git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre \
+    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && npm install -g node-gyp \
     && yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
@@ -36,7 +36,7 @@ COPY opencti-front/package.json opencti-front/yarn.lock opencti-front/.yarnrc.ym
 COPY opencti-front/.yarn ./.yarn
 COPY opencti-front/patch ./patch
 RUN set -ex \
-    ; apk add --no-cache git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre \
+    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && npm install -g node-gyp \
 && yarn install
 
@@ -51,7 +51,7 @@ RUN yarn build:standalone
 FROM base AS app
 
 RUN set -ex \
-    ; apk add --no-cache git tini gcc musl-dev python3 python3-dev postfix postfix-pcre \
+    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && python3 -m ensurepip \
     && rm -rv /usr/lib/python*/ensurepip \
     && pip3 install --no-cache-dir --upgrade pip setuptools wheel \

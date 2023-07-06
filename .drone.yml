@@ -25,7 +25,7 @@ steps:
       SMTP__PASSWORD: frhJ2mSPTfaEutpbug
       PYTHONUNBUFFERED: 1
     commands:
-      - apk add build-base git libffi-dev python3 python3-dev
+      - apk add build-base git libffi-dev cargo
       - ln -sf python3 /usr/bin/python
       - python3 -m ensurepip
       - pip3 install --no-cache --upgrade pip setuptools
@@ -133,7 +133,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 30
-      - apk add build-base git libffi-dev
+      - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform /tmp/raw-start-platform
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
@@ -159,7 +159,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 90
-      - apk add build-base git libffi-dev python3-dev
+      - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform /tmp/live-start-platform
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
@@ -185,7 +185,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 60
-      - apk add build-base git libffi-dev python3-dev
+      - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform /tmp/direct-start-platform
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
@@ -202,7 +202,7 @@ services:
       WORKER_LOG_LEVEL: info
     commands:
       - sleep 180
-      - apk add build-base git libffi-dev
+      - apk add build-base git libffi-dev cargo
       - cp -a opencti-worker /tmp/direct-start-worker
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
@@ -227,7 +227,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 120
-      - apk add build-base git libffi-dev python3-dev
+      - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform /tmp/restore-start-platform
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
