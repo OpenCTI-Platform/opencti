@@ -1809,6 +1809,7 @@ enum StixCoreObjectsFilter {
   createdBy
   markedBy
   assigneeTo
+  participant
   labelledBy
   killChainPhase
   hasExternalReference

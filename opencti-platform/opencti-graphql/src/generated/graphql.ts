@@ -20676,6 +20676,7 @@ export enum StixCoreObjectsFilter {
   Modified = 'modified',
   Name = 'name',
   ObjectContains = 'objectContains',
+  Participant = 'participant',
   PatternType = 'pattern_type',
   Published = 'published',
   RelatedTo = 'relatedTo',

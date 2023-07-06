@@ -39,7 +39,7 @@ import {
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT,
 } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -117,6 +117,7 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_${ROLE_TO}`,
   `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
   `${RELATION_OBJECT_ASSIGNEE}_${ROLE_TO}`,
+  `${RELATION_OBJECT_PARTICIPANT}_${ROLE_TO}`,
   `${RELATION_GRANTED_TO}_${ROLE_TO}`,
   `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
@@ -807,6 +808,32 @@ export const RUNTIME_ATTRIBUTES = {
           if (assigneeId.size() >= 1) {
             def assigneeName = params[assigneeId[0]].toLowerCase();
             emit(assigneeName != null ? assigneeName : 'unknown')
+          } else {
+              emit('unknown')
+            }
+        } else {
+          emit('unknown')
+        }
+    `,
+    getParams: async (context, user) => {
+      // eslint-disable-next-line no-use-before-define
+      const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
+        types: [ENTITY_TYPE_USER],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
+    },
+  },
+  participant: {
+    field: 'participant.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_object-participant.internal_id')) {
+          def participantId = doc['rel_object-participant.internal_id.keyword'];
+          if (participantId.size() >= 1) {
+            def participantName = params[participantId[0]].toLowerCase();
+            emit(participantName != null ? participantName : 'unknown')
           } else {
               emit('unknown')
             }
