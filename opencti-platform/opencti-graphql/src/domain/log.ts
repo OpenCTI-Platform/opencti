@@ -1,10 +1,11 @@
 import { elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
-import { timeSeriesHistories } from '../database/middleware';
+import {timeSeriesAudits, timeSeriesEntities, timeSeriesHistories} from '../database/middleware';
 import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
+import {ABSTRACT_STIX_CORE_OBJECT} from "../schema/general";
 
 export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
   const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY] };
@@ -19,6 +20,12 @@ export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAudi
 export const logsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
   const filters: any[] = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
   return timeSeriesHistories(context, user, { ...args, filters });
+};
+
+export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
+  const { types } = args;
+  const filters: any[] = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
+  return timeSeriesAudits(context, user, types ?? [ENTITY_TYPE_HISTORY], { ...args, filters });
 };
 
 export const logsWorkerConfig = () => {

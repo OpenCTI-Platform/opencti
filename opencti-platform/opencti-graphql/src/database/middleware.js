@@ -549,6 +549,12 @@ export const timeSeriesHistories = async (context, user, args) => {
   const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
+export const timeSeriesAudits = async (context, user, types, args) => {
+  const timeSeriesArgs = buildEntityFilters({ types, ...args });
+  const { startDate, endDate, interval } = args;
+  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, timeSeriesArgs);
+  return fillTimeSeries(startDate, endDate, interval, histogramData);
+};
 export const timeSeriesEntities = async (context, user, types, args) => {
   const timeSeriesArgs = buildEntityFilters({ types, ...args });
   const { startDate, endDate, interval } = args;

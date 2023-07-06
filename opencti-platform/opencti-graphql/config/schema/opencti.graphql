@@ -11640,6 +11640,34 @@ type Query {
     filterMode: FilterMode
     search: String
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  auditsTimeSeries(
+    userId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+    filters: [LogsFiltering!]
+    filterMode: FilterMode
+    search: String
+  ): LogConnection @auth(for: [SETTINGS])
+  auditsDistribution(
+    objectId: [String]
+    relationship_type: [String]
+    toTypes: [String]
+    elementWithTargetTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): [Distribution] @auth(for: [SETTINGS])
   subType(id: String!): SubType @auth(for: [KNOWLEDGE])
   subTypes(
     first: Int
