@@ -67,12 +67,10 @@ const threatActorIndividualEditionDetailsFragment = graphql`
 
 interface ThreatActorIndividualEditionDetailsProps {
   threatActorIndividualRef: ThreatActorIndividualEditionDetails_ThreatActorIndividual$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
+  context: ReadonlyArray<{
+    readonly focusOn: string | null
+    readonly name: string
+  }> | null
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -99,7 +97,6 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
   const [commitEditionDetailsFocus] = useMutation<ThreatActorIndividualEditionDetailsFocusMutation>(
     ThreatActorIndividualEditionDetailsFocus,
   );
-
   const basicShape = {
     first_seen: Yup.date()
       .nullable()
@@ -117,6 +114,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
     references: Yup.array(),
   };
   const individualThreatActorValidator = useSchemaEditionValidation('Threat-Actor-Individual', basicShape);
+
   const handleChangeFocus = (name: string) => {
     commitEditionDetailsFocus({
       variables: {
@@ -139,7 +137,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
       ...otherValues,
       first_seen: values.first_seen ? parse(values.first_seen).format() : null,
       last_seen: values.last_seen ? parse(values.last_seen).format() : null,
-      goals: values.goals && values.goals.length ? values.goals.split('\n') : '',
+      goals: values.goals && values.goals.length ? values.goals.split('\n') : [],
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     commitFieldPatch({
@@ -156,19 +154,32 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
       },
     });
   };
-  const handleSubmitField = (name: string, value: string | string [] | null) => {
+  const handleSubmitField = (name: string, value: string | string[] | null) => {
     if (!enableReferences) {
-      let finalValue = value;
-      if (name === 'goals') {
-        finalValue = value && value.length > 0 ? (value as string).split('\n') : '';
-      }
       individualThreatActorValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           commitFieldPatch({
             variables: {
               id: threatActorIndividual.id,
-              input: [{ key: name, value: [finalValue as string ?? ''] }],
+              input: [{ key: name, value: Array.isArray(value) ? value : [value] }],
+            },
+          });
+        })
+        .catch(() => false);
+    }
+  };
+
+  const handleSubmitGoals = (name: string, value: string) => {
+    if (!enableReferences) {
+      const finalValue = value && value.length > 0 ? value.split('\n') : [];
+      individualThreatActorValidator
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          commitFieldPatch({
+            variables: {
+              id: threatActorIndividual.id,
+              input: [{ key: name, value: finalValue }],
             },
           });
         })
@@ -179,13 +190,13 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
   const initialValues = {
     first_seen: !isNone(threatActorIndividual.first_seen) ? threatActorIndividual.first_seen : null,
     last_seen: !isNone(threatActorIndividual.last_seen) ? threatActorIndividual.last_seen : null,
-    secondary_motivations: threatActorIndividual.secondary_motivations,
-    personal_motivations: threatActorIndividual.personal_motivations,
-    primary_motivations: threatActorIndividual.primary_motivation,
-    roles: threatActorIndividual.roles,
-    sophistication: threatActorIndividual.sophistication,
-    resource_level: threatActorIndividual.resource_level,
-    goals: threatActorIndividual.goals ? threatActorIndividual.goals.join('\n') : '',
+    secondary_motivations: threatActorIndividual.secondary_motivations ?? [],
+    personal_motivations: threatActorIndividual.personal_motivations ?? [],
+    primary_motivation: threatActorIndividual.primary_motivation ?? '',
+    roles: threatActorIndividual.roles ?? [],
+    sophistication: threatActorIndividual.sophistication ?? '',
+    resource_level: threatActorIndividual.resource_level ?? '',
+    goals: (threatActorIndividual.goals ?? []).join('\n'),
   };
   return (
       <div>
@@ -322,7 +333,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
                   rows="4"
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
+                  onSubmit={handleSubmitGoals}
                   helperText={
                     <SubscriptionFocus context={context} fieldName="goals" />
                   }

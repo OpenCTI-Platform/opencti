@@ -95,8 +95,8 @@ const ThreatActorsIndividualCards: FunctionComponent<ThreatActorsIndividualCards
     nodePath: ['threatActorsIndividuals', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
-  const handleSetBookmarkList = () => {
-    setBookmarks(bookmarks);
+  const handleSetBookmarkList = (newBookmarks: []) => {
+    setBookmarks(newBookmarks);
   };
 
   return (
