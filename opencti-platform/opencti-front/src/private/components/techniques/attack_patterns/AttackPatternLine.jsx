@@ -66,7 +66,7 @@ class AttackPatternLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.killChainPhase.width }}
               >
-                {node.killChainPhases.edges.length > 0
+                {node.killChainPhases?.edges.length > 0
                   ? `[${node.killChainPhases.edges[0].node.kill_chain_name}] ${node.killChainPhases.edges[0].node.phase_name}`
                   : '-'}
               </div>
