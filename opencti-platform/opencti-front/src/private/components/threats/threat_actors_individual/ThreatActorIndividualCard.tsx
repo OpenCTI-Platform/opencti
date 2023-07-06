@@ -28,7 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   cardDummy: {
     width: '100%',
     height: 320,
-    color: theme.palette?.grey?.[700],
+    color: theme.palette.grey?.[700],
     borderRadius: 6,
   },
   avatar: {
