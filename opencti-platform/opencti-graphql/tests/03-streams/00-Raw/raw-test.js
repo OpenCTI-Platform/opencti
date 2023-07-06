@@ -97,7 +97,7 @@ describe('Raw streams tests', () => {
       );
       const byTypes = R.groupBy((e) => e.type, deletions);
       expect(byTypes.relationship.length).toBe(8); // Due to merge and sub deletions
-      expect(byTypes['threat-actor-group'].length).toBe(6); // Merge of threat actors in test
+      expect(byTypes['threat-actor'].length).toBe(6); // Merge of threat actors in test
       expect(byTypes.file.length).toBe(2); // Merge of files in test
     },
     FIVE_MINUTES
