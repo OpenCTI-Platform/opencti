@@ -25,6 +25,78 @@
       "modified": "2020-02-25T09:02:29.040Z"
     },
     {
+      "type": "threat-actor",
+      "spec_version": "2.1",
+      "id": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04428",
+      "created": "2018-11-19T23:39:03.893Z",
+      "modified": "2018-11-19T23:39:03.893Z",
+      "name": "Disco Team Threat Actor Group",
+      "description": "This organized threat actor group operates to create profit from all types of crime.",
+      "threat_actor_types": [
+        "crime-syndicate"
+      ],
+      "aliases": [
+        "Equipo del Discoteca"
+      ],
+      "roles": [
+        "agent"
+      ],
+      "goals": [
+        "Steal Credit Card Information"
+      ],
+      "sophistication": "expert",
+      "resource_level": "organization",
+      "primary_motivation": "personal-gain",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "type": "threat-actor",
+      "spec_version": "2.1",
+      "id": "threat-actor--dfaa8d77-07e2-4e28-b2c8-92e9f7b04429",
+      "created": "2018-11-19T23:39:03.893Z",
+      "modified": "2018-11-19T23:39:03.893Z",
+      "name": "Jhon Threat Actor Individual",
+      "description": "This organized threat actor individual.",
+      "threat_actor_types": [
+        "crime-syndicate"
+      ],
+      "sophistication": "expert",
+      "resource_level": "individual",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "id": "threat-actor--8e4cce1a-194c-564a-8125-80fe784dff3a",
+      "spec_version": "2.1",
+      "type": "threat-actor",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "id": "8bb3d3c5-ba1d-4434-82bb-23fe71d2b08b",
+          "type": "Threat-Actor-Individual",
+          "created_at": "2023-07-06T11:39:36.949Z",
+          "updated_at": "2023-07-06T11:39:36.949Z",
+          "is_inferred": false,
+          "creator_ids": [
+            "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+          ]
+        }
+      },
+      "created": "2023-07-06T11:39:36.949Z",
+      "modified": "2023-07-06T11:39:36.949Z",
+      "revoked": false,
+      "confidence": 75,
+      "lang": "en",
+      "object_marking_refs": [
+        "marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c"
+      ],
+      "name": "Henry Threat Actor Individual Hacker",
+      "description": "Henry Threat Actor Individual Hacker",
+      "threat_actor_types": [
+        "hacker"
+      ]
+    },
+    {
       "id": "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
       "type": "observed-data",
       "created": "2020-02-25T09:02:29.040Z",
