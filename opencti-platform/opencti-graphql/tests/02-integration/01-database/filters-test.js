@@ -28,7 +28,7 @@ describe('Filters testing', () => {
     // With eq on marking
     const filters = { markedBy: [{ id: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27' }] };
     const filteredObjects = await applyFilters(filters);
-    expect(filteredObjects.length).toBe(15);
+    expect(filteredObjects.length).toBe(17);
     for (let objectIndex = 0; objectIndex < filteredObjects.length; objectIndex += 1) {
       const filteredObject = filteredObjects[objectIndex];
       expect(filteredObject.object_marking_refs.includes('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27')).toBe(true);
@@ -94,7 +94,7 @@ describe('Filters testing', () => {
     // With gte on marking
     const filters = { confidence_gte: [{ id: 30 }] };
     const filteredObjects = await applyFilters(filters);
-    expect(filteredObjects.length).toBe(8);
+    expect(filteredObjects.length).toBe(9);
     // With lt
     const filtersNot = { confidence_lt: [{ id: 30 }] };
     const filteredObjectsNot = await applyFilters(filtersNot);

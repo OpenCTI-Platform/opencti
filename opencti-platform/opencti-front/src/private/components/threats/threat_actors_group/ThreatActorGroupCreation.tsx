@@ -214,7 +214,7 @@ ThreatActorGroupFormProps
             ]}
           />
           <OpenVocabField
-            type="threat-actor-type-ov"
+            type="threat-actor-group-type-ov"
             name="threat_actor_types"
             label={t('Threat actor types')}
             multiple={true}

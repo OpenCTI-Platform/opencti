@@ -37,6 +37,7 @@ const transformObjectToUpperKeys = (data) => {
 export const INTERNAL_FROM_FIELD = 'i_relations_from';
 export const INTERNAL_TO_FIELD = 'i_relations_to';
 export const NAME_FIELD = 'name';
+export const INNER_TYPE = 'opencti_type';
 export const VALUE_FIELD = 'value';
 export const FIRST_SEEN = 'first_seen';
 export const LAST_SEEN = 'last_seen';
@@ -197,12 +198,11 @@ const stixBaseEntityContribution = {
     [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
     [D.ENTITY_TYPE_LOCATION_POSITION]: [[{ src: 'latitude' }, { src: 'longitude' }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_THREAT_ACTOR_GROUP]: [{ src: NAME_FIELD }, { src: INNER_TYPE }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }, { src: 'created' }],
     [D.ENTITY_TYPE_DATA_COMPONENT]: [[{ src: NAME_FIELD }]],
-    [D.ENTITY_TYPE_DATA_SOURCE]: [[{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_DATA_SOURCE]: [[{ src: NAME_FIELD }]],
     // Stix Meta
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition', dependencies: ['definition_type'] }, { src: 'definition_type' }],
@@ -330,7 +330,8 @@ const filteredIdContributions = (contrib, way, data) => {
   return R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), objectData);
 };
 
-const generateDataUUID = (type, data) => {
+const generateDataUUID = (type, input) => {
+  const data = { ...input, opencti_type: type }; // Enforce type
   const contrib = resolveContribution(type);
   const properties = contrib.definition[type];
   if (!properties) {

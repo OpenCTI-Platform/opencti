@@ -155,6 +155,7 @@ export const typesWithoutAliases = [
 export const stixDomainObjectTypes = [
   'Stix-Domain-Object',
   'Threat-Actor',
+  'Threat-Actor-Individual',
   'Threat-Actor-Group',
   'Intrusion-Set',
   'Campaign',

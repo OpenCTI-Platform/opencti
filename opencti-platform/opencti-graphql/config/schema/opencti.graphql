@@ -6338,6 +6338,7 @@ enum ThreatActorsFilter {
   revoked
   confidence
   creator
+  targets
 }
 input ThreatActorsFiltering {
   key: [ThreatActorsFilter!]!
@@ -6354,9 +6355,9 @@ type ThreatActorGroupEdge {
   node: ThreatActorGroup!
 }
 
-type ThreatActorEdge {
+type ThreatActorGroupEdge {
   cursor: String!
-  node: ThreatActor!
+  node: ThreatActorGroup!
 }
 
 type  ThreatActorConnection {
@@ -6470,6 +6471,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
   # Technical
@@ -6483,6 +6485,16 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+}
+
+type ThreatActorEdge {
+  cursor: String!
+  node: ThreatActor!
+}
+
+type  ThreatActorConnection {
+  pageInfo: PageInfo!
+  edges: [ThreatActorEdge]
 }
 
 type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
@@ -10928,6 +10940,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Malware
   | MalwareAnalysis
   | ThreatActorGroup
+  | ThreatActorIndividual
   | Tool
   | Vulnerability
   | Incident
@@ -11006,6 +11019,7 @@ union StixObjectOrStixRelationship =
   | Malware
   | MalwareAnalysis
   | ThreatActorGroup
+  | ThreatActorIndividual
   | Tool
   | Vulnerability
   | Incident
@@ -11080,6 +11094,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | MalwareAnalysis
   | Narrative
   | ThreatActorGroup
+  | ThreatActorIndividual
   | Tool
   | Vulnerability
   | Incident ## Six Cyber Observables

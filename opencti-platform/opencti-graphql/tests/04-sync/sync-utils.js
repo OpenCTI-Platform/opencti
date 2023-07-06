@@ -61,7 +61,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
-export const UPLOADED_FILE_SIZE = 37891;
+export const UPLOADED_FILE_SIZE = 40410;
 
 export const checkPreSyncContent = async () => {
   const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
@@ -69,7 +69,7 @@ export const checkPreSyncContent = async () => {
   expect(objectMap.get('Indicator')).toEqual(28);
   expect(objectMap.get('Malware')).toEqual(27);
   expect(objectMap.get('Label')).toEqual(13);
-  expect(objectMap.get('Vocabulary')).toEqual(269);
+  expect(objectMap.get('Vocabulary')).toEqual(295);
   // Relations
   const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' });
   const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));

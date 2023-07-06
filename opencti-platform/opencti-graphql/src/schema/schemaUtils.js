@@ -3,7 +3,6 @@ import validator from 'validator';
 import { isStixCyberObservable } from './stixCyberObservable';
 import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
   isStixDomainObject,
   isStixDomainObjectCase,
   isStixDomainObjectContainer,
@@ -39,6 +38,7 @@ import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject'
 import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { isStixRefRelationship } from './stixRefRelationship';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 
 export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 export const isInternalId = (id) => validator.isUUID(id);

@@ -223,6 +223,7 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
       }
       ... on ThreatActor {
         name
+        entity_type
         first_seen
         last_seen
       }
@@ -1848,6 +1849,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
               }
               ... on ThreatActor {
                 name
+                entity_type
                 first_seen
                 last_seen
               }

@@ -46,6 +46,8 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/arsenal/malwares';
     case 'Threat-Actor-Group':
       return '/dashboard/threats/threat_actors_group';
+    case 'Threat-Actor-Individual':
+      return '/dashboard/threats/threat_actors_individual';
     case 'Tool':
       return '/dashboard/arsenal/tools';
     case 'Channel':
@@ -179,6 +181,9 @@ export const resolveLocationType = (entity: Record<string, string>): string => {
 export const resolveThreatActorType = (entity: Record<string, string>): string => {
   if (entity.x_opencti_type) {
     return entity.x_opencti_type;
+  }
+  if (entity.resource_level === 'individual') {
+    return 'Threat-Actor-Individual';
   }
   return 'Threat-Actor-Group';
 };

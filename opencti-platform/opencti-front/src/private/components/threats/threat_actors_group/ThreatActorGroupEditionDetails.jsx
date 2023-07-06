@@ -220,7 +220,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
               />
               <OpenVocabField
                 label={t('Sophistication')}
-                type="threat-actor-sophistication-ov"
+                type="threat-actor-group-sophistication-ov"
                 name="sophistication"
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
@@ -244,7 +244,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
               />
               <OpenVocabField
                 label={t('Roles')}
-                type="threat-actor-role-ov"
+                type="threat-actor-group-role-ov"
                 name="roles"
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}

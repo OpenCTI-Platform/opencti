@@ -12,11 +12,15 @@ import RootIntrusionSet from './intrusion_sets/Root';
 import Campaigns from './Campaigns';
 import RootCampaign from './campaigns/Root';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import ThreatActorsIndividual from './ThreatActorsIndividual';
+import RootThreatActorIndividual from './threat_actors_individual/Root';
 
 const Root = () => {
   let redirect: string | null = null;
   if (!useIsHiddenEntity('Threat-Actor-Group')) {
     redirect = 'threat_actors_group';
+  } else if (!useIsHiddenEntity('Threat-Actor-Individual')) {
+    redirect = 'threat_actors_individual';
   } else if (!useIsHiddenEntity('Intrusion-Set')) {
     redirect = 'intrusion_sets';
   } else if (!useIsHiddenEntity('Campaign')) {
@@ -37,6 +41,15 @@ const Root = () => {
       <BoundaryRoute
         path="/dashboard/threats/threat_actors_group/:threatActorGroupId"
         component={RootThreatActorGroup}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/threats/threat_actors_individual"
+        component={ThreatActorsIndividual}
+      />
+      <BoundaryRoute
+        path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId"
+        component={RootThreatActorIndividual}
       />
       <BoundaryRoute
         exact

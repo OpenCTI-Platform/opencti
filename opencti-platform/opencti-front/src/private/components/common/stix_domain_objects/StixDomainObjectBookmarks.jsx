@@ -73,23 +73,25 @@ export const stixDomainObjectBookmarksQuery = graphql`
   }
 `;
 
+export const stixDomainobjectBookmarksFragment = graphql`
+  fragment StixDomainObjectBookmarks_bookmarks on Query
+  @argumentDefinitions(types: { type: "[String]" }) {
+    bookmarks(types: $types, first: 200)
+    @connection(key: "Pagination_bookmarks") {
+      edges {
+        node {
+          id
+          ...StixDomainObjectBookmark_node
+        }
+      }
+    }
+  }
+`;
+
 const StixDomainObjectBookmarksFragment = createPaginationContainer(
   StixDomainObjectBookmarksComponent,
   {
-    data: graphql`
-      fragment StixDomainObjectBookmarks_bookmarks on Query
-      @argumentDefinitions(types: { type: "[String]" }) {
-        bookmarks(types: $types, first: 200)
-          @connection(key: "Pagination_bookmarks") {
-          edges {
-            node {
-              id
-              ...StixDomainObjectBookmark_node
-            }
-          }
-        }
-      }
-    `,
+    data: stixDomainobjectBookmarksFragment,
   },
   {
     direction: 'forward',

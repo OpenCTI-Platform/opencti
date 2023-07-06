@@ -42,7 +42,6 @@ export const ENTITY_TYPE_LOCATION_REGION = 'Region';
 export const ENTITY_TYPE_LOCATION_POSITION = 'Position';
 export const ENTITY_TYPE_MALWARE = 'Malware';
 export const ENTITY_TYPE_THREAT_ACTOR_GROUP = 'Threat-Actor-Group';
-export const ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL = 'Threat-Actor-Individual';
 export const ENTITY_TYPE_TOOL = 'Tool';
 export const ENTITY_TYPE_VULNERABILITY = 'Vulnerability';
 export const ENTITY_TYPE_INCIDENT = 'Incident';
@@ -95,7 +94,6 @@ export const isStixDomainObjectLocation = (type: string): boolean => schemaTypes
 
 const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL
 ];
 schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THREAT_ACTORS);
 export const isStixDomainObjectThreatActor = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)

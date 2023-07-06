@@ -51,7 +51,7 @@ const TopMenuThreatActorGroup = () => {
         classes={{ root: classes.buttonHome }}
       >
         <LaptopAccount className={classes.icon} fontSize="small" />
-        {t('Threat actors group')}
+        {t('Threat actors (group)')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"

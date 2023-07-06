@@ -1139,41 +1139,43 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
   );
   // Build the search for all other fields
   const searchPhrase = R.uniq(querySearch).join(' ');
-  shouldSearch.push(...[
-    {
-      query_string: {
-        query: searchPhrase,
-        analyze_wildcard: true,
-        fields: BASE_SEARCH_ATTRIBUTES,
+  if (searchPhrase) {
+    shouldSearch.push(...[
+      {
+        query_string: {
+          query: searchPhrase,
+          analyze_wildcard: true,
+          fields: BASE_SEARCH_ATTRIBUTES,
+        },
       },
-    },
-    {
-      multi_match: {
-        type: 'phrase',
-        query: searchPhrase,
-        lenient: true,
-        fields: BASE_SEARCH_ATTRIBUTES,
+      {
+        multi_match: {
+          type: 'phrase',
+          query: searchPhrase,
+          lenient: true,
+          fields: BASE_SEARCH_ATTRIBUTES,
+        },
       },
-    },
-    {
-      nested: {
-        path: 'connections',
-        query: {
-          bool: {
-            must: [
-              {
-                query_string: {
-                  query: searchPhrase,
-                  analyze_wildcard: true,
-                  fields: BASE_SEARCH_CONNECTIONS,
+      {
+        nested: {
+          path: 'connections',
+          query: {
+            bool: {
+              must: [
+                {
+                  query_string: {
+                    query: searchPhrase,
+                    analyze_wildcard: true,
+                    fields: BASE_SEARCH_CONNECTIONS,
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
         },
       },
-    },
-  ]);
+    ]);
+  }
   return shouldSearch;
 };
 

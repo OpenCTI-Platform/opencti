@@ -51,6 +51,7 @@ import useGranted, {
 } from '../../../../utils/hooks/useGranted';
 import { CaseRfiCreationForm } from '../../cases/case_rfis/CaseRfiCreation';
 import { CaseRftCreationForm } from '../../cases/case_rfts/CaseRftCreation';
+import { ThreatActorIndividualCreationForm } from '../../threats/threat_actors_individual/ThreatActorIndividualCreation';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -607,6 +608,18 @@ const StixDomainPanel = ({
           onReset={onClose}
           updater={creationUpdater}
         />
+      );
+    }
+    if (type === 'Threat-Actor-Individual') {
+      return (
+          <ThreatActorIndividualCreationForm
+              inputValue={inputValue}
+              defaultConfidence={confidence}
+              defaultCreatedBy={baseCreatedBy}
+              defaultMarkingDefinitions={baseMarkingDefinitions}
+              onReset={onClose}
+              updater={creationUpdater}
+          />
       );
     }
     if (type === 'Tool') {
