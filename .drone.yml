@@ -132,7 +132,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - sleep 30
+      - sleep 90
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform /tmp/raw-start-platform
       - cd /tmp/raw-start-platform/opencti-graphql
@@ -158,7 +158,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - sleep 90
+      - sleep 60
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform /tmp/live-start-platform
       - cd /tmp/live-start-platform/opencti-graphql
@@ -184,7 +184,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - sleep 60
+      - sleep 30
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform /tmp/direct-start-platform
       - cd /tmp/direct-start-platform/opencti-graphql
@@ -201,7 +201,7 @@ services:
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
     commands:
-      - sleep 180
+      - sleep 300
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-worker /tmp/direct-start-worker
       - cd /tmp/direct-start-worker
