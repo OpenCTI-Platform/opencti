@@ -5,7 +5,7 @@ import { platformStart, platformStop } from '../../src/boot';
 import { deleteBucket } from '../../src/database/file-storage';
 import { deleteQueues } from '../../src/domain/connector';
 import { ADMIN_USER, createTestUsers, testContext } from './testQuery';
-import { elDeleteIndexes, elPlatformIndices } from '../../src/database/engine';
+import { elDeleteIndices, elPlatformIndices } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { createRedisClient } from '../../src/database/redis';
 
@@ -16,7 +16,7 @@ const platformClean = async () => {
   await deleteQueues(testContext, ADMIN_USER);
   // Remove all elastic indices
   const indices = await elPlatformIndices();
-  await elDeleteIndexes(indices.map((i) => i.index));
+  await elDeleteIndices(indices.map((i) => i.index));
   // Delete redis streams
   const testRedisClient = createRedisClient('reset');
   await testRedisClient.del('stream.opencti');

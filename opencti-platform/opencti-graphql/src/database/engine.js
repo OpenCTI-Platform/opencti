@@ -423,30 +423,61 @@ export const elPlatformIndices = async () => {
   return oebp(listIndices);
 };
 const elCreateLifecyclePolicy = async () => {
-  await engine.ilm.putLifecycle({
-    name: `${ES_INDEX_PREFIX}-ilm-policy`,
-    body: {
-      policy: {
-        phases: {
-          hot: {
-            min_age: '0ms',
-            actions: {
-              rollover: {
-                max_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
-                max_age: ES_MAX_AGE,
-                max_docs: ES_MAX_DOCS
-              },
-              set_priority: {
-                priority: 100
+  if (engine instanceof ElkClient) {
+    await engine.ilm.putLifecycle({
+      name: `${ES_INDEX_PREFIX}-ilm-policy`,
+      body: {
+        policy: {
+          phases: {
+            hot: {
+              min_age: '0ms',
+              actions: {
+                rollover: {
+                  max_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
+                  max_age: ES_MAX_AGE,
+                  max_docs: ES_MAX_DOCS
+                },
+                set_priority: {
+                  priority: 100
+                }
               }
             }
           }
         }
       }
-    }
-  }).catch((e) => {
-    throw DatabaseError('[SEARCH] Error creating lifecycle policy', { error: e });
-  });
+    }).catch((e) => {
+      throw DatabaseError('[SEARCH] Error creating lifecycle policy', { error: e });
+    });
+  } else {
+    await engine.transport.request({
+      method: 'PUT',
+      path: `_plugins/_ism/policies/${ES_INDEX_PREFIX}-ism-policy`,
+      body: {
+        policy: {
+          description: 'OpenCTI ISM Policy',
+          default_state: 'hot',
+          states: [
+            {
+              name: 'hot',
+              actions: [
+                {
+                  rollover: {
+                    min_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
+                    min_index_age: ES_MAX_AGE,
+                    min_doc_count: ES_MAX_DOCS
+                  }
+                }],
+              transitions: []
+            }],
+          ism_template: {
+            index_patterns: [`${ES_INDEX_PREFIX}*`],
+            priority: 100
+          }
+        }
+      } }).catch((e) => {
+      throw DatabaseError('[SEARCH] Error creating lifecycle policy', { error: e });
+    });
+  }
 };
 const elCreateCoreSettings = async () => {
   await engine.cluster.putComponentTemplate({
@@ -476,20 +507,32 @@ const elCreateCoreSettings = async () => {
   });
 };
 const elCreateIndexTemplate = async (index) => {
+  let settings;
+  if (engine instanceof ElkClient) {
+    settings = {
+      index: {
+        lifecycle: {
+          name: `${ES_INDEX_PREFIX}-ilm-policy`,
+          rollover_alias: index,
+        }
+      }
+    };
+  } else {
+    settings = {
+      plugins: {
+        index_state_management: {
+          rollover_alias: index,
+        }
+      }
+    };
+  }
   await engine.indices.putIndexTemplate({
     name: index,
     create: false,
     body: {
       index_patterns: [`${index}*`],
       template: {
-        settings: {
-          index: {
-            lifecycle: {
-              name: `${ES_INDEX_PREFIX}-ilm-policy`,
-              rollover_alias: index,
-            }
-          }
-        },
+        settings,
         mappings: {
           dynamic_templates: [
             {
@@ -655,7 +698,7 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES) 
   }
   return createdIndices;
 };
-export const elDeleteIndexes = async (indexesToDelete) => {
+export const elDeleteIndices = async (indexesToDelete) => {
   return Promise.all(
     indexesToDelete.map((index) => {
       return engine.indices.delete({ index })
