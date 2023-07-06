@@ -4888,7 +4888,7 @@ input MalwareAddInput {
   file: Upload
 }
 
-enum ThreatActorsGroupOrdering {
+enum ThreatActorsOrdering {
   name
   created
   modified
@@ -4898,7 +4898,7 @@ enum ThreatActorsGroupOrdering {
   confidence
 }
 
-enum ThreatActorsGroupFilter {
+enum ThreatActorsFilter {
   name
   aliases
   created
@@ -4915,8 +4915,8 @@ enum ThreatActorsGroupFilter {
   creator
 }
 
-input ThreatActorsGroupFiltering {
-  key: [ThreatActorsGroupFilter!]!
+input ThreatActorsFiltering {
+  key: [ThreatActorsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -4925,11 +4925,6 @@ input ThreatActorsGroupFiltering {
 type ThreatActorGroupConnection {
   pageInfo: PageInfo!
   edges: [ThreatActorGroupEdge]
-}
-
-type ThreatActorGroupEdge {
-  cursor: String!
-  node: ThreatActorGroup!
 }
 
 type ThreatActorGroupEdge {
@@ -4998,6 +4993,11 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+}
+
+type ThreatActorEdge {
+  cursor: String!
+  node: ThreatActor!
 }
 
 type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
