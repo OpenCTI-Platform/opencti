@@ -1,5 +1,5 @@
 import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
+import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
@@ -13,7 +13,6 @@ import {
   RELATION_COOPERATES_WITH,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
-  RELATION_INDICATES,
   RELATION_LOCATED_AT,
   RELATION_OWNS,
   RELATION_PART_OF,
@@ -25,7 +24,7 @@ import {
   ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_INFRASTRUCTURE,
+  ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_POSITION,
@@ -37,6 +36,7 @@ import { REL_EXTENDED } from '../../database/stix';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../schema/stixCyberObservable';
 
 const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
   type: {
@@ -83,7 +83,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: RELATION_USES,
       targets: [
         { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
-        { name: ABSTRACT_STIX_CYBER_OBSERVABLE, type: REL_EXTENDED },
+        { name: ENTITY_HASHED_OBSERVABLE_STIX_FILE, type: REL_EXTENDED },
         { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
         { name: ENTITY_TYPE_NARRATIVE, type: REL_EXTENDED },
         { name: ENTITY_TYPE_CHANNEL, type: REL_EXTENDED },
@@ -153,11 +153,6 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
       ]
     },
-    { name: RELATION_INDICATES,
-      targets: [
-        { name: ENTITY_TYPE_INDICATOR, type: REL_EXTENDED },
-      ]
-    }
   ],
   relationsRefs: [
     objectOrganization,
