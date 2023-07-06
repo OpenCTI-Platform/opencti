@@ -118,12 +118,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
       />
       <Route
         exact
-        path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/threat_actors_individual"
-        render={(routeProps: any) => (
+        path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/threat_actors"
+        render={(routeProps) => (
           <EntityStixCoreRelationships
             entityId={threatActorIndividual.id}
             relationshipTypes={['part-of', 'cooperates-with']}
-            stixCoreObjectTypes={['Threat-Actor-Individual']}
+            stixCoreObjectTypes={['Threat-Actor']}
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}

@@ -23,6 +23,7 @@ import {
 import {
   ThreatActorIndividualEditionDetailsFieldPatchMutation,
 } from './__generated__/ThreatActorIndividualEditionDetailsFieldPatchMutation.graphql';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const threatActorIndividualMutationFieldPatch = graphql`
   mutation ThreatActorIndividualEditionDetailsFieldPatchMutation(
@@ -99,7 +100,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
     ThreatActorIndividualEditionDetailsFocus,
   );
 
-  const ThreatActorIndividualValidation = () => Yup.object().shape({
+  const basicShape = {
     first_seen: Yup.date()
       .nullable()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -114,7 +115,8 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
     personal_motivations: Yup.array().nullable(),
     goals: Yup.string().nullable(),
     references: Yup.array(),
-  });
+  };
+  const individualThreatActorValidator = useSchemaEditionValidation('Threat-Actor-Individual', basicShape);
   const handleChangeFocus = (name: string) => {
     commitEditionDetailsFocus({
       variables: {
@@ -137,7 +139,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
       ...otherValues,
       first_seen: values.first_seen ? parse(values.first_seen).format() : null,
       last_seen: values.last_seen ? parse(values.last_seen).format() : null,
-      goals: values.goals.length ? R.split('\n', values.goals) : [],
+      goals: values.goals && values.goals.length ? values.goals.split('\n') : '',
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     commitFieldPatch({
@@ -158,9 +160,9 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'goals') {
-        finalValue = value && value.length > 0 ? R.split('\n', value as string) : [];
+        finalValue = value && value.length > 0 ? (value as string).split('\n') : '';
       }
-      ThreatActorIndividualValidation()
+      individualThreatActorValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           commitFieldPatch({
@@ -183,14 +185,14 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<ThreatActo
     roles: threatActorIndividual.roles,
     sophistication: threatActorIndividual.sophistication,
     resource_level: threatActorIndividual.resource_level,
-    goals: R.join('\n', threatActorIndividual.goals ? threatActorIndividual.goals : []),
+    goals: threatActorIndividual.goals ? threatActorIndividual.goals.join('\n') : '',
   };
   return (
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={ThreatActorIndividualValidation}
+          initialValues={initialValues as never}
+          validationSchema={individualThreatActorValidator}
           onSubmit={onSubmit}
         >
           {({

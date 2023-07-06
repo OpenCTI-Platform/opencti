@@ -89,8 +89,7 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
           stixCoreObjectLink={link}
           availableSections={[
             'victimology',
-            'threat_actors_group',
-            'threat_actors_individual',
+            'threat_actors',
             'intrusion_sets',
             'campaigns',
             'incidents',

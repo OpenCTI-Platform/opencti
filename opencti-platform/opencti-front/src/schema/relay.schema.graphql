@@ -4913,6 +4913,7 @@ enum ThreatActorsFilter {
   revoked
   confidence
   creator
+  targets
 }
 
 input ThreatActorsFiltering {

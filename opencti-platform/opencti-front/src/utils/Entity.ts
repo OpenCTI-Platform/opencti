@@ -182,6 +182,9 @@ export const resolveThreatActorType = (entity: Record<string, string>): string =
   if (entity.x_opencti_type) {
     return entity.x_opencti_type;
   }
+  if (entity.resource_level === 'individual') {
+    return 'Threat-Actor-Individual';
+  }
   return 'Threat-Actor-Group';
 };
 

@@ -6338,6 +6338,7 @@ enum ThreatActorsFilter {
   revoked
   confidence
   creator
+  targets
 }
 input ThreatActorsFiltering {
   key: [ThreatActorsFilter!]!

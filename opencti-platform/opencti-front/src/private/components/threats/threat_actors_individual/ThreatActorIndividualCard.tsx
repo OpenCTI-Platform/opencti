@@ -173,11 +173,11 @@ export const ThreatActorIndividualCard: FunctionComponent<ThreatActorIndividualC
   const classes = useStyles();
   const { t, fld } = useFormatter();
   const data = useFragment(ThreatActorIndividualCardFragment, node);
-  const usedMalware = (data?.usedMalware ?? []).map((n) => n?.entity?.name).join(', ');
-  const targetedCountries = (data?.targetedCountries ?? [])
+  const usedMalware = (data.usedMalware ?? []).map((n) => n?.entity?.name).join(', ');
+  const targetedCountries = (data.targetedCountries ?? [])
     .map((n) => n?.entity?.name)
     .join(', ');
-  const targetedSectors = (data?.targetedSectors ?? [])
+  const targetedSectors = (data.targetedSectors ?? [])
     .map((n) => n?.entity?.name)
     .join(', ');
 
