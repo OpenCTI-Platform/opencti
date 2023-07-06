@@ -6,7 +6,7 @@ steps:
   - name: sleep-for-opencti
     image: python:3.11
     commands:
-      - sleep 100
+      - sleep 180
   - name: client-test-38
     image: python:3.8
     commands:
@@ -87,7 +87,7 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - apk add build-base git libffi-dev
+      - apk add build-base git libffi-dev cargo
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH)
       - OPENCTI_BRANCH=$([ $(echo $BRANCH | cut -d "/" -f 1) == opencti ] && echo issue/$(echo $BRANCH | cut -d "/" -f 2) || echo 'master' )
       - git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git /tmp/opencti

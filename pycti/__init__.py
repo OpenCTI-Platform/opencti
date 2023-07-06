@@ -46,6 +46,7 @@ from .entities.opencti_stix_sighting_relationship import StixSightingRelationshi
 from .entities.opencti_task import Task
 from .entities.opencti_threat_actor import ThreatActor
 from .entities.opencti_threat_actor_group import ThreatActorGroup
+from .entities.opencti_threat_actor_individual import ThreatActorIndividual
 from .entities.opencti_tool import Tool
 from .entities.opencti_vulnerability import Vulnerability
 from .utils.constants import (
@@ -113,6 +114,7 @@ __all__ = [
     "StixSightingRelationship",
     "ThreatActor",
     "ThreatActorGroup",
+    "ThreatActorIndividual",
     "Tool",
     "Vulnerability",
     "get_config_variable",
