@@ -104,9 +104,9 @@ const createIndividualThreatCategories = async () => {
     { individual: 'threat_actor_individual_sophistication_ov', group: 'threat_actor_group_sophistication_ov' }
   ];
   for (let indexCategory = 0; indexCategory < categories.length; indexCategory += 1) {
-    const category = categories[indexCategory].individual;
-    const vocabularies = openVocabularies[category] ?? [];
-    const args = { connectionFormat: false, filters: [{ key: ['category'], values: [category.group] }] };
+    const { individual, group } = categories[indexCategory];
+    const vocabularies = openVocabularies[individual] ?? [];
+    const args = { connectionFormat: false, filters: [{ key: 'category', values: [group] }] };
     const vocabsFromGroup = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], args);
     vocabularies.push(...(vocabsFromGroup ?? []));
     for (let i = 0; i < vocabularies.length; i += 1) {
@@ -115,8 +115,8 @@ const createIndividualThreatCategories = async () => {
         name: key,
         description: description ?? '',
         aliases: aliases ?? [],
-        category,
-        builtIn: builtInOv.includes(category) };
+        category: individual,
+        builtIn: builtInOv.includes(individual) };
       await addVocabulary(context, SYSTEM_USER, data);
     }
   }
