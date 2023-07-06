@@ -1,11 +1,14 @@
-import List from '@mui/material/List';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, MutableRefObject } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { UserLine } from './UserLine';
-import { MembersListForGroupQuery } from './__generated__/MembersListForGroupQuery.graphql';
+import { UserLine, UserLineDummy } from './UserLine';
+import {
+  MembersListForGroupQuery,
+  MembersListForGroupQuery$variables,
+} from './__generated__/MembersListForGroupQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { MembersList_data$key } from './__generated__/MembersList_data.graphql';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 
 export const membersListForGroupQuery = graphql`
     query MembersListForGroupQuery(
@@ -73,13 +76,19 @@ const membersListFragment = graphql`
 interface MembersListProps {
   userColumns: DataColumns,
   queryRef: PreloadedQuery<MembersListForGroupQuery>;
+  containerRef: MutableRefObject<null>;
+  paginationOptions: MembersListForGroupQuery$variables;
 }
+
+const nbOfRowsToLoad = 50;
 
 const MembersList: FunctionComponent<MembersListProps> = ({
   userColumns,
   queryRef,
+  containerRef,
+  paginationOptions,
 }) => {
-  const { data } = usePreloadedPaginationFragment<
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   MembersListForGroupQuery,
   MembersList_data$key
   >({
@@ -88,19 +97,21 @@ const MembersList: FunctionComponent<MembersListProps> = ({
     queryRef,
   });
   const membersData = data.group?.members;
-  const members = membersData?.edges ?? [];
   return (
-    <div>
-      <List>
-        {members.map((member) => (
-          <UserLine
-            key={member?.node.id}
-            dataColumns={userColumns}
-            node={member?.node}
-          />
-        ))}
-      </List>
-    </div>
+    <ListLinesContent
+      initialLoading={!data}
+      isLoading={isLoadingMore}
+      loadMore={loadMore}
+      hasMore={hasMore}
+      dataList={membersData?.edges ?? []}
+      globalCount={membersData?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={UserLine}
+      DummyLineComponent={UserLineDummy}
+      dataColumns={userColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+      containerRef={containerRef}
+    />
   );
 };
 
