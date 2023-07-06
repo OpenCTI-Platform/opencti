@@ -21610,6 +21610,7 @@ export enum StixDomainObjectsFilter {
   Name = 'name',
   ObjectContains = 'objectContains',
   OperatingSystem = 'operatingSystem',
+  Participant = 'participant',
   PatternType = 'pattern_type',
   Priority = 'priority',
   Product = 'product',

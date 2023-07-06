@@ -2008,6 +2008,7 @@ enum StixDomainObjectsFilter {
   createdBy
   markedBy
   assigneeTo
+  participant
   labelledBy
   hasExternalReference
   objectContains
