@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { isNone, useFormatter } from '../../../../components/i18n';
