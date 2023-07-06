@@ -274,7 +274,7 @@ class Indicator:
 
         Note: either `id` or `filters` is required.
 
-        :param str id: the id of the Threat-Actor
+        :param str id: the id of the Threat-Actor-Group
         :param list filters: the filters to apply if no id provided
 
         :return: Indicator object

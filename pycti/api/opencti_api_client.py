@@ -60,6 +60,7 @@ from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelati
 from pycti.entities.opencti_task import Task
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_threat_actor_group import ThreatActorGroup
+from pycti.entities.opencti_threat_actor_individual import ThreatActorIndividual
 from pycti.entities.opencti_tool import Tool
 from pycti.entities.opencti_vocabulary import Vocabulary
 from pycti.entities.opencti_vulnerability import Vulnerability
@@ -183,6 +184,7 @@ class OpenCTIApiClient:
         self.location = Location(self)
         self.threat_actor = ThreatActor(self)
         self.threat_actor_group = ThreatActorGroup(self)
+        self.threat_actor_individual = ThreatActorIndividual(self)
         self.intrusion_set = IntrusionSet(self)
         self.infrastructure = Infrastructure(self)
         self.campaign = Campaign(self)
