@@ -56,20 +56,19 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface Participant extends Option {
+interface OptionParticipant extends Option {
   type: string;
 }
 interface ObjectParticipantFieldProps {
   name: string;
-  onChange?: (name: string, values: Participant[]) => void;
+  onChange?: (name: string, values: OptionParticipant[]) => void;
   style?: Record<string, string | number>;
   helpertext?: string;
-  defaultObjectParticipant?: Participant,
+  defaultObjectParticipant?: OptionParticipant,
   label?: string,
   disabled?: boolean,
 }
 const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = ({
-  defaultObjectParticipant,
   name,
   style,
   label,
@@ -79,17 +78,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const defaultStateObjectParticipant = defaultObjectParticipant
-    ? [
-      {
-        label: defaultObjectParticipant.name,
-        value: defaultObjectParticipant.id,
-        type: defaultObjectParticipant.entity_type,
-        entity: defaultObjectParticipant,
-      },
-    ]
-    : [];
-  const [participants, setParticipants] = useState<Participant>(defaultStateObjectParticipant);
+  const [participants, setParticipants] = useState<OptionParticipant[]>([]);
 
   const searchParticipants = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectParticipantFieldMembersSearchQuery, {
@@ -105,7 +94,6 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
           label: n.node.name,
           value: n.node.id,
           type: n.node.entity_type,
-          entity: n.node,
         })).sort((a, b) => a.label.localeCompare(b.label));
         setParticipants(newParticipants);
       });
