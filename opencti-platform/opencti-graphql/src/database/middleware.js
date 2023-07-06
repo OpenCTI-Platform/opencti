@@ -2849,7 +2849,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       const timeFilters = buildRelationTimeFilter(resolvedInput);
       const manualArgs = { ...listingArgs, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, ...timeFilters };
       const manualRelationships = await listRelations(context, SYSTEM_USER, relationshipType, manualArgs);
-      existingRelationships.push(...manualRelationships); x;
+      existingRelationships.push(...manualRelationships);
     }
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
