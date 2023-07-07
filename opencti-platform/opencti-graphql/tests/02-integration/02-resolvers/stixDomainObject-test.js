@@ -164,7 +164,7 @@ describe('StixDomainObject resolver standard behavior', () => {
       }
     `;
     const queryResult = await queryAsAdmin({ query: NUMBER_QUERY });
-    expect(queryResult.data.stixDomainObjectsNumber.total).toEqual(37);
+    expect(queryResult.data.stixDomainObjectsNumber.total).toEqual(38);
   });
   it('should timeseries stixDomainObjects to be accurate', async () => {
     const TIMESERIES_QUERY = gql`

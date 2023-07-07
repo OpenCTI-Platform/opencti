@@ -462,6 +462,10 @@ const i18n = {
       Periodicity: 'Periodicidad',
       Period: 'Periodo',
       Time: 'Hora',
+      month: 'mes',
+      week: 'semana',
+      day: 'dia',
+      hour: 'hora',
       'Knowledge update (except indicators & observables)':
         'Actualización de base de conocimiento (excepto indicadores y observables)',
       'Containers (reports, groupings, notes & opinions)':
@@ -2522,6 +2526,10 @@ const i18n = {
       Periodicity: 'Périodicité',
       Period: 'Période',
       Time: 'Heure',
+      month: 'mois',
+      week: 'semaine',
+      day: 'jour',
+      hour: 'heure',
       'Knowledge update (except indicators & observables)':
         'Modification des connaissances (sauf indicateurs et observables)',
       'Containers (reports, groupings, notes & opinions)':
@@ -4526,6 +4534,10 @@ const i18n = {
       Periodicity: '周期',
       Period: '時代',
       Time: '時間',
+      month: '月',
+      week: '週間',
+      day: '日',
+      hour: '時間',
       'Knowledge update (except indicators & observables)':
         'ナレッジを更新（インジケータと観測結果を除く）',
       'Containers (reports, notes & opinions)':
@@ -6446,6 +6458,10 @@ const i18n = {
       Periodicity: '周期性',
       Period: '時期',
       Time: '時間',
+      month: '月',
+      week: '周',
+      day: '日',
+      hour: '时间',
       'Knowledge update (except indicators & observables)':
         '知识更新(攻击指标和可观测数据除外)',
       'Containers (reports, notes & opinions)': '容器(报告、注释和建议)',

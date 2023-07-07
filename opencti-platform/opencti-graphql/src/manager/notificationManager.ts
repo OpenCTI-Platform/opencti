@@ -265,8 +265,10 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
     const triggerAuthorizedMembersIds = trigger.authorized_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
+    const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
+      .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
-    return { users: [...usersFromGroups, ...usersFromIds], trigger };
+    return { users: [...usersFromGroups, ...usersFromIds, ...usersFromOrganizations], trigger };
   });
 };
 

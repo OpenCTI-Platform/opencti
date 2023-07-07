@@ -18,6 +18,7 @@ import SettingsOrganizationDetails from './SettingsOrganizationDetails';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import MembersList from '../users/MembersList';
+import Triggers from '../common/Triggers';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -165,12 +166,12 @@ const SettingsOrganization = ({ organizationData }: { organizationData: Settings
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 0, marginLeft: 0 }}
+          style={{ marginTop: 10, marginLeft: 0 }}
         >
+          <Triggers recipientId={organization.id} filter={'organization_ids'}/>
           <MembersList members={members} />
         </Grid>
       </Grid>
-
     </div>
   );
 };

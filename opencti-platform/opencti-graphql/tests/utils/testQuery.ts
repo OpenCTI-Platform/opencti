@@ -23,6 +23,7 @@ import {
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_USER
 } from '../../src/schema/internalObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/schema/stixDomainObject';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -30,8 +31,8 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 805;
-export const SYNC_LIVE_EVENTS_SIZE = 554;
+export const RAW_EVENTS_SIZE = 806;
+export const SYNC_LIVE_EVENTS_SIZE = 555;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -123,8 +124,17 @@ export const AMBER_STRICT_GROUP: Group = {
   markings: [MARKING_TLP_AMBER_STRICT],
   roles: [ROLE_SECURITY],
 };
+
+// Organization
+interface Organization { name: string, id: string }
+
+const TEST_ORGANIZATION: Organization = {
+  name: 'TestOrganization',
+  id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: 'TestOrganization', identity_class: 'organization' }),
+};
+
 // Users
-interface User { id: string, email: string, password: string, roles?: Role[], groups: Group[], client: AxiosInstance }
+interface User { id: string, email: string, password: string, roles?: Role[], organizations?: Organization[], groups: Group[], client: AxiosInstance }
 export const ADMIN_USER: AuthUser = {
   entity_type: 'User',
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
@@ -157,6 +167,7 @@ export const USER_EDITOR: User = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'editor@opencti.io' }),
   email: 'editor@opencti.io',
   password: 'editor',
+  organizations: [TEST_ORGANIZATION],
   groups: [AMBER_GROUP],
   client: createHttpClient('editor@opencti.io', 'editor')
 };
@@ -231,6 +242,40 @@ const createGroup = async (input: { name: string, markings: string[], roles: Rol
 };
 const assignGroupToUser = async (group: Group, user: User) => {
   await adminQuery(GROUP_ASSIGN_MUTATION, { userId: user.id, toId: group.id });
+};
+// endregion
+
+// region organization management
+const ORGANIZATION_CREATION_MUTATION = `
+  mutation organizationCreation($name: name_String_NotNull_minLength_2!) {
+     organizationAdd(input: {
+      name: $name
+    }) {
+        id
+        name
+    }
+  }
+`;
+
+const ORGANIZATION_ASSIGN_MUTATION = `
+  mutation organizationAssign($userId: ID!, $toId: ID) {
+    userEdit(id: $userId) {
+      relationAdd(input: {
+        toId: $toId
+        relationship_type: "member-of"
+      }) {
+        id
+      }
+    }
+  }
+`;
+const createOrganization = async (input: { name: string }): Promise<string> => {
+  const organization = await adminQuery(ORGANIZATION_CREATION_MUTATION, input);
+  return organization.data.organizationAdd.id;
+};
+
+const assignOrganizationToUser = async (organization: Organization, user: User) => {
+  await adminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
 };
 // endregion
 
@@ -311,6 +356,14 @@ const createUser = async (user: User) => {
     await createGroup(group);
     // Assign user to group
     await assignGroupToUser(group, user);
+  }
+  // Assign user to organizations
+  if (user.organizations && user.organizations.length > 0) {
+    for (let indexOrganization = 0; indexOrganization < user.organizations.length; indexOrganization += 1) {
+      const organization = user.organizations[indexOrganization];
+      await createOrganization(organization);
+      await assignOrganizationToUser(organization, user);
+    }
   }
 };
 // Create all testing users

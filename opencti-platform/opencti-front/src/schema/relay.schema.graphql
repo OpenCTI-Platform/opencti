@@ -9302,6 +9302,7 @@ enum TriggerFilter {
   event_types
   user_ids
   group_ids
+  organization_ids
   filters
   instance_trigger
 }

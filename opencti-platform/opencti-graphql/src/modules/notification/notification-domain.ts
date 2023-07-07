@@ -48,6 +48,7 @@ import {
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../schema/stixDomainObject';
 
 // Outcomes
 
@@ -87,7 +88,7 @@ export const addTrigger = async (
   const isSelfTrigger = recipient.id === user.id;
   if (recipient.entity_type === ENTITY_TYPE_USER) {
     authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
-  } else if (recipient.entity_type === ENTITY_TYPE_GROUP) {
+  } else if (recipient.entity_type === ENTITY_TYPE_GROUP || recipient.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
     authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }];
   } else {
     throw UnsupportedError(`Cannot add a recipient with type ${type}`);

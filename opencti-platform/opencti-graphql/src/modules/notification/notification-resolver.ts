@@ -45,6 +45,7 @@ const notificationResolvers: Resolvers = {
   TriggerFilter: {
     user_ids: 'authorized_members.id',
     group_ids: 'authorized_members.id',
+    organization_ids: 'authorized_members.id',
   },
   Mutation: {
     triggerFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),
