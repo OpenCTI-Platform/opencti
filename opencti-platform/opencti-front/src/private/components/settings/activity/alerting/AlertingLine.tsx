@@ -86,7 +86,6 @@ const alertingLineFragment = graphql`
     id
     name
     trigger_type
-    event_types
     description
     filters
     created
@@ -157,31 +156,6 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({ da
                     <code>{outcomesOptions[n]}</code>
                   ))
                     .reduce((prev, curr) => [prev, ', ', curr])}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.event_types.width }}
-            >
-              {data.event_types
-                && data.event_types.map((n: string) => (
-                  <Chip
-                    key={n}
-                    classes={{ root: classes.chipInList }}
-                    color="primary"
-                    variant="outlined"
-                    label={t(n)}
-                  />
-                ))}
-              {data.triggers
-                && data.triggers.map((n) => (
-                  <Chip
-                    key={n?.id}
-                    classes={{ root: classes.chipInList }}
-                    color="warning"
-                    variant="outlined"
-                    label={n?.name}
-                  />
-                ))}
             </div>
             {data.trigger_type === 'live' && (
               <FilterIconButton

@@ -134,9 +134,6 @@ export const addTriggerActivity = async (
     authorized_members,
   };
   const trigger = { ...triggerInput, ...defaultOpts };
-  if (type === TriggerTypeValue.Live && (trigger as TriggerActivityLiveAddInput).event_types.length === 0) {
-    throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
-  }
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
   await publishUserAction({
     user,

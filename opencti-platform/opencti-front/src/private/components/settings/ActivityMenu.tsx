@@ -13,7 +13,7 @@ const ActivityMenu: FunctionComponent = () => {
     },
     {
       path: '/dashboard/settings/activity/alerting',
-      label: 'Alerting',
+      label: 'Activity triggers',
     },
   ];
 

@@ -34,7 +34,6 @@ import {
 import {
   AlertLiveCreationActivityMutation,
   AlertLiveCreationActivityMutation$data,
-  TriggerActivityEventType,
 } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import Filters from '../../../common/lists/Filters';
@@ -84,7 +83,6 @@ export const triggerLiveActivityCreationMutation = graphql`
     triggerActivityLiveAdd(input: $input) {
       id
       name
-      event_types
       ...AlertingLine_node
     }
   }
@@ -93,14 +91,12 @@ export const triggerLiveActivityCreationMutation = graphql`
 const liveActivityTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
-  event_types: Yup.array().min(1, t('Minimum one event type')).required(t('This field is required')),
   outcomes: Yup.array().nullable(),
 });
 
 interface TriggerActivityLiveAddInput {
   name: string;
   description: string;
-  event_types: { value: TriggerActivityEventType, label: string }[];
   outcomes: { value: string, label: string }[];
   recipients: { value: string, label: string }[];
 }
@@ -176,7 +172,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   const liveInitialValues: TriggerActivityLiveAddInput = {
     name: inputValue || '',
     description: '',
-    event_types: [],
     outcomes: outcomesOptions,
     recipients: [],
   };
@@ -188,7 +183,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     const jsonFilters = JSON.stringify(filters);
     const finalValues = {
       name: values.name,
-      event_types: values.event_types.map((n) => n.value),
       outcomes: values.outcomes.map((n) => n.value),
       description: values.description,
       filters: jsonFilters,
@@ -219,26 +213,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
 
   const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: string | string[]) => void) => {
     return <>
-      <Field component={AutocompleteField}
-          name="event_types"
-          style={fieldSpacingContainerStyle}
-          multiple={true}
-          textfieldprops={{
-            variant: 'standard',
-            label: t('Triggering on'),
-          }}
-          options={activityTypesOptions}
-          onChange={setFieldValue}
-          renderOption={(
-            props: React.HTMLAttributes<HTMLLIElement>,
-            option: { value: TriggerActivityEventType, label: string },
-          ) => (
-              <MenuItem value={option.value} {...props}>
-                <Checkbox checked={values.event_types.map((n) => n.value).includes(option.value)} />
-                <ListItemText primary={option.label} />
-              </MenuItem>
-          )}
-      />
       <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
                           onChange={setFieldValue}
                           multiple={true} name={'recipients'} />
@@ -247,6 +221,8 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
           <Filters
               variant="text"
               availableFilterKeys={[
+                'event_type',
+                'event_scope',
                 'members_user',
                 'members_group',
                 'members_organization',

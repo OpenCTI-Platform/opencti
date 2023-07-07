@@ -9434,7 +9434,6 @@ type TriggerEdge {
 enum TriggerActivityFilter {
   trigger_type
   created
-  event_types
   filters
 }
 
@@ -9449,7 +9448,6 @@ enum TriggerActivityEventType {
 input TriggerActivityLiveAddInput {
   name: name_String_NotNull_minLength_1!
   description: String
-  event_types: [TriggerActivityEventType!]!
   outcomes: [StixRef!]
   filters: String
   recipients: [String!]!

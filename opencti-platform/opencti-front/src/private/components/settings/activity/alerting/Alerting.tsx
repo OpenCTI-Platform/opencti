@@ -153,23 +153,18 @@ const Alerting: FunctionComponent = () => {
     const dataColumns = {
       trigger_type: {
         label: 'Type',
-        width: '10%',
+        width: '15%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '15%',
+        width: '25%',
         isSortable: true,
       },
       outcomes: {
         label: 'Notification',
-        width: '20%',
+        width: '30%',
         isSortable: true,
-      },
-      event_types: {
-        label: 'Triggering on',
-        width: '20%',
-        isSortable: false,
       },
       filters: {
         label: 'Details',

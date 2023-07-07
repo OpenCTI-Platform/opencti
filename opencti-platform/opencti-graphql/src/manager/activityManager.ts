@@ -64,15 +64,24 @@ export const getLiveActivityNotifications = async (context: AuthContext): Promis
 
 const isEventMatchFilter = async (context: AuthContext, trigger: BasicStoreEntityLiveTrigger, event: ActivityStreamEvent) => {
   const { type, event_scope, status, origin } = event;
-  const { filters: rawFilters, event_types } = trigger;
+  const { filters: rawFilters } = trigger;
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
-  if (!event_types.includes(type)) {
-    return false;
-  }
   const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, filters);
   for (let index = 0; index < adaptedFilters.length; index += 1) {
     const { key, values } = adaptedFilters[index];
     if (values.length > 0) {
+      if (key === 'event_type') {
+        const ids = values.map((v) => v.id);
+        if (!ids.includes(type)) {
+          return false;
+        }
+      }
+      if (key === 'event_scope') {
+        const ids = values.map((v) => v.id);
+        if (!ids.includes(event_scope)) {
+          return false;
+        }
+      }
       if (key === 'members_user') {
         const ids = values.map((v) => v.id);
         if (!ids.includes(origin.user_id)) {
@@ -94,12 +103,6 @@ const isEventMatchFilter = async (context: AuthContext, trigger: BasicStoreEntit
       if (key === 'activity_statuses') {
         const ids = values.map((v) => v.id);
         if (!ids.includes(status)) {
-          return false;
-        }
-      }
-      if (key === 'activity_scopes') {
-        const ids = values.map((v) => v.id);
-        if (!ids.includes(event_scope)) {
           return false;
         }
       }
