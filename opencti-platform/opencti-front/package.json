@@ -26,6 +26,7 @@
     "graphql": "16.6.0",
     "html-to-image": "1.11.11",
     "html-to-pdfmake": "2.4.20",
+    "invert-color": "^2.0.0",
     "js-base64": "3.7.5",
     "js-file-download": "0.4.12",
     "leaflet": "1.9.4",

@@ -1,4 +1,6 @@
 /* eslint-disable no-bitwise */
+import invert from 'invert-color';
+
 export const stringToColour = (str, reversed = false) => {
   if (!str) {
     return '#5d4037';
@@ -340,4 +342,20 @@ export const hexToRGB = (hex, transp = 0.1) => {
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgb(${r}, ${g}, ${b}, ${transp})`;
+};
+
+const adjustColor = (color, amount = 1) => {
+  return `#${color.replace(/^#/, '').replace(/../g, (c) => (`0${Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)}`).substr(-2))}`;
+};
+
+export const generateBannerMessageColors = (color) => {
+  let messageColor;
+  if (color && /^#[0-9A-F]{6}$/i.test(color)) {
+    messageColor = hexToRGB(adjustColor(color, 50), 0.9);
+  }
+  return {
+    backgroundColor: messageColor ?? '#ffecb3',
+    borderLeft: `8px solid ${messageColor ? color : '#ffc107'}`,
+    color: messageColor ? invert(color, true) : '#663c00',
+  };
 };

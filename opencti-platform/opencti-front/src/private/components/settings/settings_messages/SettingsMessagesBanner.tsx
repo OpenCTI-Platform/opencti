@@ -7,6 +7,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'rea
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
+import { generateBannerMessageColors } from '../../../../utils/Colors';
 import useBus, { dispatch } from '../../../../utils/hooks/useBus';
 import useLocalStorage, { MessageFromLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -23,6 +24,7 @@ export const settingsMessagesQuery = graphql`
         activated
         dismissible
         updated_at
+        color
       }
     }
   }
@@ -37,6 +39,7 @@ const settingsSubscription = graphql`
         activated
         dismissible
         updated_at
+        color
       }
     }
   }
@@ -159,9 +162,27 @@ const SettingsMessagesBannerComponent = ({
     setMessages({ messages: [...otherMessages, { ...messageToDisplay, dismiss: true }] });
   };
 
+  const {
+    backgroundColor,
+    borderLeft,
+    color,
+  } = generateBannerMessageColors(messageToDisplay?.color);
   return (
-    <div ref={ref} id={BANNER_DIV} className={classes.container}>
-      <div className={classes.message}>{messageToDisplay.message}</div>
+    <div
+      ref={ref}
+      id={BANNER_DIV}
+      className={classes.container}
+      style={{
+        backgroundColor,
+        borderLeft,
+      }}
+    >
+      <div
+        className={classes.message}
+        style={{ color }}
+      >
+        {messageToDisplay.message}
+      </div>
       {messageToDisplay.dismissible
         && (
           <IconButton
@@ -169,6 +190,7 @@ const SettingsMessagesBannerComponent = ({
             color="inherit"
             size="small"
             className={classes.button}
+            style={{ color }}
             onClick={handleDismiss}
           >
             <Close fontSize="inherit" />
