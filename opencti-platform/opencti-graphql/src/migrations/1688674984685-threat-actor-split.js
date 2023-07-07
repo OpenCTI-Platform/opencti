@@ -3,7 +3,7 @@ import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { elCount, elRawUpdateByQuery } from '../database/engine';
 import {
-  READ_ENTITIES_INDICES,
+  READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_META_OBJECTS,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED
@@ -18,6 +18,31 @@ import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { logApp } from '../config/conf';
 
 const message = '[MIGRATION] Threat-actors to group and individual';
+
+const entitySettingTypeChange = async () => {
+  const updateQuery = {
+    script: {
+      params: { toType: 'Threat-Actor-Group' },
+      source: 'ctx._source.target_type = params.toType;'
+    },
+    query: {
+      bool: {
+        must: [
+          { term: { 'entity_type.keyword': { value: 'EntitySetting' } } },
+          { term: { 'target_type.keyword': { value: 'Threat-Actor' } } }
+        ],
+      },
+    },
+  };
+  await elRawUpdateByQuery({
+    index: [READ_INDEX_INTERNAL_OBJECTS],
+    refresh: true,
+    wait_for_completion: true,
+    body: updateQuery
+  }).catch((err) => {
+    throw DatabaseError('Error updating elastic', { error: err });
+  });
+};
 
 const updateOVCategory = async (fromOV, toOV) => {
   const updateIndividualQuery = {
@@ -77,6 +102,9 @@ const createIndividualThreatCategories = async (context) => {
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');
+  // Migrate the entity setting
+  logApp.info(`${message} > Migration of entity setting`);
+  await entitySettingTypeChange();
   // Rename threat actor ov to group
   logApp.info(`${message} > Migration open vocabularies`);
   await updateOVCategory('threat_actor_type_ov', 'threat_actor_group_type_ov');
@@ -91,24 +119,18 @@ export const up = async (next) => {
   let processNumber = 0;
   const callback = async (threatActors) => {
     processNumber += threatActors.length;
-    const workingActors = threatActors.filter((t) => {
-      // If not yet migrated
-      if (t.entity_type === ENTITY_TYPE_THREAT_ACTOR) return true;
-      // If migrated but needs to be changed to individual
-      const isIndividualTarget = t.resource_level === 'individual';
-      const toType = isIndividualTarget ? ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL : ENTITY_TYPE_THREAT_ACTOR_GROUP;
-      return t.entity_type === ENTITY_TYPE_THREAT_ACTOR_GROUP && toType === ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL;
-    });
-    for (let index = 0; index < workingActors.length; index += 1) {
-      const threatActor = workingActors[index];
+    for (let index = 0; index < threatActors.length; index += 1) {
+      const threatActor = threatActors[index];
       const isIndividualTarget = threatActor.resource_level === 'individual';
       const toType = isIndividualTarget ? ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL : ENTITY_TYPE_THREAT_ACTOR_GROUP;
       const standardId = generateStandardId(toType, threatActor);
       // Update the entity
       const updateEntityQuery = {
         script: {
-          params: { toType, standardId },
-          source: 'ctx._source.entity_type = params.toType; ctx._source.standard_id = params.standardId;',
+          params: { original: ENTITY_TYPE_THREAT_ACTOR, toType, standardId },
+          source: 'ctx._source.entity_type = params.toType; '
+                + 'ctx._source.standard_id = params.standardId; '
+                + 'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
         },
         query: {
           term: { 'internal_id.keyword': { value: threatActor.internal_id } }
@@ -127,17 +149,23 @@ export const up = async (next) => {
         script: {
           params: { toType, toId: threatActor.internal_id },
           source: 'for(def connection : ctx._source.connections) {'
-              + 'if (connection.internal_id == params.toId) { connection.types.add(params.toType); } '
-              + '} '
-              + 'if (ctx._source.fromId == params.toId) { ctx._source.fromType = params.toType; }'
-              + 'if (ctx._source.toId == params.toId) { ctx._source.toType = params.toType; }'
+                + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
+                + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
+                + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
+                + '}'
         },
         query: {
-          bool: {
-            should: [
-              { term: { 'fromId.keyword': { value: threatActor.internal_id } } },
-              { term: { 'toId.keyword': { value: threatActor.internal_id } } }
-            ],
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                should: [
+                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
+                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } }
+                ],
+                minimum_should_match: 1
+              }
+            }
           }
         },
       };

@@ -7,8 +7,8 @@ import { listAllEntities } from '../database/middleware-loader';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 
 export const up = async (next) => {
-  const context = executionContext('migration');
   logApp.info('[MIGRATION] Group initialization migration');
+  const context = executionContext('migration');
   const groups = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP]);
   const patchingGroups = groups.filter((g) => g.auto_new_marking === undefined || g.default_assignation === undefined);
   logApp.info(`[MIGRATION] Group initialization patching ${patchingGroups.length} groups`);

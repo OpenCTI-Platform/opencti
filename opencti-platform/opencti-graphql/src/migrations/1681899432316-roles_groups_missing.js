@@ -9,9 +9,9 @@ import { deleteElementById } from '../database/middleware';
 import { addGroup } from '../domain/grant';
 
 export const up = async (next) => {
+  logApp.info('[MIGRATION] Roles missing groups');
   const context = executionContext('migration', SYSTEM_USER);
   const start = new Date().getTime();
-  logApp.info('[MIGRATION] Roles missing groups');
   const relationArgs = { fromTypes: [ENTITY_TYPE_USER], connectionFormat: false };
   const currentRolesRelations = await listAllRelations(context, context.user, [RELATION_HAS_ROLE], relationArgs);
   // If remaining user->roles relationships available.

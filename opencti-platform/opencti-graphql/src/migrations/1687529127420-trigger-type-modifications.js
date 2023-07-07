@@ -3,7 +3,10 @@ import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_DATA_INDICES } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 
+const message = '[MIGRATION] Adding instance_trigger attribute to triggers';
+
 export const up = async (next) => {
+  logApp.info(`${message} > started`);
   // triggers now have a mandatory boolean attribute 'instance_trigger'
   const updateQuery = {
     script: {
@@ -18,7 +21,7 @@ export const up = async (next) => {
       },
     },
   };
-  await elUpdateByQueryForMigration('[MIGRATION] Adding instance_trigger attribute to triggers', READ_DATA_INDICES, updateQuery)
+  await elUpdateByQueryForMigration(message, READ_DATA_INDICES, updateQuery)
     .catch((err) => {
       throw DatabaseError('Error updating elastic', { error: err });
     });

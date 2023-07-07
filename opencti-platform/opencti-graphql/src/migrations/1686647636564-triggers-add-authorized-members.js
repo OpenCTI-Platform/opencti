@@ -7,8 +7,8 @@ import { patchAttribute } from '../database/middleware';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 
 export const up = async (next) => {
-  const context = executionContext('migration', SYSTEM_USER);
   logApp.info('[MIGRATION] Triggers add authorizedMembers start');
+  const context = executionContext('migration', SYSTEM_USER);
   const triggers = await listAllEntities(context, context.user, [ENTITY_TYPE_TRIGGER]);
   logApp.info(`[MIGRATION] Triggers add authorizedMembers on ${triggers.length} triggers`);
   const updateTriggers = async (trigger) => {

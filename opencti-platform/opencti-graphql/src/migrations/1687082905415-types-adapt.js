@@ -2,6 +2,7 @@ import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { convertTypeToStixType } from '../database/stix-converter';
+import { logApp } from '../config/conf';
 
 const entityTypeChange = (fromType, toType, indices) => {
   const updateQuery = {
@@ -24,7 +25,7 @@ const entityTypeChange = (fromType, toType, indices) => {
 };
 
 export const up = async (next) => {
-  // Change Task entity types to BackgroundTask
+  logApp.info('[MIGRATION] Types adapt');
   await entityTypeChange('Task', 'BackgroundTask', READ_INDEX_INTERNAL_OBJECTS);
   next();
 };

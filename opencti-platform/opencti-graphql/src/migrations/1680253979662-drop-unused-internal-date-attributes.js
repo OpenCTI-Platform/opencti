@@ -16,6 +16,7 @@ const statsDateAttributes = [
 ];
 
 export const up = async (next) => {
+  logApp.info('[MIGRATION] Dropping unused split date attributes');
   const buildStatsDateAttributes = statsDateAttributes.map((attr) => [
     `i_${attr}_day`,
     `i_${attr}_month`,

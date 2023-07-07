@@ -1,6 +1,9 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { DatabaseError } from '../config/errors';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { logApp } from '../config/conf';
+
+const message = '[MIGRATION] Triggers remove unused fields: recipients, user_ids, group_ids';
 
 const updateTriggers = async () => {
   const updateQuery = {
@@ -40,12 +43,12 @@ const updateTriggers = async () => {
       }
     }
   };
-  const message = '[MIGRATION] Triggers remove unused fields: recipients, user_ids, group_ids';
   return elUpdateByQueryForMigration(message, READ_INDEX_INTERNAL_OBJECTS, updateQuery).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
 };
 export const up = async (next) => {
+  logApp.info(message);
   await updateTriggers();
   next();
 };

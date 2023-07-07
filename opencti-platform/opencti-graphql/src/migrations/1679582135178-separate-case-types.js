@@ -12,8 +12,10 @@ import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { findByType } from '../modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { logApp } from '../config/conf';
 
 export const up = async (next) => {
+  logApp.info('[MIGRATION] Separate case types');
   const context = executionContext('migration');
   const casesPromise = getAllCases(context, SYSTEM_USER);
   const vocabPromise = getVocabularies(context, SYSTEM_USER, { category: 'case_types_ov' });
