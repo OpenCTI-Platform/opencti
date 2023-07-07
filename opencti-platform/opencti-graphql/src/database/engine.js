@@ -17,7 +17,6 @@ import {
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
   READ_INDEX_INTERNAL_OBJECTS,
-  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_PLATFORM_INDICES,
   READ_RELATIONSHIPS_INDICES,
@@ -1809,7 +1808,7 @@ export const elAttributeValues = async (context, user, field, opts = {}) => {
     },
   };
   const query = {
-    index: [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS],
+    index: [READ_DATA_INDICES],
     ignore_throttled: ES_IGNORE_THROTTLED,
     body,
   };

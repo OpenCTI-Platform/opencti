@@ -130,7 +130,6 @@ import {
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import {
-  ENTITY_TYPE_HISTORY,
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_USER,
   isDatedInternalObject,
@@ -542,17 +541,9 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
     .filter((n) => isNotEmptyField(resolveLabels[n.label.toLowerCase()]))
     .map((n) => R.assoc('entity', resolveLabels[n.label.toLowerCase()], n));
 };
-export const timeSeriesHistories = async (context, user, args) => {
-  const types = [ENTITY_TYPE_HISTORY];
-  const timeSeriesArgs = buildEntityFilters({ types, ...args });
+export const timeSeriesHistory = async (context, user, types, args) => {
   const { startDate, endDate, interval } = args;
-  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, timeSeriesArgs);
-  return fillTimeSeries(startDate, endDate, interval, histogramData);
-};
-export const timeSeriesAudits = async (context, user, types, args) => {
-  const timeSeriesArgs = buildEntityFilters({ types, ...args });
-  const { startDate, endDate, interval } = args;
-  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, timeSeriesArgs);
+  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, args);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesEntities = async (context, user, types, args) => {
@@ -567,6 +558,41 @@ export const timeSeriesRelations = async (context, user, args) => {
   const timeSeriesArgs = buildEntityFilters({ types, ...args });
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
+};
+export const distributionHistory = async (context, user, types, args) => {
+  const { limit = 10, order = 'desc', field } = args;
+  if (field.includes('.') && !field.endsWith('internal_id')) {
+    throw FunctionalError('Distribution entities does not support relation aggregation field');
+  }
+  let finalField = field;
+  if (field.includes('.')) {
+    finalField = REL_INDEX_PREFIX + field;
+  }
+  if (field === 'name') {
+    finalField = 'internal_id';
+  }
+  const distributionData = await elAggregationCount(context, user, READ_INDEX_HISTORY, {
+    ...args,
+    field: finalField
+  });
+  // Take a maximum amount of distribution depending on the ordering.
+  const orderingFunction = order === 'asc' ? R.ascend : R.descend;
+  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'user_id' || field === 'context_data.id') {
+    return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
+  }
+  if (field === 'name') {
+    let result = [];
+    await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
+      .then((hits) => {
+        result = hits.map((hit) => ({
+          label: hit.entity.name ?? extractEntityRepresentative(hit.entity),
+          value: hit.value,
+          entity: hit.entity,
+        }));
+      });
+    return result;
+  }
+  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntities = async (context, user, types, args) => {
   const distributionArgs = buildEntityFilters({ types, ...args });

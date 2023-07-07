@@ -52,6 +52,7 @@ const rootPrivateQuery = graphql`
         enable
         running
       }
+      enterprise_edition
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
       ...PasswordPolicies

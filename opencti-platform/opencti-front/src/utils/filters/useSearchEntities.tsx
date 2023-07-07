@@ -777,6 +777,41 @@ const useSearchEntities = ({
         }));
         unionSetEntities('is_read', isReadEntities);
         break;
+      case 'event_type':
+        // eslint-disable-next-line no-case-declarations
+        const eventTypeEntities = [
+          'authentication',
+          'read',
+          'mutation',
+          'file',
+          'command',
+        ].map((n) => ({
+          label: n,
+          value: n,
+          type: 'Vocabulary',
+        }));
+        unionSetEntities('event_type', eventTypeEntities);
+        break;
+      case 'event_scope':
+        // eslint-disable-next-line no-case-declarations
+        const eventScopeEntities = [
+          'create',
+          'update',
+          'delete',
+          'read',
+          'search',
+          'enrich',
+          'import',
+          'export',
+          'login',
+          'logout',
+        ].map((n) => ({
+          label: n,
+          value: n,
+          type: 'Vocabulary',
+        }));
+        unionSetEntities('event_scope', eventScopeEntities);
+        break;
       case 'priority':
         fetchQuery(attributesSearchQuery, {
           attributeName: 'priority',
