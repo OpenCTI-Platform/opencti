@@ -106,11 +106,10 @@ export const deleteWork = async (context, user, workId) => {
 };
 
 export const pingWork = async (context, user, workId) => {
+  const currentWork = await loadWorkById(context, user, workId);
   const params = { updated_at: now() };
   const source = 'ctx._source["updated_at"] = params.updated_at;';
-  await elUpdate(INDEX_HISTORY, workId, {
-    script: { source, lang: 'painless', params },
-  });
+  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
   return workId;
 };
 
@@ -196,7 +195,8 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       params.error = error;
     }
     // Update elastic
-    await elUpdate(INDEX_HISTORY, workId, { script: { source: sourceScript, lang: 'painless', params } });
+    const currentWork = await loadWorkById(context, user, workId);
+    await elUpdate(currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
     // Remove redis work if needed
     if (isComplete) {
       await redisDeleteWorks(workId);
@@ -206,14 +206,16 @@ export const reportExpectation = async (context, user, workId, errorData) => {
 };
 
 export const updateExpectationsNumber = async (context, user, workId, expectations) => {
+  const currentWork = await loadWorkById(context, user, workId);
   const params = { updated_at: now(), import_expected_number: expectations };
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
-  await elUpdate(INDEX_HISTORY, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
   return redisUpdateActionExpectation(user, workId, expectations);
 };
 
 export const updateReceivedTime = async (context, user, workId, message) => {
+  const currentWork = await loadWorkById(context, user, workId);
   const params = { received_time: now(), message };
   let source = 'ctx._source.status = "progress";';
   source += 'ctx._source["received_time"] = params.received_time;';
@@ -221,14 +223,14 @@ export const updateReceivedTime = async (context, user, workId, message) => {
     source += 'ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); ';
   }
   // Update elastic
-  await elUpdate(INDEX_HISTORY, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
   return workId;
 };
 
 export const updateProcessedTime = async (context, user, workId, message, inError = false) => {
+  const currentWork = await loadWorkById(context, user, workId);
   const params = { processed_time: now(), message };
   let source = 'ctx._source["processed_time"] = params.processed_time;';
-  const currentWork = await loadWorkById(context, user, workId);
   const { isComplete, total } = await isWorkCompleted(workId);
   if (currentWork.import_expected_number === 0 || isComplete) {
     params.completed_number = total ?? 0;
@@ -244,7 +246,7 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     }
   }
   // Update elastic
-  await elUpdate(INDEX_HISTORY, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
   // Remove redis work if needed
   if (isComplete) {
     await redisDeleteWorks([workId]);
