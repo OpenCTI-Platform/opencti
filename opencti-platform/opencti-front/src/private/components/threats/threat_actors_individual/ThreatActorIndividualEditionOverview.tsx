@@ -202,7 +202,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatAct
   };
   const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
     if (!enableReferences) {
-      let finalValue: string = value as string;
+      let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as unknown as Option).value;
       }
@@ -212,7 +212,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatAct
           editor.fieldPatch({
             variables: {
               id: threatActorIndividual.id,
-              input: [{ key: name, value: [finalValue ?? ''] }],
+              input: [{ key: name, value: Array.isArray(finalValue) ? finalValue : [finalValue] }],
             },
           });
         })
