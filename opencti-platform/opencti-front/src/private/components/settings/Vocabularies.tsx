@@ -106,6 +106,12 @@ const Vocabularies = () => {
         isSortable: false,
         render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.usages),
       },
+      order: {
+        label: 'Order',
+        width: '10%',
+        isSortable: true,
+        render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.order),
+      },
     };
     return (
       <ListLines

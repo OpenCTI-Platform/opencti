@@ -14,7 +14,6 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
-import { findAll as findIndividuals } from './individual';
 import { now } from '../utils/format';
 
 export const findById = (context, user, opinionId) => {
@@ -24,21 +23,11 @@ export const findAll = async (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], args);
 };
 export const findMyOpinion = async (context, user, entityId) => {
-  // Resolve the individual
-  const individualsArgs = {
-    filters: [{ key: 'contact_information', values: [user.user_email] }],
-    connectionFormat: false,
-  };
-  const individuals = await findIndividuals(context, user, individualsArgs);
-  if (individuals.length === 0) {
-    return null;
-  }
   const keyObject = buildRefRelationKey(RELATION_OBJECT);
-  const keyCreatedBy = buildRefRelationKey(RELATION_CREATED_BY);
   const opinionsArgs = {
     filters: [
       { key: keyObject, values: [entityId] },
-      { key: keyCreatedBy, values: [R.head(individuals).id] },
+      { key: 'creator_id', values: [user.id] },
     ],
     connectionFormat: false,
   };

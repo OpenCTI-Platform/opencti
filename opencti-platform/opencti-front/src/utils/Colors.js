@@ -344,6 +344,27 @@ export const hexToRGB = (hex, transp = 0.1) => {
   return `rgb(${r}, ${g}, ${b}, ${transp})`;
 };
 
+const numberToHex = (c) => {
+  const hex = c.toString(16);
+  return hex.length === 1 ? `0${hex}` : hex;
+};
+const rgbToHex = (r, g, b) => {
+  return `#${numberToHex(r)}${numberToHex(g)}${numberToHex(b)}`;
+};
+
+const generateGreenToRedColor = (n) => {
+  const red = (n > 50 ? (1 - 2 * ((n - 50) / 100.0)) : 1.0) * 255;
+  const green = (n > 50 ? 1.0 : ((2 * n) / 100.0)) * 255;
+  const blue = 50;
+  return rgbToHex(Math.round(red), Math.round(green), Math.round(blue));
+};
+
+export const generateGreenToRedColors = (size) => {
+  const fact = 100 / size;
+  const ns = Array.from(Array(size).keys()).map((idx) => idx * fact);
+  return ns.map((n) => generateGreenToRedColor(n));
+};
+
 const adjustColor = (color, amount = 1) => {
   return `#${color.replace(/^#/, '').replace(/../g, (c) => (`0${Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)}`).substr(-2))}`;
 };

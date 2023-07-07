@@ -34,8 +34,12 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabul
         operator: entityTypes.operator,
       }];
   }
+  const args = {
+    orderBy: ['order', 'name'], // Default orderBy if none
+    ...opts
+  };
   return listEntitiesPaginated<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], {
-    ...opts,
+    ...args,
     filters
   });
 };
@@ -54,7 +58,7 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
 };
 
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
-  const element = await createEntity(context, user, vocabulary, ENTITY_TYPE_VOCABULARY);
+  const element = await createEntity(context, user, { ...vocabulary, order: vocabulary.order ?? 0 }, ENTITY_TYPE_VOCABULARY);
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);
 };
 
@@ -62,7 +66,7 @@ export const deleteVocabulary = async (context: AuthContext, user: AuthUser, voc
   const vocabulary = await findById(context, user, vocabularyId);
   const usages = await getVocabularyUsages(context, user, vocabulary);
   const completeCategory = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
-  const deletable = !vocabulary.builtIn && (!completeCategory || (!completeCategory.fields.some(({ required }) => required) || usages.length === 0));
+  const deletable = !vocabulary.builtIn && (!completeCategory || (!completeCategory.fields.some(({ required }) => required) || usages === 0));
   if (deletable) {
     if (completeCategory) {
       await elRawUpdateByQuery({

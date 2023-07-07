@@ -76,6 +76,7 @@ const vocabularyAdd = graphql`
 
 const labelValidation = (t: (v: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  order: Yup.number().nullable(),
 });
 
 const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
@@ -94,6 +95,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
     name: string;
     description: string;
     aliases: { value: string }[];
+    order: number;
   }
   const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (
     values,
@@ -103,6 +105,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
       name: values.name,
       description: values.description,
       aliases: values.aliases.map((a) => a.value),
+      order: parseInt(String(values.order), 10),
       category,
     };
     addVocab({
@@ -158,12 +161,13 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
               name: '',
               description: '',
               aliases: [] as { value: string }[],
+              order: 0,
             }}
             validationSchema={labelValidation(t)}
             onSubmit={onSubmit}
             onReset={handleClose}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({ submitForm, handleReset, isSubmitting, isValid, dirty }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -200,6 +204,15 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                   )}
                   classes={{ clearIndicator: classes.autoCompleteIndicator }}
                 />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="order"
+                  label={t('Order')}
+                  fullWidth={true}
+                  type="number"
+                  style={{ marginTop: 20 }}
+                />
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"
@@ -213,7 +226,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                     variant="contained"
                     color="secondary"
                     onClick={submitForm}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !isValid || !dirty}
                     classes={{ root: classes.button }}
                   >
                     {t('Create')}

@@ -76,6 +76,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   usages: Int!
   aliases: [String!]
   builtIn: Boolean
+  order: Int
 }
 
 # Ordering
@@ -83,6 +84,7 @@ enum VocabularyOrdering {
   name
   category
   description
+  order
 }
 
 # Filtering
@@ -133,6 +135,7 @@ input VocabularyAddInput {
   name: String! @constraint(minLength: 1)
   description: String
   category: VocabularyCategory!
+  order: Int
   created: DateTime
   modified: DateTime
   aliases: [String!]

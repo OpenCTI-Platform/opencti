@@ -1244,7 +1244,8 @@ class ToolBar extends Component {
     const typesAreNotAddableInContainer = R.includes(
       R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
       notAddableTypes,
-    );
+    ) || ((filters?.entity_type ?? []).length === 1
+      && notScannableTypes.includes(R.head(filters.entity_type).id));
     const selectedElementsList = R.values(selectedElements || {});
     const titleCopy = this.titleCopy();
     let keptElement = null;

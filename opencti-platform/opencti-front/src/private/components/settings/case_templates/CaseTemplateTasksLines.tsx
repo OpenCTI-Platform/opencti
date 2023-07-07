@@ -43,7 +43,7 @@ export const tasksLinesFragment = graphql`
     count: { type: "Int", defaultValue: 200 }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     orderBy: { type: "TaskTemplatesOrdering", defaultValue: name }
-    after: { type: "ID", defaultValue: "" }
+    after: { type: "ID" }
   )
   @refetchable(queryName: "CaseTemplateTasksLines_DataQuery") {
     taskTemplates(
