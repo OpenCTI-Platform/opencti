@@ -18,15 +18,7 @@ import { SettingsMessagesLine_settingsMessage$data } from './__generated__/Setti
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
-    padding: theme.spacing(2),
-    display: 'flex',
-    alignItems: 'center',
-  },
-  title: {
-    float: 'left',
-  },
-  container: {
-    padding: theme.spacing(2),
+    padding: '20px 20px 20px 60px',
   },
   buttons: {
     marginTop: theme.spacing(2),
@@ -34,6 +26,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  container: {
+    padding: '10px 20px 20px 20px',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    left: 5,
+    color: 'inherit',
   },
 }));
 
@@ -59,7 +60,12 @@ const messageValidation = () => Yup.object().shape({
   color: Yup.string().nullable(),
 });
 
-type SettingsMessageInput = Partial<Pick<SettingsMessagesLine_settingsMessage$data, 'id' | 'activated' | 'message' | 'dismissible'>>;
+type SettingsMessageInput = Partial<
+Pick<
+SettingsMessagesLine_settingsMessage$data,
+'id' | 'activated' | 'message' | 'dismissible'
+>
+>;
 
 const SettingsMessageForm = ({
   settingsId,
@@ -67,16 +73,18 @@ const SettingsMessageForm = ({
   handleClose,
   creation = false,
 }: {
-  settingsId: string
-  message?: SettingsMessagesLine_settingsMessage$data
-  handleClose: () => void
-  creation?: boolean
+  settingsId: string;
+  message?: SettingsMessagesLine_settingsMessage$data;
+  handleClose: () => void;
+  creation?: boolean;
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [commit] = useMutation(settingsMessageEditionPatch);
-
-  const onSubmit: FormikConfig<SettingsMessageInput>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<SettingsMessageInput>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     commit({
       variables: {
         id: settingsId,
@@ -88,32 +96,36 @@ const SettingsMessageForm = ({
       },
     });
   };
-
-  const initialValues = message ? {
-    id: message.id,
-    message: message.message,
-    activated: message.activated,
-    dismissible: message.dismissible,
-    color: message.color,
-  } : {
-    message: '',
-    activated: false,
-    dismissible: false,
-    color: undefined,
+  const onReset = () => {
+    handleClose();
   };
-
+  const initialValues = message
+    ? {
+      id: message.id,
+      message: message.message,
+      activated: message.activated,
+      dismissible: message.dismissible,
+      color: message.color,
+    }
+    : {
+      message: '',
+      activated: false,
+      dismissible: false,
+      color: '',
+    };
   return (
-    <div>
+    <>
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
+          className={classes.closeButton}
           onClick={handleClose}
           size="large"
           color="primary"
         >
           <Close fontSize="small" color="primary" />
         </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
+        <Typography variant="h6">
           {creation ? `${t('Create a message')}` : `${t('Update a message')}`}
         </Typography>
         <div className="clearfix" />
@@ -124,12 +136,9 @@ const SettingsMessageForm = ({
           initialValues={initialValues}
           validationSchema={messageValidation()}
           onSubmit={onSubmit}
+          onReset={onReset}
         >
-          {({
-            submitForm,
-            isSubmitting,
-            isValid,
-          }) => (
+          {({ submitForm, handleReset, isSubmitting, isValid }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -142,9 +151,6 @@ const SettingsMessageForm = ({
                 component={ColorPickerField}
                 name="color"
                 label={t('Color')}
-                InputLabelProps={{
-                  shrink: true,
-                }}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
@@ -160,12 +166,20 @@ const SettingsMessageForm = ({
                 type="checkbox"
                 name="dismissible"
                 label={t('Dismissible')}
-                containerstyle={{ marginTop: 20 }}
+                containerstyle={{ marginTop: 10 }}
               />
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
-                  color="primary"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting || !isValid}
                   classes={{ root: classes.button }}
@@ -173,10 +187,11 @@ const SettingsMessageForm = ({
                   {creation ? `${t('Create')}` : `${t('Update')}`}
                 </Button>
               </div>
-            </Form>)}
+            </Form>
+          )}
         </Formik>
       </div>
-    </div>
+    </>
   );
 };
 

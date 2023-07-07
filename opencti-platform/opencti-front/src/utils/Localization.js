@@ -2049,8 +2049,8 @@ const i18n = {
       GREEN: 'VERDE',
       RED: 'ROJO',
       YELLOW: 'AMARILLO',
-      'Platform Banner Level': 'Nivel de banner de plataforma',
-      'Platform Banner Text': 'Texto de la pancarta de la plataforma',
+      'Platform banner level': 'Nivel de banner de plataforma',
+      'Platform banner text': 'Texto de la pancarta de la plataforma',
       'System Banner Configuration': 'Configuración de la pancarta del sistema',
     },
     'fr-fr': {
@@ -4104,8 +4104,8 @@ const i18n = {
       GREEN: 'VERT',
       RED: 'ROUGE',
       YELLOW: 'JAUNE',
-      'Platform Banner Level': 'Niveau de la bannière de la plate-forme',
-      'Platform Banner Text': 'Texte de la bannière de la plate-forme',
+      'Platform banner level': 'Niveau de la bannière de la plate-forme',
+      'Platform banner text': 'Texte de la bannière de la plate-forme',
       'System Banner Configuration': 'Configuration de la bannière système',
     },
     'ja-jp': {
@@ -6083,8 +6083,8 @@ const i18n = {
       GREEN: '緑',
       RED: '赤',
       YELLOW: '黄色',
-      'Platform Banner Level': 'プラットフォーム バナー レベル',
-      'Platform Banner Text': 'プラットフォームのバナーテキスト',
+      'Platform banner level': 'プラットフォーム バナー レベル',
+      'Platform banner text': 'プラットフォームのバナーテキスト',
       'System Banner Configuration': 'システムバナーの設定',
     },
     'zh-cn': {
@@ -7957,8 +7957,8 @@ const i18n = {
       GREEN: '绿色的',
       RED: '红色的',
       YELLOW: '黄色的',
-      'Platform Banner Level': '平台横幅级别',
-      'Platform Banner Text': '平台横幅文本',
+      'Platform banner level': '平台横幅级别',
+      'Platform banner text': '平台横幅文本',
       'System Banner Configuration': '系统横幅配置',
     },
     'en-us': {

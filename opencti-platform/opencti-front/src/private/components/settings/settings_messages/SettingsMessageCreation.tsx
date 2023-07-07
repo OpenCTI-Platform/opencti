@@ -5,8 +5,8 @@ const SettingsMessageCreation = ({
   settingsId,
   handleClose,
 }: {
-  settingsId: string
-  handleClose: () => void
+  settingsId: string;
+  handleClose: () => void;
 }) => {
   return (
     <SettingsMessageForm

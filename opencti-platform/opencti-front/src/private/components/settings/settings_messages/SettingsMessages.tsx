@@ -1,5 +1,4 @@
 import { Add } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
@@ -15,6 +14,7 @@ import { generateBannerMessageColors } from '../../../../utils/Colors';
 import { SettingsMessages_settingsMessages$key } from './__generated__/SettingsMessages_settingsMessages.graphql';
 import SettingsMessageCreation from './SettingsMessageCreation';
 import SettingsMessagesLines from './SettingsMessagesLines';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -58,24 +58,21 @@ const settingsMessagesFragment = graphql`
 const SettingsMessages = ({
   settings,
 }: {
-  settings: SettingsMessages_settingsMessages$key & { readonly id: string }
+  settings: SettingsMessages_settingsMessages$key & { readonly id: string };
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
-  const messages = useFragment<SettingsMessages_settingsMessages$key>(settingsMessagesFragment, settings)?.messages ?? [];
-
+  const messages = useFragment<SettingsMessages_settingsMessages$key>(
+    settingsMessagesFragment,
+    settings,
+  )?.messages ?? [];
   const dataColumns: DataColumns = {
     color: {
       label: 'Color',
       width: '15%',
       isSortable: false,
       render: (data) => {
-        const {
-          backgroundColor,
-          borderLeft,
-          color,
-        } = generateBannerMessageColors(data?.color);
+        const { backgroundColor, borderLeft, color } = generateBannerMessageColors(data?.color);
         return (
           <div
             style={{
@@ -103,14 +100,11 @@ const SettingsMessages = ({
       width: '15%',
       isSortable: false,
       render: (data) => {
-        const color = data.activated ? 'primary' : 'secondary';
-        const label = data.activated ? 'Active' : 'Inactive';
         return (
-          <Chip
-            classes={{ root: classes.chipInList }}
-            color={color}
-            variant="outlined"
-            label={t(label)}
+          <ItemBoolean
+            variant="inList"
+            label={data.activated ? t('Enabled') : t('Disabled')}
+            status={data.activated}
           />
         );
       },
@@ -120,42 +114,53 @@ const SettingsMessages = ({
       width: '15%',
       isSortable: false,
       render: (data) => {
-        const color = data.dismissible ? 'primary' : 'secondary';
-        const label = data.dismissible ? 'Yes' : 'No';
         return (
-          <Chip
-            classes={{ root: classes.chipInList }}
-            color={color}
-            variant="outlined"
-            label={t(label)}
+          <ItemBoolean
+            variant="inList"
+            label={data.dismissible ? t('Yes') : t('No')}
+            status={data.dismissible}
           />
         );
       },
     },
   };
-
   const datas = messages.map((m) => ({ node: m }));
-
   const [displayCreate, setDisplayCreate] = useState(false);
   const handleOpenCreate = () => setDisplayCreate(true);
   const handleCloseCreate = () => setDisplayCreate(false);
-
   return (
     <>
-      <div className={classes.container}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Platform announcement')}
-        </Typography>
-        <IconButton
-          style={{ marginTop: -5 }}
-          color="secondary"
-          aria-label="Add"
-          onClick={handleOpenCreate}
-          size="large"
+      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+        {t('Platform announcement')}
+      </Typography>
+      <IconButton
+        style={{ float: 'left', marginTop: -15 }}
+        color="secondary"
+        aria-label="Add"
+        onClick={handleOpenCreate}
+        size="large"
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <div className="clearfix" />
+      <Paper
+        classes={{ root: classes.paper }}
+        variant="outlined"
+        style={{ marginTop: 0 }}
+      >
+        <ListLines
+          dataColumns={dataColumns}
+          noFilters
+          noPadding
+          secondaryAction
         >
-          <Add fontSize="small" />
-        </IconButton>
-      </div>
+          <SettingsMessagesLines
+            settingsId={settings.id}
+            datas={datas}
+            dataColumns={dataColumns}
+          />
+        </ListLines>
+      </Paper>
       <Drawer
         open={displayCreate}
         anchor="right"
@@ -169,16 +174,6 @@ const SettingsMessages = ({
           handleClose={handleCloseCreate}
         />
       </Drawer>
-      <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 0 }}>
-        <ListLines
-          dataColumns={dataColumns}
-          noFilters
-          noPadding
-          secondaryAction
-        >
-          <SettingsMessagesLines settingsId={settings.id} datas={datas} dataColumns={dataColumns} />
-        </ListLines>
-      </Paper>
     </>
   );
 };

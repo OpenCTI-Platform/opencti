@@ -178,12 +178,12 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#00838f';
       }
       return '#00bcd4';
-    case 'Theat-Actor-Group':
+    case 'Threat-Actor-Group':
       if (dark) {
         return '#880e4f';
       }
       return '#e91e63';
-    case 'Theat-Actor-Individual':
+    case 'Threat-Actor-Individual':
       if (dark) {
         return '#4a148c';
       }

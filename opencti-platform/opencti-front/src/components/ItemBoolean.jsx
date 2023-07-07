@@ -43,7 +43,7 @@ const inlineStyles = {
 };
 
 const ItemBoolean = (props) => {
-  const { classes, label, status, variant, t, reverse } = props;
+  const { classes, label, neutralLabel, status, variant, t, reverse } = props;
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   if (status === true) {
     return (
@@ -59,7 +59,7 @@ const ItemBoolean = (props) => {
       <Chip
         classes={{ root: style }}
         style={inlineStyles.blue}
-        label={t('Not applicable')}
+        label={neutralLabel || t('Not applicable')}
       />
     );
   }
@@ -85,6 +85,7 @@ ItemBoolean.propTypes = {
   classes: PropTypes.object.isRequired,
   status: PropTypes.bool,
   label: PropTypes.string,
+  neutralLabel: PropTypes.string,
   variant: PropTypes.string,
   reverse: PropTypes.bool,
 };

@@ -134,11 +134,17 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
     classOperator = classes.operator3;
   }
 
-  const filterPairs = toPairs(filters).filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((k) => currentFilter[0].startsWith(k)));
+  const filterPairs = toPairs(filters).filter(
+    (currentFilter) => !availableFilterKeys
+      || availableFilterKeys?.some((k) => currentFilter[0].startsWith(k)),
+  );
   const lastKey = last(filterPairs)?.[0];
 
   return (
-    <div className={finalClassName} style={{ width: dataColumns?.filters.width }}>
+    <div
+      className={finalClassName}
+      style={{ width: dataColumns?.filters.width }}
+    >
       {filterPairs.map((currentFilter) => {
         const filterKey = currentFilter[0];
         const filterContent = currentFilter[1];
@@ -149,17 +155,18 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
           <span>
             {filterContent.map((n) => (
               <span key={n.value}>
-                {(redirection && entityFilters.includes(filterKey))
-                  ? <FilterIconButtonContentWithRedirectionContainer
+                {redirection && entityFilters.includes(filterKey) ? (
+                  <FilterIconButtonContentWithRedirectionContainer
                     filter={n}
                     resolvedInstanceFilters={resolvedInstanceFilters}
                   />
-                  : <span>
+                ) : (
+                  <span>
                     {n.value && n.value.length > 0
                       ? truncate(n.value, 15)
                       : t('No label')}{' '}
                   </span>
-                }
+                )}
                 {last(filterContent)?.value !== n.value && (
                   <div className={classes.inlineOperator}>
                     {localFilterMode}
@@ -182,11 +189,13 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
                 disabledPossible ? Object.keys(filters).length === 1 : undefined
               }
               onDelete={
-                handleRemoveFilter ? () => handleRemoveFilter(filterKey) : undefined
+                handleRemoveFilter
+                  ? () => handleRemoveFilter(filterKey)
+                  : undefined
               }
             />
             {lastKey !== filterKey && (
-              <Chip classes={{ root: classOperator }} label={t('AND')}/>
+              <Chip classes={{ root: classOperator }} label={t('AND')} />
             )}
           </span>
         );

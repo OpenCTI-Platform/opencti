@@ -384,12 +384,8 @@ const Policies: FunctionComponent = () => {
                       />
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={6}>
-                    <Typography
-                      variant="h4"
-                      gutterBottom={true}
-                      style={{ marginTop: '30px' }}
-                    >
+                  <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+                    <Typography variant="h4" gutterBottom={true}>
                       {t('Platform Banner Configuration')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
@@ -397,12 +393,13 @@ const Policies: FunctionComponent = () => {
                         component={SelectField}
                         variant="standard"
                         name="platform_banner_level"
-                        label={t('Platform Banner Level')}
+                        label={t('Platform banner level')}
                         fullWidth={true}
                         containerstyle={{ marginTop: 5, width: '100%' }}
                         onSubmit={(name: string, value: string) => {
                           return handleSubmitField(name, value);
                         }}
+                        displ
                       >
                         <MenuItem value="">&nbsp;</MenuItem>
                         <MenuItem value="GREEN">{t('GREEN')}</MenuItem>
@@ -410,14 +407,13 @@ const Policies: FunctionComponent = () => {
                         <MenuItem value="YELLOW">{t('YELLOW')}</MenuItem>
                       </Field>
                       <Field
-                        component={MarkdownField}
-                        name="platform_banner_text"
-                        label={t('Platform Banner Text')}
-                        fullWidth={true}
-                        height={38}
-                        style={{ marginTop: 20 }}
-                        onSubmit={handleSubmitField}
+                        component={TextField}
                         variant="standard"
+                        style={{ marginTop: 20 }}
+                        name="platform_banner_text"
+                        label={t('Platform banner text')}
+                        fullWidth={true}
+                        onSubmit={handleSubmitField}
                       />
                     </Paper>
                   </Grid>

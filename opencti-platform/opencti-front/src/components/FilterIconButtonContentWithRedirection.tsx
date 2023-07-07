@@ -1,48 +1,70 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
-import { graphql, useLazyLoadQuery } from 'react-relay';
-import {
-  FilterIconButtonContentWithRedirectionQuery,
-} from './__generated__/FilterIconButtonContentWithRedirectionQuery.graphql';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { FilterIconButtonContentWithRedirectionQuery } from './__generated__/FilterIconButtonContentWithRedirectionQuery.graphql';
+import useQueryLoading from '../utils/hooks/useQueryLoading';
 
 export const filterIconButtonContentWithRedirectionQuery = graphql`
-    query FilterIconButtonContentWithRedirectionQuery(
-        $id: String!
-    ) {
-        stixObjectOrStixRelationship(id: $id) {
-            ... on StixCoreObject {
-                id
-            }
-        }
+  query FilterIconButtonContentWithRedirectionQuery($id: String!) {
+    stixObjectOrStixRelationship(id: $id) {
+      ... on BasicObject {
+        id
+      }
+      ... on BasicRelationship {
+        id
+      }
     }
+  }
 `;
 
-interface FilterIconButtonContentWithRedirectionProps {
-  filterId: string,
-  displayedValue: string,
+interface RenderButtonProps {
+  queryRef: PreloadedQuery<FilterIconButtonContentWithRedirectionQuery>;
+  displayedValue: string;
 }
 
-const FilterIconButtonContentWithRedirection: FunctionComponent<FilterIconButtonContentWithRedirectionProps> = ({
-  filterId,
+interface FilterIconButtonContentWithRedirectionProps {
+  filterId: string;
+  displayedValue: string;
+}
+
+const RenderButton: FunctionComponent<RenderButtonProps> = ({
+  queryRef,
   displayedValue,
 }) => {
-  const instanceData = useLazyLoadQuery<FilterIconButtonContentWithRedirectionQuery>(
+  const data = usePreloadedQuery<FilterIconButtonContentWithRedirectionQuery>(
+    filterIconButtonContentWithRedirectionQuery,
+    queryRef,
+  );
+  return (
+    <>
+      {data.stixObjectOrStixRelationship?.id ? (
+        <Link to={`/dashboard/id/${data.stixObjectOrStixRelationship.id}`}>
+          <span color="primary">{displayedValue}</span>
+        </Link>
+      ) : (
+        <del>{displayedValue}</del>
+      )}
+    </>
+  );
+};
+
+const FilterIconButtonContentWithRedirection: FunctionComponent<
+FilterIconButtonContentWithRedirectionProps
+> = ({ filterId, displayedValue }) => {
+  const queryRef = useQueryLoading<FilterIconButtonContentWithRedirectionQuery>(
     filterIconButtonContentWithRedirectionQuery,
     { id: filterId },
   );
-  const entityId = instanceData.stixObjectOrStixRelationship?.id;
-
   return (
-    <span>
-      {entityId
-        ? <Link to={`/dashboard/id/${filterId}`}>
-          <span color="primary">
-            {displayedValue}{' '}
-          </span>
-        </Link>
-        : <del>{displayedValue}{' '}</del>
-      }
-    </span>
+    <>
+      {queryRef && (
+        <React.Suspense
+          fallback={<span color="disabled">{displayedValue}</span>}
+        >
+          <RenderButton queryRef={queryRef} displayedValue={displayedValue} />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

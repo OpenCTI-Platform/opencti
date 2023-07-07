@@ -35,6 +35,7 @@ import HiddenTypesList from './entity_settings/HiddenTypesList';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { isNotEmptyField } from '../../../utils/utils';
 import SettingsMessages from './settings_messages/SettingsMessages';
+import ItemBoolean from '../../../components/ItemBoolean';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -488,7 +489,11 @@ const Settings = () => {
                             <List style={{ marginTop: -20 }}>
                               <ListItem divider={true}>
                                 <ListItemText primary={t('Version')} />
-                                <Chip label={version} color="primary" />
+                                <Chip
+                                  label={version}
+                                  color="primary"
+                                  style={{ borderRadius: 5 }}
+                                />
                               </ListItem>
                               <ListItem divider={true}>
                                 <ListItemText primary={t('Edition')} />
@@ -501,6 +506,7 @@ const Settings = () => {
                                   color={
                                     isEnterpriseEdition ? 'success' : 'warning'
                                   }
+                                  style={{ borderRadius: 5 }}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
@@ -515,6 +521,7 @@ const Settings = () => {
                                       : t('Standalone')
                                   }
                                   color="primary"
+                                  style={{ borderRadius: 5 }}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
@@ -526,6 +533,7 @@ const Settings = () => {
                                     settings.platform_cluster.instances_number
                                   }
                                   color="primary"
+                                  style={{ borderRadius: 5 }}
                                 />
                               </ListItem>
                               <ListItem divider={true}>
@@ -636,9 +644,7 @@ const Settings = () => {
                       </Dialog>
                     </Paper>
                   </Grid>
-                </Grid>
-                <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
-                  <Grid item={true} xs={4}>
+                  <Grid item={true} xs={4} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t('Dark theme')}
                     </Typography>
@@ -844,7 +850,7 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={4}>
+                  <Grid item={true} xs={4} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t('Light theme')}
                     </Typography>
@@ -1050,7 +1056,7 @@ const Settings = () => {
                       </Formik>
                     </Paper>
                   </Grid>
-                  <Grid item={true} xs={4}>
+                  <Grid item={true} xs={4} style={{ marginTop: 30 }}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t('Tools')}
                     </Typography>
@@ -1059,27 +1065,30 @@ const Settings = () => {
                         {modules.map((module) => (
                           <ListItem key={module.id} divider={true}>
                             <ListItemText primary={t(module.id)} />
-                            <Chip
+                            <ItemBoolean
+                              variant="inList"
                               label={
                                 module.enable ? t('Enabled') : t('Disabled')
                               }
-                              color={module.enable ? 'success' : 'error'}
+                              status={module.enable}
                             />
                           </ListItem>
                         ))}
                         {dependencies.map((dep) => (
                           <ListItem key={dep.name} divider={true}>
                             <ListItemText primary={t(dep.name)} />
-                            <Chip label={dep.version} color="primary" />
+                            <ItemBoolean
+                              variant="inList"
+                              neutralLabel={dep.version}
+                              status={null}
+                            />
                           </ListItem>
                         ))}
                       </List>
                     </Paper>
                   </Grid>
-                </Grid>
-                <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
-                  <Grid item={true} xs={12}>
-                    <SettingsMessages settings={settings}/>
+                  <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+                    <SettingsMessages settings={settings} />
                   </Grid>
                 </Grid>
               </>

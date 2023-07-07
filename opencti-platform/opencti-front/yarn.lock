@@ -9502,7 +9502,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"invert-color@npm:^2.0.0":
+"invert-color@npm:2.0.0":
   version: 2.0.0
   resolution: "invert-color@npm:2.0.0"
   checksum: 96ce4eddef748077167c3b7db89954824f80d82ddf90b01e56d44ec1f83c70b4857fbf149b8439498c0e0bca12f56b43c1b61a48d52b6e9f7d6aeb97632e2235
@@ -12360,7 +12360,7 @@ __metadata:
     html-to-image: 1.11.11
     html-to-pdfmake: 2.4.20
     http-proxy-middleware: 2.0.6
-    invert-color: ^2.0.0
+    invert-color: 2.0.0
     js-base64: 3.7.5
     js-file-download: 0.4.12
     jsdom: 22.1.0
