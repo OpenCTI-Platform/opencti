@@ -1,6 +1,7 @@
 import { FunctionComponent } from 'react';
 import Button from '@mui/material/Button';
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
+import FieldOrEmpty from './FieldOrEmpty';
 
 type Participants = ObjectParticipantFieldParticipantsSearchQuery$data['participants'];
 interface ItemParticipantsProps {
@@ -15,21 +16,19 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({
     .map((n) => n.node);
 
   return (
-    <div>
-      {participantsData.length > 0
-        ? participantsData.map((participant) => (
-          <Button
-            key={participant.id}
-            variant="outlined"
-            color="primary"
-            size="small"
-            style={{ margin: '0 7px 7px 0', cursor: 'default' }}
-          >
-            {participant.name}
-          </Button>
-        ))
-        : '-'}
-    </div>
+    <FieldOrEmpty source={participantsData}>
+      {participantsData.map((participant) => (
+        <Button
+          key={participant.id}
+          variant="outlined"
+          color="primary"
+          size="small"
+          style={{ margin: '0 7px 7px 0', cursor: 'default' }}
+        >
+          {participant.name}
+        </Button>
+      ))}
+    </FieldOrEmpty>
   );
 };
 export default ItemParticipants;

@@ -222,11 +222,7 @@ class StixDomainObjectOverview extends Component {
                   >
                     {t('Participants')}
                   </Typography>
-                  <ItemParticipants
-                    participants={
-                      stixDomainObject.objectParticipant
-                    }
-                  />
+                  <ItemParticipants participants={stixDomainObject.objectParticipant} />
                 </div>
               )}
               <Typography
