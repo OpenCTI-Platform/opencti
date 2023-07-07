@@ -54,7 +54,7 @@ input WorkspacesFiltering {
 # Relay connections
 type WorkspaceConnection {
     pageInfo: PageInfo!
-    edges: [WorkspaceEdge]
+    edges: [WorkspaceEdge!]!
 }
 
 # Queries

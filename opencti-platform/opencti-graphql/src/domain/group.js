@@ -208,7 +208,6 @@ const cleanMarkingValues = async (context, values) => {
     return R.uniqWith((a, b) => a.id === b.id, results);
   }).flat();
 };
-
 export const groupEditDefaultMarking = async (context, user, groupId, defaultMarking) => {
   const values = (await cleanMarkingValues(context, defaultMarking.values)).map((m) => m.id);
 

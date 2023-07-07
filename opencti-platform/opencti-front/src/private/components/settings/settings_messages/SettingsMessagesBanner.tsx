@@ -92,10 +92,15 @@ const extractMessagesToDisplay = (messagesFromLocalStorage: MessageFromLocalStor
       return m1.dismissible ? -1 : 1;
     });
 };
+
 const ref = React.createRef<HTMLDivElement>();
 export const useSettingsMessagesBannerHeight = () => {
   const [bannerHeight, setBannerHeight] = useState(ref.current?.clientHeight ?? 0);
-  useBus(BANNER_LOCAL_STORAGE_KEY, (size: number) => setBannerHeight(size ?? 0));
+  useBus(BANNER_LOCAL_STORAGE_KEY, (size: number) => {
+    if ((size != null || bannerHeight != null) && bannerHeight !== size) {
+      setBannerHeight(size ?? 0);
+    }
+  }, [bannerHeight]);
   return bannerHeight;
 };
 

@@ -22,10 +22,6 @@ class TopMenuDashboard extends Component {
       t,
       location,
       classes,
-      handleChangeTimeField,
-      timeField,
-      handleChangeDashboard,
-      dashboard,
     } = this.props;
     return (
       <div>
@@ -39,14 +35,7 @@ class TopMenuDashboard extends Component {
         >
           {t('Dashboard')}
         </Button>
-        {handleChangeTimeField && handleChangeDashboard && (
-          <DashboardSettings
-            handleChangeTimeField={handleChangeTimeField}
-            timeField={timeField}
-            handleChangeDashboard={handleChangeDashboard}
-            dashboard={dashboard}
-          />
-        )}
+        <DashboardSettings />
       </div>
     );
   }

@@ -1,67 +1,31 @@
+import bcrypt from 'bcryptjs';
+import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
-import { authenticator } from 'otplib';
-import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
-import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listThroughGetTo,
-  patchAttribute,
-  updateAttribute, updatedInputsToData,
-} from '../database/middleware';
-import {
-  listAllEntities,
-  listAllEntitiesForFilter,
-  listAllRelations,
-  listEntities,
-  storeLoadById
-} from '../database/middleware-loader';
-import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_USER,
-} from '../schema/internalObject';
-import {
-  isInternalRelationship,
-  RELATION_ACCESSES_TO,
-  RELATION_HAS_CAPABILITY,
-  RELATION_HAS_ROLE,
-  RELATION_MEMBER_OF,
-  RELATION_PARTICIPATE_TO,
-} from '../schema/internalRelationship';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
-import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
-import { generateStandardId } from '../schema/identifier';
+import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
+import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { elFindByIds, elLoadBy } from '../database/engine';
-import { now } from '../utils/format';
+import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
+import { internalFindByIds, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import { buildPagination, extractEntityRepresentative, isEmptyField, isNotEmptyField } from '../database/utils';
-import {
-  BYPASS,
-  executionContext,
-  INTERNAL_USERS,
-  isBypassUser,
-  isUserHasCapability,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  SETTINGS_SET_ACCESSES,
-  SYSTEM_USER
-} from '../utils/access';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
-import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { addIndividual } from './individual';
-import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
+import { generateStandardId } from '../schema/identifier';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
+import { now } from '../utils/format';
 import { addGroup } from './grant';
+import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
+import { addIndividual } from './individual';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1116,6 +1080,15 @@ export const initAdmin = async (context, email, password, tokenValue) => {
   }
 };
 
+export const findDefaultDashboards = async (context, user, currentUser) => {
+  const groupsDashboardIds = (currentUser.groups ?? []).map(({ default_dashboard }) => default_dashboard);
+  const orgaDashboardIds = (currentUser.organizations ?? []).map(({ default_dashboard }) => default_dashboard);
+  const ids = [...orgaDashboardIds, ...groupsDashboardIds].filter((id) => id);
+  const dashboards = await internalFindByIds(context, user, ids, { type: ENTITY_TYPE_WORKSPACE });
+  // Sort dashboards the same order as the fetched ids
+  return dashboards.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+};
+
 // region context
 export const userCleanContext = async (context, user, userId) => {
   await delEditContext(user, userId);
@@ -1126,4 +1099,5 @@ export const userEditContext = async (context, user, userId, input) => {
   await setEditContext(user, userId, input);
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
 };
+
 // endregion

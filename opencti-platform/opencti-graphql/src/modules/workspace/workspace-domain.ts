@@ -40,15 +40,7 @@ import { convertTypeToStixType } from '../../database/stix-converter';
 import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 
-export const DEFAULT_DASHBOARD = {
-  id: 'b9bea5e1-027d-47ef-9a12-02beaae6ba9d',
-  name: 'Default',
-};
-
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string): BasicStoreEntityWorkspace => {
-  if (workspaceId === DEFAULT_DASHBOARD.id) {
-    return DEFAULT_DASHBOARD as BasicStoreEntityWorkspace;
-  }
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE) as unknown as BasicStoreEntityWorkspace;
 };
 

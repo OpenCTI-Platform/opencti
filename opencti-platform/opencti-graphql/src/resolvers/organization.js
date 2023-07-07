@@ -1,16 +1,11 @@
-import { addOrganization, findAll, findById, batchSectors, batchMembers, batchSubOrganizations, batchParentOrganizations } from '../domain/organization';
-import {
-  stixDomainObjectAddRelation,
-  stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
-  stixDomainObjectDeleteRelation,
-  stixDomainObjectEditContext,
-  stixDomainObjectEditField,
-} from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
+import { elBatchIds } from '../database/engine';
 import { batchLoader } from '../database/middleware';
+import { addOrganization, batchMembers, batchParentOrganizations, batchSectors, batchSubOrganizations, findAll, findById } from '../domain/organization';
+import { stixDomainObjectAddRelation, stixDomainObjectCleanContext, stixDomainObjectDelete, stixDomainObjectDeleteRelation, stixDomainObjectEditContext, stixDomainObjectEditField } from '../domain/stixDomainObject';
+import { buildRefRelationKey } from '../schema/general';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 
+const loadByIdLoader = batchLoader(elBatchIds);
 const sectorsLoader = batchLoader(batchSectors);
 const membersLoader = batchLoader(batchMembers);
 const subOrganizationsLoader = batchLoader(batchSubOrganizations);
@@ -26,6 +21,7 @@ const organizationResolvers = {
     members: (organization, _, context) => membersLoader.load(organization.id, context, context.user),
     subOrganizations: (organization, _, context) => subOrganizationsLoader.load(organization.id, context, context.user),
     parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
+    default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
   },
   OrganizationsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

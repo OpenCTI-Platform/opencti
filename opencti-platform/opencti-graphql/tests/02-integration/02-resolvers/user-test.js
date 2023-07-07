@@ -50,12 +50,12 @@ const READ_QUERY = gql`
       name
       description
       groups {
-          edges {
-              node {
-                  id
-                  name
-              }
+        edges {
+          node {
+            id
+            name
           }
+        }
       }
       roles {
         id
@@ -146,6 +146,7 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.id).toEqual(userInternalId);
   });
+
   it('should user login', async () => {
     const res = await queryAsAdmin({
       query: LOGIN_QUERY,
@@ -278,13 +279,13 @@ describe('User resolver standard behavior', () => {
   });
   it('should add role in group', async () => {
     const ROLE_ADD_QUERY = gql`
-        mutation RoleAdd($input: RoleAddInput!) {
-            roleAdd(input: $input) {
-                id
-                name
-                description
-            }
+      mutation RoleAdd($input: RoleAddInput!) {
+        roleAdd(input: $input) {
+          id
+          name
+          description
         }
+      }
     `;
     // Create the role
     const ROLE_TO_CREATE = {
@@ -302,21 +303,21 @@ describe('User resolver standard behavior', () => {
     expect(role.data.roleAdd.name).toEqual('Role in group');
     roleInternalId = role.data.roleAdd.id;
     const RELATION_ADD_QUERY = gql`
-        mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
-            groupEdit(id: $id) {
-                relationAdd(input: $input) {
-                    id
-                    from {
-                        ... on Group {
-                            roles {
-                                id
-                                name
-                            }
-                        }
-                    }
+      mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
+        groupEdit(id: $id) {
+          relationAdd(input: $input) {
+            id
+            from {
+              ... on Group {
+                roles {
+                  id
+                  name
                 }
+              }
             }
+          }
         }
+      }
     `;
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
@@ -341,22 +342,22 @@ describe('User resolver standard behavior', () => {
     const capability = await elLoadById(testContext, ADMIN_USER, capabilityStandardId);
     capabilityId = capability.id;
     const RELATION_ADD_QUERY = gql`
-        mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {
-            roleEdit(id: $id) {
-                relationAdd(input: $input) {
-                    id
-                    from {
-                        ... on Role {
-                            capabilities {
-                                id
-                                standard_id
-                                name
-                            }
-                        }
-                    }
+      mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {
+        roleEdit(id: $id) {
+          relationAdd(input: $input) {
+            id
+            from {
+              ... on Role {
+                capabilities {
+                  id
+                  standard_id
+                  name
                 }
+              }
             }
+          }
         }
+      }
     `;
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
