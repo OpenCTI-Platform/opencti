@@ -83,7 +83,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openLive, setOpenLive] = useState(false);
   const [openDigest, setOpenDigest] = useState(false);
   return (
-    <Grid item={true} xs={12} style={{ marginTop: 20 }} ref={ref}>
+    <Grid item={true} xs={12} style={{ marginTop: 20 }}>
       <Typography
         variant="h4"
         gutterBottom={true}
@@ -121,17 +121,19 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       </Tooltip>
       <div className="clearfix" />
       <Paper
+        ref={ref}
         classes={{ root: classes.paper }}
         variant="outlined"
-        style={{ marginTop: 0 }}
+        style={{ marginTop: 0, maxHeight: 500, overflow: 'auto' }}
       >
         <TriggerLineTitles dataColumns={dataColumns} />
         {queryRef && (
           <TriggersLines
+            adminByPass
+            containerRef={ref}
             queryRef={queryRef}
             paginationOptions={paginationOptions}
             dataColumns={dataColumns}
-            containerRef={ref}
           />
         )}
       </Paper>

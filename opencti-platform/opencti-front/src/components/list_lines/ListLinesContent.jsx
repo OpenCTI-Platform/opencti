@@ -147,6 +147,7 @@ class ListLinesContent extends Component {
       redirectionMode,
       contentMapping,
       contentMappingData,
+      adminByPass,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -188,6 +189,7 @@ class ListLinesContent extends Component {
             redirectionMode={redirectionMode}
             contentMapping={contentMapping}
             contentMappingData={contentMappingData}
+            adminByPass={adminByPass}
           />
         ) : (
           React.cloneElement(LineComponent, {
@@ -212,6 +214,7 @@ class ListLinesContent extends Component {
             redirectionMode,
             contentMapping,
             contentMappingData,
+            adminByPass,
           })
         )}
       </div>
@@ -345,6 +348,7 @@ ListLinesContent.propTypes = {
   containerRef: PropTypes.object,
   contentMapping: PropTypes.object,
   contentMappingData: PropTypes.object,
+  adminByPass: PropTypes.bool,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ListLinesContent);

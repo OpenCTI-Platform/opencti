@@ -1,16 +1,13 @@
+import { GridTypeMap } from '@mui/material';
 import React, { FunctionComponent, MutableRefObject } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { GridTypeMap } from '@mui/material';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { TriggerLineComponent, TriggerLineDummy } from './TriggerLine';
-import {
-  TriggersLinesPaginationQuery,
-  TriggersLinesPaginationQuery$variables,
-} from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggersLines_data$key } from './__generated__/TriggersLines_data.graphql';
+import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import { TriggerLineComponent, TriggerLineDummy } from './TriggerLine';
 
 const nbOfRowsToLoad = 50;
 
@@ -26,6 +23,7 @@ interface TriggerLinesProps {
     event: React.KeyboardEvent
   ) => void;
   containerRef?: MutableRefObject<GridTypeMap | null>;
+  adminByPass?: boolean
 }
 
 export const triggersLinesQuery = graphql`
@@ -91,6 +89,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
   dataColumns,
   paginationOptions,
   onLabelClick,
+  adminByPass = false,
   containerRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
@@ -118,6 +117,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
       paginationOptions={paginationOptions}
       onLabelClick={onLabelClick}
       containerRef={containerRef}
+      adminByPass={adminByPass}
     />
   );
 };
