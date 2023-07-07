@@ -89,6 +89,11 @@ const CONTAINER_ENTITIES = [
   'Case-Rfi',
   'Case-Rft',
 ];
+const THREAT_ACTOR_ENTITIES = [
+  'Threat-Actor-Group',
+  'Threat-Actor-Individual',
+  'Threat-Actor',
+];
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -168,6 +173,12 @@ const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
     if (
       stixDomainObjectTypes.includes('Identity')
       && IDENTITY_ENTITIES.includes(n.value)
+    ) {
+      return true;
+    }
+    if (
+      stixDomainObjectTypes.includes('Threat-Actor')
+      && THREAT_ACTOR_ENTITIES.includes(n.value)
     ) {
       return true;
     }
