@@ -16,7 +16,6 @@ import { useFormatter } from '../../../../components/i18n';
 import TriggerPopover from './TriggerPopover';
 import { dayStartDate } from '../../../../utils/Time';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
-import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -73,13 +72,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface TriggerLineProps {
   node: TriggerLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
+  adminByPass?: boolean
 }
 
 const triggerLineFragment = graphql`
@@ -113,6 +107,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
+  adminByPass = false,
 }) => {
   const classes = useStyles();
   const { t, nt } = useFormatter();
@@ -259,7 +254,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
        <TriggerPopover
          id={data.id}
          paginationOptions={paginationOptions}
-         disabled={!(data.currentUserAccessRight === 'admin' || useGranted([SETTINGS_SETACCESSES]))}/>
+         disabled={!adminByPass && data.currentUserAccessRight === 'view'}/>
       </ListItemIcon>
     </ListItem>
   );

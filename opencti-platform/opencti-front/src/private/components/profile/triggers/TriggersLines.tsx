@@ -1,16 +1,15 @@
+import { GridTypeMap } from '@mui/material';
+import List from '@mui/material/List';
 import React, { FunctionComponent, MutableRefObject } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { GridTypeMap } from '@mui/material';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { TriggerLineComponent, TriggerLineDummy } from './TriggerLine';
-import {
-  TriggersLinesPaginationQuery,
-  TriggersLinesPaginationQuery$variables,
-} from './__generated__/TriggersLinesPaginationQuery.graphql';
+import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
 import { TriggersLines_data$key } from './__generated__/TriggersLines_data.graphql';
+import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import { TriggerLineComponent, TriggerLineDummy } from './TriggerLine';
 
 const nbOfRowsToLoad = 50;
 
@@ -26,6 +25,7 @@ interface TriggerLinesProps {
     event: React.KeyboardEvent
   ) => void;
   containerRef?: MutableRefObject<GridTypeMap | null>;
+  adminByPass?: boolean
 }
 
 export const triggersLinesQuery = graphql`
@@ -91,6 +91,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
   dataColumns,
   paginationOptions,
   onLabelClick,
+  adminByPass = false,
   containerRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
@@ -103,6 +104,21 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
     nodePath: ['triggers', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
+  if (adminByPass) {
+    const triggers = (data.triggers?.edges?.filter((e) => e?.node)
+      .map((e) => e?.node) as unknown as TriggerLine_node$key[]) ?? [];
+    return (
+      <List>
+        {triggers.map((node) => (
+          <TriggerLineComponent
+            node={node}
+            dataColumns={dataColumns}
+            adminByPass
+          />
+        ))}
+      </List>
+    );
+  }
   return (
     <ListLinesContent
       initialLoading={!data}

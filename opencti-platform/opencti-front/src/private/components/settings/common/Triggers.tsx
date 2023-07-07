@@ -128,10 +128,10 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         <TriggerLineTitles dataColumns={dataColumns} />
         {queryRef && (
           <TriggersLines
+            adminByPass
             queryRef={queryRef}
             paginationOptions={paginationOptions}
             dataColumns={dataColumns}
-            containerRef={ref}
           />
         )}
       </Paper>
