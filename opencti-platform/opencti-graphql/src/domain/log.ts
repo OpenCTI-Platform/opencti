@@ -1,7 +1,11 @@
-import { elPaginate } from '../database/engine';
+import * as R from 'ramda';
+import { elCount, elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
-import { timeSeriesHistories } from '../database/middleware';
-import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
+import { distributionHistory, timeSeriesHistory } from '../database/middleware';
+import {
+  INDEX_HISTORY,
+  READ_INDEX_HISTORY,
+} from '../database/utils';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
@@ -16,9 +20,27 @@ export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAudi
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
-export const logsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
+export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) => ({
+  count: elCount(context, user, READ_INDEX_HISTORY, args),
+  total: elCount(context, user, READ_INDEX_HISTORY, R.dissoc('endDate', args)),
+});
+
+export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
+  const { types } = args;
   const filters: any[] = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
-  return timeSeriesHistories(context, user, { ...args, filters });
+  return timeSeriesHistory(context, user, types ?? [ENTITY_TYPE_HISTORY], { ...args, filters });
+};
+
+export const auditsMultiTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
+  return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter: any) => {
+    const { types } = timeSeriesParameter;
+    return { data: timeSeriesHistory(context, user, types ?? [ENTITY_TYPE_HISTORY], { ...args, ...timeSeriesParameter }) };
+  }));
+};
+
+export const auditsDistribution = async (context: AuthContext, user: AuthUser, args: any) => {
+  const { types } = args;
+  return distributionHistory(context, user, types ?? [ENTITY_TYPE_HISTORY], args);
 };
 
 export const logsWorkerConfig = () => {

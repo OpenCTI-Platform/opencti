@@ -246,6 +246,13 @@ type TimeSeries {
 type MultiTimeSeries {
   data: [TimeSeries]
 }
+input AuditsTimeSeriesParameters {
+  field: String!
+  types: [String]
+  filters: [LogsFiltering]
+  filterMode: FilterMode
+  search: String
+}
 input StixCoreObjectsTimeSeriesParameters {
   field: String!
   types: [String]
@@ -332,10 +339,12 @@ type LogsWorkerConfig {
 enum LogsOrdering {
   event
   timestamp
+  created_at
 }
 enum LogsFilter {
   elementId
   event_type
+  event_scope
   entity_id
   created
   connection_id
@@ -345,6 +354,7 @@ enum LogsFilter {
   members_group
   members_organization
   applicant_id
+  created_at
 }
 type LogConnection {
   pageInfo: PageInfo!
@@ -373,6 +383,7 @@ type Log {
   id: ID!
   entity_type: String
   event_type: String!
+  event_scope: String
   event_status: String!
   timestamp: DateTime!
   user_id: String!
@@ -11629,17 +11640,47 @@ type Query {
     filterMode: FilterMode
     search: String
   ): LogConnection @auth(for: [SETTINGS])
-  logsTimeSeries(
-    userId: String
+  auditsNumber(
+    types: [String]
+    startDate: DateTime
+    endDate: DateTime
+    onlyInferred: Boolean
+    filters: [LogsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  auditsTimeSeries(
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
-    endDate: DateTime!
+    endDate: DateTime
     interval: String!
-    filters: [LogsFiltering!]
+    types: [String]
+    filters: [LogsFiltering]
     filterMode: FilterMode
     search: String
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [SETTINGS])
+  auditsDistribution(
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: [LogsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): [Distribution] @auth(for: [SETTINGS])
+  auditsMultiTimeSeries(
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    timeSeriesParameters: [AuditsTimeSeriesParameters]
+  ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   subType(id: String!): SubType @auth(for: [KNOWLEDGE])
   subTypes(
     first: Int

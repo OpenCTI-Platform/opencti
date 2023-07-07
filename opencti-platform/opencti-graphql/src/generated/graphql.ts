@@ -872,6 +872,14 @@ export enum AttributesOrdering {
   Value = 'value'
 }
 
+export type AuditsTimeSeriesParameters = {
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<LogsFiltering>>>;
+  search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
 export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'AutonomousSystem';
   cases?: Maybe<CaseConnection>;
@@ -10603,6 +10611,7 @@ export type Log = {
   context_data?: Maybe<ContextData>;
   context_uri?: Maybe<Scalars['String']>;
   entity_type?: Maybe<Scalars['String']>;
+  event_scope?: Maybe<Scalars['String']>;
   event_status: Scalars['String'];
   event_type: Scalars['String'];
   id: Scalars['ID'];
@@ -10628,9 +10637,11 @@ export enum LogsFilter {
   ApplicantId = 'applicant_id',
   ConnectionId = 'connection_id',
   Created = 'created',
+  CreatedAt = 'created_at',
   Creator = 'creator',
   ElementId = 'elementId',
   EntityId = 'entity_id',
+  EventScope = 'event_scope',
   EventType = 'event_type',
   MembersGroup = 'members_group',
   MembersOrganization = 'members_organization',
@@ -10646,6 +10657,7 @@ export type LogsFiltering = {
 };
 
 export enum LogsOrdering {
+  CreatedAt = 'created_at',
   Event = 'event',
   Timestamp = 'timestamp'
 }
@@ -16426,6 +16438,10 @@ export type Query = {
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
   audits?: Maybe<LogConnection>;
+  auditsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  auditsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
+  auditsNumber?: Maybe<Number>;
+  auditsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   backgroundTask?: Maybe<BackgroundTask>;
   backgroundTasks?: Maybe<BackgroundTaskConnection>;
   bookmarks?: Maybe<StixDomainObjectConnection>;
@@ -16517,7 +16533,6 @@ export type Query = {
   location?: Maybe<Location>;
   locations?: Maybe<LocationConnection>;
   logs?: Maybe<LogConnection>;
-  logsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   logsWorkerConfig?: Maybe<LogsWorkerConfig>;
   malware?: Maybe<Malware>;
   malwareAnalyses?: Maybe<MalwareAnalysisConnection>;
@@ -16718,6 +16733,55 @@ export type QueryAuditsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<Scalars['String']>>;
+};
+
+
+export type QueryAuditsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<LogsFiltering>>>;
+  limit?: InputMaybe<Scalars['Int']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryAuditsMultiTimeSeriesArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  interval: Scalars['String'];
+  onlyInferred?: InputMaybe<Scalars['Boolean']>;
+  operation: StatsOperation;
+  startDate: Scalars['DateTime'];
+  timeSeriesParameters?: InputMaybe<Array<InputMaybe<AuditsTimeSeriesParameters>>>;
+};
+
+
+export type QueryAuditsNumberArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<LogsFiltering>>>;
+  onlyInferred?: InputMaybe<Scalars['Boolean']>;
+  search?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryAuditsTimeSeriesArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  field: Scalars['String'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<LogsFiltering>>>;
+  interval: Scalars['String'];
+  operation: StatsOperation;
+  search?: InputMaybe<Scalars['String']>;
+  startDate: Scalars['DateTime'];
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -17424,19 +17488,6 @@ export type QueryLogsArgs = {
   orderBy?: InputMaybe<LogsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryLogsTimeSeriesArgs = {
-  endDate: Scalars['DateTime'];
-  field: Scalars['String'];
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<LogsFiltering>>;
-  interval: Scalars['String'];
-  operation: StatsOperation;
-  search?: InputMaybe<Scalars['String']>;
-  startDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -26624,6 +26675,7 @@ export type ResolversTypes = ResolversObject<{
   AttributeEdge: ResolverTypeWrapper<AttributeEdge>;
   AttributeEditMutations: ResolverTypeWrapper<AttributeEditMutations>;
   AttributesOrdering: AttributesOrdering;
+  AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
   AutonomousSystem: ResolverTypeWrapper<Omit<AutonomousSystem, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   AutonomousSystemAddInput: AutonomousSystemAddInput;
   BackgroundTask: ResolversTypes['ListTask'] | ResolversTypes['QueryTask'] | ResolversTypes['RuleTask'];
@@ -27398,6 +27450,7 @@ export type ResolversParentTypes = ResolversObject<{
   AttributeConnection: AttributeConnection;
   AttributeEdge: AttributeEdge;
   AttributeEditMutations: AttributeEditMutations;
+  AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
   AutonomousSystem: Omit<AutonomousSystem, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   AutonomousSystemAddInput: AutonomousSystemAddInput;
   BackgroundTask: ResolversParentTypes['ListTask'] | ResolversParentTypes['QueryTask'] | ResolversParentTypes['RuleTask'];
@@ -31081,6 +31134,7 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
   context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType>;
   context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   event_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -32535,6 +32589,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
   audits?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, Partial<QueryAuditsArgs>>;
+  auditsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryAuditsDistributionArgs, 'field' | 'operation'>>;
+  auditsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
+  auditsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryAuditsNumberArgs>>;
+  auditsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   backgroundTask?: Resolver<Maybe<ResolversTypes['BackgroundTask']>, ParentType, ContextType, RequireFields<QueryBackgroundTaskArgs, 'id'>>;
   backgroundTasks?: Resolver<Maybe<ResolversTypes['BackgroundTaskConnection']>, ParentType, ContextType, Partial<QueryBackgroundTasksArgs>>;
   bookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, Partial<QueryBookmarksArgs>>;
@@ -32626,7 +32684,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   location?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<QueryLocationArgs, 'id'>>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType, Partial<QueryLocationsArgs>>;
   logs?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, Partial<QueryLogsArgs>>;
-  logsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryLogsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   logsWorkerConfig?: Resolver<Maybe<ResolversTypes['LogsWorkerConfig']>, ParentType, ContextType>;
   malware?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, Partial<QueryMalwareArgs>>;
   malwareAnalyses?: Resolver<Maybe<ResolversTypes['MalwareAnalysisConnection']>, ParentType, ContextType, Partial<QueryMalwareAnalysesArgs>>;

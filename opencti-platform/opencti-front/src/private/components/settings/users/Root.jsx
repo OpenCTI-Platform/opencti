@@ -1,7 +1,12 @@
 import React, { useEffect, useMemo } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, useParams } from 'react-router-dom';
-import { graphql, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
+import {
+  graphql,
+  usePreloadedQuery,
+  useQueryLoader,
+  useSubscription,
+} from 'react-relay';
 import TopBar from '../../nav/TopBar';
 import User, { userQuery } from './User';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -11,33 +16,33 @@ import Security from '../../../../utils/Security';
 
 const subscription = graphql`
   subscription RootUsersSubscription(
-      $id: ID!
-      $rolesOrderBy: RolesOrdering
-      $rolesOrderMode: OrderingMode
-      $groupsOrderBy: GroupsOrdering
-      $groupsOrderMode: OrderingMode
-      $organizationsOrderBy: OrganizationsOrdering
-      $organizationsOrderMode: OrderingMode
+    $id: ID!
+    $rolesOrderBy: RolesOrdering
+    $rolesOrderMode: OrderingMode
+    $groupsOrderBy: GroupsOrdering
+    $groupsOrderMode: OrderingMode
+    $organizationsOrderBy: OrganizationsOrdering
+    $organizationsOrderMode: OrderingMode
   ) {
     user(id: $id) {
       ...User_user
-      @arguments(
+        @arguments(
           rolesOrderBy: $rolesOrderBy
           rolesOrderMode: $rolesOrderMode
           groupsOrderBy: $groupsOrderBy
           groupsOrderMode: $groupsOrderMode
           organizationsOrderBy: $organizationsOrderBy
           organizationsOrderMode: $organizationsOrderMode
-      )
+        )
       ...UserEdition_user
-      @arguments(
+        @arguments(
           rolesOrderBy: $rolesOrderBy
           rolesOrderMode: $rolesOrderMode
           groupsOrderBy: $groupsOrderBy
           groupsOrderMode: $groupsOrderMode
           organizationsOrderBy: $organizationsOrderBy
           organizationsOrderMode: $organizationsOrderMode
-      )
+        )
     }
   }
 `;
@@ -62,7 +67,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             exact
             path="/dashboard/settings/accesses/users/:userId"
             render={(routeProps) => (
-              <User {...routeProps} userData={user} refetch={refetch}/>
+              <User {...routeProps} userData={user} refetch={refetch} />
             )}
           />
         </Switch>
@@ -82,7 +87,8 @@ const RootUser = () => {
     groupsOrderBy: 'name',
     groupsOrderMode: 'asc',
     organizationsOrderBy: 'name',
-    organizationsOrderMode: 'asc' };
+    organizationsOrderMode: 'asc',
+  };
   const [queryRef, loadQuery] = useQueryLoader(userQuery);
   useEffect(() => {
     loadQuery(queryParams, { fetchPolicy: 'store-and-network' });
@@ -97,7 +103,11 @@ const RootUser = () => {
       <TopBar />
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootUserComponent queryRef={queryRef} userId={userId} refetch={refetch}/>
+          <RootUserComponent
+            queryRef={queryRef}
+            userId={userId}
+            refetch={refetch}
+          />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.container} />

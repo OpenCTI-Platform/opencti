@@ -8,7 +8,7 @@ WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
 COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
-RUN set -ex \
+RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && npm install -g node-gyp \
     && yarn install --frozen-lockfile && yarn cache clean --all
@@ -20,7 +20,7 @@ WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
 COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
-RUN set -ex \
+RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && npm install -g node-gyp \
     && yarn install
@@ -35,7 +35,7 @@ WORKDIR /opt/opencti-build/opencti-front
 COPY opencti-front/package.json opencti-front/yarn.lock opencti-front/.yarnrc.yml ./
 COPY opencti-front/.yarn ./.yarn
 COPY opencti-front/patch ./patch
-RUN set -ex \
+RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && npm install -g node-gyp \
 && yarn install
@@ -50,7 +50,7 @@ RUN yarn build:standalone
 
 FROM base AS app
 
-RUN set -ex \
+RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && python3 -m ensurepip \
     && rm -rv /usr/lib/python*/ensurepip \

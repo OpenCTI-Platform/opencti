@@ -247,6 +247,14 @@ type MultiTimeSeries {
   data: [TimeSeries]
 }
 
+input AuditsTimeSeriesParameters {
+  field: String!
+  types: [String]
+  filters: [LogsFiltering]
+  filterMode: FilterMode
+  search: String
+}
+
 input StixCoreObjectsTimeSeriesParameters {
   field: String!
   types: [String]
@@ -336,11 +344,13 @@ type LogsWorkerConfig {
 enum LogsOrdering {
   event
   timestamp
+  created_at
 }
 
 enum LogsFilter {
   elementId
   event_type
+  event_scope
   entity_id
   created
   connection_id
@@ -350,6 +360,7 @@ enum LogsFilter {
   members_group
   members_organization
   applicant_id
+  created_at
 }
 
 type LogConnection {
@@ -383,6 +394,7 @@ type Log {
   id: ID!
   entity_type: String
   event_type: String!
+  event_scope: String
   event_status: String!
   timestamp: DateTime!
   user_id: String!
@@ -7737,7 +7749,10 @@ type Query {
   elasticSearchMetrics: ElasticSearchMetrics
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering!], filterMode: FilterMode, search: String): LogConnection
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering!], filterMode: FilterMode, search: String): LogConnection
-  logsTimeSeries(userId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: [LogsFiltering!], filterMode: FilterMode, search: String): [TimeSeries]
+  auditsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: [LogsFiltering], filterMode: FilterMode, search: String): Number
+  auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: [LogsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
+  auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [LogsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  auditsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [AuditsTimeSeriesParameters]): [MultiTimeSeries]
   subType(id: String!): SubType
   subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection!
   file(id: String!): File

@@ -6,6 +6,7 @@ import inject18n from '../../../../components/i18n';
 import UserHistoryLines, { userHistoryLinesQuery } from './UserHistoryLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import SearchInput from '../../../../components/SearchInput';
+import Loader from '../../../../components/Loader';
 
 class UserHistory extends Component {
   constructor(props) {
@@ -22,11 +23,7 @@ class UserHistory extends Component {
     const { entitySearchTerm } = this.state;
     return (
       <>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          style={{ float: 'left' }}
-        >
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('History')}
         </Typography>
         <div style={{ float: 'right', marginTop: -12 }}>
@@ -36,13 +33,16 @@ class UserHistory extends Component {
             keyword={entitySearchTerm}
           />
         </div>
-        <div className="clearfix"/>
+        <div className="clearfix" />
         <QueryRenderer
           query={userHistoryLinesQuery}
           variables={{
             filters: [
               { key: 'user_id', values: [userId], operator: 'wildcard' },
-              { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+              {
+                key: 'event_type',
+                values: ['mutation', 'create', 'update', 'delete', 'merge'],
+              },
             ],
             first: 10,
             orderBy: 'timestamp',
@@ -59,7 +59,7 @@ class UserHistory extends Component {
                 />
               );
             }
-            return <div />;
+            return <Loader variant="inElement" />;
           }}
         />
       </>

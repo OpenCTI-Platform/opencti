@@ -16,7 +16,9 @@ import WorkspaceHeader from '../WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import Security from '../../../../utils/Security';
-import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  EXPLORE_EXUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import WidgetPopover from './WidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
 import WidgetConfig from './WidgetConfig';
@@ -48,8 +50,18 @@ import StixCoreRelationshipsTreeMap from '../../common/stix_core_relationships/S
 import StixCoreRelationshipsMap from '../../common/stix_core_relationships/StixCoreRelationshipsMap';
 import StixDomainObjectBookmarksList from '../../common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixCoreObjectsMultiHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
+import AuditsList from '../../common/audits/AuditsList';
+import AuditsMultiLineChart from '../../common/audits/AuditsMultiLineChart';
+import AuditsMultiAreaChart from '../../common/audits/AuditsMultiAreaChart';
+import AuditsMultiVerticalBars from '../../common/audits/AuditsMultiVerticalBars';
+import AuditsNumber from '../../common/audits/AuditsNumber';
+import AuditsDonut from '../../common/audits/AuditsDonut';
+import AuditsHorizontalBars from '../../common/audits/AuditsHorizontalBars';
+import AuditsRadar from '../../common/audits/AuditsRadar';
+import AuditsMultiHeatMap from '../../common/audits/AuditsMultiHeatMap';
+import AuditsTreeMap from '../../common/audits/AuditsTreeMap';
+import AuditsDistributionList from '../../common/audits/AuditsDistributionList';
 import { ErrorBoundary, SimpleError } from '../../Error';
-import { useFormatter } from '../../../../components/i18n';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -76,7 +88,6 @@ const useStyles = makeStyles(() => ({
 
 const DashboardComponent = ({ workspace, noToolbar }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
   const isExploreEditor = useGranted([EXPLORE_EXUPDATE]);
   const [manifest, setManifest] = useState(
     workspace.manifest && workspace.manifest.length > 0
@@ -84,9 +95,11 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       : { widgets: {}, config: {} },
   );
   useEffect(() => {
-    setManifest(workspace.manifest && workspace.manifest.length > 0
-      ? JSON.parse(fromB64(workspace.manifest))
-      : { widgets: {}, config: {} });
+    setManifest(
+      workspace.manifest && workspace.manifest.length > 0
+        ? JSON.parse(fromB64(workspace.manifest))
+        : { widgets: {}, config: {} },
+    );
   }, [workspace]);
   const [deleting, setDeleting] = useState(false);
   const userCanEdit = workspace.currentUserAccessRight === 'admin'
@@ -540,6 +553,135 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         return 'Not implemented yet';
     }
   };
+  const renderAuditsVisualization = (widget, config) => {
+    const { relativeDate } = config;
+    const startDate = relativeDate
+      ? computerRelativeDate(relativeDate)
+      : config.startDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
+    switch (widget.type) {
+      case 'number':
+        return (
+          <AuditsNumber
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <AuditsList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'distribution-list':
+        return (
+          <AuditsDistributionList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <AuditsMultiVerticalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      case 'line':
+        return (
+          <AuditsMultiLineChart
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      case 'area':
+        return (
+          <AuditsMultiAreaChart
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      case 'donut':
+        return (
+          <AuditsDonut
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      case 'horizontal-bar':
+        return (
+          <AuditsHorizontalBars
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      case 'radar':
+        return (
+          <AuditsRadar
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      case 'heatmap':
+        return (
+          <AuditsMultiHeatMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      case 'tree':
+        return (
+          <AuditsTreeMap
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      default:
+        return 'Not implemented yet';
+    }
+  };
   return (
     <div
       className={classes.container}
@@ -588,12 +730,8 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                     && renderEntitiesVisualization(widget, manifest.config)}
                   {widget.perspective === 'relationships'
                     && renderRelationshipsVisualization(widget, manifest.config)}
-                  {widget.perspective !== 'entities'
-                    && widget.perspective !== 'relationships' && (
-                      <div style={{ textAlign: 'center' }}>
-                        <i>{t('Deprecated')}</i>
-                      </div>
-                  )}
+                  {widget.perspective === 'audits'
+                    && renderAuditsVisualization(widget, manifest.config)}
                 </ErrorBoundary>
               </Paper>
             ))}
@@ -637,12 +775,8 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                   && renderEntitiesVisualization(widget, manifest.config)}
                 {widget.perspective === 'relationships'
                   && renderRelationshipsVisualization(widget, manifest.config)}
-                {widget.perspective !== 'entities'
-                  && widget.perspective !== 'relationships' && (
-                    <div style={{ textAlign: 'center' }}>
-                      <i>{t('Deprecated')}</i>
-                    </div>
-                )}
+                {widget.perspective === 'audits'
+                  && renderAuditsVisualization(widget, manifest.config)}
               </ErrorBoundary>
             </Paper>
           ))}

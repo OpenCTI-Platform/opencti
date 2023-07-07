@@ -43,6 +43,7 @@ import {
   WifiTetheringOutlined,
   WorkOutline,
   WorkspacesOutlined,
+  SafetyCheckOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -66,6 +67,7 @@ import {
   ProgressWrench,
   ShieldSearch,
   VectorRadius,
+  ClipboardTextClockOutline,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -268,6 +270,18 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       );
     case 'Task':
       return <TaskAltOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'History':
+      return (
+        <ClipboardTextClockOutline
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
+    case 'Activity':
+      return (
+        <SafetyCheckOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

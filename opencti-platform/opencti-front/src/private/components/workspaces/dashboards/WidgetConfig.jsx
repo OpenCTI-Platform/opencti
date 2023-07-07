@@ -24,6 +24,7 @@ import {
   AddOutlined,
   CancelOutlined,
   MapOutlined,
+  LibraryBooksOutlined,
 } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
@@ -102,6 +103,15 @@ const useStyles = makeStyles((theme) => ({
     padding: 15,
     verticalAlign: 'middle',
     border: `1px solid ${theme.palette.primary.main}`,
+    borderRadius: 5,
+  },
+  step_audit: {
+    position: 'relative',
+    width: '100%',
+    margin: '0 0 20px 0',
+    padding: 15,
+    verticalAlign: 'middle',
+    border: `1px solid ${theme.palette.secondary.main}`,
     borderRadius: 5,
   },
   formControl: {
@@ -186,6 +196,16 @@ const relationshipsFilters = [
   'creator',
 ];
 
+const auditsFilters = [
+  'entity_type',
+  'elementId',
+  'event_type',
+  'event_scope',
+  'members_group',
+  'members_organization',
+  'members_user',
+];
+
 const visualizationTypes = [
   {
     key: 'number',
@@ -195,6 +215,7 @@ const visualizationTypes = [
     availableParameters: [],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'list',
@@ -204,6 +225,7 @@ const visualizationTypes = [
     availableParameters: [],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'distribution-list',
@@ -213,6 +235,7 @@ const visualizationTypes = [
     availableParameters: ['attribute'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'vertical-bar',
@@ -222,6 +245,7 @@ const visualizationTypes = [
     availableParameters: ['stacked', 'legend'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'line',
@@ -231,6 +255,7 @@ const visualizationTypes = [
     availableParameters: ['legend'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'area',
@@ -240,6 +265,7 @@ const visualizationTypes = [
     availableParameters: ['stacked', 'legend'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'timeline',
@@ -249,6 +275,7 @@ const visualizationTypes = [
     availableParameters: [],
     isRelationships: true,
     isEntities: true,
+    isAudits: false,
   },
   {
     key: 'donut',
@@ -258,6 +285,7 @@ const visualizationTypes = [
     availableParameters: ['attribute'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'horizontal-bar',
@@ -267,6 +295,7 @@ const visualizationTypes = [
     availableParameters: ['attribute'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'radar',
@@ -276,6 +305,7 @@ const visualizationTypes = [
     availableParameters: ['attribute'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'heatmap',
@@ -285,6 +315,7 @@ const visualizationTypes = [
     availableParameters: ['stacked', 'legend'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'tree',
@@ -294,6 +325,7 @@ const visualizationTypes = [
     availableParameters: ['attribute', 'distributed'],
     isRelationships: true,
     isEntities: true,
+    isAudits: true,
   },
   {
     key: 'map',
@@ -303,6 +335,7 @@ const visualizationTypes = [
     availableParameters: ['attribute'],
     isRelationships: true,
     isEntities: false,
+    isAudits: false,
   },
   {
     key: 'bookmark',
@@ -312,6 +345,7 @@ const visualizationTypes = [
     availableParameters: [],
     isRelationships: false,
     isEntities: true,
+    isAudits: false,
   },
 ];
 const indexedVisualizationTypes = R.indexBy(R.prop('key'), visualizationTypes);
@@ -365,6 +399,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   };
   const getCurrentIsEntities = () => {
     return indexedVisualizationTypes[type]?.isEntities ?? false;
+  };
+  const getCurrentIsAudits = () => {
+    return indexedVisualizationTypes[type]?.isAudits ?? false;
   };
   const getCurrentDataSelectionLimit = () => {
     return indexedVisualizationTypes[type]?.dataSelectionLimit ?? 0;
@@ -667,7 +704,16 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     );
   };
   const renderPerspective = () => {
-    const isEntitiesAndRelationships = getCurrentIsEntities() && getCurrentIsRelationships();
+    let xs = 12;
+    if (
+      getCurrentIsEntities()
+      && getCurrentIsRelationships()
+      && getCurrentIsAudits()
+    ) {
+      xs = 4;
+    } else if (getCurrentIsEntities() && getCurrentIsRelationships()) {
+      xs = 6;
+    }
     return (
       <Grid
         container={true}
@@ -675,7 +721,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         style={{ marginTop: 20, marginBottom: 20 }}
       >
         {getCurrentIsEntities() && (
-          <Grid item={true} xs={isEntitiesAndRelationships ? '6' : '12'}>
+          <Grid item={true} xs={xs}>
             <Card variant="outlined" className={classes.card}>
               <CardActionArea
                 onClick={() => handleSelectPerspective('entities')}
@@ -700,7 +746,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           </Grid>
         )}
         {getCurrentIsRelationships() && (
-          <Grid item={true} xs={isEntitiesAndRelationships ? '6' : '12'}>
+          <Grid item={true} xs={xs}>
             <Card variant="outlined" className={classes.card}>
               <CardActionArea
                 onClick={() => handleSelectPerspective('relationships')}
@@ -726,6 +772,34 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             </Card>
           </Grid>
         )}
+        {getCurrentIsAudits() && (
+          <Grid item={true} xs={xs}>
+            <Card variant="outlined" className={classes.card}>
+              <CardActionArea
+                onClick={() => handleSelectPerspective('audits')}
+                style={{ height: '100%' }}
+              >
+                <CardContent>
+                  <LibraryBooksOutlined
+                    style={{ fontSize: 40 }}
+                    color="primary"
+                  />
+                  <Typography
+                    gutterBottom
+                    variant="h2"
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Activity & history')}
+                  </Typography>
+                  <br />
+                  <Typography variant="body1">
+                    {t('Display data related to the history and activity.')}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
+        )}
       </Grid>
     );
   };
@@ -735,9 +809,24 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         {Array(dataSelection.length)
           .fill(0)
           .map((_, i) => {
-            const style = dataSelection[i].perspective === 'entities'
-              ? 'step_entity'
-              : 'step_relationship';
+            let style = 'step_entity';
+            let availableFilterKeys = entitiesFilters;
+            let availableEntityTypes = [
+              'Stix-Domain-Object',
+              'Stix-Cyber-Observable',
+            ];
+            if (dataSelection[i].perspective === 'relationships') {
+              style = 'step_relationship';
+              availableFilterKeys = relationshipsFilters;
+              availableEntityTypes = [
+                'Stix-Domain-Object',
+                'Stix-Cyber-Observable',
+              ];
+            } else if (dataSelection[i].perspective === 'audits') {
+              style = 'step_audit';
+              availableFilterKeys = auditsFilters;
+              availableEntityTypes = ['History', 'Activity'];
+            }
             return (
               <div key={i} className={classes[style]}>
                 <IconButton
@@ -769,16 +858,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                           }}
                         >
                           <Filters
-                            availableFilterKeys={
-                              (dataSelection[i].perspective ?? perspective)
-                              === 'entities'
-                                ? entitiesFilters
-                                : relationshipsFilters
-                            }
-                            availableEntityTypes={[
-                              'Stix-Domain-Object',
-                              'Stix-Cyber-Observable',
-                            ]}
+                            availableFilterKeys={availableFilterKeys}
+                            availableEntityTypes={availableEntityTypes}
                             handleAddFilter={(key, id, value) => handleAddDataValidationFilter(i, key, id, value)
                             }
                             noDirectFilters={true}
@@ -1019,6 +1100,23 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             </Button>
           </div>
         )}
+        {perspective === 'audits' && (
+          <div className={classes.add}>
+            <Button
+              variant="contained"
+              disabled={
+                getCurrentDataSelectionLimit() === dataSelection.length
+                || getCurrentCategory() === 'distribution'
+              }
+              color="secondary"
+              size="small"
+              onClick={() => handleAddDataSelection('audits')}
+              classes={{ root: classes.buttonAdd }}
+            >
+              <AddOutlined fontSize="small" />
+            </Button>
+          </div>
+        )}
         <div className={classes.buttons}>
           <Button
             disabled={!isDataSelectionFiltersValid()}
@@ -1089,57 +1187,65 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       style={{ marginTop: 20 }}
                     />
                   )}
-                  <div
-                    style={{
-                      display: 'flex',
-                      width: '100%',
-                      marginTop: 20,
-                    }}
-                  >
-                    <FormControl fullWidth={true} style={{ flex: 1 }}>
-                      <InputLabel id="relative" variant="standard" size="small">
-                        {isNotEmptyField(dataSelection[i].label)
-                          ? dataSelection[i].label
-                          : 'Unspecified'}
-                      </InputLabel>
-                      <Select
-                        variant="standard"
-                        labelId="relative"
-                        size="small"
-                        fullWidth={true}
-                        value={dataSelection[i].date_attribute ?? 'created_at'}
-                        onChange={(event) => handleChangeDataValidationParameter(
-                          i,
-                          'date_attribute',
-                          event.target.value,
-                        )
-                        }
-                      >
-                        <MenuItem value="created_at">
-                          created_at ({t('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="updated_at">
-                          updated_at ({t('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="created">
-                          created ({t('Functional date')})
-                        </MenuItem>
-                        <MenuItem value="modified">
-                          modified ({t('Functional date')})
-                        </MenuItem>
-                        {getCurrentIsRelationships() && (
-                          <MenuItem value="start_time">
-                            start_time ({t('Functional date')})
+                  {!getCurrentIsAudits() && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        marginTop: 20,
+                      }}
+                    >
+                      <FormControl fullWidth={true} style={{ flex: 1 }}>
+                        <InputLabel
+                          id="relative"
+                          variant="standard"
+                          size="small"
+                        >
+                          {isNotEmptyField(dataSelection[i].label)
+                            ? dataSelection[i].label
+                            : t('Date attribute')}
+                        </InputLabel>
+                        <Select
+                          variant="standard"
+                          labelId="relative"
+                          size="small"
+                          fullWidth={true}
+                          value={
+                            dataSelection[i].date_attribute ?? 'created_at'
+                          }
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'date_attribute',
+                            event.target.value,
+                          )
+                          }
+                        >
+                          <MenuItem value="created_at">
+                            created_at ({t('Technical date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships() && (
-                          <MenuItem value="stop_time">
-                            stop_time ({t('Functional date')})
+                          <MenuItem value="updated_at">
+                            updated_at ({t('Technical date')})
                           </MenuItem>
-                        )}
-                      </Select>
-                    </FormControl>
-                  </div>
+                          <MenuItem value="created">
+                            created ({t('Functional date')})
+                          </MenuItem>
+                          <MenuItem value="modified">
+                            modified ({t('Functional date')})
+                          </MenuItem>
+                          {getCurrentIsRelationships() && (
+                            <MenuItem value="start_time">
+                              start_time ({t('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships() && (
+                            <MenuItem value="stop_time">
+                              stop_time ({t('Functional date')})
+                            </MenuItem>
+                          )}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  )}
                   {getCurrentAvailableParameters().includes('attribute') && (
                     <div
                       style={{ display: 'flex', width: '100%', marginTop: 20 }}
@@ -1287,6 +1393,38 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             )
                             }
                           />
+                      )}
+                      {dataSelection[i].perspective === 'audits' && (
+                        <Select
+                          fullWidth={true}
+                          variant="standard"
+                          value={dataSelection[i].attribute ?? 'entity_type'}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'attribute',
+                            event.target.value,
+                          )
+                          }
+                        >
+                          {[
+                            { value: 'entity_type' },
+                            { value: 'event_type' },
+                            {
+                              value: 'event_scope',
+                            },
+                            { value: 'context_data.id' },
+                            {
+                              value: 'user_id',
+                            },
+                          ].map((attribute) => (
+                            <MenuItem
+                              key={attribute.value}
+                              value={attribute.value}
+                            >
+                              {t(capitalizeFirstLetter(attribute.value))}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       )}
                       {dataSelection[i].perspective === 'relationships' && (
                         <FormControlLabel
