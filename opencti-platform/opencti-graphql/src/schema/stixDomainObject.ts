@@ -131,6 +131,7 @@ export const isStixDomainObject = (type: string): boolean => {
     || isStixDomainObjectIdentity(type)
     || isStixDomainObjectLocation(type)
     || isStixDomainObjectContainer(type)
+    || isStixDomainObjectThreatActor(type)
     || type === ABSTRACT_STIX_DOMAIN_OBJECT;
 };
 
