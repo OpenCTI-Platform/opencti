@@ -295,22 +295,11 @@ const AuditsDistributionList = ({
     const dataSelectionTypes = R.head(
       finalFilters.filter((o) => o.key === 'entity_type'),
     )?.values || ['History', 'Activity'];
-    const dataSelectionObjectId = finalFilters.filter((o) => o.key === 'elementId')?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFilters.filter((o) => o.key === 'relationship_type'))
-      ?.values || null;
-    const dataSelectionToTypes = R.head(finalFilters.filter((o) => o.key === 'toTypes'))?.values || null;
-    finalFilters = finalFilters.filter(
-      (o) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
-        o.key,
-      ),
-    );
+    finalFilters = finalFilters.filter((o) => !['entity_type'].includes(o.key));
     return (
       <QueryRenderer
         query={auditsDistributionListDistributionQuery}
         variables={{
-          objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
-          toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,
           operation: 'count',
@@ -319,7 +308,7 @@ const AuditsDistributionList = ({
           dateAttribute:
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
-              : 'created_at',
+              : 'timestamp',
           filters: finalFilters,
           limit: selection.number ?? 10,
         }}

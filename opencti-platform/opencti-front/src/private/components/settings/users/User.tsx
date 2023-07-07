@@ -136,6 +136,7 @@ export const userOtpDeactivationMutation = graphql`
 
 const userAuditsTimeSeriesQuery = graphql`
   query UserAuditsTimeSeriesQuery(
+    $types: [String!]
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
@@ -145,6 +146,7 @@ const userAuditsTimeSeriesQuery = graphql`
     $filterMode: FilterMode
   ) {
     auditsTimeSeries(
+      types: $types
       field: $field
       filters: $filters
       filterMode: $filterMode
@@ -567,7 +569,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           <Paper
             classes={{ root: classes.paper }}
             variant="outlined"
-            style={{ marginTop: 15 }}
+            style={{ marginTop: 15, minHeight: 500 }}
           >
             {!isEnterpriseEdition ? (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -587,6 +589,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
               <QueryRenderer
                 query={userAuditsTimeSeriesQuery}
                 variables={{
+                  types: ['History'],
                   field: 'timestamp',
                   operation: 'count',
                   startDate,

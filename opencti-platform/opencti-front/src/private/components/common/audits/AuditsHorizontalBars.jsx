@@ -255,22 +255,11 @@ const AuditsHorizontalBars = ({
     const dataSelectionTypes = R.head(
       finalFilters.filter((n) => n.key === 'entity_type'),
     )?.values || ['History', 'Activity'];
-    const dataSelectionObjectId = finalFilters.filter((n) => n.key === 'elementId')?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
-    const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
-    finalFilters = finalFilters.filter(
-      (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
-        n.key,
-      ),
-    );
+    finalFilters = finalFilters.filter((n) => !['entity_type'].includes(n.key));
     return (
       <QueryRenderer
         query={auditsHorizontalBarsDistributionQuery}
         variables={{
-          objectId: dataSelectionObjectId,
-          relationship_type: dataSelectionRelationshipType,
-          toTypes: dataSelectionToTypes,
           types: dataSelectionTypes,
           field: selection.attribute,
           operation: 'count',
@@ -279,7 +268,7 @@ const AuditsHorizontalBars = ({
           dateAttribute:
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
-              : 'created_at',
+              : 'timestamp',
           filters: finalFilters,
           limit: selection.number ?? 10,
         }}

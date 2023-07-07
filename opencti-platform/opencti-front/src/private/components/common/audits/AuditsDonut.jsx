@@ -237,26 +237,8 @@ const AuditsDonut = ({
     const dataSelectionTypes = R.head(
       finalFilters.filter((n) => n.key === 'entity_type'),
     )?.values || ['History', 'Activity'];
-    const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
-      ?.values || null;
-    const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
-    const dataSelectionElementWithTargetTypes = R.head(finalFilters.filter((n) => n.key === 'elementWithTargetTypes'))
-      ?.values || null;
-    finalFilters = finalFilters.filter(
-      (n) => ![
-        'entity_type',
-        'elementId',
-        'relationship_type',
-        'toTypes',
-        'elementWithTargetTypes',
-      ].includes(n.key),
-    );
+    finalFilters = finalFilters.filter((n) => !['entity_type'].includes(n.key));
     const variables = {
-      objectId: Array.isArray(dataSelectionObjectId)
-        ? R.head(dataSelectionObjectId)
-        : dataSelectionObjectId,
-      relationship_type: dataSelectionRelationshipType,
       types: dataSelectionTypes,
       field: selection.attribute,
       operation: 'count',
@@ -265,19 +247,10 @@ const AuditsDonut = ({
       dateAttribute:
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
-          : 'created_at',
+          : 'timestamp',
       filters: finalFilters,
       limit: selection.number ?? 10,
     };
-    if (dataSelectionToTypes && dataSelectionToTypes.length > 0) {
-      variables.toTypes = dataSelectionToTypes;
-    }
-    if (
-      dataSelectionElementWithTargetTypes
-      && dataSelectionElementWithTargetTypes.length > 0
-    ) {
-      variables.elementWithTargetTypes = dataSelectionElementWithTargetTypes;
-    }
     return (
       <QueryRenderer
         query={auditsDonutDistributionQuery}

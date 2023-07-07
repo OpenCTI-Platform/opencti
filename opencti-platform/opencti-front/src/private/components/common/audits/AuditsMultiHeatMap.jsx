@@ -150,7 +150,7 @@ const AuditsMultiHeatMap = ({
         field:
           selection.date_attribute && selection.date_attribute.length > 0
             ? selection.date_attribute
-            : 'created_at',
+            : 'timestamp',
         types,
         filters,
       };
