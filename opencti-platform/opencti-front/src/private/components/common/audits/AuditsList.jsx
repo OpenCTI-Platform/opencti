@@ -92,6 +92,7 @@ const auditsListQuery = graphql`
           entity_type
           event_status
           event_type
+          event_scope
           timestamp
           user {
             id
@@ -229,7 +230,19 @@ const AuditsList = ({
                                 className={classes.bodyItem}
                                 style={{ width: '15%' }}
                               >
-                                {audit.user.name}
+                                {audit.user?.name ?? '-'}
+                              </div>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '12%' }}
+                              >
+                                {audit.event_type}
+                              </div>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '12%' }}
+                              >
+                                {audit.event_scope}
                               </div>
                               <div
                                 className={classes.bodyItem}

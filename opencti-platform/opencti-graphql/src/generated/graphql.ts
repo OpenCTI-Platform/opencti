@@ -10611,6 +10611,7 @@ export type Log = {
   context_data?: Maybe<ContextData>;
   context_uri?: Maybe<Scalars['String']>;
   entity_type?: Maybe<Scalars['String']>;
+  event_scope?: Maybe<Scalars['String']>;
   event_status: Scalars['String'];
   event_type: Scalars['String'];
   id: Scalars['ID'];
@@ -16532,7 +16533,6 @@ export type Query = {
   location?: Maybe<Location>;
   locations?: Maybe<LocationConnection>;
   logs?: Maybe<LogConnection>;
-  logsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   logsWorkerConfig?: Maybe<LogsWorkerConfig>;
   malware?: Maybe<Malware>;
   malwareAnalyses?: Maybe<MalwareAnalysisConnection>;
@@ -17488,21 +17488,6 @@ export type QueryLogsArgs = {
   orderBy?: InputMaybe<LogsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryLogsTimeSeriesArgs = {
-  endDate?: InputMaybe<Scalars['DateTime']>;
-  field: Scalars['String'];
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<LogsFiltering>>>;
-  interval: Scalars['String'];
-  onlyInferred?: InputMaybe<Scalars['Boolean']>;
-  operation: StatsOperation;
-  search?: InputMaybe<Scalars['String']>;
-  startDate: Scalars['DateTime'];
-  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -31149,6 +31134,7 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
   context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType>;
   context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   event_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -32698,7 +32684,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   location?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<QueryLocationArgs, 'id'>>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType, Partial<QueryLocationsArgs>>;
   logs?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, Partial<QueryLogsArgs>>;
-  logsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryLogsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   logsWorkerConfig?: Resolver<Maybe<ResolversTypes['LogsWorkerConfig']>, ParentType, ContextType>;
   malware?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, Partial<QueryMalwareArgs>>;
   malwareAnalyses?: Resolver<Maybe<ResolversTypes['MalwareAnalysisConnection']>, ParentType, ContextType, Partial<QueryMalwareAnalysesArgs>>;

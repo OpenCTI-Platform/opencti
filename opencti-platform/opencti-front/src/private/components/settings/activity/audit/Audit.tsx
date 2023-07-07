@@ -64,18 +64,32 @@ const Audit = () => {
       count: 25,
     },
   );
-
   const { numberOfElements, filters, searchTerm, sortBy, orderAsc, types } = viewStorage;
   const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>('view-audit');
   const dataColumns = {
     timestamp: {
-      label: 'timestamp',
-      width: '25%',
+      label: 'Date',
+      width: '15%',
+      isSortable: true,
+    },
+    user: {
+      label: 'User',
+      width: '15%',
+      isSortable: true,
+    },
+    event_type: {
+      label: 'Event type',
+      width: '10%',
+      isSortable: true,
+    },
+    event_scope: {
+      label: 'Event scope',
+      width: '10%',
       isSortable: true,
     },
     message: {
       label: 'Message',
-      width: '75%',
+      width: '50%',
       isSortable: false,
     },
   };
@@ -83,7 +97,6 @@ const Audit = () => {
     AuditLinesQuery,
     paginationOptions,
   );
-
   const extraFields = (
     <div style={{ float: 'left' }}>
       <FormControlLabel

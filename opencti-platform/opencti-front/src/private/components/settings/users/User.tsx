@@ -5,7 +5,15 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
-import { AccountBalanceOutlined, Delete, DeleteForeverOutlined, Edit, GroupOutlined, ReceiptOutlined, SecurityOutlined } from '@mui/icons-material';
+import {
+  AccountBalanceOutlined,
+  Delete,
+  DeleteForeverOutlined,
+  Edit,
+  GroupOutlined,
+  ReceiptOutlined,
+  SecurityOutlined,
+} from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -41,9 +49,10 @@ import Chart from '../../common/charts/Chart';
 import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import Triggers from '../common/Triggers';
-import { UserLogsTimeSeriesQuery$data } from './__generated__/UserLogsTimeSeriesQuery.graphql';
+import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSeriesQuery.graphql';
 import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -125,18 +134,20 @@ export const userOtpDeactivationMutation = graphql`
   }
 `;
 
-const userLogsTimeSeriesQuery = graphql`
-  query UserLogsTimeSeriesQuery(
+const userAuditsTimeSeriesQuery = graphql`
+  query UserAuditsTimeSeriesQuery(
     $field: String!
-    $userId: String
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
+    $filters: [LogsFiltering]
+    $filterMode: FilterMode
   ) {
-    logsTimeSeries(
+    auditsTimeSeries(
       field: $field
-      userId: $userId
+      filters: $filters
+      filterMode: $filterMode
       operation: $operation
       startDate: $startDate
       endDate: $endDate
@@ -226,9 +237,8 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
   const [killing, setKilling] = useState<boolean>(false);
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
-
   const user = useFragment(userFragment, userData);
-
+  const isEnterpriseEdition = useEnterpriseEdition();
   const [commitUserSessionKill] = useMutation<UserSessionKillMutation>(
     userSessionKillMutation,
   );
@@ -236,7 +246,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const [commitUserOtpDeactivation] = useMutation<UserOtpDeactivationMutation>(
     userOtpDeactivationMutation,
   );
-
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -246,25 +255,20 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
       subscription.unsubscribe();
     };
   }, []);
-
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
-
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
   };
-
   const handleOpenKillSession = (sessionId: string) => {
     setDisplayKillSession(true);
     setSessionToKill(sessionId);
   };
-
   const handleCloseKillSession = () => {
     setDisplayKillSession(false);
     setSessionToKill(null);
   };
-
   const submitKillSession = () => {
     if (sessionToKill) {
       setKilling(true);
@@ -283,15 +287,12 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
       });
     }
   };
-
   const handleOpenKillSessions = () => {
     setDisplayKillSessions(true);
   };
-
   const handleCloseKillSessions = () => {
     setDisplayKillSessions(false);
   };
-
   const submitKillSessions = () => {
     setKilling(true);
     commitUserUserSessionsKill({
@@ -308,7 +309,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
       },
     });
   };
-
   const otpUserDeactivation = () => {
     commitUserOtpDeactivation({
       variables: {
@@ -319,7 +319,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
       },
     });
   };
-
   const orderedSessions: Session[] = (user.sessions ?? [])
     .map((s) => ({
       created: s?.created ?? '',
@@ -329,7 +328,6 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
     .sort(
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
-
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -571,48 +569,75 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             variant="outlined"
             style={{ marginTop: 15 }}
           >
-            <QueryRenderer
-              query={userLogsTimeSeriesQuery}
-              variables={{
-                field: 'timestamp',
-                operation: 'count',
-                startDate,
-                endDate,
-                interval: 'month',
-                userId: user.id,
-              }}
-              render={({ props }: { props: UserLogsTimeSeriesQuery$data }) => {
-                if (props && props.logsTimeSeries) {
-                  const chartData = props.logsTimeSeries.map((entry) => ({
-                    x: new Date(entry?.date),
-                    y: entry?.value,
-                  }));
-                  return (
-                    <Chart
-                      options={
-                        areaChartOptions(
-                          theme,
-                          true,
-                          fsd,
-                          simpleNumberFormat,
-                          undefined,
-                        ) as ApexOptions
-                      }
-                      series={[
-                        {
-                          name: t('Number of operations'),
-                          data: chartData,
-                        },
-                      ]}
-                      type="area"
-                      width="100%"
-                      height="100%"
-                    />
-                  );
-                }
-                return <Loader variant={LoaderVariant.inElement} />;
-              }}
-            />
+            {!isEnterpriseEdition ? (
+              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+                <span
+                  style={{
+                    display: 'table-cell',
+                    verticalAlign: 'middle',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t(
+                    'This feature is only available in OpenCTI Enterprise Edition.',
+                  )}
+                </span>
+              </div>
+            ) : (
+              <QueryRenderer
+                query={userAuditsTimeSeriesQuery}
+                variables={{
+                  field: 'timestamp',
+                  operation: 'count',
+                  startDate,
+                  endDate,
+                  interval: 'month',
+                  filters: [
+                    {
+                      key: 'members_user',
+                      values: [user.id],
+                      operator: 'eq',
+                      filterMode: 'or',
+                    },
+                  ],
+                }}
+                render={({
+                  props,
+                }: {
+                  props: UserAuditsTimeSeriesQuery$data;
+                }) => {
+                  if (props && props.auditsTimeSeries) {
+                    const chartData = props.auditsTimeSeries.map((entry) => ({
+                      x: new Date(entry?.date),
+                      y: entry?.value,
+                    }));
+                    return (
+                      <Chart
+                        options={
+                          areaChartOptions(
+                            theme,
+                            true,
+                            fsd,
+                            simpleNumberFormat,
+                            undefined,
+                          ) as ApexOptions
+                        }
+                        series={[
+                          {
+                            name: t('Number of operations'),
+                            data: chartData,
+                          },
+                        ]}
+                        type="area"
+                        width="100%"
+                        height="100%"
+                      />
+                    );
+                  }
+                  return <Loader variant={LoaderVariant.inElement} />;
+                }}
+              />
+            )}
           </Paper>
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
@@ -727,14 +752,14 @@ export const userQuery = graphql`
       id
       name
       ...User_user
-      @arguments(
-        rolesOrderBy: $rolesOrderBy
-        rolesOrderMode: $rolesOrderMode
-        groupsOrderBy: $groupsOrderBy
-        groupsOrderMode: $groupsOrderMode
-        organizationsOrderBy: $organizationsOrderBy
-        organizationsOrderMode: $organizationsOrderMode
-      )
+        @arguments(
+          rolesOrderBy: $rolesOrderBy
+          rolesOrderMode: $rolesOrderMode
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
     }
   }
 `;

@@ -25,11 +25,6 @@ export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) =>
   total: elCount(context, user, READ_INDEX_HISTORY, R.dissoc('endDate', args)),
 });
 
-export const logsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
-  const filters: any[] = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
-  return timeSeriesHistory(context, user, [ENTITY_TYPE_HISTORY], { ...args, filters });
-};
-
 export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
   const { types } = args;
   const filters: any[] = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;

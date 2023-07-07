@@ -394,6 +394,7 @@ type Log {
   id: ID!
   entity_type: String
   event_type: String!
+  event_scope: String
   event_status: String!
   timestamp: DateTime!
   user_id: String!
@@ -7747,7 +7748,6 @@ type Query {
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering!], filterMode: FilterMode, search: String): LogConnection
-  logsTimeSeries(userId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, types: [String], filters: [LogsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering!], filterMode: FilterMode, search: String): LogConnection
   auditsNumber(types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: [LogsFiltering], filterMode: FilterMode, search: String): Number
   auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: [LogsFiltering], filterMode: FilterMode, search: String): [TimeSeries]

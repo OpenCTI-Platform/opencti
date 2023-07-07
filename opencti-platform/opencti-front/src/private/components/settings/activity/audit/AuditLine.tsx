@@ -90,6 +90,7 @@ const AuditLineFragment = graphql`
     id
     entity_type
     event_type
+    event_scope
     event_status
     timestamp
     context_uri
@@ -198,7 +199,25 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 className={classes.bodyItem}
                 style={{ width: dataColumns.timestamp.width }}
               >
-                <span style={{ color }}>{fldt(data.timestamp)}</span>
+                {fldt(data.timestamp)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.user.width }}
+              >
+                {data.user?.name ?? '-'}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.event_type.width }}
+              >
+                {data.event_type}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.event_scope.width }}
+              >
+                {data.event_scope ?? '-'}
               </div>
               <div
                 className={classes.bodyItem}
@@ -237,6 +256,39 @@ export const AuditLineDummy = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.timestamp.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.user.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.event_type.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.event_scope.width }}
             >
               <Skeleton
                 animation="wave"

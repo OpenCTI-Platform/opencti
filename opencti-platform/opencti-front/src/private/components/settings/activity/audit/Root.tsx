@@ -13,47 +13,17 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import { isEmptyField } from '../../../../../utils/utils';
+import React from 'react';
 import Audit from './Audit';
-import { RootQuery } from './__generated__/RootQuery.graphql';
 import EnterpriseEdition from '../../../common/EnterpriseEdition';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
-export const rootQuery = graphql`
-  query RootQuery {
-    settings {
-      id
-      enterprise_edition
-    }
-  }
-`;
-
-interface ConfigurationComponentProps {
-  queryRef: PreloadedQuery<RootQuery>;
-}
-
-const AuditComponent: FunctionComponent<ConfigurationComponentProps> = ({
-  queryRef,
-}) => {
-  const { settings } = usePreloadedQuery<RootQuery>(rootQuery, queryRef);
-  if (isEmptyField(settings.enterprise_edition)) {
+const Root = () => {
+  const isEnterpriseEdition = useEnterpriseEdition();
+  if (!isEnterpriseEdition) {
     return <EnterpriseEdition />;
   }
   return <Audit />;
-};
-
-const Root = () => {
-  const queryRef = useQueryLoading<RootQuery>(rootQuery, {});
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <AuditComponent queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
-  );
 };
 
 export default Root;
