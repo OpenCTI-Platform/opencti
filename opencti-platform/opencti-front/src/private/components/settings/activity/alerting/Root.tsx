@@ -19,7 +19,7 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { isEmptyField } from '../../../../../utils/utils';
 import EnterpriseEdition from '../../../common/EnterpriseEdition';
-import { RootQuery } from '../audit/__generated__/RootQuery.graphql';
+import { RootAlertingQuery } from './__generated__/RootAlertingQuery.graphql';
 import Alerting from './Alerting';
 
 export const rootQuery = graphql`
@@ -32,13 +32,13 @@ export const rootQuery = graphql`
 `;
 
 interface ConfigurationComponentProps {
-  queryRef: PreloadedQuery<RootQuery>;
+  queryRef: PreloadedQuery<RootAlertingQuery>;
 }
 
 const AlertingComponent: FunctionComponent<ConfigurationComponentProps> = ({
   queryRef,
 }) => {
-  const { settings } = usePreloadedQuery<RootQuery>(rootQuery, queryRef);
+  const { settings } = usePreloadedQuery<RootAlertingQuery>(rootQuery, queryRef);
   if (isEmptyField(settings.enterprise_edition)) {
     return <EnterpriseEdition />;
   }
@@ -46,7 +46,7 @@ const AlertingComponent: FunctionComponent<ConfigurationComponentProps> = ({
 };
 
 const Root = () => {
-  const queryRef = useQueryLoading<RootQuery>(rootQuery, {});
+  const queryRef = useQueryLoading<RootAlertingQuery>(rootQuery, {});
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <AlertingComponent queryRef={queryRef} />
