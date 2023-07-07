@@ -1,5 +1,6 @@
 import { withFilter } from 'graphql-subscriptions';
 import * as R from 'ramda';
+import { addBookmark, addUser, assignOrganizationToUser, authenticateUser, batchCreator, batchGroups, batchOrganizations, batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks, deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities, findCreators, findParticipants, findRoleById, findRoles, logout, meEditField, otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation, roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation, userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField, userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
 import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import passport, { PROVIDERS } from '../config/providers';
@@ -8,7 +9,6 @@ import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { addRole } from '../domain/grant';
-import { addBookmark, addUser, assignOrganizationToUser, authenticateUser, batchCreator, batchGroups, batchOrganizations, batchRoleCapabilities, batchRolesForGroups, batchRolesForUsers, bookmarks, deleteBookmark, findAll, findAllMembers, findAssignees, findById, findCapabilities, findCreators, findRoleById, findRoles, logout, meEditField, otpUserActivation, otpUserDeactivation, otpUserGeneration, otpUserLogin, roleAddRelation, roleCleanContext, roleDelete, roleDeleteRelation, roleEditContext, roleEditField, userAddRelation, userCleanContext, userDelete, userDeleteOrganizationRelation, userEditContext, userEditField, userIdDeleteRelation, userRenewToken, userWithOrigin, } from '../domain/user';
 import withCancel from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -30,6 +30,7 @@ const userResolvers = {
     roles: (_, args, context) => findRoles(context, context.user, args),
     creators: (_, args, context) => findCreators(context, context.user, args),
     assignees: (_, args, context) => findAssignees(context, context.user, args),
+    participants: (_, args, context) => findParticipants(context, context.user, args),
     members: (_, args, context) => findAllMembers(context, context.user, args),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),

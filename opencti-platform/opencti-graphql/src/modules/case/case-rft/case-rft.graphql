@@ -132,7 +132,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
-  # Request For Information
+  objectParticipant: ParticipantConnection
+  # Request For Takedown
   takedown_types: [String!]
   severity: String
   priority: String
@@ -148,6 +149,7 @@ enum CaseRftsOrdering {
   updated_at
   creator
   createdBy
+  objectAssignee
   x_opencti_workflow_id
   confidence
   objectMarking
@@ -168,6 +170,7 @@ enum CaseRftsFilter {
   markedBy
   labelledBy
   assigneeTo
+  participant
   x_opencti_workflow_id
   confidence
   severity
@@ -225,6 +228,7 @@ input CaseRftAddInput {
   createdBy: String
   objectMarking: [String]
   objectAssignee: [String]
+  objectParticipant: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]

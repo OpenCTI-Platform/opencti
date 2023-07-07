@@ -13,7 +13,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityConnection, StoreProxyRelation } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
-import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
+import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
 
 const MAX_SEARCH_SIZE = 5000;
@@ -384,7 +384,8 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
 
 const entitiesAggregations = [
   { name: CREATOR_FILTER, field: 'creator_id.keyword' },
-  { name: ASSIGNEE_FILTER, field: 'rel_object-assignee.internal_id.keyword' }
+  { name: ASSIGNEE_FILTER, field: 'rel_object-assignee.internal_id.keyword' },
+  { name: PARTICIPANT_FILTER, field: 'rel_object-participant.internal_id.keyword' }
 ];
 export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthUser, filter: string, type: string, args = {}) => {
   const aggregation = entitiesAggregations.find((agg) => agg.name === filter);

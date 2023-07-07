@@ -20,6 +20,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -44,6 +45,7 @@ interface FormikCaseTaskAddInput {
   due_date?: Date | null;
   description?: string;
   objectAssignee?: Option[];
+  objectParticipant: Option[];
   objectLabel?: Option[];
   objectMarking: Option[];
 }
@@ -71,6 +73,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     objectLabel: Yup.array(),
     objectMarking: Yup.array(),
     objectAssignee: Yup.array(),
+    objectParticipant: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const taskValidator = useSchemaEditionValidation('Task', basicShape);
@@ -90,6 +93,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
           objectAssignee: (values.objectAssignee ?? []).map(
             ({ value }) => value,
           ),
+          objectParticipant: values.objectParticipant.map(({ value }) => value),
           objectLabel: (values.objectLabel ?? []).map(({ value }) => value),
           objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
           objects: [caseId],
@@ -114,6 +118,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
         description: '',
         due_date: null,
         objectAssignee: [],
+        objectParticipant: [],
         objectMarking: defaultMarkings ?? [],
       }}
       onSubmit={onSubmit}
@@ -141,6 +146,10 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
             style={fieldSpacingContainerStyle}
           />
           <ObjectLabelField

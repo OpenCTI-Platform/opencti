@@ -132,6 +132,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  objectParticipant: ParticipantConnection
   # Request For Information
   information_types: [String!]
   severity: String
@@ -147,6 +148,7 @@ enum CaseRfisOrdering {
   updated_at
   creator
   createdBy
+  objectAssignee
   x_opencti_workflow_id
   confidence
   objectMarking
@@ -166,6 +168,7 @@ enum CaseRfisFilter {
   markedBy
   labelledBy
   assigneeTo
+  participant
   x_opencti_workflow_id
   confidence
   severity
@@ -223,6 +226,7 @@ input CaseRfiAddInput {
   createdBy: String
   objectMarking: [String]
   objectAssignee: [String]
+  objectParticipant: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]

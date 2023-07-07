@@ -132,6 +132,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   content: String
   content_mapping: String
   tasks: TaskConnection!
+  objectParticipant: ParticipantConnection
   # Incident Response
   rating: Int
   response_types: [String!]
@@ -151,6 +152,7 @@ enum CaseIncidentsOrdering {
   updated_at
   creator
   createdBy
+  objectAssignee
   x_opencti_workflow_id
   confidence
   objectMarking
@@ -169,6 +171,7 @@ enum CaseIncidentsFilter {
   markedBy
   labelledBy
   assigneeTo
+  participant
   x_opencti_workflow_id
   severity
   priority
@@ -226,6 +229,7 @@ input CaseIncidentAddInput {
   createdBy: String
   objectMarking: [String]
   objectAssignee: [String]
+  objectParticipant: [String]
   objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]

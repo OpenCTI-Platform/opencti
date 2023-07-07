@@ -37,6 +37,7 @@ import {
 import { CaseIncidentsLinesCasesPaginationQuery$variables } from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import RichTextField from '../../../../components/RichTextField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -107,6 +108,7 @@ interface FormikCaseIncidentAddInput {
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectAssignee: Option[];
+  objectParticipant: Option[];
   objectLabel: Option[];
   externalReferences: Option[];
   created: Date | null;
@@ -166,6 +168,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       caseTemplates: values.caseTemplates?.map(({ value }) => value),
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
+      objectParticipant: values.objectParticipant.map(({ value }) => value),
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
@@ -211,6 +214,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectAssignee: [],
+      objectParticipant: [],
       objectLabel: [],
       externalReferences: [],
       file: undefined,
@@ -296,6 +300,10 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField

@@ -59,7 +59,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { addIndividual } from './individual';
-import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
+import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addGroup } from './grant';
 
@@ -150,6 +150,10 @@ export const findCreators = (context, user, args) => {
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
   return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+};
+export const findParticipants = (context, user, args) => {
+  const { entityTypes = [] } = args;
+  return listAllEntitiesForFilter(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
 export const findAllMembers = (context, user, args) => {

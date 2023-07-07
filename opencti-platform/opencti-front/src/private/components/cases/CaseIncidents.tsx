@@ -68,7 +68,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '25%',
+        width: '22%',
         isSortable: true,
       },
       priority: {
@@ -81,9 +81,9 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         width: '5%',
         isSortable: true,
       },
-      createdBy: {
-        label: 'Author',
-        width: '11%',
+      objectAssignee: {
+        label: 'Assignees',
+        width: '14%',
         isSortable: isRuntimeSort,
       },
       creator: {
@@ -138,6 +138,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         availableFilterKeys={[
           'x_opencti_workflow_id',
           'assigneeTo',
+          'participant',
           'priority',
           'severity',
           'markedBy',

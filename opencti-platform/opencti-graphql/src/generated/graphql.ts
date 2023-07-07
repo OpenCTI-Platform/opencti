@@ -1726,6 +1726,7 @@ export type Case = {
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -1943,6 +1944,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -2141,6 +2143,7 @@ export type CaseIncidentAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   priority?: InputMaybe<Scalars['String']>;
   response_types?: InputMaybe<Array<Scalars['String']>>;
@@ -2175,6 +2178,7 @@ export enum CaseIncidentsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
   UpdatedAt = 'updated_at',
@@ -2197,6 +2201,7 @@ export enum CaseIncidentsOrdering {
   Creator = 'creator',
   Modified = 'modified',
   Name = 'name',
+  ObjectAssignee = 'objectAssignee',
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
@@ -2234,6 +2239,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -2431,6 +2437,7 @@ export type CaseRfiAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   priority?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
@@ -2463,6 +2470,7 @@ export enum CaseRfisFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
   UpdatedAt = 'updated_at',
@@ -2484,6 +2492,7 @@ export enum CaseRfisOrdering {
   Creator = 'creator',
   Modified = 'modified',
   Name = 'name',
+  ObjectAssignee = 'objectAssignee',
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
@@ -2520,6 +2529,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -2717,6 +2727,7 @@ export type CaseRftAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   priority?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
@@ -2751,6 +2762,7 @@ export enum CaseRftsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
   UpdatedAt = 'updated_at',
@@ -2773,6 +2785,7 @@ export enum CaseRftsOrdering {
   Creator = 'creator',
   Modified = 'modified',
   Name = 'name',
+  ObjectAssignee = 'objectAssignee',
   ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Severity = 'severity',
@@ -2830,6 +2843,7 @@ export enum CasesFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participant = 'participant',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -6687,6 +6701,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -8392,6 +8407,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objective?: Maybe<Scalars['String']>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -8560,6 +8576,7 @@ export type IncidentAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objective?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   severity?: InputMaybe<Scalars['String']>;
@@ -8627,6 +8644,7 @@ export enum IncidentsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Participant = 'participant',
   Severity = 'severity',
   Source = 'source',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -8643,11 +8661,13 @@ export enum IncidentsOrdering {
   Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   FirstSeen = 'first_seen',
   IncidentType = 'incident_type',
   LastSeen = 'last_seen',
   Modified = 'modified',
   Name = 'name',
+  ObjectAssignee = 'objectAssignee',
   ObjectMarking = 'objectMarking',
   Severity = 'severity',
   Source = 'source',
@@ -15559,6 +15579,25 @@ export type PageInfo = {
   startCursor: Scalars['String'];
 };
 
+export type Participant = {
+  __typename?: 'Participant';
+  entity_type: Scalars['String'];
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
+export type ParticipantConnection = {
+  __typename?: 'ParticipantConnection';
+  edges: Array<ParticipantEdge>;
+  pageInfo: PageInfo;
+};
+
+export type ParticipantEdge = {
+  __typename?: 'ParticipantEdge';
+  cursor: Scalars['String'];
+  node: Participant;
+};
+
 export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'PaymentCard';
   card_number?: Maybe<Scalars['String']>;
@@ -16570,6 +16609,7 @@ export type Query = {
   organization?: Maybe<Organization>;
   organizations?: Maybe<OrganizationConnection>;
   otpGeneration?: Maybe<OtpElement>;
+  participants?: Maybe<ParticipantConnection>;
   pendingFiles?: Maybe<FileConnection>;
   platform_theme?: Maybe<Scalars['String']>;
   position?: Maybe<Position>;
@@ -17760,6 +17800,11 @@ export type QueryOrganizationsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryParticipantsArgs = {
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
 };
 
 
@@ -19204,6 +19249,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -19398,6 +19444,7 @@ export type ReportAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   published: Scalars['DateTime'];
   report_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -19469,6 +19516,7 @@ export enum ReportsFilter {
   Name = 'name',
   ObjectContains = 'objectContains',
   ObjectLabel = 'objectLabel',
+  Participant = 'participant',
   Published = 'published',
   PublishedDay = 'published_day',
   ReportTypes = 'report_types',
@@ -20632,6 +20680,7 @@ export enum StixCoreObjectsFilter {
   Modified = 'modified',
   Name = 'name',
   ObjectContains = 'objectContains',
+  Participant = 'participant',
   PatternType = 'pattern_type',
   Published = 'published',
   RelatedTo = 'relatedTo',
@@ -21565,6 +21614,7 @@ export enum StixDomainObjectsFilter {
   Name = 'name',
   ObjectContains = 'objectContains',
   OperatingSystem = 'operatingSystem',
+  Participant = 'participant',
   PatternType = 'pattern_type',
   Priority = 'priority',
   Product = 'product',
@@ -22996,6 +23046,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   objectLabel?: Maybe<LabelConnection>;
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   objectOrganization?: Maybe<OrganizationConnection>;
+  objectParticipant?: Maybe<ParticipantConnection>;
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
@@ -23181,6 +23232,7 @@ export type TaskAddInput = {
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   update?: InputMaybe<Scalars['Boolean']>;
 };
@@ -23266,6 +23318,7 @@ export enum TasksFilter {
   Modified = 'modified',
   Name = 'name',
   ObjectContains = 'objectContains',
+  Participant = 'participant',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -27106,6 +27159,9 @@ export type ResolversTypes = ResolversObject<{
   OtpElement: ResolverTypeWrapper<OtpElement>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
+  Participant: ResolverTypeWrapper<Participant>;
+  ParticipantConnection: ResolverTypeWrapper<ParticipantConnection>;
+  ParticipantEdge: ResolverTypeWrapper<ParticipantEdge>;
   PaymentCard: ResolverTypeWrapper<Omit<PaymentCard, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   PaymentCardAddInput: PaymentCardAddInput;
   PhoneNumber: ResolverTypeWrapper<Omit<PhoneNumber, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
@@ -27790,6 +27846,9 @@ export type ResolversParentTypes = ResolversObject<{
   OtpElement: OtpElement;
   OverviewMetrics: OverviewMetrics;
   PageInfo: PageInfo;
+  Participant: Participant;
+  ParticipantConnection: ParticipantConnection;
+  ParticipantEdge: ParticipantEdge;
   PaymentCard: Omit<PaymentCard, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PaymentCardAddInput: PaymentCardAddInput;
   PhoneNumber: Omit<PhoneNumber, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
@@ -28631,6 +28690,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<CaseObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseOpinionsArgs>>;
@@ -28695,6 +28755,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<CaseIncidentObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseIncidentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseIncidentOpinionsArgs>>;
@@ -28765,6 +28826,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<CaseRfiObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseRfiObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseRfiOpinionsArgs>>;
@@ -28832,6 +28894,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<CaseRftObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<CaseRftObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CaseRftOpinionsArgs>>;
@@ -30043,6 +30106,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<FeedbackObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<FeedbackObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<FeedbackOpinionsArgs>>;
@@ -30508,6 +30572,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objective?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<IncidentObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IncidentOpinionsArgs>>;
@@ -32353,6 +32418,25 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ParticipantResolvers<ContextType = any, ParentType extends ResolversParentTypes['Participant'] = ResolversParentTypes['Participant']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ParticipantConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ParticipantConnection'] = ResolversParentTypes['ParticipantConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['ParticipantEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ParticipantEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ParticipantEdge'] = ResolversParentTypes['ParticipantEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Participant'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PaymentCardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaymentCard'] = ResolversParentTypes['PaymentCard']> = ResolversObject<{
   card_number?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<PaymentCardCasesArgs>>;
@@ -32724,6 +32808,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<QueryOrganizationArgs>>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;
   otpGeneration?: Resolver<Maybe<ResolversTypes['OtpElement']>, ParentType, ContextType>;
+  participants?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType, Partial<QueryParticipantsArgs>>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryPendingFilesArgs>>;
   platform_theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   position?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<QueryPositionArgs, 'id'>>;
@@ -33010,6 +33095,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<ReportObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<ReportObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ReportOpinionsArgs>>;
@@ -34252,6 +34338,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<TaskObjectsArgs>>;
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<TaskObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<TaskOpinionsArgs>>;
@@ -35554,6 +35641,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   OtpElement?: OtpElementResolvers<ContextType>;
   OverviewMetrics?: OverviewMetricsResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
+  Participant?: ParticipantResolvers<ContextType>;
+  ParticipantConnection?: ParticipantConnectionResolvers<ContextType>;
+  ParticipantEdge?: ParticipantEdgeResolvers<ContextType>;
   PaymentCard?: PaymentCardResolvers<ContextType>;
   PhoneNumber?: PhoneNumberResolvers<ContextType>;
   Position?: PositionResolvers<ContextType>;

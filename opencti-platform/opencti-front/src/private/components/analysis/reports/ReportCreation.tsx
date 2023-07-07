@@ -38,6 +38,7 @@ import {
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 import useAuth from '../../../../utils/hooks/useAuth';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -122,6 +123,7 @@ interface ReportAddInput {
   objectMarking: Option[];
   objectLabel: Option[];
   objectAssignee: { value: string }[];
+  objectParticipant: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
 }
@@ -179,6 +181,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
+      objectParticipant: values.objectParticipant.map(({ value }) => value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
@@ -220,6 +223,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectAssignee: [],
+    objectParticipant: [],
     objectLabel: [],
     externalReferences: [],
     file: undefined,
@@ -284,6 +288,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectParticipantField
+            name="objectParticipant"
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField

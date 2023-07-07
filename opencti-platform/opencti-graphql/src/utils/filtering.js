@@ -20,6 +20,7 @@ export const MARKING_FILTER = 'markedBy';
 export const CREATED_BY_FILTER = 'createdBy';
 export const CREATOR_FILTER = 'creator';
 export const ASSIGNEE_FILTER = 'assigneeTo';
+export const PARTICIPANT_FILTER = 'participant';
 export const OBJECT_CONTAINS_FILTER = 'objectContains';
 export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
@@ -29,6 +30,7 @@ export const RESOLUTION_FILTERS = [
   MARKING_FILTER,
   CREATED_BY_FILTER,
   ASSIGNEE_FILTER,
+  PARTICIPANT_FILTER,
   OBJECT_CONTAINS_FILTER,
   RELATION_FROM,
   RELATION_TO,

@@ -1135,6 +1135,10 @@ type AssigneeConnection {
   pageInfo: PageInfo!
   edges: [AssigneeEdge!]!
 }
+type ParticipantConnection {
+  pageInfo: PageInfo!
+  edges: [ParticipantEdge!]!
+}
 type MemberConnection {
   pageInfo: PageInfo!
   edges: [MemberEdge!]!
@@ -1151,11 +1155,20 @@ type AssigneeEdge {
   cursor: String!
   node: Assignee!
 }
+type ParticipantEdge {
+  cursor: String!
+  node: Participant!
+}
 type MemberEdge {
   cursor: String!
   node: Member!
 }
 type Assignee {
+  id: ID! # internal_id
+  name: String!
+  entity_type: String!
+}
+type Participant {
   id: ID! # internal_id
   name: String!
   entity_type: String!
@@ -1798,6 +1811,7 @@ enum StixCoreObjectsFilter {
   createdBy
   markedBy
   assigneeTo
+  participant
   labelledBy
   killChainPhase
   hasExternalReference
@@ -1996,6 +2010,7 @@ enum StixDomainObjectsFilter {
   createdBy
   markedBy
   assigneeTo
+  participant
   labelledBy
   hasExternalReference
   objectContains
@@ -3371,6 +3386,7 @@ enum ReportsFilter {
   createdBy
   markedBy
   assigneeTo
+  participant
   labelledBy
   objectContains
   x_opencti_workflow_id
@@ -3515,6 +3531,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   content_mapping: String
   report_types: [String]
   published: DateTime
+  objectParticipant: ParticipantConnection
   # Technical
   creators: [Creator!]
   toStix: String
@@ -3544,6 +3561,7 @@ input ReportAddInput {
   objectOrganization: [String]
   objectMarking: [String]
   objectAssignee: [String]
+  objectParticipant: [String]
   objectLabel: [String]
   externalReferences: [String]
   objects: [String]
@@ -7038,6 +7056,8 @@ enum IncidentsOrdering {
   x_opencti_workflow_id
   objectMarking
   confidence
+  objectAssignee
+  creator
 }
 enum IncidentsFilter {
   name
@@ -7051,6 +7071,7 @@ enum IncidentsFilter {
   createdBy
   markedBy
   assigneeTo
+  participant
   labelledBy
   x_opencti_workflow_id
   confidence
@@ -7173,6 +7194,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   incident_type: String
   severity: String
   source: String
+  objectParticipant: ParticipantConnection
   # Technical
   creators: [Creator!]
   toStix: String
@@ -7204,6 +7226,7 @@ input IncidentAddInput {
   objectOrganization: [String]
   objectMarking: [String]
   objectAssignee: [String]
+  objectParticipant: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
@@ -11713,6 +11736,7 @@ type Query {
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
   creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])
   assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE])
+  participants(entityTypes: [String!]): ParticipantConnection @auth(for: [KNOWLEDGE])
   members(first: Int, search: String, entityTypes: [MemberType!]): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE CONNECTORAPI, SETTINGS])
   users(
     first: Int

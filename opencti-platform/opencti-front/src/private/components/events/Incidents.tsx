@@ -62,7 +62,7 @@ const Incidents: FunctionComponent = () => {
   const dataColumns = {
     name: {
       label: 'Name',
-      width: '23%',
+      width: '20%',
       isSortable: true,
     },
     incident_type: {
@@ -75,9 +75,9 @@ const Incidents: FunctionComponent = () => {
       width: '5%',
       isSortable: true,
     },
-    createdBy: {
-      label: 'Author',
-      width: '11%',
+    objectAssignee: {
+      label: 'Assignees',
+      width: '14%',
       isSortable: isRuntimeSort,
     },
     creator: {
@@ -134,6 +134,7 @@ const Incidents: FunctionComponent = () => {
           iconExtension={true}
           availableFilterKeys={[
             'incident_type',
+            'participant',
             'severity',
             'labelledBy',
             'markedBy',
