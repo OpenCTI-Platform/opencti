@@ -61,7 +61,7 @@ const vocabularyMutationUpdate = graphql`
 const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
-  order: Yup.number().nullable(),
+  order: Yup.number().nullable().integer(t('The value must be a number')),
 });
 
 interface VocabularyEditionFormikValues {
@@ -150,7 +150,7 @@ const VocabularyEdition = ({
           validationSchema={attributeValidation(t)}
           onSubmit={onSubmit}
         >
-          {({ submitForm, isSubmitting }) => (
+          {({ submitForm, isSubmitting, isValid }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
@@ -204,7 +204,7 @@ const VocabularyEdition = ({
                   variant="contained"
                   color="primary"
                   onClick={submitForm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !isValid}
                   classes={{ root: classes.button }}
                 >
                   {t('Update')}

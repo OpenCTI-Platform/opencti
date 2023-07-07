@@ -166,7 +166,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
             onSubmit={onSubmit}
             onReset={handleClose}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({ submitForm, handleReset, isSubmitting, isValid, dirty }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -225,7 +225,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                     variant="contained"
                     color="secondary"
                     onClick={submitForm}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !isValid || !dirty}
                     classes={{ root: classes.button }}
                   >
                     {t('Create')}
