@@ -225,8 +225,9 @@ export const usePaginationLocalStorage = <U>(
   key: string,
   initialValue: LocalStorage,
   additionalFilters?: BackendFilters,
+  ignoreUri?: boolean,
 ): PaginationLocalStorage<U> => {
-  const [viewStorage, setValue] = useLocalStorage(key, initialValue);
+  const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
   const paginationOptions = localStorageToPaginationOptions(
     { count: 25, ...viewStorage },
     additionalFilters,

@@ -48,6 +48,8 @@ const MembersListContainerForOrganization: FunctionComponent<MembersListContaine
         symbol: '',
       },
     },
+    undefined,
+    false,
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;
   const paginationOptions = {
