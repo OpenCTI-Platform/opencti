@@ -100,7 +100,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
           helperText: helpertext,
           onFocus: searchMembers,
         }}
-        onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
+        onChange={typeof onChange === 'function' ? onChange : null}
         style={style}
         noOptionsText={t('No available options')}
         options={members}

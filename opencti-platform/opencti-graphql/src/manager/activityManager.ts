@@ -65,7 +65,7 @@ export const getLiveActivityNotifications = async (context: AuthContext): Promis
 const isEventMatchFilter = async (context: AuthContext, trigger: BasicStoreEntityLiveTrigger, event: ActivityStreamEvent) => {
   const { type, event_scope, status, origin } = event;
   const { filters: rawFilters } = trigger;
-  const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
+  const filters = rawFilters ? JSON.parse(rawFilters) : {};
   const adaptedFilters = await convertFiltersFrontendFormat(context, SYSTEM_USER, filters);
   for (let index = 0; index < adaptedFilters.length; index += 1) {
     const { key, values } = adaptedFilters[index];
