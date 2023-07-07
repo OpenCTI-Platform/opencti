@@ -12,7 +12,7 @@ import {
   ObjectParticipantFieldMembersSearchQuery$data,
 } from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
 
-export const objectParticipantFieldMembersSearchQuery = graphql`
+const objectParticipantFieldMembersSearchQuery = graphql`
   query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
     members(search: $search, first: $first, entityTypes: $entityTypes) {
       edges {
@@ -64,7 +64,6 @@ interface ObjectParticipantFieldProps {
   onChange?: (name: string, values: OptionParticipant[]) => void;
   style?: Record<string, string | number>;
   helpertext?: string;
-  defaultObjectParticipant?: OptionParticipant,
   label?: string,
   disabled?: boolean,
 }
