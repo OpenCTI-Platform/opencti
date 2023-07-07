@@ -35,7 +35,6 @@ import {
 import { now } from '../utils/format';
 import {
   EVENT_TYPE_CREATE,
-  INDEX_INTERNAL_OBJECTS,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -168,7 +167,7 @@ const computeListTaskElements = async (context, user, task) => {
   }
   return { actions, elements: processingElements };
 };
-const appendTaskErrors = async (taskId, errors) => {
+const appendTaskErrors = async (task, errors) => {
   if (errors.length === 0) {
     return;
   }
@@ -178,9 +177,7 @@ const appendTaskErrors = async (taskId, errors) => {
     const error = errors[index];
     source += `ctx._source.errors.add(["timestamp": params.received_time, "id": "${error.id}", "message": "${error.message}"]); `;
   }
-  await elUpdate(INDEX_INTERNAL_OBJECTS, taskId, {
-    script: { source, lang: 'painless', params },
-  });
+  await elUpdate(task._index, task.id, { script: { source, lang: 'painless', params } });
 };
 
 const executeDelete = async (context, user, element) => {
@@ -445,7 +442,7 @@ const taskHandler = async () => {
     const processingElements = jobToExecute.elements;
     if (processingElements.length > 0) {
       const errors = await executeProcessing(context, user, jobToExecute);
-      await appendTaskErrors(task.id, errors);
+      await appendTaskErrors(task, errors);
     }
     // Update the task
     // Get the last element processed and update task_position+ task_processed_number
