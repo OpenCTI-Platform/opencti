@@ -7054,6 +7054,8 @@ enum IncidentsOrdering {
   x_opencti_workflow_id
   objectMarking
   confidence
+  objectAssignee
+  creator
 }
 enum IncidentsFilter {
   name

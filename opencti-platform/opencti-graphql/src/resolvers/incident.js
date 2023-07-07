@@ -40,6 +40,9 @@ const incidentResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     creator: 'creator_id',
   },
+  IncidentsOrdering: {
+    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
+  },
   Mutation: {
     incidentEdit: (_, { id }, context) => ({
       delete: () => stixDomainObjectDelete(context, context.user, id),
