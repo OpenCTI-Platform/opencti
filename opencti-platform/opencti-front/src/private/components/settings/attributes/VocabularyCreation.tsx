@@ -105,6 +105,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
       name: values.name,
       description: values.description,
       aliases: values.aliases.map((a) => a.value),
+      order: parseInt(String(values.order), 10),
       category,
     };
     addVocab({
