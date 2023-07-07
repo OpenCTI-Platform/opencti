@@ -1,4 +1,4 @@
-import React, { FunctionComponent, MutableRefObject } from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { UserLine, UserLineDummy } from './UserLine';
 import { DataColumns } from '../../../../components/list_lines';
@@ -76,7 +76,6 @@ const membersListForOrganizationFragment = graphql`
 interface MembersListProps {
   userColumns: DataColumns,
   queryRef: PreloadedQuery<MembersListForOrganizationQuery>;
-  containerRef: MutableRefObject<null>;
   paginationOptions: MembersListForOrganizationQuery$variables;
 }
 
@@ -85,7 +84,6 @@ const nbOfRowsToLoad = 50;
 const MembersListForOrganization: FunctionComponent<MembersListProps> = ({
   userColumns,
   queryRef,
-  containerRef,
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
@@ -110,7 +108,6 @@ const MembersListForOrganization: FunctionComponent<MembersListProps> = ({
       dataColumns={userColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
-      containerRef={containerRef}
     />
   );
 };

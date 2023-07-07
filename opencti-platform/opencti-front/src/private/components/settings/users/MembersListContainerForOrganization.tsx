@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef } from 'react';
+import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -34,7 +34,6 @@ interface MembersListContainerProps {
 const MembersListContainerForOrganization: FunctionComponent<MembersListContainerProps> = ({ organizationId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const ref = useRef(null);
 
   const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<MembersListForOrganizationQuery$variables>(
     `view-${organizationId}-members`,
@@ -44,6 +43,10 @@ const MembersListContainerForOrganization: FunctionComponent<MembersListContaine
       sortBy: 'name',
       orderAsc: true,
       count: 25,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
     },
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;
@@ -122,7 +125,6 @@ const MembersListContainerForOrganization: FunctionComponent<MembersListContaine
             <MembersListForOrganization
               userColumns={userColumns}
               queryRef={membersQueryRef as PreloadedQuery<MembersListForOrganizationQuery>}
-              containerRef={ref}
               paginationOptions={paginationOptions}
             />
           </React.Suspense>
