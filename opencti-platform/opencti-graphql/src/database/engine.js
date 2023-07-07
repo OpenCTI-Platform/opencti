@@ -1045,7 +1045,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       },
     };
     if (opts.orderBy) {
-      const orderKey = `${opts.orderBy}.keyword`;
+      const orderCriteria = opts.orderBy;
+      const isDateOrNumber = isDateNumericOrBooleanAttribute(orderCriteria);
+      const orderKey = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
       body.sort = [{ [orderKey]: (opts.orderMode ?? 'asc') }];
     }
     const query = {

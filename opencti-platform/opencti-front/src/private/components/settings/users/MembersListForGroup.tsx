@@ -7,8 +7,8 @@ import {
 } from './__generated__/MembersListForGroupQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { MembersList_data$key } from './__generated__/MembersList_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { MembersListForGroup_data$key } from './__generated__/MembersListForGroup_data.graphql';
 
 export const membersListForGroupQuery = graphql`
     query MembersListForGroupQuery(
@@ -90,7 +90,7 @@ const MembersListForGroup: FunctionComponent<MembersListProps> = ({
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   MembersListForGroupQuery,
-  MembersList_data$key
+  MembersListForGroup_data$key
   >({
     linesQuery: membersListForGroupQuery,
     linesFragment: membersListForGroupFragment,

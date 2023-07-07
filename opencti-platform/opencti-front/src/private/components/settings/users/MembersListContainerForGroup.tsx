@@ -85,7 +85,7 @@ const MembersListContainerForGroup: FunctionComponent<MembersListContainerProps>
     created_at: {
       label: 'Creation date',
       width: '10%',
-      isSortable: false,
+      isSortable: true,
     },
   };
 
