@@ -11,6 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { treeMapOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -231,7 +232,15 @@ const StixCoreObjectsTreeMap = ({
             && props.stixCoreObjectsDistribution.length > 0
           ) {
             const data = props.stixCoreObjectsDistribution;
-            const chartData = data.map((n) => ({ x: n.label, y: n.value }));
+            const chartData = data.map((n) => ({
+              // eslint-disable-next-line no-nested-ternary
+              x: selection.attribute.endsWith('_id')
+                ? defaultValue(n.entity)
+                : selection.attribute === 'entity_type'
+                  ? t(`entity_${n.label}`)
+                  : n.label,
+              y: n.value,
+            }));
             const series = [{ data: chartData }];
             return (
               <Chart

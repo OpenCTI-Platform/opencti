@@ -8279,6 +8279,8 @@ const i18n = {
       Event_scope: 'Event scope',
       'Context_data.id': 'Related entity',
       User_id: 'User',
+      Group_ids: 'Group',
+      Organization_ids: 'Organization',
       EXTERNAL_IMPORT: 'Data import',
       INTERNAL_IMPORT_FILE: 'Files import',
       INTERNAL_EXPORT_FILE: 'Files export',

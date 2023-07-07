@@ -10997,6 +10997,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | CaseTemplate
   | EntitySetting
   | Creator
+  | Group
   | Workspace
 union StixObjectOrStixRelationship =
   MarkingDefinition

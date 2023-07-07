@@ -577,7 +577,7 @@ export const distributionHistory = async (context, user, types, args) => {
   });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'user_id' || field === 'context_data.id') {
+  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'user_id' || field === 'group_ids' || field === 'organization_ids' || field === 'context_data.id') {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   if (field === 'name') {

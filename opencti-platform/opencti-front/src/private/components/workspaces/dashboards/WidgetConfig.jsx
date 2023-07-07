@@ -1395,36 +1395,53 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                           />
                       )}
                       {dataSelection[i].perspective === 'audits' && (
-                        <Select
+                        <FormControl
+                          className={classes.formControl}
                           fullWidth={true}
-                          variant="standard"
-                          value={dataSelection[i].attribute ?? 'entity_type'}
-                          onChange={(event) => handleChangeDataValidationParameter(
-                            i,
-                            'attribute',
-                            event.target.value,
-                          )
-                          }
+                          style={{
+                            flex: 1,
+                          }}
                         >
-                          {[
-                            { value: 'entity_type' },
-                            { value: 'event_type' },
-                            {
-                              value: 'event_scope',
-                            },
-                            { value: 'context_data.id' },
-                            {
-                              value: 'user_id',
-                            },
-                          ].map((attribute) => (
-                            <MenuItem
-                              key={attribute.value}
-                              value={attribute.value}
-                            >
-                              {t(capitalizeFirstLetter(attribute.value))}
-                            </MenuItem>
-                          ))}
-                        </Select>
+                          <InputLabel variant="standard">
+                            {t('Attribute')}
+                          </InputLabel>
+                          <Select
+                            fullWidth={true}
+                            variant="standard"
+                            value={dataSelection[i].attribute ?? 'entity_type'}
+                            onChange={(event) => handleChangeDataValidationParameter(
+                              i,
+                              'attribute',
+                              event.target.value,
+                            )
+                            }
+                          >
+                            {[
+                              { value: 'entity_type' },
+                              { value: 'event_type' },
+                              {
+                                value: 'event_scope',
+                              },
+                              { value: 'context_data.id' },
+                              {
+                                value: 'user_id',
+                              },
+                              {
+                                value: 'group_ids',
+                              },
+                              {
+                                value: 'organization_ids',
+                              },
+                            ].map((attribute) => (
+                              <MenuItem
+                                key={attribute.value}
+                                value={attribute.value}
+                              >
+                                {t(capitalizeFirstLetter(attribute.value))}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                       )}
                       {dataSelection[i].perspective === 'relationships' && (
                         <FormControlLabel

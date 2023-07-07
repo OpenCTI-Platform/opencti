@@ -28,6 +28,7 @@ import { treeMapOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -184,6 +185,9 @@ const auditsTreeMapDistributionQuery = graphql`
         ... on StixCyberObservable {
           observable_value
         }
+        ... on Group {
+          name
+        }
       }
     }
   }
@@ -252,7 +256,17 @@ const AuditsTreeMap = ({
             && props.auditsDistribution.length > 0
           ) {
             const data = props.auditsDistribution;
-            const chartData = data.map((n) => ({ x: n.label, y: n.value }));
+            const chartData = data.map((n) => ({
+              x:
+                // eslint-disable-next-line no-nested-ternary
+                selection.attribute.endsWith('_id')
+                || selection.attribute.endsWith('_ids')
+                  ? defaultValue(n.entity)
+                  : selection.attribute === 'entity_type'
+                    ? t(`entity_${n.label}`)
+                    : n.label,
+              y: n.value,
+            }));
             const series = [{ data: chartData }];
             return (
               <Chart

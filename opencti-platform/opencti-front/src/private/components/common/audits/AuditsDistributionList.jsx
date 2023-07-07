@@ -252,6 +252,9 @@ const auditsDistributionListDistributionQuery = graphql`
         ... on Opinion {
           opinion
         }
+        ... on Group {
+          name
+        }
       }
     }
   }
@@ -322,15 +325,22 @@ const AuditsDistributionList = ({
               label:
                 // eslint-disable-next-line no-nested-ternary
                 selection.attribute.endsWith('_id')
+                || selection.attribute.endsWith('_ids')
                   ? defaultValue(o.entity)
                   : selection.attribute === 'entity_type'
                     ? t(`entity_${o.label}`)
                     : o.label,
               value: o.value,
-              id: selection.attribute.endsWith('_id') ? o.entity.id : null,
-              type: selection.attribute.endsWith('_id')
-                ? o.entity.entity_type
-                : o.label,
+              id:
+                selection.attribute.endsWith('_id')
+                || selection.attribute.endsWith('_ids')
+                  ? o.entity.id
+                  : null,
+              type:
+                selection.attribute.endsWith('_id')
+                || selection.attribute.endsWith('_ids')
+                  ? o.entity.entity_type
+                  : o.label,
             }));
             return (
               <div id="container" className={classes.container}>

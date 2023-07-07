@@ -210,6 +210,9 @@ const auditsHorizontalBarsDistributionQuery = graphql`
         ... on Opinion {
           opinion
         }
+        ... on Group {
+          name
+        }
       }
     }
   }
@@ -282,14 +285,17 @@ const AuditsHorizontalBars = ({
               x:
                 // eslint-disable-next-line no-nested-ternary
                 selection.attribute.endsWith('_id')
+                || selection.attribute.endsWith('_ids')
                   ? defaultValue(n.entity)
                   : selection.attribute === 'entity_type'
                     ? t(`entity_${n.label}`)
                     : n.label,
               y: n.value,
-              fillColor: selection.attribute.endsWith('_id')
-                ? itemColor(n.entity.entity_type)
-                : itemColor(n.label),
+              fillColor:
+                selection.attribute.endsWith('_id')
+                || selection.attribute.endsWith('_ids')
+                  ? itemColor(n.entity.entity_type)
+                  : itemColor(n.label),
             }));
             const chartData = [
               {

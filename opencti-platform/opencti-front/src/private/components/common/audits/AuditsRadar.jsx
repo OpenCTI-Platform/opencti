@@ -29,6 +29,7 @@ import { convertFilters } from '../../../../utils/ListParameters';
 import { truncate } from '../../../../utils/String';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -186,6 +187,9 @@ const auditsRadarDistributionQuery = graphql`
         ... on StixCyberObservable {
           observable_value
         }
+        ... on Group {
+          name
+        }
       }
     }
   }
@@ -260,7 +264,16 @@ const AuditsRadar = ({
                 data,
               },
             ];
-            const labels = props.auditsDistribution.map((n) => truncate(n.label, 20));
+            const labels = props.auditsDistribution.map((n) => truncate(
+              // eslint-disable-next-line no-nested-ternary
+              selection.attribute.endsWith('_id')
+                  || selection.attribute.endsWith('_ids')
+                ? defaultValue(n.entity)
+                : selection.attribute === 'entity_type'
+                  ? t(`entity_${n.label}`)
+                  : n.label,
+              20,
+            ));
             return (
               <Chart
                 options={radarChartOptions(theme, labels, [], true, false)}

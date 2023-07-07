@@ -193,6 +193,9 @@ const auditsDonutDistributionQuery = graphql`
         ... on Creator {
           name
         }
+        ... on Group {
+          name
+        }
       }
     }
   }
@@ -265,6 +268,7 @@ const AuditsDonut = ({
             const chartData = data.map((n) => n.value);
             // eslint-disable-next-line no-nested-ternary
             const labels = data.map((n) => (selection.attribute.endsWith('_id')
+              || selection.attribute.endsWith('_ids')
               ? defaultValue(n.entity)
               : selection.attribute === 'entity_type'
                 ? t(`entity_${n.label}`)
