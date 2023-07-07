@@ -13,8 +13,6 @@ import {
   ExtensionOutlined,
   FactCheckOutlined,
   FlagOutlined,
-  GroupOutlined,
-  GroupsOutlined,
   HelpOutlined,
   LayersClearOutlined,
   LocalOfferOutlined,
@@ -44,6 +42,7 @@ import {
   WorkOutline,
   WorkspacesOutlined,
   SafetyCheckOutlined,
+  SecurityOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -68,6 +67,8 @@ import {
   ShieldSearch,
   VectorRadius,
   ClipboardTextClockOutline,
+  AccountMultipleOutline,
+  AccountGroupOutline,
 } from 'mdi-material-ui';
 import { itemColor } from '../utils/Colors';
 
@@ -173,13 +174,18 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Course-Of-Action':
       return <ProgressWrench style={style} fontSize={fontSize} role="img" />;
     case 'Role':
+      return <SecurityOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Individual':
     case 'User':
       return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Group':
-      return <GroupOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <AccountGroupOutline style={style} fontSize={fontSize} role="img" />
+      );
     case 'all-users':
-      return <GroupsOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <AccountGroupOutline style={style} fontSize={fontSize} role="img" />
+      );
     case 'Organization':
     case 'Identity':
       return (
@@ -212,10 +218,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
     case 'Malware-Analysis':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
-    case 'Threat-Actor':
-      return <LaptopAccount style={style} fontSize={fontSize} role="img" />;
     case 'Threat-Actor-Group':
-      return <LaptopAccount style={style} fontSize={fontSize} role="img" />;
+      return (
+        <AccountMultipleOutline style={style} fontSize={fontSize} role="img" />
+      );
     case 'Threat-Actor-Individual':
       return <LaptopAccount style={style} fontSize={fontSize} role="img" />;
     case 'Tool':

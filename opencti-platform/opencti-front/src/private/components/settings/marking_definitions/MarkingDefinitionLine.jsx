@@ -6,11 +6,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert, CenterFocusStrongOutlined } from '@mui/icons-material';
+import { MoreVert } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import MarkingDefinitionPopover from './MarkingDefinitionPopover';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -49,11 +50,8 @@ class MarkingDefinitionLineComponent extends Component {
     const { fd, classes, node, dataColumns, paginationOptions } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
-        <ListItemIcon
-          style={{ color: node.x_opencti_color }}
-          classes={{ root: classes.itemIcon }}
-        >
-          <CenterFocusStrongOutlined />
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type="Marking-Definition" color={node.x_opencti_color} />
         </ListItemIcon>
         <ListItemText
           primary={

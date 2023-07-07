@@ -7,11 +7,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
-import { Launch } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import KillChainPhasePopover from './KillChainPhasePopover';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -51,7 +51,7 @@ class KillChainPhaseLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Launch />
+          <ItemIcon type="Kill-Chain-Phase" />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
-import { LaptopAccount } from 'mdi-material-ui';
+import { AccountMultipleOutline } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
@@ -50,7 +50,7 @@ const TopMenuThreatActorGroup = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <LaptopAccount className={classes.icon} fontSize="small" />
+        <AccountMultipleOutline className={classes.icon} fontSize="small" />
         {t('Threat actors (group)')}
       </Button>
       <ArrowForwardIosOutlined

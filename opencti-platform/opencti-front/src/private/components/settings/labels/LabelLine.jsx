@@ -5,12 +5,12 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
-import { LabelOutline } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import { useFormatter } from '../../../../components/i18n';
 import LabelPopover from './LabelPopover';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -74,8 +74,8 @@ const LabelLineComponent = ({
           disableRipple={true}
         />
       </ListItemIcon>
-      <ListItemIcon style={{ color: node.color }}>
-        <LabelOutline />
+      <ListItemIcon>
+        <ItemIcon type="Label" color={node.color} />
       </ListItemIcon>
       <ListItemText
         primary={

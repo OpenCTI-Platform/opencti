@@ -990,6 +990,28 @@ const useSearchEntities = ({
             unionSetEntities('source', sourceEntities);
           });
         break;
+      case 'x_opencti_main_observable_type':
+        fetchQuery(attributesSearchQuery, {
+          attributeName: 'x_opencti_main_observable_type',
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const mainObservableTypeEntities = (
+              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.value,
+              type: 'Vocabulary',
+            }));
+            unionSetEntities(
+              'x_opencti_main_observable_type',
+              mainObservableTypeEntities,
+            );
+          });
+        break;
       case 'indicator_types':
         fetchQuery(vocabularySearchQuery, {
           category: 'indicator_type_ov',

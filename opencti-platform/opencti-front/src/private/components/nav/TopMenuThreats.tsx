@@ -1,7 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ChessKnight, DiamondOutline, LaptopAccount } from 'mdi-material-ui';
+import {
+  AccountMultipleOutline,
+  ChessKnight,
+  DiamondOutline,
+  LaptopAccount,
+} from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
@@ -32,23 +37,19 @@ const TopMenuThreats = () => {
           component={Link}
           to="/dashboard/threats/threat_actors_group"
           variant={
-            location.pathname.includes(
-              '/dashboard/threats/threat_actors_group',
-            )
+            location.pathname.includes('/dashboard/threats/threat_actors_group')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes(
-              '/dashboard/threats/threat_actors_group',
-            )
+            location.pathname.includes('/dashboard/threats/threat_actors_group')
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
         >
-          <LaptopAccount className={classes.icon} fontSize="small" />
+          <AccountMultipleOutline className={classes.icon} fontSize="small" />
           {t('Threat actors (group)')}
         </Button>
       )}
@@ -82,17 +83,13 @@ const TopMenuThreats = () => {
           component={Link}
           to="/dashboard/threats/intrusion_sets"
           variant={
-            location.pathname.includes(
-              '/dashboard/threats/intrusion_sets',
-            )
+            location.pathname.includes('/dashboard/threats/intrusion_sets')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes(
-              '/dashboard/threats/intrusion_sets',
-            )
+            location.pathname.includes('/dashboard/threats/intrusion_sets')
               ? 'secondary'
               : 'primary'
           }

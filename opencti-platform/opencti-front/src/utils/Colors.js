@@ -62,9 +62,9 @@ export const itemColor = (type, dark = false, reversed = false) => {
       return '#3f51b5';
     case 'Campaign':
       if (dark) {
-        return '#4a148c';
+        return '#8e24aa';
       }
-      return '#9c27b0';
+      return '#ab47bc';
     case 'Note':
       if (dark) {
         return '#43a047';
@@ -181,6 +181,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#880e4f';
       }
       return '#e91e63';
+    case 'Theat-Actor-Individual':
+      if (dark) {
+        return '#4a148c';
+      }
+      return '#7b1fa2';
     case 'Tool':
       if (dark) {
         return '#1b5e20';

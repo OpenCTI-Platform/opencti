@@ -9,13 +9,13 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import {
   CheckCircleOutlined,
   DoNotDisturbOnOutlined,
-  GroupOutlined,
   KeyboardArrowRightOutlined,
 } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -60,11 +60,11 @@ class GroupLineComponent extends Component {
         to={`/dashboard/settings/accesses/groups/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <GroupOutlined />
+          <ItemIcon type="Group" />
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
+            <>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
@@ -103,7 +103,7 @@ class GroupLineComponent extends Component {
               >
                 {fd(node.updated_at)}
               </div>
-            </div>
+            </>
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>

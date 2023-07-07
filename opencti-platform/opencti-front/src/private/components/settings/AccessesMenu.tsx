@@ -1,12 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import {
   CenterFocusStrongOutlined,
-  GroupOutlined,
   PermIdentityOutlined,
   ReceiptOutlined,
   LocalPoliceOutlined,
-  Security as SecurityIcon, AccountBalanceOutlined,
+  SecurityOutlined,
+  AccountBalanceOutlined,
 } from '@mui/icons-material';
+import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, {
   SETTINGS_SETACCESSES,
@@ -19,12 +20,12 @@ const AccessesMenu: FunctionComponent = () => {
     {
       path: '/dashboard/settings/accesses/roles',
       label: 'Roles',
-      icon: <SecurityIcon fontSize="medium" />,
+      icon: <SecurityOutlined fontSize="medium" />,
     },
     {
       path: '/dashboard/settings/accesses/groups',
       label: 'Groups',
-      icon: <GroupOutlined fontSize="medium" />,
+      icon: <AccountGroupOutline fontSize="medium" />,
     },
     {
       path: '/dashboard/settings/accesses/users',

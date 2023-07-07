@@ -284,6 +284,7 @@ const StreamCollectionEditionContainer = (props) => {
                     'confidence',
                     'indicator_types',
                     'pattern_type',
+                    'x_opencti_main_observable_type',
                     'fromId',
                     'toId',
                     'fromTypes',

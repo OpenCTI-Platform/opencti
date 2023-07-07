@@ -51,6 +51,7 @@ export const WORKFLOW_FILTER = 'x_opencti_workflow_id';
 export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
 export const PATTERN_FILTER = 'pattern_type';
+export const MAIN_OBSERVABLE_TYPE_FILTER = 'x_opencti_main_observable_type';
 export const RELATION_FROM_TYPES = 'fromTypes';
 export const RELATION_TO_TYPES = 'toTypes';
 
@@ -470,6 +471,19 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
         }
         // If pattern is not available but must be
         if (operator === 'eq' && !isPatternFound) {
+          return false;
+        }
+      }
+      // Main Observable Filter filtering
+      if (key === MAIN_OBSERVABLE_TYPE_FILTER) {
+        const currentMainObservableType = stix.x_opencti_main_observable_type;
+        const isMainObservableTypeFound = values.map((v) => v.id).includes(currentMainObservableType);
+        // If main observable type is available but must not be
+        if (operator === 'not_eq' && isMainObservableTypeFound) {
+          return false;
+        }
+        // If main observable type is not available but must be
+        if (operator === 'eq' && !isMainObservableTypeFound) {
           return false;
         }
       }

@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -57,11 +58,11 @@ class RoleLineComponent extends Component {
         to={`/dashboard/settings/accesses/roles/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Security />
+          <ItemIcon type="Role" />
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
+            <>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
@@ -77,10 +78,12 @@ class RoleLineComponent extends Component {
                 }}
                 render={({ props }) => {
                   if (props) {
-                    const groupIds = props.groups.edges
-                      .map((group) => (((group.node.roles
-                        .map((role) => role.id)).includes(node.id)) ? group.node.id : null));
-                    const numberOfGroups = groupIds.filter((id) => id !== null).length;
+                    const groupIds = props.groups.edges.map((group) => (group.node.roles.map((role) => role.id).includes(node.id)
+                      ? group.node.id
+                      : null));
+                    const numberOfGroups = groupIds.filter(
+                      (id) => id !== null,
+                    ).length;
                     return (
                       <div
                         className={classes.bodyItem}
@@ -94,8 +97,7 @@ class RoleLineComponent extends Component {
                     <div
                       className={classes.bodyItem}
                       style={{ width: dataColumns.groups.width }}
-                    >
-                    </div>
+                    ></div>
                   );
                 }}
               />
@@ -111,7 +113,7 @@ class RoleLineComponent extends Component {
               >
                 {fd(node.updated_at)}
               </div>
-            </div>
+            </>
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
