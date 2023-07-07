@@ -51,6 +51,7 @@ import {
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../schema/stixDomainObject';
 
 // Outcomes
 
@@ -220,18 +221,19 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
   return triggerId;
 };
 export const triggersKnowledgeFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersKnowledgeArgs) => {
-  let queryArgs = { ...opts };
   // key is a string[] because of the resolver, we have updated the keys
   const userIdFilter = opts.filters?.find((f) => (f.key as string[]).includes('authorized_members.id'));
+  const finalFilter = [];
+  finalFilter.push(...(opts.filters ?? []));
+  finalFilter.push({ key: ['trigger_scope'], values: ['knowledge'] });
+  let adminBypassUserAccess = false;
   if (userIdFilter) {
     if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
       throw UnsupportedError(`${TriggerFilter.UserIds} filter is only accessible for administration users (set access)`);
     }
-    queryArgs = {
-      ...queryArgs,
-      adminBypassUserAccess: true
-    };
+    adminBypassUserAccess = true;
   }
+  const queryArgs = { ...opts, adminBypassUserAccess, filters: finalFilter };
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 

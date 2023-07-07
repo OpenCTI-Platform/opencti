@@ -87,10 +87,7 @@ describe('Trigger resolver standard behavior', () => {
         instance_trigger: false,
       },
     };
-    const trigger = await queryAsAdmin({
-      query: CREATE_LIVE_QUERY,
-      variables: TRIGGER_TO_CREATE,
-    });
+    const trigger = await queryAsAdmin({ query: CREATE_LIVE_QUERY, variables: TRIGGER_TO_CREATE });
     expect(trigger).not.toBeNull();
     expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
     expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('live trigger');
@@ -108,10 +105,7 @@ describe('Trigger resolver standard behavior', () => {
         outcomes: [],
       },
     };
-    const digest = await queryAsAdmin({
-      query: CREATE_DIGEST_QUERY,
-      variables: DIGEST_TO_CREATE,
-    });
+    const digest = await queryAsAdmin({ query: CREATE_DIGEST_QUERY, variables: DIGEST_TO_CREATE });
     expect(digest).not.toBeNull();
     expect(digest.data.triggerKnowledgeDigestAdd).not.toBeNull();
     expect(digest.data.triggerKnowledgeDigestAdd.name).toEqual('regular digest');
@@ -136,51 +130,42 @@ describe('Trigger resolver standard behavior', () => {
         instance_trigger: false,
       },
     };
-    const trigger = await securityQuery({
-      query: CREATE_LIVE_QUERY,
-      variables: TRIGGER_TO_CREATE_FOR_USER,
-    });
+    const trigger = await securityQuery({ query: CREATE_LIVE_QUERY, variables: TRIGGER_TO_CREATE_FOR_USER });
     expect(trigger).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd.name).toEqual('trigger');
-    triggerUserInternalId = trigger.data.triggerLiveAdd.id;
+    expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('trigger');
+    triggerUserInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('should list triggers', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(3);
+    expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);
   });
   it('security user should list Admin triggers', async () => {
     const queryResult = await securityQuery({ query: LIST_QUERY, variables: { filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }] } });
-    expect(queryResult.data.triggers.edges.length).toEqual(3);
+    expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);
   });
   it('should update trigger', async () => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: triggerInternalId, input: { key: 'name', value: ['live trigger - updated'] } },
     });
-    expect(queryResult.data.triggerFieldPatch.name).toEqual('live trigger - updated');
+    expect(queryResult.data.triggerKnowledgeFieldPatch.name).toEqual('live trigger - updated');
   });
   it('should trigger deleted', async () => {
     // Delete the trigger
-    await queryAsAdmin({
-      query: DELETE_QUERY,
-      variables: { id: triggerInternalId },
-    });
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: triggerInternalId } });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: triggerInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   it('should regular digest deleted', async () => {
     // Delete the digest
-    await queryAsAdmin({
-      query: DELETE_QUERY,
-      variables: { id: digestInternalId },
-    });
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: digestInternalId } });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: digestInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   it('security user should Admin trigger deleted', async () => {
     // Delete the trigger
@@ -191,7 +176,7 @@ describe('Trigger resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerUserInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   // endregion
   // region Group trigger
@@ -232,10 +217,7 @@ describe('Trigger resolver standard behavior', () => {
   });
   it('security user should group trigger deleted', async () => {
     // Delete the trigger
-    await securityQuery({
-      query: DELETE_QUERY,
-      variables: { id: triggerGroupInternalId },
-    });
+    await securityQuery({ query: DELETE_QUERY, variables: { id: triggerGroupInternalId } });
     // Verify is no longer found
     const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerGroupInternalId } });
     expect(queryResult).not.toBeNull();
@@ -280,10 +262,7 @@ describe('Trigger resolver standard behavior', () => {
   });
   it('security user should organization trigger deleted', async () => {
     // Delete the trigger
-    await securityQuery({
-      query: DELETE_QUERY,
-      variables: { id: triggerOrganizationInternalId },
-    });
+    await securityQuery({ query: DELETE_QUERY, variables: { id: triggerOrganizationInternalId } });
     // Verify is no longer found
     const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerOrganizationInternalId } });
     expect(queryResult).not.toBeNull();

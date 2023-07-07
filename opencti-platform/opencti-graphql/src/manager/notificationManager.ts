@@ -22,7 +22,7 @@ import {
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser } from '../types/user';
 import { utcDate } from '../utils/format';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, filtersToJson } from '../database/utils';
 import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-common';
 import {
   BasicStoreEntityDigestTrigger,
@@ -507,8 +507,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
       && translatedType !== EVENT_TYPE_UPDATE // if displayed type is update, we should have notifications in case a listened instance is in the patch (= case 1.2.)
   ) {
     // User should be notified of the relationship creation / deletion / newly visible / no more visible
-    const message = await generateNotificationMessageForInstance(context, user, data);
-    return message;
+    return generateNotificationMessageForInstance(context, user, data);
   }
   // -- 02. translatedType = update (i.e. event type = update that modify a listened ref and doesn't modify the rights)
   if (translatedType === EVENT_TYPE_UPDATE) {
@@ -517,8 +516,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
     }
     const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch);
     if (listenedInstancesInPatchIds.length > 0) { // 2.a.--> It's the patch that contains instance(s) of the trigger filters
-      const message = await generateNotificationMessageForInstanceWithRefsUpdate(context, user, data, listenedInstancesInPatchIds);
-      return message;
+      return generateNotificationMessageForInstanceWithRefsUpdate(context, user, data, listenedInstancesInPatchIds);
     }
     // the modification may be a modification of rights (the instance is newly/no-more visible) -> we go in case 3.
   }
@@ -533,8 +531,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
     // We need to filter these instances to keep those that are part of the event refs or of the relationship from/to
     const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
     if (listenedInstancesInRefsEventIds.length > 0) {
-      const message = await generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds);
-      return message;
+      return generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds);
     }
   }
   return undefined; // filtered event (ex: update of an instance containing a listened ref) : no notification
@@ -549,7 +546,7 @@ export const buildTargetEvents = async (
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
   const { event_types, outcomes, instance_trigger, filters } = trigger;
-  const frontendFilters = JSON.parse(filters);
+  const frontendFilters = filtersToJson(filters);
   let triggerEventTypes = event_types;
   if (instance_trigger && event_types.includes(EVENT_TYPE_UPDATE)) {
     triggerEventTypes = useSideEventMatching

@@ -38,6 +38,7 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixObject } from '../types/stix-common';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import type { BasicStoreSettings } from '../types/settings';
+import { filtersToJson } from '../database/utils';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -55,9 +56,9 @@ const platformResolvedFilters = (context: AuthContext) => {
   const reloadFilters = async () => {
     const filteringIds = [];
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
-    filteringIds.push(...streams.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
+    filteringIds.push(...streams.map((s) => extractFilterIdsToResolve(filtersToJson(s.filters))).flat());
     const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
-    filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
+    filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(filtersToJson(s.filters))).flat());
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
       const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
