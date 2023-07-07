@@ -15370,6 +15370,15 @@ export type OrganizationJobsArgs = {
 };
 
 
+export type OrganizationMembersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<UsersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+};
+
+
 export type OrganizationNotesArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -32362,7 +32371,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<OrganizationJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType>;
+  members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<OrganizationMembersArgs>>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OrganizationNotesArgs>>;

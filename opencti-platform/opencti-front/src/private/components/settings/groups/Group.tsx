@@ -25,7 +25,7 @@ import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLine
 import AccessesMenu from '../AccessesMenu';
 import Triggers from '../common/Triggers';
 import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
-import MembersListContainer from '../users/MembersListContainer';
+import MembersListContainerForGroup from '../users/MembersListContainerForGroup';
 import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupEdition from './GroupEdition';
 import GroupPopover from './GroupPopover';
@@ -345,7 +345,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           style={{ marginTop: 10, marginLeft: 0 }}
         >
           <Triggers recipientId={group.id} filter={filter} />
-          <MembersListContainer containerId={group.id} containerType={'group'} />
+          <MembersListContainerForGroup groupId={group.id} />
         </Grid>
       </Grid>
       <Fab

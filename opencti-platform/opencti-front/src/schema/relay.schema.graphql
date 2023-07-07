@@ -3507,7 +3507,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_organization_type: String
   x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
-  members: UserConnection
+  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace

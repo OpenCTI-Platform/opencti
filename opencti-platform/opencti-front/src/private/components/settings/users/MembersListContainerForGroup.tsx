@@ -3,10 +3,11 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
+import { PreloadedQuery } from 'react-relay';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import MembersList, { membersListForGroupQuery } from './MembersList';
+import MembersListForGroup, { membersListForGroupQuery } from './MembersListForGroup';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -27,19 +28,18 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 interface MembersListContainerProps {
-  containerId: string;
-  containerType: string;
+  groupId: string;
 }
 
-const MembersListContainer: FunctionComponent<MembersListContainerProps> = ({ containerId, containerType }) => {
+const MembersListContainerForGroup: FunctionComponent<MembersListContainerProps> = ({ groupId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const ref = useRef(null);
 
   const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<MembersListForGroupQuery$variables>(
-    `view-${containerId}-members`,
+    `view-${groupId}-members`,
     {
-      id: containerId,
+      id: groupId,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -51,13 +51,10 @@ const MembersListContainer: FunctionComponent<MembersListContainerProps> = ({ co
     ...paginationOptionsFromStorage,
     count: 25,
   };
-  let membersQueryRef;
-  if (containerType === 'group') { // can be extended with containerType='organization' when organization overview have a member tab
-    membersQueryRef = useQueryLoading<MembersListForGroupQuery>(
-      membersListForGroupQuery,
-      paginationOptions,
-    );
-  }
+  const membersQueryRef = useQueryLoading<MembersListForGroupQuery>(
+    membersListForGroupQuery,
+    paginationOptions,
+  );
 
   const userColumns = {
     name: {
@@ -122,9 +119,9 @@ const MembersListContainer: FunctionComponent<MembersListContainerProps> = ({ co
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <MembersList
+            <MembersListForGroup
               userColumns={userColumns}
-              queryRef={membersQueryRef}
+              queryRef={membersQueryRef as PreloadedQuery<MembersListForGroupQuery>}
               containerRef={ref}
               paginationOptions={paginationOptions}
             />
@@ -135,4 +132,4 @@ const MembersListContainer: FunctionComponent<MembersListContainerProps> = ({ co
   );
 };
 
-export default MembersListContainer;
+export default MembersListContainerForGroup;

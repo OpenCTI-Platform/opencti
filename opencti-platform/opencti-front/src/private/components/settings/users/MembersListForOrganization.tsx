@@ -1,17 +1,17 @@
 import React, { FunctionComponent, MutableRefObject } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { UserLine, UserLineDummy } from './UserLine';
-import {
-  MembersListForGroupQuery,
-  MembersListForGroupQuery$variables,
-} from './__generated__/MembersListForGroupQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { MembersList_data$key } from './__generated__/MembersList_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import {
+  MembersListForOrganizationQuery,
+  MembersListForOrganizationQuery$variables,
+} from './__generated__/MembersListForOrganizationQuery.graphql';
+import { MembersListForOrganization_data$key } from './__generated__/MembersListForOrganization_data.graphql';
 
-export const membersListForGroupQuery = graphql`
-    query MembersListForGroupQuery(
+export const membersListForOrganizationQuery = graphql`
+    query MembersListForOrganizationQuery(
         $id: String!
         $search: String
         $count: Int!
@@ -19,7 +19,7 @@ export const membersListForGroupQuery = graphql`
         $orderBy: UsersOrdering
         $orderMode: OrderingMode
     ) {
-        ...MembersList_data
+        ...MembersListForOrganization_data
         @arguments(
             id: $id
             search: $search
@@ -31,8 +31,8 @@ export const membersListForGroupQuery = graphql`
     }
 `;
 
-const membersListFragment = graphql`
-    fragment MembersList_data on Query
+const membersListForOrganizationFragment = graphql`
+    fragment MembersListForOrganization_data on Query
     @argumentDefinitions(
         id: { type: "String!" }
         search: { type: "String" }
@@ -41,8 +41,8 @@ const membersListFragment = graphql`
         orderBy: { type: "UsersOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
     )
-    @refetchable(queryName: "MembersListRefetchQuery") {
-        group(id: $id) {
+    @refetchable(queryName: "MembersListForOrganizationRefetchQuery") {
+        organization(id: $id) {
             id
             name
             members(
@@ -51,7 +51,7 @@ const membersListFragment = graphql`
                 after: $cursor
                 orderBy: $orderBy
                 orderMode: $orderMode
-            ) @connection(key: "Pagination_members") {
+            ) @connection(key: "Pagination_organization_members") {
                 edges {
                     node {
                         id
@@ -75,28 +75,28 @@ const membersListFragment = graphql`
 
 interface MembersListProps {
   userColumns: DataColumns,
-  queryRef: PreloadedQuery<MembersListForGroupQuery>;
+  queryRef: PreloadedQuery<MembersListForOrganizationQuery>;
   containerRef: MutableRefObject<null>;
-  paginationOptions: MembersListForGroupQuery$variables;
+  paginationOptions: MembersListForOrganizationQuery$variables;
 }
 
 const nbOfRowsToLoad = 50;
 
-const MembersList: FunctionComponent<MembersListProps> = ({
+const MembersListForOrganization: FunctionComponent<MembersListProps> = ({
   userColumns,
   queryRef,
   containerRef,
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  MembersListForGroupQuery,
-  MembersList_data$key
+  MembersListForOrganizationQuery,
+  MembersListForOrganization_data$key
   >({
-    linesQuery: membersListForGroupQuery,
-    linesFragment: membersListFragment,
+    linesQuery: membersListForOrganizationQuery,
+    linesFragment: membersListForOrganizationFragment,
     queryRef,
   });
-  const membersData = data.group?.members;
+  const membersData = data.organization?.members;
   return (
     <ListLinesContent
       initialLoading={!data}
@@ -115,4 +115,4 @@ const MembersList: FunctionComponent<MembersListProps> = ({
   );
 };
 
-export default MembersList;
+export default MembersListForOrganization;

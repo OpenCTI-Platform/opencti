@@ -18,7 +18,7 @@ const organizationResolvers = {
   },
   Organization: {
     sectors: (organization, _, context) => sectorsLoader.load(organization.id, context, context.user),
-    members: (organization, _, context) => membersLoader.load(organization.id, context, context.user),
+    members: (organization, args, context) => membersLoader.load(organization.id, context, context.user, args),
     subOrganizations: (organization, _, context) => subOrganizationsLoader.load(organization.id, context, context.user),
     parentOrganizations: (organization, _, context) => parentOrganizationsLoader.load(organization.id, context, context.user),
     default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),

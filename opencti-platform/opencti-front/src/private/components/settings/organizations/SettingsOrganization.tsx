@@ -21,7 +21,7 @@ import AccessesMenu from '../AccessesMenu';
 import SettingsOrganizationDetails from './SettingsOrganizationDetails';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import MembersListContainer from '../users/MembersListContainer';
+import MembersListContainerForOrganization from '../users/MembersListContainerForOrganization';
 import Triggers from '../common/Triggers';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
@@ -111,8 +111,6 @@ const SettingsOrganization = ({
     settingsOrganizationFragment,
     organizationData,
   );
-  const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
-  const members = usersSort(organization.members?.edges ?? []);
   const subOrganizations = organization.subOrganizations?.edges ?? [];
   const parentOrganizations = organization.parentOrganizations?.edges ?? [];
   const canAccessDashboard = (
@@ -239,7 +237,7 @@ const SettingsOrganization = ({
           </div>
         </Grid>
         <Triggers recipientId={organization.id} filter="organization_ids" />
-        <MembersListContainer members={members} />
+        <MembersListContainerForOrganization organizationId={organization.id} />
       </Grid>
     </div>
   );
