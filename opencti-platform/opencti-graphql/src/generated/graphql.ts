@@ -24632,7 +24632,7 @@ export type Trigger = BasicObject & InternalObject & {
 
 export type TriggerConnection = {
   __typename?: 'TriggerConnection';
-  edges?: Maybe<Array<Maybe<TriggerEdge>>>;
+  edges: Array<TriggerEdge>;
   pageInfo: PageInfo;
 };
 
@@ -27413,7 +27413,7 @@ export type ResolversTypes = ResolversObject<{
   ToolsFiltering: ToolsFiltering;
   ToolsOrdering: ToolsOrdering;
   Trigger: ResolverTypeWrapper<BasicStoreEntityTrigger>;
-  TriggerConnection: ResolverTypeWrapper<Omit<TriggerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['TriggerEdge']>>> }>;
+  TriggerConnection: ResolverTypeWrapper<Omit<TriggerConnection, 'edges'> & { edges: Array<ResolversTypes['TriggerEdge']> }>;
   TriggerDigestAddInput: TriggerDigestAddInput;
   TriggerEdge: ResolverTypeWrapper<Omit<TriggerEdge, 'node'> & { node: ResolversTypes['Trigger'] }>;
   TriggerEventType: TriggerEventType;
@@ -28053,7 +28053,7 @@ export type ResolversParentTypes = ResolversObject<{
   ToolEditMutations: Omit<ToolEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Tool']>, contextPatch?: Maybe<ResolversParentTypes['Tool']>, fieldPatch?: Maybe<ResolversParentTypes['Tool']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Tool']> };
   ToolsFiltering: ToolsFiltering;
   Trigger: BasicStoreEntityTrigger;
-  TriggerConnection: Omit<TriggerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['TriggerEdge']>>> };
+  TriggerConnection: Omit<TriggerConnection, 'edges'> & { edges: Array<ResolversParentTypes['TriggerEdge']> };
   TriggerDigestAddInput: TriggerDigestAddInput;
   TriggerEdge: Omit<TriggerEdge, 'node'> & { node: ResolversParentTypes['Trigger'] };
   TriggerLiveAddInput: TriggerLiveAddInput;
@@ -34799,7 +34799,7 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
 }>;
 
 export type TriggerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TriggerConnection'] = ResolversParentTypes['TriggerConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['TriggerEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['TriggerEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

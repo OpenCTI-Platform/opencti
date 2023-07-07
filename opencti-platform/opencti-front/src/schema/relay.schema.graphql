@@ -9381,7 +9381,7 @@ type Trigger implements InternalObject & BasicObject {
 
 type TriggerConnection {
   pageInfo: PageInfo!
-  edges: [TriggerEdge]
+  edges: [TriggerEdge!]!
 }
 
 type TriggerEdge {
