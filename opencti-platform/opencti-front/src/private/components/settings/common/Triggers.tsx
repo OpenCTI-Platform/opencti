@@ -75,6 +75,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const paginationOptions = {
     ...paginationOptionsFromStorage,
     count: 25,
+    includeAuthorities: true,
     filters: [{ key: [filter], values: [recipientId] }],
   };
   const queryRef = useQueryLoading<TriggersLinesPaginationQuery>(
@@ -180,7 +181,6 @@ const Triggers: FunctionComponent<TriggersProps> = ({
             }
           >
             <TriggersLines
-              adminByPass
               containerRef={ref}
               queryRef={queryRef}
               paginationOptions={paginationOptions}

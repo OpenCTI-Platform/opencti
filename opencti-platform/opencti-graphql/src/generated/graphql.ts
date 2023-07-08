@@ -18838,11 +18838,11 @@ export type QueryTriggersActivityArgs = {
 
 
 export type QueryTriggersKnowledgeArgs = {
-  adminBypassUserAccess?: InputMaybe<Scalars['Boolean']>;
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<TriggersFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']>;
   orderBy?: InputMaybe<TriggersOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
@@ -18922,7 +18922,6 @@ export type QueryWorkspaceArgs = {
 
 
 export type QueryWorkspacesArgs = {
-  adminBypassUserAccess?: InputMaybe<Scalars['Boolean']>;
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<WorkspacesFiltering>>;
@@ -24690,6 +24689,7 @@ export type Trigger = BasicObject & InternalObject & {
   filters?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   instance_trigger?: Maybe<Scalars['Boolean']>;
+  isDirectAdministrator?: Maybe<Scalars['Boolean']>;
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   outcomes?: Maybe<Array<Scalars['StixRef']>>;
@@ -34915,6 +34915,7 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   instance_trigger?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  isDirectAdministrator?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   outcomes?: Resolver<Maybe<Array<ResolversTypes['StixRef']>>, ParentType, ContextType>;

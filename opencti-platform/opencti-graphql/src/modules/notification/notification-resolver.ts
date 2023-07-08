@@ -25,7 +25,7 @@ import {
   ENTITY_TYPE_NOTIFICATION,
   NOTIFICATION_NUMBER
 } from './notification-types';
-import { getUserAccessRight } from '../../utils/access';
+import { getUserAccessRight, isDirectAdministrator } from '../../utils/access';
 
 const notificationResolvers: Resolvers = {
   Query: {
@@ -43,6 +43,7 @@ const notificationResolvers: Resolvers = {
   },
   Trigger: {
     triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids),
+    isDirectAdministrator: (trigger, _, context) => isDirectAdministrator(context.user, trigger),
     currentUserAccessRight: (trigger, _, context) => getUserAccessRight(context.user, trigger),
     resolved_instance_filters: (trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger, _, context) => {
       return resolvedInstanceFiltersGet(context, context.user, trigger);

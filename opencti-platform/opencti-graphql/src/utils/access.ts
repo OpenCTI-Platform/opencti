@@ -268,8 +268,19 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
 };
 
 // user access methods
+export const isDirectAdministrator = (user: AuthUser, element: any) => {
+  const elementAccessIds = element.authorized_members
+    .filter((u: AuthorizedMember) => u.access_right === MEMBER_ACCESS_RIGHT_ADMIN)
+    .map((u: AuthorizedMember) => u.id);
+  const userMemberAccessIds = computeUserMemberAccessIds(user);
+  return elementAccessIds.some((a: string) => userMemberAccessIds.includes(a));
+};
 export const getUserAccessRight = (user: AuthUser, element: any) => {
   if (!element.authorized_members) { // no restricted user access on element
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  // If user have extended capabilities, is an admin
+  if ((element.authorized_authorities ?? []).some((c: string) => isUserHasCapability(user, c))) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
   const accessMembers = [...element.authorized_members];

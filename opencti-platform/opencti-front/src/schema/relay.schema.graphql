@@ -7983,7 +7983,7 @@ type Query {
   narrative(id: String!): Narrative
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering!], filterMode: FilterMode, search: String): NarrativeConnection
   triggerKnowledge(id: String!): Trigger
-  triggersKnowledge(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, adminBypassUserAccess: Boolean, search: String): TriggerConnection
+  triggersKnowledge(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): TriggerConnection
   triggerActivity(id: String!): Trigger
   triggersActivity(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggerActivityFiltering!], filterMode: FilterMode, search: String): TriggerConnection
   notification(id: String!): Notification
@@ -8024,7 +8024,7 @@ type Query {
   entitySettingByType(targetType: String!): EntitySetting
   entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: [EntitySettingsFiltering!], filterMode: FilterMode, search: String): EntitySettingConnection
   workspace(id: String!): Workspace
-  workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: [WorkspacesFiltering!], filterMode: FilterMode, adminBypassUserAccess: Boolean, search: String): WorkspaceConnection
+  workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: [WorkspacesFiltering!], filterMode: FilterMode, search: String): WorkspaceConnection
   malwareAnalysis(id: String!): MalwareAnalysis
   malwareAnalyses(first: Int, after: ID, orderBy: MalwareAnalysesOrdering, orderMode: OrderingMode, filters: [MalwareAnalysesFiltering!], filterMode: FilterMode, search: String): MalwareAnalysisConnection
   threatActorIndividual(id: String!): ThreatActorIndividual
@@ -9416,6 +9416,7 @@ type Trigger implements InternalObject & BasicObject {
   triggers: [Trigger]
   period: DigestPeriod
   trigger_time: String
+  isDirectAdministrator: Boolean
   currentUserAccessRight: String
   instance_trigger: Boolean
   resolved_instance_filters: [ResolvedInstanceFilter!]

@@ -82,6 +82,7 @@ type Trigger implements InternalObject & BasicObject {
     triggers: [Trigger]
     period: DigestPeriod
     trigger_time: String
+    isDirectAdministrator: Boolean
     currentUserAccessRight: String
     instance_trigger: Boolean
     resolved_instance_filters: [ResolvedInstanceFilter!]
@@ -196,7 +197,7 @@ type Query {
         orderMode: OrderingMode
         filters: [TriggersFiltering!]
         filterMode: FilterMode
-        adminBypassUserAccess: Boolean
+        includeAuthorities: Boolean
         search: String
     ): TriggerConnection @auth
     # Alerts

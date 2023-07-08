@@ -67,7 +67,6 @@ type Query {
         orderMode: OrderingMode
         filters: [WorkspacesFiltering!]
         filterMode: FilterMode
-        adminBypassUserAccess: Boolean
         search: String
     ): WorkspaceConnection @auth(for: [EXPLORE])
 }

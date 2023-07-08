@@ -42,6 +42,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'period', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'trigger_time', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'authorized_authorities', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'instance_trigger', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
   ],
   relations: [],

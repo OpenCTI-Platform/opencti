@@ -92,6 +92,7 @@ const liveActivityTriggerValidation = (t: (message: string) => string) => Yup.ob
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   outcomes: Yup.array().nullable(),
+  recipients: Yup.array().min(1, t('Minimum one recipient')).required(t('This field is required')),
 });
 
 interface TriggerActivityLiveAddInput {
@@ -123,13 +124,6 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   const [filters, setFilters] = useState<
   Record<string, { id: string; value: string }[]>
   >({});
-  const activityTypesOptions: { value: string, label: string }[] = [
-    { value: 'authentication', label: t('authentication') },
-    { value: 'read', label: t('read') },
-    { value: 'mutation', label: t('mutation') },
-    { value: 'file', label: t('file') },
-    { value: 'command', label: t('command') },
-  ];
   const outcomesOptions = [
     {
       value: 'f4ee7b33-006a-4b0d-b57d-411ad288653d',

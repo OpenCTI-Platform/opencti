@@ -3,14 +3,14 @@ import { elRawUpdateByQuery } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 
-const message = '[MIGRATION] Adding trigger trigger_scope to knowledge';
+const message = '[MIGRATION] Adding trigger scope and authorized_capabilities';
 
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const updateQuery = {
     script: {
-      params: { trigger_scope: 'knowledge' },
-      source: 'ctx._source.trigger_scope = params.trigger_scope;',
+      params: { trigger_scope: 'knowledge', capabilities: ['SETTINGS_SETACCESSES'] },
+      source: 'ctx._source.trigger_scope = params.trigger_scope; ctx._source.authorized_authorities = params.capabilities',
     },
     query: {
       bool: {

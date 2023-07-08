@@ -73,7 +73,6 @@ interface TriggerLineProps {
   node: TriggerLine_node$key;
   dataColumns: DataColumns;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
-  adminByPass?: boolean
 }
 
 const triggerLineFragment = graphql`
@@ -93,6 +92,7 @@ const triggerLineFragment = graphql`
       id
       name
     }
+    isDirectAdministrator
     currentUserAccessRight
     instance_trigger
     resolved_instance_filters {
@@ -107,7 +107,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
-  adminByPass = false,
 }) => {
   const classes = useStyles();
   const { t, nt } = useFormatter();
@@ -245,7 +244,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
        <TriggerPopover
          id={data.id}
          paginationOptions={paginationOptions}
-         disabled={!adminByPass && data.currentUserAccessRight === 'view'}/>
+         disabled={!data.isDirectAdministrator}/>
       </ListItemIcon>
     </ListItem>
   );
