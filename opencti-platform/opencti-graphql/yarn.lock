@@ -1843,27 +1843,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch@npm:8.8.0":
-  version: 8.8.0
-  resolution: "@elastic/elasticsearch@npm:8.8.0"
+"@elastic/elasticsearch@npm:8.8.1":
+  version: 8.8.1
+  resolution: "@elastic/elasticsearch@npm:8.8.1"
   dependencies:
-    "@elastic/transport": ^8.3.1
+    "@elastic/transport": ^8.3.2
     tslib: ^2.4.0
-  checksum: 4c2ccde2dce77354fbbaaa6dbd8163298fc90944681f0d900c115f9ada4891770ca03e2f74b7f20eafbba78cfc0d547b7a8f488aa908cca277cca346bb575847
+  checksum: 38b0651d56f1b6b0f9bbed9fb874a337f466c4697dfb0ea37d3110bdc00fdb86b1cc58cdf03769aa2fd84076448877c33234069ed1cbd4a3906e66e18c47df5a
   languageName: node
   linkType: hard
 
-"@elastic/transport@npm:^8.3.1":
-  version: 8.3.1
-  resolution: "@elastic/transport@npm:8.3.1"
+"@elastic/transport@npm:^8.3.2":
+  version: 8.3.2
+  resolution: "@elastic/transport@npm:8.3.2"
   dependencies:
     debug: ^4.3.4
     hpagent: ^1.0.0
     ms: ^2.1.3
     secure-json-parse: ^2.4.0
     tslib: ^2.4.0
-    undici: ^5.5.1
-  checksum: 7b0c9199dfe5c71db052c877b9eb445c5047e50c69a1f30759a872907693106629dddd978a4bf03401673576a5e09347a99db6818e13f4b7b143b4c967dcc3c4
+    undici: ^5.22.1
+  checksum: 51eb19723b95b9772b90031223d1af275f1aad0611161b84da57c5e374fa1bfce1c1828870ee9b7afe9bf81de64e4a2f8ed6878875f877b71bc53d2b435fa78d
   languageName: node
   linkType: hard
 
@@ -10521,7 +10521,7 @@ __metadata:
     "@aws-sdk/credential-provider-node": 3.363.0
     "@aws-sdk/lib-storage": 3.367.0
     "@aws-sdk/property-provider": 3.366.0
-    "@elastic/elasticsearch": 8.8.0
+    "@elastic/elasticsearch": 8.8.1
     "@escape.tech/graphql-armor": 1.8.2
     "@graphql-codegen/cli": 3.3.1
     "@graphql-codegen/client-preset": 3.0.1
@@ -12708,7 +12708,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^5.5.1":
+"undici@npm:^5.22.1":
   version: 5.22.1
   resolution: "undici@npm:5.22.1"
   dependencies:
