@@ -78,7 +78,7 @@
     "@rollup/plugin-graphql": "2.0.3",
     "@testing-library/react": "14.0.0",
     "@types/node": "20.2.1",
-    "@types/qrcode": "1.5.0",
+    "@types/qrcode": "1.5.1",
     "@types/ramda": "0.29.1",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
