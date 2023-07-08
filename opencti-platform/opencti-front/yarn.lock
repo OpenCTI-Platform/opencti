@@ -1956,7 +1956,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-paragraph@npm:38.1.0":
+"@ckeditor/ckeditor5-paragraph@npm:38.1.0, @ckeditor/ckeditor5-paragraph@npm:^38.0.1":
   version: 38.1.0
   resolution: "@ckeditor/ckeditor5-paragraph@npm:38.1.0"
   dependencies:
@@ -1964,17 +1964,6 @@ __metadata:
     "@ckeditor/ckeditor5-ui": 38.1.0
     "@ckeditor/ckeditor5-utils": 38.1.0
   checksum: 4f4dfeb7939191a7e105a705ddb82f5bb09e98ef937795fd2949d04dfb606e3bec40a4d6616e940bb672054737afb787a9dab0ba415c0fdbde590c9284bf7d53
-  languageName: node
-  linkType: hard
-
-"@ckeditor/ckeditor5-paragraph@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-paragraph@npm:38.0.1"
-  dependencies:
-    "@ckeditor/ckeditor5-core": ^38.0.1
-    "@ckeditor/ckeditor5-ui": ^38.0.1
-    "@ckeditor/ckeditor5-utils": ^38.0.1
-  checksum: f68678abe08a22b1d97a4a7d47e0496f2867428194562ffeb8eadad43ca53e780bc04b05c1027633582d2ce3b36b40206d665567182887cafa41aeb2d6fb0efd
   languageName: node
   linkType: hard
 
