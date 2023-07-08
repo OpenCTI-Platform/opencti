@@ -15,7 +15,9 @@ import {
   MembersListForOrganizationQuery,
   MembersListForOrganizationQuery$variables,
 } from './__generated__/MembersListForOrganizationQuery.graphql';
-import MembersListForOrganization, { membersListForOrganizationQuery } from './MembersListForOrganization';
+import MembersListForOrganization, {
+  membersListForOrganizationQuery,
+} from './MembersListForOrganization';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -31,12 +33,17 @@ interface MembersListContainerProps {
   organizationId: string;
 }
 
-const MembersListContainerForOrganization: FunctionComponent<MembersListContainerProps> = ({ organizationId }) => {
+const MembersListContainerForOrganization: FunctionComponent<
+MembersListContainerProps
+> = ({ organizationId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<MembersListForOrganizationQuery$variables>(
-    `view-${organizationId}-members`,
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions: paginationOptionsFromStorage,
+  } = usePaginationLocalStorage<MembersListForOrganizationQuery$variables>(
+    `view-organization-${organizationId}-members`,
     {
       id: organizationId,
       searchTerm: '',
@@ -49,7 +56,7 @@ const MembersListContainerForOrganization: FunctionComponent<MembersListContaine
       },
     },
     undefined,
-    false,
+    true,
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;
   const paginationOptions = {
@@ -110,10 +117,7 @@ const MembersListContainerForOrganization: FunctionComponent<MembersListContaine
           keyword={searchTerm}
         />
       </div>
-      <Paper
-        classes={{ root: classes.paper }}
-        variant="outlined"
-      >
+      <Paper classes={{ root: classes.paper }} variant="outlined">
         <ColumnsLinesTitles
           dataColumns={userColumns}
           sortBy={sortBy}
@@ -126,7 +130,9 @@ const MembersListContainerForOrganization: FunctionComponent<MembersListContaine
           >
             <MembersListForOrganization
               userColumns={userColumns}
-              queryRef={membersQueryRef as PreloadedQuery<MembersListForOrganizationQuery>}
+              queryRef={
+                membersQueryRef as PreloadedQuery<MembersListForOrganizationQuery>
+              }
               paginationOptions={paginationOptions}
             />
           </React.Suspense>

@@ -7,7 +7,9 @@ import { PreloadedQuery } from 'react-relay';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import MembersListForGroup, { membersListForGroupQuery } from './MembersListForGroup';
+import MembersListForGroup, {
+  membersListForGroupQuery,
+} from './MembersListForGroup';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -31,12 +33,17 @@ interface MembersListContainerProps {
   groupId: string;
 }
 
-const MembersListContainerForGroup: FunctionComponent<MembersListContainerProps> = ({ groupId }) => {
+const MembersListContainerForGroup: FunctionComponent<
+MembersListContainerProps
+> = ({ groupId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<MembersListForGroupQuery$variables>(
-    `view-${groupId}-members`,
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions: paginationOptionsFromStorage,
+  } = usePaginationLocalStorage<MembersListForGroupQuery$variables>(
+    `view-group-${groupId}-members`,
     {
       id: groupId,
       searchTerm: '',
@@ -49,7 +56,7 @@ const MembersListContainerForGroup: FunctionComponent<MembersListContainerProps>
       },
     },
     undefined,
-    false,
+    true,
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;
   const paginationOptions = {
@@ -110,10 +117,7 @@ const MembersListContainerForGroup: FunctionComponent<MembersListContainerProps>
           keyword={searchTerm}
         />
       </div>
-      <Paper
-        classes={{ root: classes.paper }}
-        variant="outlined"
-      >
+      <Paper classes={{ root: classes.paper }} variant="outlined">
         <ColumnsLinesTitles
           dataColumns={userColumns}
           sortBy={sortBy}
@@ -126,7 +130,9 @@ const MembersListContainerForGroup: FunctionComponent<MembersListContainerProps>
           >
             <MembersListForGroup
               userColumns={userColumns}
-              queryRef={membersQueryRef as PreloadedQuery<MembersListForGroupQuery>}
+              queryRef={
+                membersQueryRef as PreloadedQuery<MembersListForGroupQuery>
+              }
               paginationOptions={paginationOptions}
             />
           </React.Suspense>
