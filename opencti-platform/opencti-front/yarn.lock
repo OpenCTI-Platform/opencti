@@ -3955,12 +3955,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/qrcode@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@types/qrcode@npm:1.5.0"
+"@types/qrcode@npm:1.5.1":
+  version: 1.5.1
+  resolution: "@types/qrcode@npm:1.5.1"
   dependencies:
     "@types/node": "*"
-  checksum: b0ece3834ca5ba6171132928fd1ef764772dc619b45cb4123461ee05e377ad15553a330d234c69db0d0028c6639a99429e88d99192fbba9c5ee97c23f278c48b
+  checksum: 0f780f31d983fa8d1bfbba1a130e8f7b07866d556807eccfb1d08d841c70644cdee8fc169ca752bdf17e99995e6155fcb6179079338ac8359294c781b95112b5
   languageName: node
   linkType: hard
 
@@ -12490,7 +12490,7 @@ __metadata:
     "@rollup/plugin-graphql": 2.0.3
     "@testing-library/react": 14.0.0
     "@types/node": 20.2.1
-    "@types/qrcode": 1.5.0
+    "@types/qrcode": 1.5.1
     "@types/ramda": 0.29.1
     "@types/react": 18.2.6
     "@types/react-dom": 18.2.4
