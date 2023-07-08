@@ -1979,11 +1979,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-paste-from-office@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-paste-from-office@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-paste-from-office@npm:38.1.0"
   dependencies:
-    ckeditor5: ^38.0.1
-  checksum: b182d974f46c9316b32be5034a07c2b310f835f46196f922a6652440433987293de38025f2f7e667319bc6a2a8dec2c6a77cd45bf4b413500acc9191554a6fe2
+    ckeditor5: 38.1.0
+  checksum: e498b9de49ea4e7f1f7e954bc2d398cd59221d1d36ada628c27c6b3ea2e4c443375beb523cb3322ca90f532af61bb4715ba20b2cb81eebf558b9562fec769d81
   languageName: node
   linkType: hard
 
