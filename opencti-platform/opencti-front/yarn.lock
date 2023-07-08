@@ -12401,7 +12401,7 @@ __metadata:
     relay-compiler: 15.0.0
     relay-runtime: 15.0.0
     relay-test-utils: 15.0.0
-    remark-flexible-markers: 1.0.2
+    remark-flexible-markers: 1.0.3
     remark-gfm: 3.0.1
     remark-parse: 10.0.1
     rxjs: 7.8.1
@@ -14383,14 +14383,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-flexible-markers@npm:1.0.2":
-  version: 1.0.2
-  resolution: "remark-flexible-markers@npm:1.0.2"
+"remark-flexible-markers@npm:1.0.3":
+  version: 1.0.3
+  resolution: "remark-flexible-markers@npm:1.0.3"
   dependencies:
     "@types/mdast": ^3.0.10
     unist-builder: ^3.0.1
     unist-util-visit: ^4.0.0
-  checksum: b3b173fdbe3bada504424d31b4b10dbeda1471ba4b671146998e45290dad43d66ee658ed7c42774e2f8270eeafac35085579c3db7444de27ba1e03ba8ea3c78a
+  checksum: b4ebeb8a00ef2cd43c3a31dd4771936d3187763ab1ab384e0ad15416d5bdbd1d9a7b88c2f3e19283e9a7abf4c9a427e71b6f0093a81b4a7eb97f13b3c5af6643
   languageName: node
   linkType: hard
 
