@@ -1686,11 +1686,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-block-quote@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-block-quote@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-block-quote@npm:38.1.0"
   dependencies:
-    ckeditor5: ^38.0.1
-  checksum: 9bcf286e0f0ffd5791697198ba222d097e8222e0d9ec48c193a81f77af29c8e12fe0735cb058ff405479b7860790f1f6997de8f477ab000d81976d243d5700c9
+    ckeditor5: 38.1.0
+  checksum: 84efcd35cd9c1e9a09c8a871078e78be85aa826234daf1a61476431323298e876ee9b55f585d8e2c7557cf45c7c3f89ebe709d77dd463a59d21fb8c429786db9
   languageName: node
   linkType: hard
 
