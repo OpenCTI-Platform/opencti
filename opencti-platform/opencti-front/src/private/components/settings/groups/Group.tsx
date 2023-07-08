@@ -1,5 +1,4 @@
-import { CenterFocusStrongOutlined, Edit, SecurityOutlined, Warning } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
+import { EditOutlined, WarningOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import Grid from '@mui/material/Grid';
@@ -16,6 +15,7 @@ import * as R from 'ramda';
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -28,6 +28,7 @@ import MembersList from '../users/MembersList';
 import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupEdition from './GroupEdition';
 import GroupPopover from './GroupPopover';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -151,9 +152,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
     (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')
       ?.values ?? [],
   );
-
-  const canAccessDashboard = group.default_dashboard?.authorizedMembers.some(({ id }) => ['ALL', group.id].includes(id));
-
+  const canAccessDashboard = (
+    group.default_dashboard?.authorizedMembers || []
+  ).some(({ id }) => ['ALL', group.id].includes(id));
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -227,7 +228,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                       to={`/dashboard/settings/accesses/roles/${role?.id}`}
                     >
                       <ListItemIcon>
-                        <SecurityOutlined color="primary" />
+                        <ItemIcon type="Role" />
                       </ListItemIcon>
                       <ListItemText primary={role?.name} />
                     </ListItem>
@@ -235,11 +236,41 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </List>
               </Grid>
               <Grid item={true} xs={6}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 15 }}
-                >
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Default dashboard')}
+                </Typography>
+                <FieldOrEmpty source={group.default_dashboard}>
+                  <List>
+                    <ListItem
+                      dense={true}
+                      divider={true}
+                      button={true}
+                      component={Link}
+                      to={`/dashboard/workspaces/dashboards/${group.default_dashboard?.id}`}
+                    >
+                      <ListItemIcon>
+                        <ItemIcon type="Dashboard" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={truncate(group.default_dashboard?.name, 40)}
+                      />
+                      {!canAccessDashboard && (
+                        <ListItemSecondaryAction>
+                          <Tooltip
+                            title={t(
+                              'You need to authorize this group to access this dashboard in the permissions of the workspace.',
+                            )}
+                          >
+                            <WarningOutlined color="warning" />
+                          </Tooltip>
+                        </ListItemSecondaryAction>
+                      )}
+                    </ListItem>
+                  </List>
+                </FieldOrEmpty>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
                   {t('Default markings')}
                   <Tooltip
                     title={t(
@@ -253,65 +284,54 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     />
                   </Tooltip>
                 </Typography>
-                <List>
-                  {globalDefaultMarkings.map((marking) => (
-                    <ListItem
-                      key={marking?.id}
-                      dense={true}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon
-                        style={{ color: marking?.x_opencti_color ?? undefined }}
+                <FieldOrEmpty source={globalDefaultMarkings}>
+                  <List style={{ marginTop: -3 }}>
+                    {globalDefaultMarkings.map((marking) => (
+                      <ListItem
+                        key={marking?.id}
+                        dense={true}
+                        divider={true}
+                        button={false}
                       >
-                        <CenterFocusStrongOutlined />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={truncate(marking?.definition, 40)}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
+                        <ListItemIcon>
+                          <ItemIcon
+                            type="Marking-Definition"
+                            color={marking?.x_opencti_color ?? undefined}
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={truncate(marking?.definition, 40)}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Allowed markings')}
                 </Typography>
-                <List>
-                  {allowedMarkings.map((marking) => (
-                    <ListItem
-                      key={marking?.id}
-                      dense={true}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon
-                        style={{ color: marking?.x_opencti_color ?? undefined }}
+                <FieldOrEmpty source={allowedMarkings}>
+                  <List>
+                    {allowedMarkings.map((marking) => (
+                      <ListItem
+                        key={marking?.id}
+                        dense={true}
+                        divider={true}
+                        button={false}
                       >
-                        <CenterFocusStrongOutlined />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={truncate(marking?.definition, 40)}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Grid>
-              <Grid item={true} xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Dashboard')}
-                </Typography>
-                <FieldOrEmpty source={group.default_dashboard}>
-                  <Tooltip
-                    title={!canAccessDashboard ? t('You need to add the group in view mode for this dashboard') : undefined}
-                  >
-                    <Chip
-                      key={group.default_dashboard?.name}
-                      classes={{ root: classes.chip }}
-                      label={group.default_dashboard?.name}
-                      icon={!canAccessDashboard ? <Warning /> : undefined}
-                    />
-                  </Tooltip>
+                        <ListItemIcon>
+                          <ItemIcon
+                            type="Marking-Definition"
+                            color={marking?.x_opencti_color ?? undefined}
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={truncate(marking?.definition, 40)}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
                 </FieldOrEmpty>
               </Grid>
             </Grid>
@@ -327,14 +347,13 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <MembersList members={members} />
         </Grid>
       </Grid>
-
       <Fab
         onClick={handleOpenUpdate}
         color="secondary"
         aria-label="Edit"
         className={classes.editButton}
       >
-        <Edit />
+        <EditOutlined />
       </Fab>
       <Drawer
         open={displayUpdate}

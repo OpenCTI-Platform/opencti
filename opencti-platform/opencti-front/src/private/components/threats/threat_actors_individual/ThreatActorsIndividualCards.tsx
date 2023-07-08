@@ -1,18 +1,21 @@
 import { graphql, PreloadedQuery } from 'react-relay';
 import { FunctionComponent, useState } from 'react';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+} from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
-import { ThreatActorIndividualCard, ThreatActorIndividualCardDummy } from './ThreatActorIndividualCard';
+import {
+  ThreatActorIndividualCard,
+  ThreatActorIndividualCardDummy,
+} from './ThreatActorIndividualCard';
 import StixDomainObjectBookmarks, {
   stixDomainObjectBookmarksQuery,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
-import {
-  ThreatActorsIndividualCardsPaginationQuery,
-} from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
+import { ThreatActorsIndividualCardsPaginationQuery } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import { ThreatActorsIndividualCards_data$key } from './__generated__/ThreatActorsIndividualCards_data.graphql';
-import { StixDomainObjectBookmarksQuery$data,
-} from '../../common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
+import { StixDomainObjectBookmarksQuery$data } from '../../common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 
 const nbOfCardsToLoad = 12;
@@ -27,14 +30,14 @@ export const threatActorsIndividualCardsPaginationQuery = graphql`
     $filters: [ThreatActorsIndividualFiltering!]
   ) {
     ...ThreatActorsIndividualCards_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -47,7 +50,8 @@ export const ThreatActorsIndividualCardsFragment = graphql`
     orderBy: { type: "ThreatActorsIndividualOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "[ThreatActorsIndividualFiltering!]" }
-  ) @refetchable(queryName: "ThreatActorsIndividualRefetchQuery") {
+  )
+  @refetchable(queryName: "ThreatActorsIndividualRefetchQuery") {
     threatActorsIndividuals(
       search: $search
       first: $count
@@ -79,11 +83,9 @@ interface ThreatActorsIndividualCardsProps {
   onLabelClick: HandleAddFilter;
 }
 
-const ThreatActorsIndividualCards: FunctionComponent<ThreatActorsIndividualCardsProps> = ({
-  setNumberOfElements,
-  queryRef,
-  onLabelClick,
-}) => {
+const ThreatActorsIndividualCards: FunctionComponent<
+ThreatActorsIndividualCardsProps
+> = ({ setNumberOfElements, queryRef, onLabelClick }) => {
   const [bookmarks, setBookmarks] = useState([]);
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ThreatActorsIndividualCardsPaginationQuery,
@@ -98,13 +100,12 @@ const ThreatActorsIndividualCards: FunctionComponent<ThreatActorsIndividualCards
   const handleSetBookmarkList = (newBookmarks: []) => {
     setBookmarks(newBookmarks);
   };
-
   return (
     <QueryRenderer
       query={stixDomainObjectBookmarksQuery}
       variables={{ types: ['Threat-Actor-Individual'] }}
-      render={({ props }: { props : StixDomainObjectBookmarksQuery$data }) => (
-        <div>
+      render={({ props }: { props: StixDomainObjectBookmarksQuery$data }) => (
+        <>
           <StixDomainObjectBookmarks
             data={props}
             onLabelClick={onLabelClick}
@@ -116,7 +117,10 @@ const ThreatActorsIndividualCards: FunctionComponent<ThreatActorsIndividualCards
             hasMore={hasMore}
             isLoading={isLoadingMore}
             dataList={data?.threatActorsIndividuals?.edges ?? []}
-            globalCount={data?.threatActorsIndividuals?.pageInfo?.globalCount ?? nbOfCardsToLoad}
+            globalCount={
+              data?.threatActorsIndividuals?.pageInfo?.globalCount
+              ?? nbOfCardsToLoad
+            }
             CardComponent={ThreatActorIndividualCard}
             DummyCardComponent={ThreatActorIndividualCardDummy}
             nbOfCardsToLoad={nbOfCardsToLoad}
@@ -124,7 +128,7 @@ const ThreatActorsIndividualCards: FunctionComponent<ThreatActorsIndividualCards
             bookmarkList={bookmarks}
             rowHeight={340}
           />
-        </div>
+        </>
       )}
     />
   );

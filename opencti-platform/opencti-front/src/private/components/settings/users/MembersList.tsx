@@ -23,7 +23,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 interface MemberObject {
-  node: UserLine_node$data
+  node: UserLine_node$data;
 }
 interface MembersListProps {
   members: ReadonlyArray<MemberObject>;
@@ -64,29 +64,28 @@ const MembersList: FunctionComponent<MembersListProps> = ({ members }) => {
       isSortable: true,
     },
   };
-
   return (
-      <Grid item={true} xs={12} style={{ marginTop: 30 }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Members')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12} style={{ paddingTop: 20 }}>
-              <UserLineTitles dataColumns={userColumns} />
-              <List>
-                {members.map((member) => (
-                  <UserLine
-                    key={member?.node.id}
-                    dataColumns={userColumns}
-                    node={member?.node}
-                  />
-                ))}
-              </List>
-            </Grid>
+    <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+      <Typography variant="h4" gutterBottom={true}>
+        {t('Members')}
+      </Typography>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Grid container={true} spacing={3}>
+          <Grid item={true} xs={12} style={{ paddingTop: 20 }}>
+            <UserLineTitles dataColumns={userColumns} />
+            <List>
+              {members.map((member) => (
+                <UserLine
+                  key={member?.node.id}
+                  dataColumns={userColumns}
+                  node={member?.node}
+                />
+              ))}
+            </List>
           </Grid>
-        </Paper>
-      </Grid>
+        </Grid>
+      </Paper>
+    </Grid>
   );
 };
 

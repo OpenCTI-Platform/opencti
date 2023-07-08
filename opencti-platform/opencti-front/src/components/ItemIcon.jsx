@@ -43,6 +43,10 @@ import {
   WorkspacesOutlined,
   SafetyCheckOutlined,
   SecurityOutlined,
+  LocalPoliceOutlined,
+  DashboardCustomizeOutlined,
+  TravelExploreOutlined,
+  ReceiptOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -175,6 +179,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <ProgressWrench style={style} fontSize={fontSize} role="img" />;
     case 'Role':
       return <SecurityOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Capability':
+      return (
+        <LocalPoliceOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'Individual':
     case 'User':
       return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
@@ -288,6 +296,20 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return (
         <SafetyCheckOutlined style={style} fontSize={fontSize} role="img" />
       );
+    case 'Dashboard':
+      return (
+        <DashboardCustomizeOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
+    case 'Investigation':
+      return (
+        <TravelExploreOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'Session':
+      return <ReceiptOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

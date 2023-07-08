@@ -1,4 +1,5 @@
 import React from 'react';
+import Grid from '@mui/material/Grid';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListCards from '../../../components/list_cards/ListCards';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -88,15 +89,15 @@ const ThreatActorsIndividual = () => {
         {queryRef && (
           <React.Suspense
             fallback={
-            <>
-              {Array(20)
-                .fill(0)
-                .map((idx) => (
-                  <ThreatActorIndividualCardDummy
-                    key={idx}
-                  />
-                ))}
-            </>
+              <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <Grid item={true} xs={3} key={idx}>
+                      <ThreatActorIndividualCardDummy />
+                    </Grid>
+                  ))}
+              </Grid>
             }
           >
             <ThreatActorsIndividualCards
@@ -110,12 +111,12 @@ const ThreatActorsIndividual = () => {
     );
   };
   return (
-    <div>
+    <>
       {renderCards()}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ThreatActorIndividualCreation paginationOptions={paginationOptions} />
       </Security>
-    </div>
+    </>
   );
 };
 

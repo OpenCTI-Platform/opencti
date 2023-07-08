@@ -132,7 +132,6 @@ const SettingsMessagesBannerComponent = ({
   queryRef: PreloadedQuery<SettingsMessagesBannerQuery>;
 }) => {
   const classes = useStyles();
-
   const { settings } = usePreloadedQuery<SettingsMessagesBannerQuery>(
     settingsMessagesQuery,
     queryRef,
@@ -147,14 +146,13 @@ const SettingsMessagesBannerComponent = ({
     [settings, settingsSubscription],
   );
   useSubscription(config);
-
   const messagesSettings = (settings.messages
     ?? []) as MessageFromLocalStorage[];
   const [{ messages: messagesLocalStorage }, setMessages] = useLocalStorage(
     BANNER_LOCAL_STORAGE_KEY,
     { messages: messagesSettings },
+    true,
   );
-
   let messageToDisplay: MessageFromLocalStorage;
   // Update the local storage when new items are found
   useEffect(() => {
@@ -179,7 +177,6 @@ const SettingsMessagesBannerComponent = ({
     }
     [messageToDisplay] = extractMessagesToDisplay(messagesUpdated);
   }, [JSON.stringify(messagesSettings)]);
-
   // Tell everyone that the new message is displayed
   useLayoutEffect(() => {
     dispatch(BANNER_LOCAL_STORAGE_KEY, ref.current?.clientHeight);
@@ -189,14 +186,12 @@ const SettingsMessagesBannerComponent = ({
   if (!messagesLocalStorage || messagesLocalStorage.length === 0) {
     return <></>;
   }
-
   // 3. Retrieve message to display
   [messageToDisplay] = extractMessagesToDisplay(messagesLocalStorage);
   // 4. Message not activated or dismiss
   if (!messageToDisplay) {
     return <></>;
   }
-
   // 5. Message activated and not dismiss
   const handleDismiss = () => {
     const otherMessages = messagesLocalStorage.filter(
@@ -206,7 +201,6 @@ const SettingsMessagesBannerComponent = ({
       messages: [...otherMessages, { ...messageToDisplay, dismiss: true }],
     });
   };
-
   const { backgroundColor, borderLeft, color } = generateBannerMessageColors(
     messageToDisplay?.color,
   );

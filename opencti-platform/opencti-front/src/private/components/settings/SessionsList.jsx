@@ -6,7 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { ReceiptOutlined, PersonOutlined, Delete } from '@mui/icons-material';
+import { DeleteOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import { interval } from 'rxjs';
 import Dialog from '@mui/material/Dialog';
@@ -14,7 +14,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import Slide from '@mui/material/Slide';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { graphql, createRefetchContainer } from 'react-relay';
@@ -22,21 +21,15 @@ import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
+import ItemIcon from '../../../components/ItemIcon';
+import Transition from '../../../components/Transition';
 
 const interval$ = interval(FIVE_SECONDS);
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   item: {},
   itemNested: {
     paddingLeft: theme.spacing(4),
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
   },
   name: {
     width: '20%',
@@ -141,7 +134,11 @@ class SessionsListComponent extends Component {
     )(data);
     return (
       <div>
-        <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
+        <List
+          component="nav"
+          aria-labelledby="nested-list-subheader"
+          className={classes.root}
+        >
           {sessions.map((session) => {
             const { user, sessions: userSessions } = session;
             const orderedSessions = R.sort(
@@ -157,8 +154,8 @@ class SessionsListComponent extends Component {
                   component={Link}
                   to={`/dashboard/settings/accesses/users/${user.id}`}
                 >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <PersonOutlined fontSize="medium" />
+                  <ListItemIcon>
+                    <ItemIcon type="User" />
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -179,8 +176,8 @@ class SessionsListComponent extends Component {
                       classes={{ root: classes.itemNested }}
                       divider={true}
                     >
-                      <ListItemIcon classes={{ root: classes.itemIcon }}>
-                        <ReceiptOutlined fontSize="small" />
+                      <ListItemIcon>
+                        <ItemIcon type="Session" />
                       </ListItemIcon>
                       <ListItemText
                         primary={
@@ -205,7 +202,7 @@ class SessionsListComponent extends Component {
                           )}
                           size="large"
                         >
-                          <Delete />
+                          <DeleteOutlined />
                         </IconButton>
                       </ListItemSecondaryAction>
                     </ListItem>

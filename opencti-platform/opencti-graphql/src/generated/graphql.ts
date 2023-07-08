@@ -15560,8 +15560,10 @@ export type OrganizationsFiltering = {
 export enum OrganizationsOrdering {
   Confidence = 'confidence',
   Created = 'created',
+  CreatedAt = 'created_at',
   Modified = 'modified',
   Name = 'name',
+  UpdatedAt = 'updated_at',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }

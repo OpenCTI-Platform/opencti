@@ -6,13 +6,9 @@ import Paper from '@mui/material/Paper';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import {
-  AccountBalanceOutlined,
-  Delete,
+  DeleteOutlined,
   DeleteForeverOutlined,
-  Edit,
-  GroupOutlined,
-  ReceiptOutlined,
-  SecurityOutlined,
+  EditOutlined,
 } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -53,6 +49,7 @@ import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSe
 import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import ItemIcon from '../../../../components/ItemIcon';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -79,7 +76,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',
@@ -333,7 +329,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   return (
     <div className={classes.container}>
       <AccessesMenu />
-      <div>
+      <>
         <Typography
           variant="h1"
           gutterBottom={true}
@@ -345,7 +341,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           <UserPopover userId={user.id} />
         </div>
         <div className="clearfix" />
-      </div>
+      </>
       <Grid
         container={true}
         spacing={3}
@@ -422,23 +418,25 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Roles')}
                 </Typography>
-                <List>
-                  {(user.roles ?? []).map((role) => (
-                    <ListItem
-                      key={role?.id}
-                      dense={true}
-                      divider={true}
-                      button={true}
-                      component={Link}
-                      to={`/dashboard/settings/accesses/roles/${role?.id}`}
-                    >
-                      <ListItemIcon>
-                        <SecurityOutlined color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary={role?.name} />
-                    </ListItem>
-                  ))}
-                </List>
+                <FieldOrEmpty source={user.roles ?? []}>
+                  <List>
+                    {(user.roles ?? []).map((role) => (
+                      <ListItem
+                        key={role?.id}
+                        dense={true}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="Role" />
+                        </ListItemIcon>
+                        <ListItemText primary={role?.name} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -456,7 +454,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
                       >
                         <ListItemIcon>
-                          <GroupOutlined color="primary" />
+                          <ItemIcon type="Group" />
                         </ListItemIcon>
                         <ListItemText primary={groupEdge?.node.name} />
                       </ListItem>
@@ -464,7 +462,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+              <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Organizations')}
                 </Typography>
@@ -480,7 +478,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                         to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
                       >
                         <ListItemIcon>
-                          <AccountBalanceOutlined color="primary" />
+                          <ItemIcon type="Organization" />
                         </ListItemIcon>
                         <ListItemText primary={organizationEdge.node.name} />
                       </ListItem>
@@ -506,43 +504,47 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   <DeleteForeverOutlined fontSize="small" />
                 </IconButton>
                 <div className="clearfix" />
-                <List>
-                  {orderedSessions
-                    && orderedSessions.map((session: Session) => (
-                      <ListItem
-                        key={session.id}
-                        dense={true}
-                        divider={true}
-                        button={false}
-                      >
-                        <ListItemIcon>
-                          <ReceiptOutlined color="primary" fontSize="small" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <div>
-                              <div style={{ float: 'left', width: '50%' }}>
-                                {nsdt(session.created)}
-                              </div>
-                              <div style={{ float: 'left', width: '20%' }}>
-                                {session.ttl ? Math.round(session.ttl / 60) : 0}{' '}
-                                {t('minutes')}
-                              </div>
-                            </div>
-                          }
-                        />
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            aria-label="Kill"
-                            onClick={() => handleOpenKillSession(session.id)}
-                            size="large"
-                          >
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    ))}
-                </List>
+                <FieldOrEmpty source={orderedSessions}>
+                  <List style={{ marginTop: -2 }}>
+                    {orderedSessions
+                      && orderedSessions.map((session: Session) => (
+                        <ListItem
+                          key={session.id}
+                          dense={true}
+                          divider={true}
+                          button={false}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Session" />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <>
+                                <div style={{ float: 'left', width: '50%' }}>
+                                  {nsdt(session.created)}
+                                </div>
+                                <div style={{ float: 'left', width: '20%' }}>
+                                  {session.ttl
+                                    ? Math.round(session.ttl / 60)
+                                    : 0}{' '}
+                                  {t('minutes')}
+                                </div>
+                              </>
+                            }
+                          />
+                          <ListItemSecondaryAction>
+                            <IconButton
+                              aria-label="Kill"
+                              onClick={() => handleOpenKillSession(session.id)}
+                              size="small"
+                            >
+                              <DeleteOutlined fontSize="small" />
+                            </IconButton>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      ))}
+                  </List>
+                </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -653,7 +655,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
         aria-label="Edit"
         className={classes.editButton}
       >
-        <Edit />
+        <EditOutlined />
       </Fab>
       <Drawer
         open={displayUpdate}
@@ -692,19 +694,15 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseKillSession}
-            color="primary"
-            disabled={killing}
-          >
+          <Button onClick={handleCloseKillSession} disabled={killing}>
             {t('Cancel')}
           </Button>
           <Button
             onClick={submitKillSession}
-            color="primary"
+            color="secondary"
             disabled={killing}
           >
-            {t('Delete')}
+            {t('Kill')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -721,19 +719,15 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseKillSessions}
-            color="primary"
-            disabled={killing}
-          >
+          <Button onClick={handleCloseKillSessions} disabled={killing}>
             {t('Cancel')}
           </Button>
           <Button
             onClick={submitKillSessions}
-            color="primary"
+            color="secondary"
             disabled={killing}
           >
-            {t('Delete')}
+            {t('Kill all')}
           </Button>
         </DialogActions>
       </Dialog>

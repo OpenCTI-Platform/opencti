@@ -1,10 +1,10 @@
-import { Launch } from 'mdi-material-ui';
 import { Field } from 'formik';
 import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -23,6 +23,7 @@ export interface Option {
   label: string;
   color?: string;
   [key: string]: ReactNode;
+  type?: string;
 }
 
 interface RelationFieldProps {
@@ -71,7 +72,7 @@ const ReferenceField: FunctionComponent<RelationFieldProps> = ({
       renderOption={(props: Record<string, unknown>, option: Option) => (
         <li {...props}>
           <div className={classes.icon} style={{ color: option.color }}>
-            <Launch />
+            <ItemIcon type={option.type} />
           </div>
           <div className={classes.text}>{option.label}</div>
         </li>

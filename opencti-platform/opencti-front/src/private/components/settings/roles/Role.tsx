@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Fab from '@mui/material/Fab';
-import { Edit, GroupOutlined } from '@mui/icons-material';
+import { Edit } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import ListItem from '@mui/material/ListItem';
 import { Link, useHistory } from 'react-router-dom';
@@ -37,6 +37,7 @@ import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { isEmptyField } from '../../../../utils/utils';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -204,7 +205,7 @@ const Role = ({
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t('Groups with this role')}
+                  {t('Groups using this role')}
                 </Typography>
                 <div>
                   {groupNodes(role)?.map((group) => (
@@ -217,7 +218,7 @@ const Role = ({
                       to={`/dashboard/settings/accesses/groups/${group?.id}`}
                     >
                       <ListItemIcon>
-                        <GroupOutlined color="primary" />
+                        <ItemIcon type="Group" />
                       </ListItemIcon>
                       <ListItemText primary={group?.name} />
                     </ListItem>
@@ -236,10 +237,7 @@ const Role = ({
               <Grid item={true} xs={12} style={{ paddingTop: 10 }}>
                 {queryRef && (
                   <React.Suspense>
-                    <CapabilitiesList
-                      queryRef={queryRef}
-                      role={role}
-                    ></CapabilitiesList>
+                    <CapabilitiesList queryRef={queryRef} role={role} />
                   </React.Suspense>
                 )}
               </Grid>

@@ -102,12 +102,17 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#006064';
       }
-      return '#00BCD4';
+      return '#00bcd4';
     case 'Group':
       if (dark) {
         return '#006064';
       }
-      return '#00BCD4';
+      return '#00bcd4';
+    case 'Capability':
+      if (dark) {
+        return '#424242';
+      }
+      return '#757575';
     case 'Organization':
       if (dark) {
         return '#01579b';
@@ -218,6 +223,21 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#f44336';
       }
       return '#b71c1c';
+    case 'Dashboard':
+      if (dark) {
+        return '#689f38';
+      }
+      return '#33691e';
+    case 'Investigation':
+      if (dark) {
+        return '#689f38';
+      }
+      return '#33691e';
+    case 'Session':
+      if (dark) {
+        return '#5d4037';
+      }
+      return '#795548';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
@@ -353,8 +373,8 @@ const rgbToHex = (r, g, b) => {
 };
 
 const generateGreenToRedColor = (n) => {
-  const red = (n > 50 ? (1 - 2 * ((n - 50) / 100.0)) : 1.0) * 255;
-  const green = (n > 50 ? 1.0 : ((2 * n) / 100.0)) * 255;
+  const red = (n > 50 ? 1 - 2 * ((n - 50) / 100.0) : 1.0) * 255;
+  const green = (n > 50 ? 1.0 : (2 * n) / 100.0) * 255;
   const blue = 50;
   return rgbToHex(Math.round(red), Math.round(green), Math.round(blue));
 };
@@ -366,7 +386,11 @@ export const generateGreenToRedColors = (size) => {
 };
 
 const adjustColor = (color, amount = 1) => {
-  return `#${color.replace(/^#/, '').replace(/../g, (c) => (`0${Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(16)}`).substr(-2))}`;
+  return `#${color
+    .replace(/^#/, '')
+    .replace(/../g, (c) => `0${Math.min(255, Math.max(0, parseInt(c, 16) + amount)).toString(
+      16,
+    )}`.substr(-2))}`;
 };
 
 export const generateBannerMessageColors = (color) => {

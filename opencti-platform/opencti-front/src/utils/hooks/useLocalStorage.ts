@@ -150,6 +150,7 @@ const setStoredValueToHistory = (
 const useLocalStorage = (
   key: string,
   initialValue?: LocalStorage,
+  ignoreUri?: boolean,
 ): UseLocalStorage => {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
@@ -159,7 +160,7 @@ const useLocalStorage = (
     }
     try {
       const searchParams = new URLSearchParams(window.location.search);
-      const finalParams = searchParamsToStorage(searchParams);
+      const finalParams = !ignoreUri ? searchParamsToStorage(searchParams) : null;
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
       // Parse stored json or if none return initialValue
@@ -198,7 +199,7 @@ const useLocalStorage = (
       // Save state
       setStoredValue(valueToStore);
       // Save to local storage + re-align uri if needed
-      if (typeof window !== 'undefined') {
+      if (typeof window !== 'undefined' && !ignoreUri) {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
         setStoredValueToHistory(initialValue, valueToStore);
       }
@@ -208,7 +209,9 @@ const useLocalStorage = (
     }
   };
   // re-align uri if needed
-  setStoredValueToHistory(initialValue, storedValue);
+  if (!ignoreUri) {
+    setStoredValueToHistory(initialValue, storedValue);
+  }
   return [storedValue, setValue];
 };
 
@@ -228,7 +231,6 @@ export const usePaginationLocalStorage = <U>(
     { count: 25, ...viewStorage },
     additionalFilters,
   );
-
   const helpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
     handleRemoveFilter: (k: string, id?: string) => setValue((c) => {

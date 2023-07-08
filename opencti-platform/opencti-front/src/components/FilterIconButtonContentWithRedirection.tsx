@@ -17,7 +17,7 @@ export const filterIconButtonContentWithRedirectionQuery = graphql`
   }
 `;
 
-interface RenderButtonProps {
+interface FilterIconButtonContentWithRedirectionComponentProps {
   queryRef: PreloadedQuery<FilterIconButtonContentWithRedirectionQuery>;
   displayedValue: string;
 }
@@ -27,10 +27,9 @@ interface FilterIconButtonContentWithRedirectionProps {
   displayedValue: string;
 }
 
-const RenderButton: FunctionComponent<RenderButtonProps> = ({
-  queryRef,
-  displayedValue,
-}) => {
+const FilterIconButtonContentWithRedirectionComponent: FunctionComponent<
+FilterIconButtonContentWithRedirectionComponentProps
+> = ({ queryRef, displayedValue }) => {
   const data = usePreloadedQuery<FilterIconButtonContentWithRedirectionQuery>(
     filterIconButtonContentWithRedirectionQuery,
     queryRef,
@@ -61,7 +60,10 @@ FilterIconButtonContentWithRedirectionProps
         <React.Suspense
           fallback={<span color="disabled">{displayedValue}</span>}
         >
-          <RenderButton queryRef={queryRef} displayedValue={displayedValue} />
+          <FilterIconButtonContentWithRedirectionComponent
+            queryRef={queryRef}
+            displayedValue={displayedValue}
+          />
         </React.Suspense>
       )}
     </>

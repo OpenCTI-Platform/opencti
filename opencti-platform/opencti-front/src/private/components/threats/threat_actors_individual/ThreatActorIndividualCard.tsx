@@ -15,7 +15,10 @@ import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import ItemIcon from '../../../../components/ItemIcon';
-import { addBookmark, deleteBookMark } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
+import {
+  addBookmark,
+  deleteBookMark,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import { emptyFilled } from '../../../../utils/String';
 import { ThreatActorIndividualCard_node$key } from './__generated__/ThreatActorIndividualCard_node.graphql';
 
@@ -163,17 +166,17 @@ const ThreatActorIndividualCardFragment = graphql`
 interface ThreatActorIndividualCardProps {
   node: ThreatActorIndividualCard_node$key;
   onLabelClick: () => void;
-  bookmarksIds?: string[]
+  bookmarksIds?: string[];
 }
-export const ThreatActorIndividualCard: FunctionComponent<ThreatActorIndividualCardProps> = ({
-  node,
-  onLabelClick,
-  bookmarksIds,
-}) => {
+export const ThreatActorIndividualCard: FunctionComponent<
+ThreatActorIndividualCardProps
+> = ({ node, onLabelClick, bookmarksIds }) => {
   const classes = useStyles();
   const { t, fld } = useFormatter();
   const data = useFragment(ThreatActorIndividualCardFragment, node);
-  const usedMalware = (data.usedMalware ?? []).map((n) => n?.entity?.name).join(', ');
+  const usedMalware = (data.usedMalware ?? [])
+    .map((n) => n?.entity?.name)
+    .join(', ');
   const targetedCountries = (data.targetedCountries ?? [])
     .map((n) => n?.entity?.name)
     .join(', ');
@@ -306,24 +309,56 @@ export const ThreatActorIndividualCardDummy = () => {
           }
         />
         <CardContent classes={{ root: classes.contentDummy }}>
-          <Skeleton
-            animation="wave"
-            variant="rectangular"
-            width="90%"
-            style={{ marginBottom: 10 }}
-          />
-          <Skeleton
-            animation="wave"
-            variant="rectangular"
-            width="95%"
-            style={{ marginBottom: 10 }}
-          />
-          <Skeleton
-            animation="wave"
-            variant="rectangular"
-            width="90%"
-            style={{ marginBottom: 10 }}
-          />
+          <div className={classes.description}>
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="80%"
+              style={{ marginBottom: 10 }}
+            />
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              style={{ marginBottom: 10 }}
+            />
+          </div>
+          <div className={classes.extras}>
+            <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="100%"
+                style={{ marginBottom: 10 }}
+              />
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="100%"
+                style={{ marginBottom: 10 }}
+              />
+            </div>
+            <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="100%"
+                style={{ marginBottom: 10 }}
+              />
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="100%"
+                style={{ marginBottom: 10 }}
+              />
+            </div>
+          </div>
         </CardContent>
       </CardActionArea>
     </Card>

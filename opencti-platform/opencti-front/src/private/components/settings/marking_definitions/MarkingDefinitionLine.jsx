@@ -19,9 +19,6 @@ const styles = (theme) => ({
     height: 50,
     cursor: 'default',
   },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
   bodyItem: {
     height: 20,
     fontSize: 13,
@@ -50,7 +47,7 @@ class MarkingDefinitionLineComponent extends Component {
     const { fd, classes, node, dataColumns, paginationOptions } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon>
           <ItemIcon type="Marking-Definition" color={node.x_opencti_color} />
         </ListItemIcon>
         <ListItemText

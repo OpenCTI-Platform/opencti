@@ -4122,7 +4122,9 @@ enum OrganizationsOrdering {
   name
   confidence
   created
+  created_at
   modified
+  updated_at
   x_opencti_organization_type
   x_opencti_workflow_id
 }

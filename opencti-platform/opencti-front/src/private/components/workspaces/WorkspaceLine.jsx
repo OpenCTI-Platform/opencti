@@ -4,10 +4,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  DashboardCustomizeOutlined,
-  TravelExploreOutlined,
-} from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
@@ -16,6 +12,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { useFormatter } from '../../../components/i18n';
 import WorkspacePopover from './WorkspacePopover';
+import ItemIcon from '../../../components/ItemIcon';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -66,9 +63,9 @@ const WorkspaceLineComponent = ({ dataColumns, node, paginationOptions }) => {
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         {node.type === 'dashboard' ? (
-          <DashboardCustomizeOutlined />
+          <ItemIcon type="Dashboard" />
         ) : (
-          <TravelExploreOutlined />
+          <ItemIcon type="Investigation" />
         )}
       </ListItemIcon>
       <ListItemText

@@ -1,5 +1,4 @@
-import { AccountBalanceOutlined, Warning } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
+import { WarningOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -13,6 +12,7 @@ import * as R from 'ramda';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
@@ -23,6 +23,8 @@ import { SettingsOrganization_organization$key } from './__generated__/SettingsO
 import SettingsOrganizationDetails from './SettingsOrganizationDetails';
 import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 import Triggers from '../common/Triggers';
+import ItemIcon from '../../../../components/ItemIcon';
+import { truncate } from '../../../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -31,9 +33,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   gridContainer: {
     marginBottom: 20,
-  },
-  title: {
-    float: 'left',
   },
   paper: {
     height: '100%',
@@ -50,6 +49,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textTransform: 'uppercase',
     borderRadius: '0',
     margin: '0 5px 5px 0',
+  },
+  title: {
+    float: 'left',
   },
 }));
 const settingsOrganizationFragment = graphql`
@@ -98,19 +100,24 @@ const settingsOrganizationFragment = graphql`
     }
   }
 `;
-const SettingsOrganization = ({ organizationData }: {
-  organizationData: SettingsOrganization_organization$key,
+const SettingsOrganization = ({
+  organizationData,
+}: {
+  organizationData: SettingsOrganization_organization$key;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const organization = useFragment<SettingsOrganization_organization$key>(settingsOrganizationFragment, organizationData);
+  const organization = useFragment<SettingsOrganization_organization$key>(
+    settingsOrganizationFragment,
+    organizationData,
+  );
   const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
   const members = usersSort(organization.members?.edges ?? []);
   const subOrganizations = organization.subOrganizations?.edges ?? [];
   const parentOrganizations = organization.parentOrganizations?.edges ?? [];
-
-  const canAccessDashboard = organization.default_dashboard?.authorizedMembers.some(({ id }) => ['ALL', organization.id].includes(id));
-
+  const canAccessDashboard = (
+    organization.default_dashboard?.authorizedMembers || []
+  ).some(({ id }) => ['ALL', organization.id].includes(id));
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -119,16 +126,12 @@ const SettingsOrganization = ({ organizationData }: {
         enableReferences={useIsEnforceReference('Organization')}
         context={organization.editContext}
       />
-      <div>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
+      <>
+        <Typography variant="h1" gutterBottom={true} className={classes.title}>
           {organization.name}
         </Typography>
-      </div>
-      <div className="clearfix" />
+        <div className="clearfix" />
+      </>
       <Grid
         container={true}
         spacing={3}
@@ -144,9 +147,9 @@ const SettingsOrganization = ({ organizationData }: {
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={12}>
+                <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Part of')}
+                    {t('Parent organizations')}
                   </Typography>
                   <FieldOrEmpty source={parentOrganizations}>
                     <List>
@@ -160,16 +163,19 @@ const SettingsOrganization = ({ organizationData }: {
                           to={`/dashboard/settings/accesses/organizations/${parentOrganization.node.id}`}
                         >
                           <ListItemIcon>
-                            <AccountBalanceOutlined color="primary" />
+                            <ItemIcon type="Organization" />
                           </ListItemIcon>
-                          <ListItemText primary={parentOrganization.node.name} />
+                          <ListItemText
+                            primary={parentOrganization.node.name}
+                          />
                         </ListItem>
                       ))}
                     </List>
                   </FieldOrEmpty>
-                  <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}
-                  >
-                    {t('Sub organizations')}
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Child organizations')}
                   </Typography>
                   <FieldOrEmpty source={subOrganizations}>
                     <List>
@@ -183,7 +189,7 @@ const SettingsOrganization = ({ organizationData }: {
                           to={`/dashboard/settings/accesses/organizations/${subOrganization.node.id}`}
                         >
                           <ListItemIcon>
-                            <AccountBalanceOutlined color="primary" />
+                            <ItemIcon type="Organization" />
                           </ListItemIcon>
                           <ListItemText primary={subOrganization.node.name} />
                         </ListItem>
@@ -191,36 +197,49 @@ const SettingsOrganization = ({ organizationData }: {
                     </List>
                   </FieldOrEmpty>
                 </Grid>
-                <Grid item={true} xs={12}>
+                <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t('Dashboard')}
+                    {t('Default dashboard')}
                   </Typography>
                   <FieldOrEmpty source={organization.default_dashboard}>
-                    <Tooltip
-                      title={!canAccessDashboard ? t('You need to add the organization in view mode for this dashboard') : undefined}
-                    >
-                      <Chip
-                        key={organization.default_dashboard?.name}
-                        classes={{ root: classes.chip }}
-                        label={organization.default_dashboard?.name}
-                        icon={!canAccessDashboard ? <Warning /> : undefined}
-                      />
-                    </Tooltip>
+                    <List>
+                      <ListItem
+                        dense={true}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/workspaces/dashboards/${organization.default_dashboard?.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="Dashboard" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={truncate(
+                            organization.default_dashboard?.name,
+                            40,
+                          )}
+                        />
+                        {!canAccessDashboard && (
+                          <ListItemSecondaryAction>
+                            <Tooltip
+                              title={t(
+                                'You need to authorize this organization to access this dashboard in the permissions of the workspace.',
+                              )}
+                            >
+                              <WarningOutlined color="warning" />
+                            </Tooltip>
+                          </ListItemSecondaryAction>
+                        )}
+                      </ListItem>
+                    </List>
                   </FieldOrEmpty>
                 </Grid>
               </Grid>
             </Paper>
           </div>
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 10, marginLeft: 0 }}
-        >
-          <Triggers recipientId={organization.id} filter={'organization_ids'}/>
-          <MembersList members={members} />
-        </Grid>
+        <Triggers recipientId={organization.id} filter="organization_ids" />
+        <MembersList members={members} />
       </Grid>
     </div>
   );

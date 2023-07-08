@@ -3,12 +3,12 @@ import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { Role_role$data } from './__generated__/Role_role.graphql';
+import ItemIcon from '../../../../components/ItemIcon';
 
 interface CapabilitiesListProps {
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
@@ -27,14 +27,15 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
     roleEditionCapabilitiesLinesSearch,
     queryRef,
   );
-
   return (
     <List>
       {capabilities?.edges?.map((edge) => {
         const capability = edge?.node;
         if (capability) {
           const paddingLeft = (capability.name.split('_').length ?? -20) * 20 - 20;
-          const roleCapability = roleCapabilities.find((r) => r.name === capability.name);
+          const roleCapability = roleCapabilities.find(
+            (r) => r.name === capability.name,
+          );
           const matchingCapabilities = roleCapabilities.filter(
             (r) => capability.name !== r.name
               && r.name.includes(capability.name)
@@ -51,7 +52,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
                 style={{ paddingLeft }}
               >
                 <ListItemIcon style={{ minWidth: 32 }}>
-                  <LocalPoliceOutlined fontSize="small" />
+                  <ItemIcon type="Capability" />
                 </ListItemIcon>
                 <ListItemText primary={t(capability.description)} />
               </ListItem>

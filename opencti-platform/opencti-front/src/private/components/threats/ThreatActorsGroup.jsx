@@ -24,7 +24,7 @@ class ThreatActorGroups extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-threat_actors_group',
+      'view-threatActorGroups',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -40,7 +40,7 @@ class ThreatActorGroups extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-threat_actors_group',
+      'view-threatActorGroups',
       this.state,
     );
   }
@@ -173,12 +173,12 @@ class ThreatActorGroups extends Component {
       filters: finalFilters,
     };
     return (
-      <div>
+      <>
         {this.renderCards(paginationOptions)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorGroupCreation paginationOptions={paginationOptions} />
         </Security>
-      </div>
+      </>
     );
   }
 }

@@ -20,9 +20,6 @@ const styles = (theme) => ({
     paddingLeft: 10,
     height: 50,
   },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
   bodyItem: {
     height: 20,
     fontSize: 13,
@@ -57,7 +54,7 @@ class RoleLineComponent extends Component {
         component={Link}
         to={`/dashboard/settings/accesses/roles/${node.id}`}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ListItemIcon>
           <ItemIcon type="Role" />
         </ListItemIcon>
         <ListItemText

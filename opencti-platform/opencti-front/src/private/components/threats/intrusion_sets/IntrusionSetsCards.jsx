@@ -39,7 +39,7 @@ class IntrusionSetsCards extends Component {
         query={stixDomainObjectBookmarksQuery}
         variables={{ types: ['Intrusion-Set'] }}
         render={({ props }) => (
-          <div>
+          <>
             <StixDomainObjectBookmarks
               data={props}
               onLabelClick={onLabelClick.bind(this)}
@@ -63,7 +63,7 @@ class IntrusionSetsCards extends Component {
               bookmarkList={bookmarks}
               rowHeight={340}
             />
-          </div>
+          </>
         )}
       />
     );

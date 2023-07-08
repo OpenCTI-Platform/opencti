@@ -18,6 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { ReportLine_node$data } from './__generated__/ReportLine_node.graphql';
+import { emptyFilled } from '../../../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -153,13 +154,15 @@ const ReportLineComponent: FunctionComponent<ReportLineComponentProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {node.createdBy?.name}
+              {emptyFilled(node.createdBy?.name)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
             >
-              {(node.creators ?? []).map((c) => c?.name).join(', ')}
+              {emptyFilled(
+                (node.creators ?? []).map((c) => c?.name).join(', '),
+              )}
             </div>
             <div
               className={classes.bodyItem}
