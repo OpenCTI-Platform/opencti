@@ -12403,7 +12403,7 @@ __metadata:
     relay-test-utils: 15.0.0
     remark-flexible-markers: 1.0.2
     remark-gfm: 3.0.1
-    remark-parse: 10.0.1
+    remark-parse: 10.0.2
     rxjs: 7.8.1
     subscriptions-transport-ws: 0.11.0
     tap: 16.3.4
@@ -14406,18 +14406,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-parse@npm:10.0.1":
-  version: 10.0.1
-  resolution: "remark-parse@npm:10.0.1"
-  dependencies:
-    "@types/mdast": ^3.0.0
-    mdast-util-from-markdown: ^1.0.0
-    unified: ^10.0.0
-  checksum: 505088e564ab53ff054433368adbb7b551f69240c7d9768975529837a86f1d0f085e72d6211929c5c42db315273df4afc94f3d3a8662ffdb69468534c6643d29
-  languageName: node
-  linkType: hard
-
-"remark-parse@npm:^10.0.0":
+"remark-parse@npm:10.0.2, remark-parse@npm:^10.0.0":
   version: 10.0.2
   resolution: "remark-parse@npm:10.0.2"
   dependencies:
