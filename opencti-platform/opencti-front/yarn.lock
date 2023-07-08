@@ -2061,11 +2061,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-theme-lark@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-theme-lark@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-theme-lark@npm:38.1.0"
   dependencies:
-    "@ckeditor/ckeditor5-ui": ^38.0.1
-  checksum: 0185426d0abe079b936360b442c8ecd3de8dc232bae0548c1ecaea33873ef154bdbd49e84f14d3b40cc4772a735268a3e5545d0e60a6563fd3f318404b11654f
+    "@ckeditor/ckeditor5-ui": 38.1.0
+  checksum: 31ae81a99c27b78cf6f31acf2352b59984b136ce5442817384bbe069cf2bc981aff05add7324e8c49d10f846d88c1dc2427f65bbd5fbc3e19485f7bf3ae5f041
   languageName: node
   linkType: hard
 
