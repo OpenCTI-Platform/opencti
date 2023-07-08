@@ -1927,12 +1927,12 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-list@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-list@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-list@npm:38.1.0"
   dependencies:
-    "@ckeditor/ckeditor5-ui": ^38.0.1
-    ckeditor5: ^38.0.1
-  checksum: 55ff9697046259e1a9b9109f3266ccb8f440262ef7d42fad43086e65dcc6197451388dfbcfa27412d44ccfa1cede03d9e2e0fe72aa50be1e050c797b4385d183
+    "@ckeditor/ckeditor5-ui": 38.1.0
+    ckeditor5: 38.1.0
+  checksum: 4a565c8905bcfbefb4dd7a1a8358089ce7b633140b986ac54b779c8148dd479a7ae8d60be75d8bf29369d18aa418f93c2b34b2d8c1bd6eb91d9a34c6fc7339ff
   languageName: node
   linkType: hard
 
