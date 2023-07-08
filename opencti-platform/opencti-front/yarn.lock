@@ -2044,11 +2044,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-special-characters@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-special-characters@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-special-characters@npm:38.1.0"
   dependencies:
-    ckeditor5: ^38.0.1
-  checksum: 25bba8701b2a6662b5b2010402133981a8ddd43669ac8ff6359edd117af91426cbe6d5edce1b9d64e93320360f8848fb36d7307c4f85df2fbcf8b866727a2163
+    ckeditor5: 38.1.0
+  checksum: f51c63bb1ec94fbc3771347468eb6cfec0e33a34f5ed73092ab30fc90a5da0990e516818dd8661c83b61df4f8f8b9bfc7b763d8d13780cccbad36bc62e6e22cc
   languageName: node
   linkType: hard
 
