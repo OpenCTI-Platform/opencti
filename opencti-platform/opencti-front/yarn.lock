@@ -12385,7 +12385,7 @@ __metadata:
     react-grid-layout: 1.3.4
     react-intl: 6.4.4
     react-leaflet: 4.2.1
-    react-markdown: 8.0.5
+    react-markdown: 8.0.7
     react-mde: 11.5.0
     react-otp-input: 2.4.0
     react-pdf: 6.2.2
@@ -13750,9 +13750,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-markdown@npm:8.0.5":
-  version: 8.0.5
-  resolution: "react-markdown@npm:8.0.5"
+"react-markdown@npm:8.0.7":
+  version: 8.0.7
+  resolution: "react-markdown@npm:8.0.7"
   dependencies:
     "@types/hast": ^2.0.0
     "@types/prop-types": ^15.0.0
@@ -13772,7 +13772,7 @@ __metadata:
   peerDependencies:
     "@types/react": ">=16"
     react: ">=16"
-  checksum: 9d11b7aba16216d590e56b4744e05d2925141bfb0f5885b3d9400ccf006cd24b79ce3b3d20af8a083a01324215b58fa4c5979e44f69d54123ff1dd5dacb0dc89
+  checksum: 0f3e570975134a3382c3fe5189e04e742ae154941463bdfaab2293319da1f1585cb9b75b6f07d99f514c4d728d69cc1af3c96ab37df90003b3bcc210dd0001ba
   languageName: node
   linkType: hard
 
