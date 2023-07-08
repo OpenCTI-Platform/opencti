@@ -1677,11 +1677,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-basic-styles@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-basic-styles@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-basic-styles@npm:38.1.0"
   dependencies:
-    ckeditor5: ^38.0.1
-  checksum: 117ef7db1bc4b14435b8ea7037b60427bf3b38e948a9e2d17c70731c408d057c49fd37a2d2d416c10c974cbe8932962504c8ff892147e5188f469591bac46a41
+    ckeditor5: 38.1.0
+  checksum: 7d5803621c46c9bc60458459e9c05a52c423e9063093cd409d48c6b9d73052c4b2bd86c9174124af501bd6930826c58f9b67529a1a3084471fc7896e154f4b34
   languageName: node
   linkType: hard
 
