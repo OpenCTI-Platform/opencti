@@ -1987,9 +1987,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-react@npm:6.0.0":
-  version: 6.0.0
-  resolution: "@ckeditor/ckeditor5-react@npm:6.0.0"
+"@ckeditor/ckeditor5-react@npm:6.1.0":
+  version: 6.1.0
+  resolution: "@ckeditor/ckeditor5-react@npm:6.1.0"
   dependencies:
     prop-types: ^15.7.2
   peerDependencies:
@@ -1998,7 +1998,7 @@ __metadata:
     "@ckeditor/ckeditor5-utils": ">=37.0.0"
     "@ckeditor/ckeditor5-watchdog": ">=37.0.0"
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: f8548ee3747e19b415ed521cef813947e16e9b81a4452f139168cb404c66354d9e753f5a6be9070483c9855adc5b8ebd59895c0a8a6159297ce91092ae07a0cb
+  checksum: d936fb6bf9c76a6a280e3992a9c9692b0256eddf4636b3218f94ff5d1e75c35dc10c07f63e1b2c98e89fea9e06d8e6c43b8dfddb73ca1f70d9397db088209efc
   languageName: node
   linkType: hard
 
@@ -12486,7 +12486,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-front@workspace:."
   dependencies:
-    "@ckeditor/ckeditor5-react": 6.0.0
+    "@ckeditor/ckeditor5-react": 6.1.0
     "@date-io/date-fns": 2.16.0
     "@emotion/react": 11.11.0
     "@emotion/styled": 11.11.0
