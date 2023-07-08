@@ -2003,11 +2003,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-remove-format@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-remove-format@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-remove-format@npm:38.1.0"
   dependencies:
-    ckeditor5: ^38.0.1
-  checksum: b13482febc7d222793c6fb84bd38944457f8e7ffb9f6a567a8ec103ab0c59cf0efef4972af7fdb5fc74778855298a4cb136451b22bb45ac67d0006d2789bd317
+    ckeditor5: 38.1.0
+  checksum: 71c1a4e5a0bdbebe77be7073d70942216ef08b5b0ab924d085f774cf838e9921f57bf2221f42deaaea93254d5c381b083e27e0a61d971f4b1301aa577c6b5333
   languageName: node
   linkType: hard
 
