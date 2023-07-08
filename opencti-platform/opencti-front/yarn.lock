@@ -2034,12 +2034,12 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-source-editing@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-source-editing@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-source-editing@npm:38.1.0"
   dependencies:
-    "@ckeditor/ckeditor5-theme-lark": ^38.0.1
-    ckeditor5: ^38.0.1
-  checksum: e86528e1f7e5bbf264cef9b48a16eb8ed36f2978f00e2000a805659b74e0dd148c6c0d43538ff9f99e12b6425fce7c534ad6b7ba39bcf743073ecdc7bdcf9696
+    "@ckeditor/ckeditor5-theme-lark": 38.1.0
+    ckeditor5: 38.1.0
+  checksum: 904fa2a83ac3665bbec8b521767c14992131a7a50ec2f89576629b7084b1616d3c225aed8f6a1a9c353cd752e8878e10a3e2b1989e48a51f2e5f0115487aeba8
   languageName: node
   linkType: hard
 
@@ -2059,6 +2059,15 @@ __metadata:
     ckeditor5: ^38.0.1
     lodash-es: ^4.17.15
   checksum: ba11eee0b0f5c9f73b76d532b0086293457493b970e54cc0cbf91a33b66052760d4690ee46d76a94bc6d63f933cfbfbc8a748735a4e0a7fe73e97e4b64ae28dc
+  languageName: node
+  linkType: hard
+
+"@ckeditor/ckeditor5-theme-lark@npm:38.1.0":
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-theme-lark@npm:38.1.0"
+  dependencies:
+    "@ckeditor/ckeditor5-ui": 38.1.0
+  checksum: 31ae81a99c27b78cf6f31acf2352b59984b136ce5442817384bbe069cf2bc981aff05add7324e8c49d10f846d88c1dc2427f65bbd5fbc3e19485f7bf3ae5f041
   languageName: node
   linkType: hard
 
