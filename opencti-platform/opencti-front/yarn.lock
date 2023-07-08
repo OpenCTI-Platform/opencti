@@ -1907,11 +1907,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-indent@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-indent@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-indent@npm:38.1.0"
   dependencies:
-    ckeditor5: ^38.0.1
-  checksum: 135ced3334d7911ef98abc757f14873314d7f0f10b3b954b49348ced5b5bcea04c1733716995dfd878a42d04cddaad0a3027c2ed33542481586ff03856c9b156
+    ckeditor5: 38.1.0
+  checksum: 0226429c5b8cb7eb33b65040e9a09cab19b78cb323fa2ada78a618b563ee3f4d79b7684f9b3474a37a18b62e305692bf888a884b346623d1e95166537c9082c2
   languageName: node
   linkType: hard
 
