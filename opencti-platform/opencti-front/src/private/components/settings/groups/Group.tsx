@@ -23,7 +23,6 @@ import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
 import AccessesMenu from '../AccessesMenu';
 import Triggers from '../common/Triggers';
-import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import GroupUsers from '../users/GroupUsers';
 import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupEdition from './GroupEdition';
