@@ -2143,7 +2143,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-upload@npm:38.1.0":
+"@ckeditor/ckeditor5-upload@npm:38.1.0, @ckeditor/ckeditor5-upload@npm:^38.0.1":
   version: 38.1.0
   resolution: "@ckeditor/ckeditor5-upload@npm:38.1.0"
   dependencies:
@@ -2151,17 +2151,6 @@ __metadata:
     "@ckeditor/ckeditor5-ui": 38.1.0
     "@ckeditor/ckeditor5-utils": 38.1.0
   checksum: 6b910de4f12ff641ef250c9bf0f3ee92602b49c7876f63d15b452ec21f4e07657d888db36f0ded8ceef80b959407d75e612c622972f3772cb301b5113347ffc3
-  languageName: node
-  linkType: hard
-
-"@ckeditor/ckeditor5-upload@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-upload@npm:38.0.1"
-  dependencies:
-    "@ckeditor/ckeditor5-core": ^38.0.1
-    "@ckeditor/ckeditor5-ui": ^38.0.1
-    "@ckeditor/ckeditor5-utils": ^38.0.1
-  checksum: c2eea78a50a46d789987df57e51ec397c82bb3047a15ea0c6f00602eeba6d85b123edd9097cd3e961d8221b93f7251ee7bae04050d1f83c7beffa0ebca93b035
   languageName: node
   linkType: hard
 
