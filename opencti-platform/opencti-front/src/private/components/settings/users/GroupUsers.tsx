@@ -7,17 +7,15 @@ import { PreloadedQuery } from 'react-relay';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import MembersListForGroup, {
-  membersListForGroupQuery,
-} from './MembersListForGroup';
+import GroupUsersLines, { groupUsersLinesQuery } from './GroupUsersLines';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import {
-  MembersListForGroupQuery,
-  MembersListForGroupQuery$variables,
-} from './__generated__/MembersListForGroupQuery.graphql';
+  GroupUsersLinesQuery,
+  GroupUsersLinesQuery$variables,
+} from './__generated__/GroupUsersLinesQuery.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
+import { UserLineDummy } from './UserLine';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -29,21 +27,19 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-interface MembersListContainerProps {
+interface GroupUsersProps {
   groupId: string;
 }
 
-const MembersListContainerForGroup: FunctionComponent<
-MembersListContainerProps
-> = ({ groupId }) => {
+const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const {
     viewStorage,
     helpers,
     paginationOptions: paginationOptionsFromStorage,
-  } = usePaginationLocalStorage<MembersListForGroupQuery$variables>(
-    `view-group-${groupId}-members`,
+  } = usePaginationLocalStorage<GroupUsersLinesQuery$variables>(
+    `view-group-${groupId}-users`,
     {
       id: groupId,
       searchTerm: '',
@@ -63,12 +59,11 @@ MembersListContainerProps
     ...paginationOptionsFromStorage,
     count: 25,
   };
-  const membersQueryRef = useQueryLoading<MembersListForGroupQuery>(
-    membersListForGroupQuery,
+  const queryRef = useQueryLoading<GroupUsersLinesQuery>(
+    groupUsersLinesQuery,
     paginationOptions,
   );
-
-  const userColumns = {
+  const dataColumns = {
     name: {
       label: 'Name',
       width: '20%',
@@ -100,7 +95,6 @@ MembersListContainerProps
       isSortable: true,
     },
   };
-
   return (
     <Grid item={true} xs={12} style={{ marginTop: 40 }}>
       <Typography
@@ -119,20 +113,26 @@ MembersListContainerProps
       </div>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <ColumnsLinesTitles
-          dataColumns={userColumns}
+          dataColumns={dataColumns}
           sortBy={sortBy}
           orderAsc={orderAsc}
           handleSort={helpers.handleSort}
         />
-        {membersQueryRef && (
+        {queryRef && (
           <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <UserLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
           >
-            <MembersListForGroup
-              userColumns={userColumns}
-              queryRef={
-                membersQueryRef as PreloadedQuery<MembersListForGroupQuery>
-              }
+            <GroupUsersLines
+              dataColumns={dataColumns}
+              queryRef={queryRef as PreloadedQuery<GroupUsersLinesQuery>}
               paginationOptions={paginationOptions}
             />
           </React.Suspense>
@@ -142,4 +142,4 @@ MembersListContainerProps
   );
 };
 
-export default MembersListContainerForGroup;
+export default GroupUsers;

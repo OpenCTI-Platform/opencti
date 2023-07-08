@@ -8,7 +8,6 @@ import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -19,12 +18,12 @@ import { Theme } from '../../../../components/Theme';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import AccessesMenu from '../AccessesMenu';
 import SettingsOrganizationDetails from './SettingsOrganizationDetails';
-import { useFormatter } from '../../../../components/i18n';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import MembersListContainerForOrganization from '../users/MembersListContainerForOrganization';
+import SettingsOrganizationUsers from '../users/SettingsOrganizationUsers';
 import Triggers from '../common/Triggers';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
+import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
+import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -237,7 +236,7 @@ const SettingsOrganization = ({
           </div>
         </Grid>
         <Triggers recipientId={organization.id} filter="organization_ids" />
-        <MembersListContainerForOrganization organizationId={organization.id} />
+        <SettingsOrganizationUsers organizationId={organization.id} />
       </Grid>
     </div>
   );

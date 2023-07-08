@@ -27,7 +27,7 @@ class Users extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Users-view',
+      'view-users',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),

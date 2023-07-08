@@ -9,15 +9,15 @@ import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import {
-  MembersListForOrganizationQuery,
-  MembersListForOrganizationQuery$variables,
-} from './__generated__/MembersListForOrganizationQuery.graphql';
-import MembersListForOrganization, {
-  membersListForOrganizationQuery,
-} from './MembersListForOrganization';
+  SettingsOrganizationUsersLinesQuery,
+  SettingsOrganizationUsersLinesQuery$variables,
+} from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
+import SettingsOrganizationUsersLines, {
+  settingsOrganizationUsersLinesQuery,
+} from './SettingsOrganizationUsersLines';
+import { UserLineDummy } from './UserLine';
 
 const useStyles = makeStyles<Theme>(() => ({
   paper: {
@@ -33,7 +33,7 @@ interface MembersListContainerProps {
   organizationId: string;
 }
 
-const MembersListContainerForOrganization: FunctionComponent<
+const SettingsOrganizationUsers: FunctionComponent<
 MembersListContainerProps
 > = ({ organizationId }) => {
   const classes = useStyles();
@@ -42,8 +42,8 @@ MembersListContainerProps
     viewStorage,
     helpers,
     paginationOptions: paginationOptionsFromStorage,
-  } = usePaginationLocalStorage<MembersListForOrganizationQuery$variables>(
-    `view-organization-${organizationId}-members`,
+  } = usePaginationLocalStorage<SettingsOrganizationUsersLinesQuery$variables>(
+    `view-organization-${organizationId}-users`,
     {
       id: organizationId,
       searchTerm: '',
@@ -63,12 +63,11 @@ MembersListContainerProps
     ...paginationOptionsFromStorage,
     count: 25,
   };
-  const membersQueryRef = useQueryLoading<MembersListForOrganizationQuery>(
-    membersListForOrganizationQuery,
+  const queryRef = useQueryLoading<SettingsOrganizationUsersLinesQuery>(
+    settingsOrganizationUsersLinesQuery,
     paginationOptions,
   );
-
-  const userColumns = {
+  const dataColumns = {
     name: {
       label: 'Name',
       width: '20%',
@@ -108,7 +107,7 @@ MembersListContainerProps
         gutterBottom={true}
         style={{ float: 'left', marginRight: 12 }}
       >
-        {t('Members')}
+        {t('Users')}
       </Typography>
       <div style={{ float: 'right', marginTop: -12 }}>
         <SearchInput
@@ -119,19 +118,27 @@ MembersListContainerProps
       </div>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <ColumnsLinesTitles
-          dataColumns={userColumns}
+          dataColumns={dataColumns}
           sortBy={sortBy}
           orderAsc={orderAsc}
           handleSort={helpers.handleSort}
         />
-        {membersQueryRef && (
+        {queryRef && (
           <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <UserLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
           >
-            <MembersListForOrganization
-              userColumns={userColumns}
+            <SettingsOrganizationUsersLines
+              dataColumns={dataColumns}
               queryRef={
-                membersQueryRef as PreloadedQuery<MembersListForOrganizationQuery>
+                queryRef as PreloadedQuery<SettingsOrganizationUsersLinesQuery>
               }
               paginationOptions={paginationOptions}
             />
@@ -142,4 +149,4 @@ MembersListContainerProps
   );
 };
 
-export default MembersListContainerForOrganization;
+export default SettingsOrganizationUsers;

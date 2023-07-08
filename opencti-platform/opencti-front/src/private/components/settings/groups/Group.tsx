@@ -21,11 +21,10 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
-import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import AccessesMenu from '../AccessesMenu';
 import Triggers from '../common/Triggers';
 import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
-import MembersListContainerForGroup from '../users/MembersListContainerForGroup';
+import GroupUsers from '../users/GroupUsers';
 import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupEdition from './GroupEdition';
 import GroupPopover from './GroupPopover';
@@ -133,10 +132,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [displayUpdate, setDisplayUpdate] = useState(false);
-
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const filter: TriggerFilter = 'group_ids';
-
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
@@ -344,8 +340,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 10, marginLeft: 0 }}
         >
-          <Triggers recipientId={group.id} filter={filter} />
-          <MembersListContainerForGroup groupId={group.id} />
+          <Triggers recipientId={group.id} filter="group_ids" />
+          <GroupUsers groupId={group.id} />
         </Grid>
       </Grid>
       <Fab

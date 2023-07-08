@@ -17,12 +17,14 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import {
   TriggerFilter,
-  TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables,
+  TriggersLinesPaginationQuery,
+  TriggersLinesPaginationQuery$variables,
 } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../../components/list_lines';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
+import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -49,7 +51,11 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const ref = useRef(null);
-  const { viewStorage, helpers, paginationOptions: paginationOptionsFromStorage } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions: paginationOptionsFromStorage,
+  } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_TRIGGERS,
     {
       searchTerm: '',
@@ -62,7 +68,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       },
     },
     undefined,
-    false,
+    true,
   );
   const { searchTerm, sortBy, orderAsc } = viewStorage;
 
@@ -155,15 +161,32 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         variant="outlined"
         style={{ marginTop: 0, maxHeight: 500, overflow: 'auto' }}
       >
-        <ColumnsLinesTitles dataColumns={dataColumns} sortBy={sortBy} orderAsc={orderAsc} handleSort={helpers.handleSort} />
+        <ColumnsLinesTitles
+          dataColumns={dataColumns}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          handleSort={helpers.handleSort}
+        />
         {queryRef && (
-          <TriggersLines
-            adminByPass
-            containerRef={ref}
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            dataColumns={dataColumns}
-          />
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <TriggerLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
+            <TriggersLines
+              adminByPass
+              containerRef={ref}
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+            />
+          </React.Suspense>
         )}
       </Paper>
       <TriggerDigestCreation
