@@ -5590,15 +5590,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios-cookiejar-support@npm:4.0.6":
-  version: 4.0.6
-  resolution: "axios-cookiejar-support@npm:4.0.6"
+"axios-cookiejar-support@npm:4.0.7":
+  version: 4.0.7
+  resolution: "axios-cookiejar-support@npm:4.0.7"
   dependencies:
-    http-cookie-agent: ^5.0.2
+    http-cookie-agent: ^5.0.4
   peerDependencies:
     axios: ">=0.20.0"
     tough-cookie: ">=4.0.0"
-  checksum: 0b9cc97f5f9027a9f0dc61e24782aef999a09bc7776dcaebe0b05e1ea6e8bcc370974c4e98ef616d1dd423cd19f847c902c14a66494dafeea2bab77f522aa19c
+  checksum: aeaaa631026edb6d215dcdb042446c34240c2374104ec2708eb643158f0506c6d52fe5eea56882efde7ae3f020e072fc48a5255c515b7297dcc9ac00b8c494d2
   languageName: node
   linkType: hard
 
@@ -8580,11 +8580,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-cookie-agent@npm:^5.0.2":
-  version: 5.0.2
-  resolution: "http-cookie-agent@npm:5.0.2"
+"http-cookie-agent@npm:^5.0.4":
+  version: 5.0.4
+  resolution: "http-cookie-agent@npm:5.0.4"
   dependencies:
-    agent-base: ^6.0.2
+    agent-base: ^7.1.0
   peerDependencies:
     deasync: ^0.1.26
     tough-cookie: ^4.0.0
@@ -8594,7 +8594,7 @@ __metadata:
       optional: true
     undici:
       optional: true
-  checksum: e7b2f5740933ad163d9c7c020f55d7663651fa5d51d6652dad84b22b25813be6ce457cd93e0fa1c7aa5f49932d10d9924944db1c6c3059c19341486018df2c48
+  checksum: c136529cc402d0d7b8d3ae644a41f6ebc986951e0add60efbb7faf6cee74bf0895a25f8827fc362e4dc9238f937bb64d0c144e0236fd5af6cbb48849bbf327cc
   languageName: node
   linkType: hard
 
@@ -10566,7 +10566,7 @@ __metadata:
     apollo-server-express: 3.12.0
     async-lock: 1.4.0
     axios: 1.4.0
-    axios-cookiejar-support: 4.0.6
+    axios-cookiejar-support: 4.0.7
     bcryptjs: 2.4.3
     bluebird: 3.7.2
     body-parser: 1.20.2
