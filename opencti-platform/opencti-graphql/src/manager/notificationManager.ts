@@ -262,8 +262,12 @@ const extractUserAccessPropertiesFromStixObject = (
 
 // endregion
 
-export const isLive = (n: ResolvedTrigger): n is ResolvedLive => n.trigger.trigger_type === 'live';
-export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => n.trigger.trigger_type === 'digest';
+export const isKnowledgeLive = (n: ResolvedTrigger): n is ResolvedLive => {
+  return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'live';
+};
+export const isKnowledgeDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
+  return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'digest';
+};
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
@@ -284,7 +288,7 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
 
 export const getLiveNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
   const liveNotifications = await getNotifications(context);
-  return liveNotifications.filter(isLive);
+  return liveNotifications.filter(isKnowledgeLive);
 };
 
 export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Moment): boolean => {
@@ -320,7 +324,7 @@ export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Moment): boolean
 
 export const getDigestNotifications = async (context: AuthContext, baseDate: Moment): Promise<Array<ResolvedDigest>> => {
   const notifications = await getNotifications(context);
-  return notifications.filter(isDigest).filter((digest) => isTimeTrigger(digest, baseDate));
+  return notifications.filter(isKnowledgeDigest).filter((digest) => isTimeTrigger(digest, baseDate));
 };
 
 export const convertToNotificationUser = (user: AuthUser, outcomes: Array<string>): NotificationUser => {
