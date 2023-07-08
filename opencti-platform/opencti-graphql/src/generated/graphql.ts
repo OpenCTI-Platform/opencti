@@ -7027,6 +7027,15 @@ export type Group = BasicObject & InternalObject & {
 };
 
 
+export type GroupMembersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<UsersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+};
+
+
 export type GroupRolesArgs = {
   orderBy?: InputMaybe<RolesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -15358,6 +15367,15 @@ export type OrganizationImportFilesArgs = {
 
 export type OrganizationJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type OrganizationMembersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<UsersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -30218,7 +30236,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType>;
+  members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<GroupMembersArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['Role']>>>, ParentType, ContextType, Partial<GroupRolesArgs>>;
@@ -32353,7 +32371,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<OrganizationJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType>;
+  members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<OrganizationMembersArgs>>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OrganizationNotesArgs>>;

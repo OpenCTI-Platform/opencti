@@ -22,7 +22,7 @@ const groupResolvers = {
     allowed_marking: (stixCoreObject, _, context) => markingsLoader.load(stixCoreObject.id, context, context.user),
     default_marking: (group, _, context) => defaultMarkingDefinitions(context, group),
     roles: (stixCoreObject, _, context) => rolesLoader.load(stixCoreObject.id, context, context.user),
-    members: (group, _, context) => membersLoader.load(group.id, context, context.user),
+    members: (group, args, context) => membersLoader.load(group.id, context, context.user, args),
     editContext: (group) => fetchEditContext(group.id),
     default_dashboard: (current, _, context) => loadByIdLoader.load(current.default_dashboard, context, context.user),
   },

@@ -8,7 +8,6 @@ import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -18,13 +17,13 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import AccessesMenu from '../AccessesMenu';
-import MembersList from '../users/MembersList';
-import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationDetails from './SettingsOrganizationDetails';
-import SettingsOrganizationEdition from './SettingsOrganizationEdition';
+import SettingsOrganizationUsers from '../users/SettingsOrganizationUsers';
 import Triggers from '../common/Triggers';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
+import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
+import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -111,8 +110,6 @@ const SettingsOrganization = ({
     settingsOrganizationFragment,
     organizationData,
   );
-  const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
-  const members = usersSort(organization.members?.edges ?? []);
   const subOrganizations = organization.subOrganizations?.edges ?? [];
   const parentOrganizations = organization.parentOrganizations?.edges ?? [];
   const canAccessDashboard = (
@@ -239,7 +236,7 @@ const SettingsOrganization = ({
           </div>
         </Grid>
         <Triggers recipientId={organization.id} filter="organization_ids" />
-        <MembersList members={members} />
+        <SettingsOrganizationUsers organizationId={organization.id} />
       </Grid>
     </div>
   );

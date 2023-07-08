@@ -1,18 +1,22 @@
 import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
-import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
+import {
+  Filters,
+  OrderMode,
+  PaginationOptions,
+} from '../../components/list_lines';
 import { BackendFilters, isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 
 export interface MessageFromLocalStorage {
-  id: string
-  message: string
-  activated: boolean
-  dismissible: boolean
-  updated_at: Date
-  dismiss: boolean
-  color: string
+  id: string;
+  message: string;
+  activated: boolean;
+  dismissible: boolean;
+  updated_at: Date;
+  dismiss: boolean;
+  color: string;
 }
 
 export interface LocalStorage {
@@ -37,9 +41,9 @@ export interface LocalStorage {
   selectAll?: boolean;
   selectedElements?: Record<string, unknown>;
   deSelectedElements?: Record<string, unknown>;
-  messages?: MessageFromLocalStorage[]
-  timeField?: string
-  dashboard?: string
+  messages?: MessageFromLocalStorage[];
+  timeField?: string;
+  dashboard?: string;
 }
 
 export interface UseLocalStorageHelpers {
@@ -82,7 +86,10 @@ const localStorageToPaginationOptions = (
     basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
     basePagination.orderBy = sortBy;
   }
-  const paginationFilters: BackendFilters = [...(convertFilters(filters ?? {}) as unknown as BackendFilters), ...(additionalFilters ?? [])];
+  const paginationFilters: BackendFilters = [
+    ...(convertFilters(filters ?? {}) as unknown as BackendFilters),
+    ...(additionalFilters ?? []),
+  ];
   basePagination.filters = paginationFilters.length > 0 ? paginationFilters : undefined;
   return basePagination;
 };
@@ -101,14 +108,20 @@ export type UseLocalStorage = [
 
 const buildParamsFromHistory = (params: LocalStorage) => {
   return removeEmptyFields({
-    filters: params.filters && Object.keys(params.filters).length > 0 ? JSON.stringify(params.filters) : undefined,
+    filters:
+      params.filters && Object.keys(params.filters).length > 0
+        ? JSON.stringify(params.filters)
+        : undefined,
     zoom: JSON.stringify(params.zoom),
     searchTerm: params.searchTerm,
     sortBy: params.sortBy,
     orderAsc: params.orderAsc,
     timeField: params.timeField,
     dashboard: params.dashboard,
-    types: (params.types && params.types.length > 0) ? params.types.join(',') : undefined,
+    types:
+      params.types && params.types.length > 0
+        ? params.types.join(',')
+        : undefined,
   });
 };
 
@@ -118,10 +131,16 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
   return removeEmptyFields({
     filters: filters ? JSON.parse(filters) : undefined,
     zoom: zoom ? JSON.parse(zoom) : undefined,
-    searchTerm: searchObject.get('searchTerm') ? searchObject.get('searchTerm') : undefined,
+    searchTerm: searchObject.get('searchTerm')
+      ? searchObject.get('searchTerm')
+      : undefined,
     sortBy: searchObject.get('sortBy'),
-    types: searchObject.get('types') ? searchObject.get('types')?.split(',') : undefined,
-    orderAsc: searchObject.get('orderAsc') ? searchObject.get('orderAsc') === 'true' : undefined,
+    types: searchObject.get('types')
+      ? searchObject.get('types')?.split(',')
+      : undefined,
+    orderAsc: searchObject.get('orderAsc')
+      ? searchObject.get('orderAsc') === 'true'
+      : undefined,
     timeField: searchObject.get('timeField'),
     dashboard: searchObject.get('dashboard'),
   });
@@ -137,8 +156,9 @@ const setStoredValueToHistory = (
   if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
     const effectiveParams = new URLSearchParams(urlParams);
     if (
-      Object.entries(urlParams)
-        .some(([k, v]) => initialValue?.[k as keyof LocalStorage] !== v)
+      Object.entries(urlParams).some(
+        ([k, v]) => initialValue?.[k as keyof LocalStorage] !== v,
+      )
     ) {
       window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
     } else {
@@ -160,7 +180,9 @@ const useLocalStorage = (
     }
     try {
       const searchParams = new URLSearchParams(window.location.search);
-      const finalParams = !ignoreUri ? searchParamsToStorage(searchParams) : null;
+      const finalParams = !ignoreUri
+        ? searchParamsToStorage(searchParams)
+        : null;
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
       // Parse stored json or if none return initialValue
@@ -199,9 +221,11 @@ const useLocalStorage = (
       // Save state
       setStoredValue(valueToStore);
       // Save to local storage + re-align uri if needed
-      if (typeof window !== 'undefined' && !ignoreUri) {
+      if (typeof window !== 'undefined') {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
-        setStoredValueToHistory(initialValue, valueToStore);
+        if (!ignoreUri) {
+          setStoredValueToHistory(initialValue, valueToStore);
+        }
       }
     } catch (error) {
       // A more advanced implementation would handle the error case
@@ -225,8 +249,9 @@ export const usePaginationLocalStorage = <U>(
   key: string,
   initialValue: LocalStorage,
   additionalFilters?: BackendFilters,
+  ignoreUri?: boolean,
 ): PaginationLocalStorage<U> => {
-  const [viewStorage, setValue] = useLocalStorage(key, initialValue);
+  const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
   const paginationOptions = localStorageToPaginationOptions(
     { count: 25, ...viewStorage },
     additionalFilters,
@@ -310,7 +335,10 @@ export const usePaginationLocalStorage = <U>(
         event.stopPropagation();
         event.preventDefault();
       }
-      setValue((c) => ({ ...c, filters: R.assoc(k, [{ id, value }], c.filters) }));
+      setValue((c) => ({
+        ...c,
+        filters: R.assoc(k, [{ id, value }], c.filters),
+      }));
     },
     handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),

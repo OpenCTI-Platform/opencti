@@ -21,10 +21,9 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
-import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import AccessesMenu from '../AccessesMenu';
 import Triggers from '../common/Triggers';
-import MembersList from '../users/MembersList';
+import GroupUsers from '../users/GroupUsers';
 import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupEdition from './GroupEdition';
 import GroupPopover from './GroupPopover';
@@ -133,15 +132,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const { t } = useFormatter();
   const [displayUpdate, setDisplayUpdate] = useState(false);
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const filter: TriggerFilter = 'group_ids';
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
   };
-  const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
-  const members = usersSort(group.members?.edges ?? []);
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
     R.descend(R.propOr(0, 'x_opencti_order')),
@@ -343,8 +339,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 10, marginLeft: 0 }}
         >
-          <Triggers recipientId={group.id} filter={filter} />
-          <MembersList members={members} />
+          <Triggers recipientId={group.id} filter="group_ids" />
+          <GroupUsers groupId={group.id} />
         </Grid>
       </Grid>
       <Fab

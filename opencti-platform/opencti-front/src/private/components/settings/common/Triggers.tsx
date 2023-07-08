@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import React, { FunctionComponent, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import TriggerLiveCreation from '../../profile/triggers/TriggerLiveCreation';
-import TriggerLineTitles from '../../profile/TriggerLineTitles';
+import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import TriggersLines, {
   triggersLinesQuery,
 } from '../../profile/triggers/TriggersLines';
@@ -18,7 +18,13 @@ import { useFormatter } from '../../../../components/i18n';
 import {
   TriggerFilter,
   TriggersLinesPaginationQuery,
+  TriggersLinesPaginationQuery$variables,
 } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import SearchInput from '../../../../components/SearchInput';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { Filters } from '../../../../components/list_lines';
+import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
+import { TriggerLineDummy } from '../../profile/triggers/TriggerLine';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -45,7 +51,29 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const ref = useRef(null);
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions: paginationOptionsFromStorage,
+  } = usePaginationLocalStorage<TriggersLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY_TRIGGERS,
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      filters: {} as Filters,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
+    },
+    undefined,
+    true,
+  );
+  const { searchTerm, sortBy, orderAsc } = viewStorage;
+
   const paginationOptions = {
+    ...paginationOptionsFromStorage,
     count: 25,
     filters: [{ key: [filter], values: [recipientId] }],
   };
@@ -91,6 +119,13 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       >
         {t('Triggers and Digests')}
       </Typography>
+      <div style={{ float: 'right', marginTop: -12 }}>
+        <SearchInput
+          variant="thin"
+          onSubmit={helpers.handleSearch}
+          keyword={searchTerm}
+        />
+      </div>
       <Tooltip title={t('Add a live trigger')}>
         <IconButton
           aria-label="Add"
@@ -126,15 +161,32 @@ const Triggers: FunctionComponent<TriggersProps> = ({
         variant="outlined"
         style={{ marginTop: 0, maxHeight: 500, overflow: 'auto' }}
       >
-        <TriggerLineTitles dataColumns={dataColumns} />
+        <ColumnsLinesTitles
+          dataColumns={dataColumns}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          handleSort={helpers.handleSort}
+        />
         {queryRef && (
-          <TriggersLines
-            adminByPass
-            containerRef={ref}
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            dataColumns={dataColumns}
-          />
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <TriggerLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
+            <TriggersLines
+              adminByPass
+              containerRef={ref}
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+            />
+          </React.Suspense>
         )}
       </Paper>
       <TriggerDigestCreation

@@ -78,9 +78,7 @@ const StatusTemplateLine: FunctionComponent<StatusTemplateLineProps> = ({
   paginationOptions,
 }) => {
   const classes = useStyles();
-
   const data = useFragment(StatusTemplateLineFragment, node);
-
   return (
     <ListItemButton classes={{ root: classes.item }} divider={true}>
       <ListItemIcon style={{ color: data.color }}>

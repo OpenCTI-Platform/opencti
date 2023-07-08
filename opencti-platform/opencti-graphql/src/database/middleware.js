@@ -271,7 +271,7 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 
 // Listing handle
 const batchListThrough = async (context, user, sources, sourceSide, relationType, targetEntityType, opts = {}) => {
-  const { paginate = true, withInferences = true, batched = true, first = null } = opts;
+  const { paginate = true, withInferences = true, batched = true, first = null, search = null } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
   const ids = Array.isArray(sources) ? sources : [sources];
@@ -298,6 +298,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     filters,
     types: [relationType],
     connectionFormat: false,
+    search,
   });
   // For each relation resolved the target entity
   const targets = await elFindByIds(context, user, R.uniq(relations.map((s) => s[`${opposite}Id`])), opts);
