@@ -1668,11 +1668,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-autoformat@npm:^38.0.1":
-  version: 38.0.1
-  resolution: "@ckeditor/ckeditor5-autoformat@npm:38.0.1"
+  version: 38.1.0
+  resolution: "@ckeditor/ckeditor5-autoformat@npm:38.1.0"
   dependencies:
-    ckeditor5: ^38.0.1
-  checksum: 665ff1ee71a1ea80aff3f1f74c41f2e7a5908bb483167e13a5a4f3bf5c3c5c211c7201b96c23f301e9693ec6f54835bf584b3e38098b91233298c79a73f16928
+    ckeditor5: 38.1.0
+  checksum: bb9949bbced8d9f5a613d93a5edeb4966be1b1a9ca9844b347305e4dc8674d87df1b0d59a5d27222dbfe3fa9f10fc40000cd13e8fc28879b2b6369763ef9a311
   languageName: node
   linkType: hard
 
