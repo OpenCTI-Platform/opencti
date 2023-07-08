@@ -18,7 +18,7 @@ enum TriggersOrdering {
     created
     event_types
     trigger_type
-    outcomes
+    notifiers
 }
 enum TriggerType {
     live
@@ -50,7 +50,7 @@ input TriggerLiveAddInput {
     name: String! @constraint(minLength: 1)
     description: String
     event_types: [TriggerEventType!]!
-    outcomes: [StixRef!]
+    notifiers: [StixRef!]
     instance_trigger: Boolean!
     filters: String
     recipients: [String!]
@@ -61,7 +61,7 @@ input TriggerDigestAddInput {
     trigger_ids: [String!]! # Triggers that composed the digest
     period: DigestPeriod!
     trigger_time: String
-    outcomes: [StixRef!]!
+    notifiers: [StixRef!]!
     recipients: [String!]
 }
 
@@ -77,7 +77,7 @@ type Trigger implements InternalObject & BasicObject {
     trigger_type: TriggerType! # live or digest
     event_types: [String!]
     filters: String
-    outcomes: [StixRef!]
+    notifiers: [Notifier!]
     trigger_ids: [String]
     triggers: [Trigger]
     recipients: [Member]
@@ -113,7 +113,7 @@ enum TriggerActivityEventType {
 input TriggerActivityLiveAddInput {
     name: String! @constraint(minLength: 1)
     description: String
-    outcomes: [StixRef!]
+    notifiers: [StixRef!]
     filters: String
     recipients: [String!]!
 }
@@ -124,7 +124,7 @@ input TriggerActivityDigestAddInput {
     trigger_ids: [String!]! # Triggers that composed the digest
     period: DigestPeriod!
     trigger_time: String
-    outcomes: [StixRef!]!
+    notifiers: [StixRef!]!
     recipients: [String!]!
 }
 

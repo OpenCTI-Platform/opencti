@@ -12,6 +12,8 @@ generates:
     config:
       useTypeImports: true
       useIndexSignature: true
+      maybeValue: T | null | undefined
+      inputMaybeValue: T | null
       mappers:
         Channel: ../modules/channel/channel-types#BasicStoreEntityChannel
         Language: ../modules/language/language-types#BasicStoreEntityLanguage
@@ -34,6 +36,7 @@ generates:
         EntitySetting: ../modules/entitySetting/entitySetting-types#BasicStoreEntityEntitySetting
         Workspace: ../modules/workspace/workspace-types#BasicStoreEntityWorkspace
         MalwareAnalysis: ../modules/malwareAnalysis/malwareAnalysis-types#BasicStoreEntityMalwareAnalysis
+        Notifier: ../modules/notifier/notifier-types#BasicStoreEntityNotifier
         ThreatActorIndividual: ../modules/threatActorIndividual/threatActorIndividual-types#BasicStoreEntityThreatActorIndividual
   ./graphql.schema.json:
     plugins:

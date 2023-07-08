@@ -1,35 +1,31 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import * as Yup from 'yup';
-import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
-import ListItemText from '@mui/material/ListItemText';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useFragment, useMutation } from 'react-relay';
+import * as Yup from 'yup';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
-import { Option } from '../../common/form/ReferenceField';
-import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
-import Filters from '../../common/lists/Filters';
+import TextField from '../../../../components/TextField';
+import TimePickerField from '../../../../components/TimePickerField';
+import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import {
-  convertEventTypes,
-  convertOutcomes,
-  convertTriggers, filterEventTypesOptions,
-  instanceEventTypesOptions, outcomesOptions,
-} from '../../../../utils/edition';
+import { dayStartDate, parse } from '../../../../utils/Time';
+import NotifierField from '../../common/form/NotifierField';
+import { Option } from '../../common/form/ReferenceField';
+import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
+import Filters from '../../common/lists/Filters';
+import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
+import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
-import TimePickerField from '../../../../components/TimePickerField';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -52,7 +48,10 @@ const triggerEditionOverviewFragment = graphql`
     filters
     created
     modified
-    outcomes
+    notifiers{
+      id
+      name
+    }
     period
     trigger_time
     instance_trigger
@@ -81,7 +80,7 @@ interface TriggerEditionFormValues {
     value: TriggerEventType,
     label: string,
   }[];
-  outcomes: {
+  notifiers: {
     value: string,
     label: string,
   }[];
@@ -157,9 +156,9 @@ TriggerEditionOverviewProps
         trigger.trigger_type === 'live'
           ? Yup.array().min(1, t('Minimum one event type')).required(t('This field is required'))
           : Yup.array().nullable(),
-    outcomes:
+    notifiers:
         trigger.trigger_type === 'digest'
-          ? Yup.array().min(1, t('Minimum one outcome')).required(t('This field is required'))
+          ? Yup.array().min(1, t('Minimum one notifier')).required(t('This field is required'))
           : Yup.array().nullable(),
     period:
         trigger.trigger_type === 'digest'
@@ -279,7 +278,7 @@ TriggerEditionOverviewProps
     name: trigger.name,
     description: trigger.description,
     event_types: convertEventTypes(trigger),
-    outcomes: convertOutcomes(trigger),
+    notifiers: convertNotifiers(trigger),
     trigger_ids: convertTriggers(trigger),
     period: trigger.period,
     day: currentTime.length > 1 ? currentTime[0] : '1',
@@ -411,30 +410,9 @@ TriggerEditionOverviewProps
               }}
             />
           )}
-          <Field
-            component={AutocompleteField}
-            name="outcomes"
-            style={fieldSpacingContainerStyle}
-            multiple={true}
-            textfieldprops={{
-              variant: 'standard',
-              label: t('Notification'),
-            }}
-            options={outcomesOptions}
-            onChange={(name: string, value: { value: string, label: string }[]) => handleSubmitField(name, value.map((n) => n.value))}
-            renderOption={(
-              props: React.HTMLAttributes<HTMLLIElement>,
-              option: { value: string, label: string },
-            ) => (
-              <MenuItem value={option.value} {...props}>
-                <Checkbox
-                  checked={values.outcomes.map((n) => n.value).includes(option.value)}
-                />
-                <ListItemText
-                  primary={option.label}
-                />
-              </MenuItem>
-            )}
+          <NotifierField
+            name="notifiers"
+            onChange={(name, options) => handleSubmitField(name, options.map(({ value }) => value))}
           />
           {trigger.trigger_type === 'live'
             && <span>

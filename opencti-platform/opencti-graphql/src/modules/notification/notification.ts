@@ -36,7 +36,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'event_types', type: 'string', mandatoryType: 'external', multiple: true, upsert: false },
     { name: 'trigger_scope', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'outcomes', type: 'string', mandatoryType: 'external', multiple: true, upsert: false },
+    { name: 'notifiers', type: 'string', mandatoryType: 'external', multiple: true, upsert: false },
     { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'recipients', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'trigger_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },

@@ -31,170 +31,170 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 
 // -- PREPARE queries --
 const MARKING_READ_QUERY = gql`
-    query markingDefinition($id: String!) {
-        markingDefinition(id: $id) {
-            id
-            definition_type
-            definition
-            standard_id
-        }
+  query markingDefinition($id: String!) {
+    markingDefinition(id: $id) {
+      id
+      definition_type
+      definition
+      standard_id
     }
+  }
 `;
 const CREATE_USER_QUERY = gql`
-    mutation UserAdd($input: UserAddInput!) {
-        userAdd(input: $input) {
-            id
-            name
-            standard_id
-        }
+  mutation UserAdd($input: UserAddInput!) {
+    userAdd(input: $input) {
+      id
+      name
+      standard_id
     }
+  }
 `;
 const CREATE_GROUP_QUERY = gql`
-    mutation GroupAdd($input: GroupAddInput!) {
-        groupAdd(input: $input) {
-            id
-            name
-        }
+  mutation GroupAdd($input: GroupAddInput!) {
+    groupAdd(input: $input) {
+      id
+      name
     }
+  }
 `;
 const GROUP_RELATION_ADD_QUERY = gql`
-    mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
-        groupEdit(id: $id) {
-            relationAdd(input: $input) {
-                id
-                to {
-                    ... on Group {
-                        members {
-                            edges {
-                                node {
-                                    id
-                                }
-                            }
-                        }
-                    }
+  mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
+    groupEdit(id: $id) {
+      relationAdd(input: $input) {
+        id
+        to {
+          ... on Group {
+            members {
+              edges {
+                node {
+                  id
                 }
+              }
             }
+          }
         }
+      }
     }
+  }
 `;
 const USER_ORGANIZATION_ADD_QUERY = gql`
-    mutation UserEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
-        userEdit(id: $id) {
-            organizationAdd(organizationId: $organizationId) {
-                id
-                name
-                standard_id
-            }
-        }
+  mutation UserEditionOverviewGroupAddMutation($id: ID!, $organizationId: ID!) {
+    userEdit(id: $id) {
+      organizationAdd(organizationId: $organizationId) {
+        id
+        name
+        standard_id
+      }
     }
+  }
 `;
 const CREATE_LIVE_TRIGGER_QUERY = gql`
-    mutation TriggerKnowledgeLiveAdd($input: TriggerLiveAddInput!) {
-        triggerKnowledgeLiveAdd(input: $input) {
-            id
-            name
-        }
+  mutation TriggerKnowledgeLiveAdd($input: TriggerLiveAddInput!) {
+    triggerKnowledgeLiveAdd(input: $input) {
+      id
+      name
     }
+  }
 `;
 const CREATE_MALWARE_QUERY = gql`
-    mutation MalwareAdd($input: MalwareAddInput!) {
-        malwareAdd(input: $input) {
-            id
-            name
-            standard_id
-        }
+  mutation MalwareAdd($input: MalwareAddInput!) {
+    malwareAdd(input: $input) {
+      id
+      name
+      standard_id
     }
+  }
 `;
 const CREATE_REPORT_QUERY = gql`
-    mutation ReportAdd($input: ReportAddInput!) {
-        reportAdd(input: $input) {
-            id
-            name
-            standard_id
-        }
+  mutation ReportAdd($input: ReportAddInput!) {
+    reportAdd(input: $input) {
+      id
+      name
+      standard_id
     }
+  }
 `;
 const CREATE_ORGANIZATION_QUERY = gql`
-    mutation OrganizationAdd($input: OrganizationAddInput!) {
-        organizationAdd(input: $input) {
-            id
-            name
-            standard_id
-        }
+  mutation OrganizationAdd($input: OrganizationAddInput!) {
+    organizationAdd(input: $input) {
+      id
+      name
+      standard_id
     }
+  }
 `;
 const CREATE_ATTACKPATTERN_QUERY = gql`
-    mutation AttackPatternAdd($input: AttackPatternAddInput!) {
-        attackPatternAdd(input: $input) {
-            id
-            name
-            standard_id
-        }
+  mutation AttackPatternAdd($input: AttackPatternAddInput!) {
+    attackPatternAdd(input: $input) {
+      id
+      name
+      standard_id
     }
+  }
 `;
 const CREATE_RELATIONSHIP_QUERY = gql`
-    mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
-        stixCoreRelationshipAdd(input: $input) {
-            id
-            standard_id
-        }
+  mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
+    stixCoreRelationshipAdd(input: $input) {
+      id
+      standard_id
     }
+  }
 `;
 const CREATE_SIGHTING_QUERY = gql`
-    mutation StixSightingRelationshipAdd($input: StixSightingRelationshipAddInput!) {
-        stixSightingRelationshipAdd(input: $input) {
-            id
-            standard_id
-        }
+  mutation StixSightingRelationshipAdd($input: StixSightingRelationshipAddInput!) {
+    stixSightingRelationshipAdd(input: $input) {
+      id
+      standard_id
     }
+  }
 `;
 
 const DELETE_USER_QUERY = gql`
-    mutation userDelete($id: ID!) {
-        userEdit(id: $id) {
-            delete
-        }
+  mutation userDelete($id: ID!) {
+    userEdit(id: $id) {
+      delete
     }
+  }
 `;
 const DELETE_GROUP_QUERY = gql`
-    mutation groupDelete($id: ID!) {
-        groupEdit(id: $id) {
-            delete
-        }
+  mutation groupDelete($id: ID!) {
+    groupEdit(id: $id) {
+      delete
     }
+  }
 `;
 const DELETE_TRIGGER_QUERY = gql`
-    mutation triggerDelete($id: ID!) {
-        triggerDelete(id: $id)
-    }
+  mutation triggerDelete($id: ID!) {
+    triggerKnowledgeDelete(id: $id)
+  }
 `;
 const DELETE_MALWARE_QUERY = gql`
-    mutation malwareDelete($id: ID!) {
-        malwareEdit(id: $id) {
-            delete
-        }
+  mutation malwareDelete($id: ID!) {
+    malwareEdit(id: $id) {
+      delete
     }
+  }
 `;
 const DELETE_REPORT_QUERY = gql`
-    mutation reportDelete($id: ID!) {
-        reportEdit(id: $id) {
-            delete
-        }
+  mutation reportDelete($id: ID!) {
+    reportEdit(id: $id) {
+      delete
     }
+  }
 `;
 const DELETE_ORGANIZATION_QUERY = gql`
-    mutation organizationDelete($id: ID!) {
-        organizationEdit(id: $id) {
-            delete
-        }
+  mutation organizationDelete($id: ID!) {
+    organizationEdit(id: $id) {
+      delete
     }
+  }
 `;
 const DELETE_ATTACKPATTERN_QUERY = gql`
-    mutation attackPatternDelete($id: ID!) {
-        attackPatternEdit(id: $id) {
-            delete
-        }
+  mutation attackPatternDelete($id: ID!) {
+    attackPatternEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 describe('Notification manager behaviors test', async () => {
@@ -502,15 +502,27 @@ describe('Notification manager behaviors test', async () => {
     result = await generateNotificationMessageForInstanceWithRefs(context, greenUser, stixCoreRelationship, [stixGreenOrganization, stixMalware]);
     expect(result).toEqual('[relationship] Restricted delivers malware_entity containing [organization] greenOrganization_name,[malware] malware_name');
 
-    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixRedOrganization, action: 'added in' }]);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{
+      instance: stixGreenOrganization,
+      action: 'added in'
+    }, { instance: stixRedOrganization, action: 'added in' }]);
     expect(result).toEqual('[organization] greenOrganization_name,[organization] redOrganization_name added in [report] report_name');
     result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }]);
     expect(result).toEqual('[organization] greenOrganization_name added in [report] report_name');
-    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixMalware, action: 'removed from' }]);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixReport, [{
+      instance: stixGreenOrganization,
+      action: 'added in'
+    }, { instance: stixMalware, action: 'removed from' }]);
     expect(result).toEqual('[organization] greenOrganization_name added in [report] report_name,[malware] malware_name removed from [report] report_name');
-    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'added in' }, { instance: stixMalware, action: 'added in' }]);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, adminUser, stixCoreRelationship, [{
+      instance: stixGreenOrganization,
+      action: 'added in'
+    }, { instance: stixMalware, action: 'added in' }]);
     expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name added in [relationship] attack-pattern_entity delivers malware_entity');
-    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, greenUser, stixCoreRelationship, [{ instance: stixGreenOrganization, action: 'removed from' }, { instance: stixMalware, action: 'removed from' }]);
+    result = await generateNotificationMessageForInstanceWithRefsUpdate(context, greenUser, stixCoreRelationship, [{
+      instance: stixGreenOrganization,
+      action: 'removed from'
+    }, { instance: stixMalware, action: 'removed from' }]);
     expect(result).toEqual('[organization] greenOrganization_name,[malware] malware_name removed from [relationship] Restricted delivers malware_entity');
   });
 
@@ -1192,103 +1204,103 @@ describe('Notification manager behaviors test', async () => {
       name: 'triggerReportUpdate',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
-      outcomes: ['UI'],
+      notifiers: ['UI'],
       filters: JSON.stringify(frontendFiltersReport),
     };
     const triggerReportDelete = { // instance trigger on a report, deletion only
       instance_trigger: true,
       event_types: [EVENT_TYPE_DELETE],
-      outcomes: ['UI'],
+      notifiers: ['UI'],
       filters: JSON.stringify(frontendFiltersReport),
     };
     const triggerRedReportUpdate = { // instance trigger on a red report update
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersRedReport),
     };
     const triggerRedReportAllEvents = { // instance trigger on a red report
       name: 'triggerRedReportAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersRedReport),
     };
     const triggerRedAttackPatternAllEvents = { // instance trigger on a red attack pattern
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersRedAttackPattern),
     };
     const triggerMalwareAllEvents = { // instance trigger on a malware
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersMalware),
     };
     const triggerMalwareUpdate = { // instance trigger on a malware, update only
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersMalware),
     };
     const triggerMalwareDelete = { // instance trigger on a malware, delete only
       name: 'triggerMalwareAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersMalware),
     };
     const triggerRedOrganizationAllEvents = { // instance trigger on an organization with marking red
       name: 'triggerRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersRedOrganization),
     };
     const triggerOrganizationsAllEvents = { // instance trigger on an organization with marking green, an organization with marking red, and the user organization
       name: 'triggerOrganizationsAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersOrganizations),
     };
     const triggerAttackPatternAllEvents = { // instance trigger on a red attack pattern
       name: 'triggerAttackPatternAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersAttackPattern),
     };
     const triggerMalwareAndRedAttackPatternAllEvents = { // instance trigger on a malware and a red attack pattern
       name: 'triggerMalwareAndRedAttackPatternAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersMalwareAndRedAttackPattern),
     };
     const triggerMalwareAndRedOrganizationAllEvents = { // instance trigger on a malware and a red organization
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersMalwareAndRedOrganization),
     };
     const triggerMalwareAndGreenOrganizationAllEvents = { // instance trigger on a malware and a green organization
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersMalwareAndGreenOrganization),
     };
     const triggerMalwareAndRedOrganizationAndRedAttackPatternAllEvents = { // instance trigger on a malware, a red organization and a red attack pattern
       name: 'triggerMalwareAndRedOrganizationAllEvents',
       instance_trigger: true,
       event_types: [EVENT_TYPE_UPDATE, EVENT_TYPE_DELETE],
-      outcomes: [],
+      notifiers: [],
       filters: JSON.stringify(frontendFiltersMalwareAndRedOrganizationAndRedAttackPattern),
     };
     // -- create the triggers
@@ -1318,7 +1330,7 @@ describe('Notification manager behaviors test', async () => {
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_DELETE);
     expect(result[0].message).toEqual('[report] redReport_name');
-    expect(result[0].user.outcomes).toEqual([]);
+    expect(result[0].user.notifiers).toEqual([]);
     expect(result[0].user.user_id).toEqual(adminUser.id);
 
     // trigger on all events for X, side events only
@@ -1339,7 +1351,7 @@ describe('Notification manager behaviors test', async () => {
     expect(result.length).toEqual(2);
     expect(result[0].message).toEqual('[relationship] attack-pattern_entity delivers malware_entity');
     expect(result[0].type).toEqual(EVENT_TYPE_CREATE);
-    expect(result[0].user.outcomes).toEqual([]);
+    expect(result[0].user.notifiers).toEqual([]);
     expect(result[0].user.user_id).toEqual(adminUser.id);
     expect(result[1].type).toEqual(EVENT_TYPE_CREATE);
     expect(result[1].message).toEqual('[relationship] Restricted delivers malware_entity');
@@ -1350,7 +1362,7 @@ describe('Notification manager behaviors test', async () => {
     expect(result.length).toEqual(2);
     expect(result[0].message).toEqual('[relationship] attack-pattern_entity delivers malware_entity');
     expect(result[0].type).toEqual(EVENT_TYPE_CREATE);
-    expect(result[0].user.outcomes).toEqual([]);
+    expect(result[0].user.notifiers).toEqual([]);
     expect(result[1].message).toEqual('[relationship] Restricted delivers malware_entity');
 
     // trigger on A, side events only
@@ -1532,7 +1544,7 @@ describe('Notification manager behaviors test', async () => {
     expect(result.length).toEqual(1);
     expect(result[0].type).toEqual(EVENT_TYPE_UPDATE);
     expect(result[0].message).toEqual('[report] report_name');
-    expect(result[0].user.outcomes).toEqual(['UI']);
+    expect(result[0].user.notifiers).toEqual(['UI']);
     expect(result[0].user.user_id).toEqual(adminUser.id);
 
     result = await buildTargetEvents(context, users, streamEventAddRedMarkingToReportContainingMalware, triggerReportUpdate, true); // side events

@@ -594,7 +594,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   component={Link}
                   to="/dashboard/profile/notifications"
                   color={
-                    location.pathname === '/dashboard/profile/notifications'
+                    ['/dashboard/profile/notifications', '/dashboard/profile/triggers'].includes(location.pathname)
                       ? 'secondary'
                       : 'default'
                   }

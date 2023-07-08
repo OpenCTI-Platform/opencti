@@ -277,23 +277,19 @@ export const triggersActivityFind = (context: AuthContext, user: AuthUser, opts:
 export const notificationGet = (context: AuthContext, user: AuthUser, narrativeId: string): BasicStoreEntityNotification => {
   return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NOTIFICATION) as unknown as BasicStoreEntityNotification;
 };
-
 export const notificationsFind = (context: AuthContext, user: AuthUser, opts: QueryNotificationsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], opts);
 };
-
 export const myNotificationsFind = (context: AuthContext, user: AuthUser, opts: QueryNotificationsArgs) => {
   const queryFilters = [...(opts.filters || []), { key: 'user_id', values: [user.id] }];
   const queryArgs = { ...opts, filters: queryFilters };
   return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], queryArgs);
 };
-
 export const myUnreadNotificationsCount = async (context: AuthContext, user: AuthUser, userId = null) => {
   const queryFilters = [{ key: 'user_id', values: [userId ?? user.id] }, { key: 'is_read', values: [false] }];
   const queryArgs = { filters: queryFilters };
   return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...queryArgs, types: [ENTITY_TYPE_NOTIFICATION] });
 };
-
 export const notificationDelete = async (context: AuthContext, user: AuthUser, notificationId: string) => {
   const notification = await notificationGet(context, user, notificationId);
   await deleteElementById(context, user, notificationId, ENTITY_TYPE_NOTIFICATION);
@@ -301,14 +297,12 @@ export const notificationDelete = async (context: AuthContext, user: AuthUser, n
   await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: notification.user_id }, user);
   return notificationId;
 };
-
 export const notificationEditRead = async (context: AuthContext, user: AuthUser, notificationId: string, read: boolean) => {
   const { element } = await patchAttribute(context, user, notificationId, ENTITY_TYPE_NOTIFICATION, { is_read: read });
   const unreadNotificationsCount = await myUnreadNotificationsCount(context, user);
   await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: element.user_id }, user);
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].EDIT_TOPIC, element, user);
 };
-
 export const addNotification = async (context: AuthContext, user: AuthUser, notification: NotificationAddInput) => {
   const created = await createEntity(context, user, notification, ENTITY_TYPE_NOTIFICATION);
   const unreadNotificationsCount = await myUnreadNotificationsCount(context, user, created.user_id);

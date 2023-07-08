@@ -58,10 +58,7 @@ export const convertCreatedBy = (element) => (isEmptyField(element?.createdBy)
     type: element.createdBy.entity_type,
   });
 
-export const outcomesOptions = [
-  { value: 'f4ee7b33-006a-4b0d-b57d-411ad288653d', label: 'User interface' },
-  { value: '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822', label: 'Email' },
-];
+export const convertNotifiers = (element) => (element?.notifiers?.map(({ id, name }) => ({ value: id, label: name })));
 
 export const filterEventTypesOptions = [
   { value: 'create', label: 'Creation' },
@@ -73,10 +70,6 @@ export const instanceEventTypesOptions = [
   { value: 'update', label: 'Modification' },
   { value: 'delete', label: 'Deletion' },
 ];
-
-export const convertOutcomes = (element) => (element?.outcomes?.map((outcome) => {
-  return outcomesOptions.find((o) => o.value === outcome);
-}));
 
 export const convertEventTypes = (element) => (element?.event_types?.map((event_type) => {
   return filterEventTypesOptions.find((o) => o.value === event_type);

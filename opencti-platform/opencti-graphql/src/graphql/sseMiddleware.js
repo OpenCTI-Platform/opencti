@@ -15,7 +15,6 @@ import {
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
   EVENT_TYPE_UPDATE,
-  filtersToJson,
   generateCreateMessage,
   isEmptyField,
   isNotEmptyField,
@@ -106,7 +105,7 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
 
   // if bypass, let's go
   if (user.capabilities.findIndex(({ name }) => name === BYPASS) > -1 && collection?.stream_public) {
-    return { streamFilters: filtersToJson(collection.filters), collection };
+    return { streamFilters: JSON.parse(collection.filters ?? ''), collection };
   }
 
   // Build filters

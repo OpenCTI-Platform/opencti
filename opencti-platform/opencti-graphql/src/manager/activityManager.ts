@@ -124,7 +124,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
     if (ENABLED_DEMO_MODE) sourceUser = REDACTED_USER;
     for (let triggerIndex = 0; triggerIndex < triggers.length; triggerIndex += 1) {
       const { trigger, users } = triggers[triggerIndex];
-      const { internal_id: notification_id, outcomes } = trigger;
+      const { internal_id: notification_id, notifiers } = trigger;
       // Filter the event
       const isMatchFilter = await isEventMatchFilter(context, trigger, event.data);
       if (isMatchFilter) {
@@ -132,7 +132,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
         const version = EVENT_NOTIFICATION_VERSION;
         for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
           const user = users[indexUser];
-          targets.push({ user: convertToNotificationUser(user, outcomes), type: event_scope, message: `\`${sourceUser?.name}\` ${message}` });
+          targets.push({ user: convertToNotificationUser(user, notifiers), type: event_scope, message: `\`${sourceUser?.name}\` ${message}` });
         }
         const notificationEvent: ActivityNotificationEvent = { version, notification_id, type: 'live', targets, data };
         await storeNotificationEvent(context, notificationEvent);

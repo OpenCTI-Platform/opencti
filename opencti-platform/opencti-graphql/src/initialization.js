@@ -10,6 +10,7 @@ import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { STREAMAPI, TAXIIAPI } from './domain/user';
 import { addCapability, addGroup, addRole } from './domain/grant';
+import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
@@ -377,6 +378,7 @@ const platformInit = async (withMarkings = true) => {
       await initializeMigration(context);
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
+      await initDefaultNotifiers(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       await initializeInternalQueues();

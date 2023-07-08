@@ -14,7 +14,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   trigger_type: string
   trigger_scope: string
   event_types: string[]
-  outcomes: string[]
+  notifiers: string[]
   user_ids: string[]
   group_ids: string[]
   organization_ids: string[]
@@ -41,7 +41,7 @@ export interface StoreEntityTrigger extends StoreEntity {
   description: string
   trigger_type: string
   event_types: string[]
-  outcomes: string[]
+  notifiers: string[]
   user_ids: string[]
   group_ids: string[]
   organization_ids: string[]

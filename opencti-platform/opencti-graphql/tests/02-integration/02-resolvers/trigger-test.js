@@ -19,7 +19,10 @@ const LIST_QUERY = gql`
                     description
                     created
                     modified
-                    outcomes
+                    notifiers {
+                      id
+                      name
+                    }
                 }
             }
         }
@@ -82,7 +85,7 @@ describe('Trigger resolver standard behavior', () => {
         name: 'live trigger',
         description: '',
         event_types: [EVENT_TYPE_CREATE],
-        outcomes: [],
+        notifiers: [],
         filters: '',
         instance_trigger: false,
       },
@@ -102,7 +105,7 @@ describe('Trigger resolver standard behavior', () => {
         trigger_ids: [triggerInternalId],
         period: 'hour',
         trigger_time: '',
-        outcomes: [],
+        notifiers: [],
       },
     };
     const digest = await queryAsAdmin({ query: CREATE_DIGEST_QUERY, variables: DIGEST_TO_CREATE });
@@ -124,7 +127,7 @@ describe('Trigger resolver standard behavior', () => {
         name: 'trigger',
         description: '',
         event_types: [EVENT_TYPE_CREATE],
-        outcomes: [],
+        notifiers: [],
         filters: '',
         recipients: [ADMIN_USER.id],
         instance_trigger: false,
@@ -191,7 +194,7 @@ describe('Trigger resolver standard behavior', () => {
         name: 'group trigger',
         description: '',
         event_types: [EVENT_TYPE_CREATE],
-        outcomes: [],
+        notifiers: [],
         filters: '',
         recipients: [AMBER_GROUP.id],
         instance_trigger: false,
@@ -236,7 +239,7 @@ describe('Trigger resolver standard behavior', () => {
         name: 'organization trigger',
         description: '',
         event_types: [EVENT_TYPE_CREATE],
-        outcomes: [],
+        notifiers: [],
         filters: '',
         recipients: [AMBER_GROUP.id],
         instance_trigger: false,

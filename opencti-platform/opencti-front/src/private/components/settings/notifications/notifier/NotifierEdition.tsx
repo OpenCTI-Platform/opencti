@@ -1,0 +1,263 @@
+import { Close } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import CoreForm from '@rjsf/core';
+import JsonForm from '@rjsf/mui';
+import type { RJSFSchema } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
+import { Field, Form, Formik } from 'formik';
+import { FormikHelpers } from 'formik/dist/types';
+import React, { createRef, FunctionComponent, useRef, useState } from 'react';
+import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import * as Yup from 'yup';
+import { useFormatter } from '../../../../../components/i18n';
+import TextField from '../../../../../components/TextField';
+import { Theme } from '../../../../../components/Theme';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import NotifierConnectorField from '../../../common/form/NotifierConnectorField';
+import ObjectMembersField from '../../../common/form/ObjectMembersField';
+import { Option } from '../../../common/form/ReferenceField';
+import { NotifierEdition_edition$key } from './__generated__/NotifierEdition_edition.graphql';
+import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graphql';
+import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
+import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
+import { uiSchema } from './NotifierUtils';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  buttons: {
+    marginTop: 20,
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
+  header: {
+    backgroundColor: theme.palette.background.nav,
+    padding: '20px 20px 20px 60px',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    left: 5,
+    color: 'inherit',
+  },
+  container: {
+    padding: '10px 20px 20px 20px',
+  },
+}));
+
+const notifierMutationFieldPatch = graphql`
+  mutation NotifierEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
+    notifierFieldPatch(id: $id, input: $input) {
+      ...NotifierLine_node
+      ...NotifierEdition_edition
+    }
+  }
+`;
+
+const notifierEditionFragment = graphql`
+  fragment NotifierEdition_edition on Notifier {
+    id
+    name
+    description
+    notifier_connector {
+      id
+      name
+      connector_schema
+      connector_schema_ui
+    }
+    notifier_connector_id
+    notifier_configuration
+    authorized_members {
+      id
+      name
+      access_right
+    }
+  }
+`;
+
+export const notifierEditionQuery = graphql`
+  query NotifierEditionQuery($id: String!) {
+    notifier(id: $id) {
+      ...NotifierEdition_edition
+    }
+  }
+`;
+
+const notifierValidation = (t: (n: string) => string) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
+  description: Yup.string().nullable(),
+});
+
+interface NotifierEditionComponentProps {
+  queryRef: PreloadedQuery<NotifierEditionQuery>
+  onClose: () => void
+}
+
+interface NotifierEditionValues {
+  name: string
+  description?: string | null
+  authorized_members?: Option[]
+  notifier_connector_id?: Option
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type FormRef = React.RefObject<CoreForm<any, RJSFSchema, any>>['current'];
+
+const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
+  queryRef,
+  onClose,
+}) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const formRef = createRef<CoreForm>();
+
+  const [open, setOpen] = useState(false);
+
+  const { notifier } = usePreloadedQuery<NotifierEditionQuery>(notifierEditionQuery, queryRef);
+  const data = useFragment<NotifierEdition_edition$key>(notifierEditionFragment, notifier);
+
+  const [commitFieldPatch] = useMutation(notifierMutationFieldPatch);
+  const initialValues: NotifierEditionValues = {
+    name: data?.name ?? '',
+    description: data?.description,
+    authorized_members: data?.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [],
+    notifier_connector_id: data?.notifier_connector ? { value: data.notifier_connector.id, label: data.notifier_connector.name } : undefined,
+  };
+  const submitForm = (setSubmitting: FormikHelpers<NotifierEditionValues>['setSubmitting'], values: NotifierEditionValues, current: FormRef) => {
+    if (current?.validateForm()) {
+      setSubmitting(true);
+      const inputs = [
+        { key: 'name', value: [values.name] },
+        { key: 'description', value: [values.description] },
+        { key: 'authorized_members', value: values.authorized_members?.map(({ value }) => value) },
+        { key: 'notifier_connector_id', value: [values.notifier_connector_id?.value] },
+        { key: 'notifier_configuration', value: [JSON.stringify(current.state.formData)] },
+      ];
+      commitFieldPatch({ variables: { id: data?.id, input: inputs } });
+      setSubmitting(false);
+    }
+  };
+
+  const notifierConfiguration = useRef<string>(data?.notifier_configuration ?? ' {}');
+
+  const [testQueryRef, sendTest] = useQueryLoader<NotifierTestDialogQuery>(notifierTestQuery);
+  return (
+    <>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={onClose}
+          size="large" color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>{t('Notifier edition')}</Typography>
+        <div className="clearfix" />
+      </div>
+      <div className={classes.container}>
+        <div>
+          <Formik
+            enableReinitialize={true}
+            initialValues={initialValues}
+            validationSchema={notifierValidation(t)}
+            onSubmit={() => {}}
+            onClose={onClose}
+          >
+            {({ values, setFieldValue, setSubmitting, isSubmitting }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  label={t('Name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={TextField}
+                  name="description"
+                  variant="standard"
+                  label={t('Description')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <NotifierConnectorField
+                  disabled={true}
+                  name="notifier_connector_id"
+                  style={{ marginTop: 20 }}
+                />
+                <ObjectMembersField
+                  label={'Accessible for'}
+                  style={fieldSpacingContainerStyle}
+                  onChange={setFieldValue}
+                  multiple={true}
+                  name="authorized_members"
+                />
+                <JsonForm
+                  uiSchema={{
+                    ...JSON.parse(data?.notifier_connector?.connector_schema_ui ?? ' {}'),
+                    ...uiSchema,
+                  }}
+                  ref={formRef}
+                  showErrorList={false}
+                  liveValidate
+                  schema={JSON.parse(data?.notifier_connector?.connector_schema ?? ' {}')}
+                  formData={JSON.parse(notifierConfiguration.current)}
+                  validator={validator}
+                  onChange={(newValue) => {
+                    notifierConfiguration.current = JSON.stringify(newValue.formData);
+                  }}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      notifierConfiguration.current = JSON.stringify(formRef.current?.state.formData);
+                      setOpen(true);
+                    }}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}>
+                    {t('Test')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => {
+                      submitForm(setSubmitting, values, formRef.current);
+                      onClose();
+                    }}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}>
+                    {t('Save')}
+                  </Button>
+                </div>
+                <NotifierTestDialog
+                  open={open}
+                  onClose={() => setOpen(false)}
+                  queryRef={testQueryRef}
+                  onTest={(notifier_test_id) => {
+                    if (values.notifier_connector_id) {
+                      sendTest({
+                        input: {
+                          notifier_test_id,
+                          notifier_connector_id: values.notifier_connector_id.value,
+                          notifier_configuration: notifierConfiguration.current,
+                        },
+                      }, { fetchPolicy: 'network-only' });
+                    }
+                  }}
+                />
+              </Form>
+            )}
+          </Formik>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default NotifierEdition;

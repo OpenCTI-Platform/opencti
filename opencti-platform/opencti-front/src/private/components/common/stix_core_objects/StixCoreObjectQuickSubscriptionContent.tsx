@@ -1,52 +1,46 @@
-import Tooltip from '@mui/material/Tooltip';
-import ToggleButton from '@mui/material/ToggleButton';
 import { Close, ExpandLess, ExpandMore, NotificationsOutlined } from '@mui/icons-material';
-import React, { FunctionComponent, useState } from 'react';
-import * as Yup from 'yup';
-import { FormikConfig } from 'formik/dist/types';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Collapse from '@mui/material/Collapse';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import { Field, Form, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
-import { pick, uniq } from 'ramda';
-import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
-import { makeStyles } from '@mui/styles';
-import Collapse from '@mui/material/Collapse';
+import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import List from '@mui/material/List';
-import Alert from '@mui/material/Alert';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { pick, uniq } from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import * as Yup from 'yup';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
-import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEditionOverview';
-import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import TextField from '../../../../components/TextField';
-import { deleteNode, insertNode } from '../../../../utils/store';
 import { Theme } from '../../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import {
-  StixCoreObjectQuickSubscriptionContentPaginationQuery,
-  StixCoreObjectQuickSubscriptionContentPaginationQuery$data,
-  StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
-} from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import {
   convertEventTypes,
-  convertOutcomes,
+  convertNotifiers,
   instanceEventTypesOptions,
-  outcomesOptions,
 } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import FilterIconButton from '../../../../components/FilterIconButton';
+import { deleteNode, insertNode } from '../../../../utils/store';
 import { TriggerLine_node$data } from '../../profile/triggers/__generated__/TriggerLine_node.graphql';
+import { TriggerLiveAddInput, TriggerLiveCreationKnowledgeMutation } from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEditionOverview';
 import { instanceTriggerDescription, triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
-import {
-  TriggerLiveAddInput,
-  TriggerLiveCreationKnowledgeMutation,
-} from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
+import NotifierField from '../form/NotifierField';
+import { Option } from '../form/ReferenceField';
+import { StixCoreObjectQuickSubscriptionContentPaginationQuery, StixCoreObjectQuickSubscriptionContentPaginationQuery$data, StixCoreObjectQuickSubscriptionContentPaginationQuery$variables } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
     query StixCoreObjectQuickSubscriptionContentPaginationQuery(
@@ -67,7 +61,10 @@ export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
                     filters
                     created
                     modified
-                    outcomes
+                    notifiers {
+                      id
+                      name
+                    }
                     resolved_instance_filters {
                         id
                         valid
@@ -83,14 +80,8 @@ interface InstanceTriggerEditionFormValues {
   id: string;
   name: string;
   description: string | null;
-  event_types: readonly {
-    label: string,
-    value: string
-  }[];
-  outcomes: readonly {
-    label: string,
-    value: string
-  }[];
+  event_types: readonly Option[];
+  notifiers: readonly Option[];
   filters: string | null,
   resolved_instance_filters?: TriggerLine_node$data['resolved_instance_filters'],
 }
@@ -212,7 +203,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     event_types: Yup.array()
       .min(1, t('Minimum one event type'))
       .required(t('This field is required')),
-    outcomes: Yup.array()
+    notifiers: Yup.array()
       .required(t('This field is required')),
   });
 
@@ -221,7 +212,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       name: instanceName,
       description: '',
       event_types: ['update', 'delete'],
-      outcomes: ['f4ee7b33-006a-4b0d-b57d-411ad288653d', '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'],
+      notifiers: ['f4ee7b33-006a-4b0d-b57d-411ad288653d', '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'],
       instance_trigger: true,
       filters: JSON.stringify({
         elementId: [{
@@ -258,8 +249,8 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         value: uniq(values.event_types.map((n) => n.value)),
       },
       {
-        key: 'outcomes',
-        value: uniq(values.outcomes.map((n) => n.value)),
+        key: 'notifiers',
+        value: uniq(values.notifiers.map((n) => n.value)),
       },
     ];
     commitFieldPatch({
@@ -338,30 +329,9 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                 label={t('Name')}
                 fullWidth={true}
               />
-              <Field
-                component={AutocompleteField}
-                name="outcomes"
-                style={fieldSpacingContainerStyle}
-                multiple={true}
-                textfieldprops={{
-                  variant: 'standard',
-                  label: t('Notification'),
-                }}
-                options={outcomesOptions}
+              <NotifierField
+                name="notifiers"
                 onChange={setFieldValue}
-                renderOption={(
-                  props: React.HTMLAttributes<HTMLLIElement>,
-                  option: { value: string, label: string },
-                ) => (
-                  <MenuItem value={option.value} {...props}>
-                    <Checkbox
-                      checked={values.outcomes.map((n) => n.value).includes(option.value)}
-                    />
-                    <ListItemText
-                      primary={option.label}
-                    />
-                  </MenuItem>
-                )}
               />
               <Field
                 component={AutocompleteField}
@@ -430,7 +400,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       .filter((l) => l)
       .map((n) => ({
         ...pick(['id', 'name', 'description', 'filters', 'resolved_instance_filters'], n?.node),
-        outcomes: convertOutcomes(n?.node),
+        notifiers: convertNotifiers(n?.node),
         event_types: convertEventTypes(n?.node),
       })) as InstanceTriggerEditionFormValues[];
     const uniqInstanceTriggers = triggerValues

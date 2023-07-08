@@ -161,7 +161,7 @@ const Alerting: FunctionComponent = () => {
         width: '25%',
         isSortable: true,
       },
-      outcomes: {
+      notifiers: {
         label: 'Notification',
         width: '20%',
         isSortable: true,

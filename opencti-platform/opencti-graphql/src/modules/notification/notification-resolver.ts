@@ -1,31 +1,12 @@
 import { withFilter } from 'graphql-subscriptions';
+import { BUS_TOPICS } from '../../config/conf';
+import { pubSubAsyncIterator } from '../../database/redis';
 import type { Resolvers } from '../../generated/graphql';
 import { TriggerType } from '../../generated/graphql';
-import {
-  addTrigger,
-  triggersActivityFind,
-  myNotificationsFind,
-  myUnreadNotificationsCount,
-  notificationDelete,
-  notificationEditRead,
-  notificationGet,
-  notificationsFind,
-  resolvedInstanceFiltersGet,
-  triggerDelete,
-  triggerEdit,
-  triggerGet,
-  triggersKnowledgeFind,
-  triggersGet, addTriggerActivity, triggerActivityEdit, getTriggerRecipients,
-} from './notification-domain';
-import { pubSubAsyncIterator } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
-import {
-  BasicStoreEntityLiveTrigger,
-  BasicStoreEntityTrigger,
-  ENTITY_TYPE_NOTIFICATION,
-  NOTIFICATION_NUMBER
-} from './notification-types';
 import { getUserAccessRight, isDirectAdministrator } from '../../utils/access';
+import { getNotifiers } from '../notifier/notifier-domain';
+import { addTrigger, addTriggerActivity, getTriggerRecipients, myNotificationsFind, myUnreadNotificationsCount, notificationDelete, notificationEditRead, notificationGet, notificationsFind, resolvedInstanceFiltersGet, triggerActivityEdit, triggerDelete, triggerEdit, triggerGet, triggersActivityFind, triggersGet, triggersKnowledgeFind, } from './notification-domain';
+import { BasicStoreEntityLiveTrigger, BasicStoreEntityTrigger, ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
 
 const notificationResolvers: Resolvers = {
   Query: {
@@ -46,6 +27,7 @@ const notificationResolvers: Resolvers = {
     recipients: (trigger, _, context) => getTriggerRecipients(context, context.user, trigger),
     isDirectAdministrator: (trigger, _, context) => isDirectAdministrator(context.user, trigger),
     currentUserAccessRight: (trigger, _, context) => getUserAccessRight(context.user, trigger),
+    notifiers: (trigger, _, context) => getNotifiers(context, context.user, trigger.notifiers),
     resolved_instance_filters: (trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger, _, context) => {
       return resolvedInstanceFiltersGet(context, context.user, trigger);
     },

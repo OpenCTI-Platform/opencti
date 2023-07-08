@@ -1,15 +1,9 @@
 import { uniq } from 'ramda';
+import { isEmptyField } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicGroupEntity, BasicOrganizationEntity, BasicStoreEntity } from '../types/store';
 import type { MemberAccess } from '../generated/graphql';
-import {
-  AuthorizedMember,
-  BYPASS,
-  MEMBER_ACCESS_ALL,
-  MEMBER_ACCESS_RIGHT_ADMIN,
-  SYSTEM_USER,
-  validateUserAccessOperation
-} from './access';
+import { AuthorizedMember, BYPASS, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER, validateUserAccessOperation } from './access';
 import { findAllMembers, findById as findUser } from '../domain/user';
 import { findById as findGroup } from '../domain/group';
 import { findById as findOrganization } from '../domain/organization';
@@ -21,7 +15,7 @@ export const getAuthorizedMembers = async (
   entity: BasicStoreEntity & { authorized_members: Array<AuthorizedMember> }
 ): Promise<MemberAccess[]> => {
   let authorizedMembers: MemberAccess[] = [];
-  if (!entity.authorized_members?.length) {
+  if (isEmptyField(entity.authorized_members)) {
     return authorizedMembers;
   }
   if (!validateUserAccessOperation(user, entity, 'manage-access')) {

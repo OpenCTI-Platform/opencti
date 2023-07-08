@@ -1,13 +1,9 @@
 import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
-import {
-  SETTINGS,
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETLABELS,
-  SETTINGS_SETMARKINGS,
-} from '../../../utils/hooks/useGranted';
+import { SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS, } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import { BoundaryRoute } from '../Error';
+import RootActivity from './activity/Root';
 import CaseTemplates from './case_templates/CaseTemplates';
 import CaseTemplateTasks from './case_templates/CaseTemplateTasks';
 import Groups from './Groups';
@@ -15,6 +11,8 @@ import RootGroup from './groups/Root';
 import KillChainPhases from './KillChainPhases';
 import Labels from './Labels';
 import MarkingDefinitions from './MarkingDefinitions';
+import RootNotification from "./notifications/Root";
+import RootSettingsOrganization from './organizations/Root';
 import Policies from './Policies';
 import Retention from './Retention';
 import Roles from './Roles';
@@ -22,6 +20,7 @@ import RootRole from './roles/Root';
 import Rules from './Rules';
 import Sessions from './Sessions';
 import Settings from './Settings';
+import SettingsOrganizations from './SettingsOrganizations';
 import StatusTemplates from './status_templates/StatusTemplates';
 import RootSubType from './sub_types/Root';
 import SubTypes from './sub_types/SubTypes';
@@ -29,9 +28,6 @@ import Users from './Users';
 import RootUser from './users/Root';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
-import RootActivity from './activity/Root';
-import SettingsOrganizations from './SettingsOrganizations';
-import RootSettingsOrganization from './organizations/Root';
 
 const Root = () => (
   <Switch>
@@ -289,6 +285,17 @@ const Root = () => (
             <Vocabularies />
           </Security>
         )}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/notification"
+        render={() => (
+          <Redirect to="/dashboard/settings/notification/notifier" />
+        )}
+      />
+      <BoundaryRoute
+        path="/dashboard/settings/notification"
+        component={RootNotification}
       />
     </Security>
   </Switch>

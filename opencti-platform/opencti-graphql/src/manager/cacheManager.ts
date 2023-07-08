@@ -1,44 +1,30 @@
-import * as R from 'ramda';
 import { Promise as Bluebird } from 'bluebird';
+import * as R from 'ramda';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
-import {
-  ENTITY_TYPE_CONNECTOR,
-  ENTITY_TYPE_RULE,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_STATUS_TEMPLATE,
-  ENTITY_TYPE_STREAM_COLLECTION,
-  ENTITY_TYPE_USER
-} from '../schema/internalObject';
-import { executionContext, SYSTEM_USER } from '../utils/access';
-import { connectors as findConnectors } from '../database/repository';
-import type {
-  BasicStreamEntity,
-  BasicStoreRelation,
-  BasicTriggerEntity,
-  BasicWorkflowStatusEntity,
-  StoreEntity,
-  StoreRelation,
-  BasicWorkflowTemplateEntity,
-} from '../types/store';
-import { EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { dynamicCacheUpdater, resetCacheForEntity, writeCacheForEntity } from '../database/cache';
-import type { AuthContext } from '../types/user';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { OrderingMode } from '../generated/graphql';
-import { extractFilterIdsToResolve } from '../utils/filtering';
-import { BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
-import { resolveUserById } from '../domain/user';
-import { pubSubSubscription } from '../database/redis';
 import { stixLoadByIds } from '../database/middleware';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import type { StixObject } from '../types/stix-common';
+import { EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
+import { pubSubSubscription } from '../database/redis';
+import { connectors as findConnectors } from '../database/repository';
+import { resolveUserById } from '../domain/user';
+import { OrderingMode } from '../generated/graphql';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
+import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
+import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
+import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import type { BasicStoreSettings } from '../types/settings';
-import { filtersToJson } from '../database/utils';
+import type { StixObject } from '../types/stix-common';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import type { BasicStoreRelation, BasicStreamEntity, BasicTriggerEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity, StoreEntity, StoreRelation, } from '../types/store';
+import type { AuthContext } from '../types/user';
+import { executionContext, SYSTEM_USER } from '../utils/access';
+import { extractFilterIdsToResolve } from '../utils/filtering';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -56,9 +42,9 @@ const platformResolvedFilters = (context: AuthContext) => {
   const reloadFilters = async () => {
     const filteringIds = [];
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
-    filteringIds.push(...streams.map((s) => extractFilterIdsToResolve(filtersToJson(s.filters))).flat());
+    filteringIds.push(...streams.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
     const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
-    filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(filtersToJson(s.filters))).flat());
+    filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
       const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
@@ -131,12 +117,18 @@ const platformEntitySettings = (context: AuthContext) => {
   };
   return { values: null, fn: reloadEntitySettings };
 };
-
 const platformStreams = (context: AuthContext) => {
   const reloadStreams = () => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
   };
   return { values: null, fn: reloadStreams };
+};
+const platformNotifiers = (context: AuthContext) => {
+  const reloadNotifiers = async () => {
+    const notifiers = await listAllEntities<BasicStoreEntityNotifier>(context, SYSTEM_USER, [ENTITY_TYPE_NOTIFIER], { connectionFormat: false });
+    return [...notifiers, ...STATIC_NOTIFIERS].sort();
+  };
+  return { values: null, fn: reloadNotifiers };
 };
 
 const initCacheManager = () => {
@@ -154,6 +146,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_IDENTITY_ORGANIZATION, platformOrganizations(context));
     writeCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS, platformResolvedFilters(context));
     writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));
+    writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
   };
   const resetCacheContent = async (event: { instance: StoreEntity | StoreRelation }) => {
     const { instance } = event;

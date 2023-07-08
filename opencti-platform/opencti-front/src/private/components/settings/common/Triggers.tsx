@@ -93,7 +93,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
       width: '15%',
       isSortable: true,
     },
-    outcomes: {
+    notifiers: {
       label: 'Notification',
       width: '20%',
       isSortable: true,

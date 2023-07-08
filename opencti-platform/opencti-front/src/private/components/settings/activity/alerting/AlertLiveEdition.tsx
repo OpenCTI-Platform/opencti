@@ -1,32 +1,29 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, usePreloadedQuery, PreloadedQuery, useMutation } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import * as R from 'ramda';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
 import { Close } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import TextField from '../../../../../components/TextField';
+import * as R from 'ramda';
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
-import { Option } from '../../../common/form/ReferenceField';
-import { AlertLiveEdition_trigger$key } from './__generated__/AlertLiveEdition_trigger.graphql';
+import MarkdownField from '../../../../../components/MarkdownField';
+import TextField from '../../../../../components/TextField';
 import { Theme } from '../../../../../components/Theme';
-import { alertEditionQuery } from './AlertEditionQuery';
+import { convertNotifiers } from '../../../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { isUniqFilter } from '../../../../../utils/filters/filtersUtils';
+import ObjectMembersField from '../../../common/form/ObjectMembersField';
+import NotifierField from '../../../common/form/NotifierField';
+import { Option } from '../../../common/form/ReferenceField';
+import Filters from '../../../common/lists/Filters';
 import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
-import MarkdownField from '../../../../../components/MarkdownField';
-import AutocompleteField from '../../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import ObjectMembersField from '../../../common/form/ObjectMembersField';
+import { AlertLiveEdition_trigger$key } from './__generated__/AlertLiveEdition_trigger.graphql';
+import { alertEditionQuery } from './AlertEditionQuery';
 import { liveActivityTriggerValidation } from './AlertLiveCreation';
-import Filters from '../../../common/lists/Filters';
-import FilterIconButton from '../../../../../components/FilterIconButton';
-import { isUniqFilter } from '../../../../../utils/filters/filtersUtils';
-import { convertOutcomes, outcomesOptions } from '../../../../../utils/edition';
 
 interface AlertLiveEditionProps {
   handleClose: () => void
@@ -36,7 +33,7 @@ interface AlertLiveEditionProps {
 
 interface AlertLiveFormValues {
   name?: string
-  outcomes: { value: string, label: string }[];
+  notifiers: { value: string, label: string }[];
   recipients: { value: string, label: string }[];
 }
 
@@ -50,7 +47,10 @@ const alertLiveEditionFragment = graphql`
     filters
     created
     modified
-    outcomes
+    notifiers {
+      id
+      name
+    }
     recipients {
       id
       name
@@ -176,102 +176,94 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
   const initialValues = {
     name: trigger?.name,
     description: trigger?.description,
-    outcomes: convertOutcomes(trigger),
+    notifiers: convertNotifiers(trigger),
     recipients: (trigger?.recipients ?? []).map((n) => ({ label: n?.name, value: n?.id })),
   };
 
   return (
-      <div>
-        <div className={classes.header}>
-          <IconButton aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary">
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an activity live trigger')}
-          </Typography>
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <Formik enableReinitialize={true} initialValues={initialValues as never} onSubmit={onSubmit}>
-            {({ values }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                      component={TextField}
-                      variant="standard"
-                      name="name"
-                      label={t('Name')}
-                      fullWidth={true}
-                      onSubmit={handleSubmitField}
-                  />
-                  <Field
-                      component={MarkdownField}
-                      name="description"
-                      label={t('Description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      onSubmit={handleSubmitField}
-                      style={{ marginTop: 20 }}
-                  />
-                  <Field component={AutocompleteField}
-                         name="outcomes"
-                         style={fieldSpacingContainerStyle}
-                         multiple={true}
-                         textfieldprops={{
-                           variant: 'standard',
-                           label: t('Notification'),
-                         }}
-                         options={outcomesOptions}
-                         onChange={(name: string, value: { value: string, label: string }[]) => handleSubmitField(name, value.map((n) => n.value))}
-                         renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: { value: string, label: string }) => (
-                             <MenuItem value={option.value} {...props}>
-                               <Checkbox checked={values.outcomes.map((n) => n.value).includes(option.value)}/>
-                               <ListItemText primary={option.label}/>
-                             </MenuItem>
-                         )}
-                  />
-                  <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
-                                      onChange={handleSubmitFieldOptions}
-                                      multiple={true} name={'recipients'} />
-                  <div style={{ marginTop: 35 }}>
-                    <Filters
-                        variant="text"
-                        availableFilterKeys={[
-                          'event_type',
-                          'event_scope',
-                          'members_user',
-                          'members_group',
-                          'members_organization',
-                        ]}
-                        handleAddFilter={handleAddFilter}
-                        handleRemoveFilter={undefined}
-                        handleSwitchFilter={undefined}
-                        noDirectFilters={true}
-                        disabled={undefined}
-                        size={undefined}
-                        fontSize={undefined}
-                        availableEntityTypes={undefined}
-                        availableRelationshipTypes={undefined}
-                        allEntityTypes={undefined}
-                        type={undefined}
-                        availableRelationFilterTypes={undefined}
-                    />
-                  </div>
-                  <div className="clearfix"/>
-                  <FilterIconButton
-                      filters={filters}
-                      handleRemoveFilter={handleRemoveFilter}
-                      classNameNumber={2}
-                  />
-                </Form>
-            )}
-          </Formik>
-        </div>
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update an activity live trigger')}
+        </Typography>
+        <div className="clearfix" />
       </div>
+      <div className={classes.container}>
+        <Formik enableReinitialize={true} initialValues={initialValues as never} onSubmit={onSubmit}>
+          {() => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t('Name')}
+                fullWidth={true}
+                onSubmit={handleSubmitField}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                onSubmit={handleSubmitField}
+                style={{ marginTop: 20 }}
+              />
+              <NotifierField
+                name="notifiers"
+                onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
+              />
+              <ObjectMembersField
+                label={'Recipients'}
+                style={fieldSpacingContainerStyle}
+                onChange={handleSubmitFieldOptions}
+                multiple={true} name={'recipients'}
+              />
+              <div style={{ marginTop: 35 }}>
+                <Filters
+                  variant="text"
+                  availableFilterKeys={[
+                    'event_type',
+                    'event_scope',
+                    'members_user',
+                    'members_group',
+                    'members_organization',
+                  ]}
+                  handleAddFilter={handleAddFilter}
+                  handleRemoveFilter={undefined}
+                  handleSwitchFilter={undefined}
+                  noDirectFilters={true}
+                  disabled={undefined}
+                  size={undefined}
+                  fontSize={undefined}
+                  availableEntityTypes={undefined}
+                  availableRelationshipTypes={undefined}
+                  allEntityTypes={undefined}
+                  type={undefined}
+                  availableRelationFilterTypes={undefined}
+                />
+              </div>
+              <div className="clearfix" />
+              <FilterIconButton
+                filters={filters}
+                handleRemoveFilter={handleRemoveFilter}
+                classNameNumber={2}
+              />
+            </Form>
+          )}
+        </Formik>
+      </div>
+    </div>
 
   );
 };
