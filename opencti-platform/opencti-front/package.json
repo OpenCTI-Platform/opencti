@@ -20,7 +20,7 @@
     "dagre": "0.8.5",
     "date-fns": "2.30.0",
     "extract-files": "13.0.0",
-    "formik": "2.4.1",
+    "formik": "2.4.2",
     "formik-mui": "5.0.0-alpha.0",
     "formik-mui-lab": "1.0.0",
     "graphql": "16.6.0",
