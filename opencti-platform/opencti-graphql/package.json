@@ -148,7 +148,7 @@
     "@types/ejs": "3.1.2",
     "@types/express": "4.17.17",
     "@types/nconf": "0.10.3",
-    "@types/ramda": "0.29.1",
+    "@types/ramda": "0.29.3",
     "@types/tough-cookie": "4.0.2",
     "@types/uuid": "9.0.2",
     "@typescript-eslint/eslint-plugin": "5.59.6",
