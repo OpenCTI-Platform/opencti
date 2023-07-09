@@ -19,7 +19,12 @@ import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS
 } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER,
+  ENTITY_TYPE_IDENTITY
+} from '../schema/general';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -144,6 +149,10 @@ export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => 
     ENTITY_TYPE_IDENTITY
   );
   return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
+};
+
+export const batchContainers = async (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER);
 };
 
 export const batchReports = async (context, user, stixCoreRelationshipIds) => {

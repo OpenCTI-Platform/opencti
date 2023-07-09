@@ -17,6 +17,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
     objectLabel: LabelConnection
     externalReferences(first: Int): ExternalReferenceConnection
+    containers(first: Int): ContainerConnection
     reports(first: Int): ReportConnection
     notes(first: Int): NoteConnection
     opinions(first: Int): OpinionConnection

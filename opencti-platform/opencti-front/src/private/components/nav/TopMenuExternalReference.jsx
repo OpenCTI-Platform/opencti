@@ -47,7 +47,7 @@ class TopMenuExternalReference extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/analysis/external_references"
+          to="/dashboard/analyses/external_references"
           variant="contained"
           size="small"
           color="primary"
@@ -62,17 +62,17 @@ class TopMenuExternalReference extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/analysis/external_references/${externalReferenceId}`}
+          to={`/dashboard/analyses/external_references/${externalReferenceId}`}
           variant={
             location.pathname
-            === `/dashboard/analysis/external_references/${externalReferenceId}`
+            === `/dashboard/analyses/external_references/${externalReferenceId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/analysis/external_references/${externalReferenceId}`
+            === `/dashboard/analyses/external_references/${externalReferenceId}`
               ? 'secondary'
               : 'primary'
           }

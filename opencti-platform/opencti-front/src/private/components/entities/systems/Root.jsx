@@ -179,7 +179,7 @@ class RootSystem extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/entities/systems/:systemId/analysis"
+                      path="/dashboard/entities/systems/:systemId/analyses"
                       render={(routeProps) => (
                         <SystemAnalysis
                           {...routeProps}

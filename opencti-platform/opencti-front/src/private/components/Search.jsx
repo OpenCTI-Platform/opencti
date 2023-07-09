@@ -195,13 +195,14 @@ class Search extends Component {
         width: '10%',
         isSortable: true,
       },
-      reports: {
-        label: 'Reports',
+      analyses: {
+        label: 'Analyses',
         width: '8%',
         isSortable: false,
       },
       objectMarking: {
         label: 'Marking',
+        width: '10%',
         isSortable: isRuntimeSort,
       },
     };

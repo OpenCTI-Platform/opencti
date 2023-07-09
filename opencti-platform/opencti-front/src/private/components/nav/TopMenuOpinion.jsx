@@ -49,7 +49,7 @@ class TopMenuOpinion extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/analysis/opinions"
+          to="/dashboard/analyses/opinions"
           variant="contained"
           size="small"
           color="primary"
@@ -64,15 +64,15 @@ class TopMenuOpinion extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/analysis/opinions/${opinionId}`}
+          to={`/dashboard/analyses/opinions/${opinionId}`}
           variant={
-            location.pathname === `/dashboard/analysis/opinions/${opinionId}`
+            location.pathname === `/dashboard/analyses/opinions/${opinionId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/analysis/opinions/${opinionId}`
+            location.pathname === `/dashboard/analyses/opinions/${opinionId}`
               ? 'secondary'
               : 'primary'
           }
@@ -84,17 +84,17 @@ class TopMenuOpinion extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/analysis/opinions/${opinionId}/files`}
+            to={`/dashboard/analyses/opinions/${opinionId}/files`}
             variant={
               location.pathname
-              === `/dashboard/analysis/opinions/${opinionId}/files`
+              === `/dashboard/analyses/opinions/${opinionId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/analysis/opinions/${opinionId}/files`
+              === `/dashboard/analyses/opinions/${opinionId}/files`
                 ? 'secondary'
                 : 'primary'
             }
@@ -106,17 +106,17 @@ class TopMenuOpinion extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/analysis/opinions/${opinionId}/history`}
+          to={`/dashboard/analyses/opinions/${opinionId}/history`}
           variant={
             location.pathname
-            === `/dashboard/analysis/opinions/${opinionId}/history`
+            === `/dashboard/analyses/opinions/${opinionId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/analysis/opinions/${opinionId}/history`
+            === `/dashboard/analyses/opinions/${opinionId}/history`
               ? 'secondary'
               : 'primary'
           }

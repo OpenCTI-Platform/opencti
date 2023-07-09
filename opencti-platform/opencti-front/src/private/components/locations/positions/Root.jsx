@@ -140,7 +140,7 @@ class RootPosition extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/locations/positions/:positionId/analysis"
+                      path="/dashboard/locations/positions/:positionId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

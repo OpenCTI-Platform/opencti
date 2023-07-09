@@ -119,7 +119,7 @@ const RootIncidentComponent = ({ queryRef }) => {
             />
             <Route
               exact
-              path="/dashboard/events/incidents/:incidentId/analysis"
+              path="/dashboard/events/incidents/:incidentId/analyses"
               render={(routeProps) => (
                 <React.Fragment>
                   <StixDomainObjectHeader

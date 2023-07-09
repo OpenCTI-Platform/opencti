@@ -108,24 +108,24 @@ class TopMenuIndividual extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/individuals/${individualId}/analysis`}
+          to={`/dashboard/entities/individuals/${individualId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/entities/individuals/${individualId}/analysis`
+            === `/dashboard/entities/individuals/${individualId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/individuals/${individualId}/analysis`
+            === `/dashboard/entities/individuals/${individualId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!individualId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

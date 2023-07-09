@@ -19,6 +19,7 @@ import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObjec
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
   INPUT_EXTERNAL_REFS,
 } from '../schema/general';
@@ -34,6 +35,7 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
@@ -112,6 +114,14 @@ export const findByIds = async (context, user, stixCoreObjectIds) => {
 
 export const batchCreatedBy = async (context, user, stixCoreObjectIds) => {
   return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+};
+
+export const batchContainers = async (context, user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER, args);
+};
+
+export const batchReports = async (context, user, stixCoreObjectIds, args = {}) => {
+  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, args);
 };
 
 export const batchCases = async (context, user, stixCoreObjectIds, args = {}) => {

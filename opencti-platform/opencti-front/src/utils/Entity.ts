@@ -5,15 +5,15 @@ export const resolveLink = (type: string): string | null => {
     case 'Campaign':
       return '/dashboard/threats/campaigns';
     case 'Note':
-      return '/dashboard/analysis/notes';
+      return '/dashboard/analyses/notes';
     case 'Observed-Data':
       return '/dashboard/events/observed_data';
     case 'Opinion':
-      return '/dashboard/analysis/opinions';
+      return '/dashboard/analyses/opinions';
     case 'Report':
-      return '/dashboard/analysis/reports';
+      return '/dashboard/analyses/reports';
     case 'Grouping':
-      return '/dashboard/analysis/groupings';
+      return '/dashboard/analyses/groupings';
     case 'Course-Of-Action':
       return '/dashboard/techniques/courses_of_action';
     case 'Individual':
@@ -77,7 +77,7 @@ export const resolveLink = (type: string): string | null => {
     case 'Task':
       return '/dashboard/cases/tasks';
     case 'Malware-Analysis':
-      return '/dashboard/analysis/malware_analyses';
+      return '/dashboard/analyses/malware_analyses';
     case 'User':
     case 'Creator':
     case 'Assignee':

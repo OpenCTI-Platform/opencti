@@ -46,7 +46,7 @@ class TopMenuNote extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/analysis/notes"
+          to="/dashboard/analyses/notes"
           variant="contained"
           size="small"
           color="primary"
@@ -61,15 +61,15 @@ class TopMenuNote extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/analysis/notes/${noteId}`}
+          to={`/dashboard/analyses/notes/${noteId}`}
           variant={
-            location.pathname === `/dashboard/analysis/notes/${noteId}`
+            location.pathname === `/dashboard/analyses/notes/${noteId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/analysis/notes/${noteId}`
+            location.pathname === `/dashboard/analyses/notes/${noteId}`
               ? 'secondary'
               : 'primary'
           }
@@ -81,15 +81,15 @@ class TopMenuNote extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/analysis/notes/${noteId}/files`}
+            to={`/dashboard/analyses/notes/${noteId}/files`}
             variant={
-              location.pathname === `/dashboard/analysis/notes/${noteId}/files`
+              location.pathname === `/dashboard/analyses/notes/${noteId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname === `/dashboard/analysis/notes/${noteId}/files`
+              location.pathname === `/dashboard/analyses/notes/${noteId}/files`
                 ? 'secondary'
                 : 'primary'
             }
@@ -101,15 +101,15 @@ class TopMenuNote extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/analysis/notes/${noteId}/history`}
+          to={`/dashboard/analyses/notes/${noteId}/history`}
           variant={
-            location.pathname === `/dashboard/analysis/notes/${noteId}/history`
+            location.pathname === `/dashboard/analyses/notes/${noteId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/analysis/notes/${noteId}/history`
+            location.pathname === `/dashboard/analyses/notes/${noteId}/history`
               ? 'secondary'
               : 'primary'
           }

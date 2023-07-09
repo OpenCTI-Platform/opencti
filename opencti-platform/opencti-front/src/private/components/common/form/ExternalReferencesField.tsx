@@ -9,11 +9,11 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { truncate } from '../../../../utils/String';
-import { ExternalReferenceCreationMutation$data } from '../../analysis/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
-import { ExternalReferencesQueriesSearchQuery$data, ExternalReferencesQueriesSearchQuery$variables } from '../../analysis/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
-import { externalReferenceLinesMutationRelationAdd } from '../../analysis/external_references/AddExternalReferencesLines';
-import ExternalReferenceCreation from '../../analysis/external_references/ExternalReferenceCreation';
-import { externalReferencesQueriesSearchQuery } from '../../analysis/external_references/ExternalReferencesQueries';
+import { ExternalReferenceCreationMutation$data } from '../../analyses/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
+import { ExternalReferencesQueriesSearchQuery$data, ExternalReferencesQueriesSearchQuery$variables } from '../../analyses/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
+import { externalReferenceLinesMutationRelationAdd } from '../../analyses/external_references/AddExternalReferencesLines';
+import ExternalReferenceCreation from '../../analyses/external_references/ExternalReferenceCreation';
+import { externalReferencesQueriesSearchQuery } from '../../analyses/external_references/ExternalReferencesQueries';
 import { Option } from './ReferenceField';
 
 const useStyles = makeStyles(() => ({

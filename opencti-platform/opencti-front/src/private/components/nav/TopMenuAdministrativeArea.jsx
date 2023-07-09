@@ -108,24 +108,24 @@ class TopMenuAdministrativeArea extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`}
+          to={`/dashboard/locations/administrative_areas/${administrativeAreaId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analysis`
+            === `/dashboard/locations/administrative_areas/${administrativeAreaId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!administrativeAreaId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

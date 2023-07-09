@@ -103,24 +103,24 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/locations/regions/${regionId}/analysis`}
+          to={`/dashboard/locations/regions/${regionId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/locations/regions/${regionId}/analysis`
+            === `/dashboard/locations/regions/${regionId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/locations/regions/${regionId}/analysis`
+            === `/dashboard/locations/regions/${regionId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!regionId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

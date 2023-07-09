@@ -103,24 +103,24 @@ class TopMenuSystem extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/systems/${systemId}/analysis`}
+          to={`/dashboard/entities/systems/${systemId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/entities/systems/${systemId}/analysis`
+            === `/dashboard/entities/systems/${systemId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/systems/${systemId}/analysis`
+            === `/dashboard/entities/systems/${systemId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!systemId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

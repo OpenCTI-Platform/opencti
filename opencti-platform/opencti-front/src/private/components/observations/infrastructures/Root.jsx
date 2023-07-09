@@ -123,7 +123,7 @@ class RootInfrastructure extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/observations/infrastructures/:infrastructureId/analysis"
+                      path="/dashboard/observations/infrastructures/:infrastructureId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

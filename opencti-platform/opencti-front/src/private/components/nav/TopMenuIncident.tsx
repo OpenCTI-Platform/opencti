@@ -76,7 +76,7 @@ const TopMenuIncident = () => {
       {computeLocatedButton('Overview')}
       {computeLocatedButton('Knowledge', '/knowledge')}
       {computeLocatedButton('Content', '/content')}
-      {computeLocatedButton('Analysis', '/analysis')}
+      {computeLocatedButton('Analyses', '/analyses')}
       {isUploaderOrExporter && computeLocatedButton('Data', '/files')}
       {computeLocatedButton('History', '/history')}
     </div>

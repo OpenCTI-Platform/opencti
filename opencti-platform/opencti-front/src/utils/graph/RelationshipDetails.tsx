@@ -429,7 +429,7 @@ RelationshipDetailsComponentProps
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
-                  to={`/dashboard/analysis/reports/${report.id}`}
+                  to={`/dashboard/analyses/reports/${report.id}`}
                 >
                   <ListItemIcon>
                     <ItemIcon type={report.entity_type} />
@@ -482,7 +482,7 @@ RelationshipDetailsComponentProps
                 <div key={externalReference.node.id}>
                   <ListItem
                     component={Link}
-                    to={`/dashboard/analysis/external_references/${externalReference.node.id}`}
+                    to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
                     dense={true}
                     divider={true}
                     button={true}

@@ -146,7 +146,7 @@ class RootThreatActorGroup extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/analysis"
+                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

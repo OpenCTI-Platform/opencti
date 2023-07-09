@@ -182,7 +182,7 @@ class RootOrganization extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/entities/organizations/:organizationId/analysis"
+                      path="/dashboard/entities/organizations/:organizationId/analyses"
                       render={(routeProps) => (
                         <OrganizationAnalysis
                           {...routeProps}

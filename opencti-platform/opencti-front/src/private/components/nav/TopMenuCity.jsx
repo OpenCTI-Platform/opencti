@@ -107,24 +107,24 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/locations/cities/${cityId}/analysis`}
+          to={`/dashboard/locations/cities/${cityId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/locations/cities/${cityId}/analysis`
+            === `/dashboard/locations/cities/${cityId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/locations/cities/${cityId}/analysis`
+            === `/dashboard/locations/cities/${cityId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!cityId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

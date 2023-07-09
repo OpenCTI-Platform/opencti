@@ -249,22 +249,22 @@ ContainerStixCyberObservablesComponentProps
     return {
       entity_type: {
         label: 'Type',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       observable_value: {
         label: 'Value',
-        width: '30%',
+        width: '28%',
         isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '19%',
         isSortable: false,
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        width: '12%',
         isSortable: isRuntimeSort,
       },
       created_at: {
@@ -272,8 +272,14 @@ ContainerStixCyberObservablesComponentProps
         width: '10%',
         isSortable: true,
       },
+      analyses: {
+        label: 'Analyses',
+        width: '8%',
+        isSortable: false,
+      },
       objectMarking: {
         label: 'Marking',
+        width: '9%',
         isSortable: isRuntimeSort,
       },
     };

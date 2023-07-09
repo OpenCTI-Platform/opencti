@@ -2,13 +2,14 @@ import { withFilter } from 'graphql-subscriptions';
 import {
   askElementEnrichmentForConnector,
   batchCases,
+  batchContainers,
   batchCreatedBy,
   batchExternalReferences,
   batchLabels,
   batchMarkingDefinitions,
   batchNotes,
   batchObservedData,
-  batchOpinions,
+  batchOpinions, batchReports,
   findAll,
   findById,
   stixCoreObjectAddRelation,
@@ -42,12 +43,13 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
-import { findReportsForObject } from '../domain/report';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 const labelsLoader = batchLoader(batchLabels);
 const externalReferencesLoader = batchLoader(batchExternalReferences);
+const containersLoader = batchLoader(batchContainers);
+const reportsLoader = batchLoader(batchReports);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const casesLoader = batchLoader(batchCases);
@@ -99,7 +101,8 @@ const stixCoreObjectResolvers = {
     objectLabel: (stixCoreObject, _, context) => labelsLoader.load(stixCoreObject.id, context, context.user),
     objectOrganization: (stixCoreObject, _, context) => batchOrganizationsLoader.load(stixCoreObject.id, context, context.user),
     externalReferences: (stixCoreObject, _, context) => externalReferencesLoader.load(stixCoreObject.id, context, context.user),
-    reports: (stixCoreObject, args, context) => findReportsForObject(context, context.user, stixCoreObject.id, args),
+    containers: (stixCoreObject, args, context) => containersLoader.load(stixCoreObject.id, context, context.user, args),
+    reports: (stixCoreObject, args, context) => reportsLoader.load(stixCoreObject.id, context, context.user, args),
     cases: (stixCoreObject, args, context) => casesLoader.load(stixCoreObject.id, context, context.user, args),
     notes: (stixCoreObject, _, context) => notesLoader.load(stixCoreObject.id, context, context.user),
     opinions: (stixCoreObject, _, context) => opinionsLoader.load(stixCoreObject.id, context, context.user),

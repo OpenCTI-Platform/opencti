@@ -10,7 +10,7 @@ import {
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_IDENTITY } from '../schema/general';
+import { ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -58,6 +58,10 @@ export const stixSightingRelationshipsNumber = (context, user, args) => ({
 
 export const batchCreatedBy = async (context, user, stixCoreRelationshipIds) => {
   return batchLoadThroughGetTo(context, user, stixCoreRelationshipIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+};
+
+export const batchContainers = async (context, user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(context, user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER);
 };
 
 export const batchReports = async (context, user, stixCoreRelationshipIds) => {

@@ -106,7 +106,7 @@ const RootAdministrativeAreaComponent = ({
           />
           <Route
             exact
-            path="/dashboard/locations/administrative_areas/:administrativeArea/analysis"
+            path="/dashboard/locations/administrative_areas/:administrativeArea/analyses"
             render={(routeProps) => (
               <React.Fragment>
                 <StixDomainObjectHeader

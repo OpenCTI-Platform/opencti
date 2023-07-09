@@ -10,6 +10,7 @@ import {
   batchNotes,
   batchOpinions,
   batchReports,
+  batchContainers,
   findAll,
   findById,
   stixSightingRelationshipAddRelation,
@@ -38,6 +39,7 @@ const labelsLoader = batchLoader(batchLabels);
 const externalReferencesLoader = batchLoader(batchExternalReferences);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
+const containersLoader = batchLoader(batchContainers);
 const reportsLoader = batchLoader(batchReports);
 const casesLoader = batchLoader(batchCases);
 const creatorsLoader = batchLoader(batchCreators);
@@ -72,6 +74,7 @@ const stixSightingRelationshipResolvers = {
     objectOrganization: (rel, _, context) => batchOrganizationsLoader.load(rel.id, context, context.user),
     objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),
     externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
+    containers: (rel, _, context) => containersLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     cases: (rel, _, context) => casesLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),

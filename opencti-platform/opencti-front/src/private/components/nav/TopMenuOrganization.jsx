@@ -108,24 +108,24 @@ class TopMenuOrganization extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/organizations/${organizationId}/analysis`}
+          to={`/dashboard/entities/organizations/${organizationId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/entities/organizations/${organizationId}/analysis`
+            === `/dashboard/entities/organizations/${organizationId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/organizations/${organizationId}/analysis`
+            === `/dashboard/entities/organizations/${organizationId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!organizationId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

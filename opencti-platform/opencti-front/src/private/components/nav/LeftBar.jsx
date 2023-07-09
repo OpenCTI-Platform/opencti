@@ -203,11 +203,11 @@ const LeftBar = () => {
       <Divider />
       <Security needs={[KNOWLEDGE]}>
         <MenuList component="nav">
-          <StyledTooltip title={!navOpen && t('Analysis')} placement="right">
+          <StyledTooltip title={!navOpen && t('Analyses')} placement="right">
             <MenuItem
               component={Link}
-              to="/dashboard/analysis"
-              selected={location.pathname.includes('/dashboard/analysis')}
+              to="/dashboard/analyses"
+              selected={location.pathname.includes('/dashboard/analyses')}
               dense={true}
               classes={{ root: classes.menuItem }}
             >
@@ -217,7 +217,7 @@ const LeftBar = () => {
               {navOpen && (
                 <ListItemText
                   classes={{ primary: classes.menuItemText }}
-                  primary={t('Analysis')}
+                  primary={t('Analyses')}
                 />
               )}
             </MenuItem>

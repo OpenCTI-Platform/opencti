@@ -100,24 +100,24 @@ const TopMenuCountry: FunctionComponent = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/locations/countries/${countryId}/analysis`}
+        to={`/dashboard/locations/countries/${countryId}/analyses`}
         variant={
           location.pathname
-          === `/dashboard/locations/countries/${countryId}/analysis`
+          === `/dashboard/locations/countries/${countryId}/analyses`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/locations/countries/${countryId}/analysis`
+          === `/dashboard/locations/countries/${countryId}/analyses`
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
         disabled={!countryId}
       >
-        {t('Analysis')}
+        {t('Analyses')}
       </Button>
       <Button
         component={Link}

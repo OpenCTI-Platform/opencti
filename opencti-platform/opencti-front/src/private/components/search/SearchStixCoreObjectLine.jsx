@@ -84,11 +84,11 @@ const SearchStixCoreObjectLineComponent = ({
   const { t, fd, n } = useFormatter();
   const navigate = useNavigate();
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
-  const reportsLink = `${link}/analysis`;
-  const onReportsClick = (event) => {
+  const linkAnalyses = `${link}/analyses`;
+  const onAnalysesClick = (event) => {
     event.stopPropagation();
     event.preventDefault();
-    navigate(reportsLink);
+    navigate(linkAnalyses);
   };
   return (
     <ListItem
@@ -171,12 +171,12 @@ const SearchStixCoreObjectLineComponent = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.reports.width }}
+              style={{ width: dataColumns.analyses.width }}
             >
               <Chip
                 classes={{ root: classes.chip }}
-                label={n(node.reports.pageInfo.globalCount)}
-                onClick={onReportsClick}
+                label={n(node.containers.pageInfo.globalCount)}
+                onClick={onAnalysesClick}
               />
             </div>
             <div
@@ -406,7 +406,7 @@ export const SearchStixCoreObjectLine = createFragmentContainer(
           id
           name
         }
-        reports {
+        containers {
           pageInfo {
             globalCount
           }
@@ -504,7 +504,7 @@ export const SearchStixCoreObjectLineDummy = ({ dataColumns }) => {
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.reports.width }}
+              style={{ width: dataColumns.analyses.width }}
             >
               <Skeleton
                 animation="wave"

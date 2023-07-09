@@ -25,7 +25,7 @@ import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
-import TopMenuAnalysis from './TopMenuAnalysis';
+import TopMenuAnalyses from './TopMenuAnalyses';
 import TopMenuReport from './TopMenuReport';
 import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
@@ -187,22 +187,30 @@ const topBarQuery = graphql`
   }
 `;
 
-const TopBar: FunctionComponent<TopBarProps> = ({
-  keyword,
-}) => {
+const TopBar: FunctionComponent<TopBarProps> = ({ keyword }) => {
   const theme = useTheme<Theme>();
   const history = useHistory();
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
-  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(null);
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
+  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
+    null,
+  );
   const data = useLazyLoadQuery<TopBarQuery>(topBarQuery, {});
-  const handleNewNotificationsNumber = (response: TopBarNotificationNumberSubscription$data | null | undefined) => {
+  const handleNewNotificationsNumber = (
+    response: TopBarNotificationNumberSubscription$data | null | undefined,
+  ) => {
     return setNotificationsNumber(response?.notificationsNumber?.count ?? null);
   };
-  const isNewNotification = notificationsNumber !== null ? notificationsNumber > 0 : (data.myUnreadNotificationsCount ?? 0) > 0;
-  const subConfig = useMemo<GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>>(
+  const isNewNotification = notificationsNumber !== null
+    ? notificationsNumber > 0
+    : (data.myUnreadNotificationsCount ?? 0) > 0;
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>
+  >(
     () => ({
       subscription: topBarNotificationNumberSubscription,
       variables: {},
@@ -211,7 +219,9 @@ const TopBar: FunctionComponent<TopBarProps> = ({
     [topBarNotificationNumberSubscription],
   );
   useSubscription(subConfig);
-  const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
+  const [navOpen, setNavOpen] = useState(
+    localStorage.getItem('navOpen') === 'true',
+  );
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -220,9 +230,14 @@ const TopBar: FunctionComponent<TopBarProps> = ({
       sub.unsubscribe();
     };
   });
-  const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
+  const [menuOpen, setMenuOpen] = useState<{
+    open: boolean;
+    anchorEl: HTMLButtonElement | null;
+  }>({ open: false, anchorEl: null });
   const [openDrawer, setOpenDrawer] = useState(false);
-  const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleOpenMenu = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
   };
@@ -249,23 +264,32 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   return (
-    <AppBar position="fixed" className={classes.appBar} variant="elevation" elevation={1}>
+    <AppBar
+      position="fixed"
+      className={classes.appBar}
+      variant="elevation"
+      elevation={1}
+    >
       {/* Header and Footer Banners containing classification level of system */}
-      <Toolbar style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}>
+      <Toolbar
+        style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
+      >
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
-            <img src={navOpen ? theme.logo : theme.logo_collapsed} alt="logo" className={navOpen ? classes.logo : classes.logoCollapsed}/>
+            <img
+              src={navOpen ? theme.logo : theme.logo_collapsed}
+              alt="logo"
+              className={navOpen ? classes.logo : classes.logoCollapsed}
+            />
           </Link>
         </div>
         <div className={classes.menuContainer}>
-          {location.pathname === '/dashboard' && (
-            <TopMenuDashboard />
-          )}
+          {location.pathname === '/dashboard' && <TopMenuDashboard />}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {location.pathname.includes('/dashboard/import') && <TopMenuImport />}
-          {(location.pathname === '/dashboard/analysis'
-            || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
-              <TopMenuAnalysis />
+          {(location.pathname === '/dashboard/analyses'
+            || location.pathname.match('/dashboard/analyses/[a-z_]+$')) && (
+            <TopMenuAnalyses />
           )}
           {location.pathname === '/dashboard/profile/me' && <TopMenuProfile />}
           {location.pathname !== '/dashboard/profile/me'
@@ -274,7 +298,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/cases'
             || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
-              <TopMenuCases />
+            <TopMenuCases />
           )}
           {location.pathname.includes('/dashboard/cases/incidents/') && (
             <TopMenuCaseIncident />
@@ -291,27 +315,27 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           {location.pathname.includes('/dashboard/cases/feedbacks/') && (
             <TopMenuCaseFeedback />
           )}
-          {location.pathname.includes('/dashboard/analysis/reports/') && (
+          {location.pathname.includes('/dashboard/analyses/reports/') && (
             <TopMenuReport />
           )}
-          {location.pathname.includes('/dashboard/analysis/groupings/') && (
+          {location.pathname.includes('/dashboard/analyses/groupings/') && (
             <TopMenuGrouping />
           )}
-          {location.pathname.includes('/dashboard/analysis/malware_analyses/') && (
-            <TopMenuMalwareAnalysis />
-          )}
-          {location.pathname.includes('/dashboard/analysis/notes/') && (
+          {location.pathname.includes(
+            '/dashboard/analyses/malware_analyses/',
+          ) && <TopMenuMalwareAnalysis />}
+          {location.pathname.includes('/dashboard/analyses/notes/') && (
             <TopMenuNote />
           )}
-          {location.pathname.includes('/dashboard/analysis/opinions/') && (
+          {location.pathname.includes('/dashboard/analyses/opinions/') && (
             <TopMenuOpinion />
           )}
           {location.pathname.includes(
-            '/dashboard/analysis/external_references/',
+            '/dashboard/analyses/external_references/',
           ) && <TopMenuExternalReference />}
           {(location.pathname === '/dashboard/events'
             || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
-              <TopMenuEvents />
+            <TopMenuEvents />
           )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuIncident />
@@ -324,7 +348,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/observations'
             || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
-              <TopMenuObservations />
+            <TopMenuObservations />
           )}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
@@ -340,14 +364,14 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
-              <TopMenuThreats />
+            <TopMenuThreats />
           )}
-          {location.pathname.includes('/dashboard/threats/threat_actors_group/') && (
-            <TopMenuThreatActorGroup />
-          )}
-          {location.pathname.includes('/dashboard/threats/threat_actors_individual/') && (
-            <TopMenuThreatActorIndividual />
-          )}
+          {location.pathname.includes(
+            '/dashboard/threats/threat_actors_group/',
+          ) && <TopMenuThreatActorGroup />}
+          {location.pathname.includes(
+            '/dashboard/threats/threat_actors_individual/',
+          ) && <TopMenuThreatActorIndividual />}
           {location.pathname.includes('/dashboard/threats/intrusion_sets/') && (
             <TopMenuIntrusionSet />
           )}
@@ -356,7 +380,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
-              <TopMenuArsenal />
+            <TopMenuArsenal />
           )}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && (
             <TopMenuMalware />
@@ -372,7 +396,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           ) && <TopMenuVulnerability />}
           {(location.pathname === '/dashboard/entities'
             || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
-              <TopMenuEntities />
+            <TopMenuEntities />
           )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
@@ -391,7 +415,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/locations'
             || location.pathname.match('/dashboard/locations/[a-z_]+$')) && (
-              <TopMenuLocation />
+            <TopMenuLocation />
           )}
           {location.pathname.includes('/dashboard/locations/countries/') && (
             <TopMenuCountry />
@@ -410,7 +434,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/techniques'
             || location.pathname.match('/dashboard/techniques/[a-z_]+$')) && (
-              <TopMenuTechniques />
+            <TopMenuTechniques />
           )}
           {location.pathname.includes(
             '/dashboard/techniques/attack_patterns/',
@@ -429,7 +453,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           ) && <TopMenuDataSource />}
           {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
           {location.pathname.includes('/dashboard/activity') && (
-              <TopMenuAudits />
+            <TopMenuAudits />
           )}
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
@@ -603,12 +627,17 @@ const TopBar: FunctionComponent<TopBarProps> = ({
                 {t('Profile')}
               </MenuItem>
               <MenuItem onClick={handleOpenDrawer}>{t('Feedback')}</MenuItem>
-              <MenuItem id="logout-button" onClick={() => handleLogout()}>{t('Logout')}</MenuItem>
+              <MenuItem id="logout-button" onClick={() => handleLogout()}>
+                {t('Logout')}
+              </MenuItem>
             </Menu>
           </div>
         </div>
       </Toolbar>
-      <FeedbackCreation openDrawer={openDrawer} handleCloseDrawer={handleCloseDrawer}/>
+      <FeedbackCreation
+        openDrawer={openDrawer}
+        handleCloseDrawer={handleCloseDrawer}
+      />
     </AppBar>
   );
 };

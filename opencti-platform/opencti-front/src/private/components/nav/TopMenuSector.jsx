@@ -103,24 +103,24 @@ class TopMenuSector extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/sectors/${sectorId}/analysis`}
+          to={`/dashboard/entities/sectors/${sectorId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/entities/sectors/${sectorId}/analysis`
+            === `/dashboard/entities/sectors/${sectorId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/sectors/${sectorId}/analysis`
+            === `/dashboard/entities/sectors/${sectorId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!sectorId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

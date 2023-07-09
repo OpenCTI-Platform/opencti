@@ -115,7 +115,7 @@ class RootStixCyberObservable extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/observations/observables/:observableId/analysis"
+                      path="/dashboard/observations/observables/:observableId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixCyberObservableHeader

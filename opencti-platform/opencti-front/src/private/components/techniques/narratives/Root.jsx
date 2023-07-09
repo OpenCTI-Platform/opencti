@@ -141,7 +141,7 @@ class RootNarrative extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/techniques/narratives/:narrativeId/analysis"
+                      path="/dashboard/techniques/narratives/:narrativeId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

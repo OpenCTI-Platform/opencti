@@ -109,10 +109,10 @@ class TopMenuIndicator extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/observations/indicators/${indicatorId}/analysis`}
+          to={`/dashboard/observations/indicators/${indicatorId}/analyses`}
           variant={
             location.pathname.includes(
-              `/dashboard/observations/indicators/${indicatorId}/analysis`,
+              `/dashboard/observations/indicators/${indicatorId}/analyses`,
             )
               ? 'contained'
               : 'text'
@@ -120,7 +120,7 @@ class TopMenuIndicator extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/observations/indicators/${indicatorId}/analysis`,
+              `/dashboard/observations/indicators/${indicatorId}/analyses`,
             )
               ? 'secondary'
               : 'primary'
@@ -128,7 +128,7 @@ class TopMenuIndicator extends Component {
           classes={{ root: classes.button }}
           disabled={!indicatorId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

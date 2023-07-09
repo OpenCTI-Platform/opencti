@@ -179,22 +179,22 @@ class ContainerStixDomainObjectsComponent extends Component {
     return {
       entity_type: {
         label: 'Type',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '30%',
+        width: '28%',
         isSortable: true,
       },
       objectLabel: {
         label: 'Labels',
-        width: '20%',
+        width: '19%',
         isSortable: false,
       },
       createdBy: {
         label: 'Author',
-        width: '15%',
+        width: '12%',
         isSortable: isRuntimeSort,
       },
       created_at: {
@@ -202,8 +202,14 @@ class ContainerStixDomainObjectsComponent extends Component {
         width: '10%',
         isSortable: true,
       },
+      analyses: {
+        label: 'Analyses',
+        width: '8%',
+        isSortable: false,
+      },
       objectMarking: {
         label: 'Marking',
+        width: '9%',
         isSortable: isRuntimeSort,
       },
     };

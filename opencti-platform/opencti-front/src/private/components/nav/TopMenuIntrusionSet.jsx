@@ -106,24 +106,24 @@ class TopMenuIntrusionSet extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!intrusionSetId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

@@ -104,7 +104,7 @@ class RootIndicator extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/observations/indicators/:indicatorId/analysis"
+                      path="/dashboard/observations/indicators/:indicatorId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

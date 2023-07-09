@@ -13,6 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
@@ -46,6 +47,17 @@ const useStyles = makeStyles((theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chip: {
+    fontSize: 13,
+    lineHeight: '12px',
+    height: 20,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+    },
+  },
   chipInList: {
     fontSize: 12,
     height: 20,
@@ -70,19 +82,27 @@ const ContainerStixCyberObservableLineComponent = (props) => {
     setSelectedElements,
   } = props;
   const classes = useStyles();
-  const { t, fd } = useFormatter();
+  const { t, fd, n } = useFormatter();
+  const navigate = useNavigate();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
+  const link = `/dashboard/observations/${
+    node.entity_type === 'Artifact' ? 'artifacts' : 'observables'
+  }/${node.id}`;
+  const linkAnalyses = `${link}/analyses`;
+  const onAnalysesClick = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    navigate(linkAnalyses);
+  };
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       button={true}
       component={Link}
-      to={`/dashboard/observations/${
-        node.entity_type === 'Artifact' ? 'artifacts' : 'observables'
-      }/${node.id}`}
+      to={link}
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
@@ -148,6 +168,16 @@ const ContainerStixCyberObservableLineComponent = (props) => {
               style={{ width: dataColumns.created_at.width }}
             >
               {fd(node.created_at)}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.analyses.width }}
+            >
+              <Chip
+                classes={{ root: classes.chip }}
+                label={n(node.containers.pageInfo.globalCount)}
+                onClick={onAnalysesClick}
+              />
             </div>
             <div
               className={classes.bodyItem}
@@ -243,6 +273,11 @@ export const ContainerStixCyberObservableLine = createFragmentContainer(
             }
           }
         }
+        containers {
+          pageInfo {
+            globalCount
+          }
+        }
       }
     `,
   },
@@ -312,6 +347,17 @@ export const ContainerStixCyberObservableLineDummy = (props) => {
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created_at.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.analyses.width }}
             >
               <Skeleton
                 animation="wave"

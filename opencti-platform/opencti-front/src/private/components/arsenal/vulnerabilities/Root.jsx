@@ -142,7 +142,7 @@ class RootVulnerability extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/analysis"
+                      path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

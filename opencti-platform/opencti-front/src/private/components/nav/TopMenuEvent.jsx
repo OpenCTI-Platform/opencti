@@ -103,24 +103,24 @@ class TopMenuEvent extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/events/${eventId}/analysis`}
+          to={`/dashboard/entities/events/${eventId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/entities/events/${eventId}/analysis`
+            === `/dashboard/entities/events/${eventId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/events/${eventId}/analysis`
+            === `/dashboard/entities/events/${eventId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!eventId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

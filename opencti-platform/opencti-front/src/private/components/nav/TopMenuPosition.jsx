@@ -103,24 +103,24 @@ class TopMenuPosition extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/locations/positions/${positionId}/analysis`}
+          to={`/dashboard/locations/positions/${positionId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/locations/positions/${positionId}/analysis`
+            === `/dashboard/locations/positions/${positionId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/locations/positions/${positionId}/analysis`
+            === `/dashboard/locations/positions/${positionId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!positionId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

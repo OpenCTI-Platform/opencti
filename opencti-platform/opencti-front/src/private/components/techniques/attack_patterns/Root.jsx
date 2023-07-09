@@ -142,7 +142,7 @@ class RootAttackPattern extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId/analysis"
+                      path="/dashboard/techniques/attack_patterns/:attackPatternId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

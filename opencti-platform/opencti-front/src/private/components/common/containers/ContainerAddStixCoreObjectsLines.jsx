@@ -9,7 +9,7 @@ import inject18n from '../../../../components/i18n';
 import {
   reportKnowledgeGraphMutationRelationDeleteMutation,
   reportKnowledgeGraphtMutationRelationAddMutation,
-} from '../../analysis/reports/ReportKnowledgeGraphQuery';
+} from '../../analyses/reports/ReportKnowledgeGraphQuery';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
   ContainerAddStixCoreObjecstLineDummy,

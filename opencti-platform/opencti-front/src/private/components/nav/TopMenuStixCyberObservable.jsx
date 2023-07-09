@@ -101,10 +101,10 @@ class TopMenuStixCyberObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/observations/observables/${observableId}/analysis`}
+          to={`/dashboard/observations/observables/${observableId}/analyses`}
           variant={
             location.pathname.includes(
-              `/dashboard/observations/observables/${observableId}/analysis`,
+              `/dashboard/observations/observables/${observableId}/analyses`,
             )
               ? 'contained'
               : 'text'
@@ -112,7 +112,7 @@ class TopMenuStixCyberObservable extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/observations/observables/${observableId}/analysis`,
+              `/dashboard/observations/observables/${observableId}/analyses`,
             )
               ? 'secondary'
               : 'primary'
@@ -120,7 +120,7 @@ class TopMenuStixCyberObservable extends Component {
           classes={{ root: classes.button }}
           disabled={!observableId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

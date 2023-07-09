@@ -149,7 +149,7 @@ const inlineStylesHeaders = {
     fontSize: 12,
     fontWeight: '700',
   },
-  reports: {
+  analyses: {
     float: 'left',
     width: '8%',
     fontSize: 12,
@@ -211,7 +211,7 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  reports: {
+  analyses: {
     float: 'left',
     width: '8%',
     height: 20,
@@ -308,7 +308,7 @@ const SearchBulk = () => {
                           value: defaultValue(resolvedStixCoreObject),
                           labels: resolvedStixCoreObject.objectLabel,
                           markings: resolvedStixCoreObject.objectMarking,
-                          reports: resolvedStixCoreObject.reports,
+                          containers: resolvedStixCoreObject.containers,
                           updated_at: resolvedStixCoreObject.updated_at,
                           author: R.pathOr(
                             '',
@@ -504,7 +504,7 @@ const SearchBulk = () => {
                     {SortHeader('creator', 'Creators', true)}
                     {SortHeader('labels', 'Labels', true)}
                     {SortHeader('created_at', 'Creation date', true)}
-                    {SortHeader('reports', 'Reports', true)}
+                    {SortHeader('analyses', 'Analyses', true)}
                     {SortHeader('markings', 'Markings', true)}
                   </div>
                 }
@@ -516,11 +516,11 @@ const SearchBulk = () => {
             {sortedResolvedEntities.map((entity) => {
               const inPlatform = entity.in_platform;
               const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
-              const reportsLink = `${link}/analysis`;
-              const onReportsClick = (event) => {
+              const analysesLink = `${link}/analyses`;
+              const onAnalysesClick = (event) => {
                 event.stopPropagation();
                 event.preventDefault();
-                navigate(reportsLink);
+                navigate(analysesLink);
               };
               return (
                 <ListItem
@@ -600,13 +600,13 @@ const SearchBulk = () => {
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={inlineStyles.reports}
+                          style={inlineStyles.analyses}
                         >
                           {entity.in_platform && (
                             <Chip
                               classes={{ root: classes.chip }}
-                              label={n(entity.reports.pageInfo.globalCount)}
-                              onClick={onReportsClick}
+                              label={n(entity.containers.pageInfo.globalCount)}
+                              onClick={onAnalysesClick}
                             />
                           )}
                         </div>

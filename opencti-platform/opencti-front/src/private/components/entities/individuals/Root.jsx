@@ -179,7 +179,7 @@ class RootIndividual extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/entities/individuals/:individualId/analysis"
+                      path="/dashboard/entities/individuals/:individualId/analyses"
                       render={(routeProps) => (
                         <IndividualAnalysis
                           {...routeProps}

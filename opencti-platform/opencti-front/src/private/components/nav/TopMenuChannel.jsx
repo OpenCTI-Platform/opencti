@@ -109,24 +109,24 @@ class TopMenuChannel extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/arsenal/channels/${channelId}/analysis`}
+          to={`/dashboard/arsenal/channels/${channelId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/arsenal/channels/${channelId}/analysis`
+            === `/dashboard/arsenal/channels/${channelId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/arsenal/channels/${channelId}/analysis`
+            === `/dashboard/arsenal/channels/${channelId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!channelId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

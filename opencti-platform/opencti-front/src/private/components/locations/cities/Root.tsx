@@ -94,7 +94,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
           />
           <Route
             exact
-            path="/dashboard/locations/cities/:cityId/analysis"
+            path="/dashboard/locations/cities/:cityId/analyses"
             render={(routeProps) => (
               <React.Fragment>
                 <StixDomainObjectHeader

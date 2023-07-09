@@ -292,7 +292,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'based-on':
     case 'communicates-with':
     case 'amplifies':
-    case 'analysis-of':
+    case 'analyses-of':
     case 'authored-by':
     case 'beacons-to':
     case 'characterizes':
@@ -314,7 +314,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'duplicate-of':
     case 'obs_content':
     case 'service-dll':
-    case 'dynamic-analysis-of':
+    case 'dynamic-analyses-of':
     case 'contains':
     case 'exfiltrates-to':
     case 'exploits':
@@ -345,7 +345,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'src':
     case 'to':
     case 'values':
-    case 'static-analysis-of':
+    case 'static-analyses-of':
     case 'subnarrative-of':
     case 'subtechnique-of':
       if (dark) {

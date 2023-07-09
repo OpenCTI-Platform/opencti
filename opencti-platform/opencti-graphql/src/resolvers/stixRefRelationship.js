@@ -18,12 +18,13 @@ import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, distributionRelations } from '../database/middleware';
 import { elBatchIds } from '../database/engine';
-import { batchNotes, batchOpinions, batchReports } from '../domain/stixCoreRelationship';
+import { batchNotes, batchOpinions, batchReports, batchContainers } from '../domain/stixCoreRelationship';
 import { batchCreators } from '../domain/user';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
+const containersLoader = batchLoader(batchContainers);
 const reportsLoader = batchLoader(batchReports);
 const creatorsLoader = batchLoader(batchCreators);
 
@@ -39,6 +40,7 @@ const stixRefRelationshipResolvers = {
   StixRefRelationship: {
     from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load(rel.fromId, context, context.user)),
     to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load(rel.toId, context, context.user)),
+    containers: (rel, _, context) => containersLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
     opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),

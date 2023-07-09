@@ -146,7 +146,7 @@ class RootIntrusionSet extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/threats/intrusion_sets/:intrusionSetId/analysis"
+                      path="/dashboard/threats/intrusion_sets/:intrusionSetId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

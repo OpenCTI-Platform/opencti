@@ -141,7 +141,7 @@ class RootCampaign extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/threats/campaigns/:campaignId/analysis"
+                      path="/dashboard/threats/campaigns/:campaignId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

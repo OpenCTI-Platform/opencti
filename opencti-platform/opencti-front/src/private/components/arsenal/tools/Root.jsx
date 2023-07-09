@@ -137,7 +137,7 @@ class RootTool extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/arsenal/tools/:toolId/analysis"
+                      path="/dashboard/arsenal/tools/:toolId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

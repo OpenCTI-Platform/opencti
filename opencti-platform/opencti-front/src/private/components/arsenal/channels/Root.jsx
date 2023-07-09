@@ -140,7 +140,7 @@ class RootChannel extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/arsenal/channels/:channelId/analysis"
+                      path="/dashboard/arsenal/channels/:channelId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

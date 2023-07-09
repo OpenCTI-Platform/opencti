@@ -49,7 +49,7 @@ class TopMenuGrouping extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/analysis/groupings"
+          to="/dashboard/analyses/groupings"
           variant="contained"
           size="small"
           color="primary"
@@ -64,15 +64,15 @@ class TopMenuGrouping extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/analysis/groupings/${groupingId}`}
+          to={`/dashboard/analyses/groupings/${groupingId}`}
           variant={
-            location.pathname === `/dashboard/analysis/groupings/${groupingId}`
+            location.pathname === `/dashboard/analyses/groupings/${groupingId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/analysis/groupings/${groupingId}`
+            location.pathname === `/dashboard/analyses/groupings/${groupingId}`
               ? 'secondary'
               : 'primary'
           }
@@ -83,10 +83,10 @@ class TopMenuGrouping extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/analysis/groupings/${groupingId}/knowledge`}
+          to={`/dashboard/analyses/groupings/${groupingId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/analysis/groupings/${groupingId}/knowledge`,
+              `/dashboard/analyses/groupings/${groupingId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -94,7 +94,7 @@ class TopMenuGrouping extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/analysis/groupings/${groupingId}/knowledge`,
+              `/dashboard/analyses/groupings/${groupingId}/knowledge`,
             )
               ? 'secondary'
               : 'primary'
@@ -106,17 +106,17 @@ class TopMenuGrouping extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/analysis/groupings/${groupingId}/entities`}
+          to={`/dashboard/analyses/groupings/${groupingId}/entities`}
           variant={
             location.pathname
-            === `/dashboard/analysis/groupings/${groupingId}/entities`
+            === `/dashboard/analyses/groupings/${groupingId}/entities`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/analysis/groupings/${groupingId}/entities`
+            === `/dashboard/analyses/groupings/${groupingId}/entities`
               ? 'secondary'
               : 'primary'
           }
@@ -127,17 +127,17 @@ class TopMenuGrouping extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/analysis/groupings/${groupingId}/observables`}
+          to={`/dashboard/analyses/groupings/${groupingId}/observables`}
           variant={
             location.pathname
-            === `/dashboard/analysis/groupings/${groupingId}/observables`
+            === `/dashboard/analyses/groupings/${groupingId}/observables`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/analysis/groupings/${groupingId}/observables`
+            === `/dashboard/analyses/groupings/${groupingId}/observables`
               ? 'secondary'
               : 'primary'
           }
@@ -149,17 +149,17 @@ class TopMenuGrouping extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/analysis/groupings/${groupingId}/files`}
+            to={`/dashboard/analyses/groupings/${groupingId}/files`}
             variant={
               location.pathname
-              === `/dashboard/analysis/groupings/${groupingId}/files`
+              === `/dashboard/analyses/groupings/${groupingId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/analysis/groupings/${groupingId}/files`
+              === `/dashboard/analyses/groupings/${groupingId}/files`
                 ? 'secondary'
                 : 'primary'
             }

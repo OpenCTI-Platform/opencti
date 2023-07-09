@@ -138,7 +138,7 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
             />
             <Route
               exact
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/analysis"
+              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/analyses"
               render={(routeProps: any) => (
                 <React.Fragment>
                   <StixDomainObjectHeader

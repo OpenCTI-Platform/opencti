@@ -101,23 +101,23 @@ const TopMenuThreatActorIndividual = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/analysis`}
+        to={`/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/analyses`}
         variant={
           location.pathname
-          === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/analysis`
+          === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/analyses`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/analysis`
+          === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/analyses`
             ? 'secondary'
             : 'primary'
         }
         classes={{ root: classes.button }}
       >
-        {t('Analysis')}
+        {t('Analyses')}
       </Button>
       <Button
         component={Link}

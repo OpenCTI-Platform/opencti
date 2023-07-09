@@ -36,12 +36,6 @@ export const batchParticipants = (context, user, reportIds) => {
   return batchListThroughGetTo(context, user, reportIds, RELATION_OBJECT_PARTICIPANT, ENTITY_TYPE_USER);
 };
 
-export const findReportsForObject = async (context, user, objectId, args) => {
-  const filters = [...(args.filters ?? []), { key: buildRefRelationKey(RELATION_OBJECT), values: [objectId] }];
-  const finalArgs = { ...args, filters };
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], finalArgs);
-};
-
 // Entities tab
 export const reportContainsStixObjectOrStixRelationship = async (context, user, reportId, thingId) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;

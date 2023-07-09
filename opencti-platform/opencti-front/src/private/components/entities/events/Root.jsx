@@ -133,7 +133,7 @@ class RootEvent extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/entities/events/:eventId/analysis"
+                      path="/dashboard/entities/events/:eventId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

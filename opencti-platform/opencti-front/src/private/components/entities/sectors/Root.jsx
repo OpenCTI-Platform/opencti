@@ -138,7 +138,7 @@ class RootSector extends Component {
                     />
                     <Route
                       exact
-                      path="/dashboard/entities/sectors/:sectorId/analysis"
+                      path="/dashboard/entities/sectors/:sectorId/analyses"
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader

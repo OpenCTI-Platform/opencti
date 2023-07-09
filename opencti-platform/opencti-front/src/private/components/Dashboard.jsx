@@ -498,7 +498,7 @@ const TargetedCountries = ({ timeField }) => {
     />
   );
 };
-const LastIngestedAnalysis = () => {
+const LastIngestedAnalyses = () => {
   const classes = useStyles();
   const { t, fsd } = useFormatter();
   const dashboardLastStixDomainObjectsQuery = graphql`
@@ -840,7 +840,7 @@ const DefaultDashboard = ({ timeField }) => {
             style={{ height: 420 }}
           >
             <Suspense fallback={<Loader variant="inElement" />}>
-              <LastIngestedAnalysis />
+              <LastIngestedAnalyses />
             </Suspense>
           </Paper>
         </Grid>

@@ -7,7 +7,10 @@ import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -106,24 +109,24 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/analysis`}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/technqiues/attack_patterns/${attackPatternId}/analysis`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/attack_patterns/${attackPatternId}/analysis`
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!attackPatternId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

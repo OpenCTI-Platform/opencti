@@ -45,7 +45,7 @@ const TopMenuReport = () => {
     <div>
       <Button
         component={Link}
-        to="/dashboard/analysis/reports"
+        to="/dashboard/analyses/reports"
         variant="contained"
         size="small"
         color="primary"
@@ -60,15 +60,15 @@ const TopMenuReport = () => {
       />
       <Button
         component={Link}
-        to={`/dashboard/analysis/reports/${reportId}`}
+        to={`/dashboard/analyses/reports/${reportId}`}
         variant={
-          location.pathname === `/dashboard/analysis/reports/${reportId}`
+          location.pathname === `/dashboard/analyses/reports/${reportId}`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname === `/dashboard/analysis/reports/${reportId}`
+          location.pathname === `/dashboard/analyses/reports/${reportId}`
             ? 'secondary'
             : 'primary'
         }
@@ -79,10 +79,10 @@ const TopMenuReport = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/analysis/reports/${reportId}/knowledge`}
+        to={`/dashboard/analyses/reports/${reportId}/knowledge`}
         variant={
           location.pathname.includes(
-            `/dashboard/analysis/reports/${reportId}/knowledge`,
+            `/dashboard/analyses/reports/${reportId}/knowledge`,
           )
             ? 'contained'
             : 'text'
@@ -90,7 +90,7 @@ const TopMenuReport = () => {
         size="small"
         color={
           location.pathname.includes(
-            `/dashboard/analysis/reports/${reportId}/knowledge`,
+            `/dashboard/analyses/reports/${reportId}/knowledge`,
           )
             ? 'secondary'
             : 'primary'
@@ -102,17 +102,17 @@ const TopMenuReport = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/analysis/reports/${reportId}/content`}
+        to={`/dashboard/analyses/reports/${reportId}/content`}
         variant={
           location.pathname
-          === `/dashboard/analysis/reports/${reportId}/content`
+          === `/dashboard/analyses/reports/${reportId}/content`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/analysis/reports/${reportId}/content`
+          === `/dashboard/analyses/reports/${reportId}/content`
             ? 'secondary'
             : 'primary'
         }
@@ -123,17 +123,17 @@ const TopMenuReport = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/analysis/reports/${reportId}/entities`}
+        to={`/dashboard/analyses/reports/${reportId}/entities`}
         variant={
           location.pathname
-          === `/dashboard/analysis/reports/${reportId}/entities`
+          === `/dashboard/analyses/reports/${reportId}/entities`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/analysis/reports/${reportId}/entities`
+          === `/dashboard/analyses/reports/${reportId}/entities`
             ? 'secondary'
             : 'primary'
         }
@@ -144,17 +144,17 @@ const TopMenuReport = () => {
       </Button>
       <Button
         component={Link}
-        to={`/dashboard/analysis/reports/${reportId}/observables`}
+        to={`/dashboard/analyses/reports/${reportId}/observables`}
         variant={
           location.pathname
-          === `/dashboard/analysis/reports/${reportId}/observables`
+          === `/dashboard/analyses/reports/${reportId}/observables`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
           location.pathname
-          === `/dashboard/analysis/reports/${reportId}/observables`
+          === `/dashboard/analyses/reports/${reportId}/observables`
             ? 'secondary'
             : 'primary'
         }
@@ -166,17 +166,17 @@ const TopMenuReport = () => {
       <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
         <Button
           component={Link}
-          to={`/dashboard/analysis/reports/${reportId}/files`}
+          to={`/dashboard/analyses/reports/${reportId}/files`}
           variant={
             location.pathname
-            === `/dashboard/analysis/reports/${reportId}/files`
+            === `/dashboard/analyses/reports/${reportId}/files`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/analysis/reports/${reportId}/files`
+            === `/dashboard/analyses/reports/${reportId}/files`
               ? 'secondary'
               : 'primary'
           }

@@ -20,7 +20,7 @@ import { ChannelCreationForm } from '../../arsenal/channels/ChannelCreation';
 import { CityCreationForm } from '../../locations/cities/CityCreation';
 import { CountryCreationForm } from '../../locations/countries/CountryCreation';
 import { EventCreationForm } from '../../entities/events/EventCreation';
-import { GroupingCreationForm } from '../../analysis/groupings/GroupingCreation';
+import { GroupingCreationForm } from '../../analyses/groupings/GroupingCreation';
 import { IncidentCreationForm } from '../../events/incidents/IncidentCreation';
 import { IndicatorCreationForm } from '../../observations/indicators/IndicatorCreation';
 import { IndividualCreationForm } from '../../entities/individuals/IndividualCreation';
@@ -30,7 +30,7 @@ import { ObservedDataCreationForm } from '../../events/observed_data/ObservedDat
 import { OrganizationCreationForm } from '../../entities/organizations/OrganizationCreation';
 import { PositionCreationForm } from '../../locations/positions/PositionCreation';
 import { RegionCreationForm } from '../../locations/regions/RegionCreation';
-import { ReportCreationForm } from '../../analysis/reports/ReportCreation';
+import { ReportCreationForm } from '../../analyses/reports/ReportCreation';
 import { SectorCreationForm } from '../../entities/sectors/SectorCreation';
 import { SystemCreationForm } from '../../entities/systems/SystemCreation';
 import { ThreatActorGroupCreationForm } from '../../threats/threat_actors_group/ThreatActorGroupCreation';
@@ -39,12 +39,12 @@ import { VulnerabilityCreationForm } from '../../arsenal/vulnerabilities/Vulnera
 import {
   OpinionCreationFormKnowledgeEditor,
   OpinionCreationFormKnowledgeParticipant,
-} from '../../analysis/opinions/OpinionCreation';
+} from '../../analyses/opinions/OpinionCreation';
 import { NarrativeCreationForm } from '../../techniques/narratives/NarrativeCreation';
 import { DataSourceCreationForm } from '../../techniques/data_sources/DataSourceCreation';
 import { DataComponentCreationForm } from '../../techniques/data_components/DataComponentCreation';
 import { CourseOfActionCreationForm } from '../../techniques/courses_of_action/CourseOfActionCreation';
-import { NoteCreationForm } from '../../analysis/notes/NoteCreation';
+import { NoteCreationForm } from '../../analyses/notes/NoteCreation';
 import { CaseIncidentCreationForm } from '../../cases/case_incidents/CaseIncidentCreation';
 import useGranted, {
   KNOWLEDGE_KNUPDATE,

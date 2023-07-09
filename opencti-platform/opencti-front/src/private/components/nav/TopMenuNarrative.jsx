@@ -111,24 +111,24 @@ class TopMenuNarrative extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/narratives/${narrativeId}/analysis`}
+          to={`/dashboard/techniques/narratives/${narrativeId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/techniques/narratives/${narrativeId}/analysis`
+            === `/dashboard/techniques/narratives/${narrativeId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/narratives/${narrativeId}/analysis`
+            === `/dashboard/techniques/narratives/${narrativeId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!narrativeId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}

@@ -96,7 +96,7 @@ const RootCountryComponent = ({ queryRef, countryId, link }) => {
           />
           <Route
             exact
-            path="/dashboard/locations/countries/:countryId/analysis"
+            path="/dashboard/locations/countries/:countryId/analyses"
             render={(routeProps) => (
               <React.Fragment>
                 <StixDomainObjectHeader

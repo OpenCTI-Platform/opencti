@@ -19,7 +19,7 @@ import { BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
-import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
+import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';

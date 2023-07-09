@@ -8,7 +8,7 @@ import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import Search from './components/Search';
 import RootImport from './components/import/Root';
-import RootAnalysis from './components/analysis/Root';
+import RootAnalyses from './components/analyses/Root';
 import RootEvents from './components/events/Root';
 import RootObservations from './components/observations/Root';
 import RootThreats from './components/threats/Root';
@@ -98,8 +98,8 @@ const Index = ({ settings }) => {
               component={SearchBulk}
             />
             <BoundaryRoute
-              path="/dashboard/analysis"
-              component={RootAnalysis}
+              path="/dashboard/analyses"
+              component={RootAnalyses}
             />
             <BoundaryRoute path="/dashboard/cases" component={RootCases} />
             <BoundaryRoute path="/dashboard/events" component={RootEvents} />

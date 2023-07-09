@@ -3,6 +3,7 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCoreRelationship,
   batchCases,
+  batchContainers,
   batchCreatedBy,
   batchExternalReferences,
   batchKillChainPhases,
@@ -24,7 +25,8 @@ import {
   stixCoreRelationshipsDistribution,
   stixCoreRelationshipsExportAsk,
   stixCoreRelationshipsMultiTimeSeries,
-  stixCoreRelationshipsNumber } from '../domain/stixCoreRelationship';
+  stixCoreRelationshipsNumber
+} from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
@@ -43,6 +45,7 @@ const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 const labelsLoader = batchLoader(batchLabels);
 const externalReferencesLoader = batchLoader(batchExternalReferences);
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
+const containersLoader = batchLoader(batchContainers);
 const notesLoader = batchLoader(batchNotes);
 const opinionsLoader = batchLoader(batchOpinions);
 const reportsLoader = batchLoader(batchReports);
@@ -75,6 +78,7 @@ const stixCoreRelationshipResolvers = {
     objectOrganization: (rel, _, context) => batchOrganizationsLoader.load(rel.id, context, context.user),
     externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
     killChainPhases: (rel, _, context) => killChainPhasesLoader.load(rel.id, context, context.user),
+    containers: (rel, _, context) => containersLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     cases: (rel, _, context) => casesLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),

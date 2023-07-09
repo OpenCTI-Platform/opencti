@@ -106,24 +106,24 @@ class TopMenuInfrastructure extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/observations/infrastructures/${infrastructureId}/analysis`}
+          to={`/dashboard/observations/infrastructures/${infrastructureId}/analyses`}
           variant={
             location.pathname
-            === `/dashboard/observations/infrastructures/${infrastructureId}/analysis`
+            === `/dashboard/observations/infrastructures/${infrastructureId}/analyses`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/observations/infrastructures/${infrastructureId}/analysis`
+            === `/dashboard/observations/infrastructures/${infrastructureId}/analyses`
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
           disabled={!infrastructureId}
         >
-          {t('Analysis')}
+          {t('Analyses')}
         </Button>
         <Button
           component={Link}
