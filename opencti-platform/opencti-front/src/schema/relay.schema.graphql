@@ -8024,7 +8024,7 @@ type Query {
   entitySettingByType(targetType: String!): EntitySetting
   entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: [EntitySettingsFiltering!], filterMode: FilterMode, search: String): EntitySettingConnection
   workspace(id: String!): Workspace
-  workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: [WorkspacesFiltering!], filterMode: FilterMode, search: String): WorkspaceConnection
+  workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: [WorkspacesFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): WorkspaceConnection
   malwareAnalysis(id: String!): MalwareAnalysis
   malwareAnalyses(first: Int, after: ID, orderBy: MalwareAnalysesOrdering, orderMode: OrderingMode, filters: [MalwareAnalysesFiltering!], filterMode: FilterMode, search: String): MalwareAnalysisConnection
   threatActorIndividual(id: String!): ThreatActorIndividual

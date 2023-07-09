@@ -40,7 +40,7 @@ import { now } from '../../utils/format';
 import { elCount, elFindByIds } from '../../database/engine';
 import { extractEntityRepresentative, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ENTITY_FILTERS } from '../../utils/filtering';
-import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreObject, InternalEditInput } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
   AuthorizedMember,
@@ -186,7 +186,7 @@ export const getTriggerRecipients = async (context: AuthContext, user: AuthUser,
   return [];
 };
 
-export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: EditInput[]) => {
+export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: InternalEditInput[]) => {
   const trigger = await triggerGet(context, user, triggerId);
   const userAccessRight = getUserAccessRight(user, trigger);
   if (userAccessRight === null || ![MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN].includes(userAccessRight)) {
@@ -203,11 +203,11 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
 };
 
 export const triggerActivityEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: EditInput[]) => {
-  const finalInput: EditInput[] = [];
+  const finalInput: InternalEditInput[] = [];
   for (let index = 0; index < input.length; index += 1) {
     const inputElement = input[index];
     if (inputElement.key === 'recipients') {
-      const value = [JSON.stringify((inputElement.value ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW })))];
+      const value = (inputElement.value ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
       finalInput.push({ key: 'authorized_members', value });
     } else {
       finalInput.push(inputElement);

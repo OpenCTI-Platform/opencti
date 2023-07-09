@@ -18926,6 +18926,7 @@ export type QueryWorkspacesArgs = {
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<WorkspacesFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']>;
   orderBy?: InputMaybe<WorkspacesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;

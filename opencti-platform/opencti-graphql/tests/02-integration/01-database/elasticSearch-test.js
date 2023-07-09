@@ -501,7 +501,7 @@ describe('Elasticsearch pagination', () => {
     expect(markings[5]).toEqual('TLP:AMBER');
   });
   it('should relation paginate everything', async () => {
-    let data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { adminBypassUserAccess: true });
+    let data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { includeAuthorities: true });
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].length).toEqual(42);

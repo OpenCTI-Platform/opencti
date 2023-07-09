@@ -33,7 +33,6 @@ const AUTH_BEARER = 'Bearer';
 const AUTH_BASIC = 'BasicAuth';
 export const STREAMAPI = 'STREAMAPI';
 export const TAXIIAPI = 'TAXIIAPI';
-export const ROLE_DEFAULT = 'Default';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 
 const roleSessionRefresh = async (context, user, roleId) => {

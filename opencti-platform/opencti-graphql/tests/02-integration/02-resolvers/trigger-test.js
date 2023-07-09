@@ -7,9 +7,9 @@ const LIST_QUERY = gql`
     query triggers(
         $search: String
         $filters: [TriggersFiltering!]
-        $adminBypassUserAccess: Boolean
+        $includeAuthorities: Boolean
     ) {
-        triggersKnowledge(search: $search, filters: $filters, adminBypassUserAccess: $adminBypassUserAccess) {
+        triggersKnowledge(search: $search, filters: $filters, includeAuthorities: $includeAuthorities) {
             edges {
                 node {
                     id
@@ -141,7 +141,11 @@ describe('Trigger resolver standard behavior', () => {
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);
   });
   it('security user should list Admin triggers', async () => {
-    const queryResult = await securityQuery({ query: LIST_QUERY, variables: { filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }] } });
+    const variables = {
+      includeAuthorities: true,
+      filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }]
+    };
+    const queryResult = await securityQuery({ query: LIST_QUERY, variables });
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);
   });
   it('should update trigger', async () => {

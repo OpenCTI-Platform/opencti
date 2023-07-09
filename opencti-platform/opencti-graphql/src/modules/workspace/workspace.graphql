@@ -67,6 +67,7 @@ type Query {
         orderMode: OrderingMode
         filters: [WorkspacesFiltering!]
         filterMode: FilterMode
+        includeAuthorities: Boolean
         search: String
     ): WorkspaceConnection @auth(for: [EXPLORE])
 }

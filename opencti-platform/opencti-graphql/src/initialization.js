@@ -8,7 +8,7 @@ import { initializeBucket, isStorageAlive } from './database/file-storage';
 import { rabbitMQIsAlive, registerConnectorQueues } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
+import { STREAMAPI, TAXIIAPI } from './domain/user';
 import { addCapability, addGroup, addRole } from './domain/grant';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { lockResource, redisIsAlive } from './database/redis';
@@ -17,7 +17,14 @@ import { applyMigration, lastAvailableMigrationTime } from './database/migration
 import { createEntity, loadEntity } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS, INTERNAL_SYNC_QUEUE } from './database/utils';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from './config/errors';
-import { BYPASS, BYPASS_REFERENCE, executionContext, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
+import {
+  BYPASS,
+  BYPASS_REFERENCE,
+  executionContext,
+  ROLE_ADMINISTRATOR,
+  ROLE_DEFAULT,
+  SYSTEM_USER
+} from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { createStatus, createStatusTemplate } from './domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';

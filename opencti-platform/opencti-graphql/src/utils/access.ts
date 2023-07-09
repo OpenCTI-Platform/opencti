@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
@@ -7,7 +8,7 @@ import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefR
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import type { AuthContext, AuthUser } from '../types/user';
+import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
@@ -21,6 +22,7 @@ export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
 
+export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
@@ -32,6 +34,16 @@ export const MEMBER_ACCESS_RIGHT_EDIT = 'edit';
 export const MEMBER_ACCESS_RIGHT_VIEW = 'view';
 const MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
 
+export const ADMINISTRATOR_ROLE: UserRole = {
+  internal_id: uuidv4(),
+  name: ROLE_ADMINISTRATOR
+};
+
+export const DEFAULT_ROLE: UserRole = {
+  internal_id: uuidv4(),
+  name: ROLE_DEFAULT
+};
+
 export const SYSTEM_USER: AuthUser = {
   entity_type: 'User',
   id: OPENCTI_SYSTEM_UUID,
@@ -41,7 +53,7 @@ export const SYSTEM_USER: AuthUser = {
   user_email: 'SYSTEM',
   inside_platform_organization: true,
   origin: { user_id: OPENCTI_SYSTEM_UUID },
-  roles: [{ name: ROLE_ADMINISTRATOR }],
+  roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
@@ -61,7 +73,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   user_email: 'RETENTION MANAGER',
   inside_platform_organization: true,
   origin: { user_id: RETENTION_MANAGER_USER_UUID },
-  roles: [{ name: ROLE_ADMINISTRATOR }],
+  roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
@@ -81,7 +93,7 @@ export const RULE_MANAGER_USER: AuthUser = {
   user_email: 'RULE MANAGER',
   inside_platform_organization: true,
   origin: { user_id: RULE_MANAGER_USER_UUID },
-  roles: [{ name: ROLE_ADMINISTRATOR }],
+  roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
   organizations: [],
@@ -264,6 +276,10 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
     const userGroupsIds = user.groups.map((group) => group.internal_id);
     memberAccessIds.push(...userGroupsIds);
   }
+  if (user.roles) {
+    const userRolesIds = user.roles.map((role) => role.internal_id);
+    memberAccessIds.push(...userRolesIds);
+  }
   return memberAccessIds;
 };
 
@@ -279,13 +295,13 @@ export const getUserAccessRight = (user: AuthUser, element: any) => {
   if (!element.authorized_members) { // no restricted user access on element
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
-  // If user have extended capabilities, is an admin
-  if ((element.authorized_authorities ?? []).some((c: string) => isUserHasCapability(user, c))) {
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
   const accessMembers = [...element.authorized_members];
   const userMemberAccessIds = computeUserMemberAccessIds(user);
   const foundAccessMembers = accessMembers.filter((u) => u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id));
+  // If user have extended capabilities, is an admin
+  if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
   if (!foundAccessMembers.length) { // user has no access
     return null;
   }
