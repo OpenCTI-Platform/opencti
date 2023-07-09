@@ -23,6 +23,7 @@ import { debounce } from 'rxjs/operators';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ToggleButtonGroup } from '@mui/material';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import ItemIcon from '../../components/ItemIcon';
 import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
@@ -87,9 +88,13 @@ const useStyles = makeStyles((theme) => ({
   chip: {
     fontSize: 13,
     lineHeight: '12px',
-    height: 18,
+    height: 20,
     textTransform: 'uppercase',
     borderRadius: '0',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+    },
   },
   chipInList: {
     fontSize: 12,
@@ -225,6 +230,7 @@ const inlineStyles = {
 
 const SearchBulk = () => {
   const { t, nsd, n } = useFormatter();
+  const navigate = useNavigate();
   const isGrantedToExports = useGranted([KNOWLEDGE_KNGETEXPORT]);
   const classes = useStyles();
   const [textFieldValue, setTextFieldValue] = useState('');
@@ -510,6 +516,12 @@ const SearchBulk = () => {
             {sortedResolvedEntities.map((entity) => {
               const inPlatform = entity.in_platform;
               const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
+              const reportsLink = `${link}/analysis`;
+              const onReportsClick = (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                navigate(reportsLink);
+              };
               return (
                 <ListItem
                   key={entity.id}
@@ -594,6 +606,7 @@ const SearchBulk = () => {
                             <Chip
                               classes={{ root: classes.chip }}
                               label={n(entity.reports.pageInfo.globalCount)}
+                              onClick={onReportsClick}
                             />
                           )}
                         </div>
