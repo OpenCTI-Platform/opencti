@@ -212,7 +212,7 @@ export const STATIC_OUTCOMES: Array<NotificationOutcome> = [
   }
 ];
 
-// start region: user access information extractors
+// region: user access information extractors
 // extract information from a sighting to have all the elements to check if a user has access to the from/to of the sighting
 const extractUserAccessPropertiesFromSighting = (sighting: StixSighting) => {
   return [
@@ -259,14 +259,14 @@ const extractUserAccessPropertiesFromStixObject = (
   }
   return [];
 };
-
 // endregion
 
-export const isKnowledgeLive = (n: ResolvedTrigger): n is ResolvedLive => {
+export const isLiveKnowledge = (n: ResolvedTrigger): n is ResolvedLive => {
   return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'live';
 };
-export const isKnowledgeDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
-  return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'digest';
+
+export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
+  return n.trigger.trigger_type === 'digest';
 };
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
@@ -288,7 +288,7 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
 
 export const getLiveNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
   const liveNotifications = await getNotifications(context);
-  return liveNotifications.filter(isKnowledgeLive);
+  return liveNotifications.filter(isLiveKnowledge);
 };
 
 export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Moment): boolean => {
@@ -324,7 +324,7 @@ export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Moment): boolean
 
 export const getDigestNotifications = async (context: AuthContext, baseDate: Moment): Promise<Array<ResolvedDigest>> => {
   const notifications = await getNotifications(context);
-  return notifications.filter(isKnowledgeDigest).filter((digest) => isTimeTrigger(digest, baseDate));
+  return notifications.filter(isDigest).filter((digest) => isTimeTrigger(digest, baseDate));
 };
 
 export const convertToNotificationUser = (user: AuthUser, outcomes: Array<string>): NotificationUser => {

@@ -3,9 +3,9 @@ import { graphql, useFragment, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -307,13 +307,10 @@ TriggerEditionOverviewProps
     description: trigger.description,
     event_types: convertEventTypes(trigger, eventTypesOptionsMap),
     outcomes: convertOutcomes(trigger, outcomesOptionsMap),
-    period: trigger.period,
     trigger_ids: convertTriggers(trigger),
+    period: trigger.period,
     day: currentTime.length > 1 ? currentTime[0] : '1',
-    time:
-      currentTime.length > 1
-        ? `2000-01-01T${currentTime[1]}`
-        : `2000-01-01T${currentTime[0]}`,
+    time: currentTime.length > 1 ? `2000-01-01T${currentTime[1]}` : `2000-01-01T${currentTime[0]}`,
   };
   return (
     <Formik

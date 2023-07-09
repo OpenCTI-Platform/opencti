@@ -15,7 +15,7 @@ import {
   triggerEdit,
   triggerGet,
   triggersKnowledgeFind,
-  triggersGet, addTriggerActivity,
+  triggersGet, addTriggerActivity, triggerActivityEdit, getTriggerRecipients,
 } from './notification-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -42,7 +42,8 @@ const notificationResolvers: Resolvers = {
     myUnreadNotificationsCount: (_, __, context) => myUnreadNotificationsCount(context, context.user),
   },
   Trigger: {
-    triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids),
+    triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids), // For Digest
+    recipients: (trigger, _, context) => getTriggerRecipients(context, context.user, trigger),
     isDirectAdministrator: (trigger, _, context) => isDirectAdministrator(context.user, trigger),
     currentUserAccessRight: (trigger, _, context) => getUserAccessRight(context.user, trigger),
     resolved_instance_filters: (trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger, _, context) => {
@@ -61,7 +62,7 @@ const notificationResolvers: Resolvers = {
     triggerKnowledgeLiveAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Live),
     triggerKnowledgeDigestAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Digest),
     // Activity trigger
-    triggerActivityFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),
+    triggerActivityFieldPatch: (_, { id, input }, context) => triggerActivityEdit(context, context.user, id, input),
     triggerActivityDelete: (_, { id }, context) => triggerDelete(context, context.user, id),
     triggerActivityLiveAdd: (_, { input }, context) => addTriggerActivity(context, context.user, input, TriggerType.Live),
     triggerActivityDigestAdd: (_, { input }, context) => addTriggerActivity(context, context.user, input, TriggerType.Digest),

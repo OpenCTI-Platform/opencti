@@ -80,6 +80,7 @@ type Trigger implements InternalObject & BasicObject {
     outcomes: [StixRef!]
     trigger_ids: [String]
     triggers: [Trigger]
+    recipients: [Member]
     period: DigestPeriod
     trigger_time: String
     isDirectAdministrator: Boolean

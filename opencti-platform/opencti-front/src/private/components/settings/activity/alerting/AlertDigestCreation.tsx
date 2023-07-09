@@ -86,16 +86,13 @@ interface TriggerDigestActivityAddInput {
   recipients: { value: string }[];
 }
 
-const digestTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
+export const digestTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
-  trigger_ids: Yup.array()
-    .min(1, t('Minimum one trigger'))
-    .required(t('This field is required')),
+  trigger_ids: Yup.array().min(1, t('Minimum one trigger')).required(t('This field is required')),
   period: Yup.string().required(t('This field is required')),
-  outcomes: Yup.array()
-    .min(1, t('Minimum one outcome'))
-    .required(t('This field is required')),
+  outcomes: Yup.array().min(1, t('Minimum one outcome')).required(t('This field is required')),
+  recipients: Yup.array().min(1, t('Minimum one recipient')).required(t('This field is required')),
   day: Yup.string().nullable(),
   time: Yup.string().nullable(),
 });
@@ -209,9 +206,6 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         style={fieldSpacingContainerStyle}
         paginationOptions={paginationOptions}
       />
-      <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
-                          onChange={setFieldValue}
-                          multiple={true} name={'recipients'} />
       <Field
         component={SelectField}
         variant="standard"
@@ -315,6 +309,9 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           <ListItemText primary={outcomesOptions.webhook} />
         </MenuItem>
       </Field>
+      <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
+                          onChange={setFieldValue}
+                          multiple={true} name={'recipients'} />
     </React.Fragment>
   );
   const renderClassic = () => (

@@ -1515,6 +1515,13 @@ const prepareAttributes = (instance, elements) => {
         return null;
       }
     }
+    // Special case to patch authorized members
+    if (input.key === 'authorized_members') {
+      return {
+        key: input.key,
+        value: JSON.parse(input.value),
+      };
+    }
     // No need to rework the input
     return input;
   }).filter((i) => isNotEmptyField(i));

@@ -297,6 +297,7 @@ export const getUserAccessRight = (user: AuthUser, element: any) => {
   }
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
+
 // ensure that user can access the element (operation: edit / delete / manage-access)
 export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access') => {
   if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {

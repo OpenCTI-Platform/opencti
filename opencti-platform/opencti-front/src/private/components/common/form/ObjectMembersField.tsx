@@ -48,7 +48,7 @@ interface ObjectMembersFieldProps {
   name: string;
   label?: string;
   multiple?: boolean;
-  onChange?: (name: string, value: string | string[]) => void;
+  onChange?: (name: string, value: Option[]) => void;
   style?: Record<string, string | number>;
   helpertext?: string;
 }

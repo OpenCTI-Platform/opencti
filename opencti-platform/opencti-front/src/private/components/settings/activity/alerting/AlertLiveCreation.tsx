@@ -88,7 +88,7 @@ export const triggerLiveActivityCreationMutation = graphql`
   }
 `;
 
-const liveActivityTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
+export const liveActivityTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   outcomes: Yup.array().nullable(),
@@ -205,7 +205,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     });
   };
 
-  const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: string | string[]) => void) => {
+  const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: Option[]) => void) => {
     return <>
       <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
                           onChange={setFieldValue}

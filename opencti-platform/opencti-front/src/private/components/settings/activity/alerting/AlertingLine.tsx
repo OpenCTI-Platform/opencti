@@ -205,7 +205,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({ da
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <AlertingPopover id={data.id} paginationOptions={paginationOptions} />
+        <AlertingPopover data={data} paginationOptions={paginationOptions} />
       </ListItemIcon>
     </ListItem>
   );

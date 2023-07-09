@@ -24695,6 +24695,7 @@ export type Trigger = BasicObject & InternalObject & {
   outcomes?: Maybe<Array<Scalars['StixRef']>>;
   parent_types: Array<Maybe<Scalars['String']>>;
   period?: Maybe<DigestPeriod>;
+  recipients?: Maybe<Array<Maybe<Member>>>;
   resolved_instance_filters?: Maybe<Array<ResolvedInstanceFilter>>;
   standard_id: Scalars['String'];
   trigger_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -34921,6 +34922,7 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   outcomes?: Resolver<Maybe<Array<ResolversTypes['StixRef']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   period?: Resolver<Maybe<ResolversTypes['DigestPeriod']>, ParentType, ContextType>;
+  recipients?: Resolver<Maybe<Array<Maybe<ResolversTypes['Member']>>>, ParentType, ContextType>;
   resolved_instance_filters?: Resolver<Maybe<Array<ResolversTypes['ResolvedInstanceFilter']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   trigger_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;

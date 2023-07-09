@@ -20,7 +20,7 @@ import type {
   TriggerLiveAddInput,
   TriggerType
 } from '../../generated/graphql';
-import { TriggerFilter, TriggerType as TriggerTypeValue } from '../../generated/graphql';
+import { TriggerType as TriggerTypeValue } from '../../generated/graphql';
 import {
   internalFindByIds,
   internalLoadById,
@@ -177,11 +177,20 @@ export const triggersGet = (context: AuthContext, user: AuthUser, triggerIds: st
   return internalFindByIds(context, user, triggerIds) as unknown as BasicStoreEntityTrigger[];
 };
 
+export const getTriggerRecipients = async (context: AuthContext, user: AuthUser, element: BasicStoreEntityTrigger) => {
+  const access = getUserAccessRight(user, element);
+  if (access === MEMBER_ACCESS_RIGHT_ADMIN) {
+    const ids = element.authorized_members.map((a) => a.id);
+    return internalFindByIds<BasicStoreEntity>(context, user, ids);
+  }
+  return [];
+};
+
 export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: EditInput[]) => {
   const trigger = await triggerGet(context, user, triggerId);
   const userAccessRight = getUserAccessRight(user, trigger);
   if (userAccessRight === null || ![MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN].includes(userAccessRight)) {
-    throw UnsupportedError(`${TriggerFilter.UserIds} filter is only accessible for administration users (set access)`);
+    throw ForbiddenAccess();
   }
   if (trigger.trigger_type === 'live') {
     const emptyTriggerEvents = input.filter((editEntry) => editEntry.key === 'event_types' && editEntry.value.length === 0);
@@ -191,6 +200,20 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
   }
   const { element: updatedElem } = await updateAttribute(context, user, triggerId, ENTITY_TYPE_TRIGGER, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].EDIT_TOPIC, updatedElem, user);
+};
+
+export const triggerActivityEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: EditInput[]) => {
+  const finalInput: EditInput[] = [];
+  for (let index = 0; index < input.length; index += 1) {
+    const inputElement = input[index];
+    if (inputElement.key === 'recipients') {
+      const value = [JSON.stringify((inputElement.value ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW })))];
+      finalInput.push({ key: 'authorized_members', value });
+    } else {
+      finalInput.push(inputElement);
+    }
+  }
+  return triggerEdit(context, user, triggerId, finalInput);
 };
 
 export const triggerDelete = async (context: AuthContext, user: AuthUser, triggerId: string) => {

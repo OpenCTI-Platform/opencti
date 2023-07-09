@@ -38,6 +38,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'trigger_scope', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'outcomes', type: 'string', mandatoryType: 'external', multiple: true, upsert: false },
     { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'recipients', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'trigger_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'period', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'trigger_time', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },

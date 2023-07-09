@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -9,12 +10,18 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useMutation } from 'react-relay';
+import { graphql, useMutation, useQueryLoader } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
 import { Theme } from '../../../../../components/Theme';
 import Transition from '../../../../../components/Transition';
 import { deleteNode } from '../../../../../utils/store';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import { AlertingLine_node$data } from './__generated__/AlertingLine_node.graphql';
+import AlertLiveEdition from './AlertLiveEdition';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
+import { alertEditionQuery } from './AlertEditionQuery';
+import AlertDigestEdition from './AlertDigestEdition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -30,23 +37,29 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const AlertingPopoverDeletionMutation = graphql`
+export const alertingPopoverDeletionMutation = graphql`
   mutation AlertingPopoverDeletionMutation($id: ID!) {
     triggerActivityDelete(id: $id)
   }
 `;
 
-const AlertingPopover = ({ id, paginationOptions }: { id: string; paginationOptions?: AlertingPaginationQuery$variables }) => {
+const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data, paginationOptions?: AlertingPaginationQuery$variables }) => {
   const { t } = useFormatter();
   const classes = useStyles();
+  const [queryRef, loadQuery] = useQueryLoader<AlertEditionQuery>(alertEditionQuery);
+  const isLiveEdition = data.trigger_type === 'live';
+  const isDigestEdition = data.trigger_type === 'digest';
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
+  const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-  const [commit] = useMutation(AlertingPopoverDeletionMutation);
+  const [commit] = useMutation(alertingPopoverDeletionMutation);
+  //  popover
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => setAnchorEl(null);
+  // delete
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
@@ -56,10 +69,10 @@ const AlertingPopover = ({ id, paginationOptions }: { id: string; paginationOpti
     setDeleting(true);
     commit({
       variables: {
-        id,
+        id: data.id,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_triggersActivity', paginationOptions, id);
+        deleteNode(store, 'Pagination_triggersActivity', paginationOptions, data.id);
       },
       onCompleted: () => {
         setDeleting(false);
@@ -67,6 +80,13 @@ const AlertingPopover = ({ id, paginationOptions }: { id: string; paginationOpti
       },
     });
   };
+  // edition
+  const handleDisplayEdit = () => {
+    loadQuery({ id: data.id }, { fetchPolicy: 'store-and-network' });
+    setDisplayEdit(true);
+    handleClose();
+  };
+  // Loader
   return (
     <div className={classes.container}>
       <IconButton
@@ -77,6 +97,7 @@ const AlertingPopover = ({ id, paginationOptions }: { id: string; paginationOpti
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleDisplayEdit}>{t('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
       <Dialog open={displayDelete}
@@ -98,6 +119,19 @@ const AlertingPopover = ({ id, paginationOptions }: { id: string; paginationOpti
           </Button>
         </DialogActions>
       </Dialog>
+      {displayEdit && <Drawer open={true}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={() => setDisplayEdit(false)}>
+        {queryRef && (
+           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+             {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+             {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+           </React.Suspense>
+        )}
+      </Drawer>}
     </div>
   );
 };
