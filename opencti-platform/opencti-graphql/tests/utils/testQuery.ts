@@ -5,7 +5,7 @@ import { print } from 'graphql';
 import axios, { AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf, { PORT } from '../../src/config/conf';
-import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/access';
+import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
 import '../../src/modules/index';
@@ -143,7 +143,7 @@ export const ADMIN_USER: AuthUser = {
   organizations: [],
   name: 'admin',
   user_email: 'admin@opencti.io',
-  roles: [{ name: ROLE_ADMINISTRATOR }],
+  roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
   all_marking: [],
@@ -405,7 +405,7 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     organizations: [],
     name: 'user',
     user_email: 'user@opencti.io',
-    roles: [{ name: 'User' }],
+    roles: [DEFAULT_ROLE],
     groups: [],
     capabilities: [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
     all_marking: (allMarkings ?? []) as StoreMarkingDefinition[],

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -11,17 +11,17 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
-import Tooltip from '@mui/material/Tooltip';
-import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { Theme } from '../../../../components/Theme';
-import Transition from '../../../../components/Transition';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
-import { deleteNode } from '../../../../utils/store';
-import TriggerEditionContainer, {
-  triggerKnowledgeEditionQuery,
-} from './TriggerEditionContainer';
-import { TriggerEditionContainerKnowledgeQuery } from './__generated__/TriggerEditionContainerKnowledgeQuery.graphql';
+import { useFormatter } from '../../../../../components/i18n';
+import { Theme } from '../../../../../components/Theme';
+import Transition from '../../../../../components/Transition';
+import { deleteNode } from '../../../../../utils/store';
+import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import { AlertingLine_node$data } from './__generated__/AlertingLine_node.graphql';
+import AlertLiveEdition from './AlertLiveEdition';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
+import { alertEditionQuery } from './AlertEditionQuery';
+import AlertDigestEdition from './AlertDigestEdition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -37,34 +37,29 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const TriggerPopoverDeletionMutation = graphql`
-  mutation TriggerPopoverDeletionMutation($id: ID!) {
-    triggerKnowledgeDelete(id: $id)
+export const alertingPopoverDeletionMutation = graphql`
+  mutation AlertingPopoverDeletionMutation($id: ID!) {
+    triggerActivityDelete(id: $id)
   }
 `;
 
-const TriggerPopover = ({
-  id,
-  paginationOptions,
-  disabled,
-}: {
-  id: string;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
-  disabled:boolean;
-}) => {
+const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data, paginationOptions?: AlertingPaginationQuery$variables }) => {
   const { t } = useFormatter();
   const classes = useStyles();
+  const [queryRef, loadQuery] = useQueryLoader<AlertEditionQuery>(alertEditionQuery);
+  const isLiveEdition = data.trigger_type === 'live';
+  const isDigestEdition = data.trigger_type === 'digest';
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-  const [commit] = useMutation(TriggerPopoverDeletionMutation);
-  const [queryRef, loadQuery] = useQueryLoader<TriggerEditionContainerKnowledgeQuery>(triggerKnowledgeEditionQuery);
+  const [commit] = useMutation(alertingPopoverDeletionMutation);
+  //  popover
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    loadQuery({ id }, { fetchPolicy: 'store-and-network' });
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => setAnchorEl(null);
+  // delete
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
@@ -74,10 +69,10 @@ const TriggerPopover = ({
     setDeleting(true);
     commit({
       variables: {
-        id,
+        id: data.id,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_triggersKnowledge', paginationOptions, id);
+        deleteNode(store, 'Pagination_triggersActivity', paginationOptions, data.id);
       },
       onCompleted: () => {
         setDeleting(false);
@@ -85,37 +80,31 @@ const TriggerPopover = ({
       },
     });
   };
-  const handleOpenEdit = () => {
+  // edition
+  const handleDisplayEdit = () => {
+    loadQuery({ id: data.id }, { fetchPolicy: 'store-and-network' });
     setDisplayEdit(true);
     handleClose();
   };
-  const handleCloseEdit = () => setDisplayEdit(false);
+  // Loader
   return (
     <div className={classes.container}>
-      <Tooltip title={disabled ? t('This trigger/digest has been shared with you and you are not able to modify or delete it') : ''}>
-        <div>
-          <IconButton
-            onClick={handleOpen}
-            aria-haspopup="true"
-            style={{ marginTop: 3 }}
-            size="medium"
-            disabled={disabled}
-          >
-             <MoreVert/>
-          </IconButton>
-        </div>
-      </Tooltip>
+      <IconButton
+        onClick={handleOpen}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        size="large">
+        <MoreVert />
+      </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleDisplayEdit}>{t('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
-      <Dialog
-            open={displayDelete}
+      <Dialog open={displayDelete}
             keepMounted={true}
             TransitionComponent={Transition}
             PaperProps={{ elevation: 1 }}
-            onClose={handleCloseDelete}
-        >
+            onClose={handleCloseDelete}>
           <DialogContent>
           <DialogContentText>
             {t('Do you want to delete this trigger?')}
@@ -130,23 +119,21 @@ const TriggerPopover = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseEdit}
-      >
+      {displayEdit && <Drawer open={true}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={() => setDisplayEdit(false)}>
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <TriggerEditionContainer queryRef={queryRef} handleClose={handleCloseEdit}
-                                     paginationOptions={paginationOptions}/>
-          </React.Suspense>
+           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+             {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+             {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+           </React.Suspense>
         )}
-      </Drawer>
+      </Drawer>}
     </div>
   );
 };
 
-export default TriggerPopover;
+export default AlertingPopover;

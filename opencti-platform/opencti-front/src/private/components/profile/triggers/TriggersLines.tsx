@@ -23,7 +23,6 @@ interface TriggerLinesProps {
     event: React.KeyboardEvent
   ) => void;
   containerRef?: MutableRefObject<GridTypeMap | null>;
-  adminByPass?: boolean
 }
 
 export const triggersLinesQuery = graphql`
@@ -33,6 +32,7 @@ export const triggersLinesQuery = graphql`
     $cursor: ID
     $orderBy: TriggersOrdering
     $orderMode: OrderingMode
+    $includeAuthorities: Boolean
     $filters: [TriggersFiltering!]
   ) {
     ...TriggersLines_data
@@ -42,6 +42,7 @@ export const triggersLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        includeAuthorities: $includeAuthorities
         filters: $filters
       )
   }
@@ -55,17 +56,19 @@ const triggersLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "TriggersOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
+    includeAuthorities: { type: "Boolean", defaultValue: false }
     filters: { type: "[TriggersFiltering!]" }
   )
   @refetchable(queryName: "TriggersLinesRefetchQuery") {
-    triggers(
+    triggersKnowledge(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
+      includeAuthorities: $includeAuthorities
       filters: $filters
-    ) @connection(key: "Pagination_triggers") {
+    ) @connection(key: "Pagination_triggersKnowledge") {
       edges {
         node {
           id
@@ -89,7 +92,6 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
   dataColumns,
   paginationOptions,
   onLabelClick,
-  adminByPass = false,
   containerRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
@@ -99,7 +101,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
     linesQuery: triggersLinesQuery,
     linesFragment: triggersLinesFragment,
     queryRef,
-    nodePath: ['triggers', 'pageInfo', 'globalCount'],
+    nodePath: ['triggersKnowledge', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (
@@ -108,8 +110,8 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
       isLoading={isLoadingMore}
       loadMore={loadMore}
       hasMore={hasMore}
-      dataList={data?.triggers?.edges ?? []}
-      globalCount={data?.triggers?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      dataList={data?.triggersKnowledge?.edges ?? []}
+      globalCount={data?.triggersKnowledge?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={TriggerLineComponent}
       DummyLineComponent={TriggerLineDummy}
       dataColumns={dataColumns}
@@ -117,7 +119,6 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
       paginationOptions={paginationOptions}
       onLabelClick={onLabelClick}
       containerRef={containerRef}
-      adminByPass={adminByPass}
     />
   );
 };

@@ -12335,10 +12335,14 @@ export type Mutation = {
   token?: Maybe<Scalars['String']>;
   toolAdd?: Maybe<Tool>;
   toolEdit?: Maybe<ToolEditMutations>;
-  triggerDelete?: Maybe<Scalars['ID']>;
-  triggerDigestAdd?: Maybe<Trigger>;
-  triggerFieldPatch?: Maybe<Trigger>;
-  triggerLiveAdd?: Maybe<Trigger>;
+  triggerActivityDelete?: Maybe<Scalars['ID']>;
+  triggerActivityDigestAdd?: Maybe<Trigger>;
+  triggerActivityFieldPatch?: Maybe<Trigger>;
+  triggerActivityLiveAdd?: Maybe<Trigger>;
+  triggerKnowledgeDelete?: Maybe<Scalars['ID']>;
+  triggerKnowledgeDigestAdd?: Maybe<Trigger>;
+  triggerKnowledgeFieldPatch?: Maybe<Trigger>;
+  triggerKnowledgeLiveAdd?: Maybe<Trigger>;
   uploadImport?: Maybe<File>;
   uploadPending?: Maybe<File>;
   userAdd?: Maybe<User>;
@@ -13701,23 +13705,44 @@ export type MutationToolEditArgs = {
 };
 
 
-export type MutationTriggerDeleteArgs = {
+export type MutationTriggerActivityDeleteArgs = {
   id: Scalars['ID'];
 };
 
 
-export type MutationTriggerDigestAddArgs = {
-  input: TriggerDigestAddInput;
+export type MutationTriggerActivityDigestAddArgs = {
+  input: TriggerActivityDigestAddInput;
 };
 
 
-export type MutationTriggerFieldPatchArgs = {
+export type MutationTriggerActivityFieldPatchArgs = {
   id: Scalars['ID'];
   input: Array<EditInput>;
 };
 
 
-export type MutationTriggerLiveAddArgs = {
+export type MutationTriggerActivityLiveAddArgs = {
+  input: TriggerActivityLiveAddInput;
+};
+
+
+export type MutationTriggerKnowledgeDeleteArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationTriggerKnowledgeDigestAddArgs = {
+  input: TriggerDigestAddInput;
+};
+
+
+export type MutationTriggerKnowledgeFieldPatchArgs = {
+  id: Scalars['ID'];
+  input: Array<EditInput>;
+};
+
+
+export type MutationTriggerKnowledgeLiveAddArgs = {
   input: TriggerLiveAddInput;
 };
 
@@ -14879,7 +14904,7 @@ export type NotificationEdge = {
 
 export type NotificationEvent = {
   __typename?: 'NotificationEvent';
-  instance_id: Scalars['String'];
+  instance_id?: Maybe<Scalars['String']>;
   message: Scalars['String'];
   operation: Scalars['String'];
 };
@@ -17064,8 +17089,10 @@ export type Query = {
   threatActorsIndividuals?: Maybe<ThreatActorIndividualConnection>;
   tool?: Maybe<Tool>;
   tools?: Maybe<ToolConnection>;
-  trigger?: Maybe<Trigger>;
-  triggers?: Maybe<TriggerConnection>;
+  triggerActivity?: Maybe<Trigger>;
+  triggerKnowledge?: Maybe<Trigger>;
+  triggersActivity?: Maybe<TriggerConnection>;
+  triggersKnowledge?: Maybe<TriggerConnection>;
   user?: Maybe<User>;
   users?: Maybe<UserConnection>;
   vocabularies?: Maybe<VocabularyConnection>;
@@ -19113,17 +19140,33 @@ export type QueryToolsArgs = {
 };
 
 
-export type QueryTriggerArgs = {
+export type QueryTriggerActivityArgs = {
   id: Scalars['String'];
 };
 
 
-export type QueryTriggersArgs = {
-  adminBypassUserAccess?: InputMaybe<Scalars['Boolean']>;
+export type QueryTriggerKnowledgeArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryTriggersActivityArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<TriggerActivityFiltering>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<TriggersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryTriggersKnowledgeArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<TriggersFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']>;
   orderBy?: InputMaybe<TriggersOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
@@ -19203,11 +19246,11 @@ export type QueryWorkspaceArgs = {
 
 
 export type QueryWorkspacesArgs = {
-  adminBypassUserAccess?: InputMaybe<Scalars['Boolean']>;
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<WorkspacesFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']>;
   orderBy?: InputMaybe<WorkspacesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
@@ -25075,21 +25118,62 @@ export type Trigger = BasicObject & InternalObject & {
   currentUserAccessRight?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   entity_type: Scalars['String'];
-  event_types?: Maybe<Array<TriggerEventType>>;
+  event_types?: Maybe<Array<Scalars['String']>>;
   filters?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
-  instance_trigger: Scalars['Boolean'];
+  instance_trigger?: Maybe<Scalars['Boolean']>;
+  isDirectAdministrator?: Maybe<Scalars['Boolean']>;
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
   outcomes?: Maybe<Array<Scalars['StixRef']>>;
   parent_types: Array<Maybe<Scalars['String']>>;
   period?: Maybe<DigestPeriod>;
+  recipients?: Maybe<Array<Maybe<Member>>>;
   resolved_instance_filters?: Maybe<Array<ResolvedInstanceFilter>>;
   standard_id: Scalars['String'];
   trigger_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
   trigger_time?: Maybe<Scalars['String']>;
   trigger_type: TriggerType;
   triggers?: Maybe<Array<Maybe<Trigger>>>;
+};
+
+export type TriggerActivityDigestAddInput = {
+  description?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
+  outcomes: Array<Scalars['StixRef']>;
+  period: DigestPeriod;
+  recipients: Array<Scalars['String']>;
+  trigger_ids: Array<Scalars['String']>;
+  trigger_time?: InputMaybe<Scalars['String']>;
+};
+
+export enum TriggerActivityEventType {
+  Authentication = 'authentication',
+  Command = 'command',
+  File = 'file',
+  Mutation = 'mutation',
+  Read = 'read'
+}
+
+export enum TriggerActivityFilter {
+  Created = 'created',
+  Filters = 'filters',
+  TriggerType = 'trigger_type'
+}
+
+export type TriggerActivityFiltering = {
+  filterMode?: InputMaybe<FilterMode>;
+  key: Array<TriggerActivityFilter>;
+  operator?: InputMaybe<Scalars['String']>;
+  values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type TriggerActivityLiveAddInput = {
+  description?: InputMaybe<Scalars['String']>;
+  filters?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
+  outcomes?: InputMaybe<Array<Scalars['StixRef']>>;
+  recipients: Array<Scalars['String']>;
 };
 
 export type TriggerConnection = {
@@ -27918,6 +28002,11 @@ export type ResolversTypes = ResolversObject<{
   ToolsFiltering: ToolsFiltering;
   ToolsOrdering: ToolsOrdering;
   Trigger: ResolverTypeWrapper<BasicStoreEntityTrigger>;
+  TriggerActivityDigestAddInput: TriggerActivityDigestAddInput;
+  TriggerActivityEventType: TriggerActivityEventType;
+  TriggerActivityFilter: TriggerActivityFilter;
+  TriggerActivityFiltering: TriggerActivityFiltering;
+  TriggerActivityLiveAddInput: TriggerActivityLiveAddInput;
   TriggerConnection: ResolverTypeWrapper<Omit<TriggerConnection, 'edges'> & { edges: Array<ResolversTypes['TriggerEdge']> }>;
   TriggerDigestAddInput: TriggerDigestAddInput;
   TriggerEdge: ResolverTypeWrapper<Omit<TriggerEdge, 'node'> & { node: ResolversTypes['Trigger'] }>;
@@ -28558,6 +28647,9 @@ export type ResolversParentTypes = ResolversObject<{
   ToolEditMutations: Omit<ToolEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Tool']>, contextPatch?: Maybe<ResolversParentTypes['Tool']>, fieldPatch?: Maybe<ResolversParentTypes['Tool']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Tool']> };
   ToolsFiltering: ToolsFiltering;
   Trigger: BasicStoreEntityTrigger;
+  TriggerActivityDigestAddInput: TriggerActivityDigestAddInput;
+  TriggerActivityFiltering: TriggerActivityFiltering;
+  TriggerActivityLiveAddInput: TriggerActivityLiveAddInput;
   TriggerConnection: Omit<TriggerConnection, 'edges'> & { edges: Array<ResolversParentTypes['TriggerEdge']> };
   TriggerDigestAddInput: TriggerDigestAddInput;
   TriggerEdge: Omit<TriggerEdge, 'node'> & { node: ResolversParentTypes['Trigger'] };
@@ -32397,10 +32489,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
   toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
-  triggerDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTriggerDeleteArgs, 'id'>>;
-  triggerDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerDigestAddArgs, 'input'>>;
-  triggerFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerFieldPatchArgs, 'id' | 'input'>>;
-  triggerLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerLiveAddArgs, 'input'>>;
+  triggerActivityDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTriggerActivityDeleteArgs, 'id'>>;
+  triggerActivityDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerActivityDigestAddArgs, 'input'>>;
+  triggerActivityFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerActivityFieldPatchArgs, 'id' | 'input'>>;
+  triggerActivityLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerActivityLiveAddArgs, 'input'>>;
+  triggerKnowledgeDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDeleteArgs, 'id'>>;
+  triggerKnowledgeDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDigestAddArgs, 'input'>>;
+  triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
+  triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
   userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUserAddArgs, 'input'>>;
@@ -32704,7 +32800,7 @@ export type NotificationEdgeResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type NotificationEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationEvent'] = ResolversParentTypes['NotificationEvent']> = ResolversObject<{
-  instance_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  instance_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   operation?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -33475,8 +33571,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   threatActorsIndividuals?: Resolver<Maybe<ResolversTypes['ThreatActorIndividualConnection']>, ParentType, ContextType, Partial<QueryThreatActorsIndividualsArgs>>;
   tool?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<QueryToolArgs>>;
   tools?: Resolver<Maybe<ResolversTypes['ToolConnection']>, ParentType, ContextType, Partial<QueryToolsArgs>>;
-  trigger?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerArgs, 'id'>>;
-  triggers?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersArgs>>;
+  triggerActivity?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerActivityArgs, 'id'>>;
+  triggerKnowledge?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerKnowledgeArgs, 'id'>>;
+  triggersActivity?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersActivityArgs>>;
+  triggersKnowledge?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   users?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   vocabularies?: Resolver<Maybe<ResolversTypes['VocabularyConnection']>, ParentType, ContextType, Partial<QueryVocabulariesArgs>>;
@@ -35361,15 +35459,17 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  event_types?: Resolver<Maybe<Array<ResolversTypes['TriggerEventType']>>, ParentType, ContextType>;
+  event_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  instance_trigger?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  instance_trigger?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  isDirectAdministrator?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   outcomes?: Resolver<Maybe<Array<ResolversTypes['StixRef']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   period?: Resolver<Maybe<ResolversTypes['DigestPeriod']>, ParentType, ContextType>;
+  recipients?: Resolver<Maybe<Array<Maybe<ResolversTypes['Member']>>>, ParentType, ContextType>;
   resolved_instance_filters?: Resolver<Maybe<Array<ResolversTypes['ResolvedInstanceFilter']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   trigger_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;

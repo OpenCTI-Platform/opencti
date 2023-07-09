@@ -6,9 +6,10 @@ import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import {
+  ActivityNotificationEvent,
   DigestEvent,
   getNotifications,
-  NotificationEvent,
+  KnowledgeNotificationEvent,
   NotificationUser,
   STATIC_OUTCOMES
 } from './notificationManager';
@@ -36,7 +37,7 @@ const processNotificationEvent = async (
   user: NotificationUser,
   data: Array<{
     notification_id: string,
-    instance: StixCoreObject | StixRelationshipObject,
+    instance: StixCoreObject | StixRelationshipObject | Partial<{ id: string }>,
     type: string,
     message: string,
   }>
@@ -57,11 +58,7 @@ const processNotificationEvent = async (
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {
       const { notification_id, instance, type, message } = data[index];
-      const event = {
-        operation: type,
-        message,
-        instance_id: instance.id
-      };
+      const event = { operation: type, message, instance_id: instance.id };
       const eventNotification = notificationMap.get(notification_id);
       if (eventNotification) {
         const notificationName = eventNotification.name;
@@ -113,7 +110,7 @@ const processNotificationEvent = async (
   }
 };
 
-const processLiveNotificationEvent = async (context: AuthContext, event: NotificationEvent) => {
+const processLiveNotificationEvent = async (context: AuthContext, event: KnowledgeNotificationEvent | ActivityNotificationEvent) => {
   const { targets, data: instance } = event;
   for (let index = 0; index < targets.length; index += 1) {
     const { user, type, message } = targets[index];
@@ -138,7 +135,7 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
       const notification = notificationMap.get(notification_id);
       if (notification) {
         if (notification.trigger_type === 'live') {
-          const liveEvent = streamEvent as SseEvent<NotificationEvent>;
+          const liveEvent = streamEvent as SseEvent<KnowledgeNotificationEvent>;
           await processLiveNotificationEvent(context, liveEvent.data);
         }
         if (notification.trigger_type === 'digest') {

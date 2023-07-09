@@ -40,11 +40,12 @@ export interface ActivityStreamEvent {
   version: string
   type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
   event_access: 'extended' | 'administration'
+  prevent_indexing: boolean
   event_scope: string
   message: string
   status: 'error' | 'success'
   origin: Partial<UserOrigin>
-  data: object
+  data: Partial<{ id: string }>
 }
 
 const initActivityManager = () => {
@@ -71,6 +72,7 @@ const initActivityManager = () => {
       type: action.event_type,
       event_access: action.event_access,
       event_scope: action.event_scope,
+      prevent_indexing: action.prevent_indexing ?? false,
       status: action.status ?? 'success',
       origin: action.user.origin,
       message,

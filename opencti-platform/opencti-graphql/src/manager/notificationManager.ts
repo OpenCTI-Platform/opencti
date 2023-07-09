@@ -14,6 +14,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import {
   executionContext,
+  INTERNAL_USERS,
   isUserCanAccessStixElement,
   isUserCanAccessStoreElement,
   SYSTEM_USER
@@ -21,7 +22,7 @@ import {
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser } from '../types/user';
 import { utcDate } from '../utils/format';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, filtersToJson } from '../database/utils';
 import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-common';
 import {
   BasicStoreEntityDigestTrigger,
@@ -44,16 +45,16 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
-const EVENT_NOTIFICATION_VERSION = '1';
+export const EVENT_NOTIFICATION_VERSION = '1';
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 
-interface ResolvedTrigger {
+export interface ResolvedTrigger {
   users: Array<AuthUser>
   trigger: BasicStoreEntityTrigger
 }
 
-interface ResolvedLive {
+export interface ResolvedLive {
   users: Array<AuthUser>
   trigger: BasicStoreEntityLiveTrigger
 }
@@ -69,10 +70,16 @@ export interface NotificationUser {
   outcomes: Array<string>
 }
 
-export interface NotificationEvent extends StreamNotifEvent {
+export interface KnowledgeNotificationEvent extends StreamNotifEvent {
   type: 'live'
   targets: Array<{ user: NotificationUser, type: string, message: string }>
   data: StixCoreObject
+}
+
+export interface ActivityNotificationEvent extends StreamNotifEvent {
+  type: 'live'
+  targets: Array<{ user: NotificationUser, type: string, message: string }>
+  data: Partial<{ id: string }>
 }
 
 export interface DigestEvent extends StreamNotifEvent {
@@ -205,7 +212,7 @@ export const STATIC_OUTCOMES: Array<NotificationOutcome> = [
   }
 ];
 
-// start region: user access information extractors
+// region: user access information extractors
 // extract information from a sighting to have all the elements to check if a user has access to the from/to of the sighting
 const extractUserAccessPropertiesFromSighting = (sighting: StixSighting) => {
   return [
@@ -252,11 +259,15 @@ const extractUserAccessPropertiesFromStixObject = (
   }
   return [];
 };
-
 // endregion
 
-export const isLive = (n: ResolvedTrigger): n is ResolvedLive => n.trigger.trigger_type === 'live';
-export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => n.trigger.trigger_type === 'digest';
+export const isLiveKnowledge = (n: ResolvedTrigger): n is ResolvedLive => {
+  return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'live';
+};
+
+export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
+  return n.trigger.trigger_type === 'digest';
+};
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
@@ -268,13 +279,16 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
     const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
-    return { users: [...usersFromGroups, ...usersFromIds, ...usersFromOrganizations], trigger };
+    const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
+      .filter((u) => INTERNAL_USERS[u.id] === undefined);
+    const users = R.uniqBy(R.prop('id'), withoutInternalUsers);
+    return { users, trigger };
   });
 };
 
 export const getLiveNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
   const liveNotifications = await getNotifications(context);
-  return liveNotifications.filter(isLive);
+  return liveNotifications.filter(isLiveKnowledge);
 };
 
 export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Moment): boolean => {
@@ -313,7 +327,7 @@ export const getDigestNotifications = async (context: AuthContext, baseDate: Mom
   return notifications.filter(isDigest).filter((digest) => isTimeTrigger(digest, baseDate));
 };
 
-const convertToNotificationUser = (user: AuthUser, outcomes: Array<string>): NotificationUser => {
+export const convertToNotificationUser = (user: AuthUser, outcomes: Array<string>): NotificationUser => {
   return {
     user_id: user.internal_id,
     user_email: user.user_email,
@@ -497,8 +511,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
       && translatedType !== EVENT_TYPE_UPDATE // if displayed type is update, we should have notifications in case a listened instance is in the patch (= case 1.2.)
   ) {
     // User should be notified of the relationship creation / deletion / newly visible / no more visible
-    const message = await generateNotificationMessageForInstance(context, user, data);
-    return message;
+    return generateNotificationMessageForInstance(context, user, data);
   }
   // -- 02. translatedType = update (i.e. event type = update that modify a listened ref and doesn't modify the rights)
   if (translatedType === EVENT_TYPE_UPDATE) {
@@ -507,8 +520,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
     }
     const listenedInstancesInPatchIds = filterUpdateInstanceIdsFromUpdatePatch(listenedInstanceIdsMap, updatePatch);
     if (listenedInstancesInPatchIds.length > 0) { // 2.a.--> It's the patch that contains instance(s) of the trigger filters
-      const message = await generateNotificationMessageForInstanceWithRefsUpdate(context, user, data, listenedInstancesInPatchIds);
-      return message;
+      return generateNotificationMessageForInstanceWithRefsUpdate(context, user, data, listenedInstancesInPatchIds);
     }
     // the modification may be a modification of rights (the instance is newly/no-more visible) -> we go in case 3.
   }
@@ -523,8 +535,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
     // We need to filter these instances to keep those that are part of the event refs or of the relationship from/to
     const listenedInstancesInRefsEventIds = filterInstancesByRefEventIds(listenedInstanceIdsMap, dataRefs);
     if (listenedInstancesInRefsEventIds.length > 0) {
-      const message = await generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds);
-      return message;
+      return generateNotificationMessageForInstanceWithRefs(context, user, data, listenedInstancesInRefsEventIds);
     }
   }
   return undefined; // filtered event (ex: update of an instance containing a listened ref) : no notification
@@ -539,7 +550,7 @@ export const buildTargetEvents = async (
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
   const { event_types, outcomes, instance_trigger, filters } = trigger;
-  const frontendFilters = JSON.parse(filters);
+  const frontendFilters = filtersToJson(filters);
   let triggerEventTypes = event_types;
   if (instance_trigger && event_types.includes(EVENT_TYPE_UPDATE)) {
     triggerEventTypes = useSideEventMatching
@@ -630,7 +641,7 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
         const targets = await buildTargetEvents(context, users, streamEvent, trigger);
         if (targets.length > 0) {
           const version = EVENT_NOTIFICATION_VERSION;
-          const notificationEvent: NotificationEvent = { version, notification_id, type, targets, data };
+          const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets, data };
           await storeNotificationEvent(context, notificationEvent);
         }
         // search side events for instance_trigger
@@ -638,7 +649,7 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
           const sideTargets = await buildTargetEvents(context, users, streamEvent, trigger, true);
           if (sideTargets.length > 0) {
             const version = EVENT_NOTIFICATION_VERSION;
-            const notificationEvent: NotificationEvent = { version, notification_id, type, targets: sideTargets, data };
+            const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets: sideTargets, data };
             await storeNotificationEvent(context, notificationEvent);
           }
         }
@@ -663,7 +674,7 @@ const notificationDigestHandler = async () => {
       const { trigger, users } = digestNotifications[index];
       const { period, trigger_ids: triggerIds, outcomes, internal_id: notification_id, trigger_type: type } = trigger;
       const fromDate = baseDate.clone().subtract(1, period).toDate();
-      const rangeNotifications = await fetchRangeNotifications<NotificationEvent>(fromDate, baseDate.toDate());
+      const rangeNotifications = await fetchRangeNotifications<KnowledgeNotificationEvent>(fromDate, baseDate.toDate());
       const digestContent = rangeNotifications.filter((n) => triggerIds.includes(n.notification_id));
       if (digestContent.length > 0) {
         // Range of results must filtered to keep only data related to the digest

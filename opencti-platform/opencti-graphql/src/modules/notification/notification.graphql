@@ -1,6 +1,25 @@
 # Outcomes
 
-# Triggers
+type ResolvedInstanceFilter {
+    id: String!
+    valid: Boolean!
+    value: String
+}
+
+# Knowledge Triggers
+enum DigestPeriod {
+    hour
+    day
+    week
+    month
+}
+enum TriggersOrdering {
+    name
+    created
+    event_types
+    trigger_type
+    outcomes
+}
 enum TriggerType {
     live
     digest
@@ -20,24 +39,32 @@ enum TriggerFilter {
     filters
     instance_trigger
 }
+
 input TriggersFiltering {
     key: [TriggerFilter!]!
     values: [String]
     operator: String
     filterMode: FilterMode
 }
-enum TriggersOrdering {
-    name
-    created
-    event_types
-    trigger_type
-    outcomes
+input TriggerLiveAddInput {
+    name: String! @constraint(minLength: 1)
+    description: String
+    event_types: [TriggerEventType!]!
+    outcomes: [StixRef!]
+    instance_trigger: Boolean!
+    filters: String
+    recipients: [String!]
 }
-type ResolvedInstanceFilter {
-    id: String!
-    valid: Boolean!
-    value: String
+input TriggerDigestAddInput {
+    name: String! @constraint(minLength: 1)
+    description: String
+    trigger_ids: [String!]! # Triggers that composed the digest
+    period: DigestPeriod!
+    trigger_time: String
+    outcomes: [StixRef!]!
+    recipients: [String!]
 }
+
 type Trigger implements InternalObject & BasicObject {
     id: ID! # internal_id
     standard_id: String!
@@ -48,18 +75,19 @@ type Trigger implements InternalObject & BasicObject {
     name: String!
     description: String
     trigger_type: TriggerType! # live or digest
-    event_types: [TriggerEventType!]
+    event_types: [String!]
     filters: String
     outcomes: [StixRef!]
     trigger_ids: [String]
     triggers: [Trigger]
+    recipients: [Member]
     period: DigestPeriod
     trigger_time: String
+    isDirectAdministrator: Boolean
     currentUserAccessRight: String
-    instance_trigger: Boolean!
+    instance_trigger: Boolean
     resolved_instance_filters: [ResolvedInstanceFilter!]
 }
-
 type TriggerConnection {
     pageInfo: PageInfo!
     edges: [TriggerEdge!]!
@@ -69,17 +97,72 @@ type TriggerEdge {
     node: Trigger!
 }
 
+# Activity Triggers
+enum TriggerActivityFilter {
+    trigger_type
+    created
+    filters
+}
+enum TriggerActivityEventType {
+    authentication
+    read
+    mutation
+    file
+    command
+}
+input TriggerActivityLiveAddInput {
+    name: String! @constraint(minLength: 1)
+    description: String
+    outcomes: [StixRef!]
+    filters: String
+    recipients: [String!]!
+}
+
+input TriggerActivityDigestAddInput {
+    name: String! @constraint(minLength: 1)
+    description: String
+    trigger_ids: [String!]! # Triggers that composed the digest
+    period: DigestPeriod!
+    trigger_time: String
+    outcomes: [StixRef!]!
+    recipients: [String!]!
+}
+
+input TriggerActivityFiltering {
+    key: [TriggerActivityFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
 # Notifications
+enum NotificationsOrdering {
+    name
+    created
+}
+enum NotificationFilter {
+    created
+    is_read
+}
+input NotificationsFiltering {
+    key: [NotificationFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+type NotificationCount {
+    user_id: String
+    count: Int
+}
 type NotificationEvent {
     message: String!
-    instance_id: String!
+    instance_id: String
     operation: String!
 }
 type NotificationContent {
     title: String!
     events: [NotificationEvent!]!
 }
-
 type Notification implements InternalObject & BasicObject {
     id: ID! # internal_id
     standard_id: String!
@@ -94,26 +177,6 @@ type Notification implements InternalObject & BasicObject {
     created_at: DateTime
     updated_at: DateTime
 }
-
-# Ordering
-enum NotificationsOrdering {
-    name
-    created
-}
-
-# Filtering
-enum NotificationFilter {
-    created
-    is_read
-}
-input NotificationsFiltering {
-    key: [NotificationFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
-# Relay connections
 type NotificationConnection {
     pageInfo: PageInfo!
     edges: [NotificationEdge]
@@ -127,17 +190,28 @@ type NotificationEdge {
 type Query {
     # Outcomes
     # Triggers
-    trigger(id: String!): Trigger @auth
-    triggers(
+    triggerKnowledge(id: String!): Trigger @auth
+    triggersKnowledge(
         first: Int
         after: ID
         orderBy: TriggersOrdering
         orderMode: OrderingMode
         filters: [TriggersFiltering!]
         filterMode: FilterMode
-        adminBypassUserAccess: Boolean
+        includeAuthorities: Boolean
         search: String
     ): TriggerConnection @auth
+    # Alerts
+    triggerActivity(id: String!): Trigger @auth(for: [SETTINGS])
+    triggersActivity(
+        first: Int
+        after: ID
+        orderBy: TriggersOrdering
+        orderMode: OrderingMode
+        filters: [TriggerActivityFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): TriggerConnection @auth(for: [SETTINGS])
     # Notifications
     notification(id: String!): Notification @auth
     notifications(
@@ -162,50 +236,24 @@ type Query {
 }
 
 # Mutations
-enum DigestPeriod {
-    hour
-    day
-    week
-    month
-}
-
-input TriggerLiveAddInput {
-    name: String! @constraint(minLength: 1)
-    description: String
-    event_types: [TriggerEventType!]!
-    outcomes: [StixRef!]
-    instance_trigger: Boolean!
-    filters: String
-    recipients: [String!]
-}
-
-input TriggerDigestAddInput {
-    name: String! @constraint(minLength: 1)
-    description: String
-    trigger_ids: [String!]! # Triggers that composed the digest
-    period: DigestPeriod!
-    trigger_time: String
-    outcomes: [StixRef!]!
-    recipients: [String!]
-}
-
 type Mutation {
     # Outcomes
     # Triggers
-    triggerDelete(id: ID!): ID @auth
-    triggerFieldPatch(id: ID!, input: [EditInput!]!): Trigger @auth
-    triggerLiveAdd(input: TriggerLiveAddInput!): Trigger @auth
-    triggerDigestAdd(input: TriggerDigestAddInput!): Trigger @auth
+    triggerKnowledgeDelete(id: ID!): ID @auth
+    triggerKnowledgeFieldPatch(id: ID!, input: [EditInput!]!): Trigger @auth
+    triggerKnowledgeLiveAdd(input: TriggerLiveAddInput!): Trigger @auth
+    triggerKnowledgeDigestAdd(input: TriggerDigestAddInput!): Trigger @auth
+    # Alerts
+    triggerActivityDelete(id: ID!): ID @auth(for: [SETTINGS])
+    triggerActivityFieldPatch(id: ID!, input: [EditInput!]!): Trigger @auth(for: [SETTINGS])
+    triggerActivityLiveAdd(input: TriggerActivityLiveAddInput!): Trigger @auth(for: [SETTINGS])
+    triggerActivityDigestAdd(input: TriggerActivityDigestAddInput!): Trigger @auth(for: [SETTINGS])
     # Notifications
     notificationDelete(id: ID!): ID @auth
     notificationMarkRead(id: ID!, read: Boolean!): Notification @auth
 }
 
 # Subscriptions
-type NotificationCount {
-    user_id: String
-    count: Int
-}
 type Subscription {
     # Outcomes
     # Triggers

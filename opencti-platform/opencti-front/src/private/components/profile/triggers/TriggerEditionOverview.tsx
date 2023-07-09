@@ -3,17 +3,14 @@ import { graphql, useFragment, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
-import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  TriggerEditionOverview_trigger$key,
-  TriggerEventType,
-} from './__generated__/TriggerEditionOverview_trigger.graphql';
+import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditionOverview_trigger.graphql';
 import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
 import Filters from '../../common/lists/Filters';
@@ -27,13 +24,14 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput!]!
   ) {
-    triggerFieldPatch(id: $id, input: $input) {
+    triggerKnowledgeFieldPatch(id: $id, input: $input) {
       ...TriggerEditionOverview_trigger
     }
   }
@@ -309,13 +307,10 @@ TriggerEditionOverviewProps
     description: trigger.description,
     event_types: convertEventTypes(trigger, eventTypesOptionsMap),
     outcomes: convertOutcomes(trigger, outcomesOptionsMap),
-    period: trigger.period,
     trigger_ids: convertTriggers(trigger),
+    period: trigger.period,
     day: currentTime.length > 1 ? currentTime[0] : '1',
-    time:
-      currentTime.length > 1
-        ? `2000-01-01T${currentTime[1]}`
-        : `2000-01-01T${currentTime[0]}`,
+    time: currentTime.length > 1 ? `2000-01-01T${currentTime[1]}` : `2000-01-01T${currentTime[0]}`,
   };
   return (
     <Formik

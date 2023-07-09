@@ -16,31 +16,26 @@ import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import {
-  TriggerLiveCreationMutation,
-  TriggerLiveCreationMutation$data,
-  TriggerEventType,
-} from './__generated__/TriggerLiveCreationMutation.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import SwitchField from '../../../../components/SwitchField';
 import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import {
+  TriggerEventType, TriggerLiveCreationKnowledgeMutation,
+  TriggerLiveCreationKnowledgeMutation$data,
+} from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -82,9 +77,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 // region live
-export const triggerLiveCreationMutation = graphql`
-  mutation TriggerLiveCreationMutation($input: TriggerLiveAddInput!) {
-    triggerLiveAdd(input: $input) {
+export const triggerLiveKnowledgeCreationMutation = graphql`
+  mutation TriggerLiveCreationKnowledgeMutation($input: TriggerLiveAddInput!) {
+    triggerKnowledgeLiveAdd(input: $input) {
       id
       name
       event_types
@@ -96,9 +91,7 @@ export const triggerLiveCreationMutation = graphql`
 const liveTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
-  event_types: Yup.array()
-    .min(1, t('Minimum one event type'))
-    .required(t('This field is required')),
+  event_types: Yup.array().min(1, t('Minimum one event type')).required(t('This field is required')),
   outcomes: Yup.array().nullable(),
 });
 
@@ -107,14 +100,8 @@ export const instanceTriggerDescription = 'An instance trigger on an entity X no
 interface TriggerLiveAddInput {
   name: string;
   description: string;
-  event_types: {
-    value: TriggerEventType,
-    label: string
-  }[];
-  outcomes: {
-    value: string,
-    label: string
-  }[];
+  event_types: { value: TriggerEventType, label: string }[];
+  outcomes: { value: string, label: string }[];
   recipients: string[];
 }
 
@@ -125,7 +112,7 @@ interface TriggerLiveCreationProps {
   inputValue?: string;
   recipientId?: string;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
-  creationCallback?: (data: TriggerLiveCreationMutation$data) => void;
+  creationCallback?: (data: TriggerLiveCreationKnowledgeMutation$data) => void;
 }
 
 const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
@@ -144,7 +131,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   >({});
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
   const [instanceFilters, setInstanceFilters] = useState({});
-
   const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
     { value: 'create', label: t('Creation') },
     { value: 'update', label: t('Modification') },
@@ -174,11 +160,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     setInstanceTrigger(!instance_trigger);
     setFilters({});
   };
-  const handleAddFilter = (
-    key: string,
-    id: string,
-    value: Record<string, unknown> | string,
-  ) => {
+  const handleAddFilter = (key: string, id: string, value: Record<string, unknown> | string) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -202,9 +184,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const handleRemoveFilter = (key: string) => {
     setFilters(R.dissoc(key, filters));
   };
-  const [commitLive] = useMutation<TriggerLiveCreationMutation>(
-    triggerLiveCreationMutation,
-  );
+  const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(triggerLiveKnowledgeCreationMutation);
   const liveInitialValues: TriggerLiveAddInput = {
     name: inputValue || '',
     description: '',
@@ -233,12 +213,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       },
       updater: (store) => {
         if (paginationOptions) {
-          insertNode(
-            store,
-            'Pagination_triggers',
-            paginationOptions,
-            'triggerLiveAdd',
-          );
+          insertNode(store, 'Pagination_triggersKnowledge', paginationOptions, 'triggerKnowledgeLiveAdd');
         }
       },
       onError: (error: Error) => {
@@ -254,14 +229,99 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       },
     });
   };
-  const liveFields = (
-    setFieldValue: (
-      field: string,
-      value: unknown,
-      shouldValidate?: boolean | undefined
-    ) => void,
-    values: TriggerLiveAddInput,
-  ) => (
+
+  const renderKnowledgeTrigger = (values: TriggerLiveAddInput, setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
+    return <>
+      <Field
+          component={SwitchField}
+          type="checkbox"
+          name="instance_trigger"
+          label={t('Instance trigger')}
+          tooltip={instanceTriggerDescription}
+        containerstyle={{ marginTop: 20 }}
+        onChange={() => onChangeInstanceTrigger(setFieldValue)}
+      />
+      <Field
+          component={AutocompleteField}
+          name="event_types"
+          style={fieldSpacingContainerStyle}
+          multiple={true}
+          textfieldprops={{
+            variant: 'standard',
+            label: t('Triggering on'),
+          }}
+          options={instance_trigger ? instanceEventTypesOptions : eventTypesOptions}
+          onChange={setFieldValue}
+          renderOption={(
+            props: React.HTMLAttributes<HTMLLIElement>,
+            option: { value: TriggerEventType, label: string },
+          ) => (
+              <MenuItem value={option.value} {...props}>
+                <Checkbox checked={values.event_types.map((n) => n.value).includes(option.value)} />
+                <ListItemText primary={option.label} />
+              </MenuItem>
+          )}
+      />
+      {instance_trigger
+        ? (<div style={fieldSpacingContainerStyle}>
+            <FilterAutocomplete
+                filterKey={'elementId'}
+                searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+                defaultHandleAddFilter={handleAddFilter}
+                inputValues={instanceFilters}
+                setInputValues={setInstanceFilters}
+                openOnFocus={true}
+            />
+          </div>)
+        : (
+              <span>
+            <div style={{ marginTop: 35 }}>
+              <Filters
+                  variant="text"
+                  availableFilterKeys={[
+                    'entity_type',
+                    'x_opencti_workflow_id',
+                    'assigneeTo',
+                    'objectContains',
+                    'markedBy',
+                    'labelledBy',
+                    'creator',
+                    'createdBy',
+                    'priority',
+                    'severity',
+                    'x_opencti_score',
+                    'x_opencti_detection',
+                    'revoked',
+                    'confidence',
+                    'indicator_types',
+                    'pattern_type',
+                    'fromId',
+                    'toId',
+                    'fromTypes',
+                    'toTypes',
+                  ]}
+                  handleAddFilter={handleAddFilter}
+                  handleRemoveFilter={undefined}
+                  handleSwitchFilter={undefined}
+                  noDirectFilters={true}
+                  disabled={undefined}
+                  size={undefined}
+                  fontSize={undefined}
+                  availableEntityTypes={undefined}
+                  availableRelationshipTypes={undefined}
+                  allEntityTypes={undefined}
+                  type={undefined}
+                  availableRelationFilterTypes={undefined}
+              />
+            </div>
+          <div className="clearfix" />
+        </span>
+        )
+      }
+      </>;
+  };
+
+  const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerLiveAddInput) => (
     <React.Fragment>
       <Field
         component={TextField}
@@ -304,92 +364,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           </MenuItem>
         )}
       />
-      <Field
-        component={SwitchField}
-        type="checkbox"
-        name="instance_trigger"
-        label={t('Instance trigger')}
-        tooltip={instanceTriggerDescription}
-        containerstyle={{ marginTop: 20 }}
-        onChange={() => onChangeInstanceTrigger(setFieldValue)}
-      />
-      <Field
-        component={AutocompleteField}
-        name="event_types"
-        style={fieldSpacingContainerStyle}
-        multiple={true}
-        textfieldprops={{
-          variant: 'standard',
-          label: t('Triggering on'),
-        }}
-        options={instance_trigger ? instanceEventTypesOptions : eventTypesOptions}
-        onChange={setFieldValue}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { value: TriggerEventType, label: string },
-        ) => (
-          <MenuItem value={option.value} {...props}>
-            <Checkbox checked={values.event_types.map((n) => n.value).includes(option.value)} />
-            <ListItemText primary={option.label} />
-          </MenuItem>
-        )}
-      />
-      {instance_trigger
-        ? (<div style={fieldSpacingContainerStyle}>
-          <FilterAutocomplete
-            filterKey={'elementId'}
-            searchContext={{ entityTypes: ['Stix-Core-Object'] }}
-            defaultHandleAddFilter={handleAddFilter}
-            inputValues={instanceFilters}
-            setInputValues={setInstanceFilters}
-            openOnFocus={true}
-          />
-        </div>)
-        : (
-          <span>
-            <div style={{ marginTop: 35 }}>
-              <Filters
-                variant="text"
-                availableFilterKeys={[
-                  'entity_type',
-                  'x_opencti_workflow_id',
-                  'assigneeTo',
-                  'objectContains',
-                  'markedBy',
-                  'labelledBy',
-                  'creator',
-                  'createdBy',
-                  'priority',
-                  'severity',
-                  'x_opencti_score',
-                  'x_opencti_detection',
-                  'revoked',
-                  'confidence',
-                  'indicator_types',
-                  'pattern_type',
-                  'fromId',
-                  'toId',
-                  'fromTypes',
-                  'toTypes',
-                ]}
-                handleAddFilter={handleAddFilter}
-                handleRemoveFilter={undefined}
-                handleSwitchFilter={undefined}
-                noDirectFilters={true}
-                disabled={undefined}
-                size={undefined}
-                fontSize={undefined}
-                availableEntityTypes={undefined}
-                availableRelationshipTypes={undefined}
-                allEntityTypes={undefined}
-                type={undefined}
-                availableRelationFilterTypes={undefined}
-              />
-            </div>
-          <div className="clearfix" />
-        </span>
-        )
-      }
+      {renderKnowledgeTrigger(values, setFieldValue)}
       <FilterIconButton
         filters={filters}
         handleRemoveFilter={handleRemoveFilter}
@@ -398,6 +373,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       />
     </React.Fragment>
   );
+
   const renderClassic = () => (
     <div>
       <Drawer
@@ -463,13 +439,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       </Drawer>
     </div>
   );
+
   const renderContextual = () => (
-    <Dialog
-      disableRestoreFocus={true}
+    <Dialog disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
-      PaperProps={{ elevation: 1 }}
-    >
+      PaperProps={{ elevation: 1 }}>
       <Formik
         initialValues={liveInitialValues}
         validationSchema={liveTriggerValidation(t)}
@@ -497,6 +472,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       </Formik>
     </Dialog>
   );
+
   return contextual ? renderContextual() : renderClassic();
 };
 // endregion

@@ -9,13 +9,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Chip from '@mui/material/Chip';
-import { DataColumns } from '../../../../components/list_lines';
-import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import { useFormatter } from '../../../../components/i18n';
-import TriggerPopover from './TriggerPopover';
-import { dayStartDate } from '../../../../utils/Time';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import { DataColumns } from '../../../../../components/list_lines';
+import FilterIconButton from '../../../../../components/FilterIconButton';
+import { useFormatter } from '../../../../../components/i18n';
+import { dayStartDate } from '../../../../../utils/Time';
+import { AlertingLine_node$key } from './__generated__/AlertingLine_node.graphql';
+import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import AlertingPopover from './AlertingPopover';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -69,18 +69,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface TriggerLineProps {
-  node: TriggerLine_node$key;
+interface AlertingLineProps {
+  node: AlertingLine_node$key;
   dataColumns: DataColumns;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
+  onLabelClick: (
+    k: string,
+    id: string,
+    value: Record<string, unknown>,
+    event: React.KeyboardEvent
+  ) => void;
+  paginationOptions?: AlertingPaginationQuery$variables;
 }
 
-const triggerLineFragment = graphql`
-  fragment TriggerLine_node on Trigger {
+const alertingLineFragment = graphql`
+  fragment AlertingLine_node on Trigger {
     id
     name
     trigger_type
-    event_types
     description
     filters
     created
@@ -92,25 +97,13 @@ const triggerLineFragment = graphql`
       id
       name
     }
-    isDirectAdministrator
-    currentUserAccessRight
-    instance_trigger
-    resolved_instance_filters {
-      id
-      valid
-      value
-    }
   }
 `;
 
-export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
-  dataColumns,
-  node,
-  paginationOptions,
-}) => {
+export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({ dataColumns, node, paginationOptions }) => {
   const classes = useStyles();
   const { t, nt } = useFormatter();
-  const data = useFragment(triggerLineFragment, node);
+  const data = useFragment(alertingLineFragment, node);
   const filters = JSON.parse(data.filters ?? '{}');
   const outcomesOptions: Record<string, string> = {
     'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
@@ -120,10 +113,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
     dayStartDate().toISOString(),
   ];
   const day = currentTime.length > 1 ? currentTime[0] : '1';
-  const time = currentTime.length > 1
-    ? new Date(`2000-01-01T${currentTime[1]}`)
-    : new Date(`2000-01-01T${currentTime[0]}`);
-
+  const time = currentTime.length > 1 ? new Date(`2000-01-01T${currentTime[1]}`) : new Date(`2000-01-01T${currentTime[0]}`);
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon>
@@ -167,31 +157,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                   ))
                     .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.event_types.width }}
-            >
-              {data.event_types
-                && data.event_types.map((n: string) => (
-                  <Chip
-                    key={n}
-                    classes={{ root: classes.chipInList }}
-                    color="primary"
-                    variant="outlined"
-                    label={t(n)}
-                  />
-                ))}
-              {data.triggers
-                && data.triggers.map((n) => (
-                  <Chip
-                    key={n?.id}
-                    classes={{ root: classes.chipInList }}
-                    color="warning"
-                    variant="outlined"
-                    label={n?.name}
-                  />
-                ))}
-            </div>
             {data.trigger_type === 'live' && (
               <FilterIconButton
                 filters={filters}
@@ -199,7 +164,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                 classNameNumber={3}
                 styleNumber={3}
                 redirection
-                resolvedInstanceFilters={data.resolved_instance_filters ?? []}
               />
             )}
             {data.trigger_type === 'digest' && (
@@ -241,20 +205,13 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-       <TriggerPopover
-         id={data.id}
-         paginationOptions={paginationOptions}
-         disabled={!data.isDirectAdministrator}/>
+        <AlertingPopover data={data} paginationOptions={paginationOptions} />
       </ListItemIcon>
     </ListItem>
   );
 };
 
-export const TriggerLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const AlertingLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

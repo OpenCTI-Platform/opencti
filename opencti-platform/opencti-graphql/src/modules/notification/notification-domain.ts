@@ -12,12 +12,15 @@ import { BUS_TOPICS } from '../../config/conf';
 import type {
   EditInput,
   QueryNotificationsArgs,
-  QueryTriggersArgs,
+  QueryTriggersActivityArgs,
+  QueryTriggersKnowledgeArgs,
+  TriggerActivityDigestAddInput,
+  TriggerActivityLiveAddInput,
   TriggerDigestAddInput,
   TriggerLiveAddInput,
   TriggerType
 } from '../../generated/graphql';
-import { TriggerFilter, TriggerType as TriggerTypeValue } from '../../generated/graphql';
+import { TriggerType as TriggerTypeValue } from '../../generated/graphql';
 import {
   internalFindByIds,
   internalLoadById,
@@ -37,12 +40,15 @@ import { now } from '../../utils/format';
 import { elCount, elFindByIds } from '../../database/engine';
 import { extractEntityRepresentative, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ENTITY_FILTERS } from '../../utils/filtering';
-import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreObject, InternalEditInput } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
   AuthorizedMember,
+  getUserAccessRight,
   isUserHasCapability,
-  MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  MEMBER_ACCESS_RIGHT_EDIT,
+  MEMBER_ACCESS_RIGHT_VIEW,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
 } from '../../utils/access';
@@ -51,6 +57,22 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../schema/stixDomainObject';
 
 // Outcomes
+
+export const batchResolvedInstanceFilters = async (context: AuthContext, user: AuthUser, instanceFiltersIds: string[]) => {
+  const instanceIds = instanceFiltersIds.map((u) => (Array.isArray(u) ? u : [u]));
+  const allInstanceIds = instanceIds.flat();
+  const instanceToFinds = R.uniq(allInstanceIds.filter((u) => isNotEmptyField(u)));
+  const instances = await elFindByIds(context, user, instanceToFinds, { toMap: true }) as BasicStoreObject[];
+  return instanceIds
+    .map((ids) => ids
+      .map((id) => [
+        id,
+        Object.keys(instances).includes(id),
+        instances[id] ? extractEntityRepresentative(instances[id]) : '',
+      ]));
+};
+
+const resolvedInstanceFiltersLoader = batchLoader(batchResolvedInstanceFilters);
 
 // Triggers
 // Due to engine limitation we restrict the recipient to only one user for now
@@ -95,20 +117,52 @@ export const addTrigger = async (
   }
   const defaultOpts = {
     trigger_type: type,
-    authorized_members: authorizedMembers,
     created: now(),
     updated: now(),
+    trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
+    authorized_members: authorizedMembers,
+    authorized_authorities: [SETTINGS_SET_ACCESSES] // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
-  delete trigger.recipients;
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
     event_access: isSelfTrigger ? 'extended' : 'administration',
-    message: `creates ${type} trigger \`${created.name}\` for ${isSelfTrigger ? '`themselves`' : `user \`${recipient.name}\``}`,
+    message: `creates ${type} trigger \`${created.name}\` for ${isSelfTrigger ? '`themselves`' : `\`${recipient.name}\``}`,
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
+};
+
+export const addTriggerActivity = async (
+  context: AuthContext,
+  user: AuthUser,
+  triggerInput: TriggerActivityLiveAddInput | TriggerActivityDigestAddInput,
+  type: TriggerType
+): Promise<BasicStoreEntityTrigger> => {
+  const members = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, triggerInput.recipients);
+  if (members.length === 0) {
+    throw UnsupportedError('Cannot add a activity trigger without recipients');
+  }
+  const defaultOpts = {
+    created: now(),
+    updated: now(),
+    trigger_scope: 'activity',
+    trigger_type: type,
+    authorized_members: [...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }))],
+    authorized_authorities: ['SETTINGS'] // Add extra capabilities
+  };
+  const trigger = { ...triggerInput, ...defaultOpts };
+  const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
+    message: `creates ${type} activity trigger \`${created.name}\` for ${members.map((m) => `\`${m.name}\``).join(', ')}`,
     context_data: { id: created.id, entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
@@ -118,25 +172,75 @@ export const triggerGet = (context: AuthContext, user: AuthUser, triggerId: stri
   return storeLoadById(context, user, triggerId, ENTITY_TYPE_TRIGGER) as unknown as BasicStoreEntityTrigger;
 };
 
+// For digest resolutions
 export const triggersGet = (context: AuthContext, user: AuthUser, triggerIds: string[]): BasicStoreEntityTrigger[] => {
   return internalFindByIds(context, user, triggerIds) as unknown as BasicStoreEntityTrigger[];
 };
 
-export const batchResolvedInstanceFilters = async (context: AuthContext, user: AuthUser, instanceFiltersIds: string[]) => {
-  const instanceIds = instanceFiltersIds.map((u) => (Array.isArray(u) ? u : [u]));
-  const allInstanceIds = instanceIds.flat();
-  const instanceToFinds = R.uniq(allInstanceIds.filter((u) => isNotEmptyField(u)));
-  const instances = await elFindByIds(context, user, instanceToFinds, { toMap: true }) as BasicStoreObject[];
-  return instanceIds
-    .map((ids) => ids
-      .map((id) => [
-        id,
-        Object.keys(instances).includes(id),
-        instances[id] ? extractEntityRepresentative(instances[id]) : '',
-      ]));
+export const getTriggerRecipients = async (context: AuthContext, user: AuthUser, element: BasicStoreEntityTrigger) => {
+  const access = getUserAccessRight(user, element);
+  if (access === MEMBER_ACCESS_RIGHT_ADMIN) {
+    const ids = element.authorized_members.map((a) => a.id);
+    return internalFindByIds<BasicStoreEntity>(context, user, ids);
+  }
+  return [];
 };
 
-const resolvedInstanceFiltersLoader = batchLoader(batchResolvedInstanceFilters);
+export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: InternalEditInput[]) => {
+  const trigger = await triggerGet(context, user, triggerId);
+  const userAccessRight = getUserAccessRight(user, trigger);
+  if (userAccessRight === null || ![MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN].includes(userAccessRight)) {
+    throw ForbiddenAccess();
+  }
+  if (trigger.trigger_type === 'live') {
+    const emptyTriggerEvents = input.filter((editEntry) => editEntry.key === 'event_types' && editEntry.value.length === 0);
+    if (emptyTriggerEvents.length > 0) {
+      throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
+    }
+  }
+  const { element: updatedElem } = await updateAttribute(context, user, triggerId, ENTITY_TYPE_TRIGGER, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].EDIT_TOPIC, updatedElem, user);
+};
+
+export const triggerActivityEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: EditInput[]) => {
+  const finalInput: InternalEditInput[] = [];
+  for (let index = 0; index < input.length; index += 1) {
+    const inputElement = input[index];
+    if (inputElement.key === 'recipients') {
+      const value = (inputElement.value ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
+      finalInput.push({ key: 'authorized_members', value });
+    } else {
+      finalInput.push(inputElement);
+    }
+  }
+  return triggerEdit(context, user, triggerId, finalInput);
+};
+
+export const triggerDelete = async (context: AuthContext, user: AuthUser, triggerId: string) => {
+  const trigger = await triggerGet(context, user, triggerId);
+  const userAccessRight = getUserAccessRight(user, trigger);
+  if (userAccessRight !== MEMBER_ACCESS_RIGHT_ADMIN) {
+    throw ForbiddenAccess();
+  }
+  const adminIds = (trigger.authorized_members ?? [])
+    .filter((a: AuthorizedMember) => a.access_right === 'admin')
+    .map((a: AuthorizedMember) => a.id);
+  const isSelfTrigger = adminIds.length === 1;
+  const deleted = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
+  const memberIds = (trigger.authorized_members ?? []).map((a: AuthorizedMember) => a.id);
+  const recipients = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, memberIds);
+  const recipientNames = recipients.map((r) => r.name);
+  await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, deleted, user);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: isSelfTrigger ? 'extended' : 'administration',
+    message: `deletes trigger \`${deleted.name}\` for ${isSelfTrigger ? '`themselves`' : `${recipientNames.map((r) => `\`${r}\``).join(', ')}`}`,
+    context_data: { id: triggerId, entity_type: ENTITY_TYPE_TRIGGER, input: deleted }
+  });
+  return triggerId;
+};
 
 export const resolvedInstanceFiltersGet = async (context: AuthContext, user: AuthUser, trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger) => {
   if (trigger.trigger_type === 'live') {
@@ -152,54 +256,20 @@ export const resolvedInstanceFiltersGet = async (context: AuthContext, user: Aut
   return [];
 };
 
-export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: EditInput[]) => {
-  const trigger = await triggerGet(context, user, triggerId);
-  if (trigger.trigger_type === 'live') {
-    const emptyTriggerEvents = input.filter((editEntry) => editEntry.key === 'event_types' && editEntry.value.length === 0);
-    if (emptyTriggerEvents.length > 0) {
-      throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
-    }
-  }
-  const { element: updatedElem } = await updateAttribute(context, user, triggerId, ENTITY_TYPE_TRIGGER, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].EDIT_TOPIC, updatedElem, user);
-};
-export const triggerDelete = async (context: AuthContext, user: AuthUser, triggerId: string) => {
-  const deleted = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
-  // region compute recipients
-  const adminIds = (deleted.authorized_members ?? [])
-    .filter((a: AuthorizedMember) => a.access_right === 'admin')
-    .map((a: AuthorizedMember) => a.id);
-  const isSelfTrigger = adminIds.includes(user.id);
-  const recipientNames = [];
-  if (!isSelfTrigger) {
-    const recipients = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, adminIds);
-    recipientNames.push(...recipients.map((r) => r.name));
-  }
-  // region
-  await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, deleted, user);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'delete',
-    event_access: isSelfTrigger ? 'extended' : 'administration',
-    message: `deletes trigger \`${deleted.name}\` for ${isSelfTrigger ? '`themselves`' : `user \`${recipientNames.join(', ')}\``}`,
-    context_data: { id: triggerId, entity_type: ENTITY_TYPE_TRIGGER, input: deleted }
-  });
-  return triggerId;
-};
-export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersArgs) => {
-  let queryArgs = { ...opts };
+export const triggersKnowledgeFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersKnowledgeArgs) => {
   // key is a string[] because of the resolver, we have updated the keys
-  const userIdFilter = opts.filters?.find((f) => (f.key as string[]).includes('authorized_members.id'));
-  if (userIdFilter) {
-    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-      throw UnsupportedError(`${TriggerFilter.UserIds} filter is only accessible for administration users (set access)`);
-    }
-    queryArgs = {
-      ...queryArgs,
-      adminBypassUserAccess: true
-    };
-  }
+  const finalFilter = [];
+  finalFilter.push(...(opts.filters ?? []));
+  finalFilter.push({ key: ['trigger_scope'], values: ['knowledge'] });
+  const queryArgs = { ...opts, filters: finalFilter };
+  return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
+};
+
+export const triggersActivityFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersActivityArgs) => {
+  const finalFilter = [];
+  finalFilter.push(...(opts.filters ?? []));
+  finalFilter.push({ key: ['trigger_scope'], values: ['activity'] });
+  const queryArgs = { ...opts, includeAuthorities: true, filters: finalFilter };
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 

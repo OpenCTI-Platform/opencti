@@ -200,7 +200,6 @@ describe('Grouping resolver standard behavior', () => {
         endDate: now(),
       },
     });
-    console.log(JSON.stringify(queryResult));
     expect(queryResult.data.groupingsNumber.total).toEqual(1);
     expect(queryResult.data.groupingsNumber.count).toEqual(1);
   });

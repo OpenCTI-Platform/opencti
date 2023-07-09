@@ -3,18 +3,18 @@ import { union } from 'ramda';
 import { Field } from 'formik';
 import { CampaignOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import { useFormatter } from '../../../../components/i18n';
-import { triggersQueriesKnowledgeSearchQuery } from './TriggersQueries';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
-import TriggerLiveCreation from './TriggerLiveCreation';
+import { useFormatter } from '../../../../../components/i18n';
+import { fetchQuery } from '../../../../../relay/environment';
+import { triggersQueriesActivitySearchQuery } from '../../../profile/triggers/TriggersQueries';
 import {
-  TriggerEventType,
-  TriggerLiveCreationKnowledgeMutation$data,
-} from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
-import { TriggerType } from './__generated__/TriggerLine_node.graphql';
-import { TriggersQueriesSearchKnowledgeQuery$data } from './__generated__/TriggersQueriesSearchKnowledgeQuery.graphql';
+  TriggersQueriesSearchActivityQuery$data,
+} from '../../../profile/triggers/__generated__/TriggersQueriesSearchActivityQuery.graphql';
+import { TriggerEventType } from '../../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import { TriggerType } from './__generated__/AlertingLine_node.graphql';
+import AutocompleteField from '../../../../../components/AutocompleteField';
+import AlertLiveCreation from './AlertLiveCreation';
+import { AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
+import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -63,8 +63,7 @@ interface TriggersFieldProps {
     };
   }[];
   helpertext?: string;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
-  recipientId?: string;
+  paginationOptions?: AlertingPaginationQuery$variables;
 }
 
 interface Option {
@@ -74,7 +73,7 @@ interface Option {
   [key: string]: ReactNode;
 }
 
-const TriggersField: FunctionComponent<TriggersFieldProps> = ({
+const AlertsField: FunctionComponent<TriggersFieldProps> = ({
   name,
   style,
   onChange,
@@ -82,7 +81,6 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   values,
   helpertext,
   paginationOptions,
-  recipientId,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -105,17 +103,11 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   };
   const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
     const filters = [{ key: 'trigger_type', values: ['live'] }];
-    if (recipientId) {
-      filters.push({ key: 'user_ids', values: [recipientId] });
-    }
-    fetchQuery(triggersQueriesKnowledgeSearchQuery, {
-      search: event && event.target.value,
-      filters,
-    })
+    fetchQuery(triggersQueriesActivitySearchQuery, { search: event && event.target.value, filters })
       .toPromise()
       .then((data) => {
-        const newTriggersEdges = ((data as TriggersQueriesSearchKnowledgeQuery$data)
-          ?.triggersKnowledge?.edges ?? []) as {
+        const newTriggersEdges = ((data as TriggersQueriesSearchActivityQuery$data)
+          ?.triggersActivity?.edges ?? []) as {
           node: {
             created: string | null;
             description: string | null;
@@ -170,14 +162,12 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
         )}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
-      <TriggerLiveCreation
-        contextual={true}
+      <AlertLiveCreation
         open={triggerCreation}
         handleClose={handleCloseTriggerCreation}
         paginationOptions={paginationOptions}
-        recipientId={recipientId}
-        creationCallback={(data: TriggerLiveCreationKnowledgeMutation$data) => {
-          const newTrigger = data.triggerKnowledgeLiveAdd;
+        creationCallback={(data: AlertLiveCreationActivityMutation$data) => {
+          const newTrigger = data.triggerActivityLiveAdd;
           if (newTrigger) {
             const entity = { id: newTrigger.id, name: newTrigger.name };
             setTriggers((o) => [
@@ -207,4 +197,4 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   );
 };
 
-export default TriggersField;
+export default AlertsField;

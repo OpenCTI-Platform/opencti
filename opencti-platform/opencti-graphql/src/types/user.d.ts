@@ -1,7 +1,7 @@
 import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } from './store';
 import type { Group } from './group';
 
-interface UserRole {
+interface UserRole extends BasicStoreIdentifier {
   name: string;
 }
 

@@ -89,8 +89,8 @@ const USER_ORGANIZATION_ADD_QUERY = gql`
     }
 `;
 const CREATE_LIVE_TRIGGER_QUERY = gql`
-    mutation TriggerLiveAdd($input: TriggerLiveAddInput!) {
-        triggerLiveAdd(input: $input) {
+    mutation TriggerKnowledgeLiveAdd($input: TriggerLiveAddInput!) {
+        triggerKnowledgeLiveAdd(input: $input) {
             id
             name
         }
@@ -1303,7 +1303,7 @@ describe('Notification manager behaviors test', async () => {
       },
     }));
     const triggerAddQueryResults = await Promise.all(triggerAddQueryPromise);
-    const createdTriggerIds = triggerAddQueryResults.map((result) => result.data.triggerLiveAdd.id);
+    const createdTriggerIds = triggerAddQueryResults.map((result) => result.data.triggerKnowledgeLiveAdd.id);
     resetCacheForEntity(ENTITY_TYPE_RESOLVED_FILTERS);
 
     // -- TESTS -- //

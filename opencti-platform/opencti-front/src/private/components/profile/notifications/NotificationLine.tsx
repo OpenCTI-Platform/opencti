@@ -43,6 +43,8 @@ import { hexToRGB } from '../../../../utils/Colors';
 import Transition from '../../../../components/Transition';
 import { deleteNode } from '../../../../utils/store';
 import { NotificationsLinesPaginationQuery$variables } from './__generated__/NotificationsLinesPaginationQuery.graphql';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -197,12 +199,7 @@ NotificationLineProps
         id: data.id,
       },
       updater: (store) => {
-        deleteNode(
-          store,
-          'Pagination_myNotifications',
-          paginationOptions,
-          data.id,
-        );
+        deleteNode(store, 'Pagination_myNotifications', paginationOptions, data.id);
       },
       onCompleted: () => {
         setUpdating(false);
@@ -216,6 +213,7 @@ NotificationLineProps
     none: t('Unknown'),
   };
   const colors: Record<string, string> = {
+    none: green[500],
     create: green[500],
     update: deepPurple[500],
     delete: red[500],
@@ -237,35 +235,21 @@ NotificationLineProps
         return <BellOutline style={{ color: colors[operation] }} />;
     }
   };
-  const firstOperation = isDigest ? 'multiple' : firstEvent?.operation ?? 'none';
+  const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
+  const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id);
+  const isClickableLine = isDigest || isLinkAvailable;
   return (
     <div>
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component={events.length > 1 ? 'div' : Link}
-        to={
-          events.length > 1
-            ? undefined
-            : `/dashboard/id/${firstEvent?.instance_id}`
-        }
-        onClick={() => setOpen(true)}
-      >
-        <ListItemIcon
-          classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 40 }}
-          onClick={(event) => (event.shiftKey
-            ? onToggleShiftEntity(index, data, event)
-            : onToggleEntity(data, event))
-          }
-        >
-          <Checkbox
-            edge="start"
-            checked={
-              (selectAll && !(data.id in (deSelectedElements || {})))
-              || data.id in (selectedElements || {})
-            }
+      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+      {/* @ts-ignore */}
+      <ListItem classes={{ root: classes.item }} divider={true} button={isClickableLine}
+        component={isLinkAvailable ? Link : 'div'}
+        to={isLinkAvailable ? `/dashboard/id/${firstEvent?.instance_id}` : undefined}
+        onClick={() => { if (isDigest) { setOpen(true); } }}>
+        <ListItemIcon classes={{ root: classes.itemIcon }} style={{ minWidth: 40 }}
+          onClick={(event) => (event.shiftKey ? onToggleShiftEntity(index, data, event) : onToggleEntity(data, event))}>
+          <Checkbox edge="start"
+            checked={(selectAll && !(data.id in (deSelectedElements || {}))) || data.id in (selectedElements || {})}
             disableRipple={true}
           />
         </ListItemIcon>
@@ -277,44 +261,32 @@ NotificationLineProps
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.operation.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.operation.width }}>
                 <Chip
                   classes={{ root: classes.chipInList2 }}
                   style={{
-                    backgroundColor: hexToRGB(colors[firstOperation], 0.08),
-                    color: colors[firstOperation],
-                    border: `1px solid ${colors[firstOperation]}`,
+                    backgroundColor: hexToRGB(colors[firstOperation] ?? indigo[500], 0.08),
+                    color: colors[firstOperation] ?? indigo[500],
+                    border: `1px solid ${colors[firstOperation] ?? indigo[500]}`,
                   }}
                   label={
                     events.length > 1
                       ? t('Multiple')
-                      : eventTypes[firstEvent?.operation ?? 'none']
+                      : (eventTypes[firstEvent?.operation ?? 'none'] ?? firstEvent?.operation)
                   }
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.message.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
                 {events.length > 1 ? (
                   <i>{t('Digest with multiple notifications')}</i>
                 ) : (
-                  firstEvent?.message
+                    <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin={true} commonmark={true}/>
                 )}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
                 {fldt(data.created)}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 <Tooltip title={data.name}>
                   <Chip
                     classes={{ root: classes.chipInList }}
@@ -362,12 +334,7 @@ NotificationLineProps
         <DialogContent>
           <List component="div" disablePadding>
             {events.map((event, i) => (
-              <ListItemButton
-                key={i}
-                component={Link}
-                divider={true}
-                to={`/dashboard/id/${event.instance_id}`}
-              >
+              <ListItemButton key={i} divider={true} component={Link} to={`/dashboard/id/${event.instance_id}`}>
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
                   <Badge color="warning" variant="dot" invisible={data.is_read}>
                     {iconSelector(event.operation ?? 'none')}
@@ -376,10 +343,7 @@ NotificationLineProps
                 <ListItemText
                   primary={
                     <div>
-                      <div
-                        className={classes.bodyItem}
-                        style={{ width: '30%' }}
-                      >
+                      <div className={classes.bodyItem} style={{ width: '30%' }}>
                         <Chip
                           classes={{ root: classes.chipInList }}
                           color="primary"
@@ -387,10 +351,7 @@ NotificationLineProps
                           label={eventTypes[event.operation ?? 'none']}
                         />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={{ width: '70%' }}
-                      >
+                      <div className={classes.bodyItem} style={{ width: '70%' }}>
                         {event.message}
                       </div>
                     </div>

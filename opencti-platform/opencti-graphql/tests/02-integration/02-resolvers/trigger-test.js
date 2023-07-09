@@ -7,9 +7,9 @@ const LIST_QUERY = gql`
     query triggers(
         $search: String
         $filters: [TriggersFiltering!]
-        $adminBypassUserAccess: Boolean
+        $includeAuthorities: Boolean
     ) {
-        triggers(search: $search, filters: $filters, adminBypassUserAccess: $adminBypassUserAccess) {
+        triggersKnowledge(search: $search, filters: $filters, includeAuthorities: $includeAuthorities) {
             edges {
                 node {
                     id
@@ -28,7 +28,7 @@ const LIST_QUERY = gql`
 
 const READ_QUERY = gql`
     query trigger($id: String!) {
-        trigger(id: $id) {
+        triggerKnowledge(id: $id) {
             id
             name
         }
@@ -36,8 +36,8 @@ const READ_QUERY = gql`
 `;
 
 const CREATE_LIVE_QUERY = gql`
-    mutation TriggerLiveAdd($input: TriggerLiveAddInput!) {
-        triggerLiveAdd(input: $input) {
+    mutation TriggerKnowledgeLiveAdd($input: TriggerLiveAddInput!) {
+        triggerKnowledgeLiveAdd(input: $input) {
             id
             name
         }
@@ -45,8 +45,8 @@ const CREATE_LIVE_QUERY = gql`
 `;
 
 const CREATE_DIGEST_QUERY = gql`
-    mutation TriggerDigestAdd($input: TriggerDigestAddInput!) {
-        triggerDigestAdd(input: $input) {
+    mutation TriggerKnowledgeDigestAdd($input: TriggerDigestAddInput!) {
+        triggerKnowledgeDigestAdd(input: $input) {
             id
             name
         }
@@ -54,8 +54,8 @@ const CREATE_DIGEST_QUERY = gql`
 `;
 
 const UPDATE_QUERY = gql`
-    mutation TriggerEdit($id: ID!, $input: [EditInput!]!) {
-        triggerFieldPatch(id: $id, input: $input) {
+    mutation TriggerKnowledgeEdit($id: ID!, $input: [EditInput!]!) {
+        triggerKnowledgeFieldPatch(id: $id, input: $input) {
             id
             name
         }
@@ -63,8 +63,8 @@ const UPDATE_QUERY = gql`
 `;
 
 const DELETE_QUERY = gql`
-    mutation triggerDelete($id: ID!) {
-        triggerDelete(id: $id)
+    mutation triggerKnowledgeDelete($id: ID!) {
+        triggerKnowledgeDelete(id: $id)
     }
 `;
 
@@ -87,14 +87,11 @@ describe('Trigger resolver standard behavior', () => {
         instance_trigger: false,
       },
     };
-    const trigger = await queryAsAdmin({
-      query: CREATE_LIVE_QUERY,
-      variables: TRIGGER_TO_CREATE,
-    });
+    const trigger = await queryAsAdmin({ query: CREATE_LIVE_QUERY, variables: TRIGGER_TO_CREATE });
     expect(trigger).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd.name).toEqual('live trigger');
-    triggerInternalId = trigger.data.triggerLiveAdd.id;
+    expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('live trigger');
+    triggerInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('should regular digest created', async () => {
     // Create the digest
@@ -108,20 +105,17 @@ describe('Trigger resolver standard behavior', () => {
         outcomes: [],
       },
     };
-    const digest = await queryAsAdmin({
-      query: CREATE_DIGEST_QUERY,
-      variables: DIGEST_TO_CREATE,
-    });
+    const digest = await queryAsAdmin({ query: CREATE_DIGEST_QUERY, variables: DIGEST_TO_CREATE });
     expect(digest).not.toBeNull();
-    expect(digest.data.triggerDigestAdd).not.toBeNull();
-    expect(digest.data.triggerDigestAdd.name).toEqual('regular digest');
-    digestInternalId = digest.data.triggerDigestAdd.id;
+    expect(digest.data.triggerKnowledgeDigestAdd).not.toBeNull();
+    expect(digest.data.triggerKnowledgeDigestAdd.name).toEqual('regular digest');
+    digestInternalId = digest.data.triggerKnowledgeDigestAdd.id;
   });
   it('should trigger loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: triggerInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).not.toBeNull();
-    expect(queryResult.data.trigger.id).toEqual(triggerInternalId);
+    expect(queryResult.data.triggerKnowledge).not.toBeNull();
+    expect(queryResult.data.triggerKnowledge.id).toEqual(triggerInternalId);
   });
   it('security user should create trigger for Admin user', async () => {
     // Create the trigger
@@ -136,51 +130,46 @@ describe('Trigger resolver standard behavior', () => {
         instance_trigger: false,
       },
     };
-    const trigger = await securityQuery({
-      query: CREATE_LIVE_QUERY,
-      variables: TRIGGER_TO_CREATE_FOR_USER,
-    });
+    const trigger = await securityQuery({ query: CREATE_LIVE_QUERY, variables: TRIGGER_TO_CREATE_FOR_USER });
     expect(trigger).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd.name).toEqual('trigger');
-    triggerUserInternalId = trigger.data.triggerLiveAdd.id;
+    expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('trigger');
+    triggerUserInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('should list triggers', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(3);
+    expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);
   });
   it('security user should list Admin triggers', async () => {
-    const queryResult = await securityQuery({ query: LIST_QUERY, variables: { filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }] } });
-    expect(queryResult.data.triggers.edges.length).toEqual(3);
+    const variables = {
+      includeAuthorities: true,
+      filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }]
+    };
+    const queryResult = await securityQuery({ query: LIST_QUERY, variables });
+    expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);
   });
   it('should update trigger', async () => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: triggerInternalId, input: { key: 'name', value: ['live trigger - updated'] } },
     });
-    expect(queryResult.data.triggerFieldPatch.name).toEqual('live trigger - updated');
+    expect(queryResult.data.triggerKnowledgeFieldPatch.name).toEqual('live trigger - updated');
   });
   it('should trigger deleted', async () => {
     // Delete the trigger
-    await queryAsAdmin({
-      query: DELETE_QUERY,
-      variables: { id: triggerInternalId },
-    });
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: triggerInternalId } });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: triggerInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   it('should regular digest deleted', async () => {
     // Delete the digest
-    await queryAsAdmin({
-      query: DELETE_QUERY,
-      variables: { id: digestInternalId },
-    });
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: digestInternalId } });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: digestInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   it('security user should Admin trigger deleted', async () => {
     // Delete the trigger
@@ -191,7 +180,7 @@ describe('Trigger resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerUserInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   // endregion
   // region Group trigger
@@ -213,13 +202,13 @@ describe('Trigger resolver standard behavior', () => {
       variables: GROUP_TRIGGER_TO_CREATE,
     });
     expect(trigger).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd.name).toEqual('group trigger');
-    triggerGroupInternalId = trigger.data.triggerLiveAdd.id;
+    expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('group trigger');
+    triggerGroupInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('editor user should list group trigger', async () => {
     const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(1);
+    expect(queryResult.data.triggersKnowledge.edges.length).toEqual(1);
   });
   it('editor user should not update group trigger', async () => {
     const queryResult = await editorQuery({
@@ -232,14 +221,11 @@ describe('Trigger resolver standard behavior', () => {
   });
   it('security user should group trigger deleted', async () => {
     // Delete the trigger
-    await securityQuery({
-      query: DELETE_QUERY,
-      variables: { id: triggerGroupInternalId },
-    });
+    await securityQuery({ query: DELETE_QUERY, variables: { id: triggerGroupInternalId } });
     // Verify is no longer found
     const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerGroupInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   // endregion
   // region Organization trigger
@@ -261,13 +247,13 @@ describe('Trigger resolver standard behavior', () => {
       variables: ORGANIZATION_TRIGGER_TO_CREATE,
     });
     expect(trigger).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd).not.toBeNull();
-    expect(trigger.data.triggerLiveAdd.name).toEqual('organization trigger');
-    triggerOrganizationInternalId = trigger.data.triggerLiveAdd.id;
+    expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('organization trigger');
+    triggerOrganizationInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('editor user should list organization trigger', async () => {
     const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(1);
+    expect(queryResult.data.triggersKnowledge.edges.length).toEqual(1);
   });
   it('editor user should not update organization trigger', async () => {
     const queryResult = await editorQuery({
@@ -280,14 +266,11 @@ describe('Trigger resolver standard behavior', () => {
   });
   it('security user should organization trigger deleted', async () => {
     // Delete the trigger
-    await securityQuery({
-      query: DELETE_QUERY,
-      variables: { id: triggerOrganizationInternalId },
-    });
+    await securityQuery({ query: DELETE_QUERY, variables: { id: triggerOrganizationInternalId } });
     // Verify is no longer found
     const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerOrganizationInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.trigger).toBeNull();
+    expect(queryResult.data.triggerKnowledge).toBeNull();
   });
   // endregion
 });

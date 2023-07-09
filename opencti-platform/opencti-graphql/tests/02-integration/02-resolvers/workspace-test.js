@@ -11,7 +11,7 @@ const LIST_QUERY = gql`
         $orderMode: OrderingMode
         $filters: [WorkspacesFiltering!]
         $filterMode: FilterMode
-        $adminBypassUserAccess: Boolean
+        $includeAuthorities: Boolean
         $search: String
     ) {
         workspaces(
@@ -21,7 +21,7 @@ const LIST_QUERY = gql`
             orderMode: $orderMode
             filters: $filters
             filterMode: $filterMode
-            adminBypassUserAccess: $adminBypassUserAccess
+            includeAuthorities: $includeAuthorities
             search: $search
         ) {
           edges {
@@ -336,12 +336,12 @@ describe('Workspace member access behavior', () => {
   it('Admin gets only his 3 created workspaces', async () => {
     const queryResultDefault = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResultDefault.data.workspaces.edges.length).toEqual(3);
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10, adminBypassUserAccess: false } });
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.workspaces.edges.length).toEqual(3);
   });
 
   it('Admin gets all 4 workspaces when bypass', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10, adminBypassUserAccess: true } });
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10, includeAuthorities: true } });
     expect(queryResult.data.workspaces.edges.length).toEqual(4);
   });
 

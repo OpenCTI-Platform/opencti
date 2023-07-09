@@ -5,18 +5,18 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDial from '@mui/material/SpeedDial';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
-import TriggerDigestCreation from './TriggerDigestCreation';
-import TriggerLiveCreation from './TriggerLiveCreation';
-import { TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import { useFormatter } from '../../../../../components/i18n';
+import { Theme } from '../../../../../components/Theme';
+import AlertLiveCreation from './AlertLiveCreation';
+import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import { AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
+import AlertDigestCreation from './AlertDigestCreation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 230,
     zIndex: 1100,
   },
   speedDialButton: {
@@ -34,11 +34,11 @@ interface TriggerCreationProps {
   open?: boolean;
   handleClose?: () => void;
   inputValue?: string;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
-  creationCallback?: (data: TriggerLiveCreationKnowledgeMutation$data) => void;
+  paginationOptions?: AlertingPaginationQuery$variables;
+  creationCallback?: (data: AlertLiveCreationActivityMutation$data) => void;
 }
 
-const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
+const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
   contextual,
   hideSpeedDial,
   inputValue,
@@ -90,7 +90,7 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
           />
         </SpeedDial>
       )}
-      <TriggerLiveCreation
+      <AlertLiveCreation
         contextual={contextual}
         inputValue={inputValue}
         paginationOptions={paginationOptions}
@@ -104,7 +104,7 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
         }}
         creationCallback={creationCallback}
       />
-      <TriggerDigestCreation
+      <AlertDigestCreation
         contextual={contextual}
         inputValue={inputValue}
         paginationOptions={paginationOptions}
@@ -115,4 +115,4 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
   );
 };
 
-export default TriggerCreation;
+export default AlertCreation;

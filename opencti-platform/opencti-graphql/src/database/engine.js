@@ -71,12 +71,11 @@ import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stix
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
+  BYPASS,
   computeUserMemberAccessIds,
   INTERNAL_USERS,
   isBypassUser,
-  isUserHasCapability,
   MEMBER_ACCESS_ALL,
-  SETTINGS_SET_ACCESSES
 } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
@@ -288,7 +287,7 @@ const buildDataRestrictions = async (context, user, opts = {}) => {
     return { must, must_not };
   }
   // check user access
-  must.push(...buildUserMemberAccessFilter(user, opts?.adminBypassUserAccess));
+  must.push(...buildUserMemberAccessFilter(user, opts?.includeAuthorities));
   // If user have bypass, no need to check restrictions
   if (!isBypassUser(user)) {
     // region Handle marking restrictions
@@ -392,26 +391,23 @@ const buildDataRestrictions = async (context, user, opts = {}) => {
   return { must, must_not };
 };
 
-export const buildUserMemberAccessFilter = (user, adminBypassUserAccess = false) => {
-  if (adminBypassUserAccess && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+export const buildUserMemberAccessFilter = (user, includeAuthorities = false) => {
+  const capabilities = user.capabilities.map((c) => c.name);
+  if (includeAuthorities && capabilities.includes(BYPASS)) {
     return [];
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  return [{
-    bool: {
-      should: [
-        {
-          bool: {
-            must_not: {
-              exists: { field: 'authorized_members' }
-            }
-          }
-        },
-        { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
-      ]
-    }
-  }];
+  const authorizedFilters = [
+    { bool: { must_not: { exists: { field: 'authorized_members' } } } },
+    { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
+  ];
+  if (includeAuthorities) {
+    const roleIds = user.roles.map((r) => r.id);
+    const owners = [...userAccessIds, ...capabilities, ...roleIds];
+    authorizedFilters.push({ terms: { 'authorized_authorities.keyword': owners } });
+  }
+  return [{ bool: { should: authorizedFilters } }];
 };
 
 export const elIndexExists = async (indexName) => {
@@ -1032,7 +1028,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       };
       mustTerms.push(shouldType);
     }
-    const restrictionOptions = { adminBypassUserAccess: true }; // Bypass the members restrictions if possible
+    const restrictionOptions = { includeAuthorities: true }; // By default include authorized through capabilities
     // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
     const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
@@ -1217,8 +1213,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const dateFilter = [];
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
-  const { adminBypassUserAccess = false } = options;
-  const markingRestrictions = await buildDataRestrictions(context, user, { adminBypassUserAccess });
+  const { includeAuthorities = false } = options;
+  const markingRestrictions = await buildDataRestrictions(context, user, { includeAuthorities });
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
