@@ -365,7 +365,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'based-on':
     case 'communicates-with':
     case 'amplifies':
-    case 'analyses-of':
+    case 'analysis-of':
     case 'authored-by':
     case 'beacons-to':
     case 'characterizes':
@@ -387,7 +387,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'duplicate-of':
     case 'obs_content':
     case 'service-dll':
-    case 'dynamic-analyses-of':
+    case 'dynamic-analysis-of':
     case 'contains':
     case 'exfiltrates-to':
     case 'exploits':
@@ -419,7 +419,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'src':
     case 'to':
     case 'values':
-    case 'static-analyses-of':
+    case 'static-analysis-of':
     case 'subnarrative-of':
     case 'subtechnique-of':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
