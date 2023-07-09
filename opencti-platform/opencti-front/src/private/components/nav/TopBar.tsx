@@ -17,7 +17,7 @@ import Menu from '@mui/material/Menu';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import { graphql, useLazyLoadQuery, useSubscription } from 'react-relay';
+import { graphql, usePreloadedQuery, useSubscription, PreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -99,6 +99,8 @@ import TopMenuAudits from './TopMenuAudits';
 import useAuth from '../../../utils/hooks/useAuth';
 import TopMenuThreatActorIndividual from './TopMenuThreatActorIndividual';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -179,6 +181,7 @@ const topBarNotificationNumberSubscription = graphql`
 
 interface TopBarProps {
   keyword?: string;
+  queryRef: PreloadedQuery<TopBarQuery>
 }
 
 const topBarQuery = graphql`
@@ -187,30 +190,21 @@ const topBarQuery = graphql`
   }
 `;
 
-const TopBar: FunctionComponent<TopBarProps> = ({ keyword }) => {
+const TopBarComponent: FunctionComponent<TopBarProps> = ({ queryRef, keyword }) => {
   const theme = useTheme<Theme>();
   const history = useHistory();
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
-  const {
-    bannerSettings: { bannerHeightNumber },
-  } = useAuth();
-  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
-    null,
-  );
-  const data = useLazyLoadQuery<TopBarQuery>(topBarQuery, {});
-  const handleNewNotificationsNumber = (
-    response: TopBarNotificationNumberSubscription$data | null | undefined,
-  ) => {
+  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const [notificationsNumber, setNotificationsNumber] = useState<null | number>(null);
+  const data = usePreloadedQuery(topBarQuery, queryRef);
+  const handleNewNotificationsNumber = (response: TopBarNotificationNumberSubscription$data | null | undefined) => {
     return setNotificationsNumber(response?.notificationsNumber?.count ?? null);
   };
-  const isNewNotification = notificationsNumber !== null
-    ? notificationsNumber > 0
-    : (data.myUnreadNotificationsCount ?? 0) > 0;
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>
-  >(
+  const isNewNotification = notificationsNumber !== null ? notificationsNumber > 0 : (data.myUnreadNotificationsCount ?? 0) > 0;
+  const subConfig = useMemo<GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>>(
     () => ({
       subscription: topBarNotificationNumberSubscription,
       variables: {},
@@ -219,9 +213,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({ keyword }) => {
     [topBarNotificationNumberSubscription],
   );
   useSubscription(subConfig);
-  const [navOpen, setNavOpen] = useState(
-    localStorage.getItem('navOpen') === 'true',
-  );
+  const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
   useEffect(() => {
     const sub = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -230,21 +222,16 @@ const TopBar: FunctionComponent<TopBarProps> = ({ keyword }) => {
       sub.unsubscribe();
     };
   });
-  const [menuOpen, setMenuOpen] = useState<{
-    open: boolean;
-    anchorEl: HTMLButtonElement | null;
-  }>({ open: false, anchorEl: null });
+  const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [openDrawer, setOpenDrawer] = useState(false);
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
+
+  const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
   };
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-
   const handleSearch = (searchKeyword: string) => {
     if (searchKeyword.length > 0) {
       // With need to double encode because of react router.
@@ -261,7 +248,6 @@ const TopBar: FunctionComponent<TopBarProps> = ({ keyword }) => {
     setOpenDrawer(false);
     handleCloseMenu();
   };
-  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   return (
     <AppBar
@@ -640,6 +626,17 @@ const TopBar: FunctionComponent<TopBarProps> = ({ keyword }) => {
       />
     </AppBar>
   );
+};
+
+const TopBar: FunctionComponent<TopBarProps> = ({ keyword }) => {
+  const queryRef = useQueryLoading<TopBarQuery>(topBarQuery, {});
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <TopBarComponent queryRef={queryRef} keyword={keyword} />
+        </React.Suspense>
+    )}
+  </>;
 };
 
 export default TopBar;

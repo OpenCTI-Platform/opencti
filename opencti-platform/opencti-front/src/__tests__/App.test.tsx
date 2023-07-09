@@ -8,7 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { CompatRouter } from 'react-router-dom-v5-compat';
 import { describe, afterEach, it, expect } from 'vitest';
 import AppIntlProvider from '../components/AppIntlProvider';
-import Profile from '../private/components/profile/Profile';
+import Profile, { profileQuery } from '../private/components/profile/Profile';
 import { APP_BASE_PATH } from '../relay/environment';
 
 describe('App', () => {
@@ -42,6 +42,7 @@ describe('App', () => {
       },
     });
     environment.mock.queueOperationResolver((operation) => profileMockOperation(operation));
+    environment.mock.queuePendingOperation(profileQuery, {});
     const { getByDisplayValue } = render(
       <RelayEnvironmentProvider environment={environment}>
         <BrowserRouter basename={APP_BASE_PATH}>

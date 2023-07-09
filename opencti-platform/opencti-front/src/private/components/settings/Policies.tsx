@@ -3,7 +3,8 @@ import {
   graphql,
   useFragment,
   useMutation,
-  useLazyLoadQuery,
+  usePreloadedQuery,
+  PreloadedQuery,
 } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import * as Yup from 'yup';
@@ -29,6 +30,8 @@ import { Policies$key } from './__generated__/Policies.graphql';
 import MarkdownField from '../../../components/MarkdownField';
 import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
 import SelectField from '../../../components/SelectField';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -114,8 +117,13 @@ const policiesValidation = () => Yup.object().shape({
   platform_banner_text: Yup.string().nullable(),
 });
 
-const Policies: FunctionComponent = () => {
-  const data = useLazyLoadQuery<PoliciesQuery>(policiesQuery, {});
+interface PoliciesComponentProps {
+  keyword?: string;
+  queryRef: PreloadedQuery<PoliciesQuery>
+}
+
+const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef }) => {
+  const data = usePreloadedQuery(policiesQuery, queryRef);
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
   const [commitField] = useMutation(policiesFieldPatch);
   const classes = useStyles();
@@ -425,6 +433,17 @@ const Policies: FunctionComponent = () => {
       </Grid>
     </div>
   );
+};
+
+const Policies: FunctionComponent = () => {
+  const queryRef = useQueryLoading<PoliciesQuery>(policiesQuery, {});
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <PoliciesComponent queryRef={queryRef} />
+        </React.Suspense>
+    )}
+  </>;
 };
 
 export default Policies;

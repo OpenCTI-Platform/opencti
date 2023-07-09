@@ -1,6 +1,6 @@
 import { StyledEngineProvider } from '@mui/material/styles';
-import React from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
@@ -10,6 +10,8 @@ import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
 import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
 import Index from './Index';
+import useQueryLoading from '../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../components/Loader';
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
@@ -108,15 +110,18 @@ const computeBannerSettings = (settings: RootPrivateQuery$data['settings']) => {
   return { bannerText, bannerLevel, bannerHeight, bannerHeightNumber, idleLimit, sessionLimit };
 };
 
-const Root = () => {
-  const data = useLazyLoadQuery<RootPrivateQuery>(rootPrivateQuery, {});
-  const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSROs } = data;
+interface RootComponentProps {
+  queryRef: PreloadedQuery<RootPrivateQuery>
+}
+
+const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
+  const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
+  const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSROs } = queryData;
   const schema = {
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),
     sros: schemaSROs.edges.map((sco) => sco.node),
   };
-
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
@@ -131,6 +136,17 @@ const Root = () => {
       </StyledEngineProvider>
     </UserContext.Provider>
   );
+};
+
+const Root = () => {
+  const queryRef = useQueryLoading<RootPrivateQuery>(rootPrivateQuery, {});
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <RootComponent queryRef={queryRef}/>
+        </React.Suspense>
+    )}
+  </>;
 };
 
 export default Root;

@@ -109,9 +109,7 @@ const EntitySettingSettings = ({
           </FormGroup>
         </div>
         <Security needs={[SETTINGS_SETACCESSES]}>
-          <EntitySettingHiddenInRoles
-            targetType={entitySetting.target_type}
-          ></EntitySettingHiddenInRoles>
+          <EntitySettingHiddenInRoles targetType={entitySetting.target_type}></EntitySettingHiddenInRoles>
         </Security>
       </Grid>
       <Grid item={true} xs={6}>

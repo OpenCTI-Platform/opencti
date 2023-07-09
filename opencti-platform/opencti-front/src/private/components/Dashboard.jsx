@@ -15,13 +15,13 @@ import { makeStyles, useTheme } from '@mui/styles';
 import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
 import { assoc, head, last, map, pathOr, pluck } from 'ramda';
 import React, { Suspense } from 'react';
-import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
+import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../components/i18n';
 import ItemIcon from '../../components/ItemIcon';
 import ItemMarkings from '../../components/ItemMarkings';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
-import Loader from '../../components/Loader';
+import Loader, { LoaderVariant } from '../../components/Loader';
 import { areaChartOptions, polarAreaChartOptions } from '../../utils/Charts';
 import { hexToRGB } from '../../utils/Colors';
 import { resolveLink } from '../../utils/Entity';
@@ -38,6 +38,9 @@ import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
 import TopBar from './nav/TopBar';
 import DashboardView from './workspaces/dashboards/Dashboard';
+import useQueryLoading from '../../utils/hooks/useQueryLoading';
+import {ProfileQuery} from "./profile/__generated__/ProfileQuery.graphql";
+import {profileQuery} from "./profile/Profile";
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
@@ -180,58 +183,63 @@ const NoTableElement = () => {
     </div>
   );
 };
-const TotalEntitiesCard = ({ title, options, Icon }) => {
+
+// TotalEntitiesCard
+const dashboardStixDomainObjectsNumberQuery = graphql`
+  query DashboardStixDomainObjectsNumberQuery($types: [String]$endDate: DateTime) {
+    stixDomainObjectsNumber(types: $types, endDate: $endDate) {
+      total
+      count
+    }
+  }
+`;
+const TotalEntitiesCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
   const { t, n } = useFormatter();
-  const dashboardStixDomainObjectsNumberQuery = graphql`
-    query DashboardStixDomainObjectsNumberQuery(
-      $types: [String]
-      $endDate: DateTime
-    ) {
-      stixDomainObjectsNumber(types: $types, endDate: $endDate) {
-        total
-        count
-      }
-    }
-  `;
-  const data = useLazyLoadQuery(dashboardStixDomainObjectsNumberQuery, options);
+  const data = usePreloadedQuery(dashboardStixDomainObjectsNumberQuery, queryRef);
   const { total } = data.stixDomainObjectsNumber;
   const difference = total - data.stixDomainObjectsNumber.count;
   return (
     <CardContent>
       <div className={classes.title}>{t(title)}</div>
       <div className={classes.number}>{n(total)}</div>
-      <ItemNumberDifference
-        difference={difference}
-        description={t('24 hours')}
-      />
+      <ItemNumberDifference difference={difference} description={t('24 hours')}/>
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
       </div>
     </CardContent>
   );
 };
-const TotalRelationshipsCard = ({ title, options, Icon }) => {
+const TotalEntitiesCard = ({ title, options, Icon }) => {
+  const queryRef = useQueryLoading(dashboardStixDomainObjectsNumberQuery, options);
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <TotalEntitiesCardComponent queryRef={queryRef} title={title} Icon={Icon} />
+        </React.Suspense>
+    )}
+  </>;
+};
+
+// TotalRelationshipsCard
+const dashboardStixCoreRelationshipsNumberQuery = graphql`
+  query DashboardStixCoreRelationshipsNumberQuery(
+    $relationship_type: [String]
+    $endDate: DateTime
+  ) {
+    stixCoreRelationshipsNumber(
+      relationship_type: $relationship_type
+      endDate: $endDate
+    ) {
+      total
+      count
+    }
+  }
+`;
+const TotalRelationshipsCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
   const { t, n } = useFormatter();
-  const dashboardStixCoreRelationshipsNumberQuery = graphql`
-    query DashboardStixCoreRelationshipsNumberQuery(
-      $relationship_type: [String]
-      $endDate: DateTime
-    ) {
-      stixCoreRelationshipsNumber(
-        relationship_type: $relationship_type
-        endDate: $endDate
-      ) {
-        total
-        count
-      }
-    }
-  `;
-  const data = useLazyLoadQuery(
-    dashboardStixCoreRelationshipsNumberQuery,
-    options,
-  );
+  const data = usePreloadedQuery(dashboardStixCoreRelationshipsNumberQuery, queryRef);
   const { total } = data.stixCoreRelationshipsNumber;
   const difference = total - data.stixCoreRelationshipsNumber.count;
   return (
@@ -248,24 +256,33 @@ const TotalRelationshipsCard = ({ title, options, Icon }) => {
     </CardContent>
   );
 };
-const TotalObservablesCard = ({ title, options, Icon }) => {
+const TotalRelationshipsCard = ({ title, options, Icon }) => {
+  const queryRef = useQueryLoading(dashboardStixCoreRelationshipsNumberQuery, options);
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <TotalRelationshipsCardComponent queryRef={queryRef} title={title} Icon={Icon} />
+        </React.Suspense>
+    )}
+  </>;
+};
+
+// TotalObservablesCard
+const dashboardStixCyberObservablesNumberQuery = graphql`
+  query DashboardStixCyberObservablesNumberQuery(
+    $types: [String]
+    $endDate: DateTime
+  ) {
+    stixCyberObservablesNumber(types: $types, endDate: $endDate) {
+      total
+      count
+    }
+  }
+`;
+const TotalObservablesCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
   const { t, n } = useFormatter();
-  const dashboardStixCyberObservablesNumberQuery = graphql`
-    query DashboardStixCyberObservablesNumberQuery(
-      $types: [String]
-      $endDate: DateTime
-    ) {
-      stixCyberObservablesNumber(types: $types, endDate: $endDate) {
-        total
-        count
-      }
-    }
-  `;
-  const data = useLazyLoadQuery(
-    dashboardStixCyberObservablesNumberQuery,
-    options,
-  );
+  const data = usePreloadedQuery(dashboardStixCyberObservablesNumberQuery, queryRef);
   const { total } = data.stixCyberObservablesNumber;
   const difference = total - data.stixCyberObservablesNumber.count;
   return (
@@ -282,59 +299,58 @@ const TotalObservablesCard = ({ title, options, Icon }) => {
     </CardContent>
   );
 };
-const TopLabelsCard = ({ classes }) => {
-  const { n } = useFormatter();
-  const dashboardStixRefRelationshipsDistributionQuery = graphql`
-    query DashboardStixRefRelationshipsDistributionQuery(
-      $field: String!
-      $operation: StatsOperation!
-      $relationship_type: [String]
-      $toTypes: [String]
-      $startDate: DateTime
-      $endDate: DateTime
-      $dateAttribute: String
-      $limit: Int
-      $isTo: Boolean
+const TotalObservablesCard = ({ title, options, Icon }) => {
+  const queryRef = useQueryLoading(dashboardStixCyberObservablesNumberQuery, options);
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <TotalObservablesCardComponent queryRef={queryRef} title={title} Icon={Icon} />
+        </React.Suspense>
+    )}
+  </>;
+};
+
+// TopLabelsCard
+const dashboardStixRefRelationshipsDistributionQuery = graphql`
+  query DashboardStixRefRelationshipsDistributionQuery(
+    $field: String!
+    $operation: StatsOperation!
+    $relationship_type: [String]
+    $toTypes: [String]
+    $startDate: DateTime
+    $endDate: DateTime
+    $dateAttribute: String
+    $limit: Int
+    $isTo: Boolean
+  ) {
+    stixRefRelationshipsDistribution(
+      field: $field
+      operation: $operation
+      relationship_type: $relationship_type
+      toTypes: $toTypes
+      startDate: $startDate
+      endDate: $endDate
+      dateAttribute: $dateAttribute
+      limit: $limit
+      isTo: $isTo
     ) {
-      stixRefRelationshipsDistribution(
-        field: $field
-        operation: $operation
-        relationship_type: $relationship_type
-        toTypes: $toTypes
-        startDate: $startDate
-        endDate: $endDate
-        dateAttribute: $dateAttribute
-        limit: $limit
-        isTo: $isTo
-      ) {
-        label
-        value
-        entity {
-          ... on BasicObject {
-            entity_type
-          }
-          ... on Label {
-            value
-            color
-          }
+      label
+      value
+      entity {
+        ... on BasicObject {
+          entity_type
+        }
+        ... on Label {
+          value
+          color
         }
       }
     }
-  `;
-  const queryOptions = {
-    field: 'internal_id',
-    operation: 'count',
-    relationship_type: 'object-label',
-    toTypes: ['Label'],
-    startDate: monthsAgo(3),
-    limit: 9,
-    isTo: true,
-  };
-  const data = useLazyLoadQuery(
-    dashboardStixRefRelationshipsDistributionQuery,
-    queryOptions,
-    { fetchPolicy: 'network-only' },
-  );
+  }
+`;
+const TopLabelsCardCardComponent = ({ classes, queryRef }) => {
+  const { n } = useFormatter();
+  const data = usePreloadedQuery(dashboardStixRefRelationshipsDistributionQuery, queryRef);
   const distribution = data.stixRefRelationshipsDistribution;
   if (distribution.length === 0) {
     return <NoTableElement />;
@@ -362,40 +378,52 @@ const TopLabelsCard = ({ classes }) => {
     </div>
   );
 };
-const IngestedEntitiesGraph = () => {
+const TopLabelsCard = ({ classes }) => {
+  const queryOptions = {
+    field: 'internal_id',
+    operation: 'count',
+    relationship_type: 'object-label',
+    toTypes: ['Label'],
+    startDate: monthsAgo(3),
+    limit: 9,
+    isTo: true,
+  };
+  const queryRef = useQueryLoading(dashboardStixRefRelationshipsDistributionQuery, queryOptions);
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <TopLabelsCardCardComponent queryRef={queryRef} classes={classes} />
+        </React.Suspense>
+    )}
+  </>;
+};
+
+// IngestedEntitiesGraph
+const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
+  query DashboardStixDomainObjectsTimeSeriesQuery(
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime
+    $interval: String!
+  ) {
+    stixDomainObjectsTimeSeries(
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      interval: $interval
+    ) {
+      date
+      value
+    }
+  }
+`;
+const IngestedEntitiesGraphComponent = ({ queryRef }) => {
   const classes = useStyles();
   const theme = useTheme();
   const { md, t } = useFormatter();
-  const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
-    query DashboardStixDomainObjectsTimeSeriesQuery(
-      $field: String!
-      $operation: StatsOperation!
-      $startDate: DateTime!
-      $endDate: DateTime
-      $interval: String!
-    ) {
-      stixDomainObjectsTimeSeries(
-        field: $field
-        operation: $operation
-        startDate: $startDate
-        endDate: $endDate
-        interval: $interval
-      ) {
-        date
-        value
-      }
-    }
-  `;
-  const data = useLazyLoadQuery(
-    dashboardStixDomainObjectsTimeSeriesQuery,
-    {
-      field: 'created_at',
-      operation: 'count',
-      startDate: yearsAgo(1),
-      interval: 'month',
-    },
-    { fetchPolicy: 'network-only' },
-  );
+  const data = usePreloadedQuery(dashboardStixDomainObjectsTimeSeriesQuery, queryRef);
   const chartData = data.stixDomainObjectsTimeSeries.map((entry) => {
     const date = new Date(entry.date);
     date.setDate(date.getDate() + 15);
@@ -427,60 +455,66 @@ const IngestedEntitiesGraph = () => {
     </div>
   );
 };
-const TargetedCountries = ({ timeField }) => {
-  const dashboardStixCoreRelationshipsDistributionQuery = graphql`
-    query DashboardStixCoreRelationshipsDistributionQuery(
-      $field: String!
-      $operation: StatsOperation!
-      $relationship_type: [String]
-      $toTypes: [String]
-      $startDate: DateTime
-      $endDate: DateTime
-      $dateAttribute: String
-      $limit: Int
+const IngestedEntitiesGraph = () => {
+  const queryOptions = {
+    field: 'created_at',
+    operation: 'count',
+    startDate: yearsAgo(1),
+    interval: 'month',
+  };
+  const queryRef = useQueryLoading(dashboardStixDomainObjectsTimeSeriesQuery, queryOptions);
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <IngestedEntitiesGraphComponent queryRef={queryRef} />
+        </React.Suspense>
+    )}
+  </>;
+};
+
+// TargetedCountries
+const dashboardStixCoreRelationshipsDistributionQuery = graphql`
+  query DashboardStixCoreRelationshipsDistributionQuery(
+    $field: String!
+    $operation: StatsOperation!
+    $relationship_type: [String]
+    $toTypes: [String]
+    $startDate: DateTime
+    $endDate: DateTime
+    $dateAttribute: String
+    $limit: Int
+  ) {
+    stixCoreRelationshipsDistribution(
+      field: $field
+      operation: $operation
+      relationship_type: $relationship_type
+      toTypes: $toTypes
+      startDate: $startDate
+      endDate: $endDate
+      dateAttribute: $dateAttribute
+      limit: $limit
     ) {
-      stixCoreRelationshipsDistribution(
-        field: $field
-        operation: $operation
-        relationship_type: $relationship_type
-        toTypes: $toTypes
-        startDate: $startDate
-        endDate: $endDate
-        dateAttribute: $dateAttribute
-        limit: $limit
-      ) {
-        label
-        value
-        entity {
-          ... on BasicObject {
-            entity_type
-          }
-          ... on BasicRelationship {
-            entity_type
-          }
-          ... on Country {
-            name
-            x_opencti_aliases
-            latitude
-            longitude
-          }
+      label
+      value
+      entity {
+        ... on BasicObject {
+          entity_type
+        }
+        ... on BasicRelationship {
+          entity_type
+        }
+        ... on Country {
+          name
+          x_opencti_aliases
+          latitude
+          longitude
         }
       }
     }
-  `;
-  const data = useLazyLoadQuery(
-    dashboardStixCoreRelationshipsDistributionQuery,
-    {
-      field: 'internal_id',
-      operation: 'count',
-      relationship_type: 'targets',
-      toTypes: ['Country'],
-      startDate: monthsAgo(3),
-      dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
-      limit: 20,
-    },
-    { fetchPolicy: 'network-only' },
-  );
+  }
+`;
+const TargetedCountriesComponent = ({ queryRef }) => {
+  const data = usePreloadedQuery(dashboardStixCoreRelationshipsDistributionQuery, queryRef);
   const values = pluck('value', data.stixCoreRelationshipsDistribution);
   const countries = map(
     (x) => assoc(
@@ -498,68 +532,80 @@ const TargetedCountries = ({ timeField }) => {
     />
   );
 };
-const LastIngestedAnalyses = () => {
-  const classes = useStyles();
-  const { t, fsd } = useFormatter();
-  const dashboardLastStixDomainObjectsQuery = graphql`
-    query DashboardLastStixDomainObjectsQuery(
-      $first: Int
-      $orderBy: StixDomainObjectsOrdering
-      $orderMode: OrderingMode
-      $types: [String]
+const TargetedCountries = ({ timeField }) => {
+  const queryOptions = {
+    field: 'internal_id',
+    operation: 'count',
+    relationship_type: 'targets',
+    toTypes: ['Country'],
+    startDate: monthsAgo(3),
+    dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
+    limit: 20,
+  };
+  const queryRef = useQueryLoading(dashboardStixCoreRelationshipsDistributionQuery, queryOptions);
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <TargetedCountriesComponent queryRef={queryRef} />
+        </React.Suspense>
+    )}
+  </>;
+};
+
+// LastIngestedAnalyses
+const dashboardLastStixDomainObjectsQuery = graphql`
+  query DashboardLastStixDomainObjectsQuery(
+    $first: Int
+    $orderBy: StixDomainObjectsOrdering
+    $orderMode: OrderingMode
+    $types: [String]
+  ) {
+    stixDomainObjects(
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+      types: $types
     ) {
-      stixDomainObjects(
-        first: $first
-        orderBy: $orderBy
-        orderMode: $orderMode
-        types: $types
-      ) {
-        edges {
-          node {
+      edges {
+        node {
+          id
+          entity_type
+          created_at
+          ... on Report {
+            name
+            report_types
+          }
+          creators {
             id
-            entity_type
-            created_at
-            ... on Report {
-              name
-              report_types
-            }
-            creators {
+            name
+          }
+          createdBy {
+            ... on Identity {
               id
               name
+              entity_type
             }
-            createdBy {
-              ... on Identity {
+          }
+          objectMarking {
+            edges {
+              node {
                 id
-                name
-                entity_type
-              }
-            }
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-                }
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
           }
         }
       }
     }
-  `;
-  const data = useLazyLoadQuery(
-    dashboardLastStixDomainObjectsQuery,
-    {
-      first: 8,
-      orderBy: 'created_at',
-      orderMode: 'desc',
-      types: ['Report'],
-    },
-    { fetchPolicy: 'network-only' },
-  );
+  }
+`;
+const LastIngestedAnalysesComponent = ({ queryRef }) => {
+  const classes = useStyles();
+  const { t, fsd } = useFormatter();
+  const data = usePreloadedQuery(dashboardLastStixDomainObjectsQuery, queryRef);
   const objects = data.stixDomainObjects;
   if (objects.edges.length === 0) {
     return <NoTableElement />;
@@ -632,29 +678,41 @@ const LastIngestedAnalyses = () => {
     </List>
   );
 };
-const ObservablesDistribution = () => {
+const LastIngestedAnalyses = () => {
+  const queryOptions = {
+    first: 8,
+    orderBy: 'created_at',
+    orderMode: 'desc',
+    types: ['Report'],
+  };
+  const queryRef = useQueryLoading(dashboardLastStixDomainObjectsQuery, queryOptions);
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <LastIngestedAnalysesComponent queryRef={queryRef} />
+        </React.Suspense>
+    )}
+  </>;
+};
+
+// ObservablesDistribution
+const dashboardStixCyberObservablesDistributionQuery = graphql`
+  query DashboardStixCyberObservablesDistributionQuery(
+    $field: String!
+    $operation: String!
+  ) {
+    stixCyberObservablesDistribution(field: $field, operation: $operation) {
+      label
+      value
+    }
+  }
+`;
+const ObservablesDistributionComponent = ({ queryRef }) => {
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
-  const dashboardStixCyberObservablesDistributionQuery = graphql`
-    query DashboardStixCyberObservablesDistributionQuery(
-      $field: String!
-      $operation: String!
-    ) {
-      stixCyberObservablesDistribution(field: $field, operation: $operation) {
-        label
-        value
-      }
-    }
-  `;
-  const data = useLazyLoadQuery(
-    dashboardStixCyberObservablesDistributionQuery,
-    { field: 'entity_type', operation: 'count' },
-    { fetchPolicy: 'network-only' },
-  );
-  const distribution = data.stixCyberObservablesDistribution.map(
-    (n) => n.value,
-  );
+  const data = usePreloadedQuery(dashboardStixCyberObservablesDistributionQuery, queryRef);
+  const distribution = data.stixCyberObservablesDistribution.map((n) => n.value);
   if (distribution.length === 0) {
     return <NoTableElement />;
   }
@@ -670,6 +728,17 @@ const ObservablesDistribution = () => {
       />
     </div>
   );
+};
+const ObservablesDistribution = () => {
+  const queryOptions = { field: 'entity_type', operation: 'count' };
+  const queryRef = useQueryLoading(dashboardStixCyberObservablesDistributionQuery, queryOptions);
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <ObservablesDistributionComponent queryRef={queryRef} />
+        </React.Suspense>
+    )}
+  </>;
 };
 
 // endregion
@@ -862,23 +931,18 @@ const DefaultDashboard = ({ timeField }) => {
     </Security>
   );
 };
-const WorkspaceDashboard = ({ dashboard, timeField }) => {
-  const dashboardCustomDashboardQuery = graphql`
-    query DashboardCustomDashboardQuery($id: String!) {
-      workspace(id: $id) {
-        id
-        name
-        ...Dashboard_workspace
-      }
+
+const dashboardCustomDashboardQuery = graphql`
+  query DashboardCustomDashboardQuery($id: String!) {
+    workspace(id: $id) {
+      id
+      name
+      ...Dashboard_workspace
     }
-  `;
-  const data = useLazyLoadQuery(
-    dashboardCustomDashboardQuery,
-    {
-      id: dashboard,
-    },
-    { fetchPolicy: 'network-only' },
-  );
+  }
+`;
+const WorkspaceDashboardComponent = ({ queryRef, timeField }) => {
+  const data = usePreloadedQuery(dashboardCustomDashboardQuery, queryRef);
   if (data.workspace) {
     return (
       <DashboardView
@@ -890,15 +954,23 @@ const WorkspaceDashboard = ({ dashboard, timeField }) => {
   }
   return <DefaultDashboard timeField={timeField} />;
 };
+const WorkspaceDashboard = ({ dashboard, timeField }) => {
+  const queryRef = useQueryLoading(dashboardCustomDashboardQuery, { id: dashboard });
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <WorkspaceDashboardComponent timeField={timeField} queryRef={queryRef} />
+        </React.Suspense>
+    )}
+  </>;
+};
 const CustomDashboard = ({ dashboard, timeField }) => {
   const { t } = useFormatter();
   return (
-    <Security
-      needs={[EXPLORE]}
+    <Security needs={[EXPLORE]}
       placeholder={t(
         'You do not have any access to the explore part of this OpenCTI instance.',
-      )}
-    >
+      )}>
       <Suspense fallback={<Loader />}>
         <WorkspaceDashboard dashboard={dashboard} timeField={timeField} />
       </Suspense>
@@ -924,11 +996,11 @@ const dashboardMeFragment = graphql`
   }
 `;
 
-const Dashboard = () => {
+const DashboardComponent = ({ queryRef }) => {
   const classes = useStyles();
   const { me: currentMe, ...context } = useAuth();
-  const { me: meData } = useLazyLoadQuery(dashboardQuery);
-  const me = useFragment(dashboardMeFragment, meData);
+  const data = usePreloadedQuery(dashboardQuery, queryRef);
+  const me = useFragment(dashboardMeFragment, data.me);
   const { default_dashboards: dashboards } = currentMe;
   const { default_time_field, default_dashboard } = me;
   const {
@@ -955,6 +1027,17 @@ const Dashboard = () => {
       </div>
     </UserContext.Provider>
   );
+};
+
+const Dashboard = () => {
+  const queryRef = useQueryLoading(dashboardQuery, {});
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <DashboardComponent queryRef={queryRef} />
+        </React.Suspense>
+    )}
+  </>;
 };
 
 export default Dashboard;

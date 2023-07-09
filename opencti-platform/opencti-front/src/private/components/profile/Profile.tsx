@@ -1,9 +1,10 @@
-import React, { Suspense } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import React, { Suspense, FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import ProfileOverview from './ProfileOverview';
-import Loader from '../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../components/Loader';
 import type { ProfileQuery } from './__generated__/ProfileQuery.graphql';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -25,9 +26,13 @@ export const profileQuery = graphql`
   }
 `;
 
-const Profile = () => {
+interface ProfileComponentProps {
+  queryRef: PreloadedQuery<ProfileQuery>
+}
+
+const ProfileComponent: FunctionComponent<ProfileComponentProps> = ({ queryRef }) => {
   const classes = useStyles();
-  const data = useLazyLoadQuery<ProfileQuery>(profileQuery, {});
+  const data = usePreloadedQuery<ProfileQuery>(profileQuery, queryRef);
   const { me, about, settings } = data;
   return (
     <div className={classes.container}>
@@ -36,6 +41,17 @@ const Profile = () => {
       </Suspense>
     </div>
   );
+};
+
+const Profile: FunctionComponent = () => {
+  const queryRef = useQueryLoading<ProfileQuery>(profileQuery, {});
+  return <>
+    {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <ProfileComponent queryRef={queryRef} />
+        </React.Suspense>
+    )}
+  </>;
 };
 
 export default Profile;
