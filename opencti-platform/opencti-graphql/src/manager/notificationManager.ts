@@ -473,9 +473,9 @@ export const generateNotificationMessageForInstanceWithRefsUpdate = async (
   return `${
     groupedRefsInstances
       .map((refsGroup) => `${
-        refsGroup
+        (refsGroup || [])
           .map((ref) => `[${ref.instance.type.toLowerCase()}] ${extractStixRepresentative(ref.instance)}`)
-      } ${refsGroup[0].action} ${mainInstanceMessage}`)
+      } ${(refsGroup || [])[0]?.action ?? 'unknown'} ${mainInstanceMessage}`)
   }`;
 };
 
