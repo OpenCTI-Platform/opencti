@@ -8551,14 +8551,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:16.6.0":
-  version: 16.6.0
-  resolution: "graphql@npm:16.6.0"
-  checksum: bf1d9e3c1938ce3c1a81e909bd3ead1ae4707c577f91cff1ca2eca474bfbc7873d5d7b942e1e9777ff5a8304421dba57a4b76d7a29eb19de8711cb70e3c2415e
-  languageName: node
-  linkType: hard
-
-"graphql@npm:^16.0.0":
+"graphql@npm:16.7.1, graphql@npm:^16.0.0":
   version: 16.7.1
   resolution: "graphql@npm:16.7.1"
   checksum: c924d8428daf0e96a5ea43e9bc3cd1b6802899907d284478ac8f705c8fd233a0a51eef915f7569fb5de8acb2e85b802ccc6c85c2b157ad805c1e9adba5a299bd
@@ -10672,7 +10665,7 @@ __metadata:
     fast-glob: 3.2.12
     fast-json-patch: 3.1.1
     github-api: 3.4.0
-    graphql: 16.6.0
+    graphql: 16.7.1
     graphql-constraint-directive: 5.1.1
     graphql-import: 1.0.2
     graphql-redis-subscriptions: 2.6.0
