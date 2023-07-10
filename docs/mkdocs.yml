@@ -168,7 +168,8 @@ nav:
       - Merging and de-duplication: administration/merging.md
     - Platform settings:
       - Parameters: administration/parameters.md
-      - Security: administration/security.md
+      - Security:
+        - Policies: administration/policies.md
       - Customization:
         - Entity types: administration/entities.md
         - Rules engine: administration/reasoning.md

@@ -33,6 +33,6 @@ You can add a relationship between entities directly in your investigation.
 ## Export your investigation
 
 You can export your investigation in PDF or image format. 
-You can also download all the content of your investigation graph in a stix bundle report.
+You can also download all the content of your investigation graph in a **Report** stix bundle (investigation is automatically converted).
 
 ![Investigation export](assets/investigation-export.png)
