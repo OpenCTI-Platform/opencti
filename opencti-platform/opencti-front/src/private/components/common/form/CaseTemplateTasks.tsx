@@ -142,8 +142,6 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
         onChange={onChange}
         openCreate={() => setOpenCreation(true)}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value
-        }
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
           option: Option,

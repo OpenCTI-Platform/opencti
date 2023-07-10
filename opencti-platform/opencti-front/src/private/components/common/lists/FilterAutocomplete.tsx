@@ -5,7 +5,7 @@ import React, {
   useState,
 } from 'react';
 import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
+import MUIAutocomplete from '@mui/material/Autocomplete';
 import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
@@ -154,7 +154,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     options = entities[filterKey];
   }
   return (
-    <Autocomplete
+    <MUIAutocomplete
       key={filterKey}
       selectOnFocus={true}
       openOnFocus={openOnFocus}

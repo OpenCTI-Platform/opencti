@@ -116,8 +116,7 @@ Omit<OpenVocabProps, 'type'>
         style={containerStyle}
         options={openVocabList}
         renderOption={renderOption}
-        isOptionEqualToValue={(option: Option, value: string) => option.value === value
-        }
+        isOptionEqualToValue={(option: Option, value: string) => option.value === value}
         textfieldprops={{
           variant: 'standard',
           label,
@@ -138,8 +137,7 @@ Omit<OpenVocabProps, 'type'>
       style={containerStyle}
       options={openVocabList}
       renderOption={renderOption}
-      isOptionEqualToValue={(option: Option, value: string) => option.value === value
-      }
+      isOptionEqualToValue={(option: Option, value: string) => option.value === value}
       textfieldprops={{
         variant: 'standard',
         label,

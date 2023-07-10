@@ -15,7 +15,12 @@ import MarkdownField from '../../../../components/MarkdownField';
 import SelectField from '../../../../components/SelectField';
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import { convertEventTypes, convertOutcomes, convertTriggers } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertOutcomes,
+  convertTriggers, filterEventTypesOptions,
+  instanceEventTypesOptions, outcomesOptions,
+} from '../../../../utils/edition';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
 import TimePickerField from '../../../../components/TimePickerField';
@@ -244,12 +249,8 @@ TriggerEditionOverviewProps
       },
     });
   };
-  const handleSubmitField = (
-    name: string,
-    value: Option | string | string[],
-  ) => {
-    return triggerValidation()
-      .validateAt(name, { [name]: value })
+  const handleSubmitField = (name: string, value: Option | string | string[]) => {
+    return triggerValidation().validateAt(name, { [name]: value })
       .then(() => {
         commitFieldPatch({
           variables: {
@@ -274,39 +275,11 @@ TriggerEditionOverviewProps
   const currentTime = trigger.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
   ];
-  const eventTypesOptionsMap: Record<string, string> = {
-    create: t('Creation'),
-    update: t('Modification'),
-    delete: t('Deletion'),
-  };
-  const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
-    { value: 'create', label: t('Creation') },
-    { value: 'update', label: t('Modification') },
-    { value: 'delete', label: t('Deletion') },
-  ];
-  const instanceEventTypesOptions = [
-    { value: 'update', label: t('Modification') },
-    { value: 'delete', label: t('Deletion') },
-  ];
-  const outcomesOptions = [
-    {
-      value: 'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-      label: t('User interface'),
-    },
-    {
-      value: '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
-      label: t('Email'),
-    },
-  ];
-  const outcomesOptionsMap: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
-  };
   const initialValues = {
     name: trigger.name,
     description: trigger.description,
-    event_types: convertEventTypes(trigger, eventTypesOptionsMap),
-    outcomes: convertOutcomes(trigger, outcomesOptionsMap),
+    event_types: convertEventTypes(trigger),
+    outcomes: convertOutcomes(trigger),
     trigger_ids: convertTriggers(trigger),
     period: trigger.period,
     day: currentTime.length > 1 ? currentTime[0] : '1',
@@ -349,7 +322,7 @@ TriggerEditionOverviewProps
                 variant: 'standard',
                 label: t('Triggering on'),
               }}
-              options={trigger.instance_trigger ? instanceEventTypesOptions : eventTypesOptions}
+              options={trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions}
               onChange={(name: string, value: { value: string, label: string }[]) => handleSubmitField(name, value.map((n) => n.value))}
               renderOption={(
                 props: React.HTMLAttributes<HTMLLIElement>,

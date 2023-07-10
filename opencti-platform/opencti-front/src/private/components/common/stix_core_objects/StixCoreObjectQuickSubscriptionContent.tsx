@@ -33,7 +33,12 @@ import {
   StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
 } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { convertEventTypes, convertOutcomes } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertOutcomes,
+  instanceEventTypesOptions,
+  outcomesOptions,
+} from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { TriggerLine_node$data } from '../../profile/triggers/__generated__/TriggerLine_node.graphql';
@@ -162,30 +167,6 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const [expandedLines, setExpandedLines] = useState<boolean>(false);
-
-  const outcomesOptions = [
-    {
-      value: 'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-      label: t('User interface'),
-    },
-    {
-      value: '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
-      label: t('Email'),
-    },
-  ];
-  const outcomesOptionsMap: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
-  };
-
-  const instanceEventTypesOptions = [
-    { value: 'update', label: t('Modification') },
-    { value: 'delete', label: t('Deletion') },
-  ];
-  const instanceEventTypesOptionsMap: Record<string, string> = {
-    update: t('Modification'),
-    delete: t('Deletion'),
-  };
 
   const initialExistingInstanceTriggersEdges = () => {
     const existingInstanceTriggersData = usePreloadedQuery<StixCoreObjectQuickSubscriptionContentPaginationQuery>(
@@ -449,8 +430,8 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       .filter((l) => l)
       .map((n) => ({
         ...pick(['id', 'name', 'description', 'filters', 'resolved_instance_filters'], n?.node),
-        outcomes: convertOutcomes(n?.node, outcomesOptionsMap),
-        event_types: convertEventTypes(n?.node, instanceEventTypesOptionsMap),
+        outcomes: convertOutcomes(n?.node),
+        event_types: convertEventTypes(n?.node),
       })) as InstanceTriggerEditionFormValues[];
     const uniqInstanceTriggers = triggerValues
       .filter((n) => !isInstanceTriggerOnMultipleInstances(n))

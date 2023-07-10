@@ -64,10 +64,8 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
       component={AutocompleteField}
       name="default_dashboard"
       multiple={false}
-      onChange={(name: string, value: Option) => onChange(name, value?.value ?? null)
-      }
-      isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value
-      }
+      onChange={(name: string, value: Option) => onChange(name, value?.value ?? null)}
+      isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
       textfieldprops={{
         variant: 'standard',
         label: t('Default dashboard'),

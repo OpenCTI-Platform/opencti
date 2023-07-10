@@ -16,6 +16,7 @@ const AutocompleteField = (props) => {
     onFocus,
     noOptionsText,
     renderOption,
+    isOptionEqualToValue,
     textfieldprops,
     openCreate,
   } = props;
@@ -40,6 +41,7 @@ const AutocompleteField = (props) => {
   const fieldProps = fieldToTextField(props);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;
+  const defaultOptionToValue = (option, value) => option.value === value.value;
   return (
     <div style={{ position: 'relative' }}>
       <MUIAutocomplete
@@ -68,6 +70,7 @@ const AutocompleteField = (props) => {
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
+        isOptionEqualToValue={isOptionEqualToValue ?? defaultOptionToValue}
       />
       {typeof openCreate === 'function' && (
         <IconButton

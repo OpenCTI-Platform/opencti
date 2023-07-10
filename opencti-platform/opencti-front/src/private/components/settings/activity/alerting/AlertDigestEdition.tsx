@@ -24,7 +24,7 @@ import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import SelectField from '../../../../../components/SelectField';
 import TimePickerField from '../../../../../components/TimePickerField';
 import { dayStartDate, parse } from '../../../../../utils/Time';
-import { convertOutcomes, convertTriggers } from '../../../../../utils/edition';
+import { convertOutcomes, convertTriggers, outcomesOptions } from '../../../../../utils/edition';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertsField from './AlertsField';
 
@@ -106,20 +106,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryRef, paginationOptions, handleClose }) => {
   const { t } = useFormatter();
-  const outcomesOptions = [
-    {
-      value: 'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-      label: t('User interface'),
-    },
-    {
-      value: '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
-      label: t('Email'),
-    },
-  ];
-  const outcomesOptionsMap: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
-  };
   const classes = useStyles();
   const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
   const trigger = useFragment<AlertDigestEdition_trigger$key>(alertDigestEditionFragment, data.triggerKnowledge);
@@ -194,7 +180,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
   const initialValues = {
     name: trigger?.name,
     description: trigger?.description,
-    outcomes: convertOutcomes(trigger, outcomesOptionsMap),
+    outcomes: convertOutcomes(trigger),
     trigger_ids: convertTriggers(trigger),
     recipients: (trigger?.recipients ?? []).map((n) => ({ label: n?.name, value: n?.id })),
     period: trigger?.period,
