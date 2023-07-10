@@ -4620,12 +4620,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ramda@npm:0.29.1":
-  version: 0.29.1
-  resolution: "@types/ramda@npm:0.29.1"
+"@types/ramda@npm:0.29.3":
+  version: 0.29.3
+  resolution: "@types/ramda@npm:0.29.3"
   dependencies:
-    types-ramda: ^0.29.2
-  checksum: e8473504d62aeb430345d20ef776209f2cc3a7b19e683f1c59130cb0a876556dd88a380bfde01ea64edc7daeac8dad838b7f6693850181039da83132356d78fb
+    types-ramda: ^0.29.4
+  checksum: 172b18d62473d4bffb1e4e92fa293e56fa4f85fcf91b1b2c9178955f775e34065cc408e93f1171436b52e240599ecb1be51955dab07ca389bf2da98f85f820a9
   languageName: node
   linkType: hard
 
@@ -10384,7 +10384,7 @@ __metadata:
     "@types/ejs": 3.1.2
     "@types/express": 4.17.17
     "@types/nconf": 0.10.3
-    "@types/ramda": 0.29.1
+    "@types/ramda": 0.29.3
     "@types/tough-cookie": 4.0.2
     "@types/uuid": 9.0.2
     "@typescript-eslint/eslint-plugin": 5.61.0
@@ -12481,7 +12481,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"types-ramda@npm:^0.29.2":
+"types-ramda@npm:^0.29.4":
   version: 0.29.4
   resolution: "types-ramda@npm:0.29.4"
   dependencies:
