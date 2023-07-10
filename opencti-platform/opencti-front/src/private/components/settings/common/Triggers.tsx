@@ -181,10 +181,11 @@ const Triggers: FunctionComponent<TriggersProps> = ({
             }
           >
             <TriggersLines
-              containerRef={ref}
               queryRef={queryRef}
+              containerRef={ref}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
+              bypassEditionRestriction={true}
             />
           </React.Suspense>
         )}

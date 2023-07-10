@@ -100,6 +100,7 @@ const Triggers: FunctionComponent = () => {
               dataColumns={dataColumns}
               onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
+              bypassEditionRestriction={false}
             />
           </React.Suspense>
         )}

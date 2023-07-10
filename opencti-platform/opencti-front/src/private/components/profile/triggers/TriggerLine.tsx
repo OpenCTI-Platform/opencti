@@ -70,9 +70,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface TriggerLineProps {
-  node: TriggerLine_node$key;
-  dataColumns: DataColumns;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
+  node: TriggerLine_node$key
+  dataColumns: DataColumns
+  bypassEditionRestriction: boolean
+  paginationOptions?: TriggersLinesPaginationQuery$variables
 }
 
 const triggerLineFragment = graphql`
@@ -106,6 +107,7 @@ const triggerLineFragment = graphql`
 export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   dataColumns,
   node,
+  bypassEditionRestriction,
   paginationOptions,
 }) => {
   const classes = useStyles();
@@ -244,7 +246,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
        <TriggerPopover
          id={data.id}
          paginationOptions={paginationOptions}
-         disabled={!data.isDirectAdministrator}/>
+         disabled={!bypassEditionRestriction && !data.isDirectAdministrator}/>
       </ListItemIcon>
     </ListItem>
   );

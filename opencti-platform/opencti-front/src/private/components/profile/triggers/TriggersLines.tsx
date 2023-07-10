@@ -23,6 +23,7 @@ interface TriggerLinesProps {
     event: React.KeyboardEvent
   ) => void;
   containerRef?: MutableRefObject<GridTypeMap | null>;
+  bypassEditionRestriction: boolean;
 }
 
 export const triggersLinesQuery = graphql`
@@ -93,6 +94,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
   paginationOptions,
   onLabelClick,
   containerRef,
+  bypassEditionRestriction,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   TriggersLinesPaginationQuery,
@@ -119,6 +121,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
       paginationOptions={paginationOptions}
       onLabelClick={onLabelClick}
       containerRef={containerRef}
+      bypassEditionRestriction={bypassEditionRestriction}
     />
   );
 };
