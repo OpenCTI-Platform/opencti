@@ -96,7 +96,7 @@ const ES_MAX_SHARDS_FAILURE = conf.get('elasticsearch:max_shards_failure') || 0;
 const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
-const ES_PRIMARY_SHARD_SIZE = conf.get('elasticsearch:max_primary_shard_size') || '40gb';
+const ES_PRIMARY_SHARD_SIZE = conf.get('elasticsearch:max_primary_shard_size') || '50gb';
 const ES_MAX_AGE = conf.get('elasticsearch:max_age') || '365d';
 const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 

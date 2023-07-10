@@ -63,7 +63,7 @@ class WorkspaceEdition extends Component {
   render() {
     const { classes, workspaceId } = this.props;
     return (
-      <div>
+      <>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
@@ -96,7 +96,7 @@ class WorkspaceEdition extends Component {
             }}
           />
         </Drawer>
-      </div>
+      </>
     );
   }
 }

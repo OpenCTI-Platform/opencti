@@ -99,7 +99,7 @@ const RootUser = () => {
   }, [queryRef]);
 
   return (
-    <div>
+    <>
       <TopBar />
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
@@ -112,7 +112,7 @@ const RootUser = () => {
       ) : (
         <Loader variant={LoaderVariant.container} />
       )}
-    </div>
+    </>
   );
 };
 

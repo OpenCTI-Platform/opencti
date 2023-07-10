@@ -33,7 +33,6 @@ const StatusTemplates = () => {
       orderAsc: false,
     },
   );
-
   const renderLines = () => {
     const { sortBy, orderAsc, searchTerm } = viewStorage;
     const dataColumns = {
@@ -57,7 +56,6 @@ const StatusTemplates = () => {
       statusTemplatesLinesQuery,
       paginationOptions,
     );
-
     return (
       <ListLines
         sortBy={sortBy}
@@ -95,7 +93,6 @@ const StatusTemplates = () => {
       </ListLines>
     );
   };
-
   return (
     <div className={classes.container}>
       <LabelsVocabulariesMenu />

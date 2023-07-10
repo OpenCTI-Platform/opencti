@@ -1,6 +1,5 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCyberObservablesLines, {
@@ -17,7 +16,6 @@ import {
   ContainerStixCyberObservablesLinesQuery$variables,
   StixObjectOrStixRelationshipsFiltering,
 } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
-import { StixCyberObservableLine_node$data } from '../../observations/stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { ContainerStixCyberObservables_container$data } from './__generated__/ContainerStixCyberObservables_container.graphql';
 import useCopy from '../../../../utils/hooks/useCopy';
@@ -27,6 +25,8 @@ import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 import { ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
+import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -113,13 +113,18 @@ ContainerStixCyberObservablesComponentProps
     handleSetNumberOfElements,
     handleAddProperty,
   } = helpers;
-  const [selectedElements, setSelectedElements] = useState<
-  Record<string, StixCyberObservableLine_node$data>
-  >({});
-  const [deSelectedElements, setDeSelectedElements] = useState<
-  Record<string, StixCyberObservableLine_node$data>
-  >({});
-  const [selectAll, setSelectAll] = useState<boolean>(false);
+  const {
+    selectedElements,
+    deSelectedElements,
+    selectAll,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    setSelectedElements,
+    onToggleEntity,
+    numberOfSelectedElements,
+  } = useEntityToggle<ContainerStixCyberObservableLine_node$data>(
+    LOCAL_STORAGE_KEY,
+  );
   // Format filters Front (object)
   const toolbarFilters = {
     objectContains: [{ id: container.id, value: defaultValue(container) }],
@@ -144,11 +149,6 @@ ContainerStixCyberObservablesComponentProps
       toolbarFilters,
     ) as unknown as StixObjectOrStixRelationshipsFiltering[],
   };
-  let numberOfSelectedElements = Object.keys(selectedElements).length;
-  if (selectAll) {
-    numberOfSelectedElements = (numberOfElements?.original ?? 0)
-      - Object.keys(deSelectedElements).length;
-  }
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
       handleAddProperty(
@@ -182,67 +182,6 @@ ContainerStixCyberObservablesComponentProps
   );
   const handleClear = () => {
     handleAddProperty('types', []);
-  };
-  const handleToggleSelectEntity = (
-    entity:
-    | StixCyberObservableLine_node$data
-    | StixCyberObservableLine_node$data[],
-    event: React.SyntheticEvent,
-    forceRemove: StixCyberObservableLine_node$data[],
-  ) => {
-    event.stopPropagation();
-    event.preventDefault();
-    if (Array.isArray(entity)) {
-      const currentIds = R.values(selectedElements).map((n) => n.id);
-      const givenIds = entity.map((n) => n.id);
-      const addedIds = givenIds.filter((n) => !currentIds.includes(n));
-      let newSelectedElements = {
-        ...selectedElements,
-        ...R.indexBy(
-          R.prop('id'),
-          entity.filter((n) => addedIds.includes(n.id)),
-        ),
-      };
-      if (forceRemove.length > 0) {
-        newSelectedElements = R.omit(
-          forceRemove.map((n) => n.id),
-          newSelectedElements,
-        );
-      }
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-      setDeSelectedElements({});
-    } else if (entity.id in selectedElements) {
-      const newSelectedElements = R.omit([entity.id], selectedElements);
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-    } else if (selectAll && entity.id in deSelectedElements) {
-      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
-      setDeSelectedElements(newDeSelectedElements);
-    } else if (selectAll) {
-      const newDeSelectedElements = {
-        ...deSelectedElements,
-        [entity.id]: entity,
-      };
-      setDeSelectedElements(newDeSelectedElements);
-    } else {
-      const newSelectedElements = {
-        ...selectedElements,
-        [entity.id]: entity,
-      };
-      setSelectAll(false);
-      setSelectedElements(newSelectedElements);
-    }
-  };
-  const handleToggleSelectAll = () => {
-    setSelectAll(!selectAll);
-    setSelectedElements({});
-    setDeSelectedElements({});
-  };
-  const handleClearSelectedElements = () => {
-    setSelectAll(false);
-    setSelectedElements({});
-    setDeSelectedElements({});
   };
   const buildColumns = (platformModuleHelpers: ModuleHelper | undefined) => {
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
@@ -342,13 +281,13 @@ ContainerStixCyberObservablesComponentProps
                     queryRef={queryRef}
                     paginationOptions={paginationOptions}
                     dataColumns={buildColumns(platformModuleHelpers)}
-                    setNumberOfElements={handleSetNumberOfElements}
                     onTypesChange={handleToggle}
                     openExports={openExports}
                     selectedElements={selectedElements}
                     deSelectedElements={deSelectedElements}
-                    onToggleEntity={handleToggleSelectEntity}
+                    onToggleEntity={onToggleEntity}
                     selectAll={selectAll}
+                    setNumberOfElements={handleSetNumberOfElements}
                     setSelectedElements={setSelectedElements}
                   />
                 </React.Suspense>

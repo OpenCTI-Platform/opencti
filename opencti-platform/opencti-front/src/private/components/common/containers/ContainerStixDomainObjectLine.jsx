@@ -13,7 +13,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
-import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
@@ -90,17 +89,11 @@ const ContainerStixDomainObjectLineComponent = (props) => {
   } = props;
   const classes = useStyles();
   const { t, fd, n } = useFormatter();
-  const navigate = useNavigate();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
   const linkAnalyses = `${link}/analyses`;
-  const onAnalysesClick = (event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    navigate(linkAnalyses);
-  };
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -186,7 +179,8 @@ const ContainerStixDomainObjectLineComponent = (props) => {
               <Chip
                 classes={{ root: classes.chip }}
                 label={n(node.containers.pageInfo.globalCount)}
-                onClick={onAnalysesClick}
+                component={Link}
+                to={linkAnalyses}
               />
             </div>
             <div

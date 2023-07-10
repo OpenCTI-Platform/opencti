@@ -120,7 +120,7 @@ class Dashboards extends Component {
       filters: [{ key: 'type', values: ['dashboard'] }],
     };
     return (
-      <div>
+      <>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[EXPLORE_EXUPDATE]}>
           <WorkspaceCreation
@@ -128,7 +128,7 @@ class Dashboards extends Component {
             type="dashboard"
           />
         </Security>
-      </div>
+      </>
     );
   }
 }

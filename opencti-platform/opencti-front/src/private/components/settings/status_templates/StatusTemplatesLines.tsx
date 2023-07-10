@@ -86,7 +86,6 @@ const StatusTemplatesLines: FunctionComponent<StatusTemplatesLinesProps> = ({
     nodePath: ['statusTemplates', 'edges'],
     setNumberOfElements,
   });
-
   return (
     <ListLinesContent
       initialLoading={!data}

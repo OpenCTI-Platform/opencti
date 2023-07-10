@@ -388,12 +388,6 @@ const WorkbenchFileContentComponent = ({
         ]);
       }
     }
-    console.log([
-      ...stixDomainObjects,
-      ...stixCyberObservables,
-      ...stixCoreRelationships,
-      ...containers,
-    ]);
     const data = {
       id: `bundle--${uuid()}`,
       type: 'bundle',

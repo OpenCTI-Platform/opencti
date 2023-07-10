@@ -27,9 +27,6 @@ import { deleteNode } from '../../../../utils/store';
 import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    marginTop: 0,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -103,23 +100,19 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
       },
     });
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   const handleCloseEdit = () => setDisplayEdit(false);
-
   const handleOpenRemove = () => {
     if (handleOpenRemoveExternal) {
       handleOpenRemoveExternal();
     }
     handleClose();
   };
-
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -186,7 +179,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           }}
         />
       </Drawer>
-    </div>
+    </>
   );
 };
 

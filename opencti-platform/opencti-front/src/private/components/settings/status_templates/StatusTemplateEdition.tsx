@@ -132,7 +132,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
   };
 
   return (
-    <div>
+    <>
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
@@ -179,7 +179,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
           )}
         </Formik>
       </div>
-    </div>
+    </>
   );
 };
 

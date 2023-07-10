@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import ListLines from '../../../components/list_lines/ListLines';
-import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_references/ExternalReferencesLines';
+import ExternalReferencesLines, {
+  externalReferencesLinesQuery,
+} from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -26,7 +28,9 @@ interface ExternalReferencesProps {
 }
 
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ExternalReferencesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -86,7 +90,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     finalFilters,
   );
   return (
-    <div>
+    <>
       <ListLines
         sortBy={sortBy}
         orderAsc={orderAsc}
@@ -156,7 +160,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
           openContextual={false}
         />
       </Security>
-    </div>
+    </>
   );
 };
 

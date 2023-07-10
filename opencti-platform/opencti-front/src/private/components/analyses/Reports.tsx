@@ -163,7 +163,8 @@ const Reports: FunctionComponent<ReportsProps> = ({
           exportContext={exportContext}
           keyword={searchTerm}
           redirectionMode={redirectionMode}
-          handleSwitchRedirectionMode={(value: string) => storageHelpers.handleAddProperty('redirectionMode', value)}
+          handleSwitchRedirectionMode={(value: string) => storageHelpers.handleAddProperty('redirectionMode', value)
+          }
           filters={filters}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}

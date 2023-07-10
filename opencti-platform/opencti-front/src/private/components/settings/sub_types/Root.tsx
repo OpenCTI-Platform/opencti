@@ -22,29 +22,27 @@ export const subTypeQuery = graphql`
 const RootSubType = () => {
   const { subTypeId } = useParams() as { subTypeId: string };
   return (
-    <div>
-      <QueryRenderer
-        query={subTypeQuery}
-        variables={{ id: subTypeId }}
-        render={({ props }: { props: RootSubTypeQuery$data }) => {
-          if (props) {
-            if (props.subType) {
-              return (
-                <Switch>
-                  <Route
-                    exact
-                    path="/dashboard/settings/customization/entity_types/:subTypeId"
-                    render={() => <SubType data={props.subType} />}
-                  />
-                </Switch>
-              );
-            }
-            return <ErrorNotFound />;
+    <QueryRenderer
+      query={subTypeQuery}
+      variables={{ id: subTypeId }}
+      render={({ props }: { props: RootSubTypeQuery$data }) => {
+        if (props) {
+          if (props.subType) {
+            return (
+              <Switch>
+                <Route
+                  exact
+                  path="/dashboard/settings/customization/entity_types/:subTypeId"
+                  render={() => <SubType data={props.subType} />}
+                />
+              </Switch>
+            );
           }
-          return <Loader />;
-        }}
-      />
-    </div>
+          return <ErrorNotFound />;
+        }
+        return <Loader />;
+      }}
+    />
   );
 };
 

@@ -63,43 +63,46 @@ class UserEditionPasswordComponent extends Component {
     const { classes, t } = this.props;
     const initialValues = { password: '', confirmation: '' };
     return (
-      <div>
-        <Formik enableReinitialize={true} initialValues={initialValues}
-          validationSchema={userValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}>
-          {({ submitForm, isSubmitting }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <PasswordPolicies style={{ marginBottom: 20 }}/>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="password"
-                label={t('Password')}
-                type="password"
-                fullWidth={true}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="confirmation"
-                label={t('Confirmation')}
-                type="password"
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-              />
-              <div className={classes.buttons}>
-                <Button variant="contained"
-                  color="primary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}>
-                  {t('Update')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={userValidation(t)}
+        onSubmit={this.onSubmit.bind(this)}
+      >
+        {({ submitForm, isSubmitting }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <PasswordPolicies style={{ marginBottom: 20 }} />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="password"
+              label={t('Password')}
+              type="password"
+              fullWidth={true}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="confirmation"
+              label={t('Confirmation')}
+              type="password"
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+            />
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Update')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
     );
   }
 }

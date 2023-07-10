@@ -13,6 +13,7 @@ export interface UseEntityToggle<T> {
   ) => void;
   handleClearSelectedElements: () => void;
   handleToggleSelectAll: () => void;
+  setSelectedElements: (selectedElements: Record<string, T>) => void;
 }
 
 const useEntityToggle = <T extends { id: string }>(
@@ -96,6 +97,7 @@ const useEntityToggle = <T extends { id: string }>(
   }
   return {
     onToggleEntity,
+    setSelectedElements,
     selectedElements,
     deSelectedElements,
     selectAll,

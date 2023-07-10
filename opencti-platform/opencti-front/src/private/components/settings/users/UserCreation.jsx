@@ -148,7 +148,7 @@ class UserCreation extends Component {
   render() {
     const { t, classes } = this.props;
     return (
-      <div>
+      <>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
@@ -288,7 +288,7 @@ class UserCreation extends Component {
             </Formik>
           </div>
         </Drawer>
-      </div>
+      </>
     );
   }
 }

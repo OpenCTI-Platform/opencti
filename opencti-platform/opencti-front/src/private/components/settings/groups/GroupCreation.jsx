@@ -130,7 +130,7 @@ class GroupCreation extends Component {
   render() {
     const { t, classes } = this.props;
     return (
-      <div>
+      <>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
@@ -208,7 +208,7 @@ class GroupCreation extends Component {
             </Formik>
           </div>
         </Drawer>
-      </div>
+      </>
     );
   }
 }

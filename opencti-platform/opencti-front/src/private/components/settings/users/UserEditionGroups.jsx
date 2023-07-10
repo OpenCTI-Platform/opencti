@@ -81,50 +81,50 @@ class UserEditionGroupsComponent extends Component {
 
   render() {
     const { classes, user } = this.props;
-    const userGroups = (user?.groups?.edges ?? []).map((n) => ({ id: n.node.id }));
+    const userGroups = (user?.groups?.edges ?? []).map((n) => ({
+      id: n.node.id,
+    }));
     return (
-      <div>
-        <QueryRenderer
-          query={groupsSearchQuery}
-          variables={{ search: '' }}
-          render={({ props }) => {
-            if (props) {
-              // Done
-              const groups = (props.groups?.edges ?? []).map((n) => n.node);
-              return (
-                <List className={classes.root}>
-                  {groups.map((group) => {
-                    const userGroup = userGroups.find((g) => g.id === group.id);
-                    return (
-                      <ListItem key={group.id} divider={true}>
-                        <ListItemIcon color="primary">
-                          <GroupOutlined />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={group.name}
-                          secondary={group.description ?? ''}
+      <QueryRenderer
+        query={groupsSearchQuery}
+        variables={{ search: '' }}
+        render={({ props }) => {
+          if (props) {
+            // Done
+            const groups = (props.groups?.edges ?? []).map((n) => n.node);
+            return (
+              <List className={classes.root}>
+                {groups.map((group) => {
+                  const userGroup = userGroups.find((g) => g.id === group.id);
+                  return (
+                    <ListItem key={group.id} divider={true}>
+                      <ListItemIcon color="primary">
+                        <GroupOutlined />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={group.name}
+                        secondary={group.description ?? ''}
+                      />
+                      <ListItemSecondaryAction>
+                        <Checkbox
+                          onChange={this.handleToggle.bind(
+                            this,
+                            group.id,
+                            userGroup,
+                          )}
+                          checked={userGroup !== undefined}
                         />
-                        <ListItemSecondaryAction>
-                          <Checkbox
-                            onChange={this.handleToggle.bind(
-                              this,
-                              group.id,
-                              userGroup,
-                            )}
-                            checked={userGroup !== undefined}
-                          />
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              );
-            }
-            // Loading
-            return <List> &nbsp; </List>;
-          }}
-        />
-      </div>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  );
+                })}
+              </List>
+            );
+          }
+          // Loading
+          return <List> &nbsp; </List>;
+        }}
+      />
     );
   }
 }
@@ -142,14 +142,11 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
   user: graphql`
     fragment UserEditionGroups_user on User
     @argumentDefinitions(
-        groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
-        groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+      groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
     ) {
       id
-      groups(
-          orderBy: $groupsOrderBy,
-          orderMode: $groupsOrderMode,
-      ) {
+      groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
         edges {
           node {
             id

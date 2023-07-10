@@ -170,7 +170,7 @@ StatusTemplateCreationProps
 
   const renderClassic = () => {
     return (
-      <div>
+      <>
         <Fab
           onClick={handleOpen}
           color="secondary"
@@ -251,7 +251,7 @@ StatusTemplateCreationProps
             </Formik>
           </div>
         </Drawer>
-      </div>
+      </>
     );
   };
 

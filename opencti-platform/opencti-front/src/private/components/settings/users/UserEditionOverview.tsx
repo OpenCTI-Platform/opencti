@@ -165,126 +165,124 @@ UserEditionOverviewComponentProps
   };
 
   return (
-    <div>
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={userValidation(t)}
-        onSubmit={() => {}}
-      >
-        {() => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              disabled={external}
-              fullWidth={true}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="user_email"
-              disabled={external}
-              label={t('Email address')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="user_email" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="firstname"
-              label={t('Firstname')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="firstname" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="lastname"
-              label={t('Lastname')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="lastname" />
-              }
-            />
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="language"
-              label={t('Language')}
-              fullWidth={true}
-              containerstyle={fieldSpacingContainerStyle}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="language" />
-              }
-            >
-              <MenuItem value="auto">
-                <em>{t('Automatic')}</em>
-              </MenuItem>
-              <MenuItem value="en">English</MenuItem>
-              <MenuItem value="fr">Français</MenuItem>
-            </Field>
-            <ObjectOrganizationField
-              name="objectOrganization"
-              label="Organizations"
-              onChange={handleChangeObjectOrganization}
-              style={fieldSpacingContainerStyle}
-              outlined={false}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="api_token"
-              disabled={true}
-              label={t('Token')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="api_token" />
-              }
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
-            />
-          </Form>
-        )}
-      </Formik>
-    </div>
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={userValidation(t)}
+      onSubmit={() => {}}
+    >
+      {() => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            disabled={external}
+            fullWidth={true}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="user_email"
+            disabled={external}
+            label={t('Email address')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="user_email" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="firstname"
+            label={t('Firstname')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="firstname" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="lastname"
+            label={t('Lastname')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="lastname" />
+            }
+          />
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="language"
+            label={t('Language')}
+            fullWidth={true}
+            containerstyle={fieldSpacingContainerStyle}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="language" />
+            }
+          >
+            <MenuItem value="auto">
+              <em>{t('Automatic')}</em>
+            </MenuItem>
+            <MenuItem value="en">English</MenuItem>
+            <MenuItem value="fr">Français</MenuItem>
+          </Field>
+          <ObjectOrganizationField
+            name="objectOrganization"
+            label="Organizations"
+            onChange={handleChangeObjectOrganization}
+            style={fieldSpacingContainerStyle}
+            outlined={false}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="api_token"
+            disabled={true}
+            label={t('Token')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="api_token" />
+            }
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+        </Form>
+      )}
+    </Formik>
   );
 };
 

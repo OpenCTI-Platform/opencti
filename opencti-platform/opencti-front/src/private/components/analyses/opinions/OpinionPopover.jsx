@@ -22,9 +22,6 @@ import OpinionEditionContainer from './OpinionEditionContainer';
 import Loader from '../../../../components/Loader';
 
 const useStyles = makeStyles((theme) => ({
-  container: {
-    margin: 0,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -44,11 +41,11 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const OpinionPopoverDeletionMutation = graphql`
-    mutation OpinionPopoverDeletionMutation($id: ID!) {
-        opinionEdit(id: $id) {
-            delete
-        }
+  mutation OpinionPopoverDeletionMutation($id: ID!) {
+    opinionEdit(id: $id) {
+      delete
     }
+  }
 `;
 
 const OpinionPopover = (data) => {
@@ -66,9 +63,7 @@ const OpinionPopover = (data) => {
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
-
   const [commit] = useMutation(OpinionPopoverDeletionMutation);
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -86,27 +81,22 @@ const OpinionPopover = (data) => {
   };
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}
         size="large"
       >
-        <MoreVert/>
+        <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenEdit}>
-          {t('Update')}
-        </MenuItem>
-        <CollaborativeSecurity data={data.opinion} needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>
-            {t('Delete')}
-          </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <CollaborativeSecurity
+          data={data.opinion}
+          needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+        >
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
       <Dialog
@@ -121,17 +111,10 @@ const OpinionPopover = (data) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>
@@ -156,11 +139,11 @@ const OpinionPopover = (data) => {
                 />
               );
             }
-            return <Loader variant="inElement"/>;
+            return <Loader variant="inElement" />;
           }}
         />
       </Drawer>
-    </div>
+    </>
   );
 };
 

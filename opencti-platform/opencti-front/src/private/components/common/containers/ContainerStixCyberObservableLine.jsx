@@ -13,7 +13,6 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
-import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
@@ -75,6 +74,8 @@ const ContainerStixCyberObservableLineComponent = (props) => {
     dataColumns,
     containerId,
     paginationOptions,
+    onToggleShiftEntity,
+    index,
     onToggleEntity,
     selectedElements,
     deSelectedElements,
@@ -83,7 +84,6 @@ const ContainerStixCyberObservableLineComponent = (props) => {
   } = props;
   const classes = useStyles();
   const { t, fd, n } = useFormatter();
-  const navigate = useNavigate();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
@@ -91,11 +91,6 @@ const ContainerStixCyberObservableLineComponent = (props) => {
     node.entity_type === 'Artifact' ? 'artifacts' : 'observables'
   }/${node.id}`;
   const linkAnalyses = `${link}/analyses`;
-  const onAnalysesClick = (event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    navigate(linkAnalyses);
-  };
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -107,7 +102,10 @@ const ContainerStixCyberObservableLineComponent = (props) => {
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
-        onClick={(event) => !isOnlyThroughInference && onToggleEntity(node, event)
+        onClick={(event) => !isOnlyThroughInference
+          && (event.shiftKey
+            ? onToggleShiftEntity(index, node, event)
+            : onToggleEntity(node, event))
         }
       >
         <Checkbox
@@ -176,7 +174,8 @@ const ContainerStixCyberObservableLineComponent = (props) => {
               <Chip
                 classes={{ root: classes.chip }}
                 label={n(node.containers.pageInfo.globalCount)}
-                onClick={onAnalysesClick}
+                component={Link}
+                to={linkAnalyses}
               />
             </div>
             <div

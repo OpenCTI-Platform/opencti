@@ -120,7 +120,7 @@ class Investigations extends Component {
       filters: [{ key: 'type', values: ['investigation'] }],
     };
     return (
-      <div>
+      <>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[EXPLORE_EXUPDATE]}>
           <WorkspaceCreation
@@ -128,7 +128,7 @@ class Investigations extends Component {
             type="investigation"
           />
         </Security>
-      </div>
+      </>
     );
   }
 }

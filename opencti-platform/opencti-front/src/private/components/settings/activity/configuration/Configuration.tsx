@@ -123,11 +123,9 @@ ConfigurationComponentProps
       resetForm();
     };
   };
-
   if (isEmptyField(settings.enterprise_edition)) {
     return <EnterpriseEdition />;
   }
-
   return (
     <div className={classes.container}>
       <ActivityMenu />

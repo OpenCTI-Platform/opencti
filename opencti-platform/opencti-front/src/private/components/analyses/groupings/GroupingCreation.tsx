@@ -159,9 +159,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     GROUPING_TYPE,
     basicShape,
   );
-
   const [commit] = useMutation<GroupingCreationMutation>(groupingMutation);
-
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },

@@ -1,21 +1,26 @@
 import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { useQueryLoader } from 'react-relay';
-import StixCoreObjectOpinionsRadar, { stixCoreObjectOpinionsRadarFragmentQuery } from './StixCoreObjectOpinionsRadar';
+import StixCoreObjectOpinionsRadar, {
+  stixCoreObjectOpinionsRadarFragmentQuery,
+} from './StixCoreObjectOpinionsRadar';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import {
-  StixCoreObjectOpinionsRadarDistributionQuery, StixCoreObjectOpinionsRadarDistributionQuery$variables,
+  StixCoreObjectOpinionsRadarDistributionQuery,
+  StixCoreObjectOpinionsRadarDistributionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDistributionQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface StixCoreObjectOpinionsProps {
-  stixCoreObjectId: string
-  variant: string
-  height: number
-  marginTop: number
-  refetch: () => void
+  stixCoreObjectId: string;
+  variant: string;
+  height: number;
+  marginTop: number;
+  refetch: () => void;
 }
 
-const StixCoreObjectOpinions: FunctionComponent<StixCoreObjectOpinionsProps> = ({ stixCoreObjectId, variant, height, marginTop }) => {
+const StixCoreObjectOpinions: FunctionComponent<
+StixCoreObjectOpinionsProps
+> = ({ stixCoreObjectId, variant, height, marginTop }) => {
   const { typeToCategory } = useVocabularyCategory();
   const variables: StixCoreObjectOpinionsRadarDistributionQuery$variables = {
     // Opininions distribution
@@ -28,9 +33,17 @@ const StixCoreObjectOpinions: FunctionComponent<StixCoreObjectOpinionsProps> = (
     // My opinion
     id: stixCoreObjectId,
   };
-  const [queryRef, fetchLoadQuery] = useQueryLoader<StixCoreObjectOpinionsRadarDistributionQuery>(stixCoreObjectOpinionsRadarFragmentQuery);
-  const fetchQuery = useCallback(() => fetchLoadQuery(variables, { fetchPolicy: 'network-only' }), []);
-  useEffect(() => fetchLoadQuery(variables, { fetchPolicy: 'store-and-network' }), []);
+  const [queryRef, fetchLoadQuery] = useQueryLoader<StixCoreObjectOpinionsRadarDistributionQuery>(
+    stixCoreObjectOpinionsRadarFragmentQuery,
+  );
+  const fetchQuery = useCallback(
+    () => fetchLoadQuery(variables, { fetchPolicy: 'network-only' }),
+    [],
+  );
+  useEffect(
+    () => fetchLoadQuery(variables, { fetchPolicy: 'store-and-network' }),
+    [],
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <StixCoreObjectOpinionsRadar

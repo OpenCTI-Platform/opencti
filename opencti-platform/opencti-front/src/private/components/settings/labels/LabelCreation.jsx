@@ -161,7 +161,7 @@ class LabelCreation extends Component {
   renderClassic() {
     const { t, classes } = this.props;
     return (
-      <div>
+      <>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
@@ -240,14 +240,14 @@ class LabelCreation extends Component {
             </Formik>
           </div>
         </Drawer>
-      </div>
+      </>
     );
   }
 
   renderContextual() {
     const { t, classes, open, inputValue, handleClose } = this.props;
     return (
-      <div>
+      <>
         <Formik
           enableReinitialize={true}
           initialValues={{
@@ -299,7 +299,7 @@ class LabelCreation extends Component {
             </Form>
           )}
         </Formik>
-      </div>
+      </>
     );
   }
 

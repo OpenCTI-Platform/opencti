@@ -100,7 +100,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
       queryData.subType,
     ) as SubTypeWorkflow_subType$data;
     return (
-      <div>
+      <>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -172,7 +172,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
           </List>
           <SubTypeWorkflowStatusAdd subTypeId={subType.id} display={true} />
         </div>
-      </div>
+      </>
     );
   }
   return <Loader variant={LoaderVariant.inElement} />;

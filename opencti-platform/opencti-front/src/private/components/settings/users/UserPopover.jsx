@@ -21,9 +21,6 @@ import UserEdition from './UserEdition';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -113,7 +110,7 @@ class UserPopover extends Component {
   render() {
     const { classes, t, userId, disabled } = this.props;
     return (
-      <div className={classes.container}>
+      <>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
@@ -189,7 +186,7 @@ class UserPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </>
     );
   }
 }

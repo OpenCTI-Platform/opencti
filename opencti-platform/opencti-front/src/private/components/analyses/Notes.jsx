@@ -257,7 +257,7 @@ class Notes extends Component {
       },
     };
     return (
-      <div>
+      <>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -322,7 +322,7 @@ class Notes extends Component {
           )}
           type="Note"
         />
-      </div>
+      </>
     );
   }
 
@@ -343,7 +343,8 @@ class Notes extends Component {
         {({ platformModuleHelpers }) => (
           <ExportContextProvider>
             <div>
-              {view === 'lines' && this.renderLines(paginationOptions, platformModuleHelpers)}
+              {view === 'lines'
+                && this.renderLines(paginationOptions, platformModuleHelpers)}
               <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
                 <NoteCreation paginationOptions={paginationOptions} />
               </Security>

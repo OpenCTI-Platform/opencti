@@ -55,7 +55,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose, user })
   };
 
   return (
-    <div>
+    <>
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
@@ -93,7 +93,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({ handleClose, user })
           <UserEditionGroups user={user} context={editContext} />
         )}
       </div>
-    </div>
+    </>
   );
 };
 

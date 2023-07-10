@@ -7,7 +7,6 @@ import {
 } from './ContainerStixCyberObservableLine';
 import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
-import { StixCyberObservableLine_node$data } from '../../observations/stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 import {
   ContainerStixCyberObservablesLinesQuery,
   ContainerStixCyberObservablesLinesQuery$variables,
@@ -17,6 +16,7 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 import { ContainerStixCyberObservablesLines_container$key } from './__generated__/ContainerStixCyberObservablesLines_container.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
 
 const nbOfRowsToLoad = 50;
 
@@ -96,20 +96,21 @@ interface ContainerStixCyberObservablesLinesProps {
   paginationOptions: ContainerStixCyberObservablesLinesQuery$variables;
   openExports?: boolean;
   onToggleEntity: (
-    entity:
-    | StixCyberObservableLine_node$data
-    | StixCyberObservableLine_node$data[],
+    entity: ContainerStixCyberObservableLine_node$data,
     event: React.SyntheticEvent,
-    forceRemove: StixCyberObservableLine_node$data[]
+    forceRemove: ContainerStixCyberObservableLine_node$data[]
   ) => void;
-  selectedElements: Record<string, StixCyberObservableLine_node$data>;
-  deSelectedElements: Record<string, StixCyberObservableLine_node$data>;
+  selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>;
+  deSelectedElements: Record<
+  string,
+  ContainerStixCyberObservableLine_node$data
+  >;
   selectAll: boolean;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   onTypesChange: (type: string) => void;
   queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>;
   setSelectedElements: (
-    selectedElements: Record<string, StixCyberObservableLine_node$data>
+    selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>
   ) => void;
 }
 

@@ -64,7 +64,6 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
     },
     additionnalFilters,
   );
-
   const {
     numberOfElements,
     filters,
@@ -73,7 +72,6 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
     orderAsc,
     openExports,
   } = viewStorage;
-
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -83,7 +81,6 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
     handleToggleSelectAll,
     selectAll,
   } = useEntityToggle<ObservedDataLine_node$data>(LOCAL_STORAGE_KEY);
-
   const renderLines = (helper: ModuleHelper | undefined) => {
     let exportContext = null;
     if (objectId) {
@@ -96,7 +93,6 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
       ...toolBarFilters,
       entity_type: [{ id: 'Observed-Data', value: 'Observed-Data' }],
     };
-
     const isRuntimeSort = helper?.isRuntimeFieldEnable();
     const dataColumns = {
       name: {
@@ -134,9 +130,8 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
         isSortable: isRuntimeSort,
       },
     };
-
     return (
-      <div>
+      <>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -199,7 +194,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           handleClearSelectedElements={handleClearSelectedElements}
           type="Observed-Data"
         />
-      </div>
+      </>
     );
   };
 

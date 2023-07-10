@@ -9,33 +9,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import SubTypeWorkflowStatusEdit, {
   statusEditQuery,
 } from './SubTypeWorkflowStatusEdit';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SubTypeWorkflowStatusEditQuery } from './__generated__/SubTypeWorkflowStatusEditQuery.graphql';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
 
 const workflowStatusDeletionMutation = graphql`
   mutation SubTypeWorkflowStatusPopoverDeletionMutation(
@@ -59,13 +40,10 @@ const SubTypeWorkflowStatusPopover: FunctionComponent<
 SubTypeStatusPopoverProps
 > = ({ subTypeId, statusId }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
-
   const queryRef = useQueryLoading<SubTypeWorkflowStatusEditQuery>(
     statusEditQuery,
     { id: statusId },
   );
-
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
@@ -97,7 +75,7 @@ SubTypeStatusPopoverProps
     });
   };
   return (
-    <div className={classes.container}>
+    <>
       <IconButton onClick={handleOpen} aria-haspopup="true" size="large">
         <MoreVert />
       </IconButton>
@@ -136,7 +114,7 @@ SubTypeStatusPopoverProps
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
 
