@@ -73,16 +73,18 @@ const userValidation = (t: (value: string) => string) => Yup.object().shape({
 });
 
 interface UserEditionOverviewComponentProps {
-  user: UserEditionOverview_user$data,
+  user: UserEditionOverview_user$data;
   context:
   | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
   } | null)[]
-  | null,
+  | null;
 }
 
-const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewComponentProps> = ({ user, context }) => {
+const UserEditionOverviewComponent: FunctionComponent<
+UserEditionOverviewComponentProps
+> = ({ user, context }) => {
   const { t } = useFormatter();
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
@@ -92,19 +94,22 @@ const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewCompone
   const external = user.external === true;
   const objectOrganization = convertOrganizations(user);
 
-  const initialValues = pick([
-    'name',
-    'user_email',
-    'firstname',
-    'lastname',
-    'language',
-    'api_token',
-    'objectOrganization',
-    'description',
-  ], {
-    ...user,
-    objectOrganization,
-  });
+  const initialValues = pick(
+    [
+      'name',
+      'user_email',
+      'firstname',
+      'lastname',
+      'language',
+      'api_token',
+      'objectOrganization',
+      'description',
+    ],
+    {
+      ...user,
+      objectOrganization,
+    },
+  );
 
   const handleChangeFocus = (name: string) => {
     commitFocus({
@@ -131,7 +136,10 @@ const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewCompone
       .catch(() => false);
   };
 
-  const handleChangeObjectOrganization = (name: string, values: { label: string, value: string }[]) => {
+  const handleChangeObjectOrganization = (
+    name: string,
+    values: { label: string; value: string }[],
+  ) => {
     const currentValues = (user?.objectOrganization?.edges ?? []).map((n) => ({
       label: n.node.name,
       value: n.node.id,
@@ -170,7 +178,7 @@ const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewCompone
               component={TextField}
               variant="standard"
               name="name"
-              label={t('name')}
+              label={t('Name')}
               disabled={external}
               fullWidth={true}
               onFocus={handleChangeFocus}
@@ -270,10 +278,7 @@ const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewCompone
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="description"
-                />
+                <SubscriptionFocus context={context} fieldName="description" />
               }
             />
           </Form>
@@ -289,10 +294,13 @@ const UserEditionOverview = createFragmentContainer(
     user: graphql`
       fragment UserEditionOverview_user on User
       @argumentDefinitions(
-          rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
-          rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
-          organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
-          organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+        rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+        rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+        organizationsOrderBy: {
+          type: "OrganizationsOrdering"
+          defaultValue: name
+        }
+        organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         id
         name
@@ -306,16 +314,13 @@ const UserEditionOverview = createFragmentContainer(
         api_token
         otp_activated
         otp_qr
-        roles(
-            orderBy: $rolesOrderBy,
-            orderMode: $rolesOrderMode,
-        ) {
+        roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
           id
           name
         }
         objectOrganization(
-            orderBy: $organizationsOrderBy,
-            orderMode: $organizationsOrderMode,
+          orderBy: $organizationsOrderBy
+          orderMode: $organizationsOrderMode
         ) {
           edges {
             node {

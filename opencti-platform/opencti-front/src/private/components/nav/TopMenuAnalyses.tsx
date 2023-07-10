@@ -92,7 +92,7 @@ const TopMenuAnalyses = () => {
           classes={{ root: classes.button }}
         >
           <BiotechOutlined className={classes.icon} fontSize="small" />
-          {t('Malware Analyses')}
+          {t('Malware analyses')}
         </Button>
       )}
       {!useIsHiddenEntity('Note') && (

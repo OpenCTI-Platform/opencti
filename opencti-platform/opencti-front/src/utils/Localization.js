@@ -736,8 +736,8 @@ const i18n = {
       Incident: 'Incidente',
       Malwares: 'Malware',
       Malware: 'Malware',
-      'Malware Analysis': 'Análisis de malware',
-      'Malware Analyses': 'Análisis de malware',
+      'Malware analysis': 'Análisis de malware',
+      'Malware analyses': 'Análisis de malware',
       Channels: 'Canales',
       Channel: 'Canal',
       Narrative: 'Narrativa',
@@ -1442,7 +1442,7 @@ const i18n = {
       'No reports about this entity.': 'Ningún informe sobre esta entidad.',
       'No Malware analysis on this observable.':
         'Ningún análisis de malware sobre esta observable.',
-      'Malware Analyses run on this observable':
+      'Malware analyses run on this observable':
         'Análisis de malware ejecutados en este observable',
       'API access': 'Acceso a la API',
       Example: 'Ejemplo',
@@ -2806,8 +2806,8 @@ const i18n = {
       Incident: 'Incident',
       Malwares: 'Codes malveillants',
       Malware: 'Code malveillant',
-      'Malware Analysis': 'Analyse de code malveillant',
-      'Malware Analyses': 'Analyses de code malveillant',
+      'Malware analysis': 'Analyse de code malveillant',
+      'Malware analyses': 'Analyses de code malveillant',
       Channels: 'Canaux',
       Channel: 'Canal',
       Narrative: 'Narratif',
@@ -3506,7 +3506,7 @@ const i18n = {
         'Aucun rapport à propos de cette entité.',
       'No Malware analysis on this observable.':
         'Aucune analyse de code malveillant sur cet observable.',
-      'Malware Analyses run on this observable':
+      'Malware analyses run on this observable':
         'Analyses de codes malveillants effectuées à partir de cet observable',
       'API access': "Accès à l'API",
       Example: 'Exemple',
@@ -5512,7 +5512,7 @@ const i18n = {
         'このエンティティに関するレポートはありません。',
       'No Malware analysis on this observable.':
         'この観測点では、マルウェアの解析は行われていません。',
-      'Malware Analyses run on this observable':
+      'Malware analyses run on this observable':
         'この観測値で実行されるマルウェア分析',
       'API access': 'APIアクセス',
       Example: '例',
@@ -7402,7 +7402,7 @@ const i18n = {
       'No reports about this entity.': '没有关于此实体的报告。',
       'No Malware analysis on this observable.':
         '没有对这个可观察到的恶意软件进行分析。',
-      'Malware Analyses run on this observable': '对该观察点进行的恶意软件分析',
+      'Malware analyses run on this observable': '对该观察点进行的恶意软件分析',
       'API access': 'API访问',
       Example: '示例',
       'API key': 'API密钥',
@@ -8213,7 +8213,7 @@ const i18n = {
       organization_other: 'Other',
       obsContent: 'content',
       'Use Alt + click to exclude items': 'Use Alt + click to exclude items',
-      filter_container_type: 'Type of analyses',
+      filter_container_type: 'Type of analysis',
       filter_basedOn: 'Based on an observable',
       filter_sightedBy: 'Sighted by/in',
       filter_sightedBy_not_eq: 'NOT Sighted by/in',

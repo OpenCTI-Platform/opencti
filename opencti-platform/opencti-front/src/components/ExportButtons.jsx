@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
-import { ImageOutlined } from '@mui/icons-material';
+import { GetAppOutlined, ImageOutlined } from '@mui/icons-material';
 import { FilePdfBox, FileDelimitedOutline } from 'mdi-material-ui';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
@@ -155,7 +155,16 @@ class ExportButtons extends Component {
 
   render() {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
-    const { classes, t, domElementId, name, csvData, csvFileName } = this.props;
+    const {
+      classes,
+      t,
+      domElementId,
+      name,
+      type,
+      csvData,
+      csvFileName,
+      handleDownloadAsStixReport,
+    } = this.props;
     return (
       <div className={classes.exportButtons} id="export-buttons">
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
@@ -169,6 +178,13 @@ class ExportButtons extends Component {
               <FilePdfBox fontSize="small" color="primary" />
             </ToggleButton>
           </Tooltip>
+          {type === 'investigation' && (
+            <Tooltip title={t('Download as STIX report')}>
+              <ToggleButton onClick={handleDownloadAsStixReport.bind(this)}>
+                <GetAppOutlined fontSize="small" color="primary" />
+              </ToggleButton>
+            </Tooltip>
+          )}
           {csvData && (
             <Tooltip title={t('Export to CSV')}>
               <ToggleButton onClick={() => this.csvLink.current.link.click()}>

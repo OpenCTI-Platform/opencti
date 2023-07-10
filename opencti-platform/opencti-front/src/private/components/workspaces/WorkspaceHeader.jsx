@@ -16,12 +16,21 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import { Add, Close, GetAppOutlined, LockPersonOutlined } from '@mui/icons-material';
+import {
+  Add,
+  Close,
+  GetAppOutlined,
+  LockPersonOutlined,
+} from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import PropTypes from 'prop-types';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
@@ -299,19 +308,12 @@ const WorkspaceHeader = ({
         </Security>
       )}
       <div className={classes.export}>
-        {workspace.type === 'investigation' && (
-          <div style={{ marginRight: '4px' }}>
-            <Tooltip title={t('Download as STIX report')}>
-              <ToggleButton size="small" onClick={handleDownloadAsStixReport}>
-                <GetAppOutlined fontSize="small" color="primary" />
-              </ToggleButton>
-            </Tooltip>
-          </div>
-        )}
         <ExportButtons
           domElementId="container"
           name={workspace.name}
+          type={workspace.type}
           adjust={adjust}
+          handleDownloadAsStixReport={handleDownloadAsStixReport}
         />
       </div>
       <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
