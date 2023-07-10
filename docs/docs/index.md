@@ -8,9 +8,13 @@ hide:
 
 Welcome to the OpenCTI Documentation space. Here you will be able to find all documents, meeting notes and presentations about the platform.
 
+**Thanks also to take a look at the [releases notes](https://github.com/OpenCTI-Platform/opencti/releases) for important information about release and deployment** 
+
 !!! tip "Need more help?"
 
-    We are doing our best to keep this documentation complete, accurate and up to date. If you still have questions or you find something which is not sufficiently explained, join the [Filigran Community on Slack](https://community.filigran.io).
+    We are doing our best to keep this documentation complete, accurate and up to date. 
+    
+    If you still have questions or you find something which is not sufficiently explained, join the [Filigran Community on Slack](https://community.filigran.io).
 
 ## Introduction
 
@@ -20,7 +24,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 <div class="grid cards" markdown>
 
--   :material-rocket-launch-outline:{ .lg .middle } __Deployement & Setup__
+-   :material-rocket-launch-outline:{ .lg .middle } __Deployment & Setup__
 
     ---
 
