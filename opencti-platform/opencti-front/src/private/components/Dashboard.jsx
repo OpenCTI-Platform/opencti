@@ -12,7 +12,11 @@ import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { makeStyles, useTheme } from '@mui/styles';
-import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
+import {
+  Database,
+  GraphOutline,
+  HexagonMultipleOutline,
+} from 'mdi-material-ui';
 import { assoc, head, last, map, pathOr, pluck } from 'ramda';
 import React, { Suspense } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
@@ -39,8 +43,6 @@ import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationship
 import TopBar from './nav/TopBar';
 import DashboardView from './workspaces/dashboards/Dashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
-import {ProfileQuery} from "./profile/__generated__/ProfileQuery.graphql";
-import {profileQuery} from "./profile/Profile";
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
@@ -186,7 +188,10 @@ const NoTableElement = () => {
 
 // TotalEntitiesCard
 const dashboardStixDomainObjectsNumberQuery = graphql`
-  query DashboardStixDomainObjectsNumberQuery($types: [String]$endDate: DateTime) {
+  query DashboardStixDomainObjectsNumberQuery(
+    $types: [String]
+    $endDate: DateTime
+  ) {
     stixDomainObjectsNumber(types: $types, endDate: $endDate) {
       total
       count
@@ -196,14 +201,20 @@ const dashboardStixDomainObjectsNumberQuery = graphql`
 const TotalEntitiesCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
   const { t, n } = useFormatter();
-  const data = usePreloadedQuery(dashboardStixDomainObjectsNumberQuery, queryRef);
+  const data = usePreloadedQuery(
+    dashboardStixDomainObjectsNumberQuery,
+    queryRef,
+  );
   const { total } = data.stixDomainObjectsNumber;
   const difference = total - data.stixDomainObjectsNumber.count;
   return (
     <CardContent>
       <div className={classes.title}>{t(title)}</div>
       <div className={classes.number}>{n(total)}</div>
-      <ItemNumberDifference difference={difference} description={t('24 hours')}/>
+      <ItemNumberDifference
+        difference={difference}
+        description={t('24 hours')}
+      />
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
       </div>
@@ -211,14 +222,23 @@ const TotalEntitiesCardComponent = ({ title, Icon, queryRef }) => {
   );
 };
 const TotalEntitiesCard = ({ title, options, Icon }) => {
-  const queryRef = useQueryLoading(dashboardStixDomainObjectsNumberQuery, options);
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(
+    dashboardStixDomainObjectsNumberQuery,
+    options,
+  );
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <TotalEntitiesCardComponent queryRef={queryRef} title={title} Icon={Icon} />
+          <TotalEntitiesCardComponent
+            queryRef={queryRef}
+            title={title}
+            Icon={Icon}
+          />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 // TotalRelationshipsCard
@@ -239,7 +259,10 @@ const dashboardStixCoreRelationshipsNumberQuery = graphql`
 const TotalRelationshipsCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
   const { t, n } = useFormatter();
-  const data = usePreloadedQuery(dashboardStixCoreRelationshipsNumberQuery, queryRef);
+  const data = usePreloadedQuery(
+    dashboardStixCoreRelationshipsNumberQuery,
+    queryRef,
+  );
   const { total } = data.stixCoreRelationshipsNumber;
   const difference = total - data.stixCoreRelationshipsNumber.count;
   return (
@@ -257,14 +280,23 @@ const TotalRelationshipsCardComponent = ({ title, Icon, queryRef }) => {
   );
 };
 const TotalRelationshipsCard = ({ title, options, Icon }) => {
-  const queryRef = useQueryLoading(dashboardStixCoreRelationshipsNumberQuery, options);
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(
+    dashboardStixCoreRelationshipsNumberQuery,
+    options,
+  );
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <TotalRelationshipsCardComponent queryRef={queryRef} title={title} Icon={Icon} />
+          <TotalRelationshipsCardComponent
+            queryRef={queryRef}
+            title={title}
+            Icon={Icon}
+          />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 // TotalObservablesCard
@@ -282,7 +314,10 @@ const dashboardStixCyberObservablesNumberQuery = graphql`
 const TotalObservablesCardComponent = ({ title, Icon, queryRef }) => {
   const classes = useStyles();
   const { t, n } = useFormatter();
-  const data = usePreloadedQuery(dashboardStixCyberObservablesNumberQuery, queryRef);
+  const data = usePreloadedQuery(
+    dashboardStixCyberObservablesNumberQuery,
+    queryRef,
+  );
   const { total } = data.stixCyberObservablesNumber;
   const difference = total - data.stixCyberObservablesNumber.count;
   return (
@@ -300,14 +335,23 @@ const TotalObservablesCardComponent = ({ title, Icon, queryRef }) => {
   );
 };
 const TotalObservablesCard = ({ title, options, Icon }) => {
-  const queryRef = useQueryLoading(dashboardStixCyberObservablesNumberQuery, options);
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(
+    dashboardStixCyberObservablesNumberQuery,
+    options,
+  );
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <TotalObservablesCardComponent queryRef={queryRef} title={title} Icon={Icon} />
+          <TotalObservablesCardComponent
+            queryRef={queryRef}
+            title={title}
+            Icon={Icon}
+          />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 // TopLabelsCard
@@ -350,7 +394,10 @@ const dashboardStixRefRelationshipsDistributionQuery = graphql`
 `;
 const TopLabelsCardCardComponent = ({ classes, queryRef }) => {
   const { n } = useFormatter();
-  const data = usePreloadedQuery(dashboardStixRefRelationshipsDistributionQuery, queryRef);
+  const data = usePreloadedQuery(
+    dashboardStixRefRelationshipsDistributionQuery,
+    queryRef,
+  );
   const distribution = data.stixRefRelationshipsDistribution;
   if (distribution.length === 0) {
     return <NoTableElement />;
@@ -388,14 +435,19 @@ const TopLabelsCard = ({ classes }) => {
     limit: 9,
     isTo: true,
   };
-  const queryRef = useQueryLoading(dashboardStixRefRelationshipsDistributionQuery, queryOptions);
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(
+    dashboardStixRefRelationshipsDistributionQuery,
+    queryOptions,
+  );
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <TopLabelsCardCardComponent queryRef={queryRef} classes={classes} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 // IngestedEntitiesGraph
@@ -423,7 +475,10 @@ const IngestedEntitiesGraphComponent = ({ queryRef }) => {
   const classes = useStyles();
   const theme = useTheme();
   const { md, t } = useFormatter();
-  const data = usePreloadedQuery(dashboardStixDomainObjectsTimeSeriesQuery, queryRef);
+  const data = usePreloadedQuery(
+    dashboardStixDomainObjectsTimeSeriesQuery,
+    queryRef,
+  );
   const chartData = data.stixDomainObjectsTimeSeries.map((entry) => {
     const date = new Date(entry.date);
     date.setDate(date.getDate() + 15);
@@ -462,14 +517,19 @@ const IngestedEntitiesGraph = () => {
     startDate: yearsAgo(1),
     interval: 'month',
   };
-  const queryRef = useQueryLoading(dashboardStixDomainObjectsTimeSeriesQuery, queryOptions);
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(
+    dashboardStixDomainObjectsTimeSeriesQuery,
+    queryOptions,
+  );
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <IngestedEntitiesGraphComponent queryRef={queryRef} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 // TargetedCountries
@@ -514,7 +574,10 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
   }
 `;
 const TargetedCountriesComponent = ({ queryRef }) => {
-  const data = usePreloadedQuery(dashboardStixCoreRelationshipsDistributionQuery, queryRef);
+  const data = usePreloadedQuery(
+    dashboardStixCoreRelationshipsDistributionQuery,
+    queryRef,
+  );
   const values = pluck('value', data.stixCoreRelationshipsDistribution);
   const countries = map(
     (x) => assoc(
@@ -542,14 +605,19 @@ const TargetedCountries = ({ timeField }) => {
     dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
     limit: 20,
   };
-  const queryRef = useQueryLoading(dashboardStixCoreRelationshipsDistributionQuery, queryOptions);
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(
+    dashboardStixCoreRelationshipsDistributionQuery,
+    queryOptions,
+  );
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <TargetedCountriesComponent queryRef={queryRef} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 // LastIngestedAnalyses
@@ -685,14 +753,19 @@ const LastIngestedAnalyses = () => {
     orderMode: 'desc',
     types: ['Report'],
   };
-  const queryRef = useQueryLoading(dashboardLastStixDomainObjectsQuery, queryOptions);
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(
+    dashboardLastStixDomainObjectsQuery,
+    queryOptions,
+  );
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <LastIngestedAnalysesComponent queryRef={queryRef} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 // ObservablesDistribution
@@ -711,8 +784,13 @@ const ObservablesDistributionComponent = ({ queryRef }) => {
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
-  const data = usePreloadedQuery(dashboardStixCyberObservablesDistributionQuery, queryRef);
-  const distribution = data.stixCyberObservablesDistribution.map((n) => n.value);
+  const data = usePreloadedQuery(
+    dashboardStixCyberObservablesDistributionQuery,
+    queryRef,
+  );
+  const distribution = data.stixCyberObservablesDistribution.map(
+    (n) => n.value,
+  );
   if (distribution.length === 0) {
     return <NoTableElement />;
   }
@@ -731,14 +809,19 @@ const ObservablesDistributionComponent = ({ queryRef }) => {
 };
 const ObservablesDistribution = () => {
   const queryOptions = { field: 'entity_type', operation: 'count' };
-  const queryRef = useQueryLoading(dashboardStixCyberObservablesDistributionQuery, queryOptions);
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(
+    dashboardStixCyberObservablesDistributionQuery,
+    queryOptions,
+  );
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <ObservablesDistributionComponent queryRef={queryRef} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 // endregion
@@ -955,22 +1038,31 @@ const WorkspaceDashboardComponent = ({ queryRef, timeField }) => {
   return <DefaultDashboard timeField={timeField} />;
 };
 const WorkspaceDashboard = ({ dashboard, timeField }) => {
-  const queryRef = useQueryLoading(dashboardCustomDashboardQuery, { id: dashboard });
-  return <>
-    {queryRef && (
+  const queryRef = useQueryLoading(dashboardCustomDashboardQuery, {
+    id: dashboard,
+  });
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <WorkspaceDashboardComponent timeField={timeField} queryRef={queryRef} />
+          <WorkspaceDashboardComponent
+            timeField={timeField}
+            queryRef={queryRef}
+          />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 const CustomDashboard = ({ dashboard, timeField }) => {
   const { t } = useFormatter();
   return (
-    <Security needs={[EXPLORE]}
+    <Security
+      needs={[EXPLORE]}
       placeholder={t(
         'You do not have any access to the explore part of this OpenCTI instance.',
-      )}>
+      )}
+    >
       <Suspense fallback={<Loader />}>
         <WorkspaceDashboard dashboard={dashboard} timeField={timeField} />
       </Suspense>
@@ -1003,9 +1095,10 @@ const DashboardComponent = ({ queryRef }) => {
   const me = useFragment(dashboardMeFragment, data.me);
   const { default_dashboards: dashboards } = currentMe;
   const { default_time_field, default_dashboard } = me;
-  const {
-    viewStorage: localTimeFieldPreferences,
-  } = usePaginationLocalStorage('view-dashboard', {});
+  const { viewStorage: localTimeFieldPreferences } = usePaginationLocalStorage(
+    'view-dashboard',
+    {},
+  );
   const { dashboard } = localTimeFieldPreferences;
 
   let defaultDashboard = default_dashboard?.id;
@@ -1020,10 +1113,14 @@ const DashboardComponent = ({ queryRef }) => {
     <UserContext.Provider value={{ me: { ...currentMe, ...me }, ...context }}>
       <div className={classes.root}>
         <TopBar />
-        {(defaultDashboard)
-          ? <CustomDashboard dashboard={defaultDashboard} timeField={default_time_field} />
-          : <DefaultDashboard timeField={default_time_field} />
-        }
+        {defaultDashboard ? (
+          <CustomDashboard
+            dashboard={defaultDashboard}
+            timeField={default_time_field}
+          />
+        ) : (
+          <DefaultDashboard timeField={default_time_field} />
+        )}
       </div>
     </UserContext.Provider>
   );
@@ -1031,13 +1128,15 @@ const DashboardComponent = ({ queryRef }) => {
 
 const Dashboard = () => {
   const queryRef = useQueryLoading(dashboardQuery, {});
-  return <>
-    {queryRef && (
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <DashboardComponent queryRef={queryRef} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 export default Dashboard;
