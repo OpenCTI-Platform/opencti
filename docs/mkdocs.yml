@@ -132,7 +132,16 @@ nav:
     - Explore knowledge:
       - Overview: usage/overview.md
       - Search for knowledge: usage/search.md
-      - Explore by entity types: usage/exploring.md
+      - Explore by entity types:
+        - Analysis: usage/exploring-analysis.md
+        - Cases: usage/exploring-cases.md
+        - Events: usage/exploring-events.md
+        - Observations: usage/exploring-observations.md
+        - Threats: usage/exploring-threats.md
+        - Arsenal: usage/exploring-arsenal.md
+        - Techniques: usage/exploring-techniques.md
+        - Entities: usage/exploring-entities.md
+        - Locations: usage/exploring-locations.md
       - Pivot and investigate: usage/pivoting.md
     - Create knowledge:
       - Automated import: usage/import-automated.md
