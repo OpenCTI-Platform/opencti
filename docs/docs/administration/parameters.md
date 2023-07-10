@@ -1,4 +1,19 @@
-# Platform
+# Parameters
+
+## Description
+
+This part of the interface wil let you configure global platform settings, like title, favicon, etc.
+It will also give you important information about the platform.
+
+## Configuration
+
+Configure global platform settings, like title, favicon, etc.
+
+## OpenCTI Platform
+
+Important information about the platform.
+
+It's also the place to activate the [Enterprise edition](enterprise.md)
 
 ## Platform Announcement
 

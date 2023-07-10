@@ -165,19 +165,16 @@ nav:
     - Introduction: administration/introduction.md
     - Enterprise edition: administration/enterprise.md
     - Data management:
-      - Custom taxonomies: administration/ontologies.md
-      - Retention policies: administration/retention.md
-      - Merging and de-duplication: administration/merging.md    
-    - Settings:
+      - Merging and de-duplication: administration/merging.md
+    - Platform settings:
       - Parameters: administration/parameters.md
-      - Reasoning engine: administration/reasoning.md
-      - Indicators lifecycle: administration/indicators.md
-      - Customize entities: administration/entities.md
-    - Security and traceability:
-      - Users and RBAC: administration/users.md
-      - Data segregation: administration/segregation.md
-      - Sourcing knowledge: administration/sourcing.md
-      - Activity monitoring: administration/audit.md
+      - Security: administration/security.md
+      - Customization:
+        - Entity types: administration/entities.md
+        - Rules engine: administration/reasoning.md
+        - Retention policies: administration/retentions.md
+      - Taxonomies: administration/ontologies.md
+      - Activity: administration/audit.md
   - Reference:
     - Data:
       - Data model: reference/data-model.md
@@ -189,7 +186,10 @@ nav:
       - Data Streaming: reference/streaming.md
       - TAXII Feeds: reference/taxii-feeds.md
       - CSV Feeds: reference/csv-feeds.md
-    - Security: reference/security.md
+    - Security:
+      - Users and RBAC: administration/users.md
+      - Data segregation: administration/segregation.md
+      - Sourcing knowledge: administration/sourcing.md
   - Development:
     - Prerequisites:
       - Ubuntu: development/environment_ubuntu.md
