@@ -23,7 +23,6 @@ import { debounce } from 'rxjs/operators';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ToggleButtonGroup } from '@mui/material';
-import { useNavigate } from 'react-router-dom-v5-compat';
 import ItemIcon from '../../components/ItemIcon';
 import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
@@ -230,7 +229,6 @@ const inlineStyles = {
 
 const SearchBulk = () => {
   const { t, nsd, n } = useFormatter();
-  const navigate = useNavigate();
   const isGrantedToExports = useGranted([KNOWLEDGE_KNGETEXPORT]);
   const classes = useStyles();
   const [textFieldValue, setTextFieldValue] = useState('');
@@ -517,11 +515,6 @@ const SearchBulk = () => {
               const inPlatform = entity.in_platform;
               const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
               const analysesLink = `${link}/analyses`;
-              const onAnalysesClick = (event) => {
-                event.stopPropagation();
-                event.preventDefault();
-                navigate(analysesLink);
-              };
               return (
                 <ListItem
                   key={entity.id}
@@ -606,7 +599,8 @@ const SearchBulk = () => {
                             <Chip
                               classes={{ root: classes.chip }}
                               label={n(entity.containers.pageInfo.globalCount)}
-                              onClick={onAnalysesClick}
+                              component={Link}
+                              to={analysesLink}
                             />
                           )}
                         </div>

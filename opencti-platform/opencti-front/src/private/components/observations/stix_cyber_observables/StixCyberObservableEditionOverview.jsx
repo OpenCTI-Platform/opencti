@@ -13,7 +13,7 @@ import {
   pick,
   pipe,
 } from 'ramda';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import * as R from 'ramda';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -109,7 +109,7 @@ const StixCyberObservableEditionOverviewComponent = ({
   context,
   handleClose,
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { t } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
 
@@ -181,7 +181,7 @@ const StixCyberObservableEditionOverviewComponent = ({
             response.stixCyberObservableEdit.fieldPatch.id
             !== stixCyberObservable.id
           ) {
-            history.push(
+            navigate(
               `/dashboard/observations/observables/${response.stixCyberObservableEdit.fieldPatch.id}`,
             );
           }

@@ -98,7 +98,7 @@ const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
 const ES_PRIMARY_SHARD_SIZE = conf.get('elasticsearch:max_primary_shard_size') || '40gb';
 const ES_MAX_AGE = conf.get('elasticsearch:max_age') || '365d';
-const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 50000000;
+const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 
 const ES_RETRY_ON_CONFLICT = 5;
 export const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.

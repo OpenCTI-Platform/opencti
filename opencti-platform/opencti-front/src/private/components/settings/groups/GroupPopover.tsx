@@ -12,7 +12,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import GroupEdition from './GroupEdition';
 import { Theme } from '../../../../components/Theme';
@@ -60,7 +60,7 @@ const groupPopoverDeletionMutation = graphql`
 const GroupPopover = ({ groupId }: { groupId: string }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(false);
@@ -106,7 +106,7 @@ const GroupPopover = ({ groupId }: { groupId: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        history.push('/dashboard/settings/accesses/groups');
+        navigate('/dashboard/settings/accesses/groups');
       },
     });
   };

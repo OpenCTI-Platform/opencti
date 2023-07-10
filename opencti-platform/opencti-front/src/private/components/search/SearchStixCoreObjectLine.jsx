@@ -10,7 +10,6 @@ import { Link } from 'react-router-dom';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
-import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../components/i18n';
 import StixCoreObjectLabels from '../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../components/ItemIcon';
@@ -82,14 +81,8 @@ const SearchStixCoreObjectLineComponent = ({
 }) => {
   const classes = useStyles();
   const { t, fd, n } = useFormatter();
-  const navigate = useNavigate();
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
   const linkAnalyses = `${link}/analyses`;
-  const onAnalysesClick = (event) => {
-    event.stopPropagation();
-    event.preventDefault();
-    navigate(linkAnalyses);
-  };
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -176,7 +169,8 @@ const SearchStixCoreObjectLineComponent = ({
               <Chip
                 classes={{ root: classes.chip }}
                 label={n(node.containers.pageInfo.globalCount)}
-                onClick={onAnalysesClick}
+                component={Link}
+                to={linkAnalyses}
               />
             </div>
             <div
