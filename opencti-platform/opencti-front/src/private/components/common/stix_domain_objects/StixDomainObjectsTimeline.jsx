@@ -166,6 +166,9 @@ const stixDomainObjectsTimelineQuery = graphql`
             attribute_abstract
             content
           }
+          ... on Opinion {
+            opinion
+          }
         }
       }
     }

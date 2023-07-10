@@ -236,6 +236,9 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
               attribute_abstract
               content
             }
+            ... on Opinion {
+              opinion
+            }
             ... on StixCyberObservable {
               id
               entity_type

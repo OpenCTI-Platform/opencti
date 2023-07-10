@@ -329,6 +329,9 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
               attribute_abstract
               content
             }
+            ... on Opinion {
+              opinion
+            }
             ... on StixCyberObservable {
               observable_value
               x_opencti_description
@@ -495,6 +498,9 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                   attribute_abstract
                   content
                 }
+                ... on Opinion {
+                  opinion
+                }
                 ... on StixCyberObservable {
                   observable_value
                   x_opencti_description
@@ -652,6 +658,9 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                 ... on Note {
                   attribute_abstract
                   content
+                }
+                ... on Opinion {
+                  opinion
                 }
                 ... on StixCyberObservable {
                   observable_value

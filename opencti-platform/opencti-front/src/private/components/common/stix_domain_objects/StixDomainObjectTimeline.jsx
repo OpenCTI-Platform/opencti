@@ -290,6 +290,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   attribute_abstract
                   content
                 }
+                ... on Opinion {
+                  opinion
+                }
                 ... on Individual {
                   name
                   description
@@ -461,6 +464,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 ... on Note {
                   attribute_abstract
                   content
+                }
+                ... on Opinion {
+                  opinion
                 }
                 ... on CourseOfAction {
                   name

@@ -74,6 +74,9 @@ const stixCoreObjectsTimelineQuery = graphql`
           ... on Note {
             attribute_abstract
           }
+          ... on Opinion {
+            opinion
+          }
           ... on ObservedData {
             first_observed
             last_observed
@@ -192,6 +195,9 @@ const stixCoreObjectsTimelineQuery = graphql`
           ... on Note {
             attribute_abstract
             content
+          }
+          ... on Opinion {
+            opinion
           }
           ... on StixCyberObservable {
             observable_value

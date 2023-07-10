@@ -349,6 +349,9 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
               attribute_abstract
               content
             }
+            ... on Opinion {
+              opinion
+            }
             ... on StixCyberObservable {
               observable_value
               x_opencti_description
@@ -534,6 +537,9 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                   attribute_abstract
                   content
                 }
+                ... on Opinion {
+                  opinion
+                }
                 ... on StixCyberObservable {
                   observable_value
                   x_opencti_description
@@ -710,6 +716,9 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                 ... on Note {
                   attribute_abstract
                   content
+                }
+                ... on Opinion {
+                  opinion
                 }
                 ... on StixCyberObservable {
                   observable_value
