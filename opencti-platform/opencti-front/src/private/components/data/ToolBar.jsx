@@ -593,6 +593,7 @@ class ToolBar extends Component {
             search,
             actions: finalActions,
             excluded_ids: Object.keys(deSelectedElements || {}),
+            scope: 'KNOWLEDGE',
           },
         },
         onCompleted: () => {
@@ -618,6 +619,7 @@ class ToolBar extends Component {
               ? [mergingElement.id]
               : Object.keys(selectedElements),
             actions: finalActions,
+            scope: 'KNOWLEDGE',
           },
         },
         onCompleted: () => {

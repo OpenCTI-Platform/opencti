@@ -38,11 +38,15 @@ export const OtpRequiredActivation = (data) => error(OTP_REQUIRED_ACTIVATION, 'Y
 });
 
 export const FORBIDDEN_ACCESS = 'ForbiddenAccess';
-export const ForbiddenAccess = (data) => error(FORBIDDEN_ACCESS, 'You are not allowed to do this.', {
-  http_status: 403,
-  category: CATEGORY_TECHNICAL,
-  ...data,
-});
+export const ForbiddenAccess = (data, message) => error(
+  FORBIDDEN_ACCESS,
+  message ? `You are not allowed to do this. ${message}` : 'You are not allowed to do this.',
+  {
+    http_status: 403,
+    category: CATEGORY_TECHNICAL,
+    ...data,
+  }
+);
 
 const RESOURCE_NOT_FOUND_ERROR = 'ResourceNotFound';
 export const ResourceNotFoundError = (data) => error(RESOURCE_NOT_FOUND_ERROR, 'Resource not found', {

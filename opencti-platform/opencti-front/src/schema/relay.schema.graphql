@@ -834,6 +834,11 @@ type BackgroundTaskError {
   message: String
 }
 
+enum BackgroundTaskScope {
+  KNOWLEDGE
+  USER
+}
+
 enum BackgroundTaskActionType {
   DELETE
   ADD
@@ -924,6 +929,9 @@ type ListTask implements BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  scope: BackgroundTaskScope!
+  authorized_members: [MemberAccess!]
+  authorized_authorities: [String]
   task_ids: [ID!]
 }
 
@@ -938,6 +946,9 @@ type QueryTask implements BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  scope: BackgroundTaskScope!
+  authorized_members: [MemberAccess!]
+  authorized_authorities: [String]
   task_filters: String!
   task_search: String
 }
@@ -966,6 +977,7 @@ input BackgroundTaskActionInput {
 input ListTaskAddInput {
   ids: [ID!]
   actions: [BackgroundTaskActionInput]!
+  scope: BackgroundTaskScope!
 }
 
 input QueryTaskAddInput {
@@ -973,6 +985,7 @@ input QueryTaskAddInput {
   search: String
   excluded_ids: [ID]
   actions: [BackgroundTaskActionInput]!
+  scope: BackgroundTaskScope!
 }
 
 input RetentionRuleAddInput {
@@ -8016,7 +8029,7 @@ type Query {
   status(id: String!): Status
   statuses(first: Int, after: ID, orderBy: StatusOrdering, orderMode: OrderingMode, filters: [StatusesFiltering!], filterMode: FilterMode, search: String): StatusConnection
   backgroundTask(id: String!): BackgroundTask
-  backgroundTasks(first: Int, after: ID, orderBy: BackgroundTasksOrdering, orderMode: OrderingMode, filters: [BackgroundTasksFiltering], filterMode: FilterMode, search: String): BackgroundTaskConnection
+  backgroundTasks(first: Int, after: ID, orderBy: BackgroundTasksOrdering, orderMode: OrderingMode, includeAuthorities: Boolean, filters: [BackgroundTasksFiltering], filterMode: FilterMode, search: String): BackgroundTaskConnection
   rule(id: String!): Rule
   rules: [Rule]
   ruleManagerInfo: RuleManager
