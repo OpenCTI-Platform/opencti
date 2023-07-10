@@ -48,13 +48,6 @@ Audit will produces **console/logs** files along with user interface elements.
 }
 ```
 
-## User interface
-
-OpenCTI is providing a unified user interface to access and filter all categories.
-This dedicated UI provides the easiest experience to consult / analyze / filters all available information.
-
-![Audit interface](assets/audit.png)
-
 ## Architecture
 
 OpenCTI use different mechanisms to be able to publish actions (audit) or data modification (history)
