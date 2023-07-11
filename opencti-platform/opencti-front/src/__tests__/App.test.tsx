@@ -32,7 +32,7 @@ describe('App', () => {
         };
       },
       AppInfo() {
-        return { version: '5.4.0' };
+        return { version: '5.9.6' };
       },
       Settings() {
         return {

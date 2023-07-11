@@ -1,0 +1,11 @@
+{
+  "headless": true,
+  "windowSize": {
+    "height": 1800,
+    "width": 1440
+  },
+  "capabilities": {
+    "browser": "chrome",
+    "browser_version": "latest"
+  }
+}
