@@ -351,6 +351,9 @@ export const SearchStixCoreObjectLine = createFragmentContainer(
         ... on StixCyberObservable {
           observable_value
         }
+        ... on StixFile {
+          x_opencti_additional_names
+        }
         ... on IPv4Addr {
           countries {
             edges {

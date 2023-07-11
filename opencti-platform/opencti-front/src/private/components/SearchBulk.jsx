@@ -291,6 +291,9 @@ const SearchBulk = () => {
                         || o.x_opencti_aliases
                           ?.map((p) => p.toLowerCase())
                           .includes(value.toLowerCase())
+                        || o.x_opencti_additional_names
+                          ?.map((p) => p.toLowerCase())
+                          .includes(value.toLowerCase())
                         || o.x_mitre_id?.toLowerCase() === value.toLowerCase()
                         || o.value?.toLowerCase() === value.toLowerCase()
                         || o.observable_value?.toLowerCase()
