@@ -11354,9 +11354,6 @@ enum StixCoreRelationshipsOrdering {
   creator
 }
 enum StixCoreRelationshipsFilter {
-  elementId
-  fromId
-  toId
   created
   modified
   created_at
