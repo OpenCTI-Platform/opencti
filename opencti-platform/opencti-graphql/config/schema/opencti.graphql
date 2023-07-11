@@ -1121,6 +1121,8 @@ enum UsersOrdering {
 }
 enum UsersFilter {
   name
+  user_email
+  external
   entity_type
   created_at
 }
