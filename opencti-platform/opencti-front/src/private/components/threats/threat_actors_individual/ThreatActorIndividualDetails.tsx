@@ -18,6 +18,7 @@ import {
   ThreatActorIndividualDetails_ThreatActorIndividual$data,
   ThreatActorIndividualDetails_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
+import Carousel from 'react-material-ui-carousel';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -51,6 +52,15 @@ const ThreatActorIndividualDetailsFragment = graphql`
     secondary_motivations
     goals
     roles
+    importFilesMimeType(first: 1000, mimeType: "image/") @connection(key: "Pagination_importFilesMimeType") {
+      edges {
+        node {
+          metaData {
+            mimetype
+          }
+        }
+      }
+    }
   }
 `;
 
@@ -65,6 +75,11 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
+  const mimeType = data.importFiles?.edges?.map((n) => n?.node.metaData?.mimetype);
+  const images = mimeType?.includes('/images');
+
+  console.log('images', images, 'mimeType', mimeType);
+
   return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -80,6 +95,17 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                 source={data.description}
                 limit={400}
               />
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Threat actor individual types')}
+              </Typography>
+              {data.threat_actor_types
+                && data.threat_actor_types.map((threatActorIndividualType) => (
+                  <Chip
+                    key={threatActorIndividualType}
+                    classes={{ root: classes.chip }}
+                    label={threatActorIndividualType}
+                  />
+                ))}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -152,17 +178,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Threat actor individual types')}
-              </Typography>
-              {data.threat_actor_types
-                && data.threat_actor_types.map((threatActorIndividualType) => (
-                  <Chip
-                    key={threatActorIndividualType}
-                    classes={{ root: classes.chip }}
-                    label={threatActorIndividualType}
-                  />
-                ))}
+              <Carousel></Carousel>
               <Typography
                 variant="h3"
                 gutterBottom={true}

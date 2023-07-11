@@ -24610,6 +24610,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID'];
   importFiles?: Maybe<FileConnection>;
+  importFilesMimeType?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']>;
@@ -24683,6 +24684,12 @@ export type ThreatActorIndividualGroupingsArgs = {
 
 export type ThreatActorIndividualImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorIndividualImportFilesMimeTypeArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+  mimeType?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -35474,6 +35481,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualImportFilesArgs>>;
+  importFilesMimeType?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualImportFilesMimeTypeArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorIndividualJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

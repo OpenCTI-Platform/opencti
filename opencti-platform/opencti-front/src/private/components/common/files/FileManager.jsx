@@ -36,6 +36,7 @@ import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import PictureManagementViewer from "./PictureManagementViewer";
 
 const styles = () => ({
   container: {
@@ -231,6 +232,7 @@ const FileManager = ({
           entity={entity}
           handleOpenImport={handleOpenImport}
         />
+        <PictureManagementViewer />
       </Grid>
       <div>
         <Formik

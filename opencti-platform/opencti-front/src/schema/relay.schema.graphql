@@ -11341,6 +11341,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  importFilesMimeType(first: Int, mimeType: String): FileConnection
 }
 
 enum ThreatActorsIndividualOrdering {
