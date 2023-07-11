@@ -1,15 +1,10 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  PictureManagementViewer_pictureManagement$data,
-  PictureManagementViewer_pictureManagement$key,
-} from './__generated__/PictureManagementViewer_pictureManagement.graphql';
 
 const useStyles = makeStyles(() => ({
   paper: {
