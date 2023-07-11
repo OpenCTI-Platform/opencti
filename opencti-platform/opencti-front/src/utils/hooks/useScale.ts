@@ -65,36 +65,26 @@ export const buildScaleLevel = (
       scale,
     };
   }
-  let label;
-  let color;
+  let level: Tick;
   const { min, max } = scale;
   const sortedTicks = (
     scale.ticks.filter((tick) => !!tick) as Array<Tick>
   ).sort((a: Tick, b: Tick) => b.value - a.value);
   const tickLevel = sortedTicks.find((tick: Tick) => value >= tick?.value);
   if (value > max.value) {
-    label = max.label;
-    color = max.color;
+    level = max;
   } else if (tickLevel) {
-    label = tickLevel.label;
-    color = tickLevel.color;
-  } else if (value <= min.value) {
-    label = noneLevel.label;
-    color = noneLevel.color;
+    level = tickLevel;
+  } else if (value < min.value) {
+    level = { value, ...noneLevel };
   } else {
-    label = min.label;
-    color = min.color;
+    level = min;
   }
   return {
-    level: {
-      value,
-      label,
-      color,
-    },
+    level,
     marks: [
       min,
-      ...sortedTicks,
-      { value: max.value, color: max.color, label: ' ' },
+      ...sortedTicks.sort((a: Tick, b: Tick) => a.value - b.value),
     ],
     scale,
   };

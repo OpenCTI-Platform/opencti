@@ -120,6 +120,7 @@ const Note = createFragmentContainer(NoteComponent, {
         id
         name
         entity_type
+        x_opencti_reliability
       }
       creators {
         id

@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const styles = () => ({
   paper: {
@@ -44,9 +46,20 @@ class IndividualDetailsComponent extends Component {
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
+                {t('Reliability')}
+              </Typography>
+              <ItemOpenVocab
+                  key="type"
+                  small={true}
+                  type="reliability_ov"
+                  value={individual.x_opencti_reliability}
+              />
+              <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                 {t('Contact information')}
               </Typography>
-              <pre>{individual.contact_information}</pre>
+              <FieldOrEmpty source={individual.contact_information}>
+                <pre>{individual.contact_information}</pre>
+              </FieldOrEmpty>
             </Grid>
           </Grid>
         </Paper>
@@ -68,6 +81,7 @@ const IndividualDetails = createFragmentContainer(IndividualDetailsComponent, {
       id
       contact_information
       description
+      x_opencti_reliability
     }
   `,
 });

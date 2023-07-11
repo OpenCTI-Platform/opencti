@@ -43,6 +43,7 @@ const intrusionSetFragment = graphql`
         id
         name
         entity_type
+        x_opencti_reliability
       }
     }
     creators {

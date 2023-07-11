@@ -3580,6 +3580,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   content: String
   content_mapping: String
   report_types: [String]
+  x_opencti_reliability: String
   published: DateTime
   objectParticipant: ParticipantConnection
   # Technical
@@ -3604,6 +3605,7 @@ input ReportAddInput {
   content_mapping: String
   published: DateTime!
   report_types: [String]
+  x_opencti_reliability: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -3948,6 +3950,7 @@ interface Identity {
   roles: [String]
   contact_information: String
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   # Technical
   creators: [Creator!]
   toStix: String
@@ -4128,6 +4131,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   # Individual
   x_opencti_firstname: String
   x_opencti_lastname: String
@@ -4155,6 +4159,7 @@ input IndividualAddInput {
   x_opencti_aliases: [String]
   x_opencti_firstname: String
   x_opencti_lastname: String
+  x_opencti_reliability: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -4228,14 +4233,6 @@ type MeOrganizationConnection {
   edges: [MeOrganizationEdge!]!
 }
 
-enum OrganizationReliability {
-  A
-  B
-  C
-  D
-  E
-  F
-}
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   id: ID! # internal_id
   standard_id: String!
@@ -4339,9 +4336,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   # Organization
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
   members(
     first: Int
@@ -4377,7 +4374,7 @@ input OrganizationAddInput {
   revoked: Boolean
   lang: String
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
+  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -4534,6 +4531,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   # Sector
   parentSectors: SectorConnection
   subSectors: SectorConnection
@@ -4714,6 +4712,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   # System
   x_opencti_firstname: String
   x_opencti_lastname: String
@@ -4740,6 +4739,7 @@ input SystemAddInput {
   x_opencti_aliases: [String]
   x_opencti_firstname: String
   x_opencti_lastname: String
+  x_opencti_reliability: String
   confidence: Int
   revoked: Boolean
   lang: String

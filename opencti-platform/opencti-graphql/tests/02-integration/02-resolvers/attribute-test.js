@@ -98,7 +98,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_IDENTITY_INDIVIDUAL }
     });
     attributes = queryResult.data.schemaAttributes.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(25);
+    expect(attributes.length).toEqual(26);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('contact_information')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_firstname')).toBeTruthy(); // Direct attribute

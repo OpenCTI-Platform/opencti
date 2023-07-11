@@ -24,6 +24,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { insertNode } from '../../../../utils/store';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import {
   IndividualCreationMutation,
   IndividualCreationMutation$variables,
@@ -94,6 +95,7 @@ const INDIVIDUAL_TYPE = 'Individual';
 interface IndividualAddInput {
   name: string
   description: string
+  x_opencti_reliability: undefined | null
   createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
@@ -125,6 +127,8 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
       .required(t('This field is required')),
     description: Yup.string()
       .nullable(),
+    x_opencti_reliability: Yup.string()
+      .nullable(),
   };
   const individualValidator = useSchemaCreationValidation(INDIVIDUAL_TYPE, basicShape);
 
@@ -138,6 +142,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     const input: IndividualCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
+      x_opencti_reliability: values.x_opencti_reliability,
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
@@ -172,6 +177,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     {
       name: '',
       description: '',
+      x_opencti_reliability: undefined,
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
@@ -209,6 +215,14 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
           multiline={true}
           rows="4"
           style={{ marginTop: 20 }}
+        />
+        <OpenVocabField
+            label={t('Reliability')}
+            type="reliability_ov"
+            name="x_opencti_reliability"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            onChange={setFieldValue}
         />
         <CreatedByField
           name="createdBy"

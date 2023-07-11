@@ -1,6 +1,6 @@
 import { Field, FieldProps } from 'formik';
 import React, { FunctionComponent } from 'react';
-import { Slider } from '@mui/material';
+import { Slider, Select, MenuItem, Grid } from '@mui/material';
 import TextField from './TextField';
 import { SubscriptionFocus } from './Subscription';
 import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
@@ -41,8 +41,8 @@ InputSliderFieldProps & FieldProps
     marks,
     scale,
   } = useLevel(entityType, attributeName, value);
-  const min = marks.length > 0 ? marks[0].value : 0;
-  const max = marks.length > 0 ? marks[marks.length - 1].value : 0;
+  const min = scale?.min ? scale.min.value : 0;
+  const max = scale?.max ? scale.max.value : 0;
   const sliderStyle = {
     color,
     '& .MuiSlider-rail': {
@@ -53,20 +53,45 @@ InputSliderFieldProps & FieldProps
   if (variant === 'edit') {
     return (
       <>
-        <Field
-          component={TextField}
-          fullWidth={true}
-          variant="standard"
-          type="number"
-          name={name}
-          label={label}
-          onSubmit={onSubmit}
-          onFocus={onFocus}
-          disabled={disabled}
-          helpertext={
-            <SubscriptionFocus context={editContext} fieldName={name} />
-          }
-        />
+        <Grid container={true} spacing={3} alignItems="end">
+          <Grid item={true} xs={6}>
+            <Field
+              component={TextField}
+              fullWidth
+              variant="standard"
+              type="number"
+              name={name}
+              label={label}
+              onSubmit={onSubmit}
+              onFocus={onFocus}
+              disabled={disabled}
+              helpertext={
+                <SubscriptionFocus context={editContext} fieldName={name} />
+              }
+            />
+          </Grid>
+          <Grid item={true} xs={6}>
+            <Select
+              fullWidth
+              variant="standard"
+              labelId={name}
+              value={currentLevel.level.value}
+              onChange={(event) => setFieldValue(name, event.target.value)}
+              disabled={disabled}
+            >
+              {marks.map((mark, i: number) => {
+                return (
+                  <MenuItem
+                    key={i}
+                    value={mark.value}
+                  >
+                    {mark.label}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </Grid>
+        </Grid>
         <Slider
           value={value}
           min={min}

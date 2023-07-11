@@ -107,6 +107,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

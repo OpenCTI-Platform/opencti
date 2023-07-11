@@ -136,6 +136,7 @@ const Position = createFragmentContainer(PositionComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

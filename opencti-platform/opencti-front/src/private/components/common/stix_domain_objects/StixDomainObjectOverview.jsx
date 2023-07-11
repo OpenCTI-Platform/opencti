@@ -35,6 +35,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemAssignees from '../../../../components/ItemAssignees';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -154,6 +155,39 @@ class StixDomainObjectOverview extends Component {
               <ItemAuthor
                 createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
               />
+              <Grid container={true} columnSpacing={1}>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}>
+                    {t('Reliability')}
+                    {!stixDomainObject.x_opencti_reliability && (
+                      <span style={{ fontStyle: 'italic' }}> ({t('of author')})</span>
+                    )}
+                  </Typography>
+                  <ItemOpenVocab
+                    key="type"
+                    type="reliability_ov"
+                    value={!stixDomainObject.x_opencti_reliability ? stixDomainObject.createdBy?.x_opencti_reliability : stixDomainObject.x_opencti_reliability}
+                    small
+                    inline
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Confidence level')}
+                  </Typography>
+                  <ItemConfidence
+                    confidence={stixDomainObject.confidence}
+                    entityType={stixDomainObject.entity_type}
+                  />
+                </Grid>
+              </Grid>
               <StixCoreObjectOpinions
                 stixCoreObjectId={stixDomainObject.id}
                 variant="inEntity"
@@ -243,14 +277,6 @@ class StixDomainObjectOverview extends Component {
                 marginTop={20}
                 entity_type={stixDomainObject.entity_type}
               />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Confidence level')}
-              </Typography>
-              <ItemConfidence confidence={stixDomainObject.confidence} entityType={stixDomainObject.entity_type} />
               <Typography
                 variant="h3"
                 gutterBottom={true}

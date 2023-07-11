@@ -119,6 +119,7 @@ interface ReportAddInput {
   published: Date | null;
   confidence: number | undefined;
   report_types: string[];
+  x_opencti_reliability: string | undefined
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectLabel: Option[];
@@ -161,6 +162,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
     report_types: Yup.array().nullable(),
+    x_opencti_reliability: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
@@ -178,6 +180,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       published: values.published,
       confidence: parseInt(String(values.confidence), 10),
       report_types: values.report_types,
+      x_opencti_reliability: values.x_opencti_reliability,
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
@@ -217,6 +220,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     name: inputValue ?? '',
     published: null,
     report_types: [],
+    x_opencti_reliability: undefined,
     confidence: defaultConfidence,
     description: '',
     content: '',
@@ -261,6 +265,14 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
+          />
+          <OpenVocabField
+            label={t('Reliability')}
+            type="reliability_ov"
+            name="x_opencti_reliability"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            onChange={setFieldValue}
           />
           <ConfidenceField
             entityType="Report"

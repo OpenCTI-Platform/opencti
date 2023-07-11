@@ -615,6 +615,7 @@ const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixRepor
         content: instance.content,
         content_mapping: instance.content_mapping,
         object_refs_inferred: convertObjectReferences(instance, true),
+        reliability: instance.x_opencti_reliability,
       })
     }
   };

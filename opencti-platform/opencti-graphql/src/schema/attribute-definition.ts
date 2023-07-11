@@ -181,6 +181,15 @@ export const confidence: AttributeDefinition = {
   upsert: true,
 };
 
+export const xOpenctiReliability: AttributeDefinition = {
+  name: 'x_opencti_reliability',
+  type: 'string',
+  mandatoryType: 'no',
+  multiple: false,
+  upsert: false,
+  label: 'Reliability'
+};
+
 export const lang: AttributeDefinition = {
   name: 'lang',
   type: 'string',

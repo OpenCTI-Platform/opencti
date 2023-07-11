@@ -832,6 +832,38 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   // R
+  reliability_ov: [
+    {
+      key: 'A - Completely reliable',
+      description: 'No doubt of authenticity, trustworthiness, or competency; has a history of complete reliability',
+      order: 6
+    },
+    {
+      key: 'B - Usually reliable',
+      description: 'Minor doubt about authenticity, trustworthiness, or competency; has a history of valid information most of the time',
+      order: 5
+    },
+    {
+      key: 'C - Fairly reliable',
+      description: 'Doubt of authenticity, trustworthiness, or competency but has provided valid information in the past',
+      order: 4
+    },
+    {
+      key: 'D - Not usually reliable',
+      description: 'Significant doubt about authenticity, trustworthiness, or competency but has provided valid information in the past',
+      order: 3
+    },
+    {
+      key: 'E - Unreliable',
+      description: 'Lacking in authenticity, trustworthiness, and competency; history of invalid information',
+      order: 2
+    },
+    {
+      key: 'F - Reliability cannot be judged',
+      description: 'No basis exists for evaluating the reliability of the source',
+      order: 1
+    },
+  ],
   report_types_ov: [
     { key: 'threat-report' },
     { key: 'internal-report' },

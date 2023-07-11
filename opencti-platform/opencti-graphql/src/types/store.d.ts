@@ -47,7 +47,7 @@ import {
   INPUT_MARKINGS,
   INPUT_OBJECTS, INPUT_PARTICIPANT
 } from '../schema/general';
-import type { OrganizationReliability, StixId } from './stix-common';
+import type { StixId } from './stix-common';
 import type { PageInfo, EditOperation } from '../generated/graphql';
 import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-sco';
 
@@ -266,7 +266,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   incident_type: string;
 
   x_opencti_location_type: string;
-  x_opencti_reliability: OrganizationReliability;
+  x_opencti_reliability: string;
   x_opencti_organization_type: string;
   x_opencti_attack_vector: string;
   x_opencti_availability_impact: string;

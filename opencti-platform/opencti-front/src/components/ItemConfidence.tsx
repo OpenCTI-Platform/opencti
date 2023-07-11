@@ -7,7 +7,6 @@ import { hexToRGB } from '../utils/Colors';
 const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 12,
-    height: 25,
     marginRight: 7,
     textTransform: 'uppercase',
     borderRadius: '0',
@@ -35,11 +34,21 @@ const ItemConfidence: FunctionComponent<ItemConfidenceProps> = ({ confidence, va
   const { level: confidenceLevel } = useLevel(entityType, 'confidence', confidence);
 
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  const multilineChip = {
+    height: 'auto',
+    '& .MuiChip-label': {
+      whiteSpace: 'normal',
+      padding: '4px 6px',
+    },
+  };
   return (
     <Chip
       classes={{ root: style }}
+      variant="outlined"
+      sx={variant !== 'inList' ? multilineChip : {}}
       style={{
         color: confidenceLevel.color,
+        borderColor: confidenceLevel.color,
         backgroundColor: hexToRGB(confidenceLevel.color),
       }}
       label={confidenceLevel.label}

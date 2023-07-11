@@ -34,7 +34,7 @@ describe('Located at located rule', () => {
       // ---- base
       // HIETZING > located-in > FRANCE (Start: 2020-02-29T23:00:00.000Z, Stop: 2020-02-29T23:00:00.000Z, Confidence: 30)
       // BRETAGNE > located-in > FRANCE (Start: none, Stop: none, Confidence: 0)
-      // FRANCE > located-in > WESTERN EUROPE (Start: none, Stop: none, Confidence: 15)
+      // FRANCE > located-in > WESTERN EUROPE (Start: none, Stop: none, Confidence: 0)
       // WESTERN EUROPE > located-in > EUROPE  (Start: none, Stop: none, Confidence: 0)
       // ---- inferences that will be created
       // HIETZING > located-in > WESTERN EUROPE (Start: 2020-02-29T23:00:00.000Z, Stop: 2020-02-29T23:00:00.000Z, Confidence: 15)
@@ -46,22 +46,22 @@ describe('Located at located rule', () => {
       const afterActivationRelations = await getInferences(RELATION_LOCATED_AT);
       const hietzingToWesternEurope = await inferenceLookup(afterActivationRelations, HIETZING, WESTERN_EUROPE, RELATION_LOCATED_AT);
       expect(hietzingToWesternEurope).not.toBeNull();
-      expect(hietzingToWesternEurope.confidence).toBe(23); // AVG 2 relations (30 + 15) = 45
+      expect(hietzingToWesternEurope.confidence).toBe(15); // AVG 2 relations (30 + 0)/2 = 15
       expect(hietzingToWesternEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToWesternEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
       const hietzingToEurope = await inferenceLookup(afterActivationRelations, HIETZING, EUROPE, RELATION_LOCATED_AT);
       expect(hietzingToEurope).not.toBeNull();
       // For confidence we have 2 explanations
-      // HIETZING > located-in > WESTERN EUROPE [Confidence: 23] > located-in > EUROPE [Confidence: 15] = 38/2 = 19
-      // HIETZING > located-in > FRANCE [Confidence: 30] > located-in > EUROPE  [Confidence: 15] = 45/2 = 22
-      expect(hietzingToEurope.confidence).toBe(21); // AVG 2 relations (19 + 22) = 41
+      // HIETZING > located-in > WESTERN EUROPE [Confidence: 15] > located-in > EUROPE [Confidence: 0] = 15/2 = 8
+      // HIETZING > located-in > FRANCE [Confidence: 30] > located-in > EUROPE  [Confidence: 0] = 30/2 = 15
+      expect(hietzingToEurope.confidence).toBe(12); // AVG 2 relations (8 + 15)/2 = 12
       expect(hietzingToEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToEurope.stop_time).toBe('2020-02-29T23:00:00.000Z');
       expect(hietzingToEurope[RULE].length).toBe(2);
       expect(hietzingToEurope.i_inference_weight).toBe(2);
       const franceToEurope = await inferenceLookup(afterActivationRelations, FRANCE, EUROPE, RELATION_LOCATED_AT);
       expect(franceToEurope).not.toBeNull();
-      expect(franceToEurope.confidence).toBe(15);
+      expect(franceToEurope.confidence).toBe(0);
       expect(franceToEurope.start_time).toBe(FROM_START_STR);
       expect(franceToEurope.stop_time).toBe(UNTIL_END_STR);
       // Create new element to trigger a live event
@@ -87,7 +87,7 @@ describe('Located at located rule', () => {
       // Inferences must have been created by the markings combination
       const parisToWesternEurope = await inferenceLookup(afterLiveRelations, PARIS, WESTERN_EUROPE, RELATION_LOCATED_AT);
       expect(parisToWesternEurope).not.toBeNull();
-      expect(parisToWesternEurope.confidence).toBe(58); // AVG 2 relations (100 + 0) = 50
+      expect(parisToWesternEurope.confidence).toBe(50); // AVG 2 relations (100 + 0) = 50
       expect(parisToWesternEurope.start_time).toBe('2020-01-20T20:30:00.000Z');
       expect(parisToWesternEurope.stop_time).toBe('2020-02-29T10:00:00.000Z');
       const parisToWesternEuropeMarkings = parisToWesternEurope[RELATION_OBJECT_MARKING];
@@ -96,7 +96,7 @@ describe('Located at located rule', () => {
       expect(parisToWesternEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       const parisToEurope = await inferenceLookup(afterLiveRelations, PARIS, EUROPE, RELATION_LOCATED_AT);
       expect(parisToEurope).not.toBeNull();
-      expect(parisToEurope.confidence).toBe(48);
+      expect(parisToEurope.confidence).toBe(38);
       expect(parisToEurope[RULE].length).toBe(2);
       const parisToEuropeMarkings = parisToEurope[RELATION_OBJECT_MARKING];
       expect(parisToEuropeMarkings.length).toBe(2); // TLP:TEST + TLP:CLEAR

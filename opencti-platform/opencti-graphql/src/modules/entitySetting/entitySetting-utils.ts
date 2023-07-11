@@ -37,7 +37,7 @@ export const defaultScale = JSON.stringify({
     min: {
       value: 0,
       color: '#f44336',
-      label: 'Low',
+      label: '6 - Truth Cannot be judged',
     },
     max: {
       value: 100,
@@ -45,8 +45,11 @@ export const defaultScale = JSON.stringify({
       label: 'Out of Range',
     },
     ticks: [
-      { value: 30, color: '#ff9800', label: 'Med' },
-      { value: 70, color: '#4caf50', label: 'High' },
+      { value: 1, color: '#f57423', label: '5 - Improbable' },
+      { value: 20, color: '#ff9800', label: '4 - Doubtful' },
+      { value: 40, color: '#f8e71c', label: '3 - Possibly True' },
+      { value: 60, color: '#92f81c', label: '2 - Probably True' },
+      { value: 80, color: '#4caf50', label: '1 - Confirmed by other sources' },
     ],
   }
 });

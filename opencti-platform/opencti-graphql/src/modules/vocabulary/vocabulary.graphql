@@ -23,6 +23,7 @@ enum VocabularyCategory {
   pattern_type_ov
   permissions_ov
   processor_architecture_ov
+  reliability_ov
   report_types_ov
   request_for_information_types_ov
   request_for_takedown_types_ov

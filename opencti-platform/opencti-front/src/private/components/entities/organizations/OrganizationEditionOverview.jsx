@@ -14,6 +14,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import StatusField from '../../common/form/StatusField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
@@ -249,30 +250,18 @@ const OrganizationEditionOverviewComponent = (props) => {
               <MenuItem value="vendor">{t('Vendor')}</MenuItem>
               <MenuItem value="other">{t('Other')}</MenuItem>
             </Field>
-            <Field
-              component={SelectField}
-              variant="standard"
-              name="x_opencti_reliability"
-              onFocus={editor.changeFocus}
-              onChange={handleSubmitField}
-              label={t('Reliability')}
-              fullWidth={true}
-              inputProps={{
-                name: 'x_opencti_reliability',
-                id: 'x_opencti_reliability',
-              }}
-              containerstyle={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_reliability" />
-              }
-            >
-              <MenuItem value="A">{t('reliability_A')}</MenuItem>
-              <MenuItem value="B">{t('reliability_B')}</MenuItem>
-              <MenuItem value="C">{t('reliability_C')}</MenuItem>
-              <MenuItem value="D">{t('reliability_D')}</MenuItem>
-              <MenuItem value="E">{t('reliability_E')}</MenuItem>
-              <MenuItem value="F">{t('reliability_F')}</MenuItem>
-            </Field>
+            <OpenVocabField
+                label={t('Reliability')}
+                type="reliability_ov"
+                name="x_opencti_reliability"
+                onChange={setFieldValue}
+                onFocus={editor.changeFocus}
+                onSubmit={handleSubmitField}
+                multiple={false}
+                editContext={context}
+                variant="edit"
+                containerStyle={fieldSpacingContainerStyle}
+            />
             {organization.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"

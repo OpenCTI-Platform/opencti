@@ -22,12 +22,28 @@ const useStyles = makeStyles(() => ({
   smallIcon: {
     margin: '5px 0 0 10px',
   },
+  inlineIcon: {
+    margin: '5px 0 0 2px',
+  },
+  pre: {
+    marginTop: '7px',
+  },
+  smallPre: {
+    margin: 0,
+    paddingTop: '7px',
+    paddingBottom: '4px',
+  },
+  inlinePre: {
+    margin: 0,
+    padding: '5px',
+  },
 }));
 
 interface ItemOpenVocabProps {
   type: string;
   value?: string | null;
   small: boolean;
+  inline?: boolean;
   queryRef: PreloadedQuery<ItemOpenVocabQuery>;
 }
 
@@ -64,7 +80,7 @@ const ItemOpenVocabDummy = ({ small }: { small: boolean }) => {
 };
 const ItemOpenVocabComponent: FunctionComponent<
 Omit<ItemOpenVocabProps, 'type'>
-> = ({ value, small = true, queryRef }) => {
+> = ({ value, small = true, inline = false, queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
@@ -92,15 +108,18 @@ Omit<ItemOpenVocabProps, 'type'>
   const description = openVocab && openVocab.description
     ? openVocab.description
     : t('No description');
-  const preStyle = small
-    ? { margin: 0, paddingTop: 7, paddingBottom: 4 }
-    : { marginTop: 7 };
+  let preClass = small ? classes.smallPre : classes.pre;
+  let iconClass = small ? classes.smallIcon : classes.icon;
+  if (inline) {
+    iconClass = classes.inlineIcon;
+    preClass = classes.inlinePre;
+  }
   return (
     <span className={classes.container}>
-      <pre style={preStyle}>{value}</pre>
+      <pre className={preClass}>{value}</pre>
       <Tooltip title={t(description)}>
         <InformationOutline
-          className={small ? classes.smallIcon : classes.icon}
+          className={iconClass}
           fontSize="small"
           color="secondary"
         />

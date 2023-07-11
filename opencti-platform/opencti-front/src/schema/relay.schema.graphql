@@ -3025,6 +3025,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   content: String
   content_mapping: String
   report_types: [String]
+  x_opencti_reliability: String
   published: DateTime
   objectParticipant: ParticipantConnection
   creators: [Creator!]
@@ -3049,6 +3050,7 @@ input ReportAddInput {
   content_mapping: String
   published: DateTime!
   report_types: [String]
+  x_opencti_reliability: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -3279,6 +3281,7 @@ interface Identity {
   roles: [String]
   contact_information: String
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection
@@ -3401,6 +3404,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   x_opencti_firstname: String
   x_opencti_lastname: String
   organizations: OrganizationConnection
@@ -3427,6 +3431,7 @@ input IndividualAddInput {
   x_opencti_aliases: [String]
   x_opencti_firstname: String
   x_opencti_lastname: String
+  x_opencti_reliability: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -3503,15 +3508,6 @@ type MeOrganizationConnection {
   edges: [MeOrganizationEdge!]!
 }
 
-enum OrganizationReliability {
-  A
-  B
-  C
-  D
-  E
-  F
-}
-
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   id: ID!
   standard_id: String!
@@ -3553,8 +3549,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   subOrganizations: OrganizationConnection
@@ -3584,7 +3580,7 @@ input OrganizationAddInput {
   revoked: Boolean
   lang: String
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
+  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3683,6 +3679,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   parentSectors: SectorConnection
   subSectors: SectorConnection
   isSubSector: Boolean
@@ -3804,6 +3801,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   x_opencti_firstname: String
   x_opencti_lastname: String
   organizations: OrganizationConnection
@@ -3829,6 +3827,7 @@ input SystemAddInput {
   x_opencti_aliases: [String]
   x_opencti_firstname: String
   x_opencti_lastname: String
+  x_opencti_reliability: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -9977,6 +9976,7 @@ enum VocabularyCategory {
   pattern_type_ov
   permissions_ov
   processor_architecture_ov
+  reliability_ov
   report_types_ov
   request_for_information_types_ov
   request_for_takedown_types_ov
