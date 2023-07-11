@@ -3,7 +3,7 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { BUS_TOPICS, logApp, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
+import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { elFindByIds, elLoadBy } from '../database/engine';
@@ -20,7 +20,17 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYP
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  executionContext,
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  REDACTED_USER,
+  SETTINGS_SET_ACCESSES,
+  SYSTEM_USER
+} from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { now } from '../utils/format';
 import { addGroup } from './grant';
@@ -294,12 +304,13 @@ export const roleEditContext = async (context, user, roleId, input) => {
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : created.from.user_email;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `adds ${created.toType} \`${extractEntityRepresentative(created.to)}\` to user \`${created.from.user_email}\``,
+    message: `adds ${created.toType} \`${extractEntityRepresentative(created.to)}\` to user \`${actionEmail}\``,
     context_data: { id: organizationId, entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(userId);
@@ -426,12 +437,13 @@ export const addUser = async (context, user, newUser) => {
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
   if (isCreation) {
+    const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : newUser.user_email;
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'create',
       event_access: 'administration',
-      message: `creates user \`${userEmail}\``,
+      message: `creates user \`${actionEmail}\``,
       context_data: { id: element.id, entity_type: ENTITY_TYPE_USER, input: newUser }
     });
   }
@@ -509,12 +521,13 @@ export const userEditField = async (context, user, userId, inputs) => {
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: personalUpdate ? 'extended' : 'administration',
-    message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${element.user_email}\``}`,
+    message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -588,12 +601,13 @@ export const meEditField = async (context, user, userId, inputs, password = null
 
 export const userDelete = async (context, user, userId) => {
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'delete',
     event_access: 'administration',
-    message: `deletes user \`${deleted.user_email}\``,
+    message: `deletes user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: deleted }
   });
   await killUserSessions(userId);
@@ -610,12 +624,13 @@ export const userAddRelation = async (context, user, userId, input) => {
   }
   const finalInput = R.assoc('fromId', userId, input);
   const relationData = await createRelation(context, user, finalInput);
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `adds ${relationData.toType} \`${extractEntityRepresentative(relationData.to)}\` for user \`${userData.user_email}\``,
+    message: `adds ${relationData.toType} \`${extractEntityRepresentative(relationData.to)}\` for user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: finalInput }
   });
   await userSessionRefresh(userId);
@@ -628,12 +643,13 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
   }
   const { to } = await deleteRelationsByFromAndTo(context, user, targetUser.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   const input = { relationship_type: relationshipType, toId };
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : targetUser.user_email;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${targetUser.user_email}\``,
+    message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${actionEmail}\``,
     context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(targetUser.id);
@@ -658,12 +674,13 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   }
   const { to } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
   const input = { relationship_type: RELATION_PARTICIPATE_TO, toId };
+  const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : targetUser.user_email;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${targetUser.user_email}\``,
+    message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(userId);
