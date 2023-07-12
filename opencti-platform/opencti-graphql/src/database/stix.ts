@@ -896,6 +896,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_IPV4_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [
     { name: RELATION_BELONGS_TO, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_IPV4_ADDR}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_IPV4_ADDR}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
   // endregion
   // region IPV6_ADDR
   [`${ENTITY_IPV6_ADDR}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
@@ -919,6 +925,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_IPV6_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [
     { name: RELATION_BELONGS_TO, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_IPV6_ADDR}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_IPV6_ADDR}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
   // endregion
   // region DOMAIN_NAME
   [`${ENTITY_DOMAIN_NAME}_${ENTITY_DOMAIN_NAME}`]: [
@@ -932,6 +944,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_DOMAIN_NAME}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
   ],
   // endregion
   // region STIX_FILE
