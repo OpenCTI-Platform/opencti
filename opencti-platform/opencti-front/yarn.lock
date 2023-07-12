@@ -1884,11 +1884,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-highlight@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-highlight@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-highlight@npm:38.1.1"
   dependencies:
-    ckeditor5: 38.1.0
-  checksum: c48b4b30d72da5e3edf27a0aa7eb2bc5c044bf2bcd7acbd668b98fd93d011ebc6f49ad5a5ec08c0197f91b43b2c9ed05540fc8bad450f49f9fe76c72a9faa7b2
+    ckeditor5: 38.1.1
+  checksum: 93dfc773961450d8609411820bdfefe779eac3735d911ae2a176ed63062f5b1c575ff160431f1da35ff66069e4caefb254af332f3587d471c996284308d5fb15
   languageName: node
   linkType: hard
 
