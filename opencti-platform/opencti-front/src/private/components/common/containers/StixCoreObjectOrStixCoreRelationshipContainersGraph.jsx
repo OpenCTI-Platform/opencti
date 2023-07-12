@@ -13,7 +13,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, ViewListOutlined } from '@mui/icons-material';
-import { GraphOutline } from 'mdi-material-ui';
+import { VectorPolygon } from 'mdi-material-ui';
 import withStyles from '@mui/styles/withStyles';
 import {
   applyFilters,
@@ -539,7 +539,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
                       </ToggleButton>
                       <ToggleButton value="graph" aria-label="graph">
                         <Tooltip title={t('Graph view')}>
-                          <GraphOutline fontSize="small" />
+                          <VectorPolygon fontSize="small" />
                         </Tooltip>
                       </ToggleButton>
                       <ToggleButton
@@ -569,7 +569,9 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
                   this,
                 )}
                 handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-                stixCoreObjectsTypes={allStixCoreObjectsTypes.filter((a) => !ignoredStixCoreObjectsTypes.includes(a))}
+                stixCoreObjectsTypes={allStixCoreObjectsTypes.filter(
+                  (a) => !ignoredStixCoreObjectsTypes.includes(a),
+                )}
                 currentStixCoreObjectsTypes={stixCoreObjectsTypes}
                 markedBy={allMarkedBy}
                 currentMarkedBy={markedBy}

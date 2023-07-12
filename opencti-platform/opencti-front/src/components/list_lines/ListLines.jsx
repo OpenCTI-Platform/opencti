@@ -217,24 +217,26 @@ class ListLines extends Component {
                     <Filters
                       searchContext={{
                         entityTypes: exportEntityType ? [exportEntityType] : [],
-                      }}availableFilterKeys={availableFilterKeys}
-                    handleAddFilter={handleAddFilter}
-                    handleSwitchFilter={handleSwitchFilter}
-                    handleRemoveFilter={handleRemoveFilter}
+                      }}
+                      availableFilterKeys={availableFilterKeys}
+                      handleAddFilter={handleAddFilter}
+                      handleSwitchFilter={handleSwitchFilter}
+                      handleRemoveFilter={handleRemoveFilter}
                       availableEntityTypes={availableEntityTypes}
                       availableRelationshipTypes={availableRelationshipTypes}
                       availableRelationFilterTypes={
                         availableRelationFilterTypes
                       }
                     />
-                  )}{(!availableFilterKeys || availableFilterKeys.length === 0)
-                  && !noHeaders
-                  && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
-                <FilterIconButton
-                  availableFilterKeys={availableFilterKeys}
-                  filters={filters}
-                  handleRemoveFilter={handleRemoveFilter}
-                  redirection
+                  )}
+                  {(!availableFilterKeys || availableFilterKeys.length === 0)
+                    && !noHeaders
+                    && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
+                  <FilterIconButton
+                    availableFilterKeys={availableFilterKeys}
+                    filters={filters}
+                    handleRemoveFilter={handleRemoveFilter}
+                    redirection
                   />
                 </div>
               )}

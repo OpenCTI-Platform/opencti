@@ -776,7 +776,7 @@ const ContainerHeader = (props) => {
                   to={`${link}/graph`}
                   selected={currentMode === 'graph'}
                 >
-                  <GraphOutline
+                  <VectorPolygon
                     fontSize="small"
                     color={currentMode === 'graph' ? 'secondary' : 'primary'}
                   />
