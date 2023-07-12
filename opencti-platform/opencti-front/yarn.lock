@@ -1893,11 +1893,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-horizontal-line@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-horizontal-line@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-horizontal-line@npm:38.1.1"
   dependencies:
-    ckeditor5: 38.1.0
-  checksum: 66ca84bf5cb554ffc40e4e572ad9936bc52b03d8a93c728430d3f25aafe0bde915bc511636931808f5568ab3880b7c4ad7107ca39b5923ed6f72305bc8a51c16
+    ckeditor5: 38.1.1
+  checksum: 4b9a78144fb769481f0fd4f18ace40af0a265dd14e2961cf1ab51b987989409c6f991dc148b1a94bfedc530304778645fffce248da1212823da372b7a55bf11e
   languageName: node
   linkType: hard
 
