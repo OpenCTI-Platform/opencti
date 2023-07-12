@@ -161,9 +161,9 @@ class CourseOfAction:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
-        LOGGER.info("Listing Course-Of-Actions with filters %s.", json.dumps(filters))
+        LOGGER.info("Listing Courses-Of-Action with filters %s.", json.dumps(filters))
         query = (
             """
             query CoursesOfAction($filters: [CoursesOfActionFiltering], $search: String, $first: Int, $after: ID, $orderBy: CoursesOfActionOrdering, $orderMode: OrderingMode) {
@@ -197,9 +197,31 @@ class CourseOfAction:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["coursesOfAction"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["coursesOfAction"])
+            final_data = final_data + data
+            while result["data"]["coursesOfAction"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["coursesOfAction"]["pageInfo"]["endCursor"]
+                LOGGER.info("Listing Courses-Of-Action after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["coursesOfAction"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["coursesOfAction"], with_pagination
+            )
 
     """
         Read a Course-Of-Action object

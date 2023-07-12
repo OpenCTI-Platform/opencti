@@ -207,9 +207,31 @@ class Identity:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["identities"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["identities"])
+            final_data = final_data + data
+            while result["data"]["identities"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["identities"]["pageInfo"]["endCursor"]
+                LOGGER.info("Listing Identities after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["identities"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["identities"], with_pagination
+            )
 
     """
         Read a Identity object
