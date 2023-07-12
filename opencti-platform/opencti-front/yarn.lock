@@ -1953,12 +1953,12 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-mention@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-mention@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-mention@npm:38.1.1"
   dependencies:
-    ckeditor5: 38.1.0
+    ckeditor5: 38.1.1
     lodash-es: ^4.17.15
-  checksum: 2913b28124afa99b56dff365eb0e44ca9a521e8fd79f71e8bfb1db1c8013c290c2c64dff9b3d93efc4c6c66d7c9ba206d419f3c8b74d5228155005a298eb61e2
+  checksum: b02f4418885313bb1a2308636ed49dfc016aeb4ca9211faf89bb378e7912abdcc1d72d1a61beccc233d9a81af128f6cde90708ba84fe0f0361622eee35ad3ef6
   languageName: node
   linkType: hard
 
