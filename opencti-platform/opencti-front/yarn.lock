@@ -1943,12 +1943,12 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-media-embed@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-media-embed@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-media-embed@npm:38.1.1"
   dependencies:
-    "@ckeditor/ckeditor5-ui": 38.1.0
-    ckeditor5: 38.1.0
-  checksum: 6d508ee1d3e3b5743df6a0d677c4988f217e3f299c3d198b0c552d808b45fdcca16d8c96bec129699385f30276161a3ebdb91774c50e22b4ce0ce4e0342c05ba
+    "@ckeditor/ckeditor5-ui": 38.1.1
+    ckeditor5: 38.1.1
+  checksum: 9c6eff349a950975adf79f2cc744b8e6861d0b0d5de6be5f2a162c2c85c471ea40c5da1a7b30a17e77205438b839c697c31d52fdf65badd5d0c8a8e89e5635de
   languageName: node
   linkType: hard
 
