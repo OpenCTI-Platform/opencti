@@ -8268,14 +8268,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-scalars@npm:1.22.0":
-  version: 1.22.0
-  resolution: "graphql-scalars@npm:1.22.0"
+"graphql-scalars@npm:1.22.2":
+  version: 1.22.2
+  resolution: "graphql-scalars@npm:1.22.2"
   dependencies:
     tslib: ^2.5.0
   peerDependencies:
     graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-  checksum: cf367f347886868fe06729bc89b4da4f7858a374279fe80d02b9f65a61f75619ca1bfbb9d1a09ce6b0a0908287d3d071832f254f58cd7759d413b6128dfed190
+  checksum: 4a5e7aa2d81fbdeeef10ca77b44b4d171f5798640db4b57f65dd3285ce9d17e55714cc3e0460e917041c0432f25881955204552937876397f135fd95eddb8b0a
   languageName: node
   linkType: hard
 
@@ -10501,7 +10501,7 @@ __metadata:
     graphql-import: 1.0.2
     graphql-redis-subscriptions: 2.6.0
     graphql-relay: 0.10.0
-    graphql-scalars: 1.22.0
+    graphql-scalars: 1.22.2
     graphql-subscriptions: 2.0.0
     graphql-tag: 2.12.6
     graphql-upload: 16.0.2
