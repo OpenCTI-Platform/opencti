@@ -2068,21 +2068,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-theme-lark@npm:38.1.1":
+"@ckeditor/ckeditor5-theme-lark@npm:38.1.1, @ckeditor/ckeditor5-theme-lark@npm:^38.0.1":
   version: 38.1.1
   resolution: "@ckeditor/ckeditor5-theme-lark@npm:38.1.1"
   dependencies:
     "@ckeditor/ckeditor5-ui": 38.1.1
   checksum: 7251b8c7c7970b067b6ec691acc00ec03043caf9f9b2a4fd16fffc65c4c859e1980c59daedbde363bd530bacbf0f10548286fb809273cb35a9228e2ccfd6a5c5
-  languageName: node
-  linkType: hard
-
-"@ckeditor/ckeditor5-theme-lark@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-theme-lark@npm:38.1.0"
-  dependencies:
-    "@ckeditor/ckeditor5-ui": 38.1.0
-  checksum: 31ae81a99c27b78cf6f31acf2352b59984b136ce5442817384bbe069cf2bc981aff05add7324e8c49d10f846d88c1dc2427f65bbd5fbc3e19485f7bf3ae5f041
   languageName: node
   linkType: hard
 
