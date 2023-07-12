@@ -166,7 +166,7 @@ class Incident:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
         LOGGER.info("Listing Incidents with filters %s.", json.dumps(filters))
         query = (
@@ -202,9 +202,31 @@ class Incident:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["incidents"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["incidents"])
+            final_data = final_data + data
+            while result["data"]["incidents"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["incidents"]["pageInfo"]["endCursor"]
+                LOGGER.info("Listing Incidents after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["incidents"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["incidents"], with_pagination
+            )
 
     """
         Read a Incident object
