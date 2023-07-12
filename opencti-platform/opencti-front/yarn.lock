@@ -1922,13 +1922,13 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-link@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-link@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-link@npm:38.1.1"
   dependencies:
-    "@ckeditor/ckeditor5-ui": 38.1.0
-    ckeditor5: 38.1.0
+    "@ckeditor/ckeditor5-ui": 38.1.1
+    ckeditor5: 38.1.1
     lodash-es: ^4.17.15
-  checksum: 40a485b64e7eed6cc143322167f14ae78b2c1c14854f07a7a72cdca6941c7e2644025361e05bdd5d80fc61c4e305231dca383302b4b6ad593f155e3c122d66fc
+  checksum: 7a675eebe276ed20aa7d8a8968aa2358a5b592953bf7ed2b0996d0281560caac9c01b1b4ed02509b1250b0b7f3c7b0e36b7881ab81e428e43feb972b55951e97
   languageName: node
   linkType: hard
 
