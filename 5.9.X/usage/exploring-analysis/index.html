@@ -12,7 +12,7 @@
         <meta name="author" content="Filigran">
       
       
-        <link rel="canonical" href="https://docs.opencti.io/5.9.X/usage/exploring-analysis/">
+        <link rel="canonical" href="https://docs.opencti.io/latest/usage/exploring-analysis/">
       
       
         <link rel="prev" href="../search/">
@@ -1507,6 +1507,28 @@
     <span class="md-ellipsis">
       
         Malware Analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External references
       
     </span>
   </a>
@@ -3932,6 +3954,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External references
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -4045,14 +4089,14 @@
 
 
 <h1 id="exploring-analysis">Exploring "Analysis"</h1>
-<p>When you click on "Analysis" in the left-side bar, the user access all the "Analysis" tabs, visible on the top bar on the left. By default, the user directly access the "Reports" tab, but can navigate to the other tabs as well.</p>
+<p>When you click on "Analysis" in the left-side bar, you access all the "Analysis" tabs, visible on the top bar on the left. By default, the user directly access the "Reports" tab, but can navigate to the other tabs as well.</p>
 <p>From the <code>Analysis</code> section, users can access the following tabs:</p>
 <ul>
 <li><code>Reports</code>: See Reports as a sort of containers to detail and structure what is contained on a specific report, either from a source or write by yourself. Think of it as an Intelligence Production in OpenCTI.</li>
 <li><code>Groupings</code>: Groupings are containers, like Reports, but do not represent an Intelligence Production. They regroup Objects sharing an explicit context. For example, a Grouping might represent a set of data that, in time, given sufficient analysis, would mature to convey an incident or threat report as Report container.</li>
 <li><code>Malware Analysis</code>: As define by STIX 2.1 standard, Malware Analysis captures the metadata and results of a particular static or dynamic analysis performed on a malware instance or family.</li>
 <li><code>Notes</code>: Through this tab, you can find all the Notes that have been written in the platform, for example to add some analyst's unstructured knowledge about an Object.</li>
-<li><code>External references</code>: Intelligence is never create from nothing. External references give user a way to link sources or reference documents to any Object in the platform.</li>
+<li><code>External references</code>: Intelligence is never created from nothing. External references give user a way to link sources or reference documents to any Object in the platform.</li>
 </ul>
 <p><a class="glightbox" href="../assets/analysis-default-page.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Analysis Default page is Reports" src="../assets/analysis-default-page.png" /></a></p>
 <h2 id="reports">Reports</h2>
@@ -4114,6 +4158,37 @@ The view can be filtered and displayed relationships too.</p>
 - Observables: A table containing all SCO (Stix Cyber Observable) contained in the Grouping, with search and filters available. It also display if the SDO has been added directly or through <a href="../inferences/">inferences with the reasonging engine</a>
 - Data: as described <a href="../overview/">here</a>.</p>
 <h2 id="malware-analysis">Malware Analysis</h2>
+<p>Malware analyses are an important part of the Cyber Threat Intelligence, allowing an precise understanding of what and how a malware really do on the host but also how and from where it receives its command and communicates its results.</p>
+<p>In OpenCTI, Malware Analyses can be created from enrichment connectors that will take an Observable as input and perform a scan on a online service platform to bring back results. As such, Malware Analysis can be done on File, Domain and URL.</p>
+<p>In the MITRE STIX 2.1 documentation, a <code>Malware Analysis</code> is defined as such :</p>
+<blockquote>
+<p>Malware Analysis captures the metadata and results of a particular static or dynamic analysis performed on a malware instance or family.</p>
+</blockquote>
+<p>When clicking on the Malware Analysis tab at the top of the interface, you access the list of all Malware Analysis you have access too, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes of the Malware Analysis.</p>
+<p>Clicking on a Malware Analysis, you land on its Overview tab. The following tabs are accessible:
+- Overview: This view contains some additions from the common Overview <a href="../overview/">here</a>. You will find here details about how the analysis have been performed, what is the global result regarding the malicioussness of the analysed artifact and all the Observables that have been found during the analysis. 
+- Knowledge: If you Malware analysis is linked to other Objects that are not part of the analysis result, they will be displayed here.
+- Data: as described <a href="../overview/">here</a>.
+- History: as described <a href="../overview/">here</a>.</p>
+<p><a class="glightbox" href="../assets/malwareanalysis-overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Malware Analysis Overview" src="../assets/malwareanalysis-overview.png" /></a></p>
+<h2 id="notes">Notes</h2>
+<p>Not every Knowledge can be structured. For allowing any users to share their insights about a specific Knowledge, they can create a Note for every Object and relationship in OpenCTI they can access to. All the Notes are listed within the Analysis menu for allowing global review of this unstructured addition to the global Knowledge.</p>
+<p>In the MITRE STIX 2.1 documentation, a <code>Note</code> is defined as such :</p>
+<blockquote>
+<p>A Note is intended to convey informative text to provide further context and/or to provide additional analysis not contained in the STIX Objects, Marking Definition objects, or Language Content objects which the Note relates to. Notes can be created by anyone (not just the original object creator).</p>
+</blockquote>
+<p>Clicking on a Note, you land on its Overview tab. The following tabs are accessible:
+- Overview: as described <a href="../overview/">here</a>.
+- Data: as described <a href="../overview/">here</a>.
+- History: as described <a href="../overview/">here</a>.</p>
+<h2 id="external-references">External references</h2>
+<p>Intelligence is never created from nothing. External references give user a way to link sources or reference documents to any Object in the platform. All external references are listed within the Analysis menu for accessing directly sources of the structured Knowledge.</p>
+<p>In the MITRE STIX 2.1 documentation, a <code>External references</code> is defined as such :</p>
+<blockquote>
+<p>External references are used to describe pointers to information represented outside of STIX. For example, a Malware object could use an external reference to indicate an ID for that malware in an external database or a report could use references to represent source material.</p>
+</blockquote>
+<p>Clicking on an External reference, you land on its Overview tab. The following tabs are accessible:
+- Overview: as described <a href="../overview/">here</a>.</p>
 
   
     
@@ -4129,7 +4204,7 @@ The view can be filtered and displayed relationships too.</p>
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-10T09:32:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-10</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-12T08:35:17+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-12</span>
       </span>
     
     

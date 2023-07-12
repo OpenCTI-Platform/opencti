@@ -12,7 +12,7 @@
         <meta name="author" content="Filigran">
       
       
-        <link rel="canonical" href="https://docs.opencti.io/5.9.X/usage/exploring-threats/">
+        <link rel="canonical" href="https://docs.opencti.io/latest/usage/exploring-threats/">
       
       
         <link rel="prev" href="../exploring-observations/">
@@ -102,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#manual-creations" class="md-skip">
+        <a href="#threats" class="md-skip">
           Skip to content
         </a>
       
@@ -1447,6 +1447,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Threats
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1462,6 +1479,120 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#threat-actors-group-and-individual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat actors (Group and Individual)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Threat actors (Group and Individual)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general-presentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General presentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-knowledge-associated-with-a-threat-actor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualizing Knowledge associated with a Threat actor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intrusion-sets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intrusion Sets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Intrusion Sets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-knowledge-associated-with-an-intrusion-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualizing Knowledge associated with an Intrusion set
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#campaigns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Campaigns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Campaigns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-knowledge-associated-with-a-campaign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualizing Knowledge associated with a Campaign
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -3646,6 +3777,109 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#threat-actors-group-and-individual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat actors (Group and Individual)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Threat actors (Group and Individual)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#general-presentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General presentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-knowledge-associated-with-a-threat-actor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualizing Knowledge associated with a Threat actor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intrusion-sets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intrusion Sets
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Intrusion Sets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-knowledge-associated-with-an-intrusion-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualizing Knowledge associated with an Intrusion set
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#campaigns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Campaigns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Campaigns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visualizing-knowledge-associated-with-a-campaign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualizing Knowledge associated with a Campaign
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3756,13 +3990,69 @@
   
 
 
-<h1 id="manual-creations">Manual creations</h1>
-<div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participae, dont hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
-</div>
+<h1 id="threats">Threats</h1>
+<p>When you click on "Threats" in the left-side bar, you access all the "Threats" tabs, visible on the top bar on the left. By default, the user directly access the "Threat Actor (Group)" tab, but can navigate to the other tabs as well.</p>
+<p>From the <code>Threats</code> section, users can access the following tabs:</p>
+<ul>
+<li><code>Threat actors (Group)</code>: Threat actor (Group) represents a physical group of attackers operating an Intrusion set, using malware and attack infrastructure, etc.</li>
+<li><code>Threat actors (Indvidual)</code>: Threat actor (Individual) represents a real attacker that can be described by physical and personal attributes and motivations. Threat actor (Individual) operates Intrusion set, uses malware and infrastructure, etc.</li>
+<li><code>Intrusion sets</code>: Intrusion set is an important concept in Cyber Threat Intelligence field. It is a consistent set of technical and non technical elements corresponding of what, how and why a Threat actor acts. it is particularly usefull for associating multiple attacks and malicious actions to a defined Threat, even without sufficiant informations regarding who did them. Often, with you understanding of the threat growing, you will link an Intrusion set to a Threat actor (either a Group or an Individual).</li>
+<li><code>Campaigns</code>: Campaign represents a serie of attacks taking place in a certain period of time and/or targeting a consistent subset of Organization/Individual.</li>
+</ul>
+<h2 id="threat-actors-group-and-individual">Threat actors (Group and Individual)</h2>
+<h3 id="general-presentation">General presentation</h3>
+<p>Threat actors are the humans who are building, deploying and operating intrusion sets. A threat actor can be an single individual or a group of attackers (who may be composed of individuals). A group of attackers may be a state-nation, a state-sponsored group, a corporation, a group of hacktivists, etc. </p>
+<p>Beware, groups of attackers might be modelized as "Intrusion sets" in feeds, as there is sometimes a misunderstanding in the industry between group of people and the technical/operational intrusion set they operate.</p>
+<p><a class="glightbox" href="../assets/cards-threat-group.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="The Threat actor (Group) cards" src="../assets/cards-threat-group.png" /></a></p>
+<p>When clicking on the Threat actor (Group or Individual) tabs at the top left, you access the list of all the groups of Threat actors or INdivudual Threat actors you have access too, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. These groups or individual are displayed as <strong>Cards</strong> where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares they used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Threat actors.</p>
+<p>At the top right of each Card, you can click the star icon to put it as favorite. It will pin the card on top of the list. You will also be able to display all your favorite easily in your <a href="../dashboards/">Custom Dashboards</a>.</p>
+<h3 id="visualizing-knowledge-associated-with-a-threat-actor">Visualizing Knowledge associated with a Threat actor</h3>
+<p>When clicking on a Threat actor Card, you land on its Overview tab. For a Threat actor, the following tabs are accessible:</p>
+<ul>
+<li>Overview: as described <a href="../overview/">here</a>.</li>
+<li>Knowledge: a complex tab that regroups all the structured Knowledge linked to the Threat actor. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Threat actor, etc. </li>
+<li>Analyses: as described <a href="../overview/">here</a>.</li>
+<li>Data: as described <a href="../overview/">here</a>.</li>
+<li>History: as described <a href="../overview/">here</a>.</li>
+</ul>
+<h2 id="intrusion-sets">Intrusion Sets</h2>
+<p>An intrusion set is a consistent group of technical elements such as "tactics, technics and procedures" (TTP), tools, malware and infrastructure used by a threat actor against one or a number of victims who are usually sharing some characteristics (field of activity, country or region) to reach a similar goal whoever the victim is. The intrusion set may be deployed once or several times and may evolve with time.
+Several intrusion sets may be linked to one threat actor. All of the entities described below may be linked to one intrusion set. There are many debates in the Threat Intelligence community on how to define an intrusion set and how to distinguish several intrusion sets with regards to:</p>
+<ul>
+<li>their differences</li>
+<li>their evolutions</li>
+<li>the possible reuse</li>
+<li>"false flag" type of attacks</li>
+</ul>
+<p>As OpenCTI is very customizable, each organization or individual may use these categories as they wish. Instead, it is also possible to use the import feed for the choice of categories.</p>
+<p><a class="glightbox" href="../assets/instrusion-set-cards.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Intrusion set Cards" src="../assets/instrusion-set-cards.png" /></a></p>
+<p>When clicking on the Intrusion set tab on the top left, you access the list of all the Intrusion sets you have access too, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. These intrusion sets are displayed as <strong>Cards</strong> where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares they used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Intrusion set.</p>
+<p>At the top right of each Card, you can click the star icon to put it as favorite. It will pin the card on top of the list. You will also be able to display all your favorite easily in your <a href="../dashboards/">Custom Dashboards</a>.</p>
+<h3 id="visualizing-knowledge-associated-with-an-intrusion-set">Visualizing Knowledge associated with an Intrusion set</h3>
+<p>When clicking on an Intrusion set Card, you land on its Overview tab. The following tabs are accessible:</p>
+<ul>
+<li>Overview: as described <a href="../overview/">here</a>.</li>
+<li>Knowledge: a complex tab that regroups all the structured Knowledge linked to the Threat actor. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Threat actor, etc. </li>
+<li>Analyses: as described <a href="../overview/">here</a>.</li>
+<li>Data: as described <a href="../overview/">here</a>.</li>
+<li>History: as described <a href="../overview/">here</a>.</li>
+</ul>
+<h2 id="campaigns">Campaigns</h2>
+<p>A campaign can be defined as "a series of malicious activities or attacks (sometimes called a "wave of attacks") taking place within a limited period of time, against a defined group of victims, associated to a similar intrusion set and characterized by the use of one or several identical malware towards the various victims and common TTPs".
+However, a campaign is an investigation element and may not be widely recognized. Thus, a provider might define a series of attacks as a campaign and another as an intrusion set.
+Campaigns can be attributed to an Intrusion set.</p>
+<p><a class="glightbox" href="../assets/campaigns-cards.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Campaings cards" src="../assets/campaigns-cards.png" /></a></p>
+<p>When clicking on the Campaign tab on the top left, you access the list of all the Campaigns you have access too, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. These campaigns are displayed as <strong>Cards</strong> where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Campaigns.</p>
+<p>At the top right of each Card, you can click the star icon to put it as favorite. It will pin the card on top of the list. You will also be able to display all your favorite easily in your <a href="../dashboards/">Custom Dashboards</a>.</p>
+<h3 id="visualizing-knowledge-associated-with-a-campaign">Visualizing Knowledge associated with a Campaign</h3>
+<p>When clicking on an Campaign Card, you land on its Overview tab. The following tabs are accessible:</p>
+<ul>
+<li>Overview: as described <a href="../overview/">here</a>.</li>
+<li>Knowledge: a complex tab that regroups all the structured Knowledge linked to the Threat actor. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Threat actor, etc. </li>
+<li>Analyses: as described <a href="../overview/">here</a>.</li>
+<li>Data: as described <a href="../overview/">here</a>.</li>
+<li>History: as described <a href="../overview/">here</a>.</li>
+</ul>
 
   
     
@@ -3778,7 +4068,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-10T09:32:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-10</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-12T08:35:17+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-12</span>
       </span>
     
     
