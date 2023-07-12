@@ -15,10 +15,10 @@ import {
   UnsupportedError,
   ValidationError,
 } from '../config/errors';
+import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import {
   buildPagination,
   computeAverage,
-  extractEntityRepresentativeName,
   extractIdsFromStoreObject,
   fillTimeSeries,
   generateCreateMessage,
@@ -900,6 +900,7 @@ const partialInstanceWithInputs = (instance, inputs) => {
     _index: instance._index,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
+    representative: extractRepresentative(instance),
     ...inputData,
   };
 };

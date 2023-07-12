@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment from 'moment';
 import { DatabaseError, UnsupportedError } from '../config/errors';
-import { ENTITY_TYPE_CAPABILITY, isHistoryObject, isInternalObject } from '../schema/internalObject';
+import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -10,19 +10,14 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import conf from '../config/conf';
-import { FROM_START_STR, now, observableValue, UNTIL_END_STR } from '../utils/format';
+import { FROM_START_STR, now, UNTIL_END_STR } from '../utils/format';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { truncate } from '../utils/mailData';
-import {
-  isDateAttribute,
-  isDictionaryAttribute,
-  isJsonAttribute, isObjectAttribute,
-  schemaAttributesDefinition
-} from '../schema/schema-attributes';
+import { isDateAttribute, isDictionaryAttribute, isJsonAttribute,isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { creators } from '../schema/attribute-definition';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
-import { elFindByIds } from "./engine";
+import { extractEntityRepresentativeName } from './entity-representative';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -251,98 +246,6 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   if (isStixRefRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
 
   throw DatabaseError(`Cant find index for type ${conceptType}`);
-};
-
-export const extractRelationshipRepresentativeName = async (context, user, relationshipData) => {
-  const ids = await elFindByIds(context, user, [relationshipData.fromId, relationshipData.toId], {toMap: true})
-
-  let mainValue = `${extractEntityRepresentativeName(ids[relationshipData.fromId])} ➡️ ${extractEntityRepresentativeName(ids[relationshipData.toId])}`;
-
-  return String(mainValue);
-}
-
-export const extractRelationshipRepresentative = async (context, user, relationshipData) => {
-  return {
-    main: await extractRelationshipRepresentativeName(context, user, relationshipData),
-    secondary: extractEntityRepresentativeDescription(relationshipData)
-  };
-};
-// TODO - Test : batch loader
-export const batchExtractRelationshipRepresentativeCreators = async (context, user, relationships) => {
-  const relationshipDatas = relationships.map((data) => (Array.isArray(data) ? data : [data]));
-  return relationshipDatas.flat().map((relationshipData) => extractRelationshipRepresentative(context, user, relationshipData));
-};
-
-// TODO migrate to extractStixRepresentative from convertStoreToStix
-export const extractEntityRepresentativeName = (entityData) => {
-  let mainValue;
-  if (isStixCyberObservable(entityData.entity_type)) {
-    // TODO: maybe not exaclty what we want
-    // Old -> Paradise Ransomware
-    // New -> 2020-02-25T09:02:29.040Z - 2020-02-25T09:02:29.040Z
-    mainValue = observableValue(entityData);
-  } else if (isNotEmptyField(entityData.definition)) {
-    mainValue = entityData.definition;
-  } else if (isNotEmptyField(entityData.value)) {
-    mainValue = entityData.value;
-  } else if (isNotEmptyField(entityData.attribute_abstract)) {
-    mainValue = entityData.attribute_abstract;
-  } else if (isNotEmptyField(entityData.opinion)) {
-    mainValue = entityData.opinion;
-  } else if (isNotEmptyField(entityData.observable_value)) {
-    mainValue = entityData.observable_value;
-  } else if (isNotEmptyField(entityData.indicator_pattern)) {
-    mainValue = entityData.indicator_pattern;
-  } else if (isNotEmptyField(entityData.source_name)) {
-    mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
-  } else if (isNotEmptyField(entityData.kill_chain_name)) {
-    mainValue = entityData.kill_chain_name;
-  } else if (isNotEmptyField(entityData.phase_name)) {
-    mainValue = entityData.phase_name;
-  } else if (isNotEmptyField(entityData.first_observed) && isNotEmptyField(entityData.last_observed)) {
-    const from = moment(entityData.first_observed).utc().toISOString();
-    const to = moment(entityData.last_observed).utc().toISOString();
-    mainValue = `${from} - ${to}`;
-  } else if (entityData.entity_type === ENTITY_TYPE_CAPABILITY) {
-    return entityData.description;
-  } else if (isNotEmptyField(entityData.name)) {
-    mainValue = entityData.name;
-    if (isNotEmptyField(entityData.x_mitre_id)) { // Attack Pattern
-      mainValue = `[${entityData.x_mitre_id}] ` + mainValue;
-    }
-  } else if (isNotEmptyField(entityData.description)) {
-    mainValue = entityData.description;
-  }
-  // If no representative value found, return the standard id
-  if (isEmptyField(mainValue) || mainValue === 'Unknown') {
-    return entityData.standard_id;
-  }
-
-  return String(mainValue);
-}
-export const extractEntityRepresentativeDescription = (entityData) => {
-  let secondValue;
-
-  // BasicStoreRelation
-
-  // BasicStoreEntity | BasicStoreCyberObservable
-  if (isNotEmptyField(entityData.description)) {
-    secondValue = entityData.description;
-  } else if (isNotEmptyField(entityData.x_opencti_description)) {
-    secondValue = entityData.x_opencti_description;
-  } else if (isNotEmptyField(entityData.content)) {
-    secondValue = entityData.content;
-  } else if (isNotEmptyField(entityData.entity_type)) {
-    secondValue = entityData.entity_type;
-  }
-
-  return String(secondValue);
-}
-export const extractEntityRepresentative = (entityData) => {
-  return {
-    main: extractEntityRepresentativeName(entityData),
-    secondary: extractEntityRepresentativeDescription(entityData)
-  };
 };
 
 export const generateMergeMessage = (instance, sources) => {

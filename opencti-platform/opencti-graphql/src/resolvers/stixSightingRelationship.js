@@ -32,8 +32,8 @@ import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { batchCreators } from '../domain/user';
-import { batchExtractRelationshipRepresentativeCreators } from "../database/utils";
 import { numberOfContainersForObject } from '../domain/container';
+import { extractRepresentative } from '../database/entity-representative';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -47,7 +47,6 @@ const casesLoader = batchLoader(batchCases);
 const creatorsLoader = batchLoader(batchCreators);
 const batchOrganizationsLoader = batchLoader(batchObjectOrganizations);
 const loadByIdLoader = batchLoader(elBatchIds);
-const representativeLoader = batchLoader(batchExtractRelationshipRepresentativeCreators);
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -71,7 +70,7 @@ const stixSightingRelationshipResolvers = {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
     to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
     toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
-    representative: (rel, _, context) => representativeLoader.load(rel, context, context.user),
+    representative: (rel, _, __) => extractRepresentative(rel),
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),

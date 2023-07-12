@@ -55,6 +55,11 @@ import type { EditOperation, PageInfo } from '../generated/graphql';
 import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-sco';
 import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
 
+interface Representative {
+  main: string
+  secondary: string
+}
+
 interface InternalEditInput {
   key: string;
   operation?: EditOperation | null;
@@ -156,6 +161,8 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
+  // representative
+  representative: Representative
 }
 
 interface StoreCommon {
@@ -205,9 +212,11 @@ interface BasicStoreRelation extends StoreRawRelation {
   fromId: string;
   fromRole: string;
   fromType: string;
+  fromRepresentative: Representative;
   toId: string;
   toRole: string;
   toType: string;
+  toRepresentative: Representative;
 }
 
 interface StoreRelation extends BasicStoreRelation, StoreCommon {

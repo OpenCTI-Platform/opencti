@@ -3,7 +3,7 @@ import { deleteFile, loadFile, upload, uploadJobImport } from '../database/file-
 import { internalLoadById } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
-import { extractEntityRepresentativeName } from '../database/utils';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 
 export const askJobImport = async (context, user, args) => {
   const { fileName, connectorId = null, bypassEntityId = null, bypassValidation = false } = args;

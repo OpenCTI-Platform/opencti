@@ -24,7 +24,8 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   INPUT_GRANTED_REFS
 } from '../schema/general';
-import { extractEntityRepresentativeName, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './backgroundTask';

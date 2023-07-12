@@ -5,7 +5,6 @@ import {
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
-  extractEntityRepresentativeName,
 } from './utils';
 import { elAggregationsList, elCount, elFindByIds, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
@@ -22,6 +21,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
+import { extractEntityRepresentativeName } from './entity-representative';
 
 const MAX_SEARCH_SIZE = 5000;
 

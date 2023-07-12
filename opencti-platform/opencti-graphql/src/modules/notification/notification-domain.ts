@@ -38,7 +38,8 @@ import {
 } from './notification-types';
 import { now } from '../../utils/format';
 import { elCount, elFindByIds } from '../../database/engine';
-import { extractEntityRepresentativeName, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { ENTITY_FILTERS } from '../../utils/filtering';
 import type { BasicStoreEntity, BasicStoreObject, InternalEditInput } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';

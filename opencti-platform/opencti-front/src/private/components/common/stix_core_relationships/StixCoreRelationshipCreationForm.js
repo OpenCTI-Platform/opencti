@@ -61,6 +61,11 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: 1,
     fontSize: 12,
     verticalAlign: 'middle',
+    textOverflow: 'ellipsis',
+    maxWidth: 180,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    padding: 8,
   },
   relationCreate: {
     position: 'relative',

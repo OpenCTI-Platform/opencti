@@ -27,7 +27,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
-import { extractEntityRepresentativeName } from '../database/utils';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 
 export const GROUP_DEFAULT = 'Default';
 

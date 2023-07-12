@@ -17,7 +17,7 @@ import {
   stixObjectOrRelationshipAddRefRelation,
   stixObjectOrRelationshipDeleteRefRelation
 } from '../../../domain/stixObjectOrStixRelationship';
-import { extractEntityRepresentativeName } from '../../../database/utils';
+import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 
 export const findById: DomainFindById<BasicStoreEntityCaseTemplate> = (context: AuthContext, user: AuthUser, templateId: string) => {

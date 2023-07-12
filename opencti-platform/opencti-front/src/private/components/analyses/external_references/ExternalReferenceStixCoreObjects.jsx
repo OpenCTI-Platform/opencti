@@ -87,12 +87,6 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                   main
                   secondary
                 }
-                from {
-                  ... on StixCoreObject {
-                    id
-                    entity_type
-                  }
-                }
               }
               ... on StixSightingRelationship {
                 id
@@ -101,12 +95,6 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                 representative {
                   main
                   secondary
-                }
-                from {
-                  ... on StixCoreObject {
-                    id
-                    entity_type
-                  }
                 }
               }
               # Thats weird

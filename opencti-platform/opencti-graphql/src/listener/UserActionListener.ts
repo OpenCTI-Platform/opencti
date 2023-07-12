@@ -1,5 +1,5 @@
 import type { AuthUser } from '../types/user';
-import { extractEntityRepresentativeName } from '../database/utils';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreObject } from '../types/store';
 
 interface BasicUserAction {

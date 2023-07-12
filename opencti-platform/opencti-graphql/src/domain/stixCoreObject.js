@@ -10,7 +10,7 @@ import {
   storeLoadByIdWithRefs,
   timeSeriesEntities,
 } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -52,7 +52,6 @@ import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import {
-  extractEntityRepresentativeName,
   isEmptyField,
   isNotEmptyField,
   READ_ENTITIES_INDICES,
@@ -67,6 +66,7 @@ import {
   stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 
 export const findAll = async (context, user, args) => {
   let types = [];

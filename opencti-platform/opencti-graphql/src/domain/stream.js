@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { elIndex } from '../database/engine';
-import { extractEntityRepresentativeName, INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import {
