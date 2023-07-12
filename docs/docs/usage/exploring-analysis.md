@@ -1,6 +1,6 @@
 # Exploring "Analysis"
 
-When you click on "Analysis" in the left-side bar, the user access all the "Analysis" tabs, visible on the top bar on the left. By default, the user directly access the "Reports" tab, but can navigate to the other tabs as well.
+When you click on "Analysis" in the left-side bar, you access all the "Analysis" tabs, visible on the top bar on the left. By default, the user directly access the "Reports" tab, but can navigate to the other tabs as well.
 
 From the `Analysis` section, users can access the following tabs:
 
@@ -8,7 +8,7 @@ From the `Analysis` section, users can access the following tabs:
 - `Groupings`: Groupings are containers, like Reports, but do not represent an Intelligence Production. They regroup Objects sharing an explicit context. For example, a Grouping might represent a set of data that, in time, given sufficient analysis, would mature to convey an incident or threat report as Report container.
 - `Malware Analysis`: As define by STIX 2.1 standard, Malware Analysis captures the metadata and results of a particular static or dynamic analysis performed on a malware instance or family.
 - `Notes`: Through this tab, you can find all the Notes that have been written in the platform, for example to add some analyst's unstructured knowledge about an Object.
-- `External references`: Intelligence is never create from nothing. External references give user a way to link sources or reference documents to any Object in the platform.
+- `External references`: Intelligence is never created from nothing. External references give user a way to link sources or reference documents to any Object in the platform.
 
 ![Analysis Default page is Reports](assets/analysis-default-page.png)
 
@@ -99,3 +99,44 @@ Clicking on a Grouping, you land on its Overview tab. For a Groupings, the follo
 
 
 ## Malware Analysis
+
+Malware analyses are an important part of the Cyber Threat Intelligence, allowing an precise understanding of what and how a malware really do on the host but also how and from where it receives its command and communicates its results.
+
+In OpenCTI, Malware Analyses can be created from enrichment connectors that will take an Observable as input and perform a scan on a online service platform to bring back results. As such, Malware Analysis can be done on File, Domain and URL.
+
+In the MITRE STIX 2.1 documentation, a `Malware Analysis` is defined as such :
+> Malware Analysis captures the metadata and results of a particular static or dynamic analysis performed on a malware instance or family.
+
+When clicking on the Malware Analysis tab at the top of the interface, you access the list of all Malware Analysis you have access too, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of the Malware Analysis.
+
+Clicking on a Malware Analysis, you land on its Overview tab. The following tabs are accessible:
+- Overview: This view contains some additions from the common Overview [here](overview.md). You will find here details about how the analysis have been performed, what is the global result regarding the malicioussness of the analysed artifact and all the Observables that have been found during the analysis. 
+- Knowledge: If you Malware analysis is linked to other Objects that are not part of the analysis result, they will be displayed here.
+- Data: as described [here](overview.md).
+- History: as described [here](overview.md).
+
+![Malware Analysis Overview](assets/malwareanalysis-overview.png)
+
+
+## Notes
+
+Not every Knowledge can be structured. For allowing any users to share their insights about a specific Knowledge, they can create a Note for every Object and relationship in OpenCTI they can access to. All the Notes are listed within the Analysis menu for allowing global review of this unstructured addition to the global Knowledge.
+
+In the MITRE STIX 2.1 documentation, a `Note` is defined as such :
+> A Note is intended to convey informative text to provide further context and/or to provide additional analysis not contained in the STIX Objects, Marking Definition objects, or Language Content objects which the Note relates to. Notes can be created by anyone (not just the original object creator).
+
+Clicking on a Note, you land on its Overview tab. The following tabs are accessible:
+- Overview: as described [here](overview.md).
+- Data: as described [here](overview.md).
+- History: as described [here](overview.md).
+
+## External references
+
+Intelligence is never created from nothing. External references give user a way to link sources or reference documents to any Object in the platform. All external references are listed within the Analysis menu for accessing directly sources of the structured Knowledge.
+
+In the MITRE STIX 2.1 documentation, a `External references` is defined as such :
+> External references are used to describe pointers to information represented outside of STIX. For example, a Malware object could use an external reference to indicate an ID for that malware in an external database or a report could use references to represent source material.
+
+Clicking on an External reference, you land on its Overview tab. The following tabs are accessible:
+- Overview: as described [here](overview.md).
+

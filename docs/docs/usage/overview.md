@@ -99,6 +99,11 @@ The `Analysis` tab contains the list of all Analysis (`Report`, `Groupings`) and
 
 ![Example of the list of reports in which the attack pattern "data obfuscation" has been identified.](assets/entity_analysis-tab.png)
 
+By default, this tab display the list, but you can also display the content of all the listed Analyses on a graph, allowing you to explore all their Knowledge and have a glance of the context around the Entity.
+
+![Graph view of all the Knowledge contained in the listed analyses](assets/analyses-graphview.png)
+
+
 ### Data
 
 The Data tab contains documents that are associated to the object and were either :
