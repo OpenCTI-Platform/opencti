@@ -16,12 +16,7 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import {
-  Add,
-  Close,
-  GetAppOutlined,
-  LockPersonOutlined,
-} from '@mui/icons-material';
+import { Add, Close, LockPersonOutlined } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';

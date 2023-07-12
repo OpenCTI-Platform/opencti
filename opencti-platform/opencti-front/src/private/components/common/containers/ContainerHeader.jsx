@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
-import { ChartTimeline, GraphOutline, VectorLink } from 'mdi-material-ui';
+import { ChartTimeline, VectorLink } from 'mdi-material-ui';
 import {
   AddTaskOutlined,
   AssistantOutlined,
