@@ -1729,11 +1729,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-code-block@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-code-block@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-code-block@npm:38.1.1"
   dependencies:
-    ckeditor5: 38.1.0
-  checksum: 5271311a4405ebc9ed107d74c43102ad5e19460e51419779566913587cb6fc7f244421cc3e88d8abba6997f186f6517f3db3020040a1fa2036d56b0a1609df5d
+    ckeditor5: 38.1.1
+  checksum: 051e0741bff683ea6c00c3f04159ae4941daeae3bf8c1afe27907439746279bf590dbecccda49776af71b910561d65ea0e3d00825a268a58b99326dbf9164de7
   languageName: node
   linkType: hard
 
