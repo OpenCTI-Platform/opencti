@@ -1875,11 +1875,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-heading@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-heading@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-heading@npm:38.1.1"
   dependencies:
-    ckeditor5: 38.1.0
-  checksum: 145876560a682313cd94e806d10c0ee4b002758908613e88c9e5b2bfba5a7d708203de23daa38ea7a0db9ed76976b52d3f33c2e788af64ce18e4d60e7c41a5d6
+    ckeditor5: 38.1.1
+  checksum: 45f7a33cc72cc5658af898416a930c0961c3b58fd46d25a96072f65e6f733eb22fc66d4ed6ba8900a972c2b19db6166301b92fc2690dcd7562395af4b4022a17
   languageName: node
   linkType: hard
 
