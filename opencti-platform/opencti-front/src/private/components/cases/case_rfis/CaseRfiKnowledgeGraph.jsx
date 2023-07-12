@@ -47,7 +47,7 @@ import {
 import CaseRfiPopover from './CaseRfiPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 
-const ignoredStixCoreObjectsTypes = ['Case-Rfi', 'Note', 'Opinion'];
+const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -223,6 +223,9 @@ const caseRfiKnowledgeGraphStixCoreObjectQuery = graphql`
         name
         first_seen
         last_seen
+      }
+      ... on MalwareAnalysis {
+        result_name
       }
       ... on ThreatActor {
         name
@@ -1435,7 +1438,7 @@ class CaseRfiKnowledgeGraphComponent extends Component {
                 handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
                   this,
                 )}
-                stixCoreObjectsTypes={allStixCoreObjectsTypes}
+                stixCoreObjectsTypes={allStixCoreObjectsTypes.filter((a) => !ignoredStixCoreObjectsTypes.includes(a))}
                 currentStixCoreObjectsTypes={stixCoreObjectsTypes}
                 currentSelectRectangleModeFree={selectRectangleModeFree}
                 currentSelectModeFree={selectModeFree}
@@ -1862,6 +1865,9 @@ const CaseRfiKnowledgeGraph = createFragmentContainer(
                 name
                 first_seen
                 last_seen
+              }
+              ... on MalwareAnalysis {
+                result_name
               }
               ... on ThreatActor {
                 name

@@ -1175,6 +1175,8 @@ enum UsersOrdering {
 
 enum UsersFilter {
   name
+  user_email
+  external
   entity_type
   created_at
 }
@@ -7497,9 +7499,6 @@ enum StixCoreRelationshipsOrdering {
 }
 
 enum StixCoreRelationshipsFilter {
-  elementId
-  fromId
-  toId
   created
   modified
   created_at

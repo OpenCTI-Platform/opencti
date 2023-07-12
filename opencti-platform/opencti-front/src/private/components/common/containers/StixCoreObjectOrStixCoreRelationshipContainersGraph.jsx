@@ -569,7 +569,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
                   this,
                 )}
                 handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-                stixCoreObjectsTypes={allStixCoreObjectsTypes}
+                stixCoreObjectsTypes={allStixCoreObjectsTypes.filter((a) => !ignoredStixCoreObjectsTypes.includes(a))}
                 currentStixCoreObjectsTypes={stixCoreObjectsTypes}
                 markedBy={allMarkedBy}
                 currentMarkedBy={markedBy}

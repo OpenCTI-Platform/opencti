@@ -21399,10 +21399,8 @@ export enum StixCoreRelationshipsFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
-  ElementId = 'elementId',
   ElementWithTargetTypes = 'elementWithTargetTypes',
   EntityType = 'entity_type',
-  FromId = 'fromId',
   FromName = 'fromName',
   FromTypes = 'fromTypes',
   KillChainPhase = 'killChainPhase',
@@ -21412,7 +21410,6 @@ export enum StixCoreRelationshipsFilter {
   RelationshipType = 'relationship_type',
   Revoked = 'revoked',
   ToCreatedAt = 'toCreatedAt',
-  ToId = 'toId',
   ToMainObservableType = 'toMainObservableType',
   ToName = 'toName',
   ToPatternType = 'toPatternType',
@@ -25973,7 +25970,9 @@ export type UserSession = {
 export enum UsersFilter {
   CreatedAt = 'created_at',
   EntityType = 'entity_type',
-  Name = 'name'
+  External = 'external',
+  Name = 'name',
+  UserEmail = 'user_email'
 }
 
 export type UsersFiltering = {

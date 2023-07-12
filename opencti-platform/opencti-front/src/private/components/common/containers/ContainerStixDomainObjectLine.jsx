@@ -247,6 +247,10 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         }
         ... on Note {
           attribute_abstract
+          content
+        }
+        ... on Opinion {
+          opinion
         }
         ... on Individual {
           name
@@ -286,6 +290,9 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         }
         ... on Malware {
           name
+        }
+        ... on MalwareAnalysis {
+          result_name
         }
         ... on ThreatActor {
           name
