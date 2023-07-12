@@ -33,9 +33,9 @@
     "node": ">= 16.*"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.367.0",
-    "@aws-sdk/credential-provider-node": "3.363.0",
-    "@aws-sdk/lib-storage": "3.367.0",
+    "@aws-sdk/client-s3": "3.369.0",
+    "@aws-sdk/credential-provider-node": "3.369.0",
+    "@aws-sdk/lib-storage": "3.369.0",
     "@aws-sdk/property-provider": "3.366.0",
     "@elastic/elasticsearch": "8.8.1",
     "@escape.tech/graphql-armor": "1.8.2",
