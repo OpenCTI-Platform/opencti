@@ -1865,12 +1865,12 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-font@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-font@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-font@npm:38.1.1"
   dependencies:
-    "@ckeditor/ckeditor5-ui": 38.1.0
-    ckeditor5: 38.1.0
-  checksum: 13b17fdf1a3fdfc7442e8c22d91d2508e61f5e52e646a064a9e2df25bd39a0d311762c80eecf6888f257e41bf17aff8caffa2ad8f26c6f785d6cc85f437f1732
+    "@ckeditor/ckeditor5-ui": 38.1.1
+    ckeditor5: 38.1.1
+  checksum: d7d0797a62872d4cb26e3c917d446d948229236786a0e11a0a2398b78def550d1b23472a0686f7bbc8564d2818d4e775f146aee4d44fd7131bbacd741097fffe
   languageName: node
   linkType: hard
 
