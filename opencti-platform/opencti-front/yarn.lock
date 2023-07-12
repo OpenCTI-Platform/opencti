@@ -1856,11 +1856,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-essentials@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-essentials@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-essentials@npm:38.1.1"
   dependencies:
-    ckeditor5: 38.1.0
-  checksum: 631ab6a750d6c915039c445ba2e543310263c5ac80a8a3374778881da9ab09b8deff53a2a3a136ab0144598b6a20cb88b6597d6c7e33f5ad359b45040b96e6ac
+    ckeditor5: 38.1.1
+  checksum: a324aa7422ca6329658669bd9a48aafad7f4c5cb62f09703e315ca753891ed687981a35e05a9b8140614406ab275d65fcb67054f26e0f54866ef3fc558a049f3
   languageName: node
   linkType: hard
 
