@@ -1962,7 +1962,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-paragraph@npm:38.1.0, @ckeditor/ckeditor5-paragraph@npm:^38.0.1":
+"@ckeditor/ckeditor5-paragraph@npm:38.1.0":
   version: 38.1.0
   resolution: "@ckeditor/ckeditor5-paragraph@npm:38.1.0"
   dependencies:
@@ -1973,7 +1973,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-paragraph@npm:38.1.1":
+"@ckeditor/ckeditor5-paragraph@npm:38.1.1, @ckeditor/ckeditor5-paragraph@npm:^38.0.1":
   version: 38.1.1
   resolution: "@ckeditor/ckeditor5-paragraph@npm:38.1.1"
   dependencies:
