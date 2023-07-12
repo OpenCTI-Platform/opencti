@@ -1913,11 +1913,11 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-indent@npm:^38.0.1":
-  version: 38.1.0
-  resolution: "@ckeditor/ckeditor5-indent@npm:38.1.0"
+  version: 38.1.1
+  resolution: "@ckeditor/ckeditor5-indent@npm:38.1.1"
   dependencies:
-    ckeditor5: 38.1.0
-  checksum: 0226429c5b8cb7eb33b65040e9a09cab19b78cb323fa2ada78a618b563ee3f4d79b7684f9b3474a37a18b62e305692bf888a884b346623d1e95166537c9082c2
+    ckeditor5: 38.1.1
+  checksum: a39ab6f64e6496e880d3889d98b6886057cb30750c1fac435a0630cb041d8f29bc24960069f9a097b72eea6e0d90a5a4e66ea8457269b509c1447657aeb48c0e
   languageName: node
   linkType: hard
 
