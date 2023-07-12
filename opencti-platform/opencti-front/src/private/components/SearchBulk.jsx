@@ -95,6 +95,13 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: theme.palette.primary.main,
     },
   },
+  chipNoLink: {
+    fontSize: 13,
+    lineHeight: '12px',
+    height: 20,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
   chipInList: {
     fontSize: 12,
     height: 20,
@@ -517,7 +524,7 @@ const SearchBulk = () => {
             {sortedResolvedEntities.map((entity) => {
               const inPlatform = entity.in_platform;
               const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
-              const analysesLink = `${link}/analyses`;
+              const linkAnalyses = `${link}/analyses`;
               return (
                 <ListItem
                   key={entity.id}
@@ -599,12 +606,31 @@ const SearchBulk = () => {
                           style={inlineStyles.analyses}
                         >
                           {entity.in_platform && (
-                            <Chip
-                              classes={{ root: classes.chip }}
-                              label={n(entity.containers.pageInfo.globalCount)}
-                              component={Link}
-                              to={analysesLink}
-                            />
+                            <>
+                              {[
+                                'Note',
+                                'Opinion',
+                                'Course-Of-Action',
+                                'Data-Component',
+                                'Data-Source',
+                              ].includes(entity.type) ? (
+                                <Chip
+                                  classes={{ root: classes.chipNoLink }}
+                                  label={n(
+                                    entity.containers.pageInfo.globalCount,
+                                  )}
+                                />
+                                ) : (
+                                <Chip
+                                  classes={{ root: classes.chip }}
+                                  label={n(
+                                    entity.containers.pageInfo.globalCount,
+                                  )}
+                                  component={Link}
+                                  to={linkAnalyses}
+                                />
+                                )}
+                            </>
                           )}
                         </div>
                         <div

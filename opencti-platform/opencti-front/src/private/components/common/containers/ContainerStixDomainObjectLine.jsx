@@ -63,6 +63,13 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: theme.palette.primary.main,
     },
   },
+  chipNoLink: {
+    fontSize: 13,
+    lineHeight: '12px',
+    height: 20,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
   chipInList: {
     fontSize: 12,
     height: 20,
@@ -176,12 +183,25 @@ const ContainerStixDomainObjectLineComponent = (props) => {
               className={classes.bodyItem}
               style={{ width: dataColumns.analyses.width }}
             >
-              <Chip
-                classes={{ root: classes.chip }}
-                label={n(node.containers.pageInfo.globalCount)}
-                component={Link}
-                to={linkAnalyses}
-              />
+              {[
+                'Note',
+                'Opinion',
+                'Course-Of-Action',
+                'Data-Component',
+                'Data-Source',
+              ].includes(node.entity_type) ? (
+                <Chip
+                  classes={{ root: classes.chipNoLink }}
+                  label={n(node.containers.pageInfo.globalCount)}
+                />
+                ) : (
+                <Chip
+                  classes={{ root: classes.chip }}
+                  label={n(node.containers.pageInfo.globalCount)}
+                  component={Link}
+                  to={linkAnalyses}
+                />
+                )}
             </div>
             <div
               className={classes.bodyItem}
