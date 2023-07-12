@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities import LOGGER
+
 
 class DataComponent:
     def __init__(self, opencti):
@@ -173,12 +175,9 @@ class DataComponent:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
-        self.opencti.log(
-            "info",
-            "Listing Data-Components with filters " + json.dumps(filters) + ".",
-        )
+        LOGGER.info("Listing Data-Components with filters " + json.dumps(filters) + ".")
         query = (
             """
             query DataComponents($filters: [DataComponentsFiltering!], $search: String, $first: Int, $after: ID, $orderBy: DataComponentsOrdering, $orderMode: OrderingMode) {
@@ -212,10 +211,31 @@ class DataComponent:
                 "orderMode": order_mode,
             },
         )
-        # TODO: get_all ?
-        return self.opencti.process_multiple(
-            result["data"]["dataComponents"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["dataComponents"])
+            final_data = final_data + data
+            while result["data"]["dataComponents"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["dataComponents"]["pageInfo"]["endCursor"]
+                LOGGER.info("Listing Data-Components after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["dataComponents"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["dataComponents"], with_pagination
+            )
 
     """
         Read a Data-Component object

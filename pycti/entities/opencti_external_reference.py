@@ -74,7 +74,7 @@ class ExternalReference:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
         LOGGER.info("Listing External-Reference with filters %s.", json.dumps(filters))
         query = (
@@ -109,9 +109,32 @@ class ExternalReference:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["externalReferences"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["externalReferences"])
+            final_data = final_data + data
+            while result["data"]["externalReferences"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["externalReferences"]["pageInfo"]["endCursor"]
+                LOGGER.info("Listing External-References after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(
+                    result["data"]["externalReferences"]
+                )
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["externalReferences"], with_pagination
+            )
 
     """
         Read a External-Reference object
