@@ -22,7 +22,7 @@ class ThreatActorsGroupCards extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'ThreatActorsGroup',
+      'threatActorsGroup',
       this.props.setNumberOfElements.bind(this),
     );
   }
