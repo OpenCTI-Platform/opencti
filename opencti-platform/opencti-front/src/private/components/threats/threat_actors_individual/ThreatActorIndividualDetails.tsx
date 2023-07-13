@@ -52,15 +52,6 @@ const ThreatActorIndividualDetailsFragment = graphql`
     secondary_motivations
     goals
     roles
-    importFilesMimeType(first: 1000, mimeType: "image/") @connection(key: "Pagination_importFilesMimeType") {
-      edges {
-        node {
-          metaData {
-            mimetype
-          }
-        }
-      }
-    }
   }
 `;
 
@@ -75,10 +66,9 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
-  const mimeType = data.importFiles?.edges?.map((n) => n?.node.metaData?.mimetype);
-  const images = mimeType?.includes('/images');
+  // const mimeType = data.importFilesMimeType?.edges?.map((n) => n?.node.metaData?.mimetype);
 
-  console.log('images', images, 'mimeType', mimeType);
+  // console.log('mimeType', mimeType);
 
   return (
       <div style={{ height: '100%' }}>
@@ -178,7 +168,10 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              <Carousel></Carousel>
+              <Carousel>
+
+
+              </Carousel>
               <Typography
                 variant="h3"
                 gutterBottom={true}

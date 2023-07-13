@@ -97,6 +97,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: AssigneeConnection
+    x_opencti_files(mimeType: String): [OpenCtiFile]
 
     # Technical
     creators: [Creator!]

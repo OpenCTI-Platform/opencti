@@ -11,7 +11,7 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
-  stixDomainObjectExportAsk,
+  stixDomainObjectExportAsk, stixDomainObjectMimeTypeFilter,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -66,6 +66,7 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
+    x_opencti_files: (stixDomainObject, { mimeType }) => stixDomainObjectMimeTypeFilter(stixDomainObject, mimeType),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

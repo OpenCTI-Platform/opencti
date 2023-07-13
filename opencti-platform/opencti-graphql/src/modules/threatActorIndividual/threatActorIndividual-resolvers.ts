@@ -16,15 +16,11 @@ import {
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
-import { filesListing } from '../../database/file-storage';
 
 const threatActorIndividualResolvers: Resolvers = {
   Query: {
     threatActorIndividual: (_, { id }, context) => findById(context, context.user, id),
     threatActorsIndividuals: (_, args, context) => findAll(context, context.user, args),
-  },
-  ThreatActorIndividual: {
-    importFilesMimeType: (threatActorIndividual, { first, mimeType }, context) => filesListing(context, context.user, first, `import/${threatActorIndividual.entity_type}/${threatActorIndividual.id}/`, null, mimeType),
   },
   ThreatActorsIndividualFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
