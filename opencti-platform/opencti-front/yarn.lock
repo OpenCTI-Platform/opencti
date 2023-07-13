@@ -12692,7 +12692,7 @@ __metadata:
     remark-parse: 10.0.2
     rxjs: 7.8.1
     subscriptions-transport-ws: 0.11.0
-    tap: 16.3.4
+    tap: 16.3.7
     three-spritetext: 1.8.1
     typeface-ibm-plex-sans: 1.1.13
     typeface-roboto: 1.1.13
@@ -16135,9 +16135,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tap@npm:16.3.4":
-  version: 16.3.4
-  resolution: "tap@npm:16.3.4"
+"tap@npm:16.3.7":
+  version: 16.3.7
+  resolution: "tap@npm:16.3.7"
   dependencies:
     "@isaacs/import-jsx": ^4.0.1
     "@types/react": ^17.0.52
@@ -16181,7 +16181,7 @@ __metadata:
       optional: true
   bin:
     tap: bin/run.js
-  checksum: 058e630aa2efa1d28e6a8fa99070a8885e1f3434507cd196a37a28ff098ac80d958220520d5ad9b0abc2a38b295882814a1b4758bca34013ad2ab48de3417f9b
+  checksum: aed5f74698a0d90c5c7e12f07f2b543aa517c4e4f0c54fdbe7a19397448a18bb2ac8a879be923f72ee36aea7fb324c578ed90005ad10cd5aa794018cd002c3f3
   languageName: node
   linkType: hard
 
