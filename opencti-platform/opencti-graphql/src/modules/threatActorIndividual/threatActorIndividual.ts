@@ -24,7 +24,7 @@ import {
   ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_INFRASTRUCTURE,
+  ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_POSITION,
@@ -32,11 +32,12 @@ import {
   ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL, ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
-import { REL_EXTENDED } from '../../database/stix';
+import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../schema/stixCyberObservable';
+import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 
 const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActorIndividual, StixThreatActorIndividual> = {
   type: {
@@ -82,75 +83,81 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   relations: [
     { name: RELATION_USES,
       targets: [
-        { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_TOOL, type: REL_BUILT_IN },
         { name: ENTITY_HASHED_OBSERVABLE_STIX_FILE, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_NARRATIVE, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_CHANNEL, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_MALWARE, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_NARRATIVE, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_CHANNEL, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
       ]
     },
     { name: RELATION_TARGETS,
       targets: [
-        { name: ENTITY_TYPE_LOCATION_CITY, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_LOCATION_REGION, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_IDENTITY_SECTOR, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_VULNERABILITY, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_LOCATION_CITY, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_IDENTITY_SYSTEM, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_LOCATION_REGION, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_IDENTITY_SECTOR, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_VULNERABILITY, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_EVENT, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN },
       ]
     },
     { name: RELATION_LOCATED_AT,
       targets: [
-        { name: ENTITY_TYPE_LOCATION_CITY, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_LOCATION_REGION, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_LOCATION_CITY, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_LOCATION_REGION, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN },
       ]
     },
     { name: RELATION_ATTRIBUTED_TO,
       targets: [
-        { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
       ]
     },
     { name: RELATION_IMPERSONATES,
       targets: [
-        { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_BUILT_IN },
+        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
       ]
     },
     { name: RELATION_COMPROMISES,
       targets: [
-        { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
       ]
     },
     { name: RELATION_HOSTS,
       targets: [
-        { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
       ]
     },
     { name: RELATION_OWNS,
       targets: [
-        { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
       ]
     },
     { name: RELATION_PARTICIPATES_IN,
       targets: [
-        { name: ENTITY_TYPE_CAMPAIGN, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_CAMPAIGN, type: REL_NEW },
       ]
     },
     { name: RELATION_PART_OF,
       targets: [
-        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_NEW },
+        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },
       ]
     },
     { name: RELATION_COOPERATES_WITH,
       targets: [
-        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_NEW },
+        { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },
       ]
     },
   ],
