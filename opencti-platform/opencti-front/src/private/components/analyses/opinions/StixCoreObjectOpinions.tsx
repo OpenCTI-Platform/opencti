@@ -45,7 +45,7 @@ StixCoreObjectOpinionsProps
     [],
   );
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense fallback={<div />}>
       <StixCoreObjectOpinionsRadar
         stixCoreObjectId={stixCoreObjectId}
         queryRef={queryRef}

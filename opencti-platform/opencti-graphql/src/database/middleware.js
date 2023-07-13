@@ -2252,7 +2252,7 @@ const buildRelationInput = (input) => {
   }
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
-    relationAttributes.description = input.description ? input.description : '';
+    relationAttributes.description = R.isNil(input.description) ? null : input.description;
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
@@ -2280,7 +2280,7 @@ const buildRelationInput = (input) => {
   }
   // stix-sighting-relationship
   if (isStixSightingRelationship(relationshipType)) {
-    relationAttributes.description = R.isNil(input.description) ? '' : input.description;
+    relationAttributes.description = R.isNil(input.description) ? null : input.description;
     relationAttributes.attribute_count = R.isNil(input.attribute_count) ? 1 : input.attribute_count;
     relationAttributes.x_opencti_negative = R.isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
     relationAttributes.first_seen = R.isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;

@@ -178,12 +178,12 @@ class Systems extends Component {
       filters: finalFilters,
     };
     return (
-      <div>
+      <>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <SystemCreation paginationOptions={paginationOptions} />
         </Security>
-      </div>
+      </>
     );
   }
 }
