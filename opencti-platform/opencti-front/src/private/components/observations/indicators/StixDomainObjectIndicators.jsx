@@ -12,7 +12,6 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
-import IndicatorsRightBar from './IndicatorsRightBar';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { UserContext } from '../../../../utils/hooks/useAuth';
@@ -67,37 +66,6 @@ class StixDomainObjectIndicators extends Component {
         this.props.onChangeOpenExports(this.state.openExports);
       }
     });
-  }
-
-  handleToggleIndicatorType(type) {
-    if (this.state.indicatorTypes.includes(type)) {
-      this.setState({
-        indicatorTypes: R.filter((t) => t !== type, this.state.indicatorTypes),
-      });
-    } else {
-      this.setState({
-        indicatorTypes: R.append(type, this.state.indicatorTypes),
-      });
-    }
-  }
-
-  handleToggleObservableType(type) {
-    if (this.state.observableTypes.includes(type)) {
-      this.setState({
-        observableTypes: R.filter(
-          (t) => t !== type,
-          this.state.observableTypes,
-        ),
-      });
-    } else {
-      this.setState({
-        observableTypes: R.append(type, this.state.observableTypes),
-      });
-    }
-  }
-
-  handleClearObservableTypes() {
-    this.setState({ observableTypes: [] }, () => this.saveView());
   }
 
   handleToggleSelectEntity(entity, event, forceRemove = []) {
@@ -332,6 +300,8 @@ class StixDomainObjectIndicators extends Component {
                 'creator',
                 'confidence',
                 'indicator_types',
+                'pattern_type',
+                'x_opencti_main_observable_type',
               ]}
             >
               <QueryRenderer
@@ -411,7 +381,7 @@ class StixDomainObjectIndicators extends Component {
     };
     return (
       <ExportContextProvider>
-        <div style={{ marginTop: 20, paddingRight: 250 }}>
+        <div style={{ marginTop: 20 }}>
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCoreRelationshipCreationFromEntity
@@ -426,20 +396,6 @@ class StixDomainObjectIndicators extends Component {
               defaultStopTime={defaultStopTime}
             />
           </Security>
-          <IndicatorsRightBar
-            indicatorTypes={indicatorTypes}
-            observableTypes={observableTypes}
-            handleToggleIndicatorType={this.handleToggleIndicatorType.bind(
-              this,
-            )}
-            handleToggleObservableType={this.handleToggleObservableType.bind(
-              this,
-            )}
-            handleClearObservableTypes={this.handleClearObservableTypes.bind(
-              this,
-            )}
-            openExports={openExports}
-          />
         </div>
       </ExportContextProvider>
     );
