@@ -8213,6 +8213,7 @@ type Query {
   threatActorIndividual(id: String!): ThreatActorIndividual
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
   threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  stixCoreObjectFromContainer(id: String!, entityType: String!, containerType: String!): StixCoreObjectConnection
 }
 
 type Subscription {

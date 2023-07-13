@@ -17301,6 +17301,7 @@ export type Query = {
   statuses?: Maybe<StatusConnection>;
   stix?: Maybe<Scalars['String']>;
   stixCoreObject?: Maybe<StixCoreObject>;
+  stixCoreObjectFromContainer?: Maybe<StixCoreObjectConnection>;
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']>;
   stixCoreObjects?: Maybe<StixCoreObjectConnection>;
@@ -18675,6 +18676,13 @@ export type QueryStixArgs = {
 
 
 export type QueryStixCoreObjectArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryStixCoreObjectFromContainerArgs = {
+  containerType: Scalars['String'];
+  entityType: Scalars['String'];
   id: Scalars['String'];
 };
 
@@ -34004,6 +34012,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
   stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
+  stixCoreObjectFromContainer?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectFromContainerArgs, 'containerType' | 'entityType' | 'id'>>;
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;
   stixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsArgs>>;

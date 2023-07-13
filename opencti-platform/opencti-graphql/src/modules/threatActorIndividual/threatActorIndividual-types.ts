@@ -20,6 +20,8 @@ export interface BasicStoreEntityThreatActorIndividual extends BasicStoreEntity 
   secondary_motivations: string[]
   personal_motivations: string[]
   eye_color: string
+  // internal
+  ['rel_object.internal_id']: string[]
 }
 
 export interface StoreEntityThreatActorIndividual extends StoreEntity {
