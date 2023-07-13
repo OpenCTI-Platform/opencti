@@ -1,5 +1,6 @@
 import {
-  addThreatActorIndividual, findAll, findById, stixCoreObjectFromContainer,
+  addThreatActorIndividual,
+  findAll, findById,
 } from './threatActorIndividual-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import {
@@ -20,7 +21,6 @@ const threatActorIndividualResolvers: Resolvers = {
   Query: {
     threatActorIndividual: (_, { id }, context) => findById(context, context.user, id),
     threatActorsIndividuals: (_, args, context) => findAll(context, context.user, args),
-    stixCoreObjectFromContainer: (_, args, context) => stixCoreObjectFromContainer(context, context.user, args),
   },
   ThreatActorsIndividualFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

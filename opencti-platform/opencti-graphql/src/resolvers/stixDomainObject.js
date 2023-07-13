@@ -15,7 +15,7 @@ import {
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
-  stixDomainObjectsNumber,
+  stixDomainObjectsNumber, stixDomainObjectsRelatedObjectsFromContainer,
   stixDomainObjectsTimeSeries,
   stixDomainObjectsTimeSeriesByAuthor,
 } from '../domain/stixDomainObject';
@@ -48,6 +48,7 @@ const stixDomainObjectResolvers = {
       return [];
     },
     stixDomainObjectsExportFiles: (_, { type, first }, context) => filesListing(context, context.user, first, `export/${type}/`),
+    stixDomainObjectsRelatedObjectsFromContainer: (_, args, context) => stixDomainObjectsRelatedObjectsFromContainer(context, context.user, args),
   },
   StixDomainObjectsFilter: stixDomainObjectOptions.StixDomainObjectsFilter,
   StixDomainObjectsOrdering: stixDomainObjectOptions.StixDomainObjectsOrdering,

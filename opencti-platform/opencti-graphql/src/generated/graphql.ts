@@ -17301,7 +17301,6 @@ export type Query = {
   statuses?: Maybe<StatusConnection>;
   stix?: Maybe<Scalars['String']>;
   stixCoreObject?: Maybe<StixCoreObject>;
-  stixCoreObjectFromContainer?: Maybe<StixCoreObjectConnection>;
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']>;
   stixCoreObjects?: Maybe<StixCoreObjectConnection>;
@@ -17330,6 +17329,7 @@ export type Query = {
   stixDomainObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixDomainObjectsExportFiles?: Maybe<FileConnection>;
   stixDomainObjectsNumber?: Maybe<Number>;
+  stixDomainObjectsRelatedObjectsFromContainer?: Maybe<StixCoreObjectConnection>;
   stixDomainObjectsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixNestedRefRelationships?: Maybe<StixRefRelationshipConnection>;
   stixObjectOrStixRelationship?: Maybe<StixObjectOrStixRelationship>;
@@ -18680,13 +18680,6 @@ export type QueryStixCoreObjectArgs = {
 };
 
 
-export type QueryStixCoreObjectFromContainerArgs = {
-  containerType: Scalars['String'];
-  entityType: Scalars['String'];
-  id: Scalars['String'];
-};
-
-
 export type QueryStixCoreObjectOrStixCoreRelationshipArgs = {
   id: Scalars['String'];
 };
@@ -19022,6 +19015,13 @@ export type QueryStixDomainObjectsNumberArgs = {
   onlyInferred?: InputMaybe<Scalars['Boolean']>;
   search?: InputMaybe<Scalars['String']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryStixDomainObjectsRelatedObjectsFromContainerArgs = {
+  containerType: Scalars['String'];
+  entityType: Scalars['String'];
+  fromId: Scalars['String'];
 };
 
 
@@ -24940,6 +24940,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
+  stixCoreObjectFromContainer?: Maybe<StixCoreObjectConnection>;
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -25016,6 +25017,13 @@ export type ThreatActorIndividualPendingFilesArgs = {
 
 export type ThreatActorIndividualReportsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ThreatActorIndividualStixCoreObjectFromContainerArgs = {
+  containerType: Scalars['String'];
+  entityType: Scalars['String'];
+  fromId: Scalars['String'];
 };
 
 
@@ -34012,7 +34020,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
   stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
-  stixCoreObjectFromContainer?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectFromContainerArgs, 'containerType' | 'entityType' | 'id'>>;
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;
   stixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsArgs>>;
@@ -34041,6 +34048,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixDomainObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsDistributionArgs, 'field' | 'operation'>>;
   stixDomainObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsExportFilesArgs, 'type'>>;
   stixDomainObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixDomainObjectsNumberArgs>>;
+  stixDomainObjectsRelatedObjectsFromContainer?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsRelatedObjectsFromContainerArgs, 'containerType' | 'entityType' | 'fromId'>>;
   stixDomainObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixNestedRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixNestedRefRelationshipsArgs>>;
   stixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<QueryStixObjectOrStixRelationshipArgs, 'id'>>;
@@ -35887,6 +35895,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectFromContainer?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<ThreatActorIndividualStixCoreObjectFromContainerArgs, 'containerType' | 'entityType' | 'fromId'>>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorIndividualStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorIndividualStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;

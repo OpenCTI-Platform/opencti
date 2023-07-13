@@ -8046,6 +8046,7 @@ type Query {
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   stixDomainObjectsNumber(types: [String], endDate: DateTime, onlyInferred: Boolean, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): Number
   stixDomainObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixDomainObjectsRelatedObjectsFromContainer(fromId: String!, entityType: String!, containerType: String!): StixCoreObjectConnection
   attackPattern(id: String): AttackPattern
   attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: [AttackPatternsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): AttackPatternConnection
   campaign(id: String): Campaign
@@ -8213,7 +8214,6 @@ type Query {
   threatActorIndividual(id: String!): ThreatActorIndividual
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
   threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  stixCoreObjectFromContainer(id: String!, entityType: String!, containerType: String!): StixCoreObjectConnection
 }
 
 type Subscription {
@@ -11399,6 +11399,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  stixCoreObjectFromContainer(fromId: String!, entityType: String!, containerType: String!): StixCoreObjectConnection
   revoked: Boolean!
   confidence: Int
   lang: String

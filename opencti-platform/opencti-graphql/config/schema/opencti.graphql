@@ -12235,6 +12235,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixDomainObjectsRelatedObjectsFromContainer(fromId: String!, entityType: String!, containerType: String!): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   attackPattern(id: String): AttackPattern @auth(for: [KNOWLEDGE])
   attackPatterns(
     first: Int
