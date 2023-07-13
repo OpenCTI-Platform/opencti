@@ -3368,16 +3368,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensearch-project/opensearch@npm:2.2.1":
-  version: 2.2.1
-  resolution: "@opensearch-project/opensearch@npm:2.2.1"
+"@opensearch-project/opensearch@npm:2.3.0":
+  version: 2.3.0
+  resolution: "@opensearch-project/opensearch@npm:2.3.0"
   dependencies:
     aws4: ^1.11.0
     debug: ^4.3.1
     hpagent: ^1.2.0
     ms: ^2.1.3
     secure-json-parse: ^2.4.0
-  checksum: ec75081574dbd036d8a72383a1a3bd99ed70a149a80960beb53052dcf8a7e2c4715a10b92fe7f6c2391ff681a3f27d9b3361f06bdbee7b88ddf869df57c2fe71
+  checksum: 36a4e41b5a3d310cd8fc04687aa8a011dfaaf6e524a9f990c23b01fb1c4522d5978de1a0048e142bf7d244887e1edb34142eba1b430a38ea94a99d1bd043d8a0
   languageName: node
   linkType: hard
 
@@ -10643,7 +10643,7 @@ __metadata:
     "@graphql-tools/schema": 9.0.19
     "@graphql-tools/utils": 9.2.1
     "@luckycatfactory/esbuild-graphql-loader": 3.8.1
-    "@opensearch-project/opensearch": 2.2.1
+    "@opensearch-project/opensearch": 2.3.0
     "@opentelemetry/api": 1.4.1
     "@opentelemetry/api-metrics": 0.33.0
     "@opentelemetry/exporter-metrics-otlp-http": 0.41.0
