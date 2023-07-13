@@ -871,23 +871,22 @@ const useSearchEntities = ({
           });
         break;
       case 'pattern_type':
-        // eslint-disable-next-line no-case-declarations
-        const patternTypesEntities = [
-          'stix',
-          'pcre',
-          'sigma',
-          'snort',
-          'suricata',
-          'yara',
-          'tanium-signal',
-          'spl',
-          'eql',
-        ].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('pattern_type', patternTypesEntities);
+        fetchQuery(vocabularySearchQuery, {
+          category: 'pattern_type_ov',
+        })
+          .toPromise()
+          .then((data) => {
+            unionSetEntities(
+              'pattern_type',
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
+            );
+          });
         break;
       case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {
