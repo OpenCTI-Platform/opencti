@@ -15,8 +15,6 @@ import { RootThreatActorIndividualQuery } from './__generated__/RootThreatActorI
 import { RootThreatActorIndividualSubscription } from './__generated__/RootThreatActorIndividualSubscription.graphql';
 import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import ThreatActorIndividual from './ThreatActorIndividual';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
