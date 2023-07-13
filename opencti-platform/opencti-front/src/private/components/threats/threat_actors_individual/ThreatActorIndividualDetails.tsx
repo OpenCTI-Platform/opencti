@@ -202,8 +202,9 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                     />
                     </Tooltip>
                   ))}
-                </Carousel>
-              </FieldOrEmpty>
+
+
+              </Carousel></FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}
