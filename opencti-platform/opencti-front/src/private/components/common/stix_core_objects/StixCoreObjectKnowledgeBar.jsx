@@ -654,22 +654,6 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
               </ListSubheader>
             }
           >
-            {includes('observables', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/observables`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/observables`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <HexagonMultipleOutline />
-                </ListItemIcon>
-                <ListItemText primary={t('Observables')} />
-              </MenuItem>
-            )}
             {includes('indicators', availableSections) && (
               <MenuItem
                 component={Link}
@@ -684,6 +668,22 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   <ShieldSearch />
                 </ListItemIcon>
                 <ListItemText primary={t('Indicators')} />
+              </MenuItem>
+            )}
+            {includes('observables', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/observables`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/observables`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <HexagonMultipleOutline />
+                </ListItemIcon>
+                <ListItemText primary={t('Observables')} />
               </MenuItem>
             )}
             {includes('infrastructures', availableSections) && (

@@ -104,6 +104,7 @@ const RootThreatActorIndividualComponent = ({
             'narratives',
             'tools',
             'vulnerabilities',
+            'indicators',
             'observables',
             'infrastructures',
             'sightings',
