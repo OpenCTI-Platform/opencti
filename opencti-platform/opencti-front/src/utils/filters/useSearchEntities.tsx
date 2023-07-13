@@ -871,17 +871,21 @@ const useSearchEntities = ({
           });
         break;
       case 'pattern_type':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'pattern_type_ov',
+        fetchQuery(attributesSearchQuery, {
+          attributeName: 'pattern_type',
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
         })
           .toPromise()
           .then((data) => {
             unionSetEntities(
               'pattern_type',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
-                ({ node }) => ({
-                  label: t(node.name),
-                  value: node.name,
+              ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+              ).map(
+                (n) => ({
+                  label: n?.node.value,
+                  value: n?.node.value,
                   type: 'Vocabulary',
                 }),
               ),
