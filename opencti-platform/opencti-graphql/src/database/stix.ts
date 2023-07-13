@@ -772,6 +772,10 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_PART_OF, type: REL_NEW },
     { name: RELATION_COOPERATES_WITH, type: REL_NEW },
   ],
+  [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
+    { name: RELATION_PART_OF, type: REL_NEW },
+    { name: RELATION_COOPERATES_WITH, type: REL_NEW },
+  ],
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_TOOL}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
