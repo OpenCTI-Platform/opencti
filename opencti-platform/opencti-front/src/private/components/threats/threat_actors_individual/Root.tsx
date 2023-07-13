@@ -160,37 +160,6 @@ const RootThreatActorIndividualComponent = ({
             />
             <Route
               exact
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/indicators"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'Threat-Actor-Individual'}
-                    stixDomainObject={data}
-                    PopoverComponent={
-                      <ThreatActorIndividualPopover id={data.id} />
-                    }
-                    disableSharing={true}
-                  />
-                  <StixDomainObjectIndicators
-                    {...routeProps}
-                    stixDomainObjectId={threatActorIndividualId}
-                    stixDomainObjectLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/indicators`}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/indicators/relations/:relationId"
-              render={(routeProps: any) => (
-                <StixCoreRelationship
-                  entityId={threatActorIndividualId}
-                  {...routeProps}
-                />
-              )}
-            />
-            <Route
-              exact
               path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/files"
               render={(routeProps: any) => (
                 <React.Fragment>
