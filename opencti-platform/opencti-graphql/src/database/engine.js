@@ -83,7 +83,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { isBooleanAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
+import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 
 const ELK_ENGINE = 'elk';
@@ -2062,13 +2062,30 @@ export const prepareElementForIndexing = (element) => {
   const thing = {};
   Object.keys(element).forEach((key) => {
     const value = element[key];
-    if (Array.isArray(value)) {
+    if (Array.isArray(value)) { // Array of Date, objects, string or number
       const filteredArray = value.filter((i) => i);
-      thing[key] = filteredArray.length > 0 ? filteredArray : [];
-    } else if (isBooleanAttribute(key)) {
-      // patch field is string generic so need to be cast to boolean
+      thing[key] = filteredArray.length > 0 ? filteredArray.map((f) => {
+        if (isDateAttribute(key)) { // Date is an object but natively supported
+          return f;
+        }
+        if (R.is(String, f)) { // For string, trim by default
+          return f.trim();
+        }
+        if (R.is(Object, f)) { // For complex object, prepare inner elements
+          return prepareElementForIndexing(f);
+        }
+        // For all other types, no transform (list of boolean is not supported)
+        return f;
+      }) : [];
+    } else if (isDateAttribute(key)) { // Date is an object but natively supported
+      thing[key] = value;
+    } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
-    } else {
+    } else if (R.is(Object, value)) { // For complex object, prepare inner elements
+      thing[key] = prepareElementForIndexing(value);
+    } else if (R.is(String, value)) { // For string, trim by default
+      thing[key] = value.trim();
+    } else { // For all other types (numeric, ...), no transform
       thing[key] = value;
     }
   });
