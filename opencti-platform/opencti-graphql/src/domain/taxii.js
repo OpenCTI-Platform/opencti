@@ -96,8 +96,11 @@ const prepareManifestElement = async (data) => {
 const collectionQuery = async (context, user, collectionId, args) => {
   const { added_after, limit, next, match = {} } = args;
   const { id, spec_version, type, version } = match;
-  if (spec_version || version) {
-    throw FunctionalError('Unsupported parameters provided', { spec_version, version });
+  if (spec_version && spec_version !== '2.1') {
+    throw FunctionalError('Invalid spec_version provided, only \'2.1\' supported', { spec_version });
+  }
+  if (version && version !== 'last') {
+    throw FunctionalError('Invalid version provided, only \'last\' supported', { version });
   }
   const collection = await storeLoadById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
   if (!collection) {
