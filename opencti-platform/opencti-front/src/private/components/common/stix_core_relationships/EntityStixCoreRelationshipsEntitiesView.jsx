@@ -1,15 +1,17 @@
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ToolBar from '../../data/ToolBar';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import EntityStixCoreRelationshipsEntities from './EntityStixCoreRelationshipsEntities';
 import { useFormatter } from '../../../../components/i18n';
+import { convertFilters } from '../../../../utils/ListParameters';
 
 const LOCAL_STORAGE_KEY = 'view-entityStixCoreRelationshipsEntitiesView';
 const EntityStixCoreRelationshipsEntitiesView = ({
-  backgroundTaskFilters,
+  localStorage,
+  entityId,
   stixCoreObjectTypes,
   relationshipTypes,
   entityLink,
@@ -21,28 +23,45 @@ const EntityStixCoreRelationshipsEntitiesView = ({
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
-    {
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      filters: {},
-    },
-  );
+  const { viewStorage, helpers: storageHelpers } = localStorage;
   const {
-    numberOfElements,
     filters,
     searchTerm,
     sortBy,
     orderAsc,
+    view,
+    numberOfElements,
     openExports,
   } = viewStorage;
+
+  const selectedTypes = filters?.entity_type?.map((o) => o.id) ?? stixCoreObjectTypes;
+  const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
+
+  const paginationOptions = { // Rework pagination options for Query
+    types: selectedTypes,
+    relationship_type: selectedRelationshipTypes,
+    elementId: entityId,
+    search: searchTerm,
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+    filters: convertFilters(
+      R.omit(['relationship_type', 'entity_type'], filters),
+    ),
+  };
+
+  let backgroundTaskFilters;
+  if (selectedRelationshipTypes.length > 0) {
+    backgroundTaskFilters = {
+      ...filters,
+      entity_type:
+        selectedTypes.length > 0
+          ? selectedTypes.map((n) => ({ id: n, value: n }))
+          : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+      [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
+        { id: entityId, value: entityId },
+      ],
+    };
+  }
 
   const {
     selectedElements,

@@ -24,6 +24,9 @@ const EntityStixCoreRelationships = ({
   stixCoreObjectTypes,
   entityId,
   role,
+  entityLink,
+  disableExport,
+  enableNestedView,
   relationshipTypes,
   isRelationReversed,
   allDirections,
@@ -32,165 +35,27 @@ const EntityStixCoreRelationships = ({
   currentView,
   paddingRightButtonAdd,
 }) => {
-/*
-    let params = {};
-    if (!props.noState) {
-      params = buildViewParamsFromUrlAndStorage(
-        props.history,
-        props.location,
-        `view-relationships-${props.entityId}-${props.stixCoreObjectTypes?.join(
-          '-',
-        )}-${props.relationshipTypes?.join('-')}`,
-      );
-    }
-    state = {
-      sortBy: R.propOr('created_at', 'sortBy', params),
-      orderAsc: R.propOr(false, 'orderAsc', params),
-      searchTerm: R.propOr('', 'searchTerm', params),
-      view: R.propOr('entities', 'view', params),
-      filters: R.propOr({}, 'filters', params),
-    };
-   */
   const classes = useStyles();
-  const { viewStorage } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
+  const localStorage = usePaginationLocalStorage(
+    `view-relationships-${entityId}-${stixCoreObjectTypes?.join(
+      '-',
+    )}-${relationshipTypes?.join('-')}`,
     {
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
       filters: {},
+      view: 'entities',
     },
   );
+  const { paginationOptions } = localStorage;
   const {
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-  } = viewStorage;
+    view,
+  } = localStorage.viewStorage;
 
   const finalView = currentView || view;
-  let selectedTypes;
-  if (filters.entity_type && filters.entity_type.length > 0) {
-    if (filters.entity_type.filter((o) => o.id === 'all').length > 0) {
-      selectedTypes = [];
-    } else {
-      selectedTypes = filters.entity_type.map((o) => o.id);
-    }
-  } else {
-    selectedTypes = Array.isArray(stixCoreObjectTypes) && stixCoreObjectTypes.length > 0
-      ? stixCoreObjectTypes
-      : [];
-  }
-  let selectedRelationshipTypes;
-  if (filters.relationship_type && filters.relationship_type.length > 0) {
-    if (filters.relationship_type.filter((o) => o.id === 'all').length > 0) {
-      selectedRelationshipTypes = [];
-    } else {
-      selectedRelationshipTypes = filters.relationship_type.map((o) => o.id);
-    }
-  } else {
-    selectedRelationshipTypes = Array.isArray(relationshipTypes) && relationshipTypes.length > 0
-      ? relationshipTypes
-      : [];
-  }
-  let backgroundTaskFilters = filters;
-  const finalFilters = convertFilters(
-    R.omit(['relationship_type', 'entity_type'], filters),
-  );
-  let paginationOptions;
-  if (finalView === 'entities') {
-    paginationOptions = {
-      types: selectedTypes,
-      relationship_type: selectedRelationshipTypes,
-      elementId: entityId,
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-      filters: finalFilters,
-    };
-    if (selectedRelationshipTypes.length > 0) {
-      backgroundTaskFilters = {
-        ...filters,
-        entity_type:
-            selectedTypes.length > 0
-              ? selectedTypes.map((n) => ({ id: n, value: n }))
-              : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-        [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
-          { id: entityId, value: entityId },
-        ],
-      };
-    }
-  } else {
-    paginationOptions = {
-      relationship_type: selectedRelationshipTypes,
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-      filters: finalFilters,
-    };
-    backgroundTaskFilters = {
-      ...R.omit(['relationship_type', 'entity_type'], filters),
-      entity_type:
-          selectedRelationshipTypes.length > 0
-            ? selectedRelationshipTypes.map((n) => ({ id: n, value: n }))
-            : [
-              {
-                id: 'stix-core-relationship',
-                value: 'stix-core-relationship',
-              },
-            ],
-    };
-    if (allDirections) {
-      paginationOptions = {
-        ...paginationOptions,
-        elementId: entityId,
-        elementWithTargetTypes: selectedTypes,
-      };
-      backgroundTaskFilters = {
-        ...backgroundTaskFilters,
-        elementId: [{ id: entityId, value: entityId }],
-        elementWithTargetTypes:
-            selectedTypes.length > 0
-              ? selectedTypes.map((n) => ({ id: n, value: n }))
-              : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-      };
-    } else if (isRelationReversed) {
-      paginationOptions = {
-        ...paginationOptions,
-        toId: entityId,
-        toRole: role || null,
-        fromTypes: selectedTypes,
-      };
-      backgroundTaskFilters = {
-        ...backgroundTaskFilters,
-        toId: [{ id: entityId, value: entityId }],
-        fromTypes:
-            selectedTypes.length > 0
-              ? selectedTypes.map((n) => ({ id: n, value: n }))
-              : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-      };
-    } else {
-      paginationOptions = {
-        ...paginationOptions,
-        fromId: entityId,
-        fromRole: role || null,
-        toTypes: selectedTypes,
-      };
-      backgroundTaskFilters = {
-        ...backgroundTaskFilters,
-        fromId: [{ id: entityId, value: entityId }],
-        toTypes:
-            selectedTypes.length > 0
-              ? selectedTypes.map((n) => ({ id: n, value: n }))
-              : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-      };
-    }
-  }
+
   const finalStixCoreObjectTypes = stixCoreObjectTypes || [
     'Stix-Core-Object',
   ];
@@ -206,10 +71,24 @@ const EntityStixCoreRelationships = ({
   return (
       <ExportContextProvider>
         <div className={classes.container}>
-          {finalView === 'relationships'
+          {finalView === 'entities'
+            && <EntityStixCoreRelationshipsEntitiesView
+              localStorage={localStorage}
+              entityId={entityId}
+              role={role}
+              stixCoreObjectTypes={stixCoreObjectTypes}
+              relationshipTypes={relationshipTypes}
+              entityLink={entityLink}
+              isRelationReversed={isRelationReversed}
+              disableExport={disableExport}
+              currentView={currentView}
+              enableNestedView={enableNestedView}
+            />}
+           {finalView === 'relationships'
             && <EntityStixCoreRelationshipsRelationshipsView
+            localStorage={localStorage}
             entityId={entityId}
-            backgroundTaskFilters={backgroundTaskFilters}
+            role={role}
             stixCoreObjectTypes={stixCoreObjectTypes}
             relationshipTypes={relationshipTypes}
             entityLink={entityLink}
@@ -218,17 +97,6 @@ const EntityStixCoreRelationships = ({
             disableExport={disableExport}
             currentView={currentView}
             enableNestedView={enableNestedView}
-            />}
-          {finalView === 'entities'
-            && <EntityStixCoreRelationshipsEntitiesView
-              backgroundTaskFilters={backgroundTaskFilters}
-              stixCoreObjectTypes={stixCoreObjectTypes}
-              relationshipTypes={relationshipTypes}
-              entityLink={entityLink}
-              isRelationReversed={isRelationReversed}
-              disableExport={disableExport}
-              currentView={currentView}
-              enableNestedView={enableNestedView}
             />}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCoreRelationshipCreationFromEntity

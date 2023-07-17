@@ -1,4 +1,5 @@
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -12,15 +13,16 @@ import EntityStixCoreRelationshipsLinesFrom, {
   entityStixCoreRelationshipsLinesFromQuery,
 } from './EntityStixCoreRelationshipsLinesFrom';
 import ToolBar from '../../data/ToolBar';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import { convertFilters } from '../../../../utils/ListParameters';
 
 const LOCAL_STORAGE_KEY = 'view-entityStixCoreRelationshipsRelationshipsView';
 const EntityStixCoreRelationshipsRelationshipsView = ({
-  backgroundTaskFilters,
+  localStorage,
   entityId,
   stixCoreObjectTypes,
   relationshipTypes,
+  role,
   entityLink,
   isRelationReversed,
   allDirections,
@@ -30,20 +32,7 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
-    {
-      numberOfElements: {
-        number: 0,
-        symbol: '',
-      },
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      filters: {},
-    },
-  );
+  const { viewStorage, helpers: storageHelpers } = localStorage;
   const {
     numberOfElements,
     filters,
@@ -51,7 +40,85 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
     sortBy,
     orderAsc,
     openExports,
+    view,
   } = viewStorage;
+
+  const selectedTypes = filters?.entity_type?.map((o) => o.id) ?? stixCoreObjectTypes;
+  const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
+
+  let paginationOptions = { // Rework pagination options for Query
+    types: selectedTypes,
+    relationship_type: selectedRelationshipTypes,
+    elementId: entityId,
+    search: searchTerm,
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+    filters: convertFilters(
+      R.omit(['relationship_type', 'entity_type'], filters),
+    ),
+  };
+
+  let backgroundTaskFilters;
+  if (selectedRelationshipTypes.length > 0) {
+    backgroundTaskFilters = {
+      ...filters,
+      entity_type:
+        selectedRelationshipTypes.length > 0
+          ? selectedRelationshipTypes.map((n) => ({ id: n, value: n }))
+          : [
+            {
+              id: 'stix-core-relationship',
+              value: 'stix-core-relationship',
+            },
+          ],
+    };
+  }
+
+  if (allDirections) {
+    paginationOptions = {
+      ...paginationOptions,
+      elementId: entityId,
+      elementWithTargetTypes: selectedTypes,
+    };
+    backgroundTaskFilters = {
+      ...backgroundTaskFilters,
+      elementId: [{ id: entityId, value: entityId }],
+      elementWithTargetTypes:
+        selectedTypes.length > 0
+          ? selectedTypes.map((n) => ({ id: n, value: n }))
+          : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+    };
+  } else if (isRelationReversed) {
+    paginationOptions = {
+      ...paginationOptions,
+      toId: entityId,
+      toRole: role || null,
+      fromTypes: selectedTypes,
+    };
+    backgroundTaskFilters = {
+      ...backgroundTaskFilters,
+      toId: [{ id: entityId, value: entityId }],
+      fromTypes:
+        selectedTypes.length > 0
+          ? selectedTypes.map((n) => ({ id: n, value: n }))
+          : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+    };
+  } else {
+    paginationOptions = {
+      ...paginationOptions,
+      fromId: entityId,
+      fromRole: role || null,
+      toTypes: selectedTypes,
+    };
+    backgroundTaskFilters = {
+      ...backgroundTaskFilters,
+      fromId: [{ id: entityId, value: entityId }],
+      toTypes:
+        selectedTypes.length > 0
+          ? selectedTypes.map((n) => ({ id: n, value: n }))
+          : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+    };
+  }
 
   const {
     selectedElements,
@@ -125,7 +192,17 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
     numberOfSelectedElements = numberOfElements.original
         - Object.keys(deSelectedElements || {}).length;
   }
-  const finalView = currentView;
+  const finalView = currentView || view;
+  const availableFilterKeys = [
+    'relationship_type',
+    'entity_type',
+    'markedBy',
+    'confidence',
+    'createdBy',
+    'creator',
+    'created_start_date',
+    'created_end_date',
+  ];
   return (
       <UserContext.Consumer>
         {({ platformModuleHelpers }) => (
@@ -146,16 +223,7 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
               selectAll={selectAll}
               numberOfElements={numberOfElements}
               filters={filters}
-              availableFilterKeys={[
-                'relationship_type',
-                'entity_type',
-                'markedBy',
-                'confidence',
-                'createdBy',
-                'creator',
-                'created_start_date',
-                'created_end_date',
-              ]}
+              availableFilterKeys={availableFilterKeys}
               availableEntityTypes={stixCoreObjectTypes}
               availableRelationshipTypes={relationshipTypes}
               handleToggleExports={
@@ -252,6 +320,7 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
 EntityStixCoreRelationshipsRelationshipsView.propTypes = {
   entityId: PropTypes.string,
   stixCoreObjectTypes: PropTypes.array,
+  role: PropTypes.string,
   relationshipTypes: PropTypes.array,
   entityLink: PropTypes.string,
   isRelationReversed: PropTypes.bool,
