@@ -1751,9 +1751,9 @@ class OpenCTIStix2:
                                     "parent_types": ["Stix-Domain-Object"],
                                 }
                             )
-            # Get extra relations (from)
+            # Get extra relations (from AND to)
             stix_core_relationships = self.opencti.stix_core_relationship.list(
-                elementId=entity["x_opencti_id"]
+                elementId=entity["x_opencti_id"], getAll=True
             )
             for stix_core_relationship in stix_core_relationships:
                 if self.check_max_marking_definition(
@@ -1788,7 +1788,8 @@ class OpenCTIStix2:
                     )
             # Get sighting
             stix_sighting_relationships = self.opencti.stix_sighting_relationship.list(
-                elementId=entity["x_opencti_id"]
+                elementId=entity["x_opencti_id"],
+                getAll=True,
             )
             for stix_sighting_relationship in stix_sighting_relationships:
                 if self.check_max_marking_definition(
