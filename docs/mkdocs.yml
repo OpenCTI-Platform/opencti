@@ -56,7 +56,6 @@ extra:
 # Plugins
 plugins:
   - mike:
-      alias_type: symlink
       canonical_version: latest  
   - search
   - git-committers:
@@ -161,9 +160,9 @@ nav:
       - Custom dashboards: usage/dashboards.md
       - Workflows and assignation: usage/workflows.md
     - Sharing and exports:
-      - Export in structured format: usage/export-structured.md
-      - Export in documents: usage/export-documents.md
       - Native feeds: usage/feeds.md
+      - Export in structured format: usage/export-structured.md
+      - Export in documents: usage/export-documents.md      
   - Administration:
     - Introduction: administration/introduction.md
     - Enterprise edition: administration/enterprise.md
@@ -173,10 +172,13 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Policies: administration/policies.md
+        - Users and RBAC: administration/users.md
+        - Data segregation: administration/segregation.md
       - Customization:
         - Entity types: administration/entities.md
         - Rules engine: administration/reasoning.md
         - Retention policies: administration/retentions.md
+        - Sourcing knowledge: administration/sourcing.md
       - Taxonomies: administration/ontologies.md
       - Activity:
         - Overview: administration/audit/overview.md
@@ -194,10 +196,7 @@ nav:
       - Data Streaming: reference/streaming.md
       - TAXII Feeds: reference/taxii-feeds.md
       - CSV Feeds: reference/csv-feeds.md
-    - Security:
-      - Users and RBAC: administration/users.md
-      - Data segregation: administration/segregation.md
-      - Sourcing knowledge: administration/sourcing.md
+    - Security and compliance: reference/security.md
   - Development:
     - Prerequisites:
       - Ubuntu: development/environment_ubuntu.md

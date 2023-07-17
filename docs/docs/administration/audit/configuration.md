@@ -11,6 +11,6 @@ However, all knowledge are not listened by default due to performance impact on 
 
 For this reason you need to explicitly activate extended listening on user / group or organization.
 
-![Audit interface](../../assets/audit_configuration.png)
+![Audit interface](../assets/audit_configuration.png)
 
 Listening will start just after the configuration. Every past events will not be taken into account.

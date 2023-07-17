@@ -8,13 +8,10 @@ hide:
 
 Welcome to the OpenCTI Documentation space. Here you will be able to find all documents, meeting notes and presentations about the platform.
 
-**Thanks also to take a look at the [releases notes](https://github.com/OpenCTI-Platform/opencti/releases) for important information about release and deployment** 
 
-!!! tip "Need more help?"
+!!! tip "Release notes"
 
-    We are doing our best to keep this documentation complete, accurate and up to date. 
-    
-    If you still have questions or you find something which is not sufficiently explained, join the [Filigran Community on Slack](https://community.filigran.io).
+    Please, be sure to also take a look at the [OpenCTI releases notes](https://github.com/OpenCTI-Platform/opencti/releases), they may contain important information about releases and deployments.
 
 ## Introduction
 
@@ -52,13 +49,26 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     [:octicons-arrow-right-24:{ .middle } Customize](administration/introduction.md)
 </div>
 
+!!! info "Need more help?"
+
+    We are doing our best to keep this documentation complete, accurate and up to date. 
+    
+    If you still have questions or you find something which is not sufficiently explained, join the [Filigran Community on Slack](https://community.filigran.io).
+
+
 ## Latest blog posts
 
-!!! info "Articles"
-
-    All tutorials are published directly on the [Medium blog](https://blog.filigran.io), this section provides a comprehensive list of the most important ones.
+All tutorials are published directly on the [Medium blog](https://blog.filigran.io), this section provides a comprehensive list of the most important ones.
 
 <div class="grid cards" markdown>
+
+-   __OpenCTI case management is ready for takeoff: what is available and what’s next__<br />
+    <sub><sup>Apr 18, 2023</sup></sub>
+
+    As part of our 2023 strategic roadmap, we’ve worked since January on the case management system within the OpenCTI platform. This initiative comes from 2 simple statements...
+
+    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/opencti-case-management-is-ready-for-takeoff-what-is-available-and-whats-next-23f44cc7aa70)**
+
 -   __Progressive rollout of the OpenCTI Enterprise Edition: why, what and how?__<br />
     <sub><sup>June 10, 2023</sup></sub>
 
@@ -72,13 +82,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     In the past year, our product and engineering teams worked closely with multiple companies, public agencies and non profit organizations to extend a bit the...
 
     **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/how-opencti-helps-to-fight-desinformation-and-foreign-interferences-424a3d02f2c7)**
-
--   __OpenCTI knowledge streams can now be turned into public feeds!__<br />
-    <sub><sup>Apr 18, 2023</sup></sub>
-
-    OpenCTI has multiple ways of sharing data with other platform and third-party systems: TAXII collections, CSV feeds, custom connectors and live streams...
-
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/opencti-public-streams-297dfdb88784)**
+    
 </div>
 
 ## Additional resources

@@ -11,7 +11,7 @@
 OpenCTI activity capability is the way to unified whats really happen in the platform.
 In events section you will have access to the UI that will answer to "who did what, where, and when?" within your data with the maximum level of transparency. 
 
-![Audit interface](../../assets/audit.png)
+![Audit interface](../assets/audit.png)
 
 ## Include knowledge
 

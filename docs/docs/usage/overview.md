@@ -75,7 +75,8 @@ Thus, in the `Basic information` section, are displayed all common properties to
 
 ![Basic information](assets/basic.png)
 
-Below these two sections, you will find latest modifications in the Knowledge base related to the Entity :
+Below these two sections, you will find latest modifications in the Knowledge base related to the Entity:
+
 - `Latest created relationships`: display the latest relationships that have been created <u>from</u> or <u>to</u> this Entity. For example, latest Indicators of Compromise and associated Threat Actor of a Malware.
 - `latest containers about the object`: display all the Cases and Analysis that contains this Entity. For example, the latest Reports about a Malware.
 - `External references`: display all the the external sources associated with the Entity. You will often find here links to external reports or webpages from where Entity's information came from.
@@ -89,8 +90,10 @@ Last, all Notes written by users of the platform about this Entity are displayed
 ### Knowledge
 
 In the `Knowledge` tab, which is the central part of the entity, you will find all the Knowledge related to the current entity. The `Knowledge` tab is different for Analysis (`Report`, `Groupings`) and Cases (`Incident response`, `Request for Information`, `Request for Takedown`) entities than for all the other entity types.
-- The `Knowledge` tab of those entities (who represents Analyses or Cases that can contains a collection of Objects) is the place to integrate and link together entities. For more information on how to integrate information in OpenCTI using the knowledge tab of a report, please refer to the part [Manual creations](manual-creations.md)
+
+- The `Knowledge` tab of those entities (who represents Analyses or Cases that can contains a collection of Objects) is the place to integrate and link together entities. For more information on how to integrate information in OpenCTI using the knowledge tab of a report, please refer to the part [Manual creation](manual-creation.md).
 - `Knowledge` tabs of any other entity (that does not aim to contain a collection of Objects) gather all the entities which have been at some point linked to the entity the user is looking at (for instance, as shown in the following capture, the `Knowledge` tab of Intrusion set APT29) gives access to the list of all entities APT29 is attributed to, all victims the intrusion set has targeted, all its campaigns, TTPs, malwares etc. For entities to appear in theses tabs under `Knowledge`, they need to have been linked to the entity directly or have been computed with the inference engine (to come).
+
 ![The Intrusion Set's Knowledge tab](assets/intrusionset_knowledge_view.png)
 
 ### Analysis
