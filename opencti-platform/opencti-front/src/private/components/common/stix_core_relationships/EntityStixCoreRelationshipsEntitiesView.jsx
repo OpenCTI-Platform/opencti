@@ -15,7 +15,6 @@ const EntityStixCoreRelationshipsEntitiesView = ({
   entityLink,
   isRelationReversed,
   disableExport,
-  handleChangeView,
   currentView,
   enableNestedView }) => {
   const { t } = useFormatter();
@@ -134,9 +133,7 @@ const EntityStixCoreRelationshipsEntitiesView = ({
             handleSearch={storageHelpers.handleSearch}
             handleAddFilter={storageHelpers.handleAddFilter}
             handleRemoveFilter={storageHelpers.handleRemoveFilter}
-            handleChangeView={
-              handleChangeView || handleChangeView
-            }
+            handleChangeView={storageHelpers.handleChangeView}
             onToggleEntity={onToggleEntity}
             handleToggleSelectAll={handleToggleSelectAll}
             paginationOptions={paginationOptions}
@@ -225,7 +222,6 @@ EntityStixCoreRelationshipsEntitiesView.propTypes = {
   entityLink: PropTypes.string,
   isRelationReversed: PropTypes.bool,
   disableExport: PropTypes.bool,
-  handleChangeView: PropTypes.func,
   currentView: PropTypes.string,
   enableNestedView: PropTypes.func,
 };
