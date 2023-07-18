@@ -13134,6 +13134,13 @@ type StixCoreObjectEditMutations {
 
 ######## STIX DOMAIN OBJECT ENTITIES
 
+input StixDomainObjectFileEditInput {
+  id: String!
+  order: Int
+  description: String
+  inCarousel: Boolean
+}
+
 type StixDomainObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   changeType(newType: String!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
