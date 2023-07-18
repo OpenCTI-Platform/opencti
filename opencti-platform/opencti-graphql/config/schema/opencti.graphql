@@ -1891,6 +1891,7 @@ interface StixCoreObject {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -2084,6 +2085,7 @@ interface StixDomainObject {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -2256,6 +2258,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -2445,6 +2448,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -2630,6 +2634,7 @@ interface Container {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -2800,6 +2805,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -3025,6 +3031,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -3227,6 +3234,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -3449,6 +3457,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -3655,6 +3664,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -3836,6 +3846,7 @@ interface Identity {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -4014,6 +4025,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -4223,6 +4235,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -4416,6 +4429,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -4594,6 +4608,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -4798,6 +4813,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -5000,6 +5016,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -5179,6 +5196,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -5364,6 +5382,7 @@ interface Location {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -5539,6 +5558,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -5723,6 +5743,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -5901,6 +5922,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -6075,6 +6097,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -6263,6 +6286,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -6463,6 +6487,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -6596,6 +6621,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -6788,6 +6814,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -6969,6 +6996,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -7162,6 +7190,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -7357,6 +7386,7 @@ interface StixCyberObservable {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -7458,6 +7488,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -7569,6 +7600,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -7684,6 +7716,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -7791,6 +7824,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -7900,6 +7934,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8019,6 +8054,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8146,6 +8182,7 @@ interface HashedObservable {
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8249,6 +8286,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8369,6 +8407,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8498,6 +8537,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8662,6 +8702,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8772,6 +8813,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8880,6 +8922,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -8987,6 +9030,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9094,6 +9138,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9220,6 +9265,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9373,6 +9419,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9499,6 +9546,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9606,6 +9654,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9740,6 +9789,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9851,6 +9901,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -9962,6 +10013,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -10069,6 +10121,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -10176,6 +10229,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -10283,6 +10337,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -10390,6 +10445,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -10497,6 +10553,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -10609,6 +10666,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -10716,6 +10774,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -10829,6 +10888,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   objectLabel: LabelConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -11428,6 +11488,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   objectLabel: LabelConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -11578,6 +11639,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   objectLabel: LabelConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -11677,6 +11739,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   start_time: DateTime
   stop_time: DateTime
   datable: Boolean
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   notes(first: Int): NoteConnection
   reports(first: Int): ReportConnection

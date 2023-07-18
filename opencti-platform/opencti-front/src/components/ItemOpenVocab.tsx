@@ -9,7 +9,6 @@ import { useFormatter } from './i18n';
 import useVocabularyCategory from '../utils/hooks/useVocabularyCategory';
 import { ItemOpenVocabQuery } from './__generated__/ItemOpenVocabQuery.graphql';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from './Loader';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -45,16 +44,34 @@ const itemOpenVocabQuery = graphql`
   }
 `;
 
+const ItemOpenVocabDummy = ({ small }: { small: boolean }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  return (
+    <span className={classes.container}>
+      <pre style={{ margin: 0, paddingTop: 7, paddingBottom: 4 }}>
+        {t('Unknown')}
+      </pre>
+      <Tooltip title={t('No description')}>
+        <InformationOutline
+          className={small ? classes.smallIcon : classes.icon}
+          fontSize="small"
+          color="disabled"
+        />
+      </Tooltip>
+    </span>
+  );
+};
 const ItemOpenVocabComponent: FunctionComponent<
 Omit<ItemOpenVocabProps, 'type'>
 > = ({ value, small = true, queryRef }) => {
+  const classes = useStyles();
   const { t } = useFormatter();
   const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
     itemOpenVocabQuery,
     queryRef,
   );
   const openVocabList = (vocabularies?.edges ?? []).map(({ node }) => node);
-  const classes = useStyles();
   if (!value) {
     return (
       <span className={classes.container}>
@@ -100,11 +117,11 @@ const ItemOpenVocab: FunctionComponent<Omit<ItemOpenVocabProps, 'queryRef'>> = (
     category: typeToCategory(props.type),
   });
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense fallback={<ItemOpenVocabDummy small={props.small} />}>
       <ItemOpenVocabComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <ItemOpenVocabDummy small={props.small} />
   );
 };
 

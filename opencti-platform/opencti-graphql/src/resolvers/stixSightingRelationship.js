@@ -32,6 +32,7 @@ import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { batchCreators } from '../domain/user';
+import { numberOfContainersForObject } from '../domain/container';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -74,6 +75,7 @@ const stixSightingRelationshipResolvers = {
     objectOrganization: (rel, _, context) => batchOrganizationsLoader.load(rel.id, context, context.user),
     objectLabel: (rel, _, context) => labelsLoader.load(rel.id, context, context.user),
     externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
+    containersNumber: (rel, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: rel.id }),
     containers: (rel, _, context) => containersLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     cases: (rel, _, context) => casesLoader.load(rel.id, context, context.user),

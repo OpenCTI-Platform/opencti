@@ -144,6 +144,7 @@ const Incidents: FunctionComponent = () => {
             'creator',
             'created_start_date',
             'created_end_date',
+            'targets',
           ]}
         >
           {queryRef && (

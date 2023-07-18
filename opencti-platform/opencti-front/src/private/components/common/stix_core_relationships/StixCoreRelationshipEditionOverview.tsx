@@ -1,5 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  usePreloadedQuery,
+} from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -11,14 +16,22 @@ import { FormikConfig } from 'formik/dist/types';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../../components/Subscription';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import {
@@ -27,9 +40,7 @@ import {
 } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import {
-  StixCoreRelationshipEditionOverviewQuery,
-} from './__generated__/StixCoreRelationshipEditionOverviewQuery.graphql';
+import { StixCoreRelationshipEditionOverviewQuery } from './__generated__/StixCoreRelationshipEditionOverviewQuery.graphql';
 import {
   StixCoreRelationshipEditionOverview_stixCoreRelationship$data,
   StixCoreRelationshipEditionOverview_stixCoreRelationship$key,
@@ -206,7 +217,7 @@ interface StixCoreRelationshipEditionOverviewProps {
   handleDelete: () => void;
   queryRef: PreloadedQuery<StixCoreRelationshipEditionOverviewQuery>;
   stixCoreRelationship: StixCoreRelationshipEditionOverview_stixCoreRelationship$data;
-  noStoreUpdate: boolean
+  noStoreUpdate: boolean;
 }
 
 interface StixCoreRelationshipAddInput {
@@ -218,16 +229,13 @@ interface StixCoreRelationshipAddInput {
   x_opencti_workflow_id: Option;
   createdBy: Option | undefined;
   objectMarking: Option[];
-  message?: string
-  references?: Option[]
+  message?: string;
+  references?: Option[];
 }
 
-const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>> = ({
-  handleClose,
-  handleDelete,
-  stixCoreRelationship,
-  noStoreUpdate,
-}) => {
+const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
+Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
+> = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate }) => {
   const stixCoreRelationshipType = 'stix-core-relationship';
 
   const { t } = useFormatter();
@@ -249,7 +257,10 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const stixCoreRelationshipValidator = useSchemaEditionValidation('stix-core-relationship', basicShape);
+  const stixCoreRelationshipValidator = useSchemaEditionValidation(
+    'stix-core-relationship',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: stixCoreRelationshipMutationFieldPatch,
@@ -257,9 +268,17 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
     relationDelete: stixCoreRelationshipMutationRelationDelete,
     editionFocus: stixCoreRelationshipEditionFocus,
   };
-  const editor = useFormEditor(stixCoreRelationship, enableReferences, queries, stixCoreRelationshipValidator);
+  const editor = useFormEditor(
+    stixCoreRelationship,
+    enableReferences,
+    queries,
+    stixCoreRelationshipValidator,
+  );
 
-  const onSubmit: FormikConfig<StixCoreRelationshipAddInput>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<StixCoreRelationshipAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -279,7 +298,8 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
       variables: {
         id: stixCoreRelationship.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -300,7 +320,7 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
     references: [],
   };
   return (
-    <div>
+    <>
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
@@ -324,7 +344,14 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
           validationSchema={stixCoreRelationshipValidator}
           onSubmit={onSubmit}
         >
-          {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
+          {({
+            submitForm,
+            isSubmitting,
+            setFieldValue,
+            values,
+            isValid,
+            dirty,
+          }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <ConfidenceField
                 variant="edit"
@@ -345,7 +372,10 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (
-                    <SubscriptionFocus context={editContext} fieldName="start_time" />
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="start_time"
+                    />
                   ),
                 }}
               />
@@ -360,7 +390,10 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (
-                    <SubscriptionFocus context={editContext} fieldName="stop_time" />
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="stop_time"
+                    />
                   ),
                 }}
               />
@@ -375,7 +408,10 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
                 helperText={
-                  <SubscriptionFocus context={editContext} fieldName="description" />
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="description"
+                  />
                 }
               />
               <KillChainPhasesField
@@ -383,7 +419,10 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
-                  <SubscriptionFocus context={editContext} fieldName="killChainPhases" />
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="killChainPhases"
+                  />
                 }
                 onChange={editor.changeKillChainPhases}
               />
@@ -396,7 +435,10 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
                   setFieldValue={setFieldValue}
                   style={{ marginTop: 20 }}
                   helpertext={
-                    <SubscriptionFocus context={editContext} fieldName="x_opencti_workflow_id" />
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="x_opencti_workflow_id"
+                    />
                   }
                 />
               )}
@@ -405,7 +447,10 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
-                  <SubscriptionFocus context={editContext} fieldName="createdBy" />
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="createdBy"
+                  />
                 }
                 onChange={editor.changeCreated}
               />
@@ -413,7 +458,10 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
                 name="objectMarking"
                 style={fieldSpacingContainerStyle}
                 helpertext={
-                  <SubscriptionFocus context={editContext} fieldname="objectMarking" />
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldname="objectMarking"
+                  />
                 }
                 onChange={editor.changeMarking}
               />
@@ -425,7 +473,8 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
                   open={false}
                   values={values.references}
                   id={stixCoreRelationship.id}
-                  noStoreUpdate={noStoreUpdate} />
+                  noStoreUpdate={noStoreUpdate}
+                />
               )}
             </Form>
           )}
@@ -440,20 +489,31 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
           </Button>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
-const StixCoreRelationshipEditionOverview: FunctionComponent<Omit<StixCoreRelationshipEditionOverviewProps, 'stixCoreRelationship'>> = (
-  props,
-) => {
-  const queryData = usePreloadedQuery(stixCoreRelationshipEditionOverviewQuery, props.queryRef);
+const StixCoreRelationshipEditionOverview: FunctionComponent<
+Omit<StixCoreRelationshipEditionOverviewProps, 'stixCoreRelationship'>
+> = (props) => {
+  const queryData = usePreloadedQuery(
+    stixCoreRelationshipEditionOverviewQuery,
+    props.queryRef,
+  );
   if (queryData.stixCoreRelationship === null) {
     return <ErrorNotFound />;
   }
   // eslint-disable-next-line max-len
-  const stixCoreRelationship = useFragment<StixCoreRelationshipEditionOverview_stixCoreRelationship$key>(StixCoreRelationshipEditionOverviewFragment, queryData.stixCoreRelationship);
-  return <StixCoreRelationshipEditionOverviewComponent {...props} stixCoreRelationship={stixCoreRelationship} />;
+  const stixCoreRelationship = useFragment<StixCoreRelationshipEditionOverview_stixCoreRelationship$key>(
+    StixCoreRelationshipEditionOverviewFragment,
+    queryData.stixCoreRelationship,
+  );
+  return (
+    <StixCoreRelationshipEditionOverviewComponent
+      {...props}
+      stixCoreRelationship={stixCoreRelationship}
+    />
+  );
 };
 
 export default StixCoreRelationshipEditionOverview;

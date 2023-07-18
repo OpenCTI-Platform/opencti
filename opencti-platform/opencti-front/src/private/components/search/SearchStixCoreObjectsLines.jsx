@@ -311,10 +311,8 @@ export const searchStixCoreObjectsLinesSearchQuery = graphql`
             id
             name
           }
-          containers {
-            pageInfo {
-              globalCount
-            }
+          containersNumber {
+            total
           }
         }
       }

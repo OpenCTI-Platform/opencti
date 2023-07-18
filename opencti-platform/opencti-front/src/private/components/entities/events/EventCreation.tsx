@@ -127,19 +127,15 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t('This field is required')),
-    description: Yup.string()
-      .nullable(),
-    event_types: Yup.array()
-      .nullable(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    description: Yup.string().nullable(),
+    event_types: Yup.array().nullable(),
     start_time: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     stop_time: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(Yup.ref('start_time'), 'The end date can\'t be before start date')
+      .min(Yup.ref('start_time'), "The end date can't be before start date")
       .nullable(),
   };
   const eventValidator = useSchemaCreationValidation(EVENT_TYPE, basicShape);
@@ -148,11 +144,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
 
   const onSubmit: FormikConfig<EventAddInput>['onSubmit'] = (
     values,
-    {
-      setSubmitting,
-      setErrors,
-      resetForm,
-    },
+    { setSubmitting, setErrors, resetForm },
   ) => {
     const input: EventCreationMutation$variables['input'] = {
       name: values.name,
@@ -189,21 +181,18 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    EVENT_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      event_types: [],
-      start_time: null,
-      stop_time: null,
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues(EVENT_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    event_types: [],
+    start_time: null,
+    stop_time: null,
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik
@@ -212,13 +201,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -339,15 +322,12 @@ const EventCreation = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_events', paginationOptions, 'eventAdd');
-
   return (
-    <div>
+    <>
       <Fab
         onClick={handleOpen}
         color="secondary"
@@ -384,7 +364,7 @@ const EventCreation = ({
           />
         </div>
       </Drawer>
-    </div>
+    </>
   );
 };
 

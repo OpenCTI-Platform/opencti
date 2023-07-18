@@ -15,8 +15,9 @@ import {
   ID_INTERNAL
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { buildPagination } from '../database/utils';
+import { buildPagination, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { now } from '../utils/format';
+import { elCount } from '../database/engine';
 
 const MANUAL_OBJECT = 'manual';
 const INFERRED_OBJECT = 'inferred';
@@ -29,6 +30,25 @@ export const findAll = async (context, user, args) => {
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
   return listEntities(context, user, types, args);
+};
+
+export const numberOfContainersForObject = (context, user, args) => {
+  const { objectId } = args;
+  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  return {
+    count: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...args, filters, types: [ENTITY_TYPE_CONTAINER] },
+    ),
+    total: elCount(
+      context,
+      user,
+      READ_INDEX_STIX_DOMAIN_OBJECTS,
+      { ...R.dissoc('endDate', args), filters, types: [ENTITY_TYPE_CONTAINER] },
+    ),
+  };
 };
 
 export const objects = async (context, user, containerId, args) => {

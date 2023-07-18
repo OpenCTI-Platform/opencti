@@ -616,16 +616,12 @@ const SearchBulk = () => {
                               ].includes(entity.type) ? (
                                 <Chip
                                   classes={{ root: classes.chipNoLink }}
-                                  label={n(
-                                    entity.containers.pageInfo.globalCount,
-                                  )}
+                                  label={n(entity.containersNumber.total)}
                                 />
                                 ) : (
                                 <Chip
                                   classes={{ root: classes.chip }}
-                                  label={n(
-                                    entity.containers.pageInfo.globalCount,
-                                  )}
+                                  label={n(entity.containersNumber.total)}
                                   component={Link}
                                   to={linkAnalyses}
                                 />

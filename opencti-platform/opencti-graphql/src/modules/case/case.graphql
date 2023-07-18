@@ -17,6 +17,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
   containers(first: Int): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection

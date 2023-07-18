@@ -38,6 +38,7 @@ import { batchCreators } from '../domain/user';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectsExportPush } from '../domain/stixCoreObject';
+import { numberOfContainersForObject } from '../domain/container';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -78,6 +79,7 @@ const stixCoreRelationshipResolvers = {
     objectOrganization: (rel, _, context) => batchOrganizationsLoader.load(rel.id, context, context.user),
     externalReferences: (rel, _, context) => externalReferencesLoader.load(rel.id, context, context.user),
     killChainPhases: (rel, _, context) => killChainPhasesLoader.load(rel.id, context, context.user),
+    containersNumber: (rel, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: rel.id }),
     containers: (rel, _, context) => containersLoader.load(rel.id, context, context.user),
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     cases: (rel, _, context) => casesLoader.load(rel.id, context, context.user),

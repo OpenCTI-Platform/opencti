@@ -116,8 +116,8 @@ interface StixContainerExtension extends StixOpenctiExtension {
   object_refs_inferred?: Array<StixId>; // optional
 }
 
-// Language
-// TODO Add support for Language
+// Language Contents
+// TODO Add support for Language Contents
 
 // Markings
 interface StixMarkingsObject extends StixObject {

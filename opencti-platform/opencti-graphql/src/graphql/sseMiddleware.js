@@ -517,7 +517,7 @@ const createSseMiddleware = () => {
       const recoverToParameter = extractQueryParameter(req, 'recover') || req.headers.recover || req.headers['recover-date'];
       const recoverIsoDate = convertParameterToDate(recoverToParameter);
       const recoverStreamId = convertParameterToStreamId(recoverToParameter);
-      const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
+      const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies'] || req.query['no-relationships'] || req.headers['no-relationships']) === 'true';
       const publishDependencies = noDependencies === false;
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
       const publishDeletion = noDelete === false;

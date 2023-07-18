@@ -202,49 +202,32 @@ StixCoreObjectOpinionsRadarProps
     }
   };
   const renderContent = () => {
-    if (opinionsDistribution) {
-      const distributionData = R.indexBy(
-        R.prop('label'),
-        opinionsDistribution.map((n) => ({
-          ...n,
-          label: n?.label.toLowerCase(),
-        })),
-      );
-      const chartData = [
-        {
-          name: t('Opinions'),
-          data: opinionOptions.map(
-            (m) => distributionData[m.label]?.value || 0,
-          ),
-        },
-      ];
-      const labels = opinionOptions.map((m) => m.label);
-      const colors = generateGreenToRedColors(opinionOptions.length);
-      return (
-        <Chart
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          // Need to migrate Chart Charts.js file to TSX
-          options={radarChartOptions(theme, labels, colors, true, true)}
-          series={chartData}
-          type="radar"
-          width="100%"
-          height={height}
-        />
-      );
-    }
+    const distributionData = R.indexBy(
+      R.prop('label'),
+      (opinionsDistribution || []).map((n) => ({
+        ...n,
+        label: n?.label.toLowerCase(),
+      })),
+    );
+    const chartData = [
+      {
+        name: t('Opinions'),
+        data: opinionOptions.map((m) => distributionData[m.label]?.value || 0),
+      },
+    ];
+    const labels = opinionOptions.map((m) => m.label);
+    const colors = generateGreenToRedColors(opinionOptions.length);
     return (
-      <div style={{ display: 'table', height: '100%', width: '100%' }}>
-        <span
-          style={{
-            display: 'table-cell',
-            verticalAlign: 'middle',
-            textAlign: 'center',
-          }}
-        >
-          {t('No entities of this type has been found.')}
-        </span>
-      </div>
+      <Chart
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // Need to migrate Chart Charts.js file to TSX
+        options={radarChartOptions(theme, labels, colors, true, true)}
+        series={chartData}
+        type="radar"
+        width="100%"
+        height={height}
+      />
     );
   };
   return (

@@ -187,12 +187,12 @@ const ContainerStixCyberObservableLineComponent = (props) => {
               ].includes(node.entity_type) ? (
                 <Chip
                   classes={{ root: classes.chipNoLink }}
-                  label={n(node.containers.pageInfo.globalCount)}
+                  label={n(node.containersNumber.total)}
                 />
                 ) : (
                 <Chip
                   classes={{ root: classes.chip }}
-                  label={n(node.containers.pageInfo.globalCount)}
+                  label={n(node.containersNumber.total)}
                   component={Link}
                   to={linkAnalyses}
                 />
@@ -292,10 +292,8 @@ export const ContainerStixCyberObservableLine = createFragmentContainer(
             }
           }
         }
-        containers {
-          pageInfo {
-            globalCount
-          }
+        containersNumber {
+          total
         }
       }
     `,
