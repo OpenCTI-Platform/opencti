@@ -10,7 +10,7 @@ import StixDomainObjectBookmarks, {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 import { QueryRenderer } from '../../../../relay/environment';
 
-const nbOfCardsToLoad = 12;
+const nbOfCardsToLoad = 20;
 
 class ThreatActorsGroupCards extends Component {
   constructor(props) {

@@ -18,7 +18,7 @@ import { ThreatActorsIndividualCards_data$key } from './__generated__/ThreatActo
 import { StixDomainObjectBookmarksQuery$data } from '../../common/stix_domain_objects/__generated__/StixDomainObjectBookmarksQuery.graphql';
 import { QueryRenderer } from '../../../../relay/environment';
 
-const nbOfCardsToLoad = 12;
+const nbOfCardsToLoad = 20;
 
 export const threatActorsIndividualCardsPaginationQuery = graphql`
   query ThreatActorsIndividualCardsPaginationQuery(

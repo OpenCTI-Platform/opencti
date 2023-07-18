@@ -119,45 +119,54 @@ const ThreatActorIndividualCardFragment = graphql`
         }
       }
     }
-    targetedCountries: stixCoreObjectsDistribution(
-      operation: count
-      field: "internal_id"
-      relationship_type: ["targets"]
-      types: ["Country"]
-      limit: 5
+    targetedCountries: stixCoreRelationships(
+      relationship_type: "targets"
+      toTypes: ["Country"]
+      first: 5
+      orderBy: created_at
+      orderMode: desc
     ) {
-      label
-      entity {
-        ... on Country {
-          name
+      edges {
+        node {
+          to {
+            ... on Country {
+              name
+            }
+          }
         }
       }
     }
-    targetedSectors: stixCoreObjectsDistribution(
-      operation: count
-      field: "internal_id"
-      relationship_type: ["targets"]
-      types: ["Sector"]
-      limit: 5
+    targetedSectors: stixCoreRelationships(
+      relationship_type: "targets"
+      toTypes: ["Sector"]
+      first: 5
+      orderBy: created_at
+      orderMode: desc
     ) {
-      label
-      entity {
-        ... on Sector {
-          name
+      edges {
+        node {
+          to {
+            ... on Sector {
+              name
+            }
+          }
         }
       }
     }
-    usedMalware: stixCoreObjectsDistribution(
-      operation: count
-      field: "internal_id"
-      relationship_type: ["uses"]
-      types: ["Malware"]
-      limit: 5
+    usedMalware: stixCoreRelationships(
+      relationship_type: "uses"
+      toTypes: ["Malware"]
+      first: 5
+      orderBy: created_at
+      orderMode: desc
     ) {
-      label
-      entity {
-        ... on Malware {
-          name
+      edges {
+        node {
+          to {
+            ... on Malware {
+              name
+            }
+          }
         }
       }
     }
@@ -174,16 +183,15 @@ ThreatActorIndividualCardProps
   const classes = useStyles();
   const { t, fld } = useFormatter();
   const data = useFragment(ThreatActorIndividualCardFragment, node);
-  const usedMalware = (data.usedMalware ?? [])
-    .map((n) => n?.entity?.name)
+  const usedMalware = (data.usedMalware?.edges ?? [])
+    .map((n) => n?.node?.to?.name)
     .join(', ');
-  const targetedCountries = (data.targetedCountries ?? [])
-    .map((n) => n?.entity?.name)
+  const targetedCountries = (data.targetedCountries?.edges ?? [])
+    .map((n) => n?.node?.to?.name)
     .join(', ');
-  const targetedSectors = (data.targetedSectors ?? [])
-    .map((n) => n?.entity?.name)
+  const targetedSectors = (data.targetedSectors?.edges ?? [])
+    .map((n) => n?.node?.to?.name)
     .join(', ');
-
   const handleBookmarksIds = (e: React.MouseEvent<HTMLElement>) => {
     if (bookmarksIds?.includes(data.id)) {
       deleteBookMark(data.id, 'Threat-Actor-Individual');

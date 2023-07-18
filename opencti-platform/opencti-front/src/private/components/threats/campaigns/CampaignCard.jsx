@@ -94,12 +94,14 @@ const styles = (theme) => ({
 class CampaignCardComponent extends Component {
   render() {
     const { t, fld, classes, node, bookmarksIds, onLabelClick } = this.props;
-    const usedMalware = node.usedMalware.map((n) => n.entity.name).join(', ');
-    const targetedCountries = node.targetedCountries
-      .map((n) => n.entity.name)
+    const usedMalware = node.usedMalware.edges
+      .map((n) => n.node.to.name)
       .join(', ');
-    const targetedSectors = node.targetedSectors
-      .map((n) => n.entity.name)
+    const targetedCountries = node.targetedCountries.edges
+      .map((n) => n.node.to.name)
+      .join(', ');
+    const targetedSectors = node.targetedSectors.edges
+      .map((n) => n.node.to.name)
       .join(', ');
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
@@ -219,48 +221,54 @@ const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
           }
         }
       }
-      targetedCountries: stixCoreRelationshipsDistribution(
-        operation: count
-        field: "internal_id"
-        relationship_type: ["targets"]
-        elementWithTargetTypes: ["Country"]
-        limit: 4
-        isTo: true
+      targetedCountries: stixCoreRelationships(
+        relationship_type: "targets"
+        toTypes: ["Country"]
+        first: 5
+        orderBy: created_at
+        orderMode: desc
       ) {
-        label
-        entity {
-          ... on Country {
-            name
+        edges {
+          node {
+            to {
+              ... on Country {
+                name
+              }
+            }
           }
         }
       }
-      targetedSectors: stixCoreRelationshipsDistribution(
-        operation: count
-        field: "internal_id"
-        relationship_type: ["targets"]
-        elementWithTargetTypes: ["Sector"]
-        limit: 4
-        isTo: true
+      targetedSectors: stixCoreRelationships(
+        relationship_type: "targets"
+        toTypes: ["Sector"]
+        first: 5
+        orderBy: created_at
+        orderMode: desc
       ) {
-        label
-        entity {
-          ... on Sector {
-            name
+        edges {
+          node {
+            to {
+              ... on Sector {
+                name
+              }
+            }
           }
         }
       }
-      usedMalware: stixCoreRelationshipsDistribution(
-        operation: count
-        field: "internal_id"
-        relationship_type: ["uses"]
-        elementWithTargetTypes: ["Malware"]
-        limit: 4
-        isTo: true
+      usedMalware: stixCoreRelationships(
+        relationship_type: "uses"
+        toTypes: ["Malware"]
+        first: 5
+        orderBy: created_at
+        orderMode: desc
       ) {
-        label
-        entity {
-          ... on Malware {
-            name
+        edges {
+          node {
+            to {
+              ... on Malware {
+                name
+              }
+            }
           }
         }
       }
