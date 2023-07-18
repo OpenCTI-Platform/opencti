@@ -453,7 +453,7 @@ class LocationCityTest(LocationTest):
         return {
             "type": LocationTypes.CITY.value,
             "name": "Mars",
-            "description": "A city ",
+            "description": "A city",
             "latitude": 48.8566,
             "longitude": 2.3522,
             # "country": "KR",
@@ -465,7 +465,7 @@ class LocationCountryTest(LocationTest):
         return {
             "type": LocationTypes.COUNTRY.value,
             "name": "Mars",
-            "description": "A country ",
+            "description": "A country",
             "latitude": 48.8566,
             "longitude": 2.3522,
             "region": "northern-america",
@@ -478,7 +478,7 @@ class LocationRegionTest(LocationTest):
         return {
             "type": LocationTypes.REGION.value,
             "name": "Mars",
-            "description": "A Region ",
+            "description": "A Region",
             "latitude": 48.8566,
             "longitude": 2.3522,
         }
@@ -783,7 +783,7 @@ class StixSightingRelationshipTest(EntityTest):
             **{
                 "type": LocationTypes.COUNTRY.value,
                 "name": "Mars",
-                "description": "A city ",
+                "description": "A city",
                 "latitude": 48.8566,
                 "longitude": 2.3522,
                 "region": "northern-america",
