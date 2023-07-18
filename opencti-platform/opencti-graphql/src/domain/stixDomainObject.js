@@ -256,7 +256,7 @@ export const stixDomainObjectEditContext = async (context, user, stixDomainObjec
 
 // region container
 export const stixDomainObjectsRelatedObjectsFromContainer = async (context, user, args) => {
-  const { fromId, entityType, containerType } = args;
+  const { fromId, entityTypes, containerType } = args;
   // Retrieve entity type
   const entity = await internalLoadById(context, user, fromId);
   // Get rel_object.internal_id from entity
@@ -268,11 +268,14 @@ export const stixDomainObjectsRelatedObjectsFromContainer = async (context, user
     return buildPagination(0, null, [], 0);
   }
   // Retrieve all entities with rel_object.internal_id contains at least one of containerTypeIds
+  let filters = args.filters ?? [];
   const opts = {
+    ...R.omit(['fromId', 'entityTypes', 'containerType'], args),
     filters: [
+      ...filters,
       { key: buildRefRelationKey(RELATION_OBJECT), values: containerTypeIds, operator: 'match' },
     ],
   };
-  return listEntitiesPaginated(context, user, [entityType], opts);
+  return listEntitiesPaginated(context, user, entityTypes, opts);
 }
 // endregion

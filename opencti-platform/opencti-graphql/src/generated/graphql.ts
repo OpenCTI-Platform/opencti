@@ -19019,9 +19019,16 @@ export type QueryStixDomainObjectsNumberArgs = {
 
 
 export type QueryStixDomainObjectsRelatedObjectsFromContainerArgs = {
+  after?: InputMaybe<Scalars['ID']>;
   containerType: Scalars['String'];
-  entityType: Scalars['String'];
+  entityTypes: Array<Scalars['String']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
   fromId: Scalars['String'];
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -34048,7 +34055,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixDomainObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsDistributionArgs, 'field' | 'operation'>>;
   stixDomainObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsExportFilesArgs, 'type'>>;
   stixDomainObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixDomainObjectsNumberArgs>>;
-  stixDomainObjectsRelatedObjectsFromContainer?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsRelatedObjectsFromContainerArgs, 'containerType' | 'entityType' | 'fromId'>>;
+  stixDomainObjectsRelatedObjectsFromContainer?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsRelatedObjectsFromContainerArgs, 'containerType' | 'entityTypes' | 'fromId'>>;
   stixDomainObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixNestedRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixNestedRefRelationshipsArgs>>;
   stixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<QueryStixObjectOrStixRelationshipArgs, 'id'>>;

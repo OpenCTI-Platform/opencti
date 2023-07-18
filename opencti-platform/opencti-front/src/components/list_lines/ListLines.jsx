@@ -18,6 +18,7 @@ import {
   ViewListOutlined,
   ViewModuleOutlined,
 } from '@mui/icons-material';
+import AirlineStopsIcon from '@mui/icons-material/AirlineStops';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
@@ -180,6 +181,7 @@ class ListLines extends Component {
       availableRelationFilterTypes,
       enableNestedView,
       enableEntitiesView,
+      enableContextualView,
       currentView,
       handleSwitchRedirectionMode,
       redirectionMode,
@@ -401,6 +403,21 @@ class ListLines extends Component {
                               <FormatListGroup
                                 fontSize="small"
                                 color="primary"
+                              />
+                            </Tooltip>
+                          </ToggleButton>
+                      )}
+                      {typeof handleChangeView === 'function'
+                        && enableContextualView && (
+                          <ToggleButton value="contextual" aria-label="contextual">
+                            <Tooltip title={t('Contextual view')}>
+                              <AirlineStopsIcon
+                                fontSize="small"
+                                color={
+                                  currentView === 'contextual' || !currentView
+                                    ? 'secondary'
+                                    : 'primary'
+                                }
                               />
                             </Tooltip>
                           </ToggleButton>
@@ -627,6 +644,7 @@ ListLines.propTypes = {
   availableRelationFilterTypes: PropTypes.object,
   enableNestedView: PropTypes.bool,
   enableEntitiesView: PropTypes.bool,
+  enableContextualView: PropTypes.bool,
   currentView: PropTypes.string,
   handleSwitchRedirectionMode: PropTypes.func,
   redirectionMode: PropTypes.string,

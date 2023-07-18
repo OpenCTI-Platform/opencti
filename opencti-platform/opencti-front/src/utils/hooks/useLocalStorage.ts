@@ -243,6 +243,7 @@ export type PaginationLocalStorage<U = Record<string, unknown>> = {
   viewStorage: LocalStorage;
   helpers: UseLocalStorageHelpers;
   paginationOptions: U;
+  localStorageKey: string;
 };
 
 export const usePaginationLocalStorage = <U>(
@@ -368,6 +369,7 @@ export const usePaginationLocalStorage = <U>(
     viewStorage,
     helpers,
     paginationOptions: paginationOptions as U,
+    localStorageKey: key,
   };
 };
 

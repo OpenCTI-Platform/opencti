@@ -13,22 +13,10 @@ import EntityStixCoreRelationshipsRelationshipsView from './EntityStixCoreRelati
 import EntityStixCoreRelationshipsEntitiesView from './EntityStixCoreRelationshipsEntitiesView';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
-const useStyles = makeStyles((theme) => ({
-  bottomNav: {
-    zIndex: 1000,
-    padding: '10px 200px 10px 205px',
-    display: 'flex',
-  },
+const useStyles = makeStyles(() => ({
   container: {
     marginTop: 15,
     paddingBottom: 70,
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: theme.spacing(1) / 4,
   },
 }));
 
@@ -277,7 +265,8 @@ EntityStixCoreRelationships.propTypes = {
   noState: PropTypes.bool,
   disableExport: PropTypes.bool,
   currentView: PropTypes.string,
-  enableNestedView: PropTypes.func,
+  enableNestedView: PropTypes.bool,
+  enableContextualView: PropTypes.bool,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
   paddingRightButtonAdd: PropTypes.string,

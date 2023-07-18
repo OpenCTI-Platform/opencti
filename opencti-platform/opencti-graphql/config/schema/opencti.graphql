@@ -12235,7 +12235,18 @@ type Query {
     filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixDomainObjectsRelatedObjectsFromContainer(fromId: String!, entityType: String!, containerType: String!): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  stixDomainObjectsRelatedObjectsFromContainer(
+    fromId: String!,
+    entityTypes: [String!]!,
+    containerType: String!
+    first: Int
+    after: ID
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   attackPattern(id: String): AttackPattern @auth(for: [KNOWLEDGE])
   attackPatterns(
     first: Int

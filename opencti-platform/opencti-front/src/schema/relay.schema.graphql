@@ -8046,7 +8046,7 @@ type Query {
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   stixDomainObjectsNumber(types: [String], endDate: DateTime, onlyInferred: Boolean, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): Number
   stixDomainObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixDomainObjectsRelatedObjectsFromContainer(fromId: String!, entityType: String!, containerType: String!): StixCoreObjectConnection
+  stixDomainObjectsRelatedObjectsFromContainer(fromId: String!, entityTypes: [String!]!, containerType: String!, first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): StixCoreObjectConnection
   attackPattern(id: String): AttackPattern
   attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: [AttackPatternsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): AttackPatternConnection
   campaign(id: String): Campaign
