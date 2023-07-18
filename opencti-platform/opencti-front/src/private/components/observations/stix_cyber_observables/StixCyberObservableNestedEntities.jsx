@@ -222,7 +222,7 @@ class StixCyberObservableNestedEntities extends Component {
             </ListItem>
             <QueryRenderer
               query={stixCyberObservableNestedEntitiesLinesQuery}
-              variables={{ count: 25, ...paginationOptions }}
+              variables={{ count: 200, ...paginationOptions }}
               render={({ props }) => (
                 <StixCyberObservableNestedEntitiesLines
                   stixCyberObservableId={entityId}

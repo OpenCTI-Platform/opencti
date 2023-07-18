@@ -278,7 +278,7 @@ class StixCyberObservableEntities extends Component {
             </ListItem>
             <QueryRenderer
               query={stixCyberObservableEntitiesLinesQuery}
-              variables={{ count: 25, ...paginationOptions }}
+              variables={{ count: 200, ...paginationOptions }}
               render={({ props }) => (
                 <StixCyberObservableEntitiesLines
                   data={props}
