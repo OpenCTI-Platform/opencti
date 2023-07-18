@@ -83,10 +83,10 @@ export const resolvedFiltersMapForUser = async (context, user, filters) => {
   const resolvedMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   const filterEntries = Object.entries(filters);
   for (let index = 0; index < filterEntries.length; index += 1) {
-    const [key, rawValues] = filterEntries[index];
+    const [, rawValues] = filterEntries[index];
     for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
       const v = rawValues[vIndex];
-      if (RESOLUTION_FILTERS.includes(key) && resolvedMap.has(v.id)) {
+      if (resolvedMap.has(v.id)) {
         const stixInstance = resolvedMap.get(v.id);
         const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stixInstance);
         if (isUserHasAccessToElement) {
@@ -109,7 +109,7 @@ export const convertFiltersFrontendFormat = async (context, user, filters) => {
     const values = [];
     for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
       const v = rawValues[vIndex];
-      if (RESOLUTION_FILTERS.includes(key) && resolvedMap.has(v.id)) {
+      if (resolvedMap.has(v.id)) {
         const stixInstance = resolvedMap.get(v.id);
         const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stixInstance);
         const value = extractStixRepresentative(stixInstance);
