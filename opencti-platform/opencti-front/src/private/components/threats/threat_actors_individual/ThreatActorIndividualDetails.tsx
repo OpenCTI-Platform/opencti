@@ -10,6 +10,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import Carousel from 'react-material-ui-carousel';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -18,7 +19,7 @@ import {
   ThreatActorIndividualDetails_ThreatActorIndividual$data,
   ThreatActorIndividualDetails_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
-import Carousel from 'react-material-ui-carousel';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -52,6 +53,14 @@ const ThreatActorIndividualDetailsFragment = graphql`
     secondary_motivations
     goals
     roles
+    x_opencti_files(mimeType: "image/") {
+      id
+      name
+      mime_type
+      order
+      inCarousel
+      description
+    }
   }
 `;
 
@@ -66,9 +75,12 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
-  // const mimeType = data.importFilesMimeType?.edges?.map((n) => n?.node.metaData?.mimetype);
 
-  // console.log('mimeType', mimeType);
+  const getUri = (id: string) => {
+    const encodedFilePath = encodeURIComponent(id);
+    const imageView = `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
+    return imageView;
+  };
 
   return (
       <div style={{ height: '100%' }}>
@@ -168,10 +180,13 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              <Carousel>
-
-
-              </Carousel>
+              {data.x_opencti_files ? (
+                <Carousel>
+                  {data.x_opencti_files.map((file) => (
+                    <img src={getUri(file ? file.id : '')} alt={file ? file.name : 'file.name'}/>
+                  ))}
+                </Carousel>
+              ) : '-'}
               <Typography
                 variant="h3"
                 gutterBottom={true}

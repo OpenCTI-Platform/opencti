@@ -814,8 +814,8 @@ type FileConnection {
 }
 
 type OpenCtiFile {
-  id: String
-  name: String
+  id: String!
+  name: String!
   version: String
   mime_type: String
   description: String
@@ -8347,6 +8347,13 @@ type StixCoreObjectEditMutations {
   exportPush(file: Upload!): Boolean
 }
 
+input StixDomainObjectFileEditInput {
+  id: String!
+  order: Int
+  description: String
+  inCarousel: Boolean
+}
+
 type StixDomainObjectEditMutations {
   delete: ID
   changeType(newType: String!): StixDomainObject
@@ -8359,6 +8366,7 @@ type StixDomainObjectEditMutations {
   importPush(file: Upload!, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean
+  stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject
 }
 
 type AttackPatternEditMutations {

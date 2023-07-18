@@ -27,7 +27,7 @@ import {
   ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
+  isStixDomainObjectLocation, isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
@@ -153,6 +153,9 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   if (isStixDomainObjectLocation(innerType)) {
     data.x_opencti_location_type = innerType;
   }
+  if (isStixDomainObjectThreatActor(innerType)) {
+    data.x_opencti_type = innerType;
+  }
   if (innerType === ENTITY_TYPE_CONTAINER_REPORT) {
     data.published = utcDate();
   }
@@ -222,6 +225,18 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
     return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
   }
   return updatedElem;
+};
+
+export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order, description, inCarousel }) => {
+  const stixDomainObject = await findById(context, user, sdoId);
+  const files = stixDomainObject.x_opencti_files.map((file) => {
+    if (file.id === id) {
+      return { ...file, order, description, inCarousel };
+    }
+    return file;
+  });
+  const patch = { x_opencti_files: files };
+  return await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, patch);
 };
 
 // region context

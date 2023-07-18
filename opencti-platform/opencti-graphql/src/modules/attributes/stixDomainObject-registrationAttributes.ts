@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import {
   aliases,
   AttributeDefinition,
+  files,
   confidence,
   created,
   entityLocationType,
@@ -42,6 +43,7 @@ const stixDomainObjectAttributes: Array<AttributeDefinition> = [
   lang,
   confidence,
   revoked,
+  { ...files, update: true },
   { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true }
 ];

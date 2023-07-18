@@ -767,8 +767,8 @@ type FileConnection {
 }
 
 type OpenCtiFile {
-  id: String
-  name: String
+  id: String!
+  name: String!
   version: String
   mime_type: String
   description: String
@@ -13148,6 +13148,7 @@ type StixDomainObjectEditMutations {
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+  stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])

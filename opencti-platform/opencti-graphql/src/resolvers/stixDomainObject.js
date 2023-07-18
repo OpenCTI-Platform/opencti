@@ -11,7 +11,7 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
-  stixDomainObjectExportAsk, stixDomainObjectMimeTypeFilter,
+  stixDomainObjectExportAsk, stixDomainObjectFileEdit, stixDomainObjectMimeTypeFilter,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -83,7 +83,7 @@ const stixDomainObjectResolvers = {
     stixDomainObjectsDelete: (_, { id }, context) => stixDomainObjectsDelete(context, context.user, id),
     stixDomainObjectAdd: (_, { input }, context) => addStixDomainObject(context, context.user, input),
     stixDomainObjectsExportAsk: (_, args, context) => stixDomainObjectsExportAsk(context, context.user, args),
-    stixDomainObjectsExportPush: (_, { type, file, listFilters }, context) => stixCoreObjectsExportPush(context, context.user, type, file, listFilters)
+    stixDomainObjectsExportPush: (_, { type, file, listFilters }, context) => stixCoreObjectsExportPush(context, context.user, type, file, listFilters),
   },
   Subscription: {
     stixDomainObject: {
