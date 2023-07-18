@@ -202,8 +202,6 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                     />
                     </Tooltip>
                   ))}
-
-
               </Carousel></FieldOrEmpty>
               <Typography
                 variant="h3"
