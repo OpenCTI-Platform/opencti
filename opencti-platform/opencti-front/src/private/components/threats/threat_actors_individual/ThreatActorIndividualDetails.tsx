@@ -38,6 +38,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
+  carousel: {
+    textAlign: 'center',
+  },
 }));
 
 const ThreatActorIndividualDetailsFragment = graphql`
@@ -181,9 +184,13 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
             </Grid>
             <Grid item={true} xs={6}>
               {data.x_opencti_files ? (
-                <Carousel>
+                <Carousel
+                  height='150px'
+                  className={classes.carousel}
+                  animation='slide'
+                >
                   {data.x_opencti_files.map((file) => (
-                    <img src={getUri(file ? file.id : '')} alt={file ? file.name : 'file.name'}/>
+                    <img style={{ height: '100%' }} src={getUri(file ? file.id : '')} alt={file ? file.name : 'file.name'}/>
                   ))}
                 </Carousel>
               ) : '-'}

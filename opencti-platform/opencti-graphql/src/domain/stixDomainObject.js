@@ -132,7 +132,7 @@ export const stixDomainObjectExportAsk = async (context, user, stixDomainObjectI
   return works.map((w) => workToExportFile(w));
 };
 
-export const stixDomainObjectMimeTypeFilter = (stixDomainObject, mimeType) => {
+export const stixDomainObjectMimeTypeFilter = (stixDomainObject, mimeType = '') => {
   // retrieve the mime type of a file in extension x_opencti_files and filter only the mimeType of your choice
   const getMimeType = stixDomainObject.x_opencti_files;
   const filterMimeType = getMimeType?.filter((n) => n.mime_type.includes(mimeType));
@@ -235,8 +235,8 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
     }
     return file;
   });
-  const patch = { x_opencti_files: files };
-  return await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, patch);
+  const { element: updatedElement } = await updateAttribute(context, user, sdoId, ABSTRACT_STIX_DOMAIN_OBJECT, { key: 'x_opencti_files', value: files });
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
 };
 
 // region context

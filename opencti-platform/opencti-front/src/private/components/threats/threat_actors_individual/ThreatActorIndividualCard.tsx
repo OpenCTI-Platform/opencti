@@ -21,6 +21,7 @@ import {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import { emptyFilled } from '../../../../utils/String';
 import { ThreatActorIndividualCard_node$key } from './__generated__/ThreatActorIndividualCard_node.graphql';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -170,6 +171,10 @@ const ThreatActorIndividualCardFragment = graphql`
         }
       }
     }
+    x_opencti_files(mimeType: "image/") {
+      id
+      name
+    }
   }
 `;
 interface ThreatActorIndividualCardProps {
@@ -200,6 +205,13 @@ ThreatActorIndividualCardProps
       addBookmark(data.id, 'Threat-Actor-Individual');
     }
   };
+
+  const getUri = (id: string) => {
+    const encodedFilePath = encodeURIComponent(id);
+    const imageView = `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
+    return imageView;
+  };
+
   return (
     <Card classes={{ root: classes.card }} variant="outlined">
       <CardActionArea
@@ -209,7 +221,12 @@ ThreatActorIndividualCardProps
       >
         <CardHeader
           classes={{ root: classes.header, title: classes.title }}
-          avatar={<ItemIcon type="Threat-Actor-Individual" size="large" />}
+          avatar={ data.x_opencti_files && (
+            data.x_opencti_files.map((file) => {
+              return <img style={{ height: '30px' }}
+                          src={getUri(file ? file.id : '')} alt={file ? file.name : 'file.name'}
+              />;
+            }))}
           title={data.name}
           subheader={fld(data.modified)}
           action={
