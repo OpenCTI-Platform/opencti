@@ -54,7 +54,7 @@
     "react-intl": "6.4.4",
     "react-leaflet": "4.2.1",
     "react-markdown": "8.0.7",
-    "react-material-ui-carousel": "3.4.2",
+    "react-material-ui-carousel": "^3.4.2",
     "react-mde": "11.5.0",
     "react-otp-input": "3.0.4",
     "react-pdf": "7.3.3",
