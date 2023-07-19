@@ -1,13 +1,9 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import {
-  convertFilters,
-} from '../../../../utils/ListParameters';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import EntityStixCoreRelationshipsRelationshipsView from './EntityStixCoreRelationshipsRelationshipsView';
 import EntityStixCoreRelationshipsEntitiesView from './EntityStixCoreRelationshipsEntitiesView';
@@ -75,7 +71,6 @@ const EntityStixCoreRelationships = ({
             && <EntityStixCoreRelationshipsEntitiesView
               localStorage={localStorage}
               entityId={entityId}
-              role={role}
               stixCoreObjectTypes={stixCoreObjectTypes}
               relationshipTypes={relationshipTypes}
               entityLink={entityLink}
