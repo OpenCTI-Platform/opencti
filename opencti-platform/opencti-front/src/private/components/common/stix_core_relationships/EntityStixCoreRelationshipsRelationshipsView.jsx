@@ -27,8 +27,11 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
   isRelationReversed,
   allDirections,
   disableExport,
+  handleChangeView,
   currentView,
-  enableNestedView }) => {
+  enableNestedView,
+  enableContextualView,
+}) => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -232,8 +235,9 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
               openExports={openExports}
               exportEntityType="stix-core-relationship"
               noPadding={true}
-              handleChangeView={storageHelpers.handleChangeView}
+              handleChangeView={handleChangeView ?? storageHelpers.handleChangeView}
               enableNestedView={enableNestedView}
+              enableContextualView={enableContextualView}
               disableCards={true}
               paginationOptions={paginationOptions}
               enableEntitiesView={true}
@@ -327,6 +331,7 @@ EntityStixCoreRelationshipsRelationshipsView.propTypes = {
   allDirections: PropTypes.bool,
   disableExport: PropTypes.bool,
   currentView: PropTypes.string,
-  enableNestedView: PropTypes.func,
+  enableNestedView: PropTypes.bool,
+  enableContextualView: PropTypes.bool,
 };
 export default EntityStixCoreRelationshipsRelationshipsView;

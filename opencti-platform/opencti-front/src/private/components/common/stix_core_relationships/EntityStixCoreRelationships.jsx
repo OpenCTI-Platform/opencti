@@ -23,6 +23,7 @@ const EntityStixCoreRelationships = ({
   entityLink,
   disableExport,
   enableNestedView,
+  enableContextualView,
   relationshipTypes,
   isRelationReversed,
   allDirections,
@@ -30,6 +31,7 @@ const EntityStixCoreRelationships = ({
   defaultStopTime,
   currentView,
   paddingRightButtonAdd,
+  handleChangeView,
 }) => {
   const classes = useStyles();
   const localStorage = usePaginationLocalStorage(
@@ -76,8 +78,10 @@ const EntityStixCoreRelationships = ({
               entityLink={entityLink}
               isRelationReversed={isRelationReversed}
               disableExport={disableExport}
+              handleChangeView={handleChangeView}
               currentView={currentView}
               enableNestedView={enableNestedView}
+              enableContextualView={enableContextualView}
             />}
            {finalView === 'relationships'
             && <EntityStixCoreRelationshipsRelationshipsView
@@ -90,8 +94,10 @@ const EntityStixCoreRelationships = ({
             isRelationReversed={isRelationReversed}
             allDirections={allDirections}
             disableExport={disableExport}
+            handleChangeView={handleChangeView}
             currentView={currentView}
             enableNestedView={enableNestedView}
+            enableContextualView={enableContextualView}
             />}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCoreRelationshipCreationFromEntity
@@ -127,6 +133,7 @@ EntityStixCoreRelationships.propTypes = {
   allDirections: PropTypes.bool,
   noState: PropTypes.bool,
   disableExport: PropTypes.bool,
+  handleChangeView: PropTypes.func,
   currentView: PropTypes.string,
   enableNestedView: PropTypes.bool,
   enableContextualView: PropTypes.bool,

@@ -17,8 +17,11 @@ const EntityStixCoreRelationshipsEntitiesView = ({
   entityLink,
   isRelationReversed,
   disableExport,
+  handleChangeView,
   currentView,
-  enableNestedView }) => {
+  enableNestedView,
+  enableContextualView,
+}) => {
   const { t } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -152,7 +155,7 @@ const EntityStixCoreRelationshipsEntitiesView = ({
             handleSearch={storageHelpers.handleSearch}
             handleAddFilter={storageHelpers.handleAddFilter}
             handleRemoveFilter={storageHelpers.handleRemoveFilter}
-            handleChangeView={storageHelpers.handleChangeView}
+            handleChangeView={handleChangeView ?? storageHelpers.handleChangeView}
             onToggleEntity={onToggleEntity}
             handleToggleSelectAll={handleToggleSelectAll}
             paginationOptions={paginationOptions}
@@ -198,6 +201,7 @@ const EntityStixCoreRelationshipsEntitiesView = ({
             disableCards={true}
             enableEntitiesView={true}
             enableNestedView={enableNestedView}
+            enableContextualView={enableContextualView}
             currentView={finalView}
           >
             <EntityStixCoreRelationshipsEntities
@@ -242,6 +246,7 @@ EntityStixCoreRelationshipsEntitiesView.propTypes = {
   isRelationReversed: PropTypes.bool,
   disableExport: PropTypes.bool,
   currentView: PropTypes.string,
-  enableNestedView: PropTypes.func,
+  enableNestedView: PropTypes.bool,
+  enableContextualView: PropTypes.bool,
 };
 export default EntityStixCoreRelationshipsEntitiesView;

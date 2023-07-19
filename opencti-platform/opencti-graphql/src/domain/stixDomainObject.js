@@ -262,13 +262,13 @@ export const stixDomainObjectsRelatedObjectsFromContainer = async (context, user
   // Get rel_object.internal_id from entity
   const containerIds = entity['rel_object.internal_id'];
   // Filter on container type
-  const containers = await internalFindByIds(context, user, containerIds, { baseData: true })
+  const containers = await internalFindByIds(context, user, containerIds, { baseData: true });
   const containerTypeIds = containers.filter((o) => o.entity_type === containerType).map((r) => r.internal_id);
   if (containerTypeIds.length === 0) {
     return buildPagination(0, null, [], 0);
   }
   // Retrieve all entities with rel_object.internal_id contains at least one of containerTypeIds
-  let filters = args.filters ?? [];
+  const filters = args.filters ?? [];
   const opts = {
     ...R.omit(['fromId', 'entityTypes', 'containerType'], args),
     filters: [
@@ -277,5 +277,5 @@ export const stixDomainObjectsRelatedObjectsFromContainer = async (context, user
     ],
   };
   return listEntitiesPaginated(context, user, entityTypes, opts);
-}
+};
 // endregion
