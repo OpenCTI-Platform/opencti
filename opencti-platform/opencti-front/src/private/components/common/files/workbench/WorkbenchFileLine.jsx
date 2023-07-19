@@ -63,8 +63,13 @@ const styles = (theme) => ({
     height: 50,
   },
   bodyItem: {
-    height: '100%',
+    height: 20,
     fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -87,35 +92,16 @@ const styles = (theme) => ({
 
 const inlineStyles = {
   name: {
-    float: 'left',
-    width: '40%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    width: '35%',
   },
   creator_name: {
-    float: 'left',
     width: '20%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
   },
   labels: {
-    float: 'left',
     width: '20%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
   },
   lastModified: {
-    float: 'left',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    width: '20%',
   },
 };
 
@@ -191,7 +177,7 @@ class WorkbenchFileLineComponent extends Component {
     const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
     const isOutdated = uploadStatus === 'timeout';
     return (
-      <div>
+      <>
         <ListItem
           divider={true}
           dense={dense === true}
@@ -219,8 +205,9 @@ class WorkbenchFileLineComponent extends Component {
             )}
           </ListItemIcon>
           <ListItemText
+            style={{ paddingRight: 10 }}
             primary={
-              <div>
+              <>
                 <div className={classes.bodyItem} style={inlineStyles.name}>
                   {file.name.replace('.json', '')}
                 </div>
@@ -247,7 +234,7 @@ class WorkbenchFileLineComponent extends Component {
                 >
                   {nsdt(file.lastModified)}
                 </div>
-              </div>
+              </>
             }
           />
           <ListItemSecondaryAction>
@@ -306,7 +293,7 @@ class WorkbenchFileLineComponent extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </>
     );
   }
 }

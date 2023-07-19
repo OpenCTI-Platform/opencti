@@ -75,7 +75,7 @@ class StixCyberObservableEdition extends Component {
   renderClassic() {
     const { classes, stixCyberObservableId, variant } = this.props;
     return (
-      <div>
+      <>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
@@ -109,7 +109,7 @@ class StixCyberObservableEdition extends Component {
             }}
           />
         </Drawer>
-      </div>
+      </>
     );
   }
 

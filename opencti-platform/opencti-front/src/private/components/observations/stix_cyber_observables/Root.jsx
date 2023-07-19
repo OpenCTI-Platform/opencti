@@ -83,7 +83,7 @@ class RootStixCyberObservable extends Component {
     } = this.props;
     const link = `/dashboard/observations/observables/${observableId}/knowledge`;
     return (
-      <div>
+      <>
         <TopBar />
         <QueryRenderer
           query={stixCyberObservableQuery}
@@ -229,7 +229,7 @@ class RootStixCyberObservable extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

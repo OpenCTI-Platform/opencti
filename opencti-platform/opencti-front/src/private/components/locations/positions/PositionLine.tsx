@@ -34,14 +34,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     position: 'absolute',
     right: -10,
   },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
 }));
 
 interface PositionLineProps {
@@ -100,7 +92,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -119,7 +111,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
             >
               {fd(data.modified)}
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
@@ -137,7 +129,6 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
   dataColumns,
 }) => {
   const classes = useStyles();
-
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -145,7 +136,7 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns?.name.width }}
@@ -179,11 +170,11 @@ export const PositionLineDummy: FunctionComponent<PositionLineDummyProps> = ({
                 height="100%"
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined color="disabled" />
       </ListItemIcon>
     </ListItem>
   );

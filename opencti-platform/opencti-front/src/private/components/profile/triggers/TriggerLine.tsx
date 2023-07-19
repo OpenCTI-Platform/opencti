@@ -2,13 +2,18 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { BackupTableOutlined, CampaignOutlined, MoreVert } from '@mui/icons-material';
+import {
+  BackupTableOutlined,
+  CampaignOutlined,
+  MoreVert,
+} from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
 import { DataColumns } from '../../../../components/list_lines';
 import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -70,10 +75,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface TriggerLineProps {
-  node: TriggerLine_node$key
-  dataColumns: DataColumns
-  bypassEditionRestriction: boolean
-  paginationOptions?: TriggersLinesPaginationQuery$variables
+  node: TriggerLine_node$key;
+  dataColumns: DataColumns;
+  bypassEditionRestriction: boolean;
+  paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
 
 const triggerLineFragment = graphql`
@@ -163,11 +168,13 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.outcomes.width }}
             >
-              {data.outcomes && data.outcomes.length > 0
-                  && data.outcomes.map<React.ReactNode>((n) => (
+              {data.outcomes
+                && data.outcomes.length > 0
+                && data.outcomes
+                  .map<React.ReactNode>((n) => (
                     <code>{outcomesOptions[n]}</code>
-                  ))
-                    .reduce((prev, curr) => [prev, ', ', curr])}
+                ))
+                  .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
             <div
               className={classes.bodyItem}
@@ -205,7 +212,10 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               />
             )}
             {data.trigger_type === 'digest' && (
-              <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.filters.width }}
+              >
                 <Chip
                   classes={{ root: classes.chipInList3 }}
                   label={
@@ -243,10 +253,11 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-       <TriggerPopover
-         id={data.id}
-         paginationOptions={paginationOptions}
-         disabled={!bypassEditionRestriction && !data.isDirectAdministrator}/>
+        <TriggerPopover
+          id={data.id}
+          paginationOptions={paginationOptions}
+          disabled={!bypassEditionRestriction && !data.isDirectAdministrator}
+        />
       </ListItemIcon>
     </ListItem>
   );
@@ -284,7 +295,9 @@ export const TriggerLineDummy = ({
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
   );

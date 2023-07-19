@@ -173,30 +173,50 @@ const inlineStylesHeaders = {
     width: '18%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   default_value: {
     float: 'left',
     width: '30%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   labels: {
     float: 'left',
     width: '22%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   markings: {
     float: 'left',
     width: '20%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   in_platform: {
     float: 'left',
     width: '10%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
 };
 
@@ -208,6 +228,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   default_value: {
     float: 'left',
@@ -216,6 +237,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   labels: {
     float: 'left',
@@ -224,6 +246,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   markings: {
     float: 'left',
@@ -232,6 +255,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   in_platform: {
     float: 'left',
@@ -240,6 +264,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
 };
 

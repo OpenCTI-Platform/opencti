@@ -12,6 +12,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
+import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
@@ -88,7 +89,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
@@ -146,7 +147,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 }
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemSecondaryAction>
@@ -382,7 +383,9 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
   );

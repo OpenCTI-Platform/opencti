@@ -13,6 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
@@ -398,7 +399,9 @@ export const ContainerStixCyberObservableLineDummy = (props) => {
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
   );

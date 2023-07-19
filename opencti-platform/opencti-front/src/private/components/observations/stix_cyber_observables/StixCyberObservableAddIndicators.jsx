@@ -85,7 +85,7 @@ class StixCyberObservableAddIndicators extends Component {
       orderMode: 'desc',
     };
     return (
-      <div>
+      <>
         <Drawer
           open={open}
           keepMounted={true}
@@ -147,7 +147,7 @@ class StixCyberObservableAddIndicators extends Component {
           paginationKey="Pagination_stixCyberObservables"
           paginationOptions={paginationOptions}
         />
-      </div>
+      </>
     );
   }
 }

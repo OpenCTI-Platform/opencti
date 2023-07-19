@@ -7,6 +7,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
+import IconButton from '@mui/material/IconButton';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
@@ -65,9 +66,9 @@ const SettingsMessagesLine = ({
   node,
   dataColumns,
 }: {
-  entityId: string
-  node: SettingsMessagesLine_settingsMessage$key
-  dataColumns: DataColumns
+  entityId: string;
+  node: SettingsMessagesLine_settingsMessage$key;
+  dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
 
@@ -78,35 +79,27 @@ const SettingsMessagesLine = ({
   }
 
   return (
-    <ListItem
-      key={message.id}
-      divider={true}
-      classes={{ root: classes.item }}
-    >
+    <ListItem key={message.id} divider={true} classes={{ root: classes.item }}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <MessageOutlined />
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            {Object.values(dataColumns ?? {})
-              .map((value) => (
-                <div
-                  key={value.label}
-                  className={classes.bodyItem}
-                  style={{ width: value.width }}
-                >
-                  {value.render?.(message)}
-                </div>
-              ))}
+            {Object.values(dataColumns ?? {}).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                {value.render?.(message)}
+              </div>
+            ))}
           </div>
         }
       />
       <ListItemSecondaryAction>
-        <SettingsMessagesPopover
-          settingsId={entityId}
-          message={message}
-        />
+        <SettingsMessagesPopover settingsId={entityId} message={message} />
       </ListItemSecondaryAction>
     </ListItem>
   );
@@ -125,26 +118,27 @@ export const SettingsMessagesLineDummy = ({
       <ListItemText
         primary={
           <div>
-            {Object.values(dataColumns)
-              .map((value) => (
-                <div
-                  key={value.label}
-                  className={classes.bodyItem}
-                  style={{ width: value.width }}
-                >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height={20}
-                  />
-                </div>
-              ))}
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height={20}
+                />
+              </div>
+            ))}
           </div>
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
   );

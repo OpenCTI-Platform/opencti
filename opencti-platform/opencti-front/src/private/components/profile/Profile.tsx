@@ -27,10 +27,12 @@ export const profileQuery = graphql`
 `;
 
 interface ProfileComponentProps {
-  queryRef: PreloadedQuery<ProfileQuery>
+  queryRef: PreloadedQuery<ProfileQuery>;
 }
 
-const ProfileComponent: FunctionComponent<ProfileComponentProps> = ({ queryRef }) => {
+const ProfileComponent: FunctionComponent<ProfileComponentProps> = ({
+  queryRef,
+}) => {
   const classes = useStyles();
   const data = usePreloadedQuery<ProfileQuery>(profileQuery, queryRef);
   const { me, about, settings } = data;
@@ -45,13 +47,15 @@ const ProfileComponent: FunctionComponent<ProfileComponentProps> = ({ queryRef }
 
 const Profile: FunctionComponent = () => {
   const queryRef = useQueryLoading<ProfileQuery>(profileQuery, {});
-  return <>
-    {queryRef && (
+  return (
+    <>
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <ProfileComponent queryRef={queryRef} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 export default Profile;

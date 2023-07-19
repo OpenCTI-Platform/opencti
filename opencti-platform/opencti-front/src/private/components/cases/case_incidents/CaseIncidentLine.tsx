@@ -42,14 +42,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     position: 'absolute',
     right: -10,
   },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
 }));
 
 interface CaseIncidentLineComponentProps {
@@ -131,7 +123,9 @@ const caseIncidentFragment = graphql`
   }
 `;
 
-export const CaseIncidentLine: FunctionComponent<CaseIncidentLineComponentProps> = ({
+export const CaseIncidentLine: FunctionComponent<
+CaseIncidentLineComponentProps
+> = ({
   dataColumns,
   node,
   onLabelClick,
@@ -175,7 +169,7 @@ export const CaseIncidentLine: FunctionComponent<CaseIncidentLineComponentProps>
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <Tooltip title={data.name}>
               <div
                 className={classes.bodyItem}
@@ -200,8 +194,9 @@ export const CaseIncidentLine: FunctionComponent<CaseIncidentLineComponentProps>
               className={classes.bodyItem}
               style={{ width: dataColumns.objectAssignee.width }}
             >
-              {(data.objectAssignee?.edges ?? []).map((p) => p?.node.name).join(', ')}
-
+              {(data.objectAssignee?.edges ?? [])
+                .map((p) => p?.node.name)
+                .join(', ')}
             </div>
             <div
               className={classes.bodyItem}
@@ -245,7 +240,7 @@ export const CaseIncidentLine: FunctionComponent<CaseIncidentLineComponentProps>
                 limit={1}
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
@@ -263,10 +258,7 @@ export const CaseIncidentLineDummy = ({
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
-      >
+      <ListItemIcon style={{ minWidth: 40 }}>
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -274,7 +266,7 @@ export const CaseIncidentLineDummy = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -374,11 +366,11 @@ export const CaseIncidentLineDummy = ({
                 height="100%"
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined color="disabled" />
       </ListItemIcon>
     </ListItem>
   );

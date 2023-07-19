@@ -86,7 +86,11 @@ const styles = (theme) => ({
   headerItem: {
     float: 'left',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: 700,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   sortableHeaderItem: {
     float: 'left',

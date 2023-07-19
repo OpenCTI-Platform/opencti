@@ -37,14 +37,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     position: 'absolute',
     right: -10,
   },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
 }));
 
 const regionLineFragment = graphql`
@@ -87,7 +79,6 @@ RegionLineComponentProps
   const classes = useStyles();
   const { fd } = useFormatter();
   const data = useFragment(regionLineFragment, node);
-
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -130,7 +121,11 @@ RegionLineComponentProps
   );
 };
 
-export const RegionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const RegionLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -177,7 +172,7 @@ export const RegionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) =
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined color="disabled" />
       </ListItemIcon>
     </ListItem>
   );

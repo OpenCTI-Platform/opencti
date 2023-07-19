@@ -8,6 +8,7 @@ import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import LabelPopover from './LabelPopover';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -79,7 +80,7 @@ const LabelLineComponent = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.value.width }}
@@ -98,7 +99,7 @@ const LabelLineComponent = ({
             >
               {fd(node.created_at)}
             </div>
-          </div>
+          </>
         }
       />
       <ListItemSecondaryAction>
@@ -124,12 +125,18 @@ export const LabelLineDummy = ({ dataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+      <ListItemIcon
+        classes={{ root: classes.itemIconDisabled }}
+        style={{ minWidth: 40 }}
+      >
+        <Checkbox edge="start" disabled={true} disableRipple={true} />
+      </ListItemIcon>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.value.width }}
@@ -163,11 +170,13 @@ export const LabelLineDummy = ({ dataColumns }) => {
                 height="100%"
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
   );

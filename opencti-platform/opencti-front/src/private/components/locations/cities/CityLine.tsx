@@ -34,14 +34,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     position: 'absolute',
     right: -10,
   },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
 }));
 
 interface CityLineComponentProps {
@@ -84,9 +76,7 @@ export const CityLine: FunctionComponent<CityLineComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
-
   const data = useFragment(cityFragment, node);
-
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -180,7 +170,7 @@ export const CityLineDummy = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRightOutlined color="disabled" />
       </ListItemIcon>
     </ListItem>
   );

@@ -44,14 +44,6 @@ const styles = (theme) => ({
     position: 'absolute',
     right: -10,
   },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '.6em',
-    backgroundColor: theme.palette.grey[700],
-  },
 });
 
 class NarrativeLineComponent extends Component {
@@ -74,14 +66,14 @@ class NarrativeLineComponent extends Component {
           </ListItemIcon>
           <ListItemText
             primary={
-              <div>
+              <>
                 <div className={classes.name}>{node.name}</div>
                 <div className={classes.description}>
                   {node.description?.length > 0
                     ? node.description
                     : t('This narrative does not have any description.')}
                 </div>
-              </div>
+              </>
             }
           />
           <ListItemIcon classes={{ root: classes.goIcon }}>
@@ -145,7 +137,7 @@ class NarrativeLineDummyComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRightOutlined />
+          <KeyboardArrowRightOutlined color="disabled" />
         </ListItemIcon>
       </ListItem>
     );

@@ -112,7 +112,6 @@ const StixCyberObservableEditionOverviewComponent = ({
   const navigate = useNavigate();
   const { t } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
-
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -155,7 +154,6 @@ const StixCyberObservableEditionOverviewComponent = ({
       },
     });
   };
-
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
       let finalName = name;
@@ -189,7 +187,6 @@ const StixCyberObservableEditionOverviewComponent = ({
       });
     }
   };
-
   const handleChangeCreatedBy = (name, value) => {
     if (!enableReferences) {
       commitMutation({
@@ -201,7 +198,6 @@ const StixCyberObservableEditionOverviewComponent = ({
       });
     }
   };
-
   const handleChangeRef = (name, value) => {
     if (!enableReferences) {
       commitMutation({
@@ -213,7 +209,6 @@ const StixCyberObservableEditionOverviewComponent = ({
       });
     }
   };
-
   const handleChangeObjectMarking = (name, values) => {
     if (!enableReferences) {
       const currentMarkingDefinitions = pipe(
@@ -249,7 +244,6 @@ const StixCyberObservableEditionOverviewComponent = ({
       }
     }
   };
-
   return (
     <QueryRenderer
       query={stixCyberObservablesLinesAttributesQuery}

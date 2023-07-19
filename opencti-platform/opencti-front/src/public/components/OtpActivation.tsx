@@ -71,7 +71,6 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
   const [commit] = useMutation(validateOtpPatch);
-
   if (code.length === OTP_CODE_SIZE && !inputDisable) {
     setInputDisable(true);
     commit({
@@ -105,7 +104,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
     );
   }, [uri, classes.color]);
   return (
-    <div style={{ textAlign: "center", maxWidth: 500 }}>
+    <div style={{ textAlign: "center", margin: "0 auto", maxWidth: 500 }}>
       <img src={otpQrImage} style={{ width: 265 }} alt="" />
       {error ? (
         <Alert

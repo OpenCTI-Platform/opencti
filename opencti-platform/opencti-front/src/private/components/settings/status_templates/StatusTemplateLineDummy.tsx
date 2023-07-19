@@ -6,6 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import IconButton from '@mui/material/IconButton';
 import { Theme } from '../../../../components/Theme';
 import { DataColumnsType } from './StatusTemplateLine';
 
@@ -81,7 +82,9 @@ StatusTemplateLineDummyProps
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
   );

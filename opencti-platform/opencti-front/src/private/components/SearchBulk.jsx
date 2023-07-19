@@ -124,47 +124,79 @@ const inlineStylesHeaders = {
     width: '10%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   value: {
     float: 'left',
     width: '22%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   author: {
     float: 'left',
     width: '12%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   creator: {
     float: 'left',
     width: '12%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   labels: {
     float: 'left',
     width: '16%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   created_at: {
     float: 'left',
     width: '10%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   analyses: {
     float: 'left',
     width: '8%',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   markings: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
 };
 
@@ -176,6 +208,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   value: {
     float: 'left',
@@ -184,6 +217,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   author: {
     float: 'left',
@@ -192,6 +226,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   creator: {
     float: 'left',
@@ -200,6 +235,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   labels: {
     float: 'left',
@@ -208,6 +244,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   created_at: {
     float: 'left',
@@ -216,6 +253,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   analyses: {
     float: 'left',
@@ -224,6 +262,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   markings: {
     float: 'left',
@@ -231,6 +270,7 @@ const inlineStyles = {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
 };
 
@@ -539,7 +579,7 @@ const SearchBulk = () => {
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <div>
+                      <>
                         <div
                           className={classes.bodyItem}
                           style={inlineStyles.type}
@@ -643,7 +683,7 @@ const SearchBulk = () => {
                             />
                           )}
                         </div>
-                      </div>
+                      </>
                     }
                   />
                   <ListItemIcon classes={{ root: classes.goIcon }}>

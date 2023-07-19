@@ -2,13 +2,18 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { BackupTableOutlined, CampaignOutlined, MoreVert } from '@mui/icons-material';
+import {
+  BackupTableOutlined,
+  CampaignOutlined,
+  MoreVert,
+} from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
 import { DataColumns } from '../../../../../components/list_lines';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
@@ -100,7 +105,11 @@ const alertingLineFragment = graphql`
   }
 `;
 
-export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({ dataColumns, node, paginationOptions }) => {
+export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
+  dataColumns,
+  node,
+  paginationOptions,
+}) => {
   const classes = useStyles();
   const { t, nt } = useFormatter();
   const data = useFragment(alertingLineFragment, node);
@@ -113,7 +122,9 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({ da
     dayStartDate().toISOString(),
   ];
   const day = currentTime.length > 1 ? currentTime[0] : '1';
-  const time = currentTime.length > 1 ? new Date(`2000-01-01T${currentTime[1]}`) : new Date(`2000-01-01T${currentTime[0]}`);
+  const time = currentTime.length > 1
+    ? new Date(`2000-01-01T${currentTime[1]}`)
+    : new Date(`2000-01-01T${currentTime[0]}`);
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon>
@@ -151,11 +162,13 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({ da
               className={classes.bodyItem}
               style={{ width: dataColumns.outcomes.width }}
             >
-              {data.outcomes && data.outcomes.length > 0
-                  && data.outcomes.map<React.ReactNode>((n) => (
+              {data.outcomes
+                && data.outcomes.length > 0
+                && data.outcomes
+                  .map<React.ReactNode>((n) => (
                     <code>{outcomesOptions[n]}</code>
-                  ))
-                    .reduce((prev, curr) => [prev, ', ', curr])}
+                ))
+                  .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
             {data.trigger_type === 'live' && (
               <FilterIconButton
@@ -167,7 +180,10 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({ da
               />
             )}
             {data.trigger_type === 'digest' && (
-              <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.filters.width }}
+              >
                 <Chip
                   classes={{ root: classes.chipInList3 }}
                   label={
@@ -211,7 +227,11 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({ da
   );
 };
 
-export const AlertingLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+export const AlertingLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -239,7 +259,9 @@ export const AlertingLineDummy = ({ dataColumns }: { dataColumns: DataColumns })
         }
       />
       <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
       </ListItemSecondaryAction>
     </ListItem>
   );

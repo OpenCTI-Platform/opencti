@@ -90,7 +90,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
       displayRelation,
     } = this.props;
     return (
-      <div>
+      <>
         {data
           && data.stixCoreRelationships
           && data.stixCoreRelationships.edges.map((stixCoreRelationshipEdge) => {
@@ -293,7 +293,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
               </ListItem>
             );
           })}
-      </div>
+      </>
     );
   }
 }
