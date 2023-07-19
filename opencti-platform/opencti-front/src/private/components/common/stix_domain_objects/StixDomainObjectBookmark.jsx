@@ -15,7 +15,7 @@ import Skeleton from '@mui/material/Skeleton';
 import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
-import { commitMutation } from '../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getFileUri } from '../../../../utils/utils';
@@ -199,6 +199,10 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         created_at
         updated_at
         modified
+        x_opencti_files(mimeType: "image/") {
+          id
+          name
+        }
         ... on AttackPattern {
           name
           x_mitre_id
