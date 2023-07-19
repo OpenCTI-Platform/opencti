@@ -195,6 +195,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                 >
                   {data.images && data.images.map((file) => (
                     <Tooltip title={file.description} key={file.id} placement='right'>
+                    <Tooltip title={file ? file.description : ''} placement='right'>
                     <img
                       style={{ height: '100%' }}
                       src={getFileUri(file.id)}
