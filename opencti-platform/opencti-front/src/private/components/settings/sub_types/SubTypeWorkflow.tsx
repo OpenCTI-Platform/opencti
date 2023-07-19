@@ -20,10 +20,10 @@ import { useFormatter } from '../../../../components/i18n';
 import SubTypeWorkflowStatusAdd from './SubTypeWorkflowStatusAdd';
 import { hexToRGB } from '../../../../utils/Colors';
 import { Theme } from '../../../../components/Theme';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEditionQuery.graphql';
 import SubTypeWorkflowStatusPopover from './SubTypeWorkflowStatusPopover';
 import { SubTypeWorkflow_subType$data } from './__generated__/SubTypeWorkflow_subType.graphql';
+import ItemCopy from '../../../../components/ItemCopy';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -40,6 +40,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
     position: 'absolute',
     top: 15,
     right: 20,
+  },
+  bodyItem: {
+    height: 20,
+    fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -159,7 +168,24 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                         {status.order}
                       </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={status.template.name} />
+                    <ListItemText
+                      primary={
+                        <>
+                          <div
+                            className={classes.bodyItem}
+                            style={{ width: '30%' }}
+                          >
+                            {status.template.name}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={{ width: '60%' }}
+                          >
+                            <ItemCopy content={status.id} variant="inLine" />
+                          </div>
+                        </>
+                      }
+                    />
                     <ListItemSecondaryAction>
                       <SubTypeWorkflowStatusPopover
                         subTypeId={subType.id}
@@ -175,7 +201,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
       </>
     );
   }
-  return <Loader variant={LoaderVariant.inElement} />;
+  return <div />;
 };
 
 export default SubTypeWorkflow;

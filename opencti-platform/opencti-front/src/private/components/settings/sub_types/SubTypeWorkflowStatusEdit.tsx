@@ -14,6 +14,7 @@ import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { SubTypeWorkflowStatusEdit_subType$key } from './__generated__/SubTypeWorkflowStatusEdit_subType.graphql';
 import { SubTypeWorkflowStatusEditQuery } from './__generated__/SubTypeWorkflowStatusEditQuery.graphql';
 import { StatusForm, statusValidation } from './statusFormUtils';
+import Transition from '../../../../components/Transition';
 
 const statusEditFieldPatchMutation = graphql`
   mutation SubTypeWorkflowStatusEditFieldPatchMutation(
@@ -120,6 +121,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
             PaperProps={{ elevation: 1 }}
             onClose={submitForm}
             fullWidth={true}
+            TransitionComponent={Transition}
           >
             <DialogTitle>{t('Update a status')}</DialogTitle>
             <DialogContent>

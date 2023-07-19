@@ -95,7 +95,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
@@ -164,7 +164,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
                 limit={1}
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>

@@ -44,27 +44,27 @@ StixCoreObjectOpinionsProps
     () => fetchLoadQuery(variables, { fetchPolicy: 'store-and-network' }),
     [],
   );
-  return queryRef ? (
-    <React.Suspense
-      fallback={
-        <div style={{ height, marginTop }}>
-          <Loader variant={LoaderVariant.inElement} />
-        </div>
-      }
-    >
-      <StixCoreObjectOpinionsRadar
-        stixCoreObjectId={stixCoreObjectId}
-        queryRef={queryRef}
-        fetchQuery={fetchQuery}
-        variant={variant}
-        height={height}
-        marginTop={marginTop}
-      />
-    </React.Suspense>
-  ) : (
-    <div style={{ height, marginTop }}>
-      <Loader variant={LoaderVariant.inElement} />
-    </div>
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense
+          fallback={
+            <div style={{ height, marginTop }}>
+              <Loader variant={LoaderVariant.inElement} />
+            </div>
+          }
+        >
+          <StixCoreObjectOpinionsRadar
+            stixCoreObjectId={stixCoreObjectId}
+            queryRef={queryRef}
+            fetchQuery={fetchQuery}
+            variant={variant}
+            height={height}
+            marginTop={marginTop}
+          />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 export default StixCoreObjectOpinions;

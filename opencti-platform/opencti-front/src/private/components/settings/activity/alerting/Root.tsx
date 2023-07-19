@@ -38,21 +38,24 @@ interface ConfigurationComponentProps {
 const AlertingComponent: FunctionComponent<ConfigurationComponentProps> = ({
   queryRef,
 }) => {
-  const { settings } = usePreloadedQuery<RootAlertingQuery>(rootQuery, queryRef);
+  const { settings } = usePreloadedQuery<RootAlertingQuery>(
+    rootQuery,
+    queryRef,
+  );
   if (isEmptyField(settings.enterprise_edition)) {
     return <EnterpriseEdition />;
   }
-  return <Alerting/>;
+  return <Alerting />;
 };
 
 const Root = () => {
   const queryRef = useQueryLoading<RootAlertingQuery>(rootQuery, {});
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <AlertingComponent queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
+  return (
+    queryRef && (
+      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <AlertingComponent queryRef={queryRef} />
+      </React.Suspense>
+    )
   );
 };
 

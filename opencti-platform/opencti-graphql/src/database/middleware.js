@@ -2689,7 +2689,10 @@ const buildRelationData = async (context, user, input, opts = {}) => {
       const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
       const statusesForType = platformStatuses.filter((p) => p.type === type);
       if (statusesForType.length > 0) {
-        data[X_WORKFLOW_ID] = R.head(statusesForType).id;
+        // Check, if status is not set or not valid
+        if (R.isNil(input[X_WORKFLOW_ID]) || statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0) {
+          data[X_WORKFLOW_ID] = R.head(statusesForType).id;
+        }
       }
     }
   }
@@ -3050,9 +3053,9 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // -- STIX-Domain-Object
   if (isStixDomainObject(type)) {
     data = R.pipe(
-      R.assoc('revoked', R.isNil(data.revoked) ? false : data.revoked),
-      R.assoc('confidence', R.isNil(data.confidence) ? computeConfidenceLevel(input) : data.confidence),
-      R.assoc('lang', R.isNil(data.lang) ? 'en' : data.lang),
+      R.assoc('revoked', R.isNil(input.revoked) ? false : input.revoked),
+      R.assoc('confidence', R.isNil(input.confidence) ? computeConfidenceLevel(input) : input.confidence),
+      R.assoc('lang', R.isNil(input.lang) ? 'en' : input.lang),
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
@@ -3060,7 +3063,10 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
     const statusesForType = platformStatuses.filter((p) => p.type === type);
     if (statusesForType.length > 0) {
-      data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);
+      // Check, if status is not set or not valid
+      if (R.isNil(input[X_WORKFLOW_ID]) || statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0) {
+        data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);
+      }
     }
   }
   // -- Aliased entities

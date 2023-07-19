@@ -1131,7 +1131,7 @@ const Dashboard = () => {
   return (
     <>
       {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<div />}>
           <DashboardComponent queryRef={queryRef} />
         </React.Suspense>
       )}

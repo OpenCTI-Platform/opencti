@@ -116,12 +116,14 @@ const ItemOpenVocab: FunctionComponent<Omit<ItemOpenVocabProps, 'queryRef'>> = (
   const queryRef = useQueryLoading<ItemOpenVocabQuery>(itemOpenVocabQuery, {
     category: typeToCategory(props.type),
   });
-  return queryRef ? (
-    <React.Suspense fallback={<ItemOpenVocabDummy small={props.small} />}>
-      <ItemOpenVocabComponent {...props} queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <ItemOpenVocabDummy small={props.small} />
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<ItemOpenVocabDummy small={props.small} />}>
+          <ItemOpenVocabComponent {...props} queryRef={queryRef} />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

@@ -20,8 +20,7 @@ import StixDomainObjectIndicators from '../../observations/indicators/StixDomain
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import StixCoreObjectOrStixCoreRelationshipContainers
-  from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
@@ -64,9 +63,14 @@ const ThreatActorIndividualQuery = graphql`
   }
 `;
 
-const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId }) => {
+const RootThreatActorIndividualComponent = ({
+  queryRef,
+  threatActorIndividualId,
+}) => {
   const { me } = useAuth();
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
+  >(
     () => ({
       subscription,
       variables: { id: threatActorIndividualId },
@@ -78,7 +82,10 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
     threatActorIndividual: data,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootThreatActorIndividualQuery>(ThreatActorIndividualQuery, queryRef);
+  } = usePreloadedQuery<RootThreatActorIndividualQuery>(
+    ThreatActorIndividualQuery,
+    queryRef,
+  );
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
 
   return (
@@ -112,10 +119,7 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
               exact
               path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId"
               render={(routeProps: any) => (
-                <ThreatActorIndividual
-                  {...routeProps}
-                  data={data}
-                />
+                <ThreatActorIndividual {...routeProps} data={data} />
               )}
             />
             <Route
@@ -144,13 +148,13 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
                   <StixDomainObjectHeader
                     entityType={'Threat-Actor-Individual'}
                     stixDomainObject={data}
-                    PopoverComponent={<ThreatActorIndividualPopover id={data.id} />}
+                    PopoverComponent={
+                      <ThreatActorIndividualPopover id={data.id} />
+                    }
                   />
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     {...routeProps}
-                    stixDomainObjectOrStixCoreRelationship={
-                      data
-                    }
+                    stixDomainObjectOrStixCoreRelationship={data}
                   />
                 </React.Fragment>
               )}
@@ -163,7 +167,9 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
                   <StixDomainObjectHeader
                     entityType={'Threat-Actor-Individual'}
                     stixDomainObject={data}
-                    PopoverComponent={<ThreatActorIndividualPopover id={data.id}/>}
+                    PopoverComponent={
+                      <ThreatActorIndividualPopover id={data.id} />
+                    }
                     disableSharing={true}
                   />
                   <StixDomainObjectIndicators
@@ -192,7 +198,9 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
                   <StixDomainObjectHeader
                     entityType={'Threat-Actor-Individual'}
                     stixDomainObject={data}
-                    PopoverComponent={<ThreatActorIndividualPopover id={data.id}/>}
+                    PopoverComponent={
+                      <ThreatActorIndividualPopover id={data.id} />
+                    }
                   />
                   <FileManager
                     {...routeProps}
@@ -212,7 +220,9 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
                   <StixDomainObjectHeader
                     entityType={'Threat-Actor-Individual'}
                     stixDomainObject={data}
-                    PopoverComponent={<ThreatActorIndividualPopover id={data.id}/>}
+                    PopoverComponent={
+                      <ThreatActorIndividualPopover id={data.id} />
+                    }
                   />
                   <StixCoreObjectHistory
                     {...routeProps}
@@ -221,7 +231,8 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
                 </React.Fragment>
               )}
             />
-          </Switch>) : (
+          </Switch>
+        ) : (
           <ErrorNotFound />
         )}
       </>
@@ -230,16 +241,26 @@ const RootThreatActorIndividualComponent = ({ queryRef, threatActorIndividualId 
 };
 
 const Root = () => {
-  const { threatActorIndividualId } = useParams() as { threatActorIndividualId: string };
-  const queryRef = useQueryLoading<RootThreatActorIndividualQuery>(ThreatActorIndividualQuery, {
-    id: threatActorIndividualId,
-  });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootThreatActorIndividualComponent queryRef={queryRef} threatActorIndividualId={threatActorIndividualId}/>
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
+  const { threatActorIndividualId } = useParams() as {
+    threatActorIndividualId: string;
+  };
+  const queryRef = useQueryLoading<RootThreatActorIndividualQuery>(
+    ThreatActorIndividualQuery,
+    {
+      id: threatActorIndividualId,
+    },
+  );
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <RootThreatActorIndividualComponent
+            queryRef={queryRef}
+            threatActorIndividualId={threatActorIndividualId}
+          />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

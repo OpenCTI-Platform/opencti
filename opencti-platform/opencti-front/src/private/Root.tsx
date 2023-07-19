@@ -8,10 +8,13 @@ import { UserContext } from '../utils/hooks/useAuth';
 import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
-import { RootPrivateQuery, RootPrivateQuery$data } from './__generated__/RootPrivateQuery.graphql';
+import {
+  RootPrivateQuery,
+  RootPrivateQuery$data,
+} from './__generated__/RootPrivateQuery.graphql';
 import Index from './Index';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../components/Loader';
+import Loader from '../components/Loader';
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
@@ -104,14 +107,23 @@ const computeBannerSettings = (settings: RootPrivateQuery$data['settings']) => {
   const idleTimeout = settings.platform_session_idle_timeout ?? 0;
   const sessionTimeout = settings.platform_session_timeout ?? 0;
   const idleLimit = idleTimeout ? Math.floor(idleTimeout / ONE_SECOND) : 0;
-  const sessionLimit = sessionTimeout ? Math.floor(sessionTimeout / ONE_SECOND) : 0;
+  const sessionLimit = sessionTimeout
+    ? Math.floor(sessionTimeout / ONE_SECOND)
+    : 0;
   const bannerHeight = isBannerActivated ? `${SYSTEM_BANNER_HEIGHT}px` : '0';
   const bannerHeightNumber = isBannerActivated ? SYSTEM_BANNER_HEIGHT : 0;
-  return { bannerText, bannerLevel, bannerHeight, bannerHeightNumber, idleLimit, sessionLimit };
+  return {
+    bannerText,
+    bannerLevel,
+    bannerHeight,
+    bannerHeightNumber,
+    idleLimit,
+    sessionLimit,
+  };
 };
 
 interface RootComponentProps {
-  queryRef: PreloadedQuery<RootPrivateQuery>
+  queryRef: PreloadedQuery<RootPrivateQuery>;
 }
 
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
@@ -126,7 +138,16 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
   return (
-    <UserContext.Provider value={{ me, settings, bannerSettings, entitySettings, platformModuleHelpers, schema }}>
+    <UserContext.Provider
+      value={{
+        me,
+        settings,
+        bannerSettings,
+        entitySettings,
+        platformModuleHelpers,
+        schema,
+      }}
+    >
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
@@ -140,13 +161,15 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
 
 const Root = () => {
   const queryRef = useQueryLoading<RootPrivateQuery>(rootPrivateQuery, {});
-  return <>
-    {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <RootComponent queryRef={queryRef}/>
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<Loader />}>
+          <RootComponent queryRef={queryRef} />
         </React.Suspense>
-    )}
-  </>;
+      )}
+    </>
+  );
 };
 
 export default Root;

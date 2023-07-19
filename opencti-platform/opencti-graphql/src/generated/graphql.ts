@@ -2208,6 +2208,7 @@ export type CaseIncidentAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']>;
 };
 
 export type CaseIncidentConnection = {

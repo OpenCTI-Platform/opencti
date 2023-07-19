@@ -144,15 +144,17 @@ const RootDataSource = () => {
   const queryRef = useQueryLoading<RootDataSourceQuery>(dataSourceQuery, {
     id: dataSourceId,
   });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <RootDataSourceComponent
-        queryRef={queryRef}
-        dataSourceId={dataSourceId}
-      />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.container} />
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <RootDataSourceComponent
+            queryRef={queryRef}
+            dataSourceId={dataSourceId}
+          />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

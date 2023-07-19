@@ -34,14 +34,6 @@ const styles = (theme) => ({
     position: 'absolute',
     right: -10,
   },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
 });
 
 class CourseOfActionLineComponent extends Component {
@@ -211,7 +203,7 @@ class CourseOfActionLineDummyComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRight color="disabled" />
         </ListItemIcon>
       </ListItem>
     );

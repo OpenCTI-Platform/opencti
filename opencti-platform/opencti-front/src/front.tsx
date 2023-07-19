@@ -13,7 +13,7 @@ import 'react-mde/lib/styles/css/react-mde-all.css';
 import * as serviceWorker from './config/serviceWorker';
 import App from './app';
 import { environment } from './relay/environment';
-import Loader, { LoaderVariant } from './components/Loader';
+import Loader from './components/Loader';
 import { THEME_DARK_DEFAULT_BACKGROUND } from './components/ThemeDark';
 
 const useStyles = makeStyles(() => ({
@@ -28,7 +28,7 @@ const Loading = () => {
   const classes = useStyles();
   return (
     <div className={classes.loading}>
-      <Loader variant={LoaderVariant.container} withRightPadding={false} />
+      <Loader />
     </div>
   );
 };

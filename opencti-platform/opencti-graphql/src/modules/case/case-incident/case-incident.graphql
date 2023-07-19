@@ -242,6 +242,7 @@ input CaseIncidentAddInput {
   update: Boolean
   response_types: [String!]
   caseTemplates: [String!]
+  x_opencti_workflow_id: String
 }
 
 type Mutation {

@@ -183,7 +183,7 @@ const RootCity = () => {
   const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId });
   const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   return (
-    <div>
+    <>
       <TopBar />
       <Route path="/dashboard/locations/cities/:cityId/knowledge">
         <StixCoreObjectKnowledgeBar
@@ -205,14 +205,12 @@ const RootCity = () => {
           ]}
         />
       </Route>
-      {queryRef ? (
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootCityComponent queryRef={queryRef} cityId={cityId} link={link} />
         </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.container} />
       )}
-    </div>
+    </>
   );
 };
 

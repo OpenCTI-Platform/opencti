@@ -13,7 +13,6 @@ import { useFormatter } from '../../../../components/i18n';
 import SubTypeWorkflowStatusEdit, {
   statusEditQuery,
 } from './SubTypeWorkflowStatusEdit';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Transition from '../../../../components/Transition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SubTypeWorkflowStatusEditQuery } from './__generated__/SubTypeWorkflowStatusEditQuery.graphql';
@@ -84,7 +83,7 @@ SubTypeStatusPopoverProps
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
       {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <React.Suspense fallback={<span />}>
           <SubTypeWorkflowStatusEdit
             subTypeId={subTypeId}
             queryRef={queryRef}

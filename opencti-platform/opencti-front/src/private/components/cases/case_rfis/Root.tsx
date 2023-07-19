@@ -214,12 +214,14 @@ const Root = () => {
   const queryRef = useQueryLoading<RootCaseRfiCaseQuery>(caseRfiQuery, {
     id: caseId,
   });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <RootCaseRfiComponent queryRef={queryRef} caseId={caseId} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.container} />
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <RootCaseRfiComponent queryRef={queryRef} caseId={caseId} />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

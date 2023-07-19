@@ -154,12 +154,14 @@ const Root = () => {
   const queryRef = useQueryLoading<RootFeedbackQuery>(feedbackQuery, {
     id: caseId,
   });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <RootFeedbackComponent queryRef={queryRef} caseId={caseId} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.container} />
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <RootFeedbackComponent queryRef={queryRef} caseId={caseId} />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

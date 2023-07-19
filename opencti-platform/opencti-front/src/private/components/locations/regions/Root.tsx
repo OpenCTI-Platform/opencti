@@ -211,12 +211,14 @@ const RootRegion = () => {
           ]}
         />
       </Route>
-      {queryRef ? (
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootRegionComponent queryRef={queryRef} regionId={regionId} link={link} />
+          <RootRegionComponent
+            queryRef={queryRef}
+            regionId={regionId}
+            link={link}
+          />
         </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.container} />
       )}
     </div>
   );

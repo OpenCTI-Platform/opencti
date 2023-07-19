@@ -210,7 +210,7 @@ const RootCountry = () => {
           ]}
         />
       </Route>
-      {queryRef ? (
+      {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootCountryComponent
             queryRef={queryRef}
@@ -218,8 +218,6 @@ const RootCountry = () => {
             link={link}
           />
         </React.Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.container} />
       )}
     </div>
   );

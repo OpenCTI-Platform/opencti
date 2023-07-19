@@ -10,7 +10,6 @@ import {
   useSubscription,
 } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
 import { generateBannerMessageColors } from '../../../../utils/Colors';
 import useBus, { dispatch } from '../../../../utils/hooks/useBus';
@@ -238,11 +237,11 @@ const SettingsMessagesBanner = () => {
     settingsMessagesQuery,
   );
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense fallback={<span />}>
       <SettingsMessagesBannerComponent queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <span />
   );
 };
 

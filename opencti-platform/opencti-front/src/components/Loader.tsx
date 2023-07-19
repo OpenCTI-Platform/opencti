@@ -38,7 +38,6 @@ const useStyles = makeStyles(() => ({
 
 export enum LoaderVariant {
   container = 'container',
-  inside = 'inside',
   inElement = 'inElement',
 }
 
