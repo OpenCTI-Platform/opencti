@@ -343,8 +343,9 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
       // Indicator type filtering
       if (key === INDICATOR_FILTER) {
         const indicators = stix.indicator_types ?? [];
-        const extractedValues = values.map((v) => v.value);
-        const isTypeAvailable = extractedValues.some((r) => indicators.includes(r));
+        // Need lowercase because in frontend, using "runtimeAttribute" based on keyword which is always lowercased
+        const extractedValues = values.map((v) => v.value.toLowerCase());
+        const isTypeAvailable = extractedValues.some((r) => indicators.includes(r.toLowerCase()));
         // If indicator type is available but must not be
         if (operator === 'not_eq' && isTypeAvailable) {
           return false;
@@ -466,7 +467,8 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
       // Pattern type filtering
       if (key === PATTERN_FILTER) {
         const currentPattern = stix.pattern_type;
-        const isPatternFound = values.map((v) => v.id).includes(currentPattern);
+        // Need lowercase because in frontend, using "runtimeAttribute" based on keyword which is always lowercased
+        const isPatternFound = values.map((v) => v.id.toLowerCase()).includes(currentPattern?.toLowerCase());
         // If pattern is available but must not be
         if (operator === 'not_eq' && isPatternFound) {
           return false;
@@ -478,8 +480,9 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
       }
       // Main Observable Filter filtering
       if (key === MAIN_OBSERVABLE_TYPE_FILTER) {
-        const currentMainObservableType = stix.x_opencti_main_observable_type;
-        const isMainObservableTypeFound = values.map((v) => v.id).includes(currentMainObservableType);
+        const currentMainObservableType = stix.extensions?.[STIX_EXT_OCTI]?.main_observable_type;
+        // Need lowercase because in frontend, using "runtimeAttribute" based on keyword which is always lowercased
+        const isMainObservableTypeFound = values.map((v) => v.id.toLowerCase()).includes(currentMainObservableType?.toLowerCase());
         // If main observable type is available but must not be
         if (operator === 'not_eq' && isMainObservableTypeFound) {
           return false;
