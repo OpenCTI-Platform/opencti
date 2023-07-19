@@ -1,9 +1,15 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import { graphql, useFragment } from 'react-relay';
+import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
+import {
+  PictureManagementViewer_pictureManagement$data,
+  PictureManagementViewer_pictureManagement$key,
+} from './__generated__/PictureManagementViewer_pictureManagement.graphql';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -15,9 +21,28 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const PictureManagementViewer = () => {
+const pictureManagementViewerFragment = graphql`
+  fragment PictureManagementViewer_pictureManagement on StixDomainObject {
+    id
+    entity_type
+    images: x_opencti_files(mimeType: "image/") {
+      id
+      name
+    }
+  }
+`;
+
+interface PictureManagementViewerProps {
+  pictureManagementData: PictureManagementViewer_pictureManagement$key;
+}
+
+const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> = ({ pictureManagementData }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const data: PictureManagementViewer_pictureManagement$data = useFragment(
+    pictureManagementViewerFragment,
+    pictureManagementData,
+  );
 
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
@@ -27,7 +52,10 @@ const PictureManagementViewer = () => {
         </Typography>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+          {data.images && data.images.length > 0 ? (
+            <List></List>
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span
                 style={{
                   display: 'table-cell',
@@ -37,7 +65,8 @@ const PictureManagementViewer = () => {
               >
                 {t('No file for the moment')}
               </span>
-          </div>
+            </div>
+          )}
         </Paper>
       </div>
     </Grid>

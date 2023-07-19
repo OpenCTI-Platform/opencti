@@ -20,7 +20,7 @@ import {
   ThreatActorIndividualDetails_ThreatActorIndividual$data,
   ThreatActorIndividualDetails_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { getUri } from '../../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -57,7 +57,7 @@ const ThreatActorIndividualDetailsFragment = graphql`
     secondary_motivations
     goals
     roles
-    x_opencti_files(mimeType: "image/") {
+    images: x_opencti_files(mimeType: "image/") {
       id
       name
       mime_type
@@ -79,12 +79,6 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
-
-  const getUri = (id: string) => {
-    const encodedFilePath = encodeURIComponent(id);
-    const imageView = `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
-    return imageView;
-  };
 
   return (
       <div style={{ height: '100%' }}>
@@ -184,18 +178,18 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              {data.x_opencti_files && data.x_opencti_files.length > 0 ? (
+              {data.images && data.images.length > 0 ? (
                 <Carousel
                   height='150px'
                   className={classes.carousel}
                   animation='fade'
                 >
-                  {data.x_opencti_files.map((file) => (
+                  {data.images.map((file) => (
                     <Tooltip title={file ? file.description : ''} key={file ? file.id : ''} placement='right'>
                     <img
                       style={{ height: '100%' }}
                       src={getUri(file ? file.id : '')}
-                      alt={file ? file.name : 'file.name'}
+                      alt={file ? file.name : 'image.name'}
                     />
                     </Tooltip>
                   ))}

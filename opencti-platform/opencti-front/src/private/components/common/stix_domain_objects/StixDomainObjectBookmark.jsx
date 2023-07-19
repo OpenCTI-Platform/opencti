@@ -15,9 +15,10 @@ import Skeleton from '@mui/material/Skeleton';
 import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
-import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
+import { getUri } from '../../../../utils/utils';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -137,13 +138,6 @@ class StixDomainObjectBookmarkComponent extends Component {
   render() {
     const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
-    const getUri = (id) => {
-      const encodedFilePath = encodeURIComponent(id);
-      const imageView = `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
-      return imageView;
-    };
-
-    console.log(node.x_opencti_files);
 
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
@@ -154,11 +148,11 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={ node.x_opencti_files && node.x_opencti_files.length > 0 ? (
+            avatar={ node.images && node.images.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getUri(node.x_opencti_files[0]?.id ?? '')}
-                alt={node.x_opencti_files[0]?.name ?? 'file.name'}
+                src={getUri(node.images[0]?.id ?? '')}
+                alt={node.images[0]?.name ?? 'image.name'}
               />
             ) : (
               <Avatar className={classes.avatar}>
@@ -205,7 +199,7 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         created_at
         updated_at
         modified
-        x_opencti_files(mimeType: "image/") {
+        images: x_opencti_files(mimeType: "image/") {
           id
           name
         }
