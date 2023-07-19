@@ -11,6 +11,7 @@ import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import Carousel from 'react-material-ui-carousel';
+import Tooltip from '@mui/material/Tooltip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -183,14 +184,20 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              {data.x_opencti_files ? (
+              {data.x_opencti_files && data.x_opencti_files.length > 0 ? (
                 <Carousel
                   height='150px'
                   className={classes.carousel}
                   animation='slide'
                 >
                   {data.x_opencti_files.map((file) => (
-                    <img style={{ height: '100%' }} src={getUri(file ? file.id : '')} alt={file ? file.name : 'file.name'}/>
+                    <Tooltip title={file ? file.description : ''} placement='right'>
+                    <img
+                      style={{ height: '100%' }}
+                      src={getUri(file ? file.id : '')}
+                      alt={file ? file.name : 'file.name'}
+                    />
+                    </Tooltip>
                   ))}
                 </Carousel>
               ) : '-'}

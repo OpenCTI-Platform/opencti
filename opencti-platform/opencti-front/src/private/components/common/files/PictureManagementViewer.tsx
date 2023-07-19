@@ -28,9 +28,17 @@ const PictureManagementViewer = () => {
         </Typography>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          <List>
-            hello
-          </List>
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No file for the moment')}
+              </span>
+          </div>
         </Paper>
       </div>
     </Grid>
