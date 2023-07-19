@@ -3,7 +3,6 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({

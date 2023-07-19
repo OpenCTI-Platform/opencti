@@ -170,6 +170,7 @@ export const validateInputUpdate = async (
     // Generic validator
     await validateFormatSchemaAttributes(context, user, instanceType, inputs);
     await validateMandatoryAttributesOnUpdate(context, user, inputs, entitySetting);
+    validateUpdatableAttribute(instanceType, inputs);
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {
