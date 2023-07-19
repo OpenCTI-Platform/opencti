@@ -191,7 +191,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                   animation='slide'
                 >
                   {data.x_opencti_files.map((file) => (
-                    <Tooltip title={file ? file.description : ''} placement='right'>
+                    <Tooltip title={file ? file.description : ''} key={file ? file.id : ''} placement='right'>
                     <img
                       style={{ height: '100%' }}
                       src={getUri(file ? file.id : '')}
