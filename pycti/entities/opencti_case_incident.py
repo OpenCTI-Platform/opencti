@@ -471,6 +471,7 @@ class CaseIncident:
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
         response_types = kwargs.get("response_types", None)
+        x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
 
         if name is not None:
             self.opencti.log("info", "Creating Case Incident {" + name + "}.")
@@ -507,6 +508,7 @@ class CaseIncident:
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                         "response_types": response_types,
+                        "x_opencti_workflow_id": x_opencti_workflow_id,
                     }
                 },
             )
@@ -636,6 +638,12 @@ class CaseIncident:
                 stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
                     "granted_refs", stix_object
                 )
+            if "x_opencti_workflow_id" not in stix_object:
+                stix_object[
+                    "x_opencti_workflow_id"
+                ] = self.opencti.get_attribute_in_extension(
+                    "x_opencti_workflow_id", stix_object
+                )
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -675,6 +683,9 @@ class CaseIncident:
                 else None,
                 objectOrganization=stix_object["granted_refs"]
                 if "granted_refs" in stix_object
+                else None,
+                x_opencti_workflow_id=stix_object["x_opencti_workflow_id"]
+                if "x_opencti_workflow_id" in stix_object
                 else None,
                 update=update,
             )
