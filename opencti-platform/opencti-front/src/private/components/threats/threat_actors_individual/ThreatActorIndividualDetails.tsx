@@ -188,7 +188,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                 <Carousel
                   height='150px'
                   className={classes.carousel}
-                  animation='slide'
+                  animation='fade'
                 >
                   {data.x_opencti_files.map((file) => (
                     <Tooltip title={file ? file.description : ''} key={file ? file.id : ''} placement='right'>
