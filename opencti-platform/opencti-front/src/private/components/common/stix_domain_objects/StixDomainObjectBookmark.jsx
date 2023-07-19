@@ -15,7 +15,7 @@ import Skeleton from '@mui/material/Skeleton';
 import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
-import { commitMutation } from '../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -137,6 +137,14 @@ class StixDomainObjectBookmarkComponent extends Component {
   render() {
     const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
+    const getUri = (id) => {
+      const encodedFilePath = encodeURIComponent(id);
+      const imageView = `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
+      return imageView;
+    };
+
+    console.log(node.x_opencti_files);
+
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -146,14 +154,20 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={
+            avatar={ node.x_opencti_files && node.x_opencti_files.length > 0 ? (
+              <img
+                style={{ height: '30px' }}
+                src={getUri(node.x_opencti_files[0]?.id ?? '')}
+                alt={node.x_opencti_files[0]?.name ?? 'file.name'}
+              />
+            ) : (
               <Avatar className={classes.avatar}>
                 <ItemIcon
                   type={node.entity_type}
                   color={theme.palette.background.default}
                 />
               </Avatar>
-            }
+            )}
             title={node.name}
             subheader={`${t('Updated on')} ${fsd(node.modified)}`}
             action={
@@ -191,6 +205,10 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         created_at
         updated_at
         modified
+        x_opencti_files(mimeType: "image/") {
+          id
+          name
+        }
         ... on AttackPattern {
           name
           x_mitre_id

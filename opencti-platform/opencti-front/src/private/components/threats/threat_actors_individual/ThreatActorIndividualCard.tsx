@@ -221,12 +221,16 @@ ThreatActorIndividualCardProps
       >
         <CardHeader
           classes={{ root: classes.header, title: classes.title }}
-          avatar={ data.x_opencti_files && (
-            data.x_opencti_files.map((file) => {
-              return <img style={{ height: '30px' }}
-                          src={getUri(file ? file.id : '')} alt={file ? file.name : 'file.name'}
-              />;
-            }))}
+          avatar={data.x_opencti_files && data.x_opencti_files.length > 0 ? (
+              <img
+                style={{ height: '30px' }}
+                src={getUri(data.x_opencti_files[0]?.id ?? '')}
+                alt={data.x_opencti_files[0]?.name ?? 'file.name'}
+              />
+          ) : (
+              <ItemIcon type="Threat-Actor-Individual" size="large" />
+          )
+          }
           title={data.name}
           subheader={fld(data.modified)}
           action={
