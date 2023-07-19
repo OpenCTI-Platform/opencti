@@ -86,10 +86,6 @@ const ThreatActorIndividualCardFragment = graphql`
         }
       }
     }
-    x_opencti_files(mimeType: "image/") {
-      id
-      name
-    }
   }
 `;
 interface ThreatActorIndividualCardProps {
