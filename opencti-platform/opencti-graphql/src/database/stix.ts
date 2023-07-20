@@ -79,7 +79,7 @@ import {
   RELATION_VARIANT_OF
 } from '../schema/stixCoreRelationship';
 import { isStixRefRelationship, RELATION_LINKED } from '../schema/stixRefRelationship';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrativeArea/administrativeArea-types';
@@ -225,6 +225,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_MALWARE}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
+    { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN }
@@ -409,6 +412,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_MALWARE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
+    { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED }
+  ],
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED }
   ],
@@ -445,6 +451,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_INDICATES, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_MALWARE}`]: [
+    { name: RELATION_INDICATES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
     { name: RELATION_INDICATES, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
@@ -572,6 +581,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_MALWARE}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
+    { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN }
+  ],
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN }
   ],
@@ -691,6 +703,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_USES, type: REL_BUILT_IN },
     { name: RELATION_VARIANT_OF, type: REL_BUILT_IN },
   ],
+  [`${ENTITY_TYPE_MALWARE}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
+    { name: RELATION_AUTHORED_BY, type: REL_BUILT_IN }
+  ],
   [`${ENTITY_TYPE_MALWARE}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
     { name: RELATION_AUTHORED_BY, type: REL_BUILT_IN }
   ],
@@ -708,6 +723,85 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   // endregion
   // region THREAT_ACTOR
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_CHANNEL}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_NARRATIVE}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_CAMPAIGN}`]: [
+    { name: RELATION_PARTICIPATES_IN, type: REL_NEW }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
+    { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN },
+    { name: RELATION_IMPERSONATES, type: REL_BUILT_IN },
+    { name: RELATION_TARGETS, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN },
+    { name: RELATION_IMPERSONATES, type: REL_BUILT_IN },
+    { name: RELATION_TARGETS, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [
+    { name: RELATION_TARGETS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_IDENTITY_SYSTEM}`]: [
+    { name: RELATION_TARGETS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_EVENT}`]: [
+    { name: RELATION_TARGETS, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_INFRASTRUCTURE}`]: [
+    { name: RELATION_COMPROMISES, type: REL_BUILT_IN },
+    { name: RELATION_HOSTS, type: REL_BUILT_IN },
+    { name: RELATION_OWNS, type: REL_BUILT_IN },
+    { name: RELATION_USES, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
+    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN },
+    { name: RELATION_TARGETS, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_LOCATION_CITY}`]: [
+    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN },
+    { name: RELATION_TARGETS, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA}`]: [
+    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN },
+    { name: RELATION_TARGETS, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [
+    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN },
+    { name: RELATION_TARGETS, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_LOCATION_REGION}`]: [
+    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN },
+    { name: RELATION_TARGETS, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_MALWARE}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
+    { name: RELATION_PART_OF, type: REL_NEW },
+    { name: RELATION_COOPERATES_WITH, type: REL_NEW },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
+    { name: RELATION_PART_OF, type: REL_NEW },
+    { name: RELATION_COOPERATES_WITH, type: REL_NEW },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_TOOL}`]: [
+    { name: RELATION_USES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_TYPE_VULNERABILITY}`]: [
+    { name: RELATION_TARGETS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED }
+  ],
+  // endregion
+  // region THREAT_ACTOR_GROUP
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN }
   ],
