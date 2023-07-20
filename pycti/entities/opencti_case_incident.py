@@ -468,6 +468,7 @@ class CaseIncident:
         severity = kwargs.get("severity", None)
         priority = kwargs.get("priority", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        object_assignee = kwargs.get("objectAssignee", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
         response_types = kwargs.get("response_types", None)
@@ -494,6 +495,7 @@ class CaseIncident:
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
                         "objectOrganization": granted_refs,
+                        "objectAssignee": object_assignee,
                         "objects": objects,
                         "externalReferences": external_references,
                         "revoked": revoked,
@@ -644,6 +646,10 @@ class CaseIncident:
                 ] = self.opencti.get_attribute_in_extension(
                     "x_opencti_workflow_id", stix_object
                 )
+            if "x_opencti_assignee_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_assignee_ids"
+                ] = self.opencti.get_attribute_in_extension("assignee_ids", stix_object)
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -683,6 +689,9 @@ class CaseIncident:
                 else None,
                 objectOrganization=stix_object["x_opencti_granted_refs"]
                 if "x_opencti_granted_refs" in stix_object
+                else None,
+                objectAssignee=stix_object["x_opencti_assignee_ids"]
+                if "x_opencti_assignee_ids" in stix_object
                 else None,
                 x_opencti_workflow_id=stix_object["x_opencti_workflow_id"]
                 if "x_opencti_workflow_id" in stix_object
