@@ -230,9 +230,7 @@ const EntityStixCoreRelationshipsEntitiesView = ({
               selectAll={selectAll}
               filters={backgroundTaskFilters}
               search={searchTerm}
-              handleClearSelectedElements={handleClearSelectedElements.bind(
-                this,
-              )}
+              handleClearSelectedElements={handleClearSelectedElements}
               variant="medium"
               warning={true}
               warningMessage={t(
