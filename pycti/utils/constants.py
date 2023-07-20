@@ -148,6 +148,7 @@ class MultipleRefRelationship(Enum):
         ("severity", StringProperty()),
         ("priority", StringProperty()),
         ("response_types", ListProperty(StringProperty)),
+        ("x_opencti_workflow_id", StringProperty()),
         (
             "object_refs",
             ListProperty(
@@ -158,6 +159,30 @@ class MultipleRefRelationship(Enum):
 )
 class CustomObjectCaseIncident:
     """Case-Incident object."""
+
+    pass
+
+
+@CustomObject(
+    "case-rfi",
+    [
+        ("name", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        ("description", StringProperty()),
+        ("severity", StringProperty()),
+        ("priority", StringProperty()),
+        ("information_types", ListProperty(StringProperty)),
+        ("x_opencti_workflow_id", StringProperty()),
+        (
+            "object_refs",
+            ListProperty(
+                ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.1")
+            ),
+        ),
+    ],
+)
+class CustomObjectCaseRfit:
+    """Case-Rfi object."""
 
     pass
 
@@ -174,6 +199,7 @@ class CustomObjectCaseIncident:
                 default=lambda: NOW, precision="millisecond", precision_constraint="min"
             ),
         ),
+        ("x_opencti_workflow_id", StringProperty()),
         (
             "object_refs",
             ListProperty(
