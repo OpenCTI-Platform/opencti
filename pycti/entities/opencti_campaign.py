@@ -350,10 +350,10 @@ class Campaign:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-            if "granted_refs" not in stix_object:
-                stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
-                    "granted_refs", stix_object
-                )
+            if "x_opencti_granted_refs" not in stix_object:
+                stix_object[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -395,8 +395,8 @@ class Campaign:
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,
-                objectOrganization=stix_object["granted_refs"]
-                if "granted_refs" in stix_object
+                objectOrganization=stix_object["x_opencti_granted_refs"]
+                if "x_opencti_granted_refs" in stix_object
                 else None,
                 update=update,
             )
