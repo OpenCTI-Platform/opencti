@@ -1165,7 +1165,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             </Select>
           </FormControl>
         )}
-        <div>
+        <>
           {Array(dataSelection.length)
             .fill(0)
             .map((_, i) => {
@@ -1188,7 +1188,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       style={{ marginTop: 20 }}
                     />
                   )}
-                  {!getCurrentIsAudits() && (
+                  {dataSelection[i].perspective !== 'audits' && (
                     <div
                       style={{
                         display: 'flex',
@@ -1473,7 +1473,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                 </div>
               );
             })}
-        </div>
+        </>
         <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
           {getCurrentAvailableParameters().includes('stacked') && (
             <FormControlLabel
