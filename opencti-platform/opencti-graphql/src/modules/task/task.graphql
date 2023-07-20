@@ -215,6 +215,7 @@ input TaskAddInput {
   objectOrganization: [String]
   createdBy: String
   objects: [String]
+  x_opencti_workflow_id: String
   update: Boolean
 }
 
