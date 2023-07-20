@@ -1,7 +1,6 @@
-import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import React from 'react';
-import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
+import React, { FunctionComponent } from 'react';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ToolBar from '../../data/ToolBar';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
@@ -12,16 +11,37 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../utils/stixTypeUtils';
+import { ModuleHelper } from '../../../../utils/platformModulesHelper';
+import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { PaginationOptions } from '../../../../components/list_lines';
+import {
+  EntityStixCoreRelationshipsEntitiesPaginationQuery$variables,
+} from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'view-entityStixCoreRelationshipsEntitiesView';
-const EntityStixCoreRelationshipsEntitiesView = ({
+
+interface EntityStixCoreRelationshipsEntitiesViewProps {
+  entityId: string
+  entityLink: string
+  defaultStartTime: string
+  defaultStopTime: string,
+  localStorage: PaginationLocalStorage<PaginationOptions>
+  relationshipTypes: string[]
+  stixCoreObjectTypes: string[]
+  isRelationReversed: boolean,
+  currentView: string
+  enableNestedView: boolean,
+  enableContextualView: boolean,
+  paddingRightButtonAdd?: number
+}
+const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsEntitiesViewProps> = ({
   entityId,
   entityLink,
   defaultStartTime,
   defaultStopTime,
   localStorage,
-  relationshipTypes = [],
-  stixCoreObjectTypes = [],
+  relationshipTypes,
+  stixCoreObjectTypes,
   isRelationReversed,
   currentView,
   enableNestedView,
@@ -29,7 +49,6 @@ const EntityStixCoreRelationshipsEntitiesView = ({
   paddingRightButtonAdd = null,
 }) => {
   const { t } = useFormatter();
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers: storageHelpers } = localStorage;
   const {
     filters,
@@ -78,9 +97,9 @@ const EntityStixCoreRelationshipsEntitiesView = ({
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle(LOCAL_STORAGE_KEY);
-  const buildColumnsEntities = (platformModuleHelpers) => {
+  const buildColumnsEntities = (platformModuleHelpers: ModuleHelper | undefined) => {
     const isObservables = isStixCyberObservables(stixCoreObjectTypes);
-    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     return {
       entity_type: {
         label: 'Type',
@@ -127,7 +146,7 @@ const EntityStixCoreRelationshipsEntitiesView = ({
 
   let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
   if (selectAll) {
-    numberOfSelectedElements = numberOfElements.original - Object.keys(deSelectedElements || {}).length;
+    numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements || {}).length;
   }
   const finalView = currentView || view;
   let availableFilterKeys = [
@@ -252,14 +271,4 @@ const EntityStixCoreRelationshipsEntitiesView = ({
   );
 };
 
-EntityStixCoreRelationshipsEntitiesView.propTypes = {
-  stixCoreObjectTypes: PropTypes.array,
-  relationshipTypes: PropTypes.array,
-  entityLink: PropTypes.string,
-  isRelationReversed: PropTypes.bool,
-  disableExport: PropTypes.bool,
-  currentView: PropTypes.string,
-  enableNestedView: PropTypes.bool,
-  enableContextualView: PropTypes.bool,
-};
 export default EntityStixCoreRelationshipsEntitiesView;
