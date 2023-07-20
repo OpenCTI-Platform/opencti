@@ -321,6 +321,7 @@ class Infrastructure:
         last_seen = kwargs.get("last_seen", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -343,6 +344,7 @@ class Infrastructure:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objectOrganization": granted_refs,
                         "externalReferences": external_references,
                         "revoked": revoked,
                         "confidence": confidence,
@@ -381,14 +383,16 @@ class Infrastructure:
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
-
-        # Search in extensions
-        if "x_opencti_stix_ids" not in stix_object:
-            stix_object["x_opencti_stix_ids"] = self.opencti.get_attribute_in_extension(
-                "stix_ids", stix_object
-            )
-
         if stix_object is not None:
+            # Search in extensions
+            if "x_opencti_stix_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
+            if "x_opencti_granted_refs" not in stix_object:
+                stix_object[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=extras["created_by_id"]
@@ -431,6 +435,9 @@ class Infrastructure:
                 else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
+                else None,
+                objectOrganization=stix_object["x_opencti_granted_refs"]
+                if "x_opencti_granted_refs" in stix_object
                 else None,
                 update=update,
             )

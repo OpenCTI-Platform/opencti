@@ -596,8 +596,8 @@ class Indicator:
                 x_opencti_create_observables=stix_object["x_opencti_create_observables"]
                 if "x_opencti_create_observables" in stix_object
                 else False,
-                objectOrganization=stix_object["granted_refs"]
-                if "granted_refs" in stix_object
+                objectOrganization=stix_object["x_opencti_granted_refs"]
+                if "x_opencti_granted_refs" in stix_object
                 else None,
                 update=update,
             )

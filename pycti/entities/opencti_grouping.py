@@ -627,8 +627,8 @@ class Grouping:
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,
-                objectOrganization=stix_object["granted_refs"]
-                if "granted_refs" in stix_object
+                objectOrganization=stix_object["x_opencti_granted_refs"]
+                if "x_opencti_granted_refs" in stix_object
                 else None,
                 x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
                 update=update,
