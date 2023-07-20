@@ -19,9 +19,7 @@ const nbOfRowsToLoad = 50;
 const contextualViewLinesFragment = graphql`
   fragment EntityStixCoreRelationshipsContextualViewLines_data on Query
   @argumentDefinitions(
-    fromId: { type: "String!" }
-    entityTypes: { type: "[String!]!" }
-    containerType: { type: "String!" }
+    reportIds: { type: "[String]" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -30,21 +28,17 @@ const contextualViewLinesFragment = graphql`
     filters: { type: "[StixCoreObjectsFiltering]" }
   )
   @refetchable(queryName: "ContextualViewLines_refetch") {
-    stixDomainObjectsRelatedObjectsFromContainer(
-      fromId: $fromId
-      entityTypes: $entityTypes
-      containerType: $containerType
+    stixCoreObjects(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_stixDomainObjectsRelatedObjectsFromContainer") {
+    )  @connection(key: "Pagination_stixCoreObjects") {
       edges {
         node {
-          id
-          ...EntityStixCoreRelationshipsContextualViewLine_node
+          ...EntityStixCoreRelationshipsContextualViewLine_node @arguments(reportIds: $reportIds)
         }
       }
       pageInfo {
@@ -58,9 +52,7 @@ const contextualViewLinesFragment = graphql`
 
 export const contextualViewLinesQuery = graphql`
   query EntityStixCoreRelationshipsContextualViewLinesQuery(
-    $fromId: String!
-    $entityTypes: [String!]!
-    $containerType: String!
+    $reportIds: [String]
     $search: String
     $count: Int!
     $cursor: ID
@@ -70,9 +62,7 @@ export const contextualViewLinesQuery = graphql`
   ) {
     ...EntityStixCoreRelationshipsContextualViewLines_data
     @arguments(
-      fromId: $fromId
-      entityTypes: $entityTypes
-      containerType: $containerType
+      reportIds: $reportIds
       search: $search
       count: $count
       cursor: $cursor
@@ -113,7 +103,7 @@ const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent
     queryRef,
     linesQuery: contextualViewLinesQuery,
     linesFragment: contextualViewLinesFragment,
-    nodePath: ['stixDomainObjectsRelatedObjectsFromContainer', 'pageInfo', 'globalCount'],
+    nodePath: ['stixCoreObjects', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 
@@ -123,10 +113,8 @@ const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent
       loadMore={loadMore}
       hasMore={hasMore}
       isLoading={isLoadingMore}
-      dataList={data?.stixDomainObjectsRelatedObjectsFromContainer?.edges ?? []}
-      globalCount={
-        data?.stixDomainObjectsRelatedObjectsFromContainer?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
+      dataList={data?.stixCoreObjects?.edges ?? []}
+      globalCount={data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={EntityStixCoreRelationshipsContextualViewLine}
       DummyLineComponent={EntityStixCoreRelationshipsContextualViewLineDummy}
       dataColumns={dataColumns}

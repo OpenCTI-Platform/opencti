@@ -25,6 +25,7 @@ export interface PaginationOptions {
   search?: string;
   orderBy?: string;
   orderMode?: OrderMode;
+  count: number;
   filters?: BackendFilters;
 }
 

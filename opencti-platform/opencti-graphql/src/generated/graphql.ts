@@ -164,6 +164,7 @@ export type AdministrativeAreaPendingFilesArgs = {
 
 
 export type AdministrativeAreaReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -468,6 +469,7 @@ export type ArtifactPendingFilesArgs = {
 
 
 export type ArtifactReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -690,6 +692,7 @@ export type AttackPatternPendingFilesArgs = {
 
 
 export type AttackPatternReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1026,6 +1029,7 @@ export type AutonomousSystemPendingFilesArgs = {
 
 
 export type AutonomousSystemReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1316,6 +1320,7 @@ export type BankAccountPendingFilesArgs = {
 
 
 export type BankAccountReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1528,6 +1533,7 @@ export type CampaignPendingFilesArgs = {
 
 
 export type CampaignReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1904,6 +1910,7 @@ export type CaseRelatedContainersArgs = {
 
 
 export type CaseReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2139,6 +2146,7 @@ export type CaseIncidentRelatedContainersArgs = {
 
 
 export type CaseIncidentReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2447,6 +2455,7 @@ export type CaseRfiRelatedContainersArgs = {
 
 
 export type CaseRfiReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2752,6 +2761,7 @@ export type CaseRftRelatedContainersArgs = {
 
 
 export type CaseRftReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3102,6 +3112,7 @@ export type ChannelPendingFilesArgs = {
 
 
 export type ChannelReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3401,6 +3412,7 @@ export type CityPendingFilesArgs = {
 
 
 export type CityReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3698,6 +3710,7 @@ export type ContainerRelatedContainersArgs = {
 
 
 export type ContainerReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4022,6 +4035,7 @@ export type CountryPendingFilesArgs = {
 
 
 export type CountryReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4281,6 +4295,7 @@ export type CourseOfActionPendingFilesArgs = {
 
 
 export type CourseOfActionReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4586,6 +4601,7 @@ export type CryptocurrencyWalletPendingFilesArgs = {
 
 
 export type CryptocurrencyWalletReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4770,6 +4786,7 @@ export type CryptographicKeyPendingFilesArgs = {
 
 
 export type CryptographicKeyReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4959,6 +4976,7 @@ export type DataComponentPendingFilesArgs = {
 
 
 export type DataComponentReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5216,6 +5234,7 @@ export type DataSourcePendingFilesArgs = {
 
 
 export type DataSourceReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5529,6 +5548,7 @@ export type DirectoryPendingFilesArgs = {
 
 
 export type DirectoryReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5747,6 +5767,7 @@ export type DomainNamePendingFilesArgs = {
 
 
 export type DomainNameReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5962,6 +5983,7 @@ export type EmailAddrPendingFilesArgs = {
 
 
 export type EmailAddrReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -6153,6 +6175,7 @@ export type EmailMessagePendingFilesArgs = {
 
 
 export type EmailMessageReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -6345,6 +6368,7 @@ export type EmailMimePartTypePendingFilesArgs = {
 
 
 export type EmailMimePartTypeReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -6584,6 +6608,7 @@ export type EventPendingFilesArgs = {
 
 
 export type EventReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7095,6 +7120,7 @@ export type FeedbackRelatedContainersArgs = {
 
 
 export type FeedbackReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7535,6 +7561,7 @@ export type GroupingRelatedContainersArgs = {
 
 
 export type GroupingReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7810,6 +7837,7 @@ export type HashedObservablePendingFilesArgs = {
 
 
 export type HashedObservableReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7989,6 +8017,7 @@ export type HostnamePendingFilesArgs = {
 
 
 export type HostnameReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8174,6 +8203,7 @@ export type IPv4AddrPendingFilesArgs = {
 
 
 export type IPv4AddrReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8361,6 +8391,7 @@ export type IPv6AddrPendingFilesArgs = {
 
 
 export type IPv6AddrReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8585,6 +8616,7 @@ export type IdentityPendingFilesArgs = {
 
 
 export type IdentityReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8853,6 +8885,7 @@ export type IncidentPendingFilesArgs = {
 
 
 export type IncidentReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -9181,6 +9214,7 @@ export type IndicatorPendingFilesArgs = {
 
 
 export type IndicatorReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -9511,6 +9545,7 @@ export type IndividualPendingFilesArgs = {
 
 
 export type IndividualReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -9822,6 +9857,7 @@ export type InfrastructurePendingFilesArgs = {
 
 
 export type InfrastructureReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -10156,6 +10192,7 @@ export type IntrusionSetPendingFilesArgs = {
 
 
 export type IntrusionSetReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -10631,6 +10668,7 @@ export type LanguagePendingFilesArgs = {
 
 
 export type LanguageReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -10902,6 +10940,7 @@ export type LocationPendingFilesArgs = {
 
 
 export type LocationReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11257,6 +11296,7 @@ export type MacAddrPendingFilesArgs = {
 
 
 export type MacAddrReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11452,6 +11492,7 @@ export type MalwarePendingFilesArgs = {
 
 
 export type MalwareReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11726,6 +11767,7 @@ export type MalwareAnalysisPendingFilesArgs = {
 
 
 export type MalwareAnalysisReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -12193,6 +12235,7 @@ export type MediaContentPendingFilesArgs = {
 
 
 export type MediaContentReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14223,6 +14266,7 @@ export type MutexPendingFilesArgs = {
 
 
 export type MutexReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14414,6 +14458,7 @@ export type NarrativePendingFilesArgs = {
 
 
 export type NarrativeReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14675,6 +14720,7 @@ export type NetworkTrafficPendingFilesArgs = {
 
 
 export type NetworkTrafficReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14902,6 +14948,7 @@ export type NoteRelatedContainersArgs = {
 
 
 export type NoteReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15328,6 +15375,7 @@ export type ObservedDataRelatedContainersArgs = {
 
 
 export type ObservedDataReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15661,6 +15709,7 @@ export type OpinionRelatedContainersArgs = {
 
 
 export type OpinionReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15999,6 +16048,7 @@ export type OrganizationPendingFilesArgs = {
 
 
 export type OrganizationReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16336,6 +16386,7 @@ export type PaymentCardPendingFilesArgs = {
 
 
 export type PaymentCardReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16523,6 +16574,7 @@ export type PhoneNumberPendingFilesArgs = {
 
 
 export type PhoneNumberReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16716,6 +16768,7 @@ export type PositionPendingFilesArgs = {
 
 
 export type PositionReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -17024,6 +17077,7 @@ export type ProcessPendingFilesArgs = {
 
 
 export type ProcessReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -17329,7 +17383,6 @@ export type Query = {
   stixDomainObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixDomainObjectsExportFiles?: Maybe<FileConnection>;
   stixDomainObjectsNumber?: Maybe<Number>;
-  stixDomainObjectsRelatedObjectsFromContainer?: Maybe<StixCoreObjectConnection>;
   stixDomainObjectsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixNestedRefRelationships?: Maybe<StixRefRelationshipConnection>;
   stixObjectOrStixRelationship?: Maybe<StixObjectOrStixRelationship>;
@@ -19018,20 +19071,6 @@ export type QueryStixDomainObjectsNumberArgs = {
 };
 
 
-export type QueryStixDomainObjectsRelatedObjectsFromContainerArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  containerType: Scalars['String'];
-  entityTypes: Array<Scalars['String']>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  fromId: Scalars['String'];
-  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']>;
-};
-
-
 export type QueryStixDomainObjectsTimeSeriesArgs = {
   authorId?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
@@ -19735,6 +19774,7 @@ export type RegionPendingFilesArgs = {
 
 
 export type RegionReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -20072,6 +20112,7 @@ export type ReportRelatedContainersArgs = {
 
 
 export type ReportReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -20558,6 +20599,7 @@ export type SectorPendingFilesArgs = {
 
 
 export type SectorReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -20966,6 +21008,7 @@ export type SoftwarePendingFilesArgs = {
 
 
 export type SoftwareReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -21240,6 +21283,7 @@ export type StixCoreObjectPendingFilesArgs = {
 
 
 export type StixCoreObjectReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -21580,6 +21624,7 @@ export type StixCoreRelationshipOpinionsArgs = {
 
 
 export type StixCoreRelationshipReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -21896,6 +21941,7 @@ export type StixCyberObservablePendingFilesArgs = {
 
 
 export type StixCyberObservableReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -22190,6 +22236,7 @@ export type StixDomainObjectPendingFilesArgs = {
 
 
 export type StixDomainObjectReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -22604,6 +22651,7 @@ export type StixFilePendingFilesArgs = {
 
 
 export type StixFileReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -22868,6 +22916,7 @@ export type StixRefRelationshipOpinionsArgs = {
 
 
 export type StixRefRelationshipReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -23114,6 +23163,7 @@ export type StixSightingRelationshipOpinionsArgs = {
 
 
 export type StixSightingRelationshipReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -23666,6 +23716,7 @@ export type SystemPendingFilesArgs = {
 
 
 export type SystemReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -23986,6 +24037,7 @@ export type TaskRelatedContainersArgs = {
 
 
 export type TaskReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -24337,6 +24389,7 @@ export type TextPendingFilesArgs = {
 
 
 export type TextReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -24535,6 +24588,7 @@ export type ThreatActorPendingFilesArgs = {
 
 
 export type ThreatActorReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -24746,6 +24800,7 @@ export type ThreatActorGroupPendingFilesArgs = {
 
 
 export type ThreatActorGroupReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -25023,6 +25078,7 @@ export type ThreatActorIndividualPendingFilesArgs = {
 
 
 export type ThreatActorIndividualReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -25341,6 +25397,7 @@ export type ToolPendingFilesArgs = {
 
 
 export type ToolReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -25771,6 +25828,7 @@ export type UrlPendingFilesArgs = {
 
 
 export type UrlReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -26018,6 +26076,7 @@ export type UserAccountPendingFilesArgs = {
 
 
 export type UserAccountReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -26227,6 +26286,7 @@ export type UserAgentPendingFilesArgs = {
 
 
 export type UserAgentReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -26691,6 +26751,7 @@ export type VulnerabilityPendingFilesArgs = {
 
 
 export type VulnerabilityReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -26949,6 +27010,7 @@ export type WindowsRegistryKeyPendingFilesArgs = {
 
 
 export type WindowsRegistryKeyReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -27137,6 +27199,7 @@ export type WindowsRegistryValueTypePendingFilesArgs = {
 
 
 export type WindowsRegistryValueTypeReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -27528,6 +27591,7 @@ export type X509CertificatePendingFilesArgs = {
 
 
 export type X509CertificateReportsArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -34055,7 +34119,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixDomainObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsDistributionArgs, 'field' | 'operation'>>;
   stixDomainObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsExportFilesArgs, 'type'>>;
   stixDomainObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixDomainObjectsNumberArgs>>;
-  stixDomainObjectsRelatedObjectsFromContainer?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsRelatedObjectsFromContainerArgs, 'containerType' | 'entityTypes' | 'fromId'>>;
   stixDomainObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixNestedRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixNestedRefRelationshipsArgs>>;
   stixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<QueryStixObjectOrStixRelationshipArgs, 'id'>>;

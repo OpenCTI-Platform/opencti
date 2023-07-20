@@ -1970,7 +1970,7 @@ interface StixCoreObject {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -2109,7 +2109,7 @@ interface StixDomainObject {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -2227,7 +2227,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -2361,7 +2361,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -2492,7 +2492,7 @@ interface Container {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -2587,7 +2587,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -2739,7 +2739,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -2865,7 +2865,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -3012,7 +3012,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -3144,7 +3144,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -3271,7 +3271,7 @@ interface Identity {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -3394,7 +3394,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -3539,7 +3539,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -3667,7 +3667,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -3790,7 +3790,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -3940,7 +3940,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -4087,7 +4087,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -4211,7 +4211,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -4341,7 +4341,7 @@ interface Location {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -4460,7 +4460,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -4587,7 +4587,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -4708,7 +4708,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -4825,7 +4825,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -4957,7 +4957,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5096,7 +5096,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5163,7 +5163,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5299,7 +5299,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5426,7 +5426,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5565,7 +5565,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5704,7 +5704,7 @@ interface StixCyberObservable {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5745,7 +5745,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5796,7 +5796,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5851,7 +5851,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5898,7 +5898,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -5947,7 +5947,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6006,7 +6006,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6080,7 +6080,7 @@ interface HashedObservable {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6122,7 +6122,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6181,7 +6181,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6249,7 +6249,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6350,7 +6350,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6400,7 +6400,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6448,7 +6448,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6495,7 +6495,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6542,7 +6542,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6608,7 +6608,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6697,7 +6697,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6765,7 +6765,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6812,7 +6812,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6886,7 +6886,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6937,7 +6937,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -6988,7 +6988,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7035,7 +7035,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7082,7 +7082,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7129,7 +7129,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7176,7 +7176,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7223,7 +7223,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7274,7 +7274,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7321,7 +7321,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7374,7 +7374,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -7692,7 +7692,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
@@ -7819,7 +7819,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
@@ -7918,7 +7918,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   containersNumber: Number
   containers(first: Int): ContainerConnection
   notes(first: Int): NoteConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
@@ -8046,7 +8046,6 @@ type Query {
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   stixDomainObjectsNumber(types: [String], endDate: DateTime, onlyInferred: Boolean, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): Number
   stixDomainObjectsDistribution(objectId: [String], relationship_type: [String], toTypes: [String], elementWithTargetTypes: [String], field: String!, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixDomainObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixDomainObjectsRelatedObjectsFromContainer(fromId: String!, entityTypes: [String!]!, containerType: String!, first: Int, after: ID, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): StixCoreObjectConnection
   attackPattern(id: String): AttackPattern
   attackPatterns(first: Int, after: ID, orderBy: AttackPatternsOrdering, orderMode: OrderingMode, filters: [AttackPatternsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): AttackPatternConnection
   campaign(id: String): Campaign
@@ -8953,7 +8952,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -9073,7 +9072,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -9183,7 +9182,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -9305,7 +9304,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -9435,7 +9434,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -9757,7 +9756,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -9874,7 +9873,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -10117,7 +10116,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -10235,7 +10234,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -10409,7 +10408,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -10549,7 +10548,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -10693,7 +10692,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -10833,7 +10832,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -10975,7 +10974,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -11238,7 +11237,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
@@ -11390,7 +11389,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int): ContainerConnection
-  reports(first: Int): ReportConnection
+  reports(first: Int, elementId: [String]): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection

@@ -103,12 +103,12 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     return {
       entity_type: {
         label: 'Type',
-        width: '12%',
+        width: '10%',
         isSortable: true,
       },
       [isObservables ? 'observable_value' : 'name']: {
         label: isObservables ? 'Value' : 'Name',
-        width: '25%',
+        width: '20%',
         // eslint-disable-next-line no-nested-ternary
         isSortable: isStixCoreObjects(stixCoreObjectTypes)
           ? false
@@ -118,12 +118,12 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
       },
       createdBy: {
         label: 'Author',
-        width: '12%',
+        width: '10%',
         isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
-        width: '12%',
+        width: '10%',
         isSortable: isRuntimeSort,
       },
       objectLabel: {
@@ -139,7 +139,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
-        width: '8%',
+        width: '10%',
       },
     };
   };

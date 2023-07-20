@@ -46,7 +46,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const contextualViewLineFragment = graphql`
-  fragment EntityStixCoreRelationshipsContextualViewLine_node on StixCoreObject {
+  fragment EntityStixCoreRelationshipsContextualViewLine_node on StixCoreObject
+  @argumentDefinitions(
+    reportIds: { type: "[String]" }
+  ) {
     id
     entity_type
     created_at
@@ -76,6 +79,14 @@ const contextualViewLineFragment = graphql`
     }
     ... on StixCyberObservable {
       observable_value
+      reports (elementId: $reportIds) {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
     }
   }
 `;

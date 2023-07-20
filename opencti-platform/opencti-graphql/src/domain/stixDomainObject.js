@@ -253,29 +253,3 @@ export const stixDomainObjectEditContext = async (context, user, stixDomainObjec
   });
 };
 // endregion
-
-// region container
-export const stixDomainObjectsRelatedObjectsFromContainer = async (context, user, args) => {
-  const { fromId, entityTypes, containerType } = args;
-  // Retrieve entity type
-  const entity = await internalLoadById(context, user, fromId);
-  // Get rel_object.internal_id from entity
-  const containerIds = entity['rel_object.internal_id'];
-  // Filter on container type
-  const containers = await internalFindByIds(context, user, containerIds, { baseData: true });
-  const containerTypeIds = containers.filter((o) => o.entity_type === containerType).map((r) => r.internal_id);
-  if (containerTypeIds.length === 0) {
-    return buildPagination(0, null, [], 0);
-  }
-  // Retrieve all entities with rel_object.internal_id contains at least one of containerTypeIds
-  const filters = args.filters ?? [];
-  const opts = {
-    ...R.omit(['fromId', 'entityTypes', 'containerType'], args),
-    filters: [
-      ...filters,
-      { key: buildRefRelationKey(RELATION_OBJECT), values: containerTypeIds, operator: 'match' },
-    ],
-  };
-  return listEntitiesPaginated(context, user, entityTypes, opts);
-};
-// endregion
