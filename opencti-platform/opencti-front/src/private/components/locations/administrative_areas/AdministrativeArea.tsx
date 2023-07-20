@@ -100,11 +100,12 @@ const AdministrativeArea = ({
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
-        entityType={'Administrative-Area'}
+        entityType="Administrative-Area"
         disableSharing={true}
         stixDomainObject={administrativeArea}
         isOpenctiAlias={true}
         PopoverComponent={AdministrativeAreaPopover}
+        enableQuickSubscription={true}
       />
       <Grid
         container={true}

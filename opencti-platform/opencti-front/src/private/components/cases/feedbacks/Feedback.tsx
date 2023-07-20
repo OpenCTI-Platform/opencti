@@ -108,7 +108,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
         PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
         enableSuggestions={false}
         disableSharing={true}
-        enableQuickSubscription
+        enableQuickSubscription={true}
       />
       <Grid
         container={true}

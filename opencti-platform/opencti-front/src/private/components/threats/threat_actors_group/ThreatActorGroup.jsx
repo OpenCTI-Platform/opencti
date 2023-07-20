@@ -33,9 +33,10 @@ class ThreatActorGroupComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
-          entityType={'Threat-Actor-Group'}
+          entityType="Threat-Actor-Group"
           stixDomainObject={threatActorGroup}
           PopoverComponent={<ThreatActorGroupPopover />}
+          enableQuickSubscription={true}
         />
         <Grid
           container={true}
@@ -65,7 +66,9 @@ class ThreatActorGroupComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-            <StixCoreObjectLatestHistory stixCoreObjectId={threatActorGroup.id} />
+            <StixCoreObjectLatestHistory
+              stixCoreObjectId={threatActorGroup.id}
+            />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

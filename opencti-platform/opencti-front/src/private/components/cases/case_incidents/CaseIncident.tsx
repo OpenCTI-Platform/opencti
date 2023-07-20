@@ -87,7 +87,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
         container={caseIncidentData}
         PopoverComponent={<CaseIncidentPopover id={caseIncidentData.id} />}
         enableSuggestions={false}
-        enableQuickSubscription
+        enableQuickSubscription={true}
       />
       <Grid
         container={true}

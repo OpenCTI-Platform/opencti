@@ -98,12 +98,12 @@ const CountryComponent = ({
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
-        entityType={'Country'}
+        entityType="Country"
         disableSharing={true}
         stixDomainObject={country}
         isOpenctiAlias={true}
         PopoverComponent={CountryPopover}
-        enableQuickSubscription
+        enableQuickSubscription={true}
       />
       <Grid
         container={true}

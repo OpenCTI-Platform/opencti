@@ -12,11 +12,9 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/Stix
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships
-  from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import { IntrusionSet_intrusionSet$key } from './__generated__/IntrusionSet_intrusionSet.graphql';
-import StixCoreObjectOrStixRelationshipLastContainers
-  from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -28,74 +26,78 @@ const useStyles = makeStyles(() => ({
 }));
 
 const intrusionSetFragment = graphql`
-    fragment IntrusionSet_intrusionSet on IntrusionSet {
+  fragment IntrusionSet_intrusionSet on IntrusionSet {
+    id
+    standard_id
+    entity_type
+    x_opencti_stix_ids
+    spec_version
+    revoked
+    confidence
+    created
+    modified
+    created_at
+    updated_at
+    createdBy {
+      ... on Identity {
         id
-        standard_id
-        entity_type
-        x_opencti_stix_ids
-        spec_version
-        revoked
-        confidence
-        created
-        modified
-        created_at
-        updated_at
-        createdBy {
-            ... on Identity {
-                id
-                name
-                entity_type
-            }
-        }
-        creators {
-            id
-            name
-        }
-        objectMarking {
-            edges {
-                node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                }
-            }
-        }
-        objectLabel {
-            edges {
-                node {
-                    id
-                    value
-                    color
-                }
-            }
-        }
         name
-        aliases
-        status {
-            id
-            order
-            template {
-                name
-                color
-            }
-        }
-        workflowEnabled
-        ...IntrusionSetDetails_intrusionSet
+        entity_type
+      }
     }
+    creators {
+      id
+      name
+    }
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
+    objectLabel {
+      edges {
+        node {
+          id
+          value
+          color
+        }
+      }
+    }
+    name
+    aliases
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+    ...IntrusionSetDetails_intrusionSet
+  }
 `;
 
-const IntrusionSetComponent = ({ intrusionSet }: { intrusionSet: IntrusionSet_intrusionSet$key }) => {
+const IntrusionSetComponent = ({
+  intrusionSet,
+}: {
+  intrusionSet: IntrusionSet_intrusionSet$key;
+}) => {
   const intrusionSetData = useFragment(intrusionSetFragment, intrusionSet);
   const classes = useStyles();
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
-        entityType={'Intrusion-Set'}
+        entityType="Intrusion-Set"
         stixDomainObject={intrusionSetData}
         PopoverComponent={<IntrusionSetPopover />}
-        enableQuickSubscription
+        enableQuickSubscription={true}
       />
       <Grid
         container={true}

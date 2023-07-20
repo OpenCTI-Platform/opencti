@@ -14,9 +14,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import ThreatActorIndividualDetails from './ThreatActorIndividualDetails';
 import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
-import {
-  ThreatActorIndividual_ThreatActorIndividual$key,
-} from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
+import { ThreatActorIndividual_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -29,74 +27,81 @@ const useStyles = makeStyles(() => ({
 
 export const threatActorIndividualFragment = graphql`
   fragment ThreatActorIndividual_ThreatActorIndividual on ThreatActorIndividual {
-      id
-      standard_id
-      entity_type
-      x_opencti_stix_ids
-      spec_version
-      revoked
-      confidence
-      created
-      modified
-      created_at
-      updated_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      creators {
+    id
+    standard_id
+    entity_type
+    x_opencti_stix_ids
+    spec_version
+    revoked
+    confidence
+    created
+    modified
+    created_at
+    updated_at
+    createdBy {
+      ... on Identity {
         id
         name
+        entity_type
       }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
+    }
+    creators {
+      id
       name
-      aliases
-      status {
-        id
-        order
-        template {
-          name
+    }
+    objectMarking {
+      edges {
+        node {
+          id
+          definition
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
+    objectLabel {
+      edges {
+        node {
+          id
+          value
           color
         }
       }
-      workflowEnabled
-    ...ThreatActorIndividualDetails_ThreatActorIndividual
     }
-  `;
+    name
+    aliases
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+    ...ThreatActorIndividualDetails_ThreatActorIndividual
+  }
+`;
 
-const ThreatActorIndividualComponent = ({ data }: { data: ThreatActorIndividual_ThreatActorIndividual$key }) => {
+const ThreatActorIndividualComponent = ({
+  data,
+}: {
+  data: ThreatActorIndividual_ThreatActorIndividual$key;
+}) => {
   const classes = useStyles();
-  const threatActorIndividual = useFragment<ThreatActorIndividual_ThreatActorIndividual$key>(threatActorIndividualFragment, data);
-
+  const threatActorIndividual = useFragment<ThreatActorIndividual_ThreatActorIndividual$key>(
+    threatActorIndividualFragment,
+    data,
+  );
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
-        entityType={'Threat-Actor-Individual'}
+        entityType="Threat-Actor-Individual"
         stixDomainObject={threatActorIndividual}
         PopoverComponent={ThreatActorIndividualPopover}
+        enableQuickSubscription={true}
       />
       <Grid
         container={true}
@@ -104,7 +109,9 @@ const ThreatActorIndividualComponent = ({ data }: { data: ThreatActorIndividual_
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <ThreatActorIndividualDetails threatActorIndividualData={threatActorIndividual} />
+          <ThreatActorIndividualDetails
+            threatActorIndividualData={threatActorIndividual}
+          />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
@@ -126,7 +133,9 @@ const ThreatActorIndividualComponent = ({ data }: { data: ThreatActorIndividual_
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={threatActorIndividual.id} />
+          <StixCoreObjectLatestHistory
+            stixCoreObjectId={threatActorIndividual.id}
+          />
         </Grid>
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
@@ -136,7 +145,9 @@ const ThreatActorIndividualComponent = ({ data }: { data: ThreatActorIndividual_
         )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ThreatActorIndividualEdition threatActorIndividualId={threatActorIndividual.id} />
+        <ThreatActorIndividualEdition
+          threatActorIndividualId={threatActorIndividual.id}
+        />
       </Security>
     </div>
   );

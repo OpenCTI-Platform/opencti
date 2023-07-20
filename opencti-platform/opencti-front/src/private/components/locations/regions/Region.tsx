@@ -103,11 +103,12 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
-        entityType={'Region'}
+        entityType="Region"
         disableSharing={true}
         stixDomainObject={region}
         isOpenctiAlias={true}
         PopoverComponent={<RegionPopover id={region.id} />}
+        enableQuickSubscription={true}
       />
       <Grid
         container={true}
