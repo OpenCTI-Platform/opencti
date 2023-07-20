@@ -30,7 +30,7 @@ class ContainerStixCoreObjectsMappingLinesComponent extends Component {
       paginationOptions,
       height,
       contentMapping,
-      contentMappingData
+      contentMappingData,
     } = this.props;
     return (
       <ListLinesContent

@@ -66,7 +66,7 @@ const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> =
 
   if (queryData.country) {
     return (
-      <div>
+      <>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -91,7 +91,7 @@ const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> =
             handleClose={handleClose}
           />
         </div>
-      </div>
+      </>
     );
   }
 

@@ -42,8 +42,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface RegionEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<RegionEditionContainerQuery>
+  handleClose: () => void;
+  queryRef: PreloadedQuery<RegionEditionContainerQuery>;
 }
 
 export const regionEditionQuery = graphql`
@@ -58,7 +58,9 @@ export const regionEditionQuery = graphql`
   }
 `;
 
-const RegionEditionContainer: FunctionComponent<RegionEditionContainerProps> = ({ handleClose, queryRef }) => {
+const RegionEditionContainer: FunctionComponent<
+RegionEditionContainerProps
+> = ({ handleClose, queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -66,7 +68,7 @@ const RegionEditionContainer: FunctionComponent<RegionEditionContainerProps> = (
 
   if (queryData.region) {
     return (
-      <div>
+      <>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -91,7 +93,7 @@ const RegionEditionContainer: FunctionComponent<RegionEditionContainerProps> = (
             handleClose={handleClose}
           />
         </div>
-      </div>
+      </>
     );
   }
 

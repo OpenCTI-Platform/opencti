@@ -67,7 +67,7 @@ const CityEditionContainer: FunctionComponent<CityEditionContainerProps> = ({ qu
     return (<ErrorNotFound />);
   }
   return (
-    <div>
+    <>
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
@@ -92,7 +92,7 @@ const CityEditionContainer: FunctionComponent<CityEditionContainerProps> = ({ qu
           handleClose={handleClose}
         />
       </div>
-    </div>
+    </>
   );
 };
 

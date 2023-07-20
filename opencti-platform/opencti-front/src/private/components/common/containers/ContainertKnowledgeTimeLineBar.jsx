@@ -88,9 +88,9 @@ const ContentKnowledgeTimeLineBar = ({
                 style={{
                   float: 'left',
 
-              height: '100%',
-              display: 'flex',
-            }}
+                  height: '100%',
+                  display: 'flex',
+                }}
           >
             <Tooltip
               title={

@@ -578,15 +578,15 @@ export const buildTargetEvents = async (
           targets.push({ user: notificationUser, type: translatedType, message });
         } else
         // Case 02. Newly visible because of a data update (gain of rights OR instance_trigger & add a listened instance in the refs)
-        if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = create
-          const message = await generateNotificationMessageForInstance(context, user, data);
-          targets.push({ user: notificationUser, type: translatedType, message });
-        } else
-        // --- 03. Just an update
-        if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = update
-          const message = await generateNotificationMessageForInstance(context, user, data);
-          targets.push({ user: notificationUser, type: translatedType, message });
-        }
+          if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = create
+            const message = await generateNotificationMessageForInstance(context, user, data);
+            targets.push({ user: notificationUser, type: translatedType, message });
+          } else
+          // --- 03. Just an update
+            if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = update
+              const message = await generateNotificationMessageForInstance(context, user, data);
+              targets.push({ user: notificationUser, type: translatedType, message });
+            }
       } else { // useSideEventMatching = true: Case side events for instance triggers
         // eslint-disable-next-line no-lonely-if
         if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible

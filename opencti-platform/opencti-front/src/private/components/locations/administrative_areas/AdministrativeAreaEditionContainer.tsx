@@ -42,57 +42,61 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface AdministrativeAreaEditionContainerProps {
-  queryRef: PreloadedQuery<AdministrativeAreaEditionContainerQuery>
-  handleClose: () => void,
+  queryRef: PreloadedQuery<AdministrativeAreaEditionContainerQuery>;
+  handleClose: () => void;
 }
 
 export const administrativeAreaEditionQuery = graphql`
-    query AdministrativeAreaEditionContainerQuery($id: String!) {
-        administrativeArea(id: $id) {
-            ...AdministrativeAreaEditionOverview_administrativeArea
-            editContext {
-                name
-                focusOn
-            }
-        }
+  query AdministrativeAreaEditionContainerQuery($id: String!) {
+    administrativeArea(id: $id) {
+      ...AdministrativeAreaEditionOverview_administrativeArea
+      editContext {
+        name
+        focusOn
+      }
     }
+  }
 `;
-const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEditionContainerProps> = ({ queryRef, handleClose }) => {
+const AdministrativeAreaEditionContainer: FunctionComponent<
+AdministrativeAreaEditionContainerProps
+> = ({ queryRef, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
   const queryData = usePreloadedQuery(administrativeAreaEditionQuery, queryRef);
 
   if (queryData.administrativeArea === null) {
-    return (<ErrorNotFound />);
+    return <ErrorNotFound />;
   }
   return (
-        <div>
-            <div className={classes.header}>
-                <IconButton
-                    aria-label="Close"
-                    className={classes.closeButton}
-                    onClick={handleClose}
-                    size="large"
-                    color="primary"
-                >
-                    <Close fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6" classes={{ root: classes.title }}>
-                    {t('Update an area')}
-                </Typography>
-                <SubscriptionAvatars context={queryData.administrativeArea.editContext} />
-                <div className="clearfix" />
-            </div>
-            <div className={classes.container}>
-                <AdministrativeAreaEditionOverview
-                    administrativeAreaRef={queryData.administrativeArea}
-                    context={queryData.administrativeArea.editContext}
-                    handleClose={handleClose}
-                    enableReferences={useIsEnforceReference('Administrative-Area')}
-                />
-            </div>
-        </div>
+    <>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update an area')}
+        </Typography>
+        <SubscriptionAvatars
+          context={queryData.administrativeArea.editContext}
+        />
+        <div className="clearfix" />
+      </div>
+      <div className={classes.container}>
+        <AdministrativeAreaEditionOverview
+          administrativeAreaRef={queryData.administrativeArea}
+          context={queryData.administrativeArea.editContext}
+          handleClose={handleClose}
+          enableReferences={useIsEnforceReference('Administrative-Area')}
+        />
+      </div>
+    </>
   );
 };
 

@@ -41,12 +41,10 @@ const useStyles = makeStyles((theme) => ({
 const PositionEditionContainer = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const { handleClose, position } = props;
   const { editContext } = position;
-
   return (
-    <div>
+    <>
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
@@ -71,7 +69,7 @@ const PositionEditionContainer = (props) => {
           handleClose={handleClose}
         />
       </div>
-    </div>
+    </>
   );
 };
 
