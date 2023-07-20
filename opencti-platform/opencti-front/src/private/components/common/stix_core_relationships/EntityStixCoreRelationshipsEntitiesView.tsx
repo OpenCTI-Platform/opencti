@@ -14,9 +14,6 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../components/list_lines';
-import {
-  EntityStixCoreRelationshipsEntitiesPaginationQuery$variables,
-} from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'view-entityStixCoreRelationshipsEntitiesView';
 
@@ -30,7 +27,7 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
   stixCoreObjectTypes: string[]
   isRelationReversed: boolean,
   currentView: string
-  enableNestedView: boolean,
+  enableNestedView?: boolean,
   enableContextualView: boolean,
   paddingRightButtonAdd?: number
 }

@@ -35,9 +35,9 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   allDirections: boolean,
   isRelationReversed: boolean,
   enableContextualView: boolean,
-  enableNestedView: boolean,
+  enableNestedView?: boolean,
   paddingRightButtonAdd?: number
-  role: string,
+  role?: string,
 }
 const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStixCoreRelationshipsRelationshipsViewProps> = ({
   entityId,

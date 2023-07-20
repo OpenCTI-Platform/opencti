@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import * as PropTypes from 'prop-types';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ToolBar from '../../data/ToolBar';
@@ -149,6 +148,8 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
             availableFilterKeys={availableFilterKeys}
             exportContext={`of-entity-${entityId}`}
             numberOfElements={numberOfElements}
+            disableCards={true}
+            enableEntitiesView={true}
             enableContextualView={enableContextualView}
             noPadding={true}
             currentView={finalView}
