@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import * as PropTypes from 'prop-types';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ToolBar from '../../data/ToolBar';
@@ -26,6 +27,7 @@ interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView
   currentView: string
   defaultStartTime: string
   defaultStopTime: string
+  enableContextualView: boolean,
 }
 const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps> = ({
   entityId,
@@ -34,6 +36,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
   currentView,
   defaultStartTime,
   defaultStopTime,
+  enableContextualView,
 }) => {
   const { t } = useFormatter();
   const { viewStorage, helpers: storageHelpers, paginationOptions } = localStorage;

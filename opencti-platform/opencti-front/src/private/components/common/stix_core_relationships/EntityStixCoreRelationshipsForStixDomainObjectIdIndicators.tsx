@@ -48,6 +48,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicators: FunctionCompon
             currentView={view}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
+            enableContextualView={true}
           />}
 
         {view === 'relationships'
