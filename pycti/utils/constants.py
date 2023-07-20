@@ -149,6 +149,7 @@ class MultipleRefRelationship(Enum):
         ("priority", StringProperty()),
         ("response_types", ListProperty(StringProperty)),
         ("x_opencti_workflow_id", StringProperty()),
+        ("x_opencti_assignee_ids", ListProperty(StringProperty)),
         (
             "object_refs",
             ListProperty(
@@ -173,6 +174,7 @@ class CustomObjectCaseIncident:
         ("priority", StringProperty()),
         ("information_types", ListProperty(StringProperty)),
         ("x_opencti_workflow_id", StringProperty()),
+        ("x_opencti_assignee_ids", ListProperty(StringProperty)),
         (
             "object_refs",
             ListProperty(
@@ -200,6 +202,7 @@ class CustomObjectCaseRfit:
             ),
         ),
         ("x_opencti_workflow_id", StringProperty()),
+        ("x_opencti_assignee_ids", ListProperty(StringProperty)),
         (
             "object_refs",
             ListProperty(
