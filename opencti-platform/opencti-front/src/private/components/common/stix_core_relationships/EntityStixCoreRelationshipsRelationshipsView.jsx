@@ -35,7 +35,6 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
   isRelationReversed,
   allDirections,
   disableExport,
-  handleChangeView = null,
   currentView,
   enableNestedView,
   enableContextualView,
@@ -235,13 +234,11 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
                 availableFilterKeys={availableFilterKeys}
                 availableEntityTypes={stixCoreObjectTypes}
                 availableRelationshipTypes={relationshipTypes}
-                handleToggleExports={
-                  disableExport ? null : storageHelpers.handleToggleExports
-                }
+                handleToggleExports={storageHelpers.handleToggleExports}
                 openExports={openExports}
                 exportEntityType="stix-core-relationship"
                 noPadding={true}
-                handleChangeView={handleChangeView ?? storageHelpers.handleChangeView}
+                handleChangeView={storageHelpers.handleChangeView}
                 enableNestedView={enableNestedView}
                 enableContextualView={enableContextualView}
                 disableCards={true}

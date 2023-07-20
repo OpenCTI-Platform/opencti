@@ -23,8 +23,6 @@ const EntityStixCoreRelationshipsEntitiesView = ({
   relationshipTypes = [],
   stixCoreObjectTypes = [],
   isRelationReversed,
-  disableExport,
-  handleChangeView = null,
   currentView,
   enableNestedView,
   enableContextualView,
@@ -159,16 +157,14 @@ const EntityStixCoreRelationshipsEntitiesView = ({
               handleSearch={storageHelpers.handleSearch}
               handleAddFilter={storageHelpers.handleAddFilter}
               handleRemoveFilter={storageHelpers.handleRemoveFilter}
-              handleChangeView={handleChangeView ?? storageHelpers.handleChangeView}
+              handleChangeView={storageHelpers.handleChangeView}
               onToggleEntity={onToggleEntity}
               handleToggleSelectAll={handleToggleSelectAll}
               paginationOptions={paginationOptions}
               selectAll={selectAll}
               keyword={searchTerm}
               displayImport={true}
-              handleToggleExports={
-                disableExport ? null : storageHelpers.handleToggleExports
-              }
+              handleToggleExports={storageHelpers.handleToggleExports}
               openExports={openExports}
               exportEntityType={'Stix-Core-Object'}
               iconExtension={true}
