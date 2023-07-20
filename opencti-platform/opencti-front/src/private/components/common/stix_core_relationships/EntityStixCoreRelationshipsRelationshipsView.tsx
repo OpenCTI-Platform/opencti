@@ -1,7 +1,6 @@
-import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import React from 'react';
-import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
+import React, { FunctionComponent } from 'react';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import EntityStixCoreRelationshipsLinesAll, {
@@ -20,8 +19,27 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../utils/stixTypeUtils';
+import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { PaginationOptions } from '../../../../components/list_lines';
+import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 
-const EntityStixCoreRelationshipsRelationshipsView = ({
+interface EntityStixCoreRelationshipsRelationshipsViewProps {
+  entityId: string
+  entityLink: string
+  stixCoreObjectTypes: string[]
+  relationshipTypes: string[]
+  localStorage: PaginationLocalStorage<PaginationOptions>
+  currentView: string
+  defaultStartTime: string
+  defaultStopTime: string,
+  allDirections: boolean,
+  isRelationReversed: boolean,
+  enableContextualView: boolean,
+  enableNestedView: boolean,
+  paddingRightButtonAdd?: number
+  role: string,
+}
+const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStixCoreRelationshipsRelationshipsViewProps> = ({
   entityId,
   entityLink,
   defaultStartTime,
@@ -34,13 +52,11 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
   role,
   isRelationReversed,
   allDirections,
-  disableExport,
   currentView,
   enableNestedView,
   enableContextualView,
   paddingRightButtonAdd = null,
 }) => {
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
   const {
     numberOfElements,
@@ -55,7 +71,7 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
   const selectedTypes = filters?.entity_type?.map((o) => o.id) ?? stixCoreObjectTypes;
   const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
 
-  let paginationOptions = { // Rework pagination options for Query
+  let paginationOptions = {
     types: selectedTypes,
     relationship_type: selectedRelationshipTypes,
     elementId: entityId,
@@ -137,9 +153,9 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle(localStorageKey);
-  const buildColumnRelationships = () => {
+  const buildColumnRelationships = (platformModuleHelpers: ModuleHelper | undefined) => {
     const isObservables = isStixCyberObservables(stixCoreObjectTypes);
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     return {
       relationship_type: {
         label: 'Relationship type',
@@ -196,7 +212,7 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
 
   let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
   if (selectAll) {
-    numberOfSelectedElements = numberOfElements.original - Object.keys(deSelectedElements || {}).length;
+    numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements || {}).length;
   }
   const finalView = currentView || view;
   const availableFilterKeys = [
@@ -338,17 +354,4 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
   );
 };
 
-EntityStixCoreRelationshipsRelationshipsView.propTypes = {
-  entityId: PropTypes.string,
-  stixCoreObjectTypes: PropTypes.array,
-  role: PropTypes.string,
-  relationshipTypes: PropTypes.array,
-  entityLink: PropTypes.string,
-  isRelationReversed: PropTypes.bool,
-  allDirections: PropTypes.bool,
-  disableExport: PropTypes.bool,
-  currentView: PropTypes.string,
-  enableNestedView: PropTypes.bool,
-  enableContextualView: PropTypes.bool,
-};
 export default EntityStixCoreRelationshipsRelationshipsView;

@@ -149,6 +149,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
             availableFilterKeys={availableFilterKeys}
             exportContext={`of-entity-${entityId}`}
             numberOfElements={numberOfElements}
+            enableContextualView={enableContextualView}
             noPadding={true}
             currentView={finalView}
           >
