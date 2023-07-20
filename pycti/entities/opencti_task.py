@@ -454,7 +454,9 @@ class Task:
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
+        object_assignee = kwargs.get("objectAssignee", None)
         granted_refs = kwargs.get("objectOrganization", None)
+        x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         update = kwargs.get("update", False)
 
         if name is not None:
@@ -482,6 +484,8 @@ class Task:
                         "objectLabel": object_label,
                         "objectMarking": object_marking,
                         "objectOrganization": granted_refs,
+                        "objectAssignee": object_assignee,
+                        "x_opencti_workflow_id": x_opencti_workflow_id,
                         "update": update,
                     }
                 },
@@ -630,6 +634,16 @@ class Task:
                 stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
                     "granted_refs", stix_object
                 )
+            if "x_opencti_workflow_id" not in stix_object:
+                stix_object[
+                    "x_opencti_workflow_id"
+                ] = self.opencti.get_attribute_in_extension(
+                    "x_opencti_workflow_id", stix_object
+                )
+            if "x_opencti_assignee_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_assignee_ids"
+                ] = self.opencti.get_attribute_in_extension("assignee_ids", stix_object)
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -653,6 +667,12 @@ class Task:
                 due_date=stix_object["due_date"] if "due_date" in stix_object else None,
                 objectOrganization=stix_object["x_opencti_granted_refs"]
                 if "x_opencti_granted_refs" in stix_object
+                else None,
+                objectAssignee=stix_object["x_opencti_assignee_ids"]
+                if "x_opencti_assignee_ids" in stix_object
+                else None,
+                x_opencti_workflow_id=stix_object["x_opencti_workflow_id"]
+                if "x_opencti_workflow_id" in stix_object
                 else None,
                 update=update,
             )
