@@ -1,8 +1,18 @@
-import React, { FunctionComponent, useState } from 'react';
-import EntityStixCoreRelationships from '../EntityStixCoreRelationships';
+import React, { FunctionComponent } from 'react';
+import makeStyles from '@mui/styles/makeStyles';
 import EntityStixCoreRelationshipsContextualView from './EntityStixCoreRelationshipsContextualView';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../../components/list_lines';
+import EntityStixCoreRelationshipsEntitiesView from '../EntityStixCoreRelationshipsEntitiesView';
+import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
+import ExportContextProvider from '../../../../../utils/ExportContextProvider';
+
+const useStyles = makeStyles(() => ({
+  container: {
+    marginTop: 15,
+    paddingBottom: 70,
+  },
+}));
 
 interface EntityStixCoreRelationshipsForStixCyberObservableProps {
   entityId: string
@@ -12,11 +22,13 @@ interface EntityStixCoreRelationshipsForStixCyberObservableProps {
 }
 
 const EntityStixCoreRelationshipsForStixCyberObservable: FunctionComponent<EntityStixCoreRelationshipsForStixCyberObservableProps> = (props) => {
+  const classes = useStyles();
+
   const { entityId, entityLink, defaultStartTime, defaultStopTime } = props;
   const relationshipTypes = ['related-to'];
   const entityTypes = ['Stix-Cyber-Observable'];
 
-  const paginationLocalStorage = usePaginationLocalStorage<PaginationOptions>(
+  const localStorage = usePaginationLocalStorage<PaginationOptions>(
     `view-relationships-${entityId}-${entityTypes?.join('-')}-${relationshipTypes?.join('-')}`,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
@@ -25,40 +37,61 @@ const EntityStixCoreRelationshipsForStixCyberObservable: FunctionComponent<Entit
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
+      view: 'entities',
     },
   );
-
-  const [viewMode, setViewMode] = useState('entities');
+  const { view } = localStorage.viewStorage;
 
   return (
-    <>
-      {viewMode === 'contextual' && (
-        <EntityStixCoreRelationshipsContextualView
-        entityId={entityId}
-        entityLink={entityLink}
-        relationshipTypes={relationshipTypes}
-        stixCoreObjectTypes={entityTypes}
-        currentView={viewMode}
-        handleChangeView={setViewMode}
-        paginationLocalStorage={paginationLocalStorage}
-        />
-      )}
-      {viewMode !== 'contextual' && (
-        <EntityStixCoreRelationships
+    <ExportContextProvider>
+      <div className={classes.container}>
+        {view === 'entities'
+          && <EntityStixCoreRelationshipsEntitiesView
+            entityId={entityId}
+            entityLink={entityLink}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+
+            localStorage={localStorage}
+            relationshipTypes={relationshipTypes}
+            stixCoreObjectTypes={entityTypes}
+
+            isRelationReversed={true}
+            currentView={view}
+            enableContextualView={true}
+          />}
+
+        {view === 'relationships'
+          && <EntityStixCoreRelationshipsRelationshipsView
+            entityId={entityId}
+            entityLink={entityLink}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+
+            localStorage={localStorage}
+            relationshipTypes={relationshipTypes}
+            stixCoreObjectTypes={entityTypes}
+
+            isRelationReversed={true}
+            allDirections={true}
+            currentView={view}
+            enableContextualView={true}
+          />}
+
+        {view === 'contextual' && (
+          <EntityStixCoreRelationshipsContextualView
           entityId={entityId}
           entityLink={entityLink}
+
+          localStorage={localStorage}
           relationshipTypes={relationshipTypes}
           stixCoreObjectTypes={entityTypes}
-          defaultStartTime={defaultStartTime}
-          defaultStopTime={defaultStopTime}
-          allDirections={true} // For any entities
-          isRelationReversed={true} // For any entities
-          enableContextualView={true}
-          currentView={viewMode}
-          handleChangeView={setViewMode}
-        />
-      )}
-    </>
+
+          currentView={view}
+          />
+        )}
+      </div>
+    </ExportContextProvider>
   );
 };
 

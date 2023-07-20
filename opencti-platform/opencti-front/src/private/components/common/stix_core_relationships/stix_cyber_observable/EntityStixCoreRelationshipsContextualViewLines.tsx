@@ -86,11 +86,8 @@ export const contextualViewLinesQuery = graphql`
 interface EntityStixCoreRelationshipsContextualViewLinesProps {
   queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewLinesQuery>
   dataColumns: DataColumns
-  entityId: string
-  entityTypes: string[]
-  containerType: string
   entityLink: string
-  paginationOptions: Partial<EntityStixCoreRelationshipsContextualViewLinesQuery$variables>
+  paginationOptions: EntityStixCoreRelationshipsContextualViewLinesQuery$variables
   onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity']
   selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements']
   deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements']
@@ -147,17 +144,7 @@ const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent
 const EntityStixCoreRelationshipsContextualViewLines: FunctionComponent<
 Omit<EntityStixCoreRelationshipsContextualViewLinesProps, 'queryRef'>
 > = (props) => {
-  const { entityId, entityTypes, containerType, paginationOptions } = props;
-  const queryRef = useQueryLoading<EntityStixCoreRelationshipsContextualViewLinesQuery>(
-    contextualViewLinesQuery,
-    {
-      fromId: entityId,
-      entityTypes,
-      containerType,
-      count: 25,
-      ...paginationOptions,
-    },
-  );
+  const queryRef = useQueryLoading<EntityStixCoreRelationshipsContextualViewLinesQuery>(contextualViewLinesQuery, props.paginationOptions);
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <EntityStixCoreRelationshipsContextualViewLinesComponent {...props} queryRef={queryRef} />

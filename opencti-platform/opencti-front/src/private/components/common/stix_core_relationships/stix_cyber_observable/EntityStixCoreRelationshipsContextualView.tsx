@@ -3,11 +3,10 @@ import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import ListLines from '../../../../../components/list_lines/ListLines';
-import { PaginationLocalStorage, UseLocalStorageHelpers } from '../../../../../utils/hooks/useLocalStorage';
+import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
 import EntityStixCoreRelationshipsContextualViewLines from './EntityStixCoreRelationshipsContextualViewLines';
-import { Theme } from '../../../../../components/Theme';
 import { hexToRGB, itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 import { defaultValue } from '../../../../../utils/Graph';
@@ -15,9 +14,10 @@ import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { PaginationOptions } from '../../../../../components/list_lines';
-import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
+import { convertFilters } from '../../../../../utils/ListParameters';
+import ToolBar from '../../../data/ToolBar';
 
-const useStyles = makeStyles<Theme>(() => ({
+const useStyles = makeStyles(() => ({
   chipInList: {
     fontSize: 12,
     height: 20,
@@ -26,33 +26,31 @@ const useStyles = makeStyles<Theme>(() => ({
     textTransform: 'uppercase',
     borderRadius: '0',
   },
-  container: {
-    marginTop: 15,
-    paddingBottom: 70,
-  },
 }));
 
 const EntityStixCoreRelationshipsContextualView = ({
   entityId,
-  currentView,
   entityLink,
-  relationshipTypes,
-  stixCoreObjectTypes,
-  handleChangeView,
-  paginationLocalStorage,
+
+  localStorage,
+  relationshipTypes = [],
+  stixCoreObjectTypes = [],
+
+  currentView,
 }: {
   entityId: string
-  currentView: string
   entityLink: string
+
+  localStorage: PaginationLocalStorage<PaginationOptions>
   relationshipTypes: string[]
   stixCoreObjectTypes: string[]
-  handleChangeView: UseLocalStorageHelpers['handleChangeView']
-  paginationLocalStorage: PaginationLocalStorage<PaginationOptions>
+
+  currentView: string
 }) => {
   const classes = useStyles();
   const { t, nsdt } = useFormatter();
 
-  const { viewStorage, helpers, paginationOptions, localStorageKey } = paginationLocalStorage;
+  const { viewStorage, helpers, paginationOptions, localStorageKey } = localStorage;
 
   const {
     numberOfElements,
@@ -63,10 +61,31 @@ const EntityStixCoreRelationshipsContextualView = ({
     openExports,
   } = viewStorage;
 
+  const selectedTypes = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
+
+  const paginationOptionsForQuery = {
+    ...paginationOptions,
+    fromId: entityId,
+    entityTypes: selectedTypes,
+    containerType: 'Report',
+    filters: convertFilters(
+      R.omit(['entity_type'], filters),
+    ),
+  };
+
+  const backgroundTaskFilters = {
+    ...filters,
+    entity_type:
+    selectedTypes.length > 0
+      ? selectedTypes.map((n) => ({ id: n, value: n }))
+      : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+  };
+
   const {
     selectedElements,
     deSelectedElements,
     selectAll,
+    handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>(localStorageKey);
@@ -82,10 +101,7 @@ const EntityStixCoreRelationshipsContextualView = ({
         <Chip
           classes={{ root: classes.chipInList }}
           style={{
-            backgroundColor: hexToRGB(
-              itemColor(stixCoreObject.entity_type),
-              0.08,
-            ),
+            backgroundColor: hexToRGB(itemColor(stixCoreObject.entity_type), 0.08),
             color: itemColor(stixCoreObject.entity_type),
             border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
           }}
@@ -136,72 +152,87 @@ const EntityStixCoreRelationshipsContextualView = ({
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
         <ItemMarkings
           variant="inList"
-          markingDefinitionsEdges={
-            stixCoreObject.objectMarking?.edges ?? []
-          }
+          markingDefinitionsEdges={stixCoreObject.objectMarking?.edges ?? []}
           limit={1}
         />
       ),
     },
   };
 
+  let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
+  if (selectAll) {
+    numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements || {}).length;
+  }
+
   return (
-    <div className={classes.container}>
-    <ListLines
-      sortBy={sortBy}
-      orderAsc={orderAsc}
-      dataColumns={dataColumns}
-      handleSort={helpers.handleSort}
-      handleSearch={helpers.handleSearch}
-      handleAddFilter={helpers.handleAddFilter}
-      handleRemoveFilter={helpers.handleRemoveFilter}
-      handleChangeView={handleChangeView}
-      handleToggleSelectAll={handleToggleSelectAll}
-      paginationOptions={paginationOptions}
-      selectAll={selectAll}
-      keyword={searchTerm}
-      displayImport={true}
-      handleToggleExports={helpers.handleToggleExports}
-      openExports={openExports}
-      exportEntityType={'Stix-Core-Object'}
-      iconExtension={true}
-      filters={filters}
-      availableFilterKeys={[
-        'relationship_type',
-        'entity_type',
-        'markedBy',
-        'labelledBy',
-        'createdBy',
-        'creator',
-        'created_start_date',
-        'created_end_date',
-      ]}
-
-      availableRelationshipTypes={relationshipTypes}
-      availableEntityTypes={stixCoreObjectTypes}
-
-      numberOfElements={numberOfElements}
-      noPadding={true}
-      disableCards={true}
-      enableEntitiesView={true}
-      enableContextualView={true}
-      currentView={currentView}
-    >
-      <EntityStixCoreRelationshipsContextualViewLines
-        entityId={entityId}
-        entityLink={entityLink}
-        entityTypes={stixCoreObjectTypes}
-        containerType={'Report'}
-        paginationOptions={paginationOptions as Partial<EntityStixCoreRelationshipsContextualViewLinesQuery$variables>}
+    <>
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
         dataColumns={dataColumns}
-        onToggleEntity={onToggleEntity}
-        setNumberOfElements={helpers.handleSetNumberOfElements}
-        selectedElements={selectedElements}
-        deSelectedElements={deSelectedElements}
+        handleSort={helpers.handleSort}
+        handleSearch={helpers.handleSearch}
+        handleAddFilter={helpers.handleAddFilter}
+        handleRemoveFilter={helpers.handleRemoveFilter}
+        handleChangeView={helpers.handleChangeView}
+        handleToggleSelectAll={handleToggleSelectAll}
+        paginationOptions={paginationOptions}
         selectAll={selectAll}
-      />
-    </ListLines>
-    </div>
+        keyword={searchTerm}
+        displayImport={true}
+        handleToggleExports={helpers.handleToggleExports}
+        openExports={openExports}
+        exportEntityType={'Stix-Core-Object'}
+        iconExtension={true}
+        filters={filters}
+        availableFilterKeys={[
+          'relationship_type',
+          'entity_type',
+          'markedBy',
+          'confidence',
+          'labelledBy',
+          'createdBy',
+          'creator',
+          'created_start_date',
+          'created_end_date',
+        ]}
+
+        availableRelationshipTypes={relationshipTypes}
+        availableEntityTypes={stixCoreObjectTypes}
+
+        numberOfElements={numberOfElements}
+        noPadding={true}
+        disableCards={true}
+        enableEntitiesView={true}
+        enableContextualView={true}
+        currentView={currentView}
+      >
+        <EntityStixCoreRelationshipsContextualViewLines
+          entityLink={entityLink}
+          paginationOptions={paginationOptionsForQuery}
+          dataColumns={dataColumns}
+          onToggleEntity={onToggleEntity}
+          setNumberOfElements={helpers.handleSetNumberOfElements}
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          selectAll={selectAll}
+        />
+      </ListLines>
+    <ToolBar
+      selectedElements={selectedElements}
+      deSelectedElements={deSelectedElements}
+      numberOfSelectedElements={numberOfSelectedElements}
+      selectAll={selectAll}
+      filters={backgroundTaskFilters}
+      search={searchTerm}
+      handleClearSelectedElements={handleClearSelectedElements}
+      variant="medium"
+      warning={true}
+      warningMessage={t(
+        'Be careful, you are about to delete the selected entities.',
+      )}
+    />
+    </>
   );
 };
 

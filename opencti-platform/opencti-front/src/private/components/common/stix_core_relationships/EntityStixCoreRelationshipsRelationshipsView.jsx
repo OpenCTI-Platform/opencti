@@ -1,5 +1,6 @@
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import React from 'react';
 import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -15,27 +16,33 @@ import EntityStixCoreRelationshipsLinesFrom, {
 import ToolBar from '../../data/ToolBar';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
+import Security from '../../../../utils/Security';
+import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../utils/stixTypeUtils';
 
-const LOCAL_STORAGE_KEY = 'view-entityStixCoreRelationshipsRelationshipsView';
 const EntityStixCoreRelationshipsRelationshipsView = ({
-  localStorage,
   entityId,
-  stixCoreObjectTypes,
-  relationshipTypes,
-  role,
   entityLink,
+  defaultStartTime,
+  defaultStopTime,
+
+  localStorage,
+  relationshipTypes = [],
+  stixCoreObjectTypes = [],
+
+  role,
   isRelationReversed,
   allDirections,
   disableExport,
-  handleChangeView,
+  handleChangeView = null,
   currentView,
   enableNestedView,
   enableContextualView,
+  paddingRightButtonAdd = null,
 }) => {
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
-  const { viewStorage, helpers: storageHelpers } = localStorage;
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
   const {
     numberOfElements,
     filters,
@@ -130,11 +137,9 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle(LOCAL_STORAGE_KEY);
+  } = useEntityToggle(localStorageKey);
   const buildColumnRelationships = () => {
-    const isObservables = stixCoreObjectTypes?.includes(
-      'Stix-Cyber-Observable',
-    );
+    const isObservables = isStixCyberObservables(stixCoreObjectTypes);
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     return {
       relationship_type: {
@@ -192,8 +197,7 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
 
   let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
   if (selectAll) {
-    numberOfSelectedElements = numberOfElements.original
-        - Object.keys(deSelectedElements || {}).length;
+    numberOfSelectedElements = numberOfElements.original - Object.keys(deSelectedElements || {}).length;
   }
   const finalView = currentView || view;
   const availableFilterKeys = [
@@ -201,6 +205,7 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
     'entity_type',
     'markedBy',
     'confidence',
+    'labelledBy',
     'createdBy',
     'creator',
     'created_start_date',
@@ -209,113 +214,128 @@ const EntityStixCoreRelationshipsRelationshipsView = ({
   return (
       <UserContext.Consumer>
         {({ platformModuleHelpers }) => (
-          <div>
-            <ListLines
-              sortBy={sortBy}
-              orderAsc={orderAsc}
-              dataColumns={buildColumnRelationships(platformModuleHelpers)}
-              handleSort={storageHelpers.handleSort}
-              handleSearch={storageHelpers.handleSearch}
-              handleAddFilter={storageHelpers.handleAddFilter}
-              handleRemoveFilter={storageHelpers.handleRemoveFilter}
-              displayImport={true}
-              secondaryAction={true}
-              iconExtension={true}
-              keyword={searchTerm}
-              handleToggleSelectAll={handleToggleSelectAll}
-              selectAll={selectAll}
-              numberOfElements={numberOfElements}
-              filters={filters}
-              availableFilterKeys={availableFilterKeys}
-              availableEntityTypes={stixCoreObjectTypes}
-              availableRelationshipTypes={relationshipTypes}
-              handleToggleExports={
-                disableExport ? null : storageHelpers.handleToggleExports
-              }
-              openExports={openExports}
-              exportEntityType="stix-core-relationship"
-              noPadding={true}
-              handleChangeView={handleChangeView ?? storageHelpers.handleChangeView}
-              enableNestedView={enableNestedView}
-              enableContextualView={enableContextualView}
-              disableCards={true}
-              paginationOptions={paginationOptions}
-              enableEntitiesView={true}
-              currentView={finalView}
-            >
-              <QueryRenderer
-                query={
-                  // eslint-disable-next-line no-nested-ternary
-                  allDirections
-                    ? entityStixCoreRelationshipsLinesAllQuery
-                    : isRelationReversed
-                      ? entityStixCoreRelationshipsLinesToQuery
-                      : entityStixCoreRelationshipsLinesFromQuery
+          <>
+            <div>
+              <ListLines
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                dataColumns={buildColumnRelationships(platformModuleHelpers)}
+                handleSort={storageHelpers.handleSort}
+                handleSearch={storageHelpers.handleSearch}
+                handleAddFilter={storageHelpers.handleAddFilter}
+                handleRemoveFilter={storageHelpers.handleRemoveFilter}
+                displayImport={true}
+                secondaryAction={true}
+                iconExtension={true}
+                keyword={searchTerm}
+                handleToggleSelectAll={handleToggleSelectAll}
+                selectAll={selectAll}
+                numberOfElements={numberOfElements}
+                filters={filters}
+                availableFilterKeys={availableFilterKeys}
+                availableEntityTypes={stixCoreObjectTypes}
+                availableRelationshipTypes={relationshipTypes}
+                handleToggleExports={
+                  disableExport ? null : storageHelpers.handleToggleExports
                 }
-                variables={{ count: 25, ...paginationOptions }}
-                render={({ props }) =>
-                  /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
-                  (allDirections ? (
-                    <EntityStixCoreRelationshipsLinesAll
-                      data={props}
-                      paginationOptions={paginationOptions}
-                      entityLink={entityLink}
-                      entityId={entityId}
-                      dataColumns={buildColumnRelationships(
-                        platformModuleHelpers,
-                      )}
-                      initialLoading={props === null}
-                      setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                      onToggleEntity={onToggleEntity}
-                      selectedElements={selectedElements}
-                      deSelectedElements={deSelectedElements}
-                      selectAll={selectAll}
-                    />
-                  ) : isRelationReversed ? (
-                    <EntityStixCoreRelationshipsLinesTo
-                      data={props}
-                      paginationOptions={paginationOptions}
-                      entityLink={entityLink}
-                      dataColumns={buildColumnRelationships(
-                        platformModuleHelpers,
-                      )}
-                      initialLoading={props === null}
-                      setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                      onToggleEntity={onToggleEntity}
-                      selectedElements={selectedElements}
-                      deSelectedElements={deSelectedElements}
-                      selectAll={selectAll}
-                    />
-                  ) : (
-                    <EntityStixCoreRelationshipsLinesFrom
-                      data={props}
-                      paginationOptions={paginationOptions}
-                      entityLink={entityLink}
-                      dataColumns={buildColumnRelationships(
-                        platformModuleHelpers,
-                      )}
-                      initialLoading={props === null}
-                      setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                      onToggleEntity={onToggleEntity}
-                      selectedElements={selectedElements}
-                      deSelectedElements={deSelectedElements}
-                      selectAll={selectAll}
-                    />
-                  ))
-                }
+                openExports={openExports}
+                exportEntityType="stix-core-relationship"
+                noPadding={true}
+                handleChangeView={handleChangeView ?? storageHelpers.handleChangeView}
+                enableNestedView={enableNestedView}
+                enableContextualView={enableContextualView}
+                disableCards={true}
+                paginationOptions={paginationOptions}
+                enableEntitiesView={true}
+                currentView={finalView}
+              >
+                <QueryRenderer
+                  query={
+                    // eslint-disable-next-line no-nested-ternary
+                    allDirections
+                      ? entityStixCoreRelationshipsLinesAllQuery
+                      : isRelationReversed
+                        ? entityStixCoreRelationshipsLinesToQuery
+                        : entityStixCoreRelationshipsLinesFromQuery
+                  }
+                  variables={{ count: 25, ...paginationOptions }}
+                  render={({ props }) =>
+                    /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
+                    (allDirections ? (
+                      <EntityStixCoreRelationshipsLinesAll
+                        data={props}
+                        paginationOptions={paginationOptions}
+                        entityLink={entityLink}
+                        entityId={entityId}
+                        dataColumns={buildColumnRelationships(
+                          platformModuleHelpers,
+                        )}
+                        initialLoading={props === null}
+                        setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                        onToggleEntity={onToggleEntity}
+                        selectedElements={selectedElements}
+                        deSelectedElements={deSelectedElements}
+                        selectAll={selectAll}
+                      />
+                    ) : isRelationReversed ? (
+                      <EntityStixCoreRelationshipsLinesTo
+                        data={props}
+                        paginationOptions={paginationOptions}
+                        entityLink={entityLink}
+                        dataColumns={buildColumnRelationships(
+                          platformModuleHelpers,
+                        )}
+                        initialLoading={props === null}
+                        setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                        onToggleEntity={onToggleEntity}
+                        selectedElements={selectedElements}
+                        deSelectedElements={deSelectedElements}
+                        selectAll={selectAll}
+                      />
+                    ) : (
+                      <EntityStixCoreRelationshipsLinesFrom
+                        data={props}
+                        paginationOptions={paginationOptions}
+                        entityLink={entityLink}
+                        dataColumns={buildColumnRelationships(
+                          platformModuleHelpers,
+                        )}
+                        initialLoading={props === null}
+                        setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+                        onToggleEntity={onToggleEntity}
+                        selectedElements={selectedElements}
+                        deSelectedElements={deSelectedElements}
+                        selectAll={selectAll}
+                      />
+                    ))
+                  }
+                />
+              </ListLines>
+              <ToolBar
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                numberOfSelectedElements={numberOfSelectedElements}
+                selectAll={selectAll}
+                filters={backgroundTaskFilters}
+                search={searchTerm}
+                handleClearSelectedElements={handleClearSelectedElements}
+                variant="medium"
               />
-            </ListLines>
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              filters={backgroundTaskFilters}
-              search={searchTerm}
-              handleClearSelectedElements={handleClearSelectedElements}
-              variant="medium"
-            />
-          </div>
+            </div>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <StixCoreRelationshipCreationFromEntity
+                entityId={entityId}
+                allowedRelationshipTypes={relationshipTypes}
+                isRelationReversed={true}
+                targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
+                targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
+                defaultStartTime={defaultStartTime}
+                defaultStopTime={defaultStopTime}
+                paginationOptions={paginationOptions}
+                paddingRight={paddingRightButtonAdd ?? 220}
+              />
+            </Security>
+          </>
         )}
       </UserContext.Consumer>
   );

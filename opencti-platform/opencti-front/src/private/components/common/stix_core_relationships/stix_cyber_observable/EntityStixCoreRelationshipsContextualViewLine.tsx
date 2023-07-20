@@ -38,7 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: -theme.spacing(1.5),
+    right: theme.spacing(-1.5),
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
