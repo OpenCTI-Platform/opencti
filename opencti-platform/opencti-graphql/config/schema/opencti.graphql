@@ -6922,6 +6922,7 @@ input ToolAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   killChainPhases: [String]
@@ -7112,6 +7113,7 @@ input VulnerabilityAddInput {
   lang: String
   createdBy: String
   objectMarking: [String]
+  objectOrganization: [String]
   objectLabel: [String]
   externalReferences: [String]
   created: DateTime
