@@ -51,11 +51,9 @@ const EntityStixCoreRelationshipsForStixCyberObservable: FunctionComponent<Entit
             entityLink={entityLink}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
-
             localStorage={localStorage}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
-
             isRelationReversed={true}
             currentView={view}
             enableContextualView={true}
@@ -67,11 +65,9 @@ const EntityStixCoreRelationshipsForStixCyberObservable: FunctionComponent<Entit
             entityLink={entityLink}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
-
             localStorage={localStorage}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
-
             isRelationReversed={true}
             allDirections={true}
             currentView={view}
@@ -82,11 +78,9 @@ const EntityStixCoreRelationshipsForStixCyberObservable: FunctionComponent<Entit
           <EntityStixCoreRelationshipsContextualView
           entityId={entityId}
           entityLink={entityLink}
-
           localStorage={localStorage}
           relationshipTypes={relationshipTypes}
           stixCoreObjectTypes={entityTypes}
-
           currentView={view}
           />
         )}

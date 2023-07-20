@@ -19,11 +19,9 @@ const EntityStixCoreRelationshipsEntitiesView = ({
   entityLink,
   defaultStartTime,
   defaultStopTime,
-
   localStorage,
   relationshipTypes = [],
   stixCoreObjectTypes = [],
-
   isRelationReversed,
   disableExport,
   handleChangeView = null,
@@ -82,9 +80,9 @@ const EntityStixCoreRelationshipsEntitiesView = ({
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle(LOCAL_STORAGE_KEY);
-  const buildColumnsEntities = () => {
+  const buildColumnsEntities = (platformModuleHelpers) => {
     const isObservables = isStixCyberObservables(stixCoreObjectTypes);
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable() ?? false;
     return {
       entity_type: {
         label: 'Type',

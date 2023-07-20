@@ -18,8 +18,9 @@ import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import {
   ThreatActorIndividualKnowledge_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualKnowledge_ThreatActorIndividual.graphql';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import EntityStixCoreRelationshipsForStixCyberObservable from '../../common/stix_core_relationships/stix_cyber_observable/EntityStixCoreRelationshipsForStixCyberObservable';
+import EntityStixCoreRelationshipsForStixDomainObjectIdIndicators
+  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsForStixDomainObjectIdIndicators';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -274,7 +275,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
           exact
           path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/indicators"
           render={(routeProps: any) => (
-            <StixDomainObjectIndicators
+            <EntityStixCoreRelationshipsForStixDomainObjectIdIndicators
               {...routeProps}
               stixDomainObjectId={threatActorIndividual.id}
               stixDomainObjectLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/indicators`}

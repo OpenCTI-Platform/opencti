@@ -1,29 +1,41 @@
-import * as PropTypes from 'prop-types';
-import React from 'react';
-import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
+import React, { FunctionComponent } from 'react';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ToolBar from '../../data/ToolBar';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectIndicatorsLines, { stixDomainObjectIndicatorsLinesQuery } from './StixDomainObjectIndicatorsLines';
+import StixDomainObjectIndicatorsLines, { stixDomainObjectIndicatorsLinesQuery } from '../../observations/indicators/StixDomainObjectIndicatorsLines';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import StixCoreRelationshipCreationFromEntity
+  from './StixCoreRelationshipCreationFromEntity';
+import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { PaginationOptions } from '../../../../components/list_lines';
+import {
+  StixDomainObjectIndicatorsLinesQuery$data,
+} from '../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
+import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 
 const LOCAL_STORAGE_KEY = 'view-stixDomainObjectIndicatorsEntitiesView';
-const StixDomainObjectIndicatorsEntitiesView = ({
-  stixDomainObjectId,
-  stixDomainObjectLink,
+
+interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps {
+  entityId: string
+  entityLink: string
+  localStorage: PaginationLocalStorage<PaginationOptions>
+  currentView: string
+  defaultStartTime: string
+  defaultStopTime: string
+}
+const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps> = ({
+  entityId,
+  entityLink,
   localStorage,
-  disableExport,
-  handleChangeView,
   currentView,
-  enableContextualView,
-  indicatorTypes,
-  observableTypes,
+  defaultStartTime,
+  defaultStopTime,
 }) => {
   const { t } = useFormatter();
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
   const { viewStorage, helpers: storageHelpers, paginationOptions } = localStorage;
   const {
     filters,
@@ -35,27 +47,6 @@ const StixDomainObjectIndicatorsEntitiesView = ({
     openExports,
   } = viewStorage;
 
-  let finalFilters = filters;
-  finalFilters = {
-    ...finalFilters,
-    indicates: [{ id: stixDomainObjectId, value: stixDomainObjectId }],
-  };
-  if (indicatorTypes.length) {
-    finalFilters = {
-      ...finalFilters,
-      pattern_type: indicatorTypes.map((n) => ({ id: n, value: n })),
-    };
-  }
-  if (observableTypes.length) {
-    finalFilters = {
-      ...finalFilters,
-      x_opencti_main_observable_type: observableTypes.map((n) => ({
-        id: n,
-        value: n,
-      })),
-    };
-  }
-
   const {
     selectedElements,
     deSelectedElements,
@@ -64,8 +55,8 @@ const StixDomainObjectIndicatorsEntitiesView = ({
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle(LOCAL_STORAGE_KEY);
-  const buildColumnsEntities = () => {
-    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const buildColumnsEntities = (platformModuleHelpers: ModuleHelper | undefined) => {
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     return {
       pattern_type: {
         label: 'Type',
@@ -101,7 +92,7 @@ const StixDomainObjectIndicatorsEntitiesView = ({
 
   let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
   if (selectAll) {
-    numberOfSelectedElements = numberOfElements.original
+    numberOfSelectedElements = (numberOfElements?.original ?? 0)
       - Object.keys(deSelectedElements || {}).length;
   }
   const finalView = currentView || view;
@@ -129,7 +120,8 @@ const StixDomainObjectIndicatorsEntitiesView = ({
   return (
     <UserContext.Consumer>
       {({ platformModuleHelpers }) => (
-        <div>
+        <>
+         <div>
           <ListLines
             sortBy={sortBy}
             orderAsc={orderAsc}
@@ -138,7 +130,7 @@ const StixDomainObjectIndicatorsEntitiesView = ({
             handleSearch={storageHelpers.handleSearch}
             handleAddFilter={storageHelpers.handleAddFilter}
             handleRemoveFilter={storageHelpers.handleRemoveFilter}
-            handleChangeView={handleChangeView ?? storageHelpers.handleChangeView}
+            handleChangeView={storageHelpers.handleChangeView}
             onToggleEntity={onToggleEntity}
             handleToggleSelectAll={handleToggleSelectAll}
             paginationOptions={paginationOptions}
@@ -146,35 +138,36 @@ const StixDomainObjectIndicatorsEntitiesView = ({
             keyword={searchTerm}
             secondaryAction={true}
             displayImport={true}
-            handleToggleExports={
-              disableExport ? null : storageHelpers.handleToggleExports
-            }
-            openExports={openExports}//
-            exportEntityType={'Stix-Core-Object'}//
-            iconExtension={true}//
-            filters={filters}//
+            handleToggleExports={storageHelpers.handleToggleExports}
+            openExports={openExports}
+            exportEntityType={'Stix-Core-Object'}
+            iconExtension={true}
+            filters={filters}
             availableFilterKeys={availableFilterKeys}
-            exportContext={`of-entity-${stixDomainObjectId}`}
-            numberOfElements={numberOfElements}//
-            noPadding={true}//
-            enableContextualView={enableContextualView}
+            exportContext={`of-entity-${entityId}`}
+            numberOfElements={numberOfElements}
+            noPadding={true}
             currentView={finalView}
           >
             <QueryRenderer
               query={stixDomainObjectIndicatorsLinesQuery}
               variables={{ count: 25, ...paginationOptions }}
-              render={({ props }) => (
+              render={({
+                props,
+              }: {
+                props: StixDomainObjectIndicatorsLinesQuery$data;
+              }) => (
                 <StixDomainObjectIndicatorsLines
                   data={props}
                   paginationOptions={paginationOptions}
-                  entityLink={stixDomainObjectLink}
-                  entityId={stixDomainObjectId}
-                  dataColumns={this.buildColumns(platformModuleHelpers)}
+                  entityLink={entityLink}
+                  entityId={entityId}
+                  dataColumns={buildColumnsEntities(platformModuleHelpers)}
                   initialLoading={props === null}
-                  setNumberOfElements={this.setNumberOfElements.bind(this)}
+                  setNumberOfElements={storageHelpers.handleSetNumberOfElements}
                   selectedElements={selectedElements}
                   deSelectedElements={deSelectedElements}
-                  onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                  onToggleEntity={onToggleEntity}
                   selectAll={selectAll}
                 />
               )}
@@ -185,7 +178,7 @@ const StixDomainObjectIndicatorsEntitiesView = ({
             deSelectedElements={deSelectedElements}
             numberOfSelectedElements={numberOfSelectedElements}
             selectAll={selectAll}
-            filters={finalFilters}
+            filters={filters}
             search={searchTerm}
             handleClearSelectedElements={handleClearSelectedElements}
             variant="large"
@@ -195,19 +188,22 @@ const StixDomainObjectIndicatorsEntitiesView = ({
             )}
           />
         </div>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCoreRelationshipCreationFromEntity
+          entityId={entityId}
+          isRelationReversed={true}
+          targetStixDomainObjectTypes={['Indicator']}
+          paginationOptions={paginationOptions}
+          openExports={openExports}
+          paddingRight={270}
+          connectionKey="Pagination_indicators"
+          defaultStartTime={defaultStartTime}
+          defaultStopTime={defaultStopTime}
+          />
+          </Security>
+        </>
       )}
     </UserContext.Consumer>
   );
 };
-
-StixDomainObjectIndicatorsEntitiesView.propTypes = {
-  stixDomainObjectId: PropTypes.string,
-  stixDomainObjectLink: PropTypes.string,
-  disableExport: PropTypes.bool,
-  currentView: PropTypes.string,
-  enableContextualView: PropTypes.bool,
-  observableTypes: PropTypes.array,
-  indicatorTypes: PropTypes.array,
-  handleChangeView: PropTypes.func,
-};
-export default StixDomainObjectIndicatorsEntitiesView;
+export default EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView;

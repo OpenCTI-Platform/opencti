@@ -1,28 +1,34 @@
-import React from 'react';
+import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import StixDomainObjectIndicatorsLines, {
+  stixDomainObjectIndicatorsLinesQuery,
+} from './StixDomainObjectIndicatorsLines';
+import ListLines from '../../../../components/list_lines/ListLines';
+import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import {
+  buildViewParamsFromUrlAndStorage,
   convertFilters,
+  saveViewParameters,
 } from '../../../../utils/ListParameters';
+import IndicatorsRightBar from './IndicatorsRightBar';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { UserContext } from '../../../../utils/hooks/useAuth';
+import ToolBar from '../../data/ToolBar';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 
-const StixDomainObjectIndicators = ({
-  stixDomainObjectId,
-  stixDomainObjectLink,
-  defaultStartTime,
-  defaultStopTime,
-}) => {
-/*  constructor(props) {
+class StixDomainObjectIndicators extends Component {
+  constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
       `view-indicators-${props.stixDomainObjectId}`,
     );
-    state = {
+    this.state = {
       sortBy: R.propOr('created_at', 'sortBy', params),
       orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
@@ -36,38 +42,68 @@ const StixDomainObjectIndicators = ({
       deSelectedElements: null,
       selectAll: false,
     };
-  } */
+  }
 
-  /*
   saveView() {
     saveViewParameters(
-      props.history,
-      props.location,
-      `view-indicators-${props.stixDomainObjectId}`,
-      state,
+      this.props.history,
+      this.props.location,
+      `view-indicators-${this.props.stixDomainObjectId}`,
+      this.state,
     );
   }
 
   handleSearch(value) {
-    setState({ searchTerm: value }, () => saveView());
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    setState({ sortBy: field, orderAsc }, () => saveView());
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   handleToggleExports() {
-    setState({ openExports: !state.openExports }, () => {
-      if (typeof props.onChangeOpenExports === 'function') {
-        props.onChangeOpenExports(state.openExports);
+    this.setState({ openExports: !this.state.openExports }, () => {
+      if (typeof this.props.onChangeOpenExports === 'function') {
+        this.props.onChangeOpenExports(this.state.openExports);
       }
     });
+  }
+
+  handleToggleIndicatorType(type) {
+    if (this.state.indicatorTypes.includes(type)) {
+      this.setState({
+        indicatorTypes: R.filter((t) => t !== type, this.state.indicatorTypes),
+      });
+    } else {
+      this.setState({
+        indicatorTypes: R.append(type, this.state.indicatorTypes),
+      });
+    }
+  }
+
+  handleToggleObservableType(type) {
+    if (this.state.observableTypes.includes(type)) {
+      this.setState({
+        observableTypes: R.filter(
+          (t) => t !== type,
+          this.state.observableTypes,
+        ),
+      });
+    } else {
+      this.setState({
+        observableTypes: R.append(type, this.state.observableTypes),
+      });
+    }
+  }
+
+  handleClearObservableTypes() {
+    this.setState({ observableTypes: [] }, () => this.saveView());
   }
 
   handleToggleSelectEntity(entity, event, forceRemove = []) {
     event.stopPropagation();
     event.preventDefault();
-    const { selectedElements, deSelectedElements, selectAll } = state;
+    const { selectedElements, deSelectedElements, selectAll } = this.state;
     if (Array.isArray(entity)) {
       const currentIds = R.values(selectedElements).map((n) => n.id);
       const givenIds = entity.map((n) => n.id);
@@ -85,20 +121,20 @@ const StixDomainObjectIndicators = ({
           newSelectedElements,
         );
       }
-      setState({
+      this.setState({
         selectAll: false,
         selectedElements: newSelectedElements,
         deSelectedElements: null,
       });
     } else if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
-      setState({
+      this.setState({
         selectAll: false,
         selectedElements: newSelectedElements,
       });
     } else if (selectAll && entity.id in (deSelectedElements || {})) {
       const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
-      setState({
+      this.setState({
         deSelectedElements: newDeSelectedElements,
       });
     } else if (selectAll) {
@@ -107,7 +143,7 @@ const StixDomainObjectIndicators = ({
         entity,
         deSelectedElements || {},
       );
-      setState({
+      this.setState({
         deSelectedElements: newDeSelectedElements,
       });
     } else {
@@ -116,7 +152,7 @@ const StixDomainObjectIndicators = ({
         entity,
         selectedElements || {},
       );
-      setState({
+      this.setState({
         selectAll: false,
         selectedElements: newSelectedElements,
       });
@@ -124,15 +160,15 @@ const StixDomainObjectIndicators = ({
   }
 
   handleToggleSelectAll() {
-    setState({
-      selectAll: !state.selectAll,
+    this.setState({
+      selectAll: !this.state.selectAll,
       selectedElements: null,
       deSelectedElements: null,
     });
   }
 
   handleClearSelectedElements() {
-    setState({
+    this.setState({
       selectAll: false,
       selectedElements: null,
       deSelectedElements: null,
@@ -144,8 +180,8 @@ const StixDomainObjectIndicators = ({
       event.stopPropagation();
       event.preventDefault();
     }
-    if (state.filters[key] && state.filters[key].length > 0) {
-      setState(
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
         {
           filters: R.assoc(
             key,
@@ -153,34 +189,33 @@ const StixDomainObjectIndicators = ({
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
                 { id, value },
-                ...state.filters[key],
+                ...this.state.filters[key],
               ]),
-            state.filters,
+            this.state.filters,
           ),
         },
-        () => saveView(),
+        () => this.saveView(),
       );
     } else {
-      setState(
+      this.setState(
         {
-          filters: R.assoc(key, [{ id, value }], state.filters),
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
         },
-        () => saveView(),
+        () => this.saveView(),
       );
     }
   }
 
   handleRemoveFilter(key) {
-    setState({ filters: R.dissoc(key, state.filters) }, () => saveView());
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
-    setState({ numberOfElements });
+    this.setState({ numberOfElements });
   }
-*/
 
   // eslint-disable-next-line class-methods-use-this
-  /*  buildColumns(platformModuleHelpers) {
+  buildColumns(platformModuleHelpers) {
     const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
     return {
       pattern_type: {
@@ -213,9 +248,9 @@ const StixDomainObjectIndicators = ({
         isSortable: isRuntimeSort,
       },
     };
-  } */
+  }
 
-  /* renderLines(paginationOptions) {
+  renderLines(paginationOptions) {
     const {
       sortBy,
       orderAsc,
@@ -228,14 +263,14 @@ const StixDomainObjectIndicators = ({
       filters,
       indicatorTypes,
       observableTypes,
-    } = state;
-    /!*    const { stixDomainObjectId, stixDomainObjectLink } = props;
+    } = this.state;
+    const { stixDomainObjectId, stixDomainObjectLink } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original
         - Object.keys(deSelectedElements || {}).length;
-    } *!/
-    /!* let finalFilters = filters;
+    }
+    let finalFilters = filters;
     finalFilters = {
       ...finalFilters,
       indicates: [{ id: stixDomainObjectId, value: stixDomainObjectId }],
@@ -254,32 +289,32 @@ const StixDomainObjectIndicators = ({
           value: n,
         })),
       };
-    } *!/
-    /!*   return (
+    }
+    return (
       <UserContext.Consumer>
         {({ platformModuleHelpers }) => (
           <div>
             <ListLines
-              sortBy={sortBy}//
-              orderAsc={orderAsc}//
-              dataColumns={buildColumns(platformModuleHelpers)}//
-              handleSort={handleSort.bind(this)}//
-              handleSearch={handleSearch.bind(this)}//
-              handleAddFilter={handleAddFilter.bind(this)}//
-              handleRemoveFilter={handleRemoveFilter.bind(this)}//
-              handleToggleExports={handleToggleExports.bind(this)}//
-              openExports={openExports}//
-              handleToggleSelectAll={handleToggleSelectAll.bind(this)}//
-              selectAll={selectAll}//
-              noPadding={typeof props.onChangeOpenExports === 'function'}//
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={this.buildColumns(platformModuleHelpers)}
+              handleSort={this.handleSort.bind(this)}
+              handleSearch={this.handleSearch.bind(this)}
+              handleAddFilter={this.handleAddFilter.bind(this)}
+              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              handleToggleExports={this.handleToggleExports.bind(this)}
+              openExports={openExports}
+              handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
+              selectAll={selectAll}
+              noPadding={typeof this.props.onChangeOpenExports === 'function'}
               paginationOptions={paginationOptions}
-              exportEntityType="Indicator"//
-              filters={filters}//
+              exportEntityType="Indicator"
+              filters={filters}
               exportContext={`of-entity-${stixDomainObjectId}`}
-              keyword={searchTerm}//
-              secondaryAction={true}//
-              iconExtension={true}//
-              numberOfElements={numberOfElements}//
+              keyword={searchTerm}
+              secondaryAction={true}
+              iconExtension={true}
+              numberOfElements={numberOfElements}
               availableFilterKeys={[
                 'labelledBy',
                 'markedBy',
@@ -297,8 +332,6 @@ const StixDomainObjectIndicators = ({
                 'creator',
                 'confidence',
                 'indicator_types',
-                'pattern_type',
-                'x_opencti_main_observable_type',
               ]}
             >
               <QueryRenderer
@@ -310,12 +343,12 @@ const StixDomainObjectIndicators = ({
                     paginationOptions={paginationOptions}
                     entityLink={stixDomainObjectLink}
                     entityId={stixDomainObjectId}
-                    dataColumns={buildColumns(platformModuleHelpers)}
+                    dataColumns={this.buildColumns(platformModuleHelpers)}
                     initialLoading={props === null}
-                    setNumberOfElements={setNumberOfElements.bind(this)}
+                    setNumberOfElements={this.setNumberOfElements.bind(this)}
                     selectedElements={selectedElements}
                     deSelectedElements={deSelectedElements}
-                    onToggleEntity={handleToggleSelectEntity.bind(this)}
+                    onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                     selectAll={selectAll}
                   />
                 )}
@@ -328,67 +361,58 @@ const StixDomainObjectIndicators = ({
               selectAll={selectAll}
               filters={finalFilters}
               search={searchTerm}
-              handleClearSelectedElements={handleClearSelectedElements.bind(this)}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
               variant="large"
             />
           </div>
         )}
       </UserContext.Consumer>
-    ); *!/
-  } */
+    );
+  }
 
-  //const { stixDomainObjectId, defaultStartTime, defaultStopTime } = props;
-  const {
-    view,
-    sortBy,
-    orderAsc,
-    searchTerm,
-    filters,
-    indicatorTypes,
-    observableTypes,
-    openExports,
-  } = state;
-  let finalFilters = convertFilters(filters);
-  finalFilters = R.append(
-    { key: 'indicates', values: [stixDomainObjectId] },
-    finalFilters,
-  );
-  if (indicatorTypes.length > 0) {
+  render() {
+    const { stixDomainObjectId, defaultStartTime, defaultStopTime } = this.props;
+    const {
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      indicatorTypes,
+      observableTypes,
+      openExports,
+    } = this.state;
+    let finalFilters = convertFilters(filters);
     finalFilters = R.append(
-      { key: 'pattern_type', values: indicatorTypes },
+      { key: 'indicates', values: [stixDomainObjectId] },
       finalFilters,
     );
-  }
-  if (observableTypes.length > 0) {
-    finalFilters = R.append(
-      {
-        key: 'x_opencti_main_observable_type',
-        operator: 'match',
-        values: observableTypes.map((type) => type.toLowerCase().replace(/\*/g, '')),
-      },
-      finalFilters,
-    );
-  }
-  const paginationOptions = {
-    search: searchTerm,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-    filters: finalFilters,
-  };
-  return (
+    if (indicatorTypes.length > 0) {
+      finalFilters = R.append(
+        { key: 'pattern_type', values: indicatorTypes },
+        finalFilters,
+      );
+    }
+    if (observableTypes.length > 0) {
+      finalFilters = R.append(
+        {
+          key: 'x_opencti_main_observable_type',
+          operator: 'match',
+          values: observableTypes.map((type) => type.toLowerCase().replace(/\*/g, '')),
+        },
+        finalFilters,
+      );
+    }
+    const paginationOptions = {
+      search: searchTerm,
+      orderBy: sortBy,
+      orderMode: orderAsc ? 'asc' : 'desc',
+      filters: finalFilters,
+    };
+    return (
       <ExportContextProvider>
-        <div style={{ marginTop: 20 }}>
-          {view === 'lines'
-          ?? <StixDomainObjectIndicatorsEntitiesView
-              stixDomainObjectId={stixDomainObjectId}
-              stixDomainObjectLink={stixDomainObjectLink}
-              localStorage={localStorage}
-              observableTypes={observableTypes}
-              indicatorTypes={indicatorTypes}
-              handleChangeView={handleChangeView}
-              currentView={currentView}
-              disableExport={disableExport}
-            />}
+        <div style={{ marginTop: 20, paddingRight: 250 }}>
+          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCoreRelationshipCreationFromEntity
               entityId={stixDomainObjectId}
@@ -402,14 +426,30 @@ const StixDomainObjectIndicators = ({
               defaultStopTime={defaultStopTime}
             />
           </Security>
+          <IndicatorsRightBar
+            indicatorTypes={indicatorTypes}
+            observableTypes={observableTypes}
+            handleToggleIndicatorType={this.handleToggleIndicatorType.bind(
+              this,
+            )}
+            handleToggleObservableType={this.handleToggleObservableType.bind(
+              this,
+            )}
+            handleClearObservableTypes={this.handleClearObservableTypes.bind(
+              this,
+            )}
+            openExports={openExports}
+          />
         </div>
       </ExportContextProvider>
-  );
-};
+    );
+  }
+}
 
 StixDomainObjectIndicators.propTypes = {
   stixDomainObjectId: PropTypes.string,
   stixDomainObjectLink: PropTypes.string,
+  history: PropTypes.object,
   onChangeOpenExports: PropTypes.func,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
