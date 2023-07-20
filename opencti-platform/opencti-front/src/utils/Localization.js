@@ -707,6 +707,11 @@ const i18n = {
       Security: 'Seguridad',
       Customization: 'Personalización',
       Taxonomies: 'Taxonomías',
+      // Scale configuration
+      'Scale configuration': 'Configuración de escala',
+      'Selected scale template': 'Plantilla de escala elegida',
+      'Customize scale': 'Personalizar escala',
+      Limits: 'Límites',
       // Workflow
       Workflows: 'Flujos de trabajo',
       Workflow: 'Flujo de trabajo',
@@ -2771,6 +2776,11 @@ const i18n = {
       Security: 'Sécurité',
       Customization: 'Personnalisation',
       Taxonomies: 'Taxonomies',
+      // Scale configuration
+      'Scale configuration': "Configuration de l'intervalle",
+      'Selected scale template': "Modèle d'intervalle sélectionné",
+      'Customize scale': "Personnaliser l'intervalle",
+      Limits: 'Limites',
       // Workflow
       Workflows: 'Flux de travail',
       Workflow: 'Flux de travail',
@@ -4778,6 +4788,11 @@ const i18n = {
       Security: '安全',
       Customization: 'カスタマイズ',
       Taxonomies: 'タクソノミー',
+      // Scale configuration
+      'Scale configuration': 'スケール構成',
+      'Selected scale template': '選択したスケール テンプレート',
+      'Customize scale': 'スケールのカスタマイズ',
+      Limits: '限界',
       // Workflow
       Workflows: 'ワークフロー',
       Workflow: 'ワークフロー',
@@ -6687,6 +6702,11 @@ const i18n = {
       Security: '安全',
       Customization: '客制化',
       Taxonomies: '分类法',
+      // Scale configuration
+      'Scale configuration': '秤配置',
+      'Selected scale template': '選定的比例模板',
+      'Customize scale': '定制規模',
+      Limits: '邊界',
       // Workflow
       Workflows: '工作流程',
       Workflow: '工作流程',
