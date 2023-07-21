@@ -166,7 +166,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Omit
   } = useEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>(localStorageKey);
 
   const { platformModuleHelpers } = useAuth();
-  const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
+  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
   const dataColumns = {
     entity_type: {
       label: 'Type',

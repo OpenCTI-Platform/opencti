@@ -29,7 +29,7 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
   const entityTypes = ['Stix-Cyber-Observable'];
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
-    `view-relationships-${entityId}-${entityTypes?.join('-')}-${relationshipTypes?.join('-')}`,
+    `view-relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
       filters: {},

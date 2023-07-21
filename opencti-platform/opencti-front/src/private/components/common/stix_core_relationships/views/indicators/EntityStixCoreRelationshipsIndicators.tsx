@@ -36,7 +36,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
   const entityTypes = ['Indicator'];
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
-    `view-relationships-${entityId}-${entityTypes?.join('-')}-${relationshipTypes?.join('-')}`,
+    `view-relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`,
     {
       searchTerm: '',
       sortBy: 'created',

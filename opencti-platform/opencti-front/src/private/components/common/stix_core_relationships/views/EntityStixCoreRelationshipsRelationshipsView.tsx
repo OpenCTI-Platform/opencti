@@ -20,7 +20,7 @@ import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreat
 import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../../components/list_lines';
+import { Filters, PaginationOptions } from '../../../../../components/list_lines';
 import { ModuleHelper } from '../../../../../utils/platformModulesHelper';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
@@ -91,21 +91,18 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     ),
   } as object;
 
-  let backgroundTaskFilters = {};
-  if (selectedRelationshipTypes.length > 0) {
-    backgroundTaskFilters = {
-      ...filters,
-      entity_type:
-        selectedRelationshipTypes.length > 0
-          ? selectedRelationshipTypes.map((n) => ({ id: n, value: n }))
-          : [
-            {
-              id: 'stix-core-relationship',
-              value: 'stix-core-relationship',
-            },
-          ],
-    };
-  }
+  let backgroundTaskFilters: Filters = {
+    ...filters,
+    entity_type:
+      selectedRelationshipTypes.length > 0
+        ? selectedRelationshipTypes.map((n) => ({ id: n, value: n }))
+        : [
+          {
+            id: 'stix-core-relationship',
+            value: 'stix-core-relationship',
+          },
+        ],
+  };
 
   if (allDirections) {
     paginationOptions = {
