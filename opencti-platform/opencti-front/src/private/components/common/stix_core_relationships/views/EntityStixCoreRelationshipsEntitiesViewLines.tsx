@@ -1,29 +1,25 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { DataColumns } from '../../../../components/list_lines';
-import type { UseEntityToggle } from '../../../../utils/hooks/useEntityToggle';
+import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
+import { DataColumns } from '../../../../../components/list_lines';
+import type { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
+import { EntityStixCoreRelationshipsEntitiesLineDummy, EntityStixCoreRelationshipsEntitiesViewLine } from './EntityStixCoreRelationshipsEntitiesViewLine';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../../utils/hooks/useLocalStorage';
 import {
-  EntityStixCoreRelationshipsEntitiesLine,
-  EntityStixCoreRelationshipsEntitiesLineDummy,
-} from './EntityStixCoreRelationshipsEntitiesLine';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import {
-  EntityStixCoreRelationshipsEntitiesPaginationQuery,
-  EntityStixCoreRelationshipsEntitiesPaginationQuery$variables,
-} from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import { EntityStixCoreRelationshipsEntities_data$key } from './__generated__/EntityStixCoreRelationshipsEntities_data.graphql';
+  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery, EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
+} from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
+import { EntityStixCoreRelationshipsEntitiesViewLines_data$key } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLines_data.graphql';
 
 const nbOfRowsToLoad = 50;
 
 interface EntityStixCoreRelationshipsEntitiesProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsEntitiesPaginationQuery>;
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery>;
   dataColumns: DataColumns;
   entityLink: string;
-  paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesPaginationQuery$variables>;
+  paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables>;
   isRelationReversed: boolean;
   onLabelClick: HandleAddFilter;
   onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
@@ -34,7 +30,7 @@ interface EntityStixCoreRelationshipsEntitiesProps {
 }
 
 const entityStixCoreRelationshipsEntitiesFragment = graphql`
-  fragment EntityStixCoreRelationshipsEntities_data on Query
+  fragment EntityStixCoreRelationshipsEntitiesViewLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
@@ -61,7 +57,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
       edges {
         node {
           id
-          ...EntityStixCoreRelationshipsEntitiesLine_node
+          ...EntityStixCoreRelationshipsEntitiesViewLine_node
         }
       }
       pageInfo {
@@ -74,7 +70,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
 `;
 
 export const entityStixCoreRelationshipsEntitiesQuery = graphql`
-  query EntityStixCoreRelationshipsEntitiesPaginationQuery(
+  query EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
@@ -85,7 +81,7 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
     $relationship_type: [String]
     $elementId: String
   ) {
-    ...EntityStixCoreRelationshipsEntities_data
+    ...EntityStixCoreRelationshipsEntitiesViewLines_data
       @arguments(
         search: $search
         count: $count
@@ -116,8 +112,8 @@ EntityStixCoreRelationshipsEntitiesProps
   setNumberOfElements,
 }) => {
   const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntityStixCoreRelationshipsEntitiesPaginationQuery,
-  EntityStixCoreRelationshipsEntities_data$key
+  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery,
+  EntityStixCoreRelationshipsEntitiesViewLines_data$key
   >({
     queryRef,
     linesQuery: entityStixCoreRelationshipsEntitiesQuery,
@@ -135,7 +131,7 @@ EntityStixCoreRelationshipsEntitiesProps
       globalCount={
         data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad
       }
-      LineComponent={EntityStixCoreRelationshipsEntitiesLine}
+      LineComponent={EntityStixCoreRelationshipsEntitiesViewLine}
       DummyLineComponent={EntityStixCoreRelationshipsEntitiesLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
@@ -151,10 +147,10 @@ EntityStixCoreRelationshipsEntitiesProps
   );
 };
 
-const EntityStixCoreRelationshipsEntities: FunctionComponent<
+const EntityStixCoreRelationshipsEntitiesViewLines: FunctionComponent<
 Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
 > = (props) => {
-  const queryRef = useQueryLoading<EntityStixCoreRelationshipsEntitiesPaginationQuery>(
+  const queryRef = useQueryLoading<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery>(
     entityStixCoreRelationshipsEntitiesQuery,
     { count: 25, ...props.paginationOptions },
   );
@@ -170,4 +166,4 @@ Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
   );
 };
 
-export default EntityStixCoreRelationshipsEntities;
+export default EntityStixCoreRelationshipsEntitiesViewLines;

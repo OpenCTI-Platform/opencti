@@ -1,46 +1,46 @@
 import React, { FunctionComponent } from 'react';
-import { UserContext } from '../../../../utils/hooks/useAuth';
-import ListLines from '../../../../components/list_lines/ListLines';
-import ToolBar from '../../data/ToolBar';
-import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectIndicatorsLines, { stixDomainObjectIndicatorsLinesQuery } from '../../observations/indicators/StixDomainObjectIndicatorsLines';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { UserContext } from '../../../../../../utils/hooks/useAuth';
+import ListLines from '../../../../../../components/list_lines/ListLines';
+import ToolBar from '../../../../data/ToolBar';
+import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
+import { useFormatter } from '../../../../../../components/i18n';
+import { QueryRenderer } from '../../../../../../relay/environment';
+import StixDomainObjectIndicatorsLines, { stixDomainObjectIndicatorsLinesQuery } from '../../../../observations/indicators/StixDomainObjectIndicatorsLines';
+import Security from '../../../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity
-  from './StixCoreRelationshipCreationFromEntity';
-import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../components/list_lines';
+  from '../../StixCoreRelationshipCreationFromEntity';
+import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
+import { PaginationOptions } from '../../../../../../components/list_lines';
 import {
   StixDomainObjectIndicatorsLinesQuery$data,
-} from '../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
-import { ModuleHelper } from '../../../../utils/platformModulesHelper';
-import { cleanFilters, convertFilters } from '../../../../utils/ListParameters';
-import { EntityStixCoreRelationshipsEntitiesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
-
-const LOCAL_STORAGE_KEY = 'view-stixDomainObjectIndicatorsEntitiesView';
+} from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
+import { ModuleHelper } from '../../../../../../utils/platformModulesHelper';
+import { cleanFilters, convertFilters } from '../../../../../../utils/ListParameters';
+import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from '../__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 
 interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps {
   entityId: string
   entityLink: string
-  localStorage: PaginationLocalStorage<PaginationOptions>
-  currentView: string
   defaultStartTime: string
   defaultStopTime: string
+  localStorage: PaginationLocalStorage<PaginationOptions>
+  isRelationReversed: boolean
+  currentView: string
   enableContextualView: boolean,
 }
-const EntityStixCoreRelationshipsForIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps> = ({
+const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps> = ({
   entityId,
   entityLink,
-  localStorage,
-  currentView,
   defaultStartTime,
   defaultStopTime,
+  localStorage,
+  isRelationReversed,
+  currentView,
   enableContextualView,
 }) => {
   const { t } = useFormatter();
-  const { viewStorage, helpers: storageHelpers } = localStorage;
+  const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
   const {
     filters,
     searchTerm,
@@ -83,7 +83,7 @@ const EntityStixCoreRelationshipsForIndicatorsEntitiesView: FunctionComponent<En
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: paginationFilters,
-  } as unknown as Partial<EntityStixCoreRelationshipsEntitiesPaginationQuery$variables>; // Because of FilterMode
+  } as unknown as Partial<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables>; // Because of FilterMode
 
   const {
     selectedElements,
@@ -92,7 +92,7 @@ const EntityStixCoreRelationshipsForIndicatorsEntitiesView: FunctionComponent<En
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle(LOCAL_STORAGE_KEY);
+  } = useEntityToggle(localStorageKey);
   const buildColumnsEntities = (platformModuleHelpers: ModuleHelper | undefined) => {
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     return {
@@ -172,11 +172,7 @@ const EntityStixCoreRelationshipsForIndicatorsEntitiesView: FunctionComponent<En
             <QueryRenderer
               query={stixDomainObjectIndicatorsLinesQuery}
               variables={{ count: 25, ...paginationOptions }}
-              render={({
-                props,
-              }: {
-                props: StixDomainObjectIndicatorsLinesQuery$data;
-              }) => (
+              render={({ props }: { props: StixDomainObjectIndicatorsLinesQuery$data }) => (
                 <StixDomainObjectIndicatorsLines
                   data={props}
                   paginationOptions={paginationOptions}
@@ -211,7 +207,7 @@ const EntityStixCoreRelationshipsForIndicatorsEntitiesView: FunctionComponent<En
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
-          isRelationReversed={true}
+          isRelationReversed={isRelationReversed}
           targetStixDomainObjectTypes={['Indicator']}
           paginationOptions={paginationOptions}
           openExports={openExports}
@@ -226,4 +222,4 @@ const EntityStixCoreRelationshipsForIndicatorsEntitiesView: FunctionComponent<En
     </UserContext.Consumer>
   );
 };
-export default EntityStixCoreRelationshipsForIndicatorsEntitiesView;
+export default EntityStixCoreRelationshipsIndicatorsEntitiesView;

@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import EntityStixCoreRelationshipsContextualView from './EntityStixCoreRelationshipsContextualView';
-import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../../components/list_lines';
+import EntityStixCoreRelationshipsContextualView from '../EntityStixCoreRelationshipsContextualView';
+import { usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
+import { PaginationOptions } from '../../../../../../components/list_lines';
 import EntityStixCoreRelationshipsEntitiesView from '../EntityStixCoreRelationshipsEntitiesView';
 import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
-import ExportContextProvider from '../../../../../utils/ExportContextProvider';
+import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -21,7 +21,7 @@ interface EntityStixCoreRelationshipsForStixCyberObservableProps {
   defaultStopTime: string
 }
 
-const EntityStixCoreRelationshipsForStixCyberObservable: FunctionComponent<EntityStixCoreRelationshipsForStixCyberObservableProps> = (props) => {
+const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntityStixCoreRelationshipsForStixCyberObservableProps> = (props) => {
   const classes = useStyles();
 
   const { entityId, entityLink, defaultStartTime, defaultStopTime } = props;
@@ -88,4 +88,4 @@ const EntityStixCoreRelationshipsForStixCyberObservable: FunctionComponent<Entit
   );
 };
 
-export default EntityStixCoreRelationshipsForStixCyberObservable;
+export default EntityStixCoreRelationshipsStixCyberObservable;

@@ -1,22 +1,20 @@
 import * as R from 'ramda';
 import React, { FunctionComponent } from 'react';
-import { UserContext } from '../../../../utils/hooks/useAuth';
-import ListLines from '../../../../components/list_lines/ListLines';
-import ToolBar from '../../data/ToolBar';
-import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import EntityStixCoreRelationshipsEntities from './EntityStixCoreRelationshipsEntities';
-import { useFormatter } from '../../../../components/i18n';
-import { cleanFilters, convertFilters } from '../../../../utils/ListParameters';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
-import Security from '../../../../utils/Security';
-import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../utils/stixTypeUtils';
-import { ModuleHelper } from '../../../../utils/platformModulesHelper';
-import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { Filters, PaginationOptions } from '../../../../components/list_lines';
-import { EntityStixCoreRelationshipsEntitiesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
-
-const LOCAL_STORAGE_KEY = 'view-entityStixCoreRelationshipsEntitiesView';
+import { UserContext } from '../../../../../utils/hooks/useAuth';
+import ListLines from '../../../../../components/list_lines/ListLines';
+import ToolBar from '../../../data/ToolBar';
+import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
+import EntityStixCoreRelationshipsEntitiesViewLines from './EntityStixCoreRelationshipsEntitiesViewLines';
+import { useFormatter } from '../../../../../components/i18n';
+import { cleanFilters, convertFilters } from '../../../../../utils/ListParameters';
+import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
+import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
+import Security from '../../../../../utils/Security';
+import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
+import { ModuleHelper } from '../../../../../utils/platformModulesHelper';
+import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import { Filters, PaginationOptions } from '../../../../../components/list_lines';
+import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string
@@ -47,7 +45,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
   paddingRightButtonAdd = null,
 }) => {
   const { t } = useFormatter();
-  const { viewStorage, helpers: storageHelpers } = localStorage;
+  const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
   const {
     filters,
     searchTerm,
@@ -86,7 +84,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     filters: convertFilters(
       R.omit(['relationship_type', 'entity_type'], cleanFilters(filters, availableFilterKeys)),
     ),
-  } as unknown as EntityStixCoreRelationshipsEntitiesPaginationQuery$variables; // Because of FilterMode
+  } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
   let backgroundTaskFilters: Filters;
   if (selectedRelationshipTypes.length > 0) {
@@ -109,7 +107,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle(LOCAL_STORAGE_KEY);
+  } = useEntityToggle(localStorageKey);
   const buildColumnsEntities = (platformModuleHelpers: ModuleHelper | undefined) => {
     const isObservables = isStixCyberObservables(stixCoreObjectTypes);
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
@@ -222,7 +220,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
               enableContextualView={enableContextualView}
               currentView={finalView}
             >
-              <EntityStixCoreRelationshipsEntities
+              <EntityStixCoreRelationshipsEntitiesViewLines
                 paginationOptions={paginationOptions}
                 entityLink={entityLink}
                 dataColumns={buildColumnsEntities(platformModuleHelpers)}

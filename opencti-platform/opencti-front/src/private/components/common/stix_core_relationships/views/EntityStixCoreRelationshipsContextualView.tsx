@@ -13,17 +13,17 @@ import { useFormatter } from '../../../../../components/i18n';
 import { defaultValue } from '../../../../../utils/Graph';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../../components/ItemMarkings';
-import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { Filters, PaginationOptions } from '../../../../../components/list_lines';
 import { cleanFilters, convertFilters } from '../../../../../utils/ListParameters';
 import ToolBar from '../../../data/ToolBar';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import usePreloadedFragment from '../../../../../utils/hooks/usePreloadedFragment';
+import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import { EntityStixCoreRelationshipsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsContextualViewQuery.graphql';
 import { EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key } from './__generated__/EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject.graphql';
 import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
-import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
+import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 
 const useStyles = makeStyles(() => ({
   chipInList: {
@@ -59,11 +59,8 @@ const handleFilterOnReports = (reports: ({ readonly id: string })[], filters: Fi
   if (isEmptyField(reports)) {
     return [{ id: '' }]; // Return nothing
   }
-  if (!filters) {
-    return reports;
-  }
 
-  const selectedReports = filters.reports ?? [];
+  const selectedReports = filters?.reports ?? [];
   let filterReport;
   if (isNotEmptyField(selectedReports)) {
     const reportIds = reports.map((r) => r.id);

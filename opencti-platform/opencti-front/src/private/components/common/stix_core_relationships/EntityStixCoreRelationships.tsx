@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
-import EntityStixCoreRelationshipsRelationshipsView from './EntityStixCoreRelationshipsRelationshipsView';
-import EntityStixCoreRelationshipsEntitiesView from './EntityStixCoreRelationshipsEntitiesView';
+import EntityStixCoreRelationshipsRelationshipsView from './views/EntityStixCoreRelationshipsRelationshipsView';
+import EntityStixCoreRelationshipsEntitiesView from './views/EntityStixCoreRelationshipsEntitiesView';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../components/list_lines';
 
@@ -30,18 +30,18 @@ interface EntityStixCoreRelationshipsProps {
 }
 
 const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationshipsProps> = ({
-  stixCoreObjectTypes,
   entityId,
-  role,
   entityLink,
-  enableNestedView,
-  enableContextualView,
-  relationshipTypes,
-  isRelationReversed,
-  allDirections,
   defaultStartTime,
   defaultStopTime,
+  relationshipTypes,
+  stixCoreObjectTypes,
   currentView,
+  enableNestedView,
+  enableContextualView,
+  isRelationReversed,
+  allDirections,
+  role,
   paddingRightButtonAdd,
 }) => {
   const classes = useStyles();
@@ -69,32 +69,32 @@ const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationships
             && <EntityStixCoreRelationshipsEntitiesView
               localStorage={localStorage}
               entityId={entityId}
-              stixCoreObjectTypes={stixCoreObjectTypes}
-              relationshipTypes={relationshipTypes}
               entityLink={entityLink}
-              isRelationReversed={isRelationReversed}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+              relationshipTypes={relationshipTypes}
+              stixCoreObjectTypes={stixCoreObjectTypes}
               currentView={currentView}
               enableNestedView={enableNestedView}
               enableContextualView={enableContextualView}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
+              isRelationReversed={isRelationReversed}
               paddingRightButtonAdd={paddingRightButtonAdd}
             />}
            {finalView === 'relationships'
             && <EntityStixCoreRelationshipsRelationshipsView
             localStorage={localStorage}
             entityId={entityId}
-            role={role}
-            stixCoreObjectTypes={stixCoreObjectTypes}
-            relationshipTypes={relationshipTypes}
             entityLink={entityLink}
-            isRelationReversed={isRelationReversed}
-            allDirections={allDirections}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+            relationshipTypes={relationshipTypes}
+            stixCoreObjectTypes={stixCoreObjectTypes}
             currentView={currentView}
             enableNestedView={enableNestedView}
             enableContextualView={enableContextualView}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
+            isRelationReversed={isRelationReversed}
+            allDirections={allDirections}
+            role={role}
             paddingRightButtonAdd={paddingRightButtonAdd}
             />}
         </div>

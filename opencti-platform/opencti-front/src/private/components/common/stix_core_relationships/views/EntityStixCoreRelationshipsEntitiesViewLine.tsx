@@ -10,20 +10,20 @@ import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import Chip from '@mui/material/Chip';
-import ItemMarkings from '../../../../components/ItemMarkings';
-import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { Theme } from '../../../../components/Theme';
-import { resolveLink } from '../../../../utils/Entity';
-import { useFormatter } from '../../../../components/i18n';
-import { DataColumns } from '../../../../components/list_lines';
-import { UseEntityToggle } from '../../../../utils/hooks/useEntityToggle';
+import ItemMarkings from '../../../../../components/ItemMarkings';
+import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
+import { Theme } from '../../../../../components/Theme';
+import { resolveLink } from '../../../../../utils/Entity';
+import { useFormatter } from '../../../../../components/i18n';
+import { DataColumns } from '../../../../../components/list_lines';
+import { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
+import ItemIcon from '../../../../../components/ItemIcon';
+import { defaultValue } from '../../../../../utils/Graph';
+import { hexToRGB, itemColor } from '../../../../../utils/Colors';
 import {
-  EntityStixCoreRelationshipsEntitiesLine_node$data,
-  EntityStixCoreRelationshipsEntitiesLine_node$key,
-} from './__generated__/EntityStixCoreRelationshipsEntitiesLine_node.graphql';
-import ItemIcon from '../../../../components/ItemIcon';
-import { defaultValue } from '../../../../utils/Graph';
-import { hexToRGB, itemColor } from '../../../../utils/Colors';
+  EntityStixCoreRelationshipsEntitiesViewLine_node$data,
+  EntityStixCoreRelationshipsEntitiesViewLine_node$key,
+} from './__generated__/EntityStixCoreRelationshipsEntitiesViewLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -65,7 +65,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const entityStixCoreRelationshipsEntitiesFragment = graphql`
-  fragment EntityStixCoreRelationshipsEntitiesLine_node on StixCoreObject {
+  fragment EntityStixCoreRelationshipsEntitiesViewLine_node on StixCoreObject {
     id
     entity_type
     created_at
@@ -217,7 +217,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
 `;
 
 interface EntityStixCoreRelationshipsEntitiesLineProps {
-  node: EntityStixCoreRelationshipsEntitiesLine_node$key;
+  node: EntityStixCoreRelationshipsEntitiesViewLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: () => void;
   onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
@@ -226,12 +226,12 @@ interface EntityStixCoreRelationshipsEntitiesLineProps {
   selectAll: UseEntityToggle<{ id: string }>['selectAll'];
   onToggleShiftEntity: (
     index: number,
-    entity: EntityStixCoreRelationshipsEntitiesLine_node$data
+    entity: EntityStixCoreRelationshipsEntitiesViewLine_node$data
   ) => void;
   index: number;
 }
 
-export const EntityStixCoreRelationshipsEntitiesLine: FunctionComponent<
+export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
 EntityStixCoreRelationshipsEntitiesLineProps
 > = ({
   node,

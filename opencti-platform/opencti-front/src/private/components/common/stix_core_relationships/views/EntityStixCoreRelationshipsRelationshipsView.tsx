@@ -1,41 +1,41 @@
 import * as R from 'ramda';
 import React, { FunctionComponent } from 'react';
-import { UserContext } from '../../../../utils/hooks/useAuth';
-import ListLines from '../../../../components/list_lines/ListLines';
-import { QueryRenderer } from '../../../../relay/environment';
+import { UserContext } from '../../../../../utils/hooks/useAuth';
+import ListLines from '../../../../../components/list_lines/ListLines';
+import { QueryRenderer } from '../../../../../relay/environment';
 import EntityStixCoreRelationshipsLinesAll, {
   entityStixCoreRelationshipsLinesAllQuery,
-} from './EntityStixCoreRelationshipsLinesAll';
+} from '../EntityStixCoreRelationshipsLinesAll';
 import EntityStixCoreRelationshipsLinesTo, {
   entityStixCoreRelationshipsLinesToQuery,
-} from './EntityStixCoreRelationshipsLinesTo';
+} from '../EntityStixCoreRelationshipsLinesTo';
 import EntityStixCoreRelationshipsLinesFrom, {
   entityStixCoreRelationshipsLinesFromQuery,
-} from './EntityStixCoreRelationshipsLinesFrom';
-import ToolBar from '../../data/ToolBar';
-import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { cleanFilters, convertFilters } from '../../../../utils/ListParameters';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
-import Security from '../../../../utils/Security';
-import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../utils/stixTypeUtils';
-import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../components/list_lines';
-import { ModuleHelper } from '../../../../utils/platformModulesHelper';
+} from '../EntityStixCoreRelationshipsLinesFrom';
+import ToolBar from '../../../data/ToolBar';
+import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
+import { cleanFilters, convertFilters } from '../../../../../utils/ListParameters';
+import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
+import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
+import Security from '../../../../../utils/Security';
+import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
+import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import { PaginationOptions } from '../../../../../components/list_lines';
+import { ModuleHelper } from '../../../../../utils/platformModulesHelper';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
   entityLink: string
+  defaultStartTime: string
+  defaultStopTime: string
   stixCoreObjectTypes: string[]
   relationshipTypes: string[]
   localStorage: PaginationLocalStorage<PaginationOptions>
   currentView: string
-  defaultStartTime: string
-  defaultStopTime: string,
-  allDirections?: boolean,
-  isRelationReversed?: boolean,
-  enableContextualView: boolean,
-  enableNestedView?: boolean,
+  allDirections?: boolean
+  isRelationReversed?: boolean
+  enableContextualView: boolean
+  enableNestedView?: boolean
   paddingRightButtonAdd?: number
   role?: string,
 }
@@ -44,11 +44,9 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   entityLink,
   defaultStartTime,
   defaultStopTime,
-
   localStorage,
   relationshipTypes = [],
   stixCoreObjectTypes = [],
-
   role,
   isRelationReversed,
   allDirections,

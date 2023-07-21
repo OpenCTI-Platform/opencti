@@ -1,13 +1,21 @@
 import React, { FunctionComponent } from 'react';
-import ExportContextProvider from '../../../../utils/ExportContextProvider';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import makeStyles from '@mui/styles/makeStyles';
+import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
+import { usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import EntityStixCoreRelationshipsContextualView
-  from './stix_cyber_observable/EntityStixCoreRelationshipsContextualView';
+  from '../EntityStixCoreRelationshipsContextualView';
 import EntityStixCoreRelationshipsRelationshipsView
-  from './EntityStixCoreRelationshipsRelationshipsView';
-import EntityStixCoreRelationshipsForIndicatorsEntitiesView
-  from './EntityStixCoreRelationshipsForIndicatorsEntitiesView';
-import { PaginationOptions } from '../../../../components/list_lines';
+  from '../EntityStixCoreRelationshipsRelationshipsView';
+import EntityStixCoreRelationshipsIndicatorsEntitiesView
+  from './EntityStixCoreRelationshipsIndicatorsEntitiesView';
+import { PaginationOptions } from '../../../../../../components/list_lines';
+
+const useStyles = makeStyles(() => ({
+  container: {
+    marginTop: 15,
+    paddingBottom: 70,
+  },
+}));
 
 interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps {
   entityId: string
@@ -16,12 +24,14 @@ interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps {
   defaultStopTime: string
 }
 
-const EntityStixCoreRelationshipsForIndicators: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps> = ({
+const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps> = ({
   entityId,
   entityLink,
   defaultStartTime,
   defaultStopTime,
 }) => {
+  const classes = useStyles();
+
   const relationshipTypes = ['indicates'];
   const entityTypes = ['Indicator'];
 
@@ -39,15 +49,16 @@ const EntityStixCoreRelationshipsForIndicators: FunctionComponent<EntityStixCore
 
   return (
     <ExportContextProvider>
-      <div style={{ marginTop: 20 }}>
+      <div className={classes.container}>
         {view === 'entities'
-          && <EntityStixCoreRelationshipsForIndicatorsEntitiesView
+          && <EntityStixCoreRelationshipsIndicatorsEntitiesView
             entityId={entityId}
             entityLink={entityLink}
-            localStorage={localStorage}
-            currentView={view}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
+            localStorage={localStorage}
+            isRelationReversed={true}
+            currentView={view}
             enableContextualView={true}
           />}
 
@@ -81,4 +92,4 @@ const EntityStixCoreRelationshipsForIndicators: FunctionComponent<EntityStixCore
   );
 };
 
-export default EntityStixCoreRelationshipsForIndicators;
+export default EntityStixCoreRelationshipsIndicators;
