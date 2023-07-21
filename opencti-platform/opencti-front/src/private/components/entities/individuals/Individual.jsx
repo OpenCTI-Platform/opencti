@@ -115,6 +115,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
       x_opencti_stix_ids
       spec_version
       revoked
+      x_opencti_reliability
       confidence
       created
       modified
@@ -126,6 +127,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

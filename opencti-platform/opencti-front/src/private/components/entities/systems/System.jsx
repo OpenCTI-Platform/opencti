@@ -110,6 +110,7 @@ const System = createFragmentContainer(SystemComponent, {
       x_opencti_stix_ids
       spec_version
       revoked
+      x_opencti_reliability
       confidence
       created
       modified
@@ -120,6 +121,7 @@ const System = createFragmentContainer(SystemComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

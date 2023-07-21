@@ -78,10 +78,9 @@ class OrganizationDetailsComponent extends Component {
                 {t('Reliability')}
               </Typography>
               <ItemOpenVocab
-                  key="type"
-                  small={true}
-                  type="reliability_ov"
-                  value={organization.x_opencti_reliability}
+                small
+                type="reliability_ov"
+                value={organization.x_opencti_reliability}
               />
               <Typography
                 variant="h3"

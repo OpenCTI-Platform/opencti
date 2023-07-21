@@ -117,7 +117,7 @@ InputSliderFieldProps & FieldProps
         <Grid item={true} xs={6}>
           <Field
             component={TextField}
-            fullWidth={true}
+            fullWidth
             variant="standard"
             type="number"
             name={name}

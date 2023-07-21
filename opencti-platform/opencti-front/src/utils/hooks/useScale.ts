@@ -144,8 +144,8 @@ export const buildScaleLevel = (
   return {
     level,
     marks: [
+      ...sortedTicks,
       min,
-      ...sortedTicks.sort((a: Tick, b: Tick) => a.value - b.value),
     ],
     scale,
   };
