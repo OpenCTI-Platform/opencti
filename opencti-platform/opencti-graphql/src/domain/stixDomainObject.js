@@ -1,26 +1,12 @@
 import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  deleteElementById,
-  distributionEntities,
-  listThroughGetTo,
-  timeSeriesEntities,
-  updateAttribute,
-} from '../database/middleware';
-import { internalFindByIds, internalLoadById, listEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { batchListThroughGetTo, createEntity, deleteElementById, distributionEntities, listThroughGetTo, timeSeriesEntities, updateAttribute, } from '../database/middleware';
+import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import {
-  buildPagination,
-  isEmptyField,
-  isNotEmptyField,
-  READ_INDEX_INFERRED_ENTITIES,
-  READ_INDEX_STIX_DOMAIN_OBJECTS
-} from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -31,7 +17,7 @@ import {
   isStixDomainObjectLocation, isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, } from '../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { now, utcDate } from '../utils/format';
@@ -39,10 +25,7 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-typ
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
-import {
-  stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipDeleteRefRelation
-} from './stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];

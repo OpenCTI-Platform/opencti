@@ -9,6 +9,7 @@ import {
   last,
   assoc,
 } from 'ramda';
+import * as R from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
 
 const buildParamsFromHistory = (params) => {
@@ -219,3 +220,10 @@ export const convertFilters = (filters) => pipe(
     return { key, values: valIds, operator, filterMode };
   }),
 )(filters);
+
+export const cleanFilters = (filters, availableFilterKeys) => {
+  if (!filters) {
+    return filters;
+  }
+  return R.omit(Object.keys(filters).filter((k) => !availableFilterKeys.includes(k)), filters);
+};

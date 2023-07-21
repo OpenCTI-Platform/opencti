@@ -19,6 +19,7 @@ const nbOfRowsToLoad = 50;
 const contextualViewLinesFragment = graphql`
   fragment EntityStixCoreRelationshipsContextualViewLines_data on Query
   @argumentDefinitions(
+    types: { type: "[String]" }
     reportIds: { type: "[String]" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
@@ -29,6 +30,7 @@ const contextualViewLinesFragment = graphql`
   )
   @refetchable(queryName: "ContextualViewLines_refetch") {
     stixCoreObjects(
+      types: $types
       search: $search
       first: $count
       after: $cursor
@@ -52,6 +54,7 @@ const contextualViewLinesFragment = graphql`
 
 export const contextualViewLinesQuery = graphql`
   query EntityStixCoreRelationshipsContextualViewLinesQuery(
+    $types: [String]
     $reportIds: [String]
     $search: String
     $count: Int!
@@ -62,6 +65,7 @@ export const contextualViewLinesQuery = graphql`
   ) {
     ...EntityStixCoreRelationshipsContextualViewLines_data
     @arguments(
+      types: $types
       reportIds: $reportIds
       search: $search
       count: $count

@@ -6,7 +6,7 @@ import ToolBar from '../../data/ToolBar';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import EntityStixCoreRelationshipsEntities from './EntityStixCoreRelationshipsEntities';
 import { useFormatter } from '../../../../components/i18n';
-import { convertFilters } from '../../../../utils/ListParameters';
+import { cleanFilters, convertFilters } from '../../../../utils/ListParameters';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
@@ -14,9 +14,7 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Filters, PaginationOptions } from '../../../../components/list_lines';
-import {
-  EntityStixCoreRelationshipsEntitiesPaginationQuery$variables,
-} from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
+import { EntityStixCoreRelationshipsEntitiesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'view-entityStixCoreRelationshipsEntitiesView';
 
@@ -60,6 +58,21 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     openExports,
   } = viewStorage;
 
+  let availableFilterKeys = [
+    'relationship_type',
+    'entity_type',
+    'markedBy',
+    'confidence',
+    'labelledBy',
+    'createdBy',
+    'creator',
+    'created_start_date',
+    'created_end_date',
+  ];
+  if ((relationshipTypes ?? []).includes('targets')) {
+    availableFilterKeys = [...availableFilterKeys, 'targets'];
+  }
+
   const selectedTypes = filters?.entity_type?.map((o) => o.id) ?? stixCoreObjectTypes;
   const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
 
@@ -71,9 +84,9 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: convertFilters(
-      R.omit(['relationship_type', 'entity_type'], filters),
+      R.omit(['relationship_type', 'entity_type'], cleanFilters(filters, availableFilterKeys)),
     ),
-  } as unknown as EntityStixCoreRelationshipsEntitiesPaginationQuery$variables;
+  } as unknown as EntityStixCoreRelationshipsEntitiesPaginationQuery$variables; // Because of FilterMode
 
   let backgroundTaskFilters: Filters;
   if (selectedRelationshipTypes.length > 0) {
@@ -149,20 +162,6 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements || {}).length;
   }
   const finalView = currentView || view;
-  let availableFilterKeys = [
-    'relationship_type',
-    'entity_type',
-    'markedBy',
-    'confidence',
-    'labelledBy',
-    'createdBy',
-    'creator',
-    'created_start_date',
-    'created_end_date',
-  ];
-  if ((relationshipTypes ?? []).includes('targets')) {
-    availableFilterKeys = [...availableFilterKeys, 'targets'];
-  }
   return (
     <UserContext.Consumer>
       {({ platformModuleHelpers }) => (

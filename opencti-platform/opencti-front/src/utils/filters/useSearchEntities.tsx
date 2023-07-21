@@ -594,6 +594,26 @@ const useSearchEntities = ({
             unionSetEntities('indicates', indicatesEntities);
           });
         break;
+      case 'reports':
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: ['Report'],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 50,
+        })
+          .toPromise()
+          .then((data) => {
+            const reportEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
+            unionSetEntities('reports', reportEntities);
+          });
+        break;
       case 'markedBy':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',

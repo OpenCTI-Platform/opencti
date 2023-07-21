@@ -14,8 +14,8 @@ import { defaultValue } from '../../../../../utils/Graph';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
-import { PaginationOptions } from '../../../../../components/list_lines';
-import { convertFilters } from '../../../../../utils/ListParameters';
+import { Filters, PaginationOptions } from '../../../../../components/list_lines';
+import { cleanFilters, convertFilters } from '../../../../../utils/ListParameters';
 import ToolBar from '../../../data/ToolBar';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -23,6 +23,7 @@ import usePreloadedFragment from '../../../../../utils/hooks/usePreloadedFragmen
 import { EntityStixCoreRelationshipsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsContextualViewQuery.graphql';
 import { EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key } from './__generated__/EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject.graphql';
 import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
+import { isNotEmptyField } from '../../../../../utils/utils';
 
 const useStyles = makeStyles(() => ({
   chipInList: {
@@ -54,6 +55,24 @@ const contextualViewQuery = graphql`
     }
   }
 `;
+const handleFilterOnReports = (reports: ({ readonly id: string })[], filters: Filters | undefined) => {
+  if (!filters) {
+    return reports;
+  }
+
+  const selectedReports = filters.reports ?? [];
+  let filterReport;
+  if (isNotEmptyField(selectedReports)) {
+    const reportIds = reports.map((r) => r.id);
+    filterReport = selectedReports.filter((r) => isNotEmptyField(r.id) && reportIds.includes(r.id as string));
+    if (filterReport.length === 0) {
+      filterReport = ['none']; // Return nothing
+    }
+  } else {
+    filterReport = reports;
+  }
+  return filterReport;
+};
 
 interface EntityStixCoreRelationshipsContextualViewProps {
   queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewQuery>
@@ -75,18 +94,6 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Omit
   const classes = useStyles();
   const { t, nsdt } = useFormatter();
 
-  const stixDomainObject = usePreloadedFragment<
-  EntityStixCoreRelationshipsContextualViewQuery,
-  EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key
-  >({
-    queryDef: contextualViewQuery,
-    fragmentDef: contextualViewFragment,
-    queryRef,
-    nodePath: 'stixDomainObject',
-  });
-
-  const reportIds = stixDomainObject.reports?.edges?.map((e) => e?.node) ?? [];
-
   const { viewStorage, helpers, paginationOptions, localStorageKey } = localStorage;
 
   const {
@@ -98,22 +105,47 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Omit
     openExports,
   } = viewStorage;
 
+  const availableFilterKeys = [
+    'relationship_type',
+    'entity_type',
+    'markedBy',
+    'confidence',
+    'labelledBy',
+    'createdBy',
+    'creator',
+    'created_start_date',
+    'created_end_date',
+    'reports',
+  ];
+
+  const stixDomainObject = usePreloadedFragment<
+  EntityStixCoreRelationshipsContextualViewQuery,
+  EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key
+  >({
+    queryDef: contextualViewQuery,
+    fragmentDef: contextualViewFragment,
+    queryRef,
+    nodePath: 'stixDomainObject',
+  });
+
   const selectedTypes = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
+  const reports = stixDomainObject.reports?.edges?.map((e) => e?.node)
+    .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
   const finalFilters = {
-    ...filters,
-    entity_type: selectedTypes.map((o) => ({ id: o, value: o })),
-    objectContains: reportIds,
+    ...R.omit(['entity_type', 'reports'], filters),
+    objectContains: handleFilterOnReports(reports, filters),
   };
 
   const paginationOptionsForQuery = {
     ...paginationOptions,
-    reportIds: reportIds.map((r) => r?.id),
-    filters: convertFilters(finalFilters),
+    types: selectedTypes,
+    reportIds: reports.map((r) => r.id),
+    filters: convertFilters(cleanFilters(finalFilters, availableFilterKeys)),
   } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables; // Because of FilterMode
 
   const backgroundTaskFilters = {
-    ...filters,
+    ...finalFilters,
     entity_type:
     selectedTypes.length > 0
       ? selectedTypes.map((n) => ({ id: n, value: n }))
@@ -230,17 +262,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Omit
         exportEntityType={'Stix-Core-Object'}
         iconExtension={true}
         filters={filters}
-        availableFilterKeys={[
-          'relationship_type',
-          'entity_type',
-          'markedBy',
-          'confidence',
-          'labelledBy',
-          'createdBy',
-          'creator',
-          'created_start_date',
-          'created_end_date',
-        ]}
+        availableFilterKeys={availableFilterKeys}
         availableRelationshipTypes={relationshipTypes}
         availableEntityTypes={stixCoreObjectTypes}
         numberOfElements={numberOfElements}

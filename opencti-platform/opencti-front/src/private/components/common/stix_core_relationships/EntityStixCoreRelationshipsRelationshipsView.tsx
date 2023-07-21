@@ -14,7 +14,7 @@ import EntityStixCoreRelationshipsLinesFrom, {
 } from './EntityStixCoreRelationshipsLinesFrom';
 import ToolBar from '../../data/ToolBar';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { convertFilters } from '../../../../utils/ListParameters';
+import { cleanFilters, convertFilters } from '../../../../utils/ListParameters';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../utils/Security';
@@ -68,6 +68,18 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     view,
   } = viewStorage;
 
+  const availableFilterKeys = [
+    'relationship_type',
+    'entity_type',
+    'markedBy',
+    'confidence',
+    'labelledBy',
+    'createdBy',
+    'creator',
+    'created_start_date',
+    'created_end_date',
+  ];
+
   const selectedTypes = filters?.entity_type?.map((o) => o.id) ?? stixCoreObjectTypes;
   const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
 
@@ -79,11 +91,11 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: convertFilters(
-      R.omit(['relationship_type', 'entity_type'], filters),
+      R.omit(['relationship_type', 'entity_type'], cleanFilters(filters, availableFilterKeys)),
     ),
   } as object;
 
-  let backgroundTaskFilters: Filters = {};
+  let backgroundTaskFilters = {};
   if (selectedRelationshipTypes.length > 0) {
     backgroundTaskFilters = {
       ...filters,
@@ -215,17 +227,6 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements || {}).length;
   }
   const finalView = currentView || view;
-  const availableFilterKeys = [
-    'relationship_type',
-    'entity_type',
-    'markedBy',
-    'confidence',
-    'labelledBy',
-    'createdBy',
-    'creator',
-    'created_start_date',
-    'created_end_date',
-  ];
   return (
       <UserContext.Consumer>
         {({ platformModuleHelpers }) => (

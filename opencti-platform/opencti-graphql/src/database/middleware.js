@@ -304,7 +304,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   // Filter on element id if necessary
   let targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
   if (isNotEmptyField(opts.elementId)) {
-    const elementIds = Array.isArray(elementId) ? elementId : [elementId]
+    const elementIds = Array.isArray(elementId) ? elementId : [elementId];
     targetIds = targetIds.filter((id) => elementIds.includes(id));
   }
   const targets = await elFindByIds(context, user, targetIds, opts);
