@@ -23,7 +23,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicators: FunctionCompon
   defaultStopTime,
 }) => {
   const relationshipTypes = ['indicates'];
-  const entityTypes = ['Stix-Cyber-Indicators'];
+  const entityTypes = ['Indicator'];
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
     `view-indicators-${entityId}`,
@@ -61,7 +61,6 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicators: FunctionCompon
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
             isRelationReversed={true}
-            allDirections={true}
             currentView={view}
             enableContextualView={true}
             enableNestedView={false}

@@ -16,6 +16,9 @@ import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__gen
 import { PaginationOptions } from '../../../../../components/list_lines';
 import { convertFilters } from '../../../../../utils/ListParameters';
 import ToolBar from '../../../data/ToolBar';
+import {
+  EntityStixCoreRelationshipsContextualViewLinesQuery$variables,
+} from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   chipInList: {
@@ -71,7 +74,7 @@ const EntityStixCoreRelationshipsContextualView = ({
     filters: convertFilters(
       R.omit(['entity_type'], filters),
     ),
-  };
+  } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables;
 
   const backgroundTaskFilters = {
     ...filters,

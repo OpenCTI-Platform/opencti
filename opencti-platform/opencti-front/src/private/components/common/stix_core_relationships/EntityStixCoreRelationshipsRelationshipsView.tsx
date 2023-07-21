@@ -20,7 +20,7 @@ import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreati
 import Security from '../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../components/list_lines';
+import { Filters, PaginationOptions } from '../../../../components/list_lines';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
@@ -32,8 +32,8 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   currentView: string
   defaultStartTime: string
   defaultStopTime: string,
-  allDirections: boolean,
-  isRelationReversed: boolean,
+  allDirections?: boolean,
+  isRelationReversed?: boolean,
   enableContextualView: boolean,
   enableNestedView?: boolean,
   paddingRightButtonAdd?: number
@@ -81,9 +81,9 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     filters: convertFilters(
       R.omit(['relationship_type', 'entity_type'], filters),
     ),
-  };
+  } as object;
 
-  let backgroundTaskFilters;
+  let backgroundTaskFilters: Filters = {};
   if (selectedRelationshipTypes.length > 0) {
     backgroundTaskFilters = {
       ...filters,
@@ -272,7 +272,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                         : entityStixCoreRelationshipsLinesFromQuery
                   }
                   variables={{ count: 25, ...paginationOptions }}
-                  render={({ props }) =>
+                  render={({ props }: { props: unknown }) =>
                     /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
                     (allDirections ? (
                       <EntityStixCoreRelationshipsLinesAll

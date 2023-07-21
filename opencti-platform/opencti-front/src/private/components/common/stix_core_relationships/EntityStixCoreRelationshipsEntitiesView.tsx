@@ -13,7 +13,10 @@ import Security from '../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../utils/stixTypeUtils';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../components/list_lines';
+import { Filters, PaginationOptions } from '../../../../components/list_lines';
+import {
+  EntityStixCoreRelationshipsEntitiesPaginationQuery$variables,
+} from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'view-entityStixCoreRelationshipsEntitiesView';
 
@@ -70,9 +73,9 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     filters: convertFilters(
       R.omit(['relationship_type', 'entity_type'], filters),
     ),
-  };
+  } as unknown as EntityStixCoreRelationshipsEntitiesPaginationQuery$variables;
 
-  let backgroundTaskFilters;
+  let backgroundTaskFilters: Filters;
   if (selectedRelationshipTypes.length > 0) {
     backgroundTaskFilters = {
       ...filters,

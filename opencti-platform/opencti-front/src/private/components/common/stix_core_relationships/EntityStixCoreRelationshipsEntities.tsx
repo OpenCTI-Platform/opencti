@@ -14,7 +14,7 @@ import {
   EntityStixCoreRelationshipsEntitiesPaginationQuery,
   EntityStixCoreRelationshipsEntitiesPaginationQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { EntityStixCoreRelationshipsEntities_data$key } from './__generated__/EntityStixCoreRelationshipsEntities_data.graphql';
 
 const nbOfRowsToLoad = 50;
@@ -25,7 +25,7 @@ interface EntityStixCoreRelationshipsEntitiesProps {
   entityLink: string;
   paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesPaginationQuery$variables>;
   isRelationReversed: boolean;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
   selectedElements: UseEntityToggle<{ id: string }>['selectedElements'];
   deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements'];
