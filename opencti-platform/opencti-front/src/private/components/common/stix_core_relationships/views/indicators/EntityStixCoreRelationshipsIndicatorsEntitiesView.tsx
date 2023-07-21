@@ -19,7 +19,7 @@ import { ModuleHelper } from '../../../../../../utils/platformModulesHelper';
 import { cleanFilters, convertFilters } from '../../../../../../utils/ListParameters';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from '../__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 
-interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps {
+interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
   entityLink: string
   defaultStartTime: string
@@ -29,7 +29,7 @@ interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView
   currentView: string
   enableContextualView: boolean,
 }
-const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps> = ({
+const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsIndicatorsEntitiesViewProps> = ({
   entityId,
   entityLink,
   defaultStartTime,

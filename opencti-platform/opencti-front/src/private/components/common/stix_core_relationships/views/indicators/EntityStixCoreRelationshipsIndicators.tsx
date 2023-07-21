@@ -17,14 +17,14 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps {
+interface EntityStixCoreRelationshipsIndicatorsProps {
   entityId: string
   entityLink: string
   defaultStartTime: string
   defaultStopTime: string
 }
 
-const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps> = ({
+const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRelationshipsIndicatorsProps> = ({
   entityId,
   entityLink,
   defaultStartTime,
