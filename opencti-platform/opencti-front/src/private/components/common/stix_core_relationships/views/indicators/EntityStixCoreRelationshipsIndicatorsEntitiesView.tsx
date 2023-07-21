@@ -124,6 +124,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
       objectMarking: {
         label: 'Marking',
         isSortable: isRuntimeSort,
+        width: '10%',
       },
     };
   };

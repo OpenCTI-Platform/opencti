@@ -336,7 +336,6 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 defaultStartTime={defaultStartTime}
                 defaultStopTime={defaultStopTime}
                 paginationOptions={paginationOptions}
-                connectionKey={'Pagination_stixCoreRelationships'}
                 paddingRight={paddingRightButtonAdd ?? 220}
               />
             </Security>
