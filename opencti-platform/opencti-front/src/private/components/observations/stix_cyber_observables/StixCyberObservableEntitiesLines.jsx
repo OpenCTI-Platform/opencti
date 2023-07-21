@@ -71,7 +71,7 @@ const styles = (theme) => ({
 class StixCyberObservableEntitiesLinesComponent extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(25);
+      this.props.relay.refetchConnection(200);
     });
   }
 
@@ -301,7 +301,6 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
 StixCyberObservableEntitiesLinesComponent.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
   entityId: PropTypes.string,
   data: PropTypes.object,
   relay: PropTypes.object,

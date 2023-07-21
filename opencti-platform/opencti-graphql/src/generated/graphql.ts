@@ -23775,6 +23775,7 @@ export type TaskAddInput = {
   objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   update?: InputMaybe<Scalars['Boolean']>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']>;
 };
 
 export type TaskConnection = {
@@ -25098,6 +25099,7 @@ export type ToolAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   tool_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -26436,6 +26438,7 @@ export type VulnerabilityAddInput = {
   name: Scalars['String'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;

@@ -10,7 +10,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { interval } from 'rxjs';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableEntitiesLines, {
@@ -20,9 +19,6 @@ import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relat
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
-import { TEN_SECONDS } from '../../../../utils/Time';
-
-const interval$ = interval(TEN_SECONDS);
 
 const styles = (theme) => ({
   paper: {
@@ -169,16 +165,6 @@ class StixCyberObservableEntities extends Component {
       view: 'lines',
       relationReversed: false,
     };
-  }
-
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(25);
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
   }
 
   handleReverseRelation() {
