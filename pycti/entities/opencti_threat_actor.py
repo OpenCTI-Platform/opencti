@@ -287,12 +287,15 @@ class ThreatActor:
             type = stix_object["x_opencti_type"].lower()
         elif self.opencti.get_attribute_in_extension("type", stix_object) is not None:
             type = self.opencti.get_attribute_in_extension("type", stix_object).lower()
-        elif "individual" in stix_object["resource_level"].lower():
+        elif (
+            "resource_level" in stix_object
+            and stix_object["resource_level"].lower() == "individual"
+        ):
             type = "threat-actor-individual"
         else:
             type = "threat-actor-group"
 
-        if "threat-actor-group" in type:
-            return self.threat_actor_group.import_from_stix2(**kwargs)
-        if "threat-actor-individual" in type:
+        if type == "threat-actor-individual":
             return self.threat_actor_individual.import_from_stix2(**kwargs)
+        else:
+            return self.threat_actor_group.import_from_stix2(**kwargs)
