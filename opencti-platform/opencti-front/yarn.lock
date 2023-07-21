@@ -4032,23 +4032,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-relay@npm:*":
+"@types/react-relay@npm:*, @types/react-relay@npm:14.1.4":
   version: 14.1.4
   resolution: "@types/react-relay@npm:14.1.4"
   dependencies:
     "@types/react": "*"
     "@types/relay-runtime": "*"
   checksum: bff523a5fc0612eb862d6f0767b7a63f0733f56280ac9974905c0abce2647dc30b9e06138634cf1d514542ac6b721a14dfade5a7468be8d32f5a35a6f4785be5
-  languageName: node
-  linkType: hard
-
-"@types/react-relay@npm:14.1.3":
-  version: 14.1.3
-  resolution: "@types/react-relay@npm:14.1.3"
-  dependencies:
-    "@types/react": "*"
-    "@types/relay-runtime": "*"
-  checksum: b161e5dd1328159b64f6875a9a0595d3f7ce5e8216bdf17bf1d188c544e675c44bb6cf368cf4c9e6e90d0a4a9f10a1dc38cb068004024c4489f84491d0551390
   languageName: node
   linkType: hard
 
@@ -12839,7 +12829,7 @@ __metadata:
     "@types/ramda": 0.29.3
     "@types/react": 18.2.6
     "@types/react-dom": 18.2.4
-    "@types/react-relay": 14.1.3
+    "@types/react-relay": 14.1.4
     "@types/react-router-dom": 5.3.3
     "@types/react-test-renderer": 18.0.0
     "@types/relay-test-utils": 14.1.0
