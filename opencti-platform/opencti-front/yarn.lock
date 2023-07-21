@@ -51,7 +51,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.1.0, @babel/core@npm:^7.12.17, @babel/core@npm:^7.12.3, @babel/core@npm:^7.16.0, @babel/core@npm:^7.19.0, @babel/core@npm:^7.21.4, @babel/core@npm:^7.5.5, @babel/core@npm:^7.7.5":
+"@babel/core@npm:^7.1.0, @babel/core@npm:^7.12.17, @babel/core@npm:^7.12.3, @babel/core@npm:^7.16.0, @babel/core@npm:^7.19.0, @babel/core@npm:^7.22.5, @babel/core@npm:^7.5.5, @babel/core@npm:^7.7.5":
   version: 7.22.9
   resolution: "@babel/core@npm:7.22.9"
   dependencies:
@@ -1263,7 +1263,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-react-jsx-self@npm:^7.21.0":
+"@babel/plugin-transform-react-jsx-self@npm:^7.22.5":
   version: 7.22.5
   resolution: "@babel/plugin-transform-react-jsx-self@npm:7.22.5"
   dependencies:
@@ -1274,7 +1274,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-react-jsx-source@npm:^7.19.6":
+"@babel/plugin-transform-react-jsx-source@npm:^7.22.5":
   version: 7.22.5
   resolution: "@babel/plugin-transform-react-jsx-source@npm:7.22.5"
   dependencies:
@@ -4325,17 +4325,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitejs/plugin-react@npm:4.0.0":
-  version: 4.0.0
-  resolution: "@vitejs/plugin-react@npm:4.0.0"
+"@vitejs/plugin-react@npm:4.0.3":
+  version: 4.0.3
+  resolution: "@vitejs/plugin-react@npm:4.0.3"
   dependencies:
-    "@babel/core": ^7.21.4
-    "@babel/plugin-transform-react-jsx-self": ^7.21.0
-    "@babel/plugin-transform-react-jsx-source": ^7.19.6
+    "@babel/core": ^7.22.5
+    "@babel/plugin-transform-react-jsx-self": ^7.22.5
+    "@babel/plugin-transform-react-jsx-source": ^7.22.5
     react-refresh: ^0.14.0
   peerDependencies:
     vite: ^4.2.0
-  checksum: 575298f66517c51348892d49b302490c48e15c9ddb0b2c5f710931804e559dceafca1be1e62cb72d0902cba5f3c98e4b1272970d328e3a62d59ecdf976e68d3d
+  checksum: dd9136aec8f30b0251b88f390c60b8ee5472454884c4f82720725c213f8988bf8e202cc2430e575a268d413c1dc7257a51b342ac431a43c02d923de932c5707c
   languageName: node
   linkType: hard
 
@@ -12844,7 +12844,7 @@ __metadata:
     "@types/react-test-renderer": 18.0.0
     "@types/relay-test-utils": 14.1.0
     "@types/uuid": 9.0.2
-    "@vitejs/plugin-react": 4.0.0
+    "@vitejs/plugin-react": 4.0.3
     apexcharts: 3.41.0
     axios: 1.4.0
     babel-plugin-relay: 15.0.0
