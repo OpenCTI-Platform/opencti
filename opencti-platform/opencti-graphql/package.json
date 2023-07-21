@@ -176,7 +176,7 @@
     "cross-fetch": "3.1.5",
     "jose": "4.14.4",
     "lodash": "4.17.21",
-    "@xmldom/xmldom": "0.8.6",
+    "@xmldom/xmldom": "0.8.10",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "nconf": "patch:nconf@0.12.0#./patch/nconf-0.12.0.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
