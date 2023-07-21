@@ -77,8 +77,7 @@ const contextualViewLineFragment = graphql`
       id
       name
     }
-    ... on StixCyberObservable {
-      observable_value
+    ... on StixCoreObject {
       reports (elementId: $reportIds) {
         edges {
           node {
@@ -87,6 +86,12 @@ const contextualViewLineFragment = graphql`
           }
         }
       }
+    }
+    ... on StixCyberObservable {
+      observable_value
+    }
+    ... on Indicator {
+      name
     }
   }
 `;
