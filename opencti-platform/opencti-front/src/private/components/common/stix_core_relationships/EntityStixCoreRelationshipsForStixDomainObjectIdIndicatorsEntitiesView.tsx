@@ -200,7 +200,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
           targetStixDomainObjectTypes={['Indicator']}
           paginationOptions={paginationOptions}
           openExports={openExports}
-          paddingRight={270}
+          paddingRight={220}
           connectionKey="Pagination_indicators"
           defaultStartTime={defaultStartTime}
           defaultStopTime={defaultStopTime}

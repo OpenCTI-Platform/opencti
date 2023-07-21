@@ -279,6 +279,8 @@ const ThreatActorIndividualKnowledgeComponent = ({
               {...routeProps}
               entityId={threatActorIndividual.id}
               entityLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/indicators`}
+              defaultStartTime={threatActorIndividual.first_seen}
+              defaultStopTime={threatActorIndividual.last_seen}
             />
           )}
         />
