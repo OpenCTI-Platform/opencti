@@ -64,7 +64,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicators: FunctionCompon
             allDirections={true}
             currentView={view}
             enableContextualView={true}
-            enableNestedView={true}
+            enableNestedView={false}
           />}
 
         {view === 'contextual' && (

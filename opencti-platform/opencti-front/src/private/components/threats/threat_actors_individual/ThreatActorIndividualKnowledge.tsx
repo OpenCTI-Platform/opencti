@@ -277,8 +277,8 @@ const ThreatActorIndividualKnowledgeComponent = ({
           render={(routeProps: any) => (
             <EntityStixCoreRelationshipsForStixDomainObjectIdIndicators
               {...routeProps}
-              stixDomainObjectId={threatActorIndividual.id}
-              stixDomainObjectLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/indicators`}
+              entityId={threatActorIndividual.id}
+              entityLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/indicators`}
             />
           )}
         />
