@@ -23,7 +23,7 @@ interface EntityStixCoreRelationshipsEntitiesProps {
   queryRef: PreloadedQuery<EntityStixCoreRelationshipsEntitiesPaginationQuery>;
   dataColumns: DataColumns;
   entityLink: string;
-  paginationOptions: EntityStixCoreRelationshipsEntitiesPaginationQuery$variables;
+  paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesPaginationQuery$variables>;
   isRelationReversed: boolean;
   onLabelClick: HandleAddFilter;
   onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];

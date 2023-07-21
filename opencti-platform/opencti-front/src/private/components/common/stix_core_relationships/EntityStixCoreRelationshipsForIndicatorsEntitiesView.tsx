@@ -16,6 +16,8 @@ import {
   StixDomainObjectIndicatorsLinesQuery$data,
 } from '../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
+import { cleanFilters, convertFilters } from '../../../../utils/ListParameters';
+import { EntityStixCoreRelationshipsEntitiesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'view-stixDomainObjectIndicatorsEntitiesView';
 
@@ -28,7 +30,7 @@ interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView
   defaultStopTime: string
   enableContextualView: boolean,
 }
-const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps> = ({
+const EntityStixCoreRelationshipsForIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesViewProps> = ({
   entityId,
   entityLink,
   localStorage,
@@ -38,7 +40,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
   enableContextualView,
 }) => {
   const { t } = useFormatter();
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = localStorage;
+  const { viewStorage, helpers: storageHelpers } = localStorage;
   const {
     filters,
     searchTerm,
@@ -48,6 +50,40 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
     numberOfElements,
     openExports,
   } = viewStorage;
+
+  const availableFilterKeys = [
+    'labelledBy',
+    'markedBy',
+    'created_start_date',
+    'created_end_date',
+    'valid_from_start_date',
+    'valid_until_end_date',
+    'x_opencti_score',
+    'createdBy',
+    'objectContains',
+    'sightedBy',
+    'x_opencti_detection',
+    'basedOn',
+    'revoked',
+    'creator',
+    'confidence',
+    'indicator_types',
+    'pattern_type',
+    'x_opencti_main_observable_type',
+  ];
+
+  const cleanedFilters = cleanFilters(filters, availableFilterKeys);
+
+  const paginationFilters = convertFilters({
+    ...cleanedFilters,
+    indicates: [{ id: entityId, value: entityId }],
+  });
+  const paginationOptions = {
+    search: searchTerm,
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+    filters: paginationFilters,
+  } as unknown as Partial<EntityStixCoreRelationshipsEntitiesPaginationQuery$variables>; // Because of FilterMode
 
   const {
     selectedElements,
@@ -98,27 +134,6 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
       - Object.keys(deSelectedElements || {}).length;
   }
   const finalView = currentView || view;
-  const availableFilterKeys = [
-    'labelledBy',
-    'markedBy',
-    'created_start_date',
-    'created_end_date',
-    'valid_from_start_date',
-    'valid_until_end_date',
-    'x_opencti_score',
-    'createdBy',
-    'objectContains',
-    'sightedBy',
-    'x_opencti_detection',
-    'basedOn',
-    'revoked',
-    'creator',
-    'confidence',
-    'indicator_types',
-    'pattern_type',
-    'x_opencti_main_observable_type',
-  ];
-
   return (
     <UserContext.Consumer>
       {({ platformModuleHelpers }) => (
@@ -144,7 +159,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
             openExports={openExports}
             exportEntityType={'Stix-Core-Object'}
             iconExtension={true}
-            filters={filters}
+            filters={cleanedFilters}
             availableFilterKeys={availableFilterKeys}
             exportContext={`of-entity-${entityId}`}
             numberOfElements={numberOfElements}
@@ -183,7 +198,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
             deSelectedElements={deSelectedElements}
             numberOfSelectedElements={numberOfSelectedElements}
             selectAll={selectAll}
-            filters={filters}
+            filters={cleanedFilters}
             search={searchTerm}
             handleClearSelectedElements={handleClearSelectedElements}
             variant="large"
@@ -211,4 +226,4 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView: Fu
     </UserContext.Consumer>
   );
 };
-export default EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView;
+export default EntityStixCoreRelationshipsForIndicatorsEntitiesView;

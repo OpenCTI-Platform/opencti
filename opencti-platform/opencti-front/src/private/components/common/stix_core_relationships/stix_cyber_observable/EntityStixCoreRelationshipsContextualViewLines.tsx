@@ -81,7 +81,7 @@ interface EntityStixCoreRelationshipsContextualViewLinesProps {
   queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewLinesQuery>
   dataColumns: DataColumns
   entityLink: string
-  paginationOptions: EntityStixCoreRelationshipsContextualViewLinesQuery$variables
+  paginationOptions: Partial<EntityStixCoreRelationshipsContextualViewLinesQuery$variables>
   onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity']
   selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements']
   deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements']
@@ -136,7 +136,10 @@ const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent
 const EntityStixCoreRelationshipsContextualViewLines: FunctionComponent<
 Omit<EntityStixCoreRelationshipsContextualViewLinesProps, 'queryRef'>
 > = (props) => {
-  const queryRef = useQueryLoading<EntityStixCoreRelationshipsContextualViewLinesQuery>(contextualViewLinesQuery, props.paginationOptions);
+  const queryRef = useQueryLoading<EntityStixCoreRelationshipsContextualViewLinesQuery>(
+    contextualViewLinesQuery,
+    { count: 25, ...props.paginationOptions },
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <EntityStixCoreRelationshipsContextualViewLinesComponent {...props} queryRef={queryRef} />

@@ -20,7 +20,7 @@ import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreati
 import Security from '../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { Filters, PaginationOptions } from '../../../../components/list_lines';
+import { PaginationOptions } from '../../../../components/list_lines';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
@@ -84,9 +84,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
 
   let paginationOptions = {
-    types: selectedTypes,
     relationship_type: selectedRelationshipTypes,
-    elementId: entityId,
     search: searchTerm,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
@@ -281,9 +279,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                         paginationOptions={paginationOptions}
                         entityLink={entityLink}
                         entityId={entityId}
-                        dataColumns={buildColumnRelationships(
-                          platformModuleHelpers,
-                        )}
+                        dataColumns={buildColumnRelationships(platformModuleHelpers)}
                         initialLoading={props === null}
                         setNumberOfElements={storageHelpers.handleSetNumberOfElements}
                         onToggleEntity={onToggleEntity}
@@ -296,9 +292,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                         data={props}
                         paginationOptions={paginationOptions}
                         entityLink={entityLink}
-                        dataColumns={buildColumnRelationships(
-                          platformModuleHelpers,
-                        )}
+                        dataColumns={buildColumnRelationships(platformModuleHelpers)}
                         initialLoading={props === null}
                         setNumberOfElements={storageHelpers.handleSetNumberOfElements}
                         onToggleEntity={onToggleEntity}
@@ -311,9 +305,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                         data={props}
                         paginationOptions={paginationOptions}
                         entityLink={entityLink}
-                        dataColumns={buildColumnRelationships(
-                          platformModuleHelpers,
-                        )}
+                        dataColumns={buildColumnRelationships(platformModuleHelpers)}
                         initialLoading={props === null}
                         setNumberOfElements={storageHelpers.handleSetNumberOfElements}
                         onToggleEntity={onToggleEntity}
@@ -340,12 +332,13 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
               <StixCoreRelationshipCreationFromEntity
                 entityId={entityId}
                 allowedRelationshipTypes={relationshipTypes}
-                isRelationReversed={true}
+                isRelationReversed={isRelationReversed}
                 targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
                 targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
                 defaultStartTime={defaultStartTime}
                 defaultStopTime={defaultStopTime}
                 paginationOptions={paginationOptions}
+                connectionKey={'Pagination_stixCoreRelationships'}
                 paddingRight={paddingRightButtonAdd ?? 220}
               />
             </Security>

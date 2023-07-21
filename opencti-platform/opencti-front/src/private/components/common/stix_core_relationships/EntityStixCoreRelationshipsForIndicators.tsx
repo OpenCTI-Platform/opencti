@@ -5,8 +5,8 @@ import EntityStixCoreRelationshipsContextualView
   from './stix_cyber_observable/EntityStixCoreRelationshipsContextualView';
 import EntityStixCoreRelationshipsRelationshipsView
   from './EntityStixCoreRelationshipsRelationshipsView';
-import EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView
-  from './EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView';
+import EntityStixCoreRelationshipsForIndicatorsEntitiesView
+  from './EntityStixCoreRelationshipsForIndicatorsEntitiesView';
 import { PaginationOptions } from '../../../../components/list_lines';
 
 interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps {
@@ -16,7 +16,7 @@ interface EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps {
   defaultStopTime: string
 }
 
-const EntityStixCoreRelationshipsForStixDomainObjectIdIndicators: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps> = ({
+const EntityStixCoreRelationshipsForIndicators: FunctionComponent<EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsProps> = ({
   entityId,
   entityLink,
   defaultStartTime,
@@ -26,7 +26,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicators: FunctionCompon
   const entityTypes = ['Indicator'];
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
-    `view-indicators-${entityId}`,
+    `view-relationships-${entityId}-${entityTypes?.join('-')}-${relationshipTypes?.join('-')}`,
     {
       searchTerm: '',
       sortBy: 'created',
@@ -41,7 +41,7 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicators: FunctionCompon
     <ExportContextProvider>
       <div style={{ marginTop: 20 }}>
         {view === 'entities'
-          && <EntityStixCoreRelationshipsForStixDomainObjectIdIndicatorsEntitiesView
+          && <EntityStixCoreRelationshipsForIndicatorsEntitiesView
             entityId={entityId}
             entityLink={entityLink}
             localStorage={localStorage}
@@ -81,4 +81,4 @@ const EntityStixCoreRelationshipsForStixDomainObjectIdIndicators: FunctionCompon
   );
 };
 
-export default EntityStixCoreRelationshipsForStixDomainObjectIdIndicators;
+export default EntityStixCoreRelationshipsForIndicators;

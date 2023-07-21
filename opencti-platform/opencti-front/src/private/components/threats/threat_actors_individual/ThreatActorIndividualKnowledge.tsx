@@ -19,8 +19,8 @@ import {
   ThreatActorIndividualKnowledge_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualKnowledge_ThreatActorIndividual.graphql';
 import EntityStixCoreRelationshipsForStixCyberObservable from '../../common/stix_core_relationships/stix_cyber_observable/EntityStixCoreRelationshipsForStixCyberObservable';
-import EntityStixCoreRelationshipsForStixDomainObjectIdIndicators
-  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsForStixDomainObjectIdIndicators';
+import EntityStixCoreRelationshipsForIndicators
+  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsForIndicators';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -275,7 +275,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
           exact
           path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/indicators"
           render={(routeProps: any) => (
-            <EntityStixCoreRelationshipsForStixDomainObjectIdIndicators
+            <EntityStixCoreRelationshipsForIndicators
               {...routeProps}
               entityId={threatActorIndividual.id}
               entityLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/indicators`}

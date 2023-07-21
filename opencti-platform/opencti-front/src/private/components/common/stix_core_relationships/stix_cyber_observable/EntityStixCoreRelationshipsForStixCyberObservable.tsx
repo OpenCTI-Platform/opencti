@@ -69,7 +69,6 @@ const EntityStixCoreRelationshipsForStixCyberObservable: FunctionComponent<Entit
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
             isRelationReversed={true}
-            allDirections={true}
             currentView={view}
             enableContextualView={true}
           />}
