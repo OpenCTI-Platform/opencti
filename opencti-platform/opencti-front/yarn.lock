@@ -12887,7 +12887,7 @@ __metadata:
     qrcode: 1.5.3
     ramda: 0.29.0
     react: 18.2.0
-    react-apexcharts: 1.4.0
+    react-apexcharts: 1.4.1
     react-color: 2.19.3
     react-cookie: 4.1.1
     react-csv: 2.2.2
@@ -13879,7 +13879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15, prop-types@npm:15.8.1, prop-types@npm:15.x, prop-types@npm:^15.0.0, prop-types@npm:^15.5.10, prop-types@npm:^15.5.7, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:15, prop-types@npm:15.8.1, prop-types@npm:15.x, prop-types@npm:^15.0.0, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -14049,15 +14049,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-apexcharts@npm:1.4.0":
-  version: 1.4.0
-  resolution: "react-apexcharts@npm:1.4.0"
+"react-apexcharts@npm:1.4.1":
+  version: 1.4.1
+  resolution: "react-apexcharts@npm:1.4.1"
   dependencies:
-    prop-types: ^15.5.7
+    prop-types: ^15.8.1
   peerDependencies:
-    apexcharts: ^3.18.0
+    apexcharts: ^3.41.0
     react: ">=0.13"
-  checksum: eb6c1fcfe7c8c9cb565edd807095633f80e8c7da115cc9aaa490b6651f771bd6bf9a48df6def4b77c6865e9170b906fa1fb8fe2b5f76b8c14ef69bca592e0f37
+  checksum: 32d1a946ad40493ecd82f7ba68c8657424a8cf0d08e0cd813752211175d6b23dd3ae9f0f7edbac9dd2bbc050a7f3531ca6e5d7ea0158f1c276c49c4f397f347f
   languageName: node
   linkType: hard
 
