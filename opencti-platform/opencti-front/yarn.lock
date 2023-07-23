@@ -3994,6 +3994,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^18.14.6":
+  version: 18.17.0
+  resolution: "@types/node@npm:18.17.0"
+  checksum: 3a43c5c5541342751b514485144818a515fac5427f663066068eaacbe8a108cbe1207aae75ec89d34c3b32414c334aad84e9083cf7fcf3ebfd970adc871314a4
+  languageName: node
+  linkType: hard
+
 "@types/normalize-package-data@npm:^2.4.0":
   version: 2.4.1
   resolution: "@types/normalize-package-data@npm:2.4.1"
@@ -6438,7 +6445,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.0.0":
+"core-js@npm:^3.29.0":
   version: 3.31.1
   resolution: "core-js@npm:3.31.1"
   checksum: 14519213a63c55cf188bdd2f4dece54583feaf6b90e75d6c65e07f509cd487055bf64898aeda7c97c36029ac1ea2f2ed8e4b02281553f6a257e7143a32a14015
@@ -12924,7 +12931,7 @@ __metadata:
     react-pdf: 6.2.2
     react-rectangle-selection: 1.0.4
     react-relay: 15.0.0
-    react-relay-network-modern: 6.2.1
+    react-relay-network-modern: 6.2.2
     react-router-dom: 5.3.4
     react-router-dom-v5-compat: 6.14.1
     react-test-renderer: 18.2.0
@@ -14393,15 +14400,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-relay-network-modern@npm:6.2.1":
-  version: 6.2.1
-  resolution: "react-relay-network-modern@npm:6.2.1"
+"react-relay-network-modern@npm:6.2.2":
+  version: 6.2.2
+  resolution: "react-relay-network-modern@npm:6.2.2"
   dependencies:
-    core-js: ^3.0.0
+    "@types/node": ^18.14.6
+    core-js: ^3.29.0
     extract-files: ^9.0.0
   peerDependencies:
     relay-runtime: ">=1.4.0"
-  checksum: 3f4db0675722eac07041689fb8786e4242cdd3db61e804ed81e0f60c69c40790b622df8136f2f5c24ce488933e639471c4a87ea4c2a3eabeb63432861313fa6c
+  checksum: 0d0db1c9a0a1a85062c6be465744bfa3d698596d176fde0246f4482d2ad27329f810a0aff854480ce1f07e3432dd93e640a038b581f174f483b1661f72da560a
   languageName: node
   linkType: hard
 
