@@ -8,7 +8,6 @@ const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 12,
     marginRight: 7,
-    textTransform: 'uppercase',
     borderRadius: '0',
     width: 120,
   },
@@ -16,7 +15,6 @@ const useStyles = makeStyles(() => ({
     fontSize: 12,
     height: 20,
     float: 'left',
-    textTransform: 'uppercase',
     borderRadius: '0',
     width: 80,
   },
@@ -44,7 +42,6 @@ const ItemConfidence: FunctionComponent<ItemConfidenceProps> = ({ confidence, va
   return (
     <Chip
       classes={{ root: style }}
-      variant="outlined"
       sx={variant !== 'inList' ? multilineChip : {}}
       style={{
         color: confidenceLevel.color,

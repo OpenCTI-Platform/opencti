@@ -170,8 +170,7 @@ class StixDomainObjectOverview extends Component {
                     key="type"
                     type="reliability_ov"
                     value={!stixDomainObject.x_opencti_reliability ? stixDomainObject.createdBy?.x_opencti_reliability : stixDomainObject.x_opencti_reliability}
-                    small
-                    inline
+                    chipDisplay
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
