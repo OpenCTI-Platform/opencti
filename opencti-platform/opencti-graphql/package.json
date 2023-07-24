@@ -7,7 +7,7 @@
     "install:python": "pip3 install -r src/python/requirements.txt",
     "build:types": "graphql-codegen --config graphql-codegen.yml",
     "build:schema": "yarn build:types && node builder/schema/schema.js && node build/script-generate-schema.js",
-    "build:prod": "yarn build:types && yarn check-ts && node builder/prod/prod.js",
+    "build:prod": "yarn build:schema && yarn check-ts && node builder/prod/prod.js",
     "build:dev": "yarn build:schema && node builder/dev/dev.js",
     "build:antlr": "java -jar ./builder/antlr/antlr-4.13.0-complete.jar -Dlanguage=JavaScript ./src/stixpattern/STIXPattern.g4 -o ./src/stixpattern/",
     "build": "yarn install:python && yarn build:prod",
