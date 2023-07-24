@@ -199,10 +199,6 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         created_at
         updated_at
         modified
-        images: x_opencti_files(mimeType: "image/") {
-          id
-          name
-        }
         ... on AttackPattern {
           name
           x_mitre_id
