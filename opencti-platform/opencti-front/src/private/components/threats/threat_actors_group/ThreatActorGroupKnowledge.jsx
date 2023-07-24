@@ -14,6 +14,8 @@ import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/St
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
+import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
 const styles = () => ({
   container: {
@@ -248,18 +250,29 @@ class ThreatActorGroupKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge/indicators"
+          render={(routeProps) => (
+            <EntityStixCoreRelationshipsIndicators
+              {...routeProps}
+              entityId={threatActorGroup.id}
+              entityLink={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/indicators`}
+              defaultStartTime={threatActorGroup.first_seen}
+              defaultStopTime={threatActorGroup.last_seen}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge/observables"
           render={(routeProps) => (
-            <EntityStixCoreRelationships
+            <EntityStixCoreRelationshipsStixCyberObservable
+              {...routeProps}
               entityId={threatActorGroup.id}
-              relationshipTypes={['related-to']}
-              stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
-              allDirections={true}
               isRelationReversed={true}
-              {...routeProps}
+              relationshipTypes={['related-to']}
             />
           )}
         />

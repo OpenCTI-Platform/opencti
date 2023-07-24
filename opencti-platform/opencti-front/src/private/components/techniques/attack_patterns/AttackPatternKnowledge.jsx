@@ -12,6 +12,8 @@ import AttackPatternPopover from './AttackPatternPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
+import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
+import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
 const styles = () => ({
   container: {
@@ -162,6 +164,34 @@ class AttackPatternKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/indicators"
+            render={(routeProps) => (
+              <EntityStixCoreRelationshipsIndicators
+                {...routeProps}
+                entityId={attackPattern.id}
+                entityLink={`/dashboard/techniques/attack_patterns/${attackPattern.id}/indicators`}
+                defaultStartTime={attackPattern.first_seen}
+                defaultStopTime={attackPattern.last_seen}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/observables"
+            render={(routeProps) => (
+              <EntityStixCoreRelationshipsStixCyberObservable
+                {...routeProps}
+                entityId={attackPattern.id}
+                entityLink={link}
+                defaultStartTime={attackPattern.first_seen}
+                defaultStopTime={attackPattern.last_seen}
+                isRelationReversed={true}
+                relationshipTypes={['related-to']}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/malwares"
             render={(routeProps) => (
               <EntityStixCoreRelationships
@@ -198,21 +228,6 @@ class AttackPatternKnowledgeComponent extends Component {
                 stixCoreObjectTypes={['Vulnerability']}
                 entityLink={link}
                 isRelationReversed={false}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/observables"
-            render={(routeProps) => (
-              <EntityStixCoreRelationships
-                entityId={attackPattern.id}
-                relationshipTypes={['related-to']}
-                stixCoreObjectTypes={['Stix-Cyber-Observable']}
-                entityLink={link}
-                allDirections={true}
-                isRelationReversed={true}
                 {...routeProps}
               />
             )}

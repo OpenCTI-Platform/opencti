@@ -11,7 +11,6 @@ import FileManager from '../../common/files/FileManager';
 import ChannelPopover from './ChannelPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import StixCoreObjectOrStixCoreRelationshipContainers
   from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -96,6 +95,7 @@ class RootChannel extends Component {
               'malwares',
               'attack_patterns',
               'vulnerabilities',
+              'indicators',
               'observables',
               'sightings',
               'channels',
@@ -153,24 +153,6 @@ class RootChannel extends Component {
                             stixDomainObjectOrStixCoreRelationship={
                               props.channel
                             }
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/arsenal/channels/:channelId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Channel'}
-                            stixDomainObject={props.channel}
-                            PopoverComponent={<ChannelPopover />}
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={channelId}
-                            stixDomainObjectLink={`/dashboard/arsenal/channels/${channelId}/indicators`}
                           />
                         </React.Fragment>
                       )}

@@ -123,29 +123,6 @@ class TopMenuCampaign extends Component {
         >
           {t('Analyses')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/threats/campaigns/${campaignId}/indicators`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/threats/campaigns/${campaignId}/indicators`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/threats/campaigns/${campaignId}/indicators`,
-            )
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-          disabled={!campaignId}
-        >
-          {t('Indicators')}
-        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}

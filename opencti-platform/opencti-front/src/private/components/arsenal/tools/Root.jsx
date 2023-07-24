@@ -14,7 +14,6 @@ import FileManager from '../../common/files/FileManager';
 import ToolPopover from './ToolPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -97,6 +96,7 @@ class RootTool extends Component {
               'malwares',
               'attack_patterns',
               'vulnerabilities',
+              'indicators',
               'observables',
               'sightings',
             ]}
@@ -148,24 +148,6 @@ class RootTool extends Component {
                           <StixCoreObjectOrStixCoreRelationshipContainers
                             {...routeProps}
                             stixDomainObjectOrStixCoreRelationship={props.tool}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/arsenal/tools/:toolId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Tool'}
-                            stixDomainObject={props.tool}
-                            PopoverComponent={<ToolPopover />}
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={toolId}
-                            stixDomainObjectLink={`/dashboard/arsenal/tools/${toolId}/indicators`}
                           />
                         </React.Fragment>
                       )}

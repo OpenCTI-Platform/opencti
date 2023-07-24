@@ -123,29 +123,6 @@ class TopMenuTool extends Component {
         >
           {t('Analyses')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/arsenal/tools/${toolId}/indicators`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/arsenal/tools/${toolId}/indicators`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/arsenal/tools/${toolId}/indicators`,
-            )
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-          disabled={!toolId}
-        >
-          {t('Indicators')}
-        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}

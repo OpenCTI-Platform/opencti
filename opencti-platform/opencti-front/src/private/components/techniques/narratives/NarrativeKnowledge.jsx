@@ -12,6 +12,8 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import NarrativePopover from './NarrativePopover';
+import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
+import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
 const styles = () => ({
   container: {
@@ -209,16 +211,29 @@ class NarrativeKnowledgeComponent extends Component {
           />
           <Route
             exact
+            path="/dashboard/techniques/narratives/:narrativeId/knowledge/indicators"
+            render={(routeProps) => (
+              <EntityStixCoreRelationshipsIndicators
+                {...routeProps}
+                entityId={narrative.id}
+                entityLink={`/dashboard/techniques/narratives/${narrative.id}/indicators`}
+                defaultStartTime={narrative.first_seen}
+                defaultStopTime={narrative.last_seen}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/dashboard/techniques/narratives/:narrativeId/knowledge/observables"
             render={(routeProps) => (
-              <EntityStixCoreRelationships
-                entityId={narrative.id}
-                relationshipTypes={['related-to']}
-                stixCoreObjectTypes={['Stix-Cyber-Observable']}
-                entityLink={link}
-                allDirections={true}
-                isRelationReversed={true}
+              <EntityStixCoreRelationshipsStixCyberObservable
                 {...routeProps}
+                entityId={narrative.id}
+                entityLink={link}
+                defaultStartTime={narrative.first_seen}
+                defaultStopTime={narrative.last_seen}
+                isRelationReversed={true}
+                relationshipTypes={['related-to']}
               />
             )}
           />

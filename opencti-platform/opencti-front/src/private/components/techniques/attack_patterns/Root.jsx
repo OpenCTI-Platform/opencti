@@ -15,8 +15,6 @@ import AttackPatternPopover from './AttackPatternPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
@@ -100,6 +98,7 @@ class RootAttackPattern extends Component {
               'vulnerabilities',
               'malwares',
               'sightings',
+              'indicators',
               'observables',
             ]}
           />
@@ -157,34 +156,6 @@ class RootAttackPattern extends Component {
                             }
                           />
                         </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Attack-Pattern'}
-                            stixDomainObject={props.attackPattern}
-                            PopoverComponent={<AttackPatternPopover />}
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={attackPatternId}
-                            stixDomainObjectLink={`/dashboard/techniques/attack_patterns/${attackPatternId}/indicators`}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/techniques/attack_patterns/:attackPatternId/indicators/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={attackPatternId}
-                          {...routeProps}
-                        />
                       )}
                     />
                     <Route
