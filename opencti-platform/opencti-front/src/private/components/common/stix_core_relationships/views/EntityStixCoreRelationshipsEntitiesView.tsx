@@ -12,7 +12,7 @@ import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreat
 import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { Filters, PaginationOptions } from '../../../../../components/list_lines';
+import { PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
@@ -85,19 +85,16 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     ),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
-  let backgroundTaskFilters: Filters;
-  if (selectedRelationshipTypes.length > 0) {
-    backgroundTaskFilters = {
-      ...filters,
-      entity_type:
-        selectedTypes.length > 0
-          ? selectedTypes.map((n) => ({ id: n, value: n }))
-          : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-      [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
-        { id: entityId, value: entityId },
-      ],
-    };
-  }
+  const backgroundTaskFilters = {
+    ...filters,
+    entity_type:
+      selectedTypes.length > 0
+        ? selectedTypes.map((n) => ({ id: n, value: n }))
+        : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+    [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
+      { id: entityId, value: entityId },
+    ],
+  };
 
   const {
     selectedElements,
