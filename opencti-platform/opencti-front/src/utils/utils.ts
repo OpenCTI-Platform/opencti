@@ -33,7 +33,7 @@ export const deleteElementByValue = (obj: Record<string, string>, val: string) =
   return obj;
 };
 
-export const getUri = (id: string) => {
+export const getFileUri = (id: string) => {
   const encodedFilePath = encodeURIComponent(id);
   const imageView = `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
   return imageView;

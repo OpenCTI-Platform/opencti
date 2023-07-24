@@ -235,7 +235,7 @@ export type AdministrativeAreaStixCoreRelationshipsDistributionArgs = {
 
 
 export type AdministrativeAreaX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type AdministrativeAreaAddInput = {
@@ -761,7 +761,7 @@ export type AttackPatternStixCoreRelationshipsDistributionArgs = {
 
 
 export type AttackPatternX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type AttackPatternAddInput = {
@@ -1598,7 +1598,7 @@ export type CampaignStixCoreRelationshipsDistributionArgs = {
 
 
 export type CampaignX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type CampaignAddInput = {
@@ -1973,7 +1973,7 @@ export type CaseStixCoreRelationshipsDistributionArgs = {
 
 
 export type CaseX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type CaseConnection = {
@@ -2208,7 +2208,7 @@ export type CaseIncidentStixCoreRelationshipsDistributionArgs = {
 
 
 export type CaseIncidentX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type CaseIncidentAddInput = {
@@ -2515,7 +2515,7 @@ export type CaseRfiStixCoreRelationshipsDistributionArgs = {
 
 
 export type CaseRfiX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type CaseRfiAddInput = {
@@ -2819,7 +2819,7 @@ export type CaseRftStixCoreRelationshipsDistributionArgs = {
 
 
 export type CaseRftX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type CaseRftAddInput = {
@@ -3167,7 +3167,7 @@ export type ChannelStixCoreRelationshipsDistributionArgs = {
 
 
 export type ChannelX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type ChannelAddInput = {
@@ -3465,7 +3465,7 @@ export type CityStixCoreRelationshipsDistributionArgs = {
 
 
 export type CityX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type CityAddInput = {
@@ -3762,7 +3762,7 @@ export type ContainerStixCoreRelationshipsDistributionArgs = {
 
 
 export type ContainerX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type ContainerConnection = {
@@ -4085,7 +4085,7 @@ export type CountryStixCoreRelationshipsDistributionArgs = {
 
 
 export type CountryX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type CountryAddInput = {
@@ -4344,7 +4344,7 @@ export type CourseOfActionStixCoreRelationshipsDistributionArgs = {
 
 
 export type CourseOfActionX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type CourseOfActionAddInput = {
@@ -5021,7 +5021,7 @@ export type DataComponentStixCoreRelationshipsDistributionArgs = {
 
 
 export type DataComponentX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type DataComponentAddInput = {
@@ -5277,7 +5277,7 @@ export type DataSourceStixCoreRelationshipsDistributionArgs = {
 
 
 export type DataSourceX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type DataSourceAddInput = {
@@ -6644,7 +6644,7 @@ export type EventStixCoreRelationshipsDistributionArgs = {
 
 
 export type EventX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type EventAddInput = {
@@ -7155,7 +7155,7 @@ export type FeedbackStixCoreRelationshipsDistributionArgs = {
 
 
 export type FeedbackX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type FeedbackAddInput = {
@@ -7594,7 +7594,7 @@ export type GroupingStixCoreRelationshipsDistributionArgs = {
 
 
 export type GroupingX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type GroupingAddInput = {
@@ -8642,7 +8642,7 @@ export type IdentityStixCoreRelationshipsDistributionArgs = {
 
 
 export type IdentityX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type IdentityAddInput = {
@@ -8910,7 +8910,7 @@ export type IncidentStixCoreRelationshipsDistributionArgs = {
 
 
 export type IncidentX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type IncidentAddInput = {
@@ -9237,7 +9237,7 @@ export type IndicatorStixCoreRelationshipsDistributionArgs = {
 
 
 export type IndicatorX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type IndicatorAddInput = {
@@ -9565,7 +9565,7 @@ export type IndividualStixCoreRelationshipsDistributionArgs = {
 
 
 export type IndividualX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type IndividualAddInput = {
@@ -9875,7 +9875,7 @@ export type InfrastructureStixCoreRelationshipsDistributionArgs = {
 
 
 export type InfrastructureX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type InfrastructureAddInput = {
@@ -10208,7 +10208,7 @@ export type IntrusionSetStixCoreRelationshipsDistributionArgs = {
 
 
 export type IntrusionSetX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type IntrusionSetAddInput = {
@@ -10682,7 +10682,7 @@ export type LanguageStixCoreRelationshipsDistributionArgs = {
 
 
 export type LanguageX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type LanguageAddInput = {
@@ -10953,7 +10953,7 @@ export type LocationStixCoreRelationshipsDistributionArgs = {
 
 
 export type LocationX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type LocationAddInput = {
@@ -11503,7 +11503,7 @@ export type MalwareStixCoreRelationshipsDistributionArgs = {
 
 
 export type MalwareX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type MalwareAddInput = {
@@ -11776,7 +11776,7 @@ export type MalwareAnalysisStixCoreRelationshipsDistributionArgs = {
 
 
 export type MalwareAnalysisX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type MalwareAnalysisAddInput = {
@@ -14463,7 +14463,7 @@ export type NarrativeStixCoreRelationshipsDistributionArgs = {
 
 
 export type NarrativeX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type NarrativeAddInput = {
@@ -14951,7 +14951,7 @@ export type NoteStixCoreRelationshipsDistributionArgs = {
 
 
 export type NoteX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type NoteAddInput = {
@@ -15375,7 +15375,7 @@ export type ObservedDataStixCoreRelationshipsDistributionArgs = {
 
 
 export type ObservedDataX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type ObservedDataAddInput = {
@@ -15492,7 +15492,6 @@ export type OpenCtiFile = {
   mime_type?: Maybe<Scalars['String']>;
   name: Scalars['String'];
   order?: Maybe<Scalars['Int']>;
-  version?: Maybe<Scalars['String']>;
 };
 
 export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
@@ -15708,7 +15707,7 @@ export type OpinionStixCoreRelationshipsDistributionArgs = {
 
 
 export type OpinionX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type OpinionAddInput = {
@@ -16045,7 +16044,7 @@ export type OrganizationStixCoreRelationshipsDistributionArgs = {
 
 
 export type OrganizationX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type OrganizationAddInput = {
@@ -16771,7 +16770,7 @@ export type PositionStixCoreRelationshipsDistributionArgs = {
 
 
 export type PositionX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type PositionAddInput = {
@@ -19775,7 +19774,7 @@ export type RegionStixCoreRelationshipsDistributionArgs = {
 
 
 export type RegionX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type RegionAddInput = {
@@ -20111,7 +20110,7 @@ export type ReportStixCoreRelationshipsDistributionArgs = {
 
 
 export type ReportX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type ReportAddInput = {
@@ -20594,7 +20593,7 @@ export type SectorStixCoreRelationshipsDistributionArgs = {
 
 
 export type SectorX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type SectorAddInput = {
@@ -22226,7 +22225,7 @@ export type StixDomainObjectStixCoreRelationshipsDistributionArgs = {
 
 
 export type StixDomainObjectX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type StixDomainObjectAddInput = {
@@ -23699,7 +23698,7 @@ export type SystemStixCoreRelationshipsDistributionArgs = {
 
 
 export type SystemX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type SystemAddInput = {
@@ -24017,7 +24016,7 @@ export type TaskStixCoreRelationshipsDistributionArgs = {
 
 
 export type TaskX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type TaskAddInput = {
@@ -24566,7 +24565,7 @@ export type ThreatActorStixCoreRelationshipsDistributionArgs = {
 
 
 export type ThreatActorX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type ThreatActorConnection = {
@@ -24777,7 +24776,7 @@ export type ThreatActorGroupStixCoreRelationshipsDistributionArgs = {
 
 
 export type ThreatActorGroupX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type ThreatActorGroupAddInput = {
@@ -25053,7 +25052,7 @@ export type ThreatActorIndividualStixCoreRelationshipsDistributionArgs = {
 
 
 export type ThreatActorIndividualX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type ThreatActorIndividualAddInput = {
@@ -25362,7 +25361,7 @@ export type ToolStixCoreRelationshipsDistributionArgs = {
 
 
 export type ToolX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type ToolAddInput = {
@@ -26709,7 +26708,7 @@ export type VulnerabilityStixCoreRelationshipsDistributionArgs = {
 
 
 export type VulnerabilityX_Opencti_FilesArgs = {
-  mimeType?: InputMaybe<Scalars['String']>;
+  prefixMimeType?: InputMaybe<Scalars['String']>;
 };
 
 export type VulnerabilityAddInput = {
@@ -33352,7 +33351,6 @@ export type OpenCtiFileResolvers<ContextType = any, ParentType extends Resolvers
   mime_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

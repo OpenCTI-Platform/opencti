@@ -20,7 +20,8 @@ import {
   ThreatActorIndividualDetails_ThreatActorIndividual$data,
   ThreatActorIndividualDetails_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
-import { getUri } from '../../../../utils/utils';
+import { getFileUri } from '../../../../utils/utils';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -57,7 +58,7 @@ const ThreatActorIndividualDetailsFragment = graphql`
     secondary_motivations
     goals
     roles
-    images: x_opencti_files(mimeType: "image/") {
+    images: x_opencti_files(prefixMimeType: "image/") {
       id
       name
       mime_type
@@ -178,23 +179,23 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              {data.images && data.images.length > 0 ? (
+              <FieldOrEmpty source={data.images}>
                 <Carousel
                   height='150px'
                   className={classes.carousel}
                   animation='fade'
                 >
-                  {data.images.map((file) => (
+                  {data.images && data.images.map((file) => (
                     <Tooltip title={file ? file.description : ''} key={file ? file.id : ''} placement='right'>
                     <img
                       style={{ height: '100%' }}
-                      src={getUri(file ? file.id : '')}
+                      src={getFileUri(file ? file.id : '')}
                       alt={file ? file.name : 'image.name'}
                     />
                     </Tooltip>
                   ))}
                 </Carousel>
-              ) : '-'}
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}

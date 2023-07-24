@@ -21,7 +21,7 @@ import {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import { emptyFilled } from '../../../../utils/String';
 import { ThreatActorIndividualCard_node$key } from './__generated__/ThreatActorIndividualCard_node.graphql';
-import { getUri } from '../../../../utils/utils';
+import { getFileUri } from '../../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -100,7 +100,7 @@ const ThreatActorIndividualCardFragment = graphql`
     description
     created
     modified
-    images: x_opencti_files(mimeType: "image/") {
+    images: x_opencti_files(prefixMimeType: "image/") {
       id
       name
     }
@@ -218,7 +218,7 @@ ThreatActorIndividualCardProps
           avatar={data.images && data.images.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getUri(data.images[0]?.id ?? '')}
+                src={getFileUri(data.images[0]?.id ?? '')}
                 alt={data.images[0]?.name ?? 'image.name'}
               />
           ) : (

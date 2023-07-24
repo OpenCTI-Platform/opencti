@@ -18,7 +18,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
-import { getUri } from '../../../../utils/utils';
+import { getFileUri } from '../../../../utils/utils';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -151,7 +151,7 @@ class StixDomainObjectBookmarkComponent extends Component {
             avatar={ node.images && node.images.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getUri(node.images[0]?.id ?? '')}
+                src={getFileUri(node.images[0]?.id ?? '')}
                 alt={node.images[0]?.name ?? 'image.name'}
               />
             ) : (
@@ -199,10 +199,6 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         created_at
         updated_at
         modified
-        images: x_opencti_files(mimeType: "image/") {
-          id
-          name
-        }
         ... on AttackPattern {
           name
           x_mitre_id
@@ -254,6 +250,12 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         }
         ... on ThreatActor {
           name
+          ... on ThreatActorIndividual {
+            images: x_opencti_files(prefixMimeType: "image/") {
+              id
+              name
+            }
+          }
         }
         ... on Tool {
           name

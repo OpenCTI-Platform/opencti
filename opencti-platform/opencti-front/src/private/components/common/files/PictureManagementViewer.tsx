@@ -25,7 +25,7 @@ const pictureManagementViewerFragment = graphql`
   fragment PictureManagementViewer_pictureManagement on StixDomainObject {
     id
     entity_type
-    images: x_opencti_files(mimeType: "image/") {
+    images: x_opencti_files(prefixMimeType: "image/") {
       id
       name
     }
