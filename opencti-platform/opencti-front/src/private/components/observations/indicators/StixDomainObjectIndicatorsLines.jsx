@@ -43,8 +43,8 @@ class StixDomainObjectIndicatorsLines extends Component {
         globalCount={
           this.props.data?.indicators?.pageInfo?.globalCount ?? nbOfRowsToLoad
         }
-        LineComponent={<StixDomainObjectIndicatorLine />}
-        DummyLineComponent={<StixDomainObjectIndicatorLineDummy />}
+        LineComponent={StixDomainObjectIndicatorLine}
+        DummyLineComponent={StixDomainObjectIndicatorLineDummy}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}

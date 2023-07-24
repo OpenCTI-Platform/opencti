@@ -2,20 +2,18 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert } from '@mui/icons-material';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import { ShieldSearch } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import StixCoreRelationshipFromAndToPopover from '../../common/stix_core_relationships/StixCoreRelationshipFromAndToPopover';
 import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
@@ -35,6 +33,10 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
@@ -52,8 +54,6 @@ class StixDomainObjectIndicatorLineComponent extends Component {
       classes,
       dataColumns,
       node,
-      paginationOptions,
-      entityId,
       onToggleEntity,
       selectedElements,
       deSelectedElements,
@@ -138,16 +138,9 @@ class StixDomainObjectIndicatorLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <StixCoreRelationshipFromAndToPopover
-            fromId={node.id}
-            toId={entityId}
-            nodeId={node.id}
-            relationshipType="indicates"
-            paginationOptions={paginationOptions}
-            connectionKey="Pagination_indicators"
-          />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -303,9 +296,9 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
       </ListItem>
     );
   }

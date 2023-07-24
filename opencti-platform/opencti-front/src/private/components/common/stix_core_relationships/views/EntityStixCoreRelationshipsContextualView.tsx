@@ -24,6 +24,7 @@ import { EntityStixCoreRelationshipsContextualViewQuery } from './__generated__/
 import { EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key } from './__generated__/EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject.graphql';
 import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
+import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 
 const useStyles = makeStyles(() => ({
   chipInList: {
@@ -168,6 +169,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Omit
 
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const isObservables = isStixCyberObservables(stixCoreObjectTypes);
   const dataColumns = {
     entity_type: {
       label: 'Type',
@@ -185,10 +187,15 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Omit
         />
       ),
     },
-    observable_value: {
-      label: 'Value',
+    [isObservables ? 'observable_value' : 'name']: {
+      label: isObservables ? 'Value' : 'Name',
       width: '20%',
-      isSortable: isRuntimeSort ?? false,
+      // eslint-disable-next-line no-nested-ternary
+      isSortable: isStixCoreObjects(stixCoreObjectTypes)
+        ? false
+        : isObservables
+          ? isRuntimeSort
+          : true,
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => defaultValue(stixCoreObject),
     },
     createdBy: {
