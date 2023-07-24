@@ -54,9 +54,9 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             localStorage={localStorage}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
-            isRelationReversed={true}
+            isRelationReversed
             currentView={view}
-            enableContextualView={true}
+            enableContextualView
           />}
 
         {view === 'relationships'
@@ -68,9 +68,9 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             localStorage={localStorage}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
-            isRelationReversed={true}
+            isRelationReversed
             currentView={view}
-            enableContextualView={true}
+            enableContextualView
           />}
 
         {view === 'contextual' && (
