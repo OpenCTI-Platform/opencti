@@ -1,6 +1,6 @@
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { useMutation } from 'react-relay';
-import BaseSchema, { SchemaObjectDescription } from 'yup/lib/schema';
+import { ObjectSchema, SchemaObjectDescription } from 'yup';
 import { Option } from '../../private/components/common/form/ReferenceField';
 import {
   convertAssignees,
@@ -52,7 +52,7 @@ const useFormEditor = (
   data: GenericData,
   enableReferences: boolean,
   queries: Queries,
-  validator: BaseSchema,
+  validator: ObjectSchema<{ [p: string]: unknown }>,
 ) => {
   const [commitRelationAdd] = useMutation(queries.relationAdd);
   const [commitRelationDelete] = useMutation(queries.relationDelete);
