@@ -32,7 +32,7 @@ When clicking on a Report, you land on the Overview tab. For a Report, the follo
 
 - Overview: as described [here](overview.md).
 - Knowledge: a complex tab that regroups all the structured Knowledge contained in the report, accessible through different views (See below for a dive-in).
-- Content: a tab to upload outcomes document displaying the content of the Report (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format.
+- Content: a tab to upload or creates outcomes document displaying the content of the Report (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format.
 - Entities: A table containing all SDO (Stix Domain Objects) contained in the Report, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
 - Observables: A table containing all SCO (Stix Cyber Observable) contained in the Report, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
 - Data: as described [here](overview.md).
