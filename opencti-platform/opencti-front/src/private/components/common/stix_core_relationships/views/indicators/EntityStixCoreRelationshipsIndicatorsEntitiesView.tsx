@@ -1,10 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { UserContext } from '../../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../../components/list_lines/ListLines';
 import ToolBar from '../../../../data/ToolBar';
 import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
 import { useFormatter } from '../../../../../../components/i18n';
-import { QueryRenderer } from '../../../../../../relay/environment';
 import StixDomainObjectIndicatorsLines, { stixDomainObjectIndicatorsLinesQuery } from '../../../../observations/indicators/StixDomainObjectIndicatorsLines';
 import Security from '../../../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../../utils/hooks/useGranted';
@@ -15,9 +13,10 @@ import { PaginationOptions } from '../../../../../../components/list_lines';
 import {
   StixDomainObjectIndicatorsLinesQuery$data,
 } from '../../../../observations/indicators/__generated__/StixDomainObjectIndicatorsLinesQuery.graphql';
-import { ModuleHelper } from '../../../../../../utils/platformModulesHelper';
 import { cleanFilters, convertFilters } from '../../../../../../utils/ListParameters';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from '../__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
+import useAuth from '../../../../../../utils/hooks/useAuth';
+import { QueryRenderer } from '../../../../../../relay/environment';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -86,6 +85,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
   } as unknown as Partial<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables>; // Because of FilterMode
 
   const {
+    numberOfSelectedElements,
     selectedElements,
     deSelectedElements,
     selectAll,
@@ -93,57 +93,49 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle(localStorageKey);
-  const buildColumnsEntities = (platformModuleHelpers: ModuleHelper | undefined) => {
-    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
-    return {
-      pattern_type: {
-        label: 'Type',
-        width: '10%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '30%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '15%',
-        isSortable: false,
-      },
-      created_at: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      valid_until: {
-        label: 'Valid until',
-        width: '15%',
-        isSortable: true,
-      },
-      objectMarking: {
-        label: 'Marking',
-        isSortable: isRuntimeSort,
-        width: '10%',
-      },
-    };
+
+  const { platformModuleHelpers } = useAuth();
+  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const dataColumns = {
+    pattern_type: {
+      label: 'Type',
+      width: '10%',
+      isSortable: true,
+    },
+    name: {
+      label: 'Name',
+      width: '30%',
+      isSortable: true,
+    },
+    objectLabel: {
+      label: 'Labels',
+      width: '15%',
+      isSortable: false,
+    },
+    created_at: {
+      label: 'Creation date',
+      width: '15%',
+      isSortable: true,
+    },
+    valid_until: {
+      label: 'Valid until',
+      width: '15%',
+      isSortable: true,
+    },
+    objectMarking: {
+      label: 'Marking',
+      isSortable: isRuntimeSort,
+      width: '10%',
+    },
   };
 
-  let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-  if (selectAll) {
-    numberOfSelectedElements = (numberOfElements?.original ?? 0)
-      - Object.keys(deSelectedElements || {}).length;
-  }
   const finalView = currentView || view;
   return (
-    <UserContext.Consumer>
-      {({ platformModuleHelpers }) => (
         <>
-         <div>
           <ListLines
             sortBy={sortBy}
             orderAsc={orderAsc}
-            dataColumns={buildColumnsEntities(platformModuleHelpers)}
+            dataColumns={dataColumns}
             handleSort={storageHelpers.handleSort}
             handleSearch={storageHelpers.handleSearch}
             handleAddFilter={storageHelpers.handleAddFilter}
@@ -179,7 +171,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
                   paginationOptions={paginationOptions}
                   entityLink={entityLink}
                   entityId={entityId}
-                  dataColumns={buildColumnsEntities(platformModuleHelpers)}
+                  dataColumns={dataColumns}
                   initialLoading={props === null}
                   setNumberOfElements={storageHelpers.handleSetNumberOfElements}
                   selectedElements={selectedElements}
@@ -204,7 +196,6 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
               'Be careful, you are about to delete the selected entities (not the relationships!).',
             )}
           />
-        </div>
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
@@ -219,8 +210,6 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
           />
           </Security>
         </>
-      )}
-    </UserContext.Consumer>
   );
 };
 export default EntityStixCoreRelationshipsIndicatorsEntitiesView;

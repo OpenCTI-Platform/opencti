@@ -158,6 +158,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Omit
 
   const {
     selectedElements,
+    numberOfSelectedElements,
     deSelectedElements,
     selectAll,
     handleClearSelectedElements,
@@ -239,11 +240,6 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Omit
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => stixCoreObject.reports?.edges?.map((e) => e?.node).map((n) => n?.name).join(','),
     },
   };
-
-  let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
-  if (selectAll) {
-    numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements || {}).length;
-  }
 
   return (
     <>
