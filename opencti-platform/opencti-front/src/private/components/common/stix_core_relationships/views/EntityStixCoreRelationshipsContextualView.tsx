@@ -172,7 +172,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     ...finalFilters,
     entity_type:
     selectedTypes.length > 0
-      ? selectedTypes.map((n) => ({ id: n, value: n }))
+      ? selectedTypes.map((node) => ({ id: node, value: node }))
       : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
   };
 
