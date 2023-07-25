@@ -34,6 +34,22 @@ import { buildScaleFilters } from '../hooks/useScale';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
+import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+
+const filtersStixCoreObjectsContainersSearchQuery = graphql`
+  query useSearchEntitiesStixCoreObjectsContainersSearchQuery($filters: [ContainersFiltering]) {
+    containers(filters: $filters) {
+      edges {
+        node {
+          id
+          entity_type
+          parent_types
+          representative
+        }
+      }
+    }
+  }
+`;
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -594,24 +610,24 @@ const useSearchEntities = ({
             unionSetEntities('indicates', indicatesEntities);
           });
         break;
-      case 'reports':
-        fetchQuery(filtersStixCoreObjectsSearchQuery, {
-          types: ['Report'],
+      case 'containers':
+        fetchQuery(filtersStixCoreObjectsContainersSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
+          filters: [{ key: 'objectContains', values: searchContext?.elementId ?? [] }],
         })
           .toPromise()
           .then((data) => {
-            const reportEntities = (
-              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
-                ?.stixCoreObjects?.edges ?? []
+            const containerEntities = (
+              (data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data)
+                ?.containers?.edges ?? []
             ).map((n) => ({
-              label: defaultValue(n?.node),
+              label: n?.node.representative,
               value: n?.node.id,
               type: n?.node.entity_type,
               parentTypes: n?.node.parent_types,
             }));
-            unionSetEntities('reports', reportEntities);
+            unionSetEntities('containers', containerEntities);
           });
         break;
       case 'markedBy':

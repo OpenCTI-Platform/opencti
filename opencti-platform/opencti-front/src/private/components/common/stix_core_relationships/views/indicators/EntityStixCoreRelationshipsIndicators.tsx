@@ -2,13 +2,10 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ExportContextProvider from '../../../../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
-import EntityStixCoreRelationshipsContextualView
-  from '../EntityStixCoreRelationshipsContextualView';
-import EntityStixCoreRelationshipsRelationshipsView
-  from '../EntityStixCoreRelationshipsRelationshipsView';
-import EntityStixCoreRelationshipsIndicatorsEntitiesView
-  from './EntityStixCoreRelationshipsIndicatorsEntitiesView';
+import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelationshipsRelationshipsView';
+import EntityStixCoreRelationshipsIndicatorsEntitiesView from './EntityStixCoreRelationshipsIndicatorsEntitiesView';
 import { PaginationOptions } from '../../../../../../components/list_lines';
+import EntityStixCoreRelationshipsIndicatorsContextualView from './EntityStixCoreRelationshipsIndicatorsContextualView';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -57,9 +54,9 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
             localStorage={localStorage}
-            isRelationReversed={true}
+            isRelationReversed
             currentView={view}
-            enableContextualView={true}
+            enableContextualView
           />}
 
         {view === 'relationships'
@@ -71,14 +68,14 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             localStorage={localStorage}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
-            isRelationReversed={true}
+            isRelationReversed
             currentView={view}
-            enableContextualView={true}
-            enableNestedView={false}
+            enableContextualView
+            enableNestedView
           />}
 
         {view === 'contextual' && (
-          <EntityStixCoreRelationshipsContextualView
+          <EntityStixCoreRelationshipsIndicatorsContextualView
             entityId={entityId}
             entityLink={entityLink}
             localStorage={localStorage}

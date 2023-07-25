@@ -26,7 +26,7 @@ export const directFilters = [
   'context',
   'trigger_type',
   'instance_trigger',
-  'reports',
+  'containers',
 ];
 export const inlineFilters = [
   'is_read',

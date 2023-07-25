@@ -287,7 +287,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   const oppositeTypeFilter = {
     key: 'connections',
     nested: [
-      { key: 'types', values: [targetEntityType] },
+      { key: 'types', values: Array.isArray(targetEntityType) ? targetEntityType : [targetEntityType] },
       { key: 'role', values: [`*_${opposite}`], operator: 'wildcard' },
     ],
   };

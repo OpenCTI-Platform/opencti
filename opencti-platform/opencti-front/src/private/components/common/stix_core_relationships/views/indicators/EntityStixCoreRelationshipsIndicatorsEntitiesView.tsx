@@ -104,7 +104,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     },
     name: {
       label: 'Name',
-      width: '30%',
+      width: '20%',
       isSortable: true,
     },
     objectLabel: {
@@ -146,20 +146,20 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
             paginationOptions={paginationOptions}
             selectAll={selectAll}
             keyword={searchTerm}
-            secondaryAction={true}
-            displayImport={true}
+            secondaryAction
+            displayImport
             handleToggleExports={storageHelpers.handleToggleExports}
             openExports={openExports}
             exportEntityType={'Stix-Core-Object'}
-            iconExtension={true}
+            iconExtension
             filters={cleanedFilters}
             availableFilterKeys={availableFilterKeys}
             exportContext={`of-entity-${entityId}`}
             numberOfElements={numberOfElements}
-            disableCards={true}
-            enableEntitiesView={true}
+            disableCards
+            enableEntitiesView
             enableContextualView={enableContextualView}
-            noPadding={true}
+            noPadding
             currentView={finalView}
           >
             <QueryRenderer
@@ -198,15 +198,15 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
           />
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
-          entityId={entityId}
-          isRelationReversed={isRelationReversed}
-          targetStixDomainObjectTypes={['Indicator']}
-          paginationOptions={paginationOptions}
-          openExports={openExports}
-          paddingRight={220}
-          connectionKey="Pagination_indicators"
-          defaultStartTime={defaultStartTime}
-          defaultStopTime={defaultStopTime}
+            entityId={entityId}
+            isRelationReversed={isRelationReversed}
+            targetStixDomainObjectTypes={['Indicator']}
+            paginationOptions={paginationOptions}
+            openExports={openExports}
+            paddingRight={220}
+            connectionKey="Pagination_indicators"
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
           />
           </Security>
         </>

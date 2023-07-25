@@ -15,6 +15,7 @@ import inject18n from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -87,7 +88,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ShieldSearch />
+          <ItemIcon type="Indicator" />
         </ListItemIcon>
         <ListItemText
           primary={

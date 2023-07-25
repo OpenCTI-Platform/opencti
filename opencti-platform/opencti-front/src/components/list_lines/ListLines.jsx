@@ -186,6 +186,7 @@ class ListLines extends Component {
       handleSwitchRedirectionMode,
       redirectionMode,
       parametersWithPadding,
+      searchContext,
     } = this.props;
     return (
       <ExportContext.Consumer>
@@ -195,6 +196,10 @@ class ListLines extends Component {
               && numberOfElements.number > export_max_size)
               || (selectedIds.length === 0
                 && numberOfElements.number > export_max_size));
+          const searchContextFinal = {
+            ...(searchContext ?? {}),
+            entityTypes: exportEntityType ? [exportEntityType] : [],
+          };
           return (
             <div
               className={
@@ -221,9 +226,7 @@ class ListLines extends Component {
                   {extraFields}
                   {availableFilterKeys && availableFilterKeys.length > 0 && (
                     <Filters
-                      searchContext={{
-                        entityTypes: exportEntityType ? [exportEntityType] : [],
-                      }}
+                      searchContext={searchContextFinal}
                       availableFilterKeys={availableFilterKeys}
                       handleAddFilter={handleAddFilter}
                       handleSwitchFilter={handleSwitchFilter}
@@ -650,6 +653,7 @@ ListLines.propTypes = {
   redirectionMode: PropTypes.string,
   parametersWithPadding: PropTypes.bool,
   inline: PropTypes.bool,
+  searchContext: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

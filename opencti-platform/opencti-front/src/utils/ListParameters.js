@@ -1,15 +1,5 @@
-import {
-  mergeLeft,
-  dissoc,
-  pipe,
-  split,
-  toPairs,
-  map,
-  head,
-  last,
-  assoc,
-} from 'ramda';
 import * as R from 'ramda';
+import { assoc, dissoc, head, last, map, mergeLeft, pipe, split, toPairs } from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
 
 const buildParamsFromHistory = (params) => {
@@ -223,7 +213,7 @@ export const convertFilters = (filters) => pipe(
 
 export const cleanFilters = (filters, availableFilterKeys) => {
   if (!filters) {
-    return filters;
+    return {};
   }
   return R.omit(Object.keys(filters).filter((k) => !availableFilterKeys.includes(k)), filters);
 };

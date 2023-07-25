@@ -7,12 +7,13 @@ import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloa
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { DataColumns } from '../../../../../components/list_lines';
-import { EntityStixCoreRelationshipsContextualViewLine, EntityStixCoreRelationshipsContextualViewLineDummy } from './EntityStixCoreRelationshipsContextualViewLine';
 import {
   EntityStixCoreRelationshipsContextualViewLinesQuery, EntityStixCoreRelationshipsContextualViewLinesQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { EntityStixCoreRelationshipsContextualViewLines_data$key } from './__generated__/EntityStixCoreRelationshipsContextualViewLines_data.graphql';
+import EntityStixCoreRelationshipsContextualViewLineDummy from './EntityStixCoreRelationshipsContextualViewLineDummy';
+import EntityStixCoreRelationshipsContextualViewLine from './EntityStixCoreRelationshipsContextualViewLine';
 
 const nbOfRowsToLoad = 50;
 
@@ -20,7 +21,7 @@ const contextualViewLinesFragment = graphql`
   fragment EntityStixCoreRelationshipsContextualViewLines_data on Query
   @argumentDefinitions(
     types: { type: "[String]" }
-    reportIds: { type: "[String]" }
+    containersIds: { type: "[String]" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -40,7 +41,7 @@ const contextualViewLinesFragment = graphql`
     )  @connection(key: "Pagination_stixCoreObjects") {
       edges {
         node {
-          ...EntityStixCoreRelationshipsContextualViewLine_node @arguments(reportIds: $reportIds)
+          ...EntityStixCoreRelationshipsContextualViewLine_node @arguments(containersIds: $containersIds)
         }
       }
       pageInfo {
@@ -55,7 +56,7 @@ const contextualViewLinesFragment = graphql`
 export const contextualViewLinesQuery = graphql`
   query EntityStixCoreRelationshipsContextualViewLinesQuery(
     $types: [String]
-    $reportIds: [String]
+    $containersIds: [String]
     $search: String
     $count: Int!
     $cursor: ID
@@ -66,7 +67,7 @@ export const contextualViewLinesQuery = graphql`
     ...EntityStixCoreRelationshipsContextualViewLines_data
     @arguments(
       types: $types
-      reportIds: $reportIds
+      containersIds: $containersIds
       search: $search
       count: $count
       cursor: $cursor

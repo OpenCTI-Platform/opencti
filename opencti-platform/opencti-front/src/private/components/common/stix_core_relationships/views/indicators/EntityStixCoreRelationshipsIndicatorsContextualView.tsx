@@ -1,44 +1,32 @@
 import React, { FunctionComponent } from 'react';
-import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import { graphql, PreloadedQuery } from 'react-relay';
-import ListLines from '../../../../../components/list_lines/ListLines';
-import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import useAuth from '../../../../../utils/hooks/useAuth';
-import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
-import EntityStixCoreRelationshipsContextualViewLines from './EntityStixCoreRelationshipsContextualViewLines';
-import { hexToRGB, itemColor } from '../../../../../utils/Colors';
-import { useFormatter } from '../../../../../components/i18n';
-import { defaultValue } from '../../../../../utils/Graph';
-import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
-import ItemMarkings from '../../../../../components/ItemMarkings';
-import { Filters, PaginationOptions } from '../../../../../components/list_lines';
-import { cleanFilters, convertFilters } from '../../../../../utils/ListParameters';
-import ToolBar from '../../../data/ToolBar';
-import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import usePreloadedFragment from '../../../../../utils/hooks/usePreloadedFragment';
-import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
-import { EntityStixCoreRelationshipsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsContextualViewQuery.graphql';
-import { EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key } from './__generated__/EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject.graphql';
-import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
-import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
-import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
-
-const useStyles = makeStyles(() => ({
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    textTransform: 'uppercase',
-    borderRadius: '0',
-  },
-}));
+import ItemPatternType from '../../../../../../components/ItemPatternType';
+import EntityStixCoreRelationshipsIndicatorsContextualViewLines from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
+import { Filters, PaginationOptions } from '../../../../../../components/list_lines';
+import { isEmptyField, isNotEmptyField } from '../../../../../../utils/utils';
+import { EntityStixCoreRelationshipsIndicatorsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewQuery.graphql';
+import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
+import { useFormatter } from '../../../../../../components/i18n';
+import usePreloadedFragment from '../../../../../../utils/hooks/usePreloadedFragment';
+import {
+  EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key,
+} from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject.graphql';
+import { cleanFilters, convertFilters } from '../../../../../../utils/ListParameters';
+import { EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
+import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
+import { EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
+import useAuth from '../../../../../../utils/hooks/useAuth';
+import { defaultValue } from '../../../../../../utils/Graph';
+import StixCoreObjectLabels from '../../../stix_core_objects/StixCoreObjectLabels';
+import ItemMarkings from '../../../../../../components/ItemMarkings';
+import ListLines from '../../../../../../components/list_lines/ListLines';
+import Loader, { LoaderVariant } from '../../../../../../components/Loader';
+import ToolBar from '../../../../data/ToolBar';
+import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
 
 const contextualViewFragment = graphql`
-  fragment EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject on StixDomainObject
+  fragment EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject on StixDomainObject
   @argumentDefinitions(entityTypes: { type: "[String!]" } ) {
     containers(entityTypes: $entityTypes) {
       edges {
@@ -51,9 +39,9 @@ const contextualViewFragment = graphql`
 `;
 
 const contextualViewQuery = graphql`
-  query EntityStixCoreRelationshipsContextualViewQuery($id: String!, $entityTypes: [String!]) {
+  query EntityStixCoreRelationshipsIndicatorsContextualViewQuery($id: String!, $entityTypes: [String!]) {
     stixDomainObject(id: $id) {
-      ...EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject @arguments(entityTypes: $entityTypes)
+      ...EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject @arguments(entityTypes: $entityTypes)
     }
   }
 `;
@@ -79,8 +67,8 @@ const handleFilterOnContainers = (containers: ({ readonly id: string })[], filte
   return filterContainers;
 };
 
-interface EntityStixCoreRelationshipsContextualViewProps {
-  queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewQuery>
+interface EntityStixCoreRelationshipsIndicatorsContextualViewProps {
+  queryRef: PreloadedQuery<EntityStixCoreRelationshipsIndicatorsContextualViewQuery>
   entityId: string
   entityLink: string
   localStorage: PaginationLocalStorage<PaginationOptions>
@@ -88,7 +76,7 @@ interface EntityStixCoreRelationshipsContextualViewProps {
   stixCoreObjectTypes: string[]
   currentView: string
 }
-const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<EntityStixCoreRelationshipsContextualViewProps> = ({
+const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComponent<EntityStixCoreRelationshipsIndicatorsContextualViewProps> = ({
   queryRef,
   entityId,
   entityLink,
@@ -97,12 +85,11 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   stixCoreObjectTypes = [],
   currentView,
 }) => {
-  const classes = useStyles();
   const { t, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
-  EntityStixCoreRelationshipsContextualViewQuery,
-  EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key
+  EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
+  EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key
   >({
     queryDef: contextualViewQuery,
     fragmentDef: contextualViewFragment,
@@ -132,6 +119,8 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     'created_start_date',
     'created_end_date',
     'containers',
+    'pattern_type',
+    'x_opencti_main_observable_type',
   ];
 
   const selectedTypes = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
@@ -152,7 +141,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     types: selectedTypes,
     containersIds: containers.map((r) => r.id),
     filters: convertFilters(finalFilters),
-  } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables; // Because of FilterMode
+  } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
 
   const backgroundTaskFilters = {
     ...finalFilters,
@@ -170,56 +159,33 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>(localStorageKey);
+  } = useEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>(localStorageKey);
 
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
-  const isObservables = isStixCyberObservables(stixCoreObjectTypes);
   const dataColumns = {
-    entity_type: {
+    pattern_type: {
       label: 'Type',
       width: '10%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          style={{
-            backgroundColor: hexToRGB(itemColor(stixCoreObject.entity_type), 0.08),
-            color: itemColor(stixCoreObject.entity_type),
-            border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
-          }}
-          label={t(`entity_${stixCoreObject.entity_type}`)}
-        />
-      ),
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => {
+        if (stixCoreObject.pattern_type) {
+          return <ItemPatternType variant="inList" label={stixCoreObject.pattern_type} />;
+        }
+        return <></>;
+      },
     },
-    [isObservables ? 'observable_value' : 'name']: {
-      label: isObservables ? 'Value' : 'Name',
+    name: {
+      label: 'Name',
       width: '20%',
-      // eslint-disable-next-line no-nested-ternary
-      isSortable: isStixCoreObjects(stixCoreObjectTypes)
-        ? false
-        : isObservables
-          ? isRuntimeSort
-          : true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => defaultValue(stixCoreObject),
-    },
-    createdBy: {
-      label: 'Author',
-      width: '10%',
-      isSortable: isRuntimeSort ?? false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => R.pathOr('', ['createdBy', 'name'], stixCoreObject),
-    },
-    creator: {
-      label: 'Creators',
-      width: '10%',
-      isSortable: isRuntimeSort ?? false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (stixCoreObject.creators ?? []).map((c) => c?.name).join(', '),
+      isSortable: true,
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => defaultValue(stixCoreObject),
     },
     objectLabel: {
       label: 'Labels',
       width: '15%',
       isSortable: false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => (
         <StixCoreObjectLabels
           variant="inList"
           labels={stixCoreObject.objectLabel}
@@ -231,13 +197,19 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       label: 'Creation date',
       width: '15%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => nsdt(stixCoreObject.created_at),
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => nsdt(stixCoreObject.created_at),
+    },
+    valid_until: {
+      label: 'Valid until',
+      width: '15%',
+      isSortable: true,
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => nsdt(stixCoreObject.valid_until),
     },
     objectMarking: {
       label: 'Marking',
       width: '10%',
       isSortable: isRuntimeSort ?? false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => (
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => (
         <ItemMarkings
           variant="inList"
           markingDefinitionsEdges={stixCoreObject.objectMarking?.edges ?? []}
@@ -249,7 +221,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       label: 'Container',
       width: '10%',
       isSortable: false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => stixCoreObject.containers?.edges?.map((e) => e?.node)
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => stixCoreObject.containers?.edges?.map((e) => e?.node)
         .map((n) => `${n?.representative} (${t(`entity_${n?.entity_type}`)})`)
         .join(','),
     },
@@ -270,26 +242,26 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         paginationOptions={paginationOptions}
         selectAll={selectAll}
         keyword={searchTerm}
-        displayImport={true}
+        displayImport
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType={'Stix-Core-Object'}
-        iconExtension={true}
+        iconExtension
         filters={cleanedFilters}
         availableFilterKeys={availableFilterKeys}
         availableRelationshipTypes={relationshipTypes}
         availableEntityTypes={stixCoreObjectTypes}
         numberOfElements={numberOfElements}
-        noPadding={true}
-        disableCards={true}
-        enableEntitiesView={true}
-        enableContextualView={true}
+        noPadding
+        disableCards
+        enableEntitiesView
+        enableContextualView
         currentView={currentView}
         searchContext={{ elementId: [entityId] }}
       >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <EntityStixCoreRelationshipsContextualViewLines
+            <EntityStixCoreRelationshipsIndicatorsContextualViewLines
               entityLink={entityLink}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -304,37 +276,37 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
           <Loader variant={LoaderVariant.inElement} />
         )}
       </ListLines>
-    <ToolBar
-      selectedElements={selectedElements}
-      deSelectedElements={deSelectedElements}
-      numberOfSelectedElements={numberOfSelectedElements}
-      selectAll={selectAll}
-      filters={backgroundTaskFilters}
-      search={searchTerm}
-      handleClearSelectedElements={handleClearSelectedElements}
-      variant="medium"
-      warning={true}
-      warningMessage={t(
-        'Be careful, you are about to delete the selected entities.',
-      )}
-    />
+      <ToolBar
+        selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
+        numberOfSelectedElements={numberOfSelectedElements}
+        selectAll={selectAll}
+        filters={backgroundTaskFilters}
+        search={searchTerm}
+        handleClearSelectedElements={handleClearSelectedElements}
+        variant="medium"
+        warning={true}
+        warningMessage={t(
+          'Be careful, you are about to delete the selected entities.',
+        )}
+      />
     </>
   );
 };
 
-const EntityStixCoreRelationshipsContextualView: FunctionComponent<Omit<EntityStixCoreRelationshipsContextualViewProps, 'queryRef'>> = (props) => {
-  const queryRef = useQueryLoading<EntityStixCoreRelationshipsContextualViewQuery>(
+const EntityStixCoreRelationshipsIndicatorsContextualView: FunctionComponent<Omit<EntityStixCoreRelationshipsIndicatorsContextualViewProps, 'queryRef'>> = (props) => {
+  const queryRef = useQueryLoading<EntityStixCoreRelationshipsIndicatorsContextualViewQuery>(
     contextualViewQuery,
     { id: props.entityId, entityTypes: ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'] },
   );
 
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <EntityStixCoreRelationshipsContextualViewComponent {...props} queryRef={queryRef} />
+      <EntityStixCoreRelationshipsIndicatorsContextualViewComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />
   );
 };
 
-export default EntityStixCoreRelationshipsContextualView;
+export default EntityStixCoreRelationshipsIndicatorsContextualView;

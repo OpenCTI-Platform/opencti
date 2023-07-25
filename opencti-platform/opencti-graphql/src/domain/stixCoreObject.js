@@ -35,7 +35,7 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
@@ -117,7 +117,12 @@ export const batchCreatedBy = async (context, user, stixCoreObjectIds) => {
 };
 
 export const batchContainers = async (context, user, stixCoreObjectIds, args = {}) => {
-  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER, args);
+  const { entityTypes } = args;
+  const finalEntityTypes = entityTypes ?? [ENTITY_TYPE_CONTAINER];
+  if (!finalEntityTypes.every((t) => isStixDomainObjectContainer(t))) {
+    throw FunctionalError(`Only ${ENTITY_TYPE_CONTAINER} can be query through this method.`);
+  }
+  return batchListThroughGetFrom(context, user, stixCoreObjectIds, RELATION_OBJECT, finalEntityTypes, args);
 };
 
 export const batchReports = async (context, user, stixCoreObjectIds, args = {}) => {

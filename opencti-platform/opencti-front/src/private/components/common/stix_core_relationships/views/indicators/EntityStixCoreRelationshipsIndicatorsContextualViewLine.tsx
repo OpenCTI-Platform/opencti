@@ -4,20 +4,17 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import ListItem from '@mui/material/ListItem';
-import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { ListItemButton } from '@mui/material';
-import { Theme } from '../../../../../components/Theme';
-import { UseEntityToggle } from '../../../../../utils/hooks/useEntityToggle';
-import { DataColumns } from '../../../../../components/list_lines';
-import { resolveLink } from '../../../../../utils/Entity';
-import ItemIcon from '../../../../../components/ItemIcon';
+import { DataColumns } from '../../../../../../components/list_lines';
+import { UseEntityToggle } from '../../../../../../utils/hooks/useEntityToggle';
+import { resolveLink } from '../../../../../../utils/Entity';
+import ItemIcon from '../../../../../../components/ItemIcon';
+import { Theme } from '../../../../../../components/Theme';
 import {
-  EntityStixCoreRelationshipsContextualViewLine_node$data,
-  EntityStixCoreRelationshipsContextualViewLine_node$key,
-} from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
+  EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data, EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key,
+} from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -43,11 +40,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const contextualViewLineFragment = graphql`
-  fragment EntityStixCoreRelationshipsContextualViewLine_node on StixCoreObject
+  fragment EntityStixCoreRelationshipsIndicatorsContextualViewLine_node on Indicator
   @argumentDefinitions(containersIds: { type: "[String]" } ) {
     id
     entity_type
+    pattern_type
     created_at
+    valid_until
+    name
     objectMarking {
       edges {
         node {
@@ -68,44 +68,35 @@ const contextualViewLineFragment = graphql`
         }
       }
     }
-    creators {
-      id
-      name
-    }
-    ... on StixCoreObject {
-      containers (elementId: $containersIds) {
-        edges {
-          node {
-            id
-            entity_type
-            ... on Container {
-              representative
-            }
+    containers (elementId: $containersIds) {
+      edges {
+        node {
+          id
+          entity_type
+          ... on Container {
+            representative
           }
         }
       }
-    }
-    ... on StixCyberObservable {
-      observable_value
     }
   }
 `;
 
 interface ContextualViewLineProps {
-  node: EntityStixCoreRelationshipsContextualViewLine_node$key
+  node: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$key
   dataColumns: DataColumns
-  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity']
-  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements']
-  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['deSelectedElements']
-  selectAll: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectAll']
+  onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['onToggleEntity']
+  selectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectedElements']
+  deSelectedElements: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['deSelectedElements']
+  selectAll: UseEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>['selectAll']
   onToggleShiftEntity: (
     index: number,
-    entity: EntityStixCoreRelationshipsContextualViewLine_node$data
+    entity: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data
   ) => void
   index: number
 }
 
-const EntityStixCoreRelationshipsContextualViewLine: FunctionComponent<
+const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent<
 ContextualViewLineProps
 > = ({
   node,
@@ -172,4 +163,4 @@ ContextualViewLineProps
   );
 };
 
-export default EntityStixCoreRelationshipsContextualViewLine;
+export default EntityStixCoreRelationshipsIndicatorsContextualViewLine;

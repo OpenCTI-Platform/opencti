@@ -17,8 +17,8 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int): ContainerConnection
-  reports(first: Int, elementId: [String]): ReportConnection
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
   observedData(first: Int): ObservedDataConnection
