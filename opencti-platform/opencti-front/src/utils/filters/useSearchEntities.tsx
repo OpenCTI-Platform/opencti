@@ -30,6 +30,7 @@ import { VocabularyQuery$data } from '../../private/components/settings/__genera
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
 import { Theme } from '../../components/Theme';
 import useAuth from '../hooks/useAuth';
+import { buildScaleFilters } from '../hooks/useScale';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
@@ -227,12 +228,14 @@ interface EntityWithLabelValue {
 const useSearchEntities = ({
   availableEntityTypes,
   availableRelationshipTypes,
+  searchContext,
   searchScope,
   setInputValues,
   allEntityTypes,
 }: {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
+  searchContext: { entityTypes: string[] };
   searchScope: Record<string, string[]>;
   setInputValues: Dispatch<Record<string, string | Date>>;
   allEntityTypes?: boolean;
@@ -247,9 +250,10 @@ const useSearchEntities = ({
       ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group) === index,
     ),
   }));
+  const entityType = searchContext?.entityTypes?.length > 0 ? searchContext.entityTypes[0] : null;
+  const confidences = buildScaleFilters(entityType, 'confidence');
   const searchEntities = (
     filterKey: string,
-    searchContext: { entityTypes: string[] },
     cacheEntities: Record<
     string,
     { label: string; value: string; type: string }[]
@@ -273,7 +277,6 @@ const useSearchEntities = ({
       '90',
       '100',
     ];
-    const confidences = ['0', '15', '50', '75', '85'];
     const likelihoods = ['0', '15', '50', '75', '85'];
     if (!event) {
       return;
@@ -674,9 +677,10 @@ const useSearchEntities = ({
       case 'confidence':
         // eslint-disable-next-line no-case-declarations
         const confidenceEntities = ['lte', 'gt'].flatMap((group) => confidences.map((n) => ({
-          label: n,
-          value: n,
+          label: n.label,
+          value: n.value,
           type: 'Vocabulary',
+          color: n.color,
           group,
         })));
         unionSetEntities('confidence', confidenceEntities);
@@ -684,18 +688,20 @@ const useSearchEntities = ({
       case 'confidence_gt':
         // eslint-disable-next-line no-case-declarations
         const confidenceEntitiesGt = confidences.map((n) => ({
-          label: t(`confidence_${n.toString()}`),
-          value: n,
+          label: n.label,
+          value: n.value,
           type: 'Vocabulary',
+          color: n.color,
         }));
         unionSetEntities('confidence_gt', confidenceEntitiesGt);
         break;
       case 'confidence_lte':
         // eslint-disable-next-line no-case-declarations
         const confidenceLteEntities = confidences.map((n) => ({
-          label: n,
-          value: n,
+          label: n.label,
+          value: n.value,
           type: 'Vocabulary',
+          color: n.color,
         }));
         unionSetEntities('confidence_lte', confidenceLteEntities);
         break;
@@ -987,6 +993,24 @@ const useSearchEntities = ({
             unionSetEntities(
               'x_opencti_organization_type',
               organizationTypeEntities,
+            );
+          });
+        break;
+      case 'x_opencti_reliability':
+        fetchQuery(vocabularySearchQuery, {
+          category: 'reliability_ov',
+        })
+          .toPromise()
+          .then((data) => {
+            unionSetEntities(
+              filterKey,
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
             );
           });
         break;

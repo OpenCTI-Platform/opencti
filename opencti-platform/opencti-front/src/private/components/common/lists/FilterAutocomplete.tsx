@@ -86,6 +86,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   Record<string, { label: string; value: string; type: string }[]>
   >({});
   const [entities, searchEntities] = useSearchEntities({
+    searchContext,
     searchScope,
     setInputValues,
     availableEntityTypes,
@@ -95,7 +96,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     Record<string, OptionValue[]>,
     (
       filterKey: string,
-      searchContext: { entityTypes: string[] },
       cacheEntities: Record<
       string,
       { label: string; value: string; type: string }[]
@@ -165,7 +165,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
       options={options}
       onInputChange={(event) => searchEntities(
         filterKey,
-        searchContext,
         cacheEntities,
         setCacheEntities,
         event,
@@ -188,7 +187,6 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
           fullWidth={true}
           onFocus={(event) => searchEntities(
             filterKey,
-            searchContext,
             cacheEntities,
             setCacheEntities,
             event,

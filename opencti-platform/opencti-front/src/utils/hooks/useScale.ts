@@ -93,7 +93,7 @@ export const findSelectedScaleName = (scale: ScaleConfig) => {
 const useScale = (
   entityType: string | null,
   attributeName: string,
-): ScaleConfig | null => {
+): ScaleConfig => {
   if (!entityType) {
     // return default configuration scale if entity type is not defined (ex: relationships)
     return defaultScale;
@@ -109,6 +109,18 @@ const useScale = (
   }
   const scale = JSON.parse(scaleAttribute.scale) as Scale;
   return scale.local_config;
+};
+
+export const buildScaleFilters = (
+  entityType: string | null,
+  attributeName: string,
+): { label: string, value: string, color: string }[] => {
+  const scale = useScale(entityType, attributeName);
+  const minLevel = { label: scale.min.label, value: scale.min.value.toString(), color: scale.min.color };
+  const tickLevels = scale.ticks.map((tick) => (
+    { label: tick.label, value: tick.value.toString(), color: tick.color }
+  ));
+  return [minLevel, ...tickLevels];
 };
 
 export const buildScaleLevel = (
@@ -157,18 +169,7 @@ export const useLevel = (
   value: number | null,
 ) => {
   const scale = useScale(entityType, attributeName);
-  if (scale) {
-    return buildScaleLevel(value, scale);
-  }
-  return {
-    level: {
-      value,
-      label: notSpecifiedLevel.label,
-      color: notSpecifiedLevel.color,
-    },
-    marks: [],
-    scale: null,
-  };
+  return buildScaleLevel(value, scale);
 };
 
 export default useScale;

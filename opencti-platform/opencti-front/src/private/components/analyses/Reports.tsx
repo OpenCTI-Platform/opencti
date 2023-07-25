@@ -179,6 +179,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
             'markedBy',
             'report_types',
             'confidence',
+            'x_opencti_reliability',
             'published_start_date',
             'published_end_date',
             'created_at_start_date',

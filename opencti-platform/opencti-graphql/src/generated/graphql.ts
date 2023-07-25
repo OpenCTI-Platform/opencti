@@ -9656,6 +9656,7 @@ export enum IndividualsFilter {
   UpdatedAt = 'updated_at',
   XOpenctiFirstname = 'x_opencti_firstname',
   XOpenctiLastname = 'x_opencti_lastname',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -20203,6 +20204,7 @@ export enum ReportsFilter {
   PublishedDay = 'published_day',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -23781,6 +23783,7 @@ export enum SystemsFilter {
   Name = 'name',
   Revoked = 'revoked',
   UpdatedAt = 'updated_at',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
