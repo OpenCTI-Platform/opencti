@@ -20,7 +20,6 @@ import { QueryRenderer } from '../../../../../../relay/environment';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
-  entityLink: string
   defaultStartTime: string
   defaultStopTime: string
   localStorage: PaginationLocalStorage<PaginationOptions>
@@ -30,7 +29,6 @@ interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
 }
 const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsIndicatorsEntitiesViewProps> = ({
   entityId,
-  entityLink,
   defaultStartTime,
   defaultStopTime,
   localStorage,
@@ -169,7 +167,6 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
                 <StixDomainObjectIndicatorsLines
                   data={props}
                   paginationOptions={paginationOptions}
-                  entityLink={entityLink}
                   entityId={entityId}
                   dataColumns={dataColumns}
                   initialLoading={props === null}

@@ -50,7 +50,6 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
         {view === 'entities'
           && <EntityStixCoreRelationshipsIndicatorsEntitiesView
             entityId={entityId}
-            entityLink={entityLink}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
             localStorage={localStorage}
@@ -76,7 +75,6 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsIndicatorsContextualView
             entityId={entityId}
-            entityLink={entityLink}
             localStorage={localStorage}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}

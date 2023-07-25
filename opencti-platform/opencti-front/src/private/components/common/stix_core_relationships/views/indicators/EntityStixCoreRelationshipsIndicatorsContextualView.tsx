@@ -90,7 +90,6 @@ const handleFilterOnContainers = (containers: ({ readonly id: string })[], filte
 interface EntityStixCoreRelationshipsIndicatorsContextualViewProps {
   queryRef: PreloadedQuery<EntityStixCoreRelationshipsIndicatorsContextualViewQuery>
   entityId: string
-  entityLink: string
   localStorage: PaginationLocalStorage<PaginationOptions>
   relationshipTypes: string[]
   stixCoreObjectTypes: string[]
@@ -99,7 +98,6 @@ interface EntityStixCoreRelationshipsIndicatorsContextualViewProps {
 const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComponent<EntityStixCoreRelationshipsIndicatorsContextualViewProps> = ({
   queryRef,
   entityId,
-  entityLink,
   localStorage,
   relationshipTypes = [],
   stixCoreObjectTypes = [],
@@ -294,7 +292,6 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <EntityStixCoreRelationshipsIndicatorsContextualViewLines
-              entityLink={entityLink}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               onToggleEntity={onToggleEntity}
