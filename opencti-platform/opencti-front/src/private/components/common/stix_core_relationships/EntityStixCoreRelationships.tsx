@@ -69,7 +69,6 @@ const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationships
             && <EntityStixCoreRelationshipsEntitiesView
               localStorage={localStorage}
               entityId={entityId}
-              entityLink={entityLink}
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}
               relationshipTypes={relationshipTypes}

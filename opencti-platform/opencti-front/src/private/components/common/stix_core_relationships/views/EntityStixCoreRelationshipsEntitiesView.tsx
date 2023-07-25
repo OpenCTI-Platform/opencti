@@ -17,7 +17,6 @@ import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables }
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string
-  entityLink: string
   defaultStartTime: string
   defaultStopTime: string,
   localStorage: PaginationLocalStorage<PaginationOptions>
@@ -31,7 +30,6 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
 }
 const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsEntitiesViewProps> = ({
   entityId,
-  entityLink,
   defaultStartTime,
   defaultStopTime,
   localStorage,
@@ -212,7 +210,6 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
             >
               <EntityStixCoreRelationshipsEntitiesViewLines
                 paginationOptions={paginationOptions}
-                entityLink={entityLink}
                 dataColumns={dataColumns}
                 onToggleEntity={onToggleEntity}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}

@@ -48,7 +48,6 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
         {view === 'entities'
           && <EntityStixCoreRelationshipsEntitiesView
             entityId={entityId}
-            entityLink={entityLink}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
             localStorage={localStorage}
@@ -75,12 +74,11 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
 
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsContextualView
-          entityId={entityId}
-          entityLink={entityLink}
-          localStorage={localStorage}
-          relationshipTypes={relationshipTypes}
-          stixCoreObjectTypes={entityTypes}
-          currentView={view}
+            entityId={entityId}
+            localStorage={localStorage}
+            relationshipTypes={relationshipTypes}
+            stixCoreObjectTypes={entityTypes}
+            currentView={view}
           />
         )}
       </div>

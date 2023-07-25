@@ -18,7 +18,6 @@ const nbOfRowsToLoad = 50;
 interface EntityStixCoreRelationshipsEntitiesProps {
   queryRef: PreloadedQuery<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery>;
   dataColumns: DataColumns;
-  entityLink: string;
   paginationOptions: Partial<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables>;
   isRelationReversed: boolean;
   onLabelClick: HandleAddFilter;
@@ -101,7 +100,6 @@ EntityStixCoreRelationshipsEntitiesProps
 > = ({
   queryRef,
   dataColumns,
-  entityLink,
   paginationOptions,
   isRelationReversed,
   onLabelClick,
@@ -136,7 +134,6 @@ EntityStixCoreRelationshipsEntitiesProps
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
-      entityLink={entityLink}
       isTo={isRelationReversed}
       onLabelClick={onLabelClick}
       selectedElements={selectedElements}

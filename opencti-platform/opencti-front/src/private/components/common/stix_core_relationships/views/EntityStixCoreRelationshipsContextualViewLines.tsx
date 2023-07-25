@@ -81,7 +81,6 @@ export const contextualViewLinesQuery = graphql`
 interface EntityStixCoreRelationshipsContextualViewLinesProps {
   queryRef: PreloadedQuery<EntityStixCoreRelationshipsContextualViewLinesQuery>
   dataColumns: DataColumns
-  entityLink: string
   paginationOptions: Partial<EntityStixCoreRelationshipsContextualViewLinesQuery$variables>
   onToggleEntity: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['onToggleEntity']
   selectedElements: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectedElements']
@@ -93,7 +92,6 @@ interface EntityStixCoreRelationshipsContextualViewLinesProps {
 const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent<EntityStixCoreRelationshipsContextualViewLinesProps> = ({
   queryRef,
   dataColumns,
-  entityLink,
   paginationOptions,
   onToggleEntity,
   selectedElements,
@@ -125,7 +123,6 @@ const EntityStixCoreRelationshipsContextualViewLinesComponent: FunctionComponent
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
-      entityLink={entityLink}
       selectedElements={selectedElements}
       deSelectedElements={deSelectedElements}
       selectAll={selectAll}
