@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import { graphql, PreloadedQuery } from 'react-relay';
+import { Link } from 'react-router-dom';
+import Chip from '@mui/material/Chip';
+import makeStyles from '@mui/styles/makeStyles';
 import ItemPatternType from '../../../../../../components/ItemPatternType';
 import EntityStixCoreRelationshipsIndicatorsContextualViewLines from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
 import { Filters, PaginationOptions } from '../../../../../../components/list_lines';
@@ -24,6 +27,23 @@ import ListLines from '../../../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../../../components/Loader';
 import ToolBar from '../../../../data/ToolBar';
 import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
+import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
+import { resolveLink } from '../../../../../../utils/Entity';
+import { Theme } from '../../../../../../components/Theme';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  chip: {
+    fontSize: 13,
+    lineHeight: '12px',
+    height: 20,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+    },
+  },
+}));
 
 const contextualViewFragment = graphql`
   fragment EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject on StixDomainObject
@@ -85,7 +105,8 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   stixCoreObjectTypes = [],
   currentView,
 }) => {
-  const { t, nsdt } = useFormatter();
+  const classes = useStyles();
+  const { t, n, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
   EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
@@ -109,21 +130,27 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   } = viewStorage;
 
   const availableFilterKeys = [
-    'relationship_type',
-    'entity_type',
-    'markedBy',
-    'confidence',
     'labelledBy',
-    'createdBy',
-    'creator',
+    'markedBy',
     'created_start_date',
     'created_end_date',
-    'containers',
+    'valid_from_start_date',
+    'valid_until_end_date',
+    'x_opencti_score',
+    'createdBy',
+    'objectContains',
+    'sightedBy',
+    'x_opencti_detection',
+    'basedOn',
+    'revoked',
+    'creator',
+    'confidence',
+    'indicator_types',
     'pattern_type',
     'x_opencti_main_observable_type',
+    'containers',
   ];
 
-  const selectedTypes = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
   const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
     .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
 
@@ -138,17 +165,13 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     search: searchTerm,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
-    types: selectedTypes,
     containersIds: containers.map((r) => r.id),
     filters: convertFilters(finalFilters),
   } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
 
   const backgroundTaskFilters = {
     ...finalFilters,
-    entity_type:
-    selectedTypes.length > 0
-      ? selectedTypes.map((n) => ({ id: n, value: n }))
-      : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+    entity_type: [{ id: 'Indicator', value: 'Indicator' }],
   };
 
   const {
@@ -217,13 +240,22 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         />
       ),
     },
-    container: {
-      label: 'Container',
-      width: '10%',
+    cases_and_analysis: {
+      label: 'Cases & Analyses',
+      width: '15%',
       isSortable: false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => stixCoreObject.containers?.edges?.map((e) => e?.node)
-        .map((n) => `${n?.representative} (${t(`entity_${n?.entity_type}`)})`)
-        .join(','),
+      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => {
+        const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
+        const linkAnalyses = `${link}/analyses`;
+        return (
+        <Chip
+          classes={{ root: classes.chip }}
+          label={n(stixCoreObject.containers?.edges?.length)}
+          component={Link}
+          to={linkAnalyses}
+        />
+        );
+      },
     },
   };
 

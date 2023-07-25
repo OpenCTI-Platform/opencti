@@ -71,7 +71,6 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             isRelationReversed
             currentView={view}
             enableContextualView
-            enableNestedView
           />}
 
         {view === 'contextual' && (

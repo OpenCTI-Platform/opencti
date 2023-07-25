@@ -3,6 +3,7 @@ import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import { graphql, PreloadedQuery } from 'react-relay';
+import { Link } from 'react-router-dom';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../../../utils/hooks/useAuth';
@@ -25,8 +26,10 @@ import { EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key 
 import { EntityStixCoreRelationshipsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsContextualViewLinesQuery.graphql';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
+import { Theme } from '../../../../../components/Theme';
+import { resolveLink } from '../../../../../utils/Entity';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   chipInList: {
     fontSize: 12,
     height: 20,
@@ -34,6 +37,17 @@ const useStyles = makeStyles(() => ({
     width: 120,
     textTransform: 'uppercase',
     borderRadius: '0',
+  },
+  chip: {
+    fontSize: 13,
+    lineHeight: '12px',
+    height: 20,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+    },
   },
 }));
 
@@ -98,7 +112,7 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   currentView,
 }) => {
   const classes = useStyles();
-  const { t, nsdt } = useFormatter();
+  const { t, n, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
   EntityStixCoreRelationshipsContextualViewQuery,
@@ -245,13 +259,22 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         />
       ),
     },
-    container: {
-      label: 'Container',
+    cases_and_analysis: {
+      label: 'Cases & Analyses',
       width: '10%',
       isSortable: false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => stixCoreObject.containers?.edges?.map((e) => e?.node)
-        .map((n) => `${n?.representative} (${t(`entity_${n?.entity_type}`)})`)
-        .join(','),
+      render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => {
+        const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
+        const linkAnalyses = `${link}/analyses`;
+        return (
+          <Chip
+            classes={{ root: classes.chip }}
+            label={n(stixCoreObject.containers?.edges?.length)}
+            component={Link}
+            to={linkAnalyses}
+          />
+        );
+      },
     },
   };
 

@@ -1904,6 +1904,8 @@ interface StixCoreObject {
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
   containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+#  Filters ?
+#  Element ID ?
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection

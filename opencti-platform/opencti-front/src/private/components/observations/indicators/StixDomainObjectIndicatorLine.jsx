@@ -8,9 +8,9 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import { ShieldSearch } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -19,7 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
-    paddingLeft: 10,
+    paddingLeft: theme.spacing(1.5),
     height: 50,
   },
   itemIcon: {
@@ -32,11 +32,11 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingRight: theme.spacing(1.5),
   },
   goIcon: {
     position: 'absolute',
-    right: -10,
+    right: theme.spacing(-1.5),
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -63,10 +63,10 @@ class StixDomainObjectIndicatorLineComponent extends Component {
       index,
     } = this.props;
     return (
-      <ListItem
+      <ListItemButton
+        key={node.id}
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         component={Link}
         to={`/dashboard/observations/indicators/${node.id}`}
       >
@@ -142,7 +142,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <KeyboardArrowRight />
         </ListItemIcon>
-      </ListItem>
+      </ListItemButton>
     );
   }
 }
