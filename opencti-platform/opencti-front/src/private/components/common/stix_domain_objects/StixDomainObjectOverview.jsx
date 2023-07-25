@@ -119,6 +119,8 @@ class StixDomainObjectOverview extends Component {
       (n) => n !== stixDomainObject.standard_id,
       otherStixIds,
     );
+    const isReliabilityOfSource = !stixDomainObject.x_opencti_reliability;
+    const reliability = isReliabilityOfSource ? stixDomainObject.createdBy?.x_opencti_reliability : stixDomainObject.x_opencti_reliability;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -162,14 +164,14 @@ class StixDomainObjectOverview extends Component {
                     gutterBottom={true}
                     style={{ marginTop: 20 }}>
                     {t('Reliability')}
-                    {!stixDomainObject.x_opencti_reliability && (
+                    {isReliabilityOfSource && (
                       <span style={{ fontStyle: 'italic' }}> ({t('of author')})</span>
                     )}
                   </Typography>
                   <ItemOpenVocab
                     key="type"
                     type="reliability_ov"
-                    value={!stixDomainObject.x_opencti_reliability ? stixDomainObject.createdBy?.x_opencti_reliability : stixDomainObject.x_opencti_reliability}
+                    value={reliability?.toString()}
                     chipDisplay
                   />
                 </Grid>

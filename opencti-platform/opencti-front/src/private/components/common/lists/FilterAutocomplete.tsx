@@ -96,13 +96,8 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     Record<string, OptionValue[]>,
     (
       filterKey: string,
-      cacheEntities: Record<
-      string,
-      { label: string; value: string; type: string }[]
-      >,
-      setCacheEntities: Dispatch<
-      Record<string, { label: string; value: string; type: string }[]>
-      >,
+      cacheEntities: Record<string, { label: string; value: string; type: string }[]>,
+      setCacheEntities: Dispatch<Record<string, { label: string; value: string; type: string }[]>>,
       event: SyntheticEvent
     ) => Record<string, OptionValue[]>,
   ]; // change when useSearchEntities will be in TS

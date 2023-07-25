@@ -108,12 +108,12 @@ Omit<ItemOpenVocabProps, 'type'>
 > = ({ value, small = true, chipDisplay = false, queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
+    itemOpenVocabQuery,
+    queryRef,
+  );
   let description = t('No description');
   if (value) {
-    const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
-      itemOpenVocabQuery,
-      queryRef,
-    );
     const openVocabList = (vocabularies?.edges ?? []).map(({ node }) => node);
     const openVocab = openVocabList.find((n) => n.name === value);
     description = openVocab?.description ? openVocab.description : t('No description');

@@ -254,13 +254,8 @@ const useSearchEntities = ({
   const confidences = buildScaleFilters(entityType, 'confidence');
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record<
-    string,
-    { label: string; value: string; type: string }[]
-    >,
-    setCacheEntities: Dispatch<
-    Record<string, { label: string; value: string; type: string }[]>
-    >,
+    cacheEntities: Record<string, { label: string; value: string; type: string }[]>,
+    setCacheEntities: Dispatch<Record<string, { label: string; value: string; type: string }[]>>,
     event: SelectChangeEvent<string | number>,
   ) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
