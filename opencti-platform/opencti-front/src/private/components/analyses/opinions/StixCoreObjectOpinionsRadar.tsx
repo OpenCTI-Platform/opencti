@@ -185,6 +185,7 @@ StixCoreObjectOpinionsRadarProps
           fetchQuery();
           setSubmitting(false);
           resetForm();
+          handleClose();
         },
       });
     } else {
@@ -197,6 +198,7 @@ StixCoreObjectOpinionsRadarProps
           fetchQuery();
           setSubmitting(false);
           resetForm();
+          handleClose();
         },
       });
     }
