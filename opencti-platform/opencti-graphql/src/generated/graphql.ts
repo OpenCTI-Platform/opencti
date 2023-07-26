@@ -11890,6 +11890,7 @@ export enum MalwaresFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }

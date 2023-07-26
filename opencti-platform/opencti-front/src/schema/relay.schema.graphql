@@ -4907,6 +4907,7 @@ enum MalwaresFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  source_reliability
 }
 
 input MalwaresFiltering {

@@ -63,6 +63,9 @@ import {
   ATTRIBUTE_DESCRIPTION,
   ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
   isStixObjectAliased,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
@@ -1276,6 +1279,23 @@ const elQueryBodyBuilder = async (context, user, options) => {
       const noValuesFiltering = [];
       const { key, values, nested, operator = 'eq', filterMode: localFilterMode = 'or' } = validFilters[index];
       const arrayKeys = Array.isArray(key) ? key : [key];
+      // in case we want to filter by source reliability (reliability of author)
+      // we need to find all authors filtered by reliability and filter on these authors
+      const sourceReliabilityFilter = arrayKeys.find((k) => k === 'source_reliability');
+      if (sourceReliabilityFilter) {
+        const authorTypes = [
+          ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+          ENTITY_TYPE_IDENTITY_ORGANIZATION,
+          ENTITY_TYPE_IDENTITY_SYSTEM
+        ];
+        const reliabilityFilter = { key: ['x_opencti_reliability'], operator, values, localFilterMode };
+        const opts = { types: authorTypes, connectionFormat: false, filters: [reliabilityFilter] };
+        const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
+        arrayKeys.splice(0, 1);
+        arrayKeys.push('rel_created-by.internal_id');
+        values.splice(0, values.length);
+        authors.forEach((author) => values.push(author.internal_id));
+      }
       // In case of entity_type filters, we also look by default in the parent_types property.
       const validKeys = R.uniq(arrayKeys.includes('entity_type') ? [...arrayKeys, 'parent_types'] : arrayKeys);
       // TODO IF KEY is PART OF Rule we need to add extra fields search

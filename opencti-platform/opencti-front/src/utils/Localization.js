@@ -8283,6 +8283,7 @@ const i18n = {
       filter_toCreatedAt_end_date: 'Ingested before',
       filter_x_opencti_organization_type: 'Organization type',
       filter_x_opencti_reliability: 'Reliability',
+      filter_source_reliability: 'Reliability of author',
       filter_indicates: 'Indicates',
       filter_indicates_not_eq: 'NOT Indicates',
       filter_revoked: 'Revoked',

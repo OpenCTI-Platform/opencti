@@ -992,6 +992,7 @@ const useSearchEntities = ({
           });
         break;
       case 'x_opencti_reliability':
+      case 'source_reliability':
         fetchQuery(vocabularySearchQuery, {
           category: 'reliability_ov',
         })
