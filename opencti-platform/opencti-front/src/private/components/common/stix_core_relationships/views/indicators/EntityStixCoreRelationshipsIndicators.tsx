@@ -50,6 +50,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
         {view === 'entities'
           && <EntityStixCoreRelationshipsIndicatorsEntitiesView
             entityId={entityId}
+            relationshipTypes={relationshipTypes}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
             localStorage={localStorage}

@@ -19,13 +19,14 @@ interface EntityStixCoreRelationshipsForStixCyberObservableProps {
   entityLink: string
   defaultStartTime: string
   defaultStopTime: string
+  relationshipTypes: string[]
+  isRelationReversed: boolean
 }
 
 const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntityStixCoreRelationshipsForStixCyberObservableProps> = (props) => {
   const classes = useStyles();
 
-  const { entityId, entityLink, defaultStartTime, defaultStopTime } = props;
-  const relationshipTypes = ['related-to'];
+  const { entityId, entityLink, defaultStartTime, defaultStopTime, relationshipTypes, isRelationReversed } = props;
   const entityTypes = ['Stix-Cyber-Observable'];
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
@@ -53,7 +54,7 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             localStorage={localStorage}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
-            isRelationReversed
+            isRelationReversed={isRelationReversed}
             currentView={view}
             enableContextualView
           />}
@@ -67,7 +68,7 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             localStorage={localStorage}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={entityTypes}
-            isRelationReversed
+            isRelationReversed={isRelationReversed}
             currentView={view}
             enableContextualView
           />}

@@ -294,6 +294,8 @@ const ThreatActorIndividualKnowledgeComponent = ({
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
+            isRelationReversed={true}
+            relationshipTypes={['related-to']}
           />
         )}
       />
