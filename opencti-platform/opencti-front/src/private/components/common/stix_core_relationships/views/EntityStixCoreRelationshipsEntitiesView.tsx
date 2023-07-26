@@ -68,7 +68,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     availableFilterKeys = [...availableFilterKeys, 'targets'];
   }
 
-  const selectedTypes = filters?.entity_type?.map((o) => o.id) ?? stixCoreObjectTypes;
+  const selectedTypes: string[] = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
   const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
 
   const paginationOptions = {
@@ -86,7 +86,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
   const backgroundTaskFilters = {
     ...filters,
     entity_type:
-      selectedTypes.length > 0
+      (selectedTypes?.length > 0)
         ? selectedTypes.map((n) => ({ id: n, value: n }))
         : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
     [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
