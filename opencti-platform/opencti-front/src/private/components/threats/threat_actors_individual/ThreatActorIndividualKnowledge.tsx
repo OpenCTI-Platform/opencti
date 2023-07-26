@@ -278,7 +278,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
             <EntityStixCoreRelationshipsIndicators
               {...routeProps}
               entityId={threatActorIndividual.id}
-              entityLink={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/indicators`}
+              entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
             />
