@@ -49,6 +49,7 @@ const TopMenuEvents = () => {
           {t('Incidents')}
         </Button>
       )}
+      {!useIsHiddenEntity('stix-sighting-relationship') && (
       <Button
         component={Link}
         to="/dashboard/events/sightings"
@@ -68,6 +69,7 @@ const TopMenuEvents = () => {
         <VisibilityOutlined className={classes.icon} fontSize="small" />
         {t('Sightings')}
       </Button>
+      )}
       {!useIsHiddenEntity('Observed-Data') && (
         <Button
           component={Link}

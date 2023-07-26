@@ -33,7 +33,7 @@ export const hiddenTypesListRoleMutationFieldPatch = graphql`
 export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Note', 'Malware-Analysis']],
   ['Cases', ['Case-Incident', 'Feedback', 'Case-Rfi', 'Case-Rft', 'Task']],
-  ['Events', ['Incident', 'Observed-Data']],
+  ['Events', ['stix-sighting-relationship', 'Incident', 'Observed-Data']],
   ['Observations', ['Indicator', 'Infrastructure']],
   ['Threats', ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set', 'Campaign']],
   ['Arsenal', ['Malware', 'Channel', 'Tool', 'Vulnerability']],
@@ -93,13 +93,17 @@ interface HiddenTypesListProps {
 const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
   const { t } = useFormatter();
 
-  const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
+  const entitySettings1 = useEntitySettings();
+  const entitySettings2 = entitySettings1.filter(({ platform_hidden_type }) => platform_hidden_type !== null);
+  const map = entitySettings2
     .map((node) => ({
       ...node,
       hidden: node.platform_hidden_type ?? false,
       group: findGroupKey(node.target_type),
-    }))
-    .filter((entitySetting) => entitySetting.group !== undefined)
+    }));
+  const filter = map
+    .filter((entitySetting) => entitySetting.group !== undefined);
+  const entitySettings = filter
     .sort((a, b) => groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group));
 
   const entitySettingsHiddenGrouped = entitySettings.reduce(
