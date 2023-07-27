@@ -240,6 +240,9 @@ export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
         ... on Malware {
           name
         }
+        ... on MalwareAnalysis {
+          result_name
+        }
         ... on ThreatActor {
           name
         }
