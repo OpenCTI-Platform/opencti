@@ -18,6 +18,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
+import { getFileUri } from '../../../../utils/utils';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -137,6 +138,7 @@ class StixDomainObjectBookmarkComponent extends Component {
   render() {
     const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
+
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -146,14 +148,20 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={
+            avatar={ node.images && node.images.length > 0 ? (
+              <img
+                style={{ height: '30px' }}
+                src={getFileUri(node.images[0].id)}
+                alt={node.images[0].name}
+              />
+            ) : (
               <Avatar className={classes.avatar}>
                 <ItemIcon
                   type={node.entity_type}
                   color={theme.palette.background.default}
                 />
               </Avatar>
-            }
+            )}
             title={node.name}
             subheader={`${t('Updated on')} ${fsd(node.modified)}`}
             action={
@@ -242,6 +250,12 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         }
         ... on ThreatActor {
           name
+          ... on ThreatActorIndividual {
+            images: x_opencti_files(prefixMimeType: "image/") {
+              id
+              name
+            }
+          }
         }
         ... on Tool {
           name

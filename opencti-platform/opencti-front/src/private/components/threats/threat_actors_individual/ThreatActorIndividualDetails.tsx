@@ -10,6 +10,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import Carousel from 'react-material-ui-carousel';
+import Tooltip from '@mui/material/Tooltip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -18,6 +20,8 @@ import {
   ThreatActorIndividualDetails_ThreatActorIndividual$data,
   ThreatActorIndividualDetails_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
+import { getFileUri } from '../../../../utils/utils';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -36,6 +40,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
+  carousel: {
+    textAlign: 'center',
+  },
 }));
 
 const ThreatActorIndividualDetailsFragment = graphql`
@@ -51,6 +58,14 @@ const ThreatActorIndividualDetailsFragment = graphql`
     secondary_motivations
     goals
     roles
+    images: x_opencti_files(prefixMimeType: "image/") {
+      id
+      name
+      mime_type
+      order
+      inCarousel
+      description
+    }
   }
 `;
 
@@ -65,6 +80,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
+
   return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -80,6 +96,17 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                 source={data.description}
                 limit={400}
               />
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Threat actor individual types')}
+              </Typography>
+              {data.threat_actor_types
+                && data.threat_actor_types.map((threatActorIndividualType) => (
+                  <Chip
+                    key={threatActorIndividualType}
+                    classes={{ root: classes.chip }}
+                    label={threatActorIndividualType}
+                  />
+                ))}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -152,17 +179,23 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Threat actor individual types')}
-              </Typography>
-              {data.threat_actor_types
-                && data.threat_actor_types.map((threatActorIndividualType) => (
-                  <Chip
-                    key={threatActorIndividualType}
-                    classes={{ root: classes.chip }}
-                    label={threatActorIndividualType}
-                  />
-                ))}
+              <FieldOrEmpty source={data.images}>
+                <Carousel
+                  height='150px'
+                  className={classes.carousel}
+                  animation='fade'
+                >
+                  {data.images && data.images.map((file) => (
+                    <Tooltip title={file.description} key={file.id} placement='right'>
+                    <img
+                      style={{ height: '100%' }}
+                      src={getFileUri(file.id)}
+                      alt={file.name}
+                    />
+                    </Tooltip>
+                  ))}
+                </Carousel>
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}

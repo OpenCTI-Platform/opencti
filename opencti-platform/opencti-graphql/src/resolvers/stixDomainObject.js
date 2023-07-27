@@ -11,7 +11,7 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
-  stixDomainObjectExportAsk,
+  stixDomainObjectExportAsk, stixDomainObjectFileEdit, stixDomainObjectFiles,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -66,6 +66,7 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
+    x_opencti_files: (stixDomainObject, { prefixMimeType }) => stixDomainObjectFiles(stixDomainObject, prefixMimeType),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({
@@ -78,11 +79,12 @@ const stixDomainObjectResolvers = {
       importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(context, context.user, id, file, noTriggerImport),
       exportAsk: (args) => stixDomainObjectExportAsk(context, context.user, id, args),
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
+      stixDomainObjectFileEdit: ({ input }) => stixDomainObjectFileEdit(context, context.user, id, input),
     }),
     stixDomainObjectsDelete: (_, { id }, context) => stixDomainObjectsDelete(context, context.user, id),
     stixDomainObjectAdd: (_, { input }, context) => addStixDomainObject(context, context.user, input),
     stixDomainObjectsExportAsk: (_, args, context) => stixDomainObjectsExportAsk(context, context.user, args),
-    stixDomainObjectsExportPush: (_, { type, file, listFilters }, context) => stixCoreObjectsExportPush(context, context.user, type, file, listFilters)
+    stixDomainObjectsExportPush: (_, { type, file, listFilters }, context) => stixCoreObjectsExportPush(context, context.user, type, file, listFilters),
   },
   Subscription: {
     stixDomainObject: {

@@ -309,10 +309,10 @@ export const filesListing = async (context, user, first, path, entityId = null) 
     const files = await rawFilesListing(context, user, path);
     const inExport = await loadExportWorksAsProgressFiles(context, user, path);
     const allFiles = R.concat(inExport, files);
-    const sortedFiles = R.sort((a, b) => b.lastModified - a.lastModified, allFiles);
-    let fileNodes = R.map((f) => ({ node: f }), sortedFiles);
+    const sortedFiles = allFiles.sort((a, b) => b.lastModified - a.lastModified);
+    let fileNodes = sortedFiles.map((f) => ({ node: f }));
     if (entityId) {
-      fileNodes = R.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
+      fileNodes = fileNodes.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
     }
     return buildPagination(first, null, fileNodes, allFiles.length);
   };

@@ -93,6 +93,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # ThreatActorIndividual
   name: String!
   description: String
@@ -109,7 +110,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
-  photo: File
   # Technical
   creators: [Creator!]
   toStix: String

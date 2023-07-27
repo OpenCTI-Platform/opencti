@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { MESSAGING$ } from '../relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from '../relay/environment';
 
 export const export_max_size = 50000;
 
@@ -31,4 +31,10 @@ export const deleteElementByValue = (obj: Record<string, string>, val: string) =
     }
   }
   return obj;
+};
+
+export const getFileUri = (id: string) => {
+  const encodedFilePath = encodeURIComponent(id);
+  const imageView = `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
+  return imageView;
 };

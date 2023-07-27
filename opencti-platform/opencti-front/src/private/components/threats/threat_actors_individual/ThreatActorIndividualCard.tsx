@@ -21,6 +21,7 @@ import {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import { emptyFilled } from '../../../../utils/String';
 import { ThreatActorIndividualCard_node$key } from './__generated__/ThreatActorIndividualCard_node.graphql';
+import { getFileUri } from '../../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -99,6 +100,10 @@ const ThreatActorIndividualCardFragment = graphql`
     description
     created
     modified
+    images: x_opencti_files(prefixMimeType: "image/") {
+      id
+      name
+    }
     objectLabel {
       edges {
         node {
@@ -200,6 +205,7 @@ ThreatActorIndividualCardProps
       addBookmark(data.id, 'Threat-Actor-Individual');
     }
   };
+
   return (
     <Card classes={{ root: classes.card }} variant="outlined">
       <CardActionArea
@@ -209,7 +215,16 @@ ThreatActorIndividualCardProps
       >
         <CardHeader
           classes={{ root: classes.header, title: classes.title }}
-          avatar={<ItemIcon type="Threat-Actor-Individual" size="large" />}
+          avatar={data.images && data.images.length > 0 ? (
+              <img
+                style={{ height: '30px' }}
+                src={getFileUri(data.images[0].id)}
+                alt={data.images[0].name}
+              />
+          ) : (
+              <ItemIcon type="Threat-Actor-Individual" size="large" />
+          )
+          }
           title={data.name}
           subheader={fld(data.modified)}
           action={

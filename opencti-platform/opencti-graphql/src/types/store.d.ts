@@ -62,6 +62,9 @@ interface StoreFile {
   name: string;
   version: string;
   mime_type: string;
+  description: string;
+  order: number;
+  inCarousel: boolean;
 }
 
 interface BasicStoreIdentifier {
