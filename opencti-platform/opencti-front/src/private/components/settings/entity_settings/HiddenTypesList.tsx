@@ -93,17 +93,13 @@ interface HiddenTypesListProps {
 const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
   const { t } = useFormatter();
 
-  const entitySettings1 = useEntitySettings();
-  const entitySettings2 = entitySettings1.filter(({ platform_hidden_type }) => platform_hidden_type !== null);
-  const map = entitySettings2
+  const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
       ...node,
       hidden: node.platform_hidden_type ?? false,
       group: findGroupKey(node.target_type),
-    }));
-  const filter = map
-    .filter((entitySetting) => entitySetting.group !== undefined);
-  const entitySettings = filter
+    }))
+    .filter((entitySetting) => entitySetting.group !== undefined)
     .sort((a, b) => groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group));
 
   const entitySettingsHiddenGrouped = entitySettings.reduce(
