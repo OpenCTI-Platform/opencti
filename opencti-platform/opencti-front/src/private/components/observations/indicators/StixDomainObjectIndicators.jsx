@@ -312,7 +312,6 @@ class StixDomainObjectIndicators extends Component {
               filters={filters}
               exportContext={`of-entity-${stixDomainObjectId}`}
               keyword={searchTerm}
-              secondaryAction={true}
               iconExtension={true}
               numberOfElements={numberOfElements}
               availableFilterKeys={[

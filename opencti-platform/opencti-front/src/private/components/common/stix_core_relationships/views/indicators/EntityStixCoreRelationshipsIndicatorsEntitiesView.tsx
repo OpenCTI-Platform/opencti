@@ -104,7 +104,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     },
     name: {
       label: 'Name',
-      width: '20%',
+      width: '25%',
       isSortable: true,
     },
     objectLabel: {
@@ -146,7 +146,6 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
             paginationOptions={paginationOptions}
             selectAll={selectAll}
             keyword={searchTerm}
-            secondaryAction
             displayImport
             handleToggleExports={storageHelpers.handleToggleExports}
             openExports={openExports}

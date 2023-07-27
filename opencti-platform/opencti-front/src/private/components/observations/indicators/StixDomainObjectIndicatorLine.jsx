@@ -19,7 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
-    paddingLeft: theme.spacing(1.5),
+    paddingLeft: 10,
     height: 50,
   },
   itemIcon: {
@@ -32,11 +32,11 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: theme.spacing(1.5),
+    paddingRight: 10,
   },
   goIcon: {
     position: 'absolute',
-    right: theme.spacing(-1.5),
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
