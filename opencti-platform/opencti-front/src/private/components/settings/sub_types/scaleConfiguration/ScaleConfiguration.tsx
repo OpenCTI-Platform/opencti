@@ -117,6 +117,7 @@ interface EntitySettingScaleProps {
     shouldValidate?: boolean
   ) => void;
   setErrors: (errors: FormikErrors<FormikValues>) => void;
+  customScale?: ScaleConfig | null;
   style?: Record<string, string | number>;
 }
 
@@ -125,6 +126,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   fieldName,
   setFieldValue,
   setErrors,
+  customScale,
   style,
 }) => {
   const { t } = useFormatter();
@@ -187,15 +189,15 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
     });
   };
 
+  const currentScaleName = findSelectedScaleName(tickDefinition);
+  const selectorScales = customScale ? [{ name: customScaleName, scale: customScale }, ...allScales] : [...allScales];
   const selectScale = (name: string) => {
-    const scaleSelected = allScales.find((scale) => scale.name === name);
+    const scaleSelected = selectorScales.find((scale) => scale.name === name);
     if (scaleSelected) {
       const newState = clone(scaleSelected.scale);
       update(newState);
     }
   };
-
-  const currentScaleName = findSelectedScaleName(tickDefinition);
 
   return (
     <div style={style}>
@@ -212,7 +214,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               value={currentScaleName}
               onChange={(event) => selectScale(event.target.value)}
             >
-              {allScales.map((scale, i: number) => {
+              {selectorScales.map((scale, i: number) => {
                 return (
                   <MenuItem
                     key={i}
@@ -222,14 +224,6 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
                   </MenuItem>
                 );
               })}
-              {currentScaleName === customScaleName && (
-                <MenuItem
-                  key={customScaleName}
-                  value={customScaleName}
-                >
-                  {t(customScaleName)}
-                </MenuItem>
-              )}
             </Select>
           </FormControl>
           <ScaleBar scale={tickDefinition} />

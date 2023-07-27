@@ -90,6 +90,11 @@ export const findSelectedScaleName = (scale: ScaleConfig) => {
   return customScaleName;
 };
 
+export const isCustomScale = (scale: ScaleConfig) => {
+  const jsonScale = JSON.stringify(scale);
+  return !allScales.some((s) => s.json === jsonScale);
+};
+
 const useScale = (
   entityType: string | null,
   attributeName: string,

@@ -19,6 +19,7 @@ import { AttributeConfiguration } from './entitySetting';
 import { EntitySettingAttributeLine_attribute$data } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 import ScaleConfiguration from '../scaleConfiguration/ScaleConfiguration';
+import { isCustomScale } from '../../../../../utils/hooks/useScale';
 import OpenVocabField from '../../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { Option } from '../../../common/form/ReferenceField';
@@ -382,6 +383,7 @@ const EntitySettingAttributeEdition = ({
       ? getScaleConfig(attribute.scale)
       : ({} as ScaleConfig),
   };
+  const customScale = (values.scale && isCustomScale(values.scale)) ? values.scale : null;
   const text = attribute.label ?? attribute.name;
   const attributeName = t(text.charAt(0).toUpperCase() + text.slice(1));
   return (
@@ -430,6 +432,7 @@ const EntitySettingAttributeEdition = ({
                   fieldName="scale"
                   setFieldValue={setFieldValue}
                   setErrors={setScaleErrors}
+                  customScale={customScale}
                   style={{ marginTop: 20 }}
                 />
               )}
