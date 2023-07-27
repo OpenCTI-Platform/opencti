@@ -53,7 +53,11 @@ class SystemComponent extends Component {
             <SystemDetails system={system} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={system} />
+            <StixDomainObjectOverview
+              stixDomainObject={system}
+              displayConfidence={false}
+              displayReliability={false}
+            />
           </Grid>
           {viewAs === 'knowledge' && (
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>

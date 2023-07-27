@@ -113,6 +113,8 @@ class StixDomainObjectOverview extends Component {
       withPattern,
       displayAssignees,
       displayParticipants,
+      displayConfidence = true,
+      displayReliability = true,
     } = this.props;
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
@@ -157,38 +159,44 @@ class StixDomainObjectOverview extends Component {
               <ItemAuthor
                 createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
               />
-              <Grid container={true} columnSpacing={1}>
-                <Grid item={true} xs={6}>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}>
-                    {t('Reliability')}
-                    {isReliabilityOfSource && (
-                      <span style={{ fontStyle: 'italic' }}> ({t('of author')})</span>
-                    )}
-                  </Typography>
-                  <ItemOpenVocab
-                    key="type"
-                    type="reliability_ov"
-                    value={reliability?.toString()}
-                    chipDisplay
-                  />
+              {(displayConfidence || displayReliability) && (
+                <Grid container={true} columnSpacing={1}>
+                  {displayReliability && (
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}>
+                        {t('Reliability')}
+                        {isReliabilityOfSource && (
+                          <span style={{ fontStyle: 'italic' }}> ({t('of author')})</span>
+                        )}
+                      </Typography>
+                      <ItemOpenVocab
+                        key="type"
+                        type="reliability_ov"
+                        value={reliability?.toString()}
+                        chipDisplay
+                      />
+                    </Grid>
+                  )}
+                  {displayConfidence && (
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Confidence level')}
+                      </Typography>
+                      <ItemConfidence
+                        confidence={stixDomainObject.confidence}
+                        entityType={stixDomainObject.entity_type}
+                      />
+                    </Grid>
+                  )}
                 </Grid>
-                <Grid item={true} xs={6}>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Confidence level')}
-                  </Typography>
-                  <ItemConfidence
-                    confidence={stixDomainObject.confidence}
-                    entityType={stixDomainObject.entity_type}
-                  />
-                </Grid>
-              </Grid>
+              )}
               <StixCoreObjectOpinions
                 stixCoreObjectId={stixDomainObject.id}
                 variant="inEntity"
@@ -398,6 +406,8 @@ StixDomainObjectOverview.propTypes = {
   withoutMarking: PropTypes.bool,
   displayAssignees: PropTypes.bool,
   displayParticipants: PropTypes.bool,
+  displayConfidence: PropTypes.bool,
+  displayReliability: PropTypes.bool,
 };
 
 export default R.compose(

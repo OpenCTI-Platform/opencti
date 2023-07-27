@@ -46,7 +46,7 @@ class NarrativeComponent extends Component {
             <NarrativeDetails narrative={narrative} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={narrative} />
+            <StixDomainObjectOverview stixDomainObject={narrative} displayConfidence={false} />
           </Grid>
           <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships

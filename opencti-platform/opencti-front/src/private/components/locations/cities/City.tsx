@@ -117,7 +117,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
           />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={city} />
+          <StixDomainObjectOverview stixDomainObject={city} displayConfidence={false} />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

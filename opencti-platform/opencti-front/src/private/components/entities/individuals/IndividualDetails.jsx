@@ -49,10 +49,9 @@ class IndividualDetailsComponent extends Component {
                 {t('Reliability')}
               </Typography>
               <ItemOpenVocab
-                  key="type"
-                  small={true}
-                  type="reliability_ov"
-                  value={individual.x_opencti_reliability}
+                chipDisplay
+                type="reliability_ov"
+                value={individual.x_opencti_reliability}
               />
               <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                 {t('Contact information')}

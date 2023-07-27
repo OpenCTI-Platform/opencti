@@ -54,7 +54,11 @@ class IndividualComponent extends Component {
             <IndividualDetails individual={individual} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={individual} />
+            <StixDomainObjectOverview
+              stixDomainObject={individual}
+              displayConfidence={false}
+              displayReliability={false}
+            />
           </Grid>
           {viewAs === 'knowledge' && (
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>
