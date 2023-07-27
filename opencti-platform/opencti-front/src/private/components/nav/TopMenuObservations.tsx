@@ -27,7 +27,8 @@ const TopMenuObservations = () => {
 
   return (
     <div>
-      <Button
+      {!useIsHiddenEntity('Stix-Cyber-Observable') && (
+        <Button
         component={Link}
         to="/dashboard/observations/observables"
         variant={
@@ -46,6 +47,8 @@ const TopMenuObservations = () => {
         <HexagonOutline className={classes.icon} fontSize="small" />
         {t('Observables')}
       </Button>
+      )}
+      {!useIsHiddenEntity('Stix-Cyber-Observable') && (
       <Button
         component={Link}
         to="/dashboard/observations/artifacts"
@@ -65,6 +68,7 @@ const TopMenuObservations = () => {
         <ArchiveOutline className={classes.icon} fontSize="small" />
         {t('Artifacts')}
       </Button>
+      )}
       {!useIsHiddenEntity('Indicator') && (
         <Button
           component={Link}

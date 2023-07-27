@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildPagination } from '../database/utils';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -21,10 +21,11 @@ export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser,
       R.map((n) => ({ node: { id: n, label: n } })),
       R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP } }),
       R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } }),
-      R.uniqBy(R.path(['node', 'id'])),
-    )(types);
-    return buildPagination(0, null, finalResult, finalResult.length);
-  };
+      R.append({ node: { id: ABSTRACT_STIX_CYBER_OBSERVABLE, label: ABSTRACT_STIX_CYBER_OBSERVABLE } }),
+    R.uniqBy(R.path(['node', 'id'])),
+  )(types);
+  return buildPagination(0, null, finalResult, finalResult.length);
+};
 
   return telemetry(context, user, 'QUERY default subtypes', {
     [SemanticAttributes.DB_NAME]: 'subtypes_domain',
