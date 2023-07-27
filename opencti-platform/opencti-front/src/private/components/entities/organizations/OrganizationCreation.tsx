@@ -97,7 +97,7 @@ const ORGANIZATION_TYPE = 'Organization';
 interface OrganizationAddInput {
   name: string
   description: string
-  x_opencti_reliability: undefined | null
+  x_opencti_reliability: string | undefined
   x_opencti_organization_type: string
   createdBy: Option | undefined
   objectMarking: Option[]

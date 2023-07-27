@@ -37,9 +37,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   smallIcon: {
     margin: '5px 0 0 10px',
   },
-  inlineIcon: {
-    margin: '5px 0 0 2px',
-  },
   pre: {
     marginTop: '7px',
   },
@@ -47,10 +44,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: 0,
     paddingTop: '7px',
     paddingBottom: '4px',
-  },
-  inlinePre: {
-    margin: 0,
-    padding: '5px',
   },
 }));
 
@@ -82,8 +75,8 @@ const ItemOpenVocabDummy = ({ small = true, chipDisplay = false }: { small?: boo
     return (
       <Tooltip title={t('No description')}>
         <Chip
-            classes={{ root: classes.chip }}
-            label={t('Unknown')}
+          classes={{ root: classes.chip }}
+          label={t('Unknown')}
         />
       </Tooltip>
     );
@@ -123,7 +116,7 @@ Omit<ItemOpenVocabProps, 'type'>
       <Tooltip title={t(description)}>
         <Chip
           classes={{ root: classes.chip }}
-          label={value ?? t('Unknown')}
+          label={value || t('Unknown')}
         />
       </Tooltip>
     );
@@ -132,7 +125,7 @@ Omit<ItemOpenVocabProps, 'type'>
   const iconClass = small ? classes.smallIcon : classes.icon;
   return (
     <span className={classes.container}>
-      <pre className={preClass}>{value ?? t('Unknown')}</pre>
+      <pre className={preClass}>{value || t('Unknown')}</pre>
       <Tooltip title={t(description)}>
         <InformationOutline
           className={iconClass}

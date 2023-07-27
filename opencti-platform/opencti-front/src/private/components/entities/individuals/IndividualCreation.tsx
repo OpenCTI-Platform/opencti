@@ -95,7 +95,7 @@ const INDIVIDUAL_TYPE = 'Individual';
 interface IndividualAddInput {
   name: string
   description: string
-  x_opencti_reliability: undefined | null
+  x_opencti_reliability: string | undefined
   createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
