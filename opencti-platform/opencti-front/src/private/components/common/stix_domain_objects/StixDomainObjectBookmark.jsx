@@ -151,8 +151,8 @@ class StixDomainObjectBookmarkComponent extends Component {
             avatar={ node.images && node.images.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(node.images[0]?.id ?? '')}
-                alt={node.images[0]?.name ?? 'image.name'}
+                src={getFileUri(node.images[0].id)}
+                alt={node.images[0].name}
               />
             ) : (
               <Avatar className={classes.avatar}>

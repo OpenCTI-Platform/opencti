@@ -92,7 +92,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: AssigneeConnection
-    x_opencti_files(prefixMimeType: String): [OpenCtiFile]
+    x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
     # Location
     name: String!
     description: String

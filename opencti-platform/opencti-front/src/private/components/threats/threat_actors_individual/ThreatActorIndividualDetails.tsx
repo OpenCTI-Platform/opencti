@@ -186,11 +186,11 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                   animation='fade'
                 >
                   {data.images && data.images.map((file) => (
-                    <Tooltip title={file ? file.description : ''} key={file ? file.id : ''} placement='right'>
+                    <Tooltip title={file.description} key={file.id} placement='right'>
                     <img
                       style={{ height: '100%' }}
-                      src={getFileUri(file ? file.id : '')}
-                      alt={file ? file.name : 'image.name'}
+                      src={getFileUri(file.id)}
+                      alt={file.name}
                     />
                     </Tooltip>
                   ))}

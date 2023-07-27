@@ -93,7 +93,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile]
+  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Container
   representative: String!
   objects(

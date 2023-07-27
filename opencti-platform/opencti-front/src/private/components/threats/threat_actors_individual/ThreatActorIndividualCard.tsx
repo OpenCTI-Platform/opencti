@@ -218,8 +218,8 @@ ThreatActorIndividualCardProps
           avatar={data.images && data.images.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(data.images[0]?.id ?? '')}
-                alt={data.images[0]?.name ?? 'image.name'}
+                src={getFileUri(data.images[0].id)}
+                alt={data.images[0].name}
               />
           ) : (
               <ItemIcon type="Threat-Actor-Individual" size="large" />
