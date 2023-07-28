@@ -12,7 +12,7 @@ From the `Cases` section, users can access the following tabs:
 - `Tasks`: In every case, you need tasks to be performed in order to solve it. The Tasks tab allows you to review all created tasks to quickly see past due date, or quickly see every task assigned to a specific user.
 - `Feedbacks`: If you use your platform to interact with other teams and provide them CTI Knowledge, some users may want to give you feedback about it. Those feedbacks can easily be considered as an other type of case to solve, as it will often reffer to Knowledge inconsistency or gaps.
 
-![Cases Default page is Incident Response](assets/Cases-landing-page.png)
+![Cases Default page is Incident Response](assets/cases-landing-page.png)
 
 ## Incident Response, Request for Information & Request for Takedown
 
