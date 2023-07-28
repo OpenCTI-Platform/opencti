@@ -785,9 +785,9 @@ type FileConnection {
 }
 
 type OpenCtiFile {
-  id: String!
+  id: ID!
   name: String!
-  mime_type: String
+  mime_type: String!
   description: String
   order: Int
   inCarousel: Boolean

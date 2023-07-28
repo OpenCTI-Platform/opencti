@@ -118,7 +118,7 @@ export const stixDomainObjectExportAsk = async (context, user, stixDomainObjectI
 
 export const stixDomainObjectFiles = (stixDomainObject, prefixMimeType = '') => {
   const files = stixDomainObject.x_opencti_files ?? [];
-  return files.filter((n) => n.mime_type.includes(prefixMimeType));
+  return files.filter((n) => n.mime_type.includes(prefixMimeType)).sort((a, b) => (a.order || 0) - (b.order || 0));
 };
 // endregion
 

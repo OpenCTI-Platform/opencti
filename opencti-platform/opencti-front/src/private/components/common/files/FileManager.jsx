@@ -36,6 +36,7 @@ import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import PictureManagementViewer from './PictureManagementViewer';
 
 const styles = () => ({
   container: {
@@ -230,6 +231,9 @@ const FileManager = ({
         <FileExternalReferencesViewer
           entity={entity}
           handleOpenImport={handleOpenImport}
+        />
+        <PictureManagementViewer
+          entity={entity}
         />
       </Grid>
       <div>

@@ -17,7 +17,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
-  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
@@ -436,6 +436,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       prevent_indexing: true,
       context_data: contextData
     });
+    await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, instance, user);
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {

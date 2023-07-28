@@ -1,15 +1,19 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, useFragment, useSubscription } from 'react-relay';
 import List from '@mui/material/List';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
+import PictureLine from './PictureLine';
 import {
-  PictureManagementViewer_pictureManagement$data,
-  PictureManagementViewer_pictureManagement$key,
-} from './__generated__/PictureManagementViewer_pictureManagement.graphql';
+  PictureManagementViewer_entity$data,
+  PictureManagementViewer_entity$key,
+} from './__generated__/PictureManagementViewer_entity.graphql';
+import { PictureManagementViewerSubscription } from './__generated__/PictureManagementViewerSubscription.graphql';
+import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -21,28 +25,68 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const subscription = graphql`
+  subscription PictureManagementViewerSubscription($id: ID!) {
+    stixDomainObject(id: $id) {
+      id
+      ...PictureManagementViewer_entity
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
+    }
+  }
+`;
+
 const pictureManagementViewerFragment = graphql`
-  fragment PictureManagementViewer_pictureManagement on StixDomainObject {
+  fragment PictureManagementViewer_entity on StixDomainObject {
     id
     entity_type
     images: x_opencti_files(prefixMimeType: "image/") {
-      id
-      name
+      ...PictureLine_node
     }
   }
 `;
 
 interface PictureManagementViewerProps {
-  pictureManagementData: PictureManagementViewer_pictureManagement$key;
+  entity: PictureManagementViewer_entity$key
 }
 
-const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> = ({ pictureManagementData }) => {
+const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> = ({ entity }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const data: PictureManagementViewer_pictureManagement$data = useFragment(
+
+  const data: PictureManagementViewer_entity$data = useFragment(
     pictureManagementViewerFragment,
-    pictureManagementData,
+    entity,
   );
+  const subConfig = useMemo<GraphQLSubscriptionConfig<PictureManagementViewerSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: data.id },
+    }),
+    [data.id],
+  );
+  useSubscription(subConfig);
+  const dataColumns = {
+    description: {
+      label: 'Description',
+      width: '60%',
+      isSortable: false,
+    },
+    order: {
+      label: 'Order',
+      width: '15%',
+      isSortable: false,
+    },
+    inCarousel: {
+      label: 'In Carousel',
+      width: '20%',
+      isSortable: false,
+    },
+  };
+
+  const images = data.images ?? [];
 
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
@@ -52,8 +96,18 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
         </Typography>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          {data.images && data.images.length > 0 ? (
-            <List></List>
+          {images && images.length > 0 ? (
+            <div>
+              <ColumnsLinesTitles
+                dataColumns={dataColumns}
+                handleSort={() => {}}
+              />
+              <List>
+                {images.map((file) => (
+                  <PictureLine picture={file} dataColumns={dataColumns} entityId={data.id}/>
+                ))}
+              </List>
+            </div>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span

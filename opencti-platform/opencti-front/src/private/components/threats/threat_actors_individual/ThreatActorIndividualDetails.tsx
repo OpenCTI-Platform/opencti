@@ -81,6 +81,9 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
     threatActorIndividualData,
   );
 
+  const image = data.images ?? [];
+  const carouselImages = image ? image.filter((file) => file?.inCarousel === true) : [];
+
   return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -193,14 +196,14 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                   className={classes.carousel}
                   animation='fade'
                 >
-                  {data.images && data.images.map((file) => (
-                    <Tooltip title={file.description} key={file.id} placement='right'>
-                    <Tooltip title={file.description} key={file.id} placement='right'>
+                  {carouselImages.map((file) => (
+                      <Tooltip title={file.description} key={file.id} placement='right'>
+                      <Tooltip title={file.description} key={file.id} placement='right'>
                     <img
-                      style={{ height: '100%' }}
-                      src={getFileUri(file.id)}
-                      alt={file.name}
-                    />
+                        style={{ height: '100%' }}
+                        src={getFileUri(file.id)}
+                        alt={file.name}
+                      />
                     </Tooltip>
                   ))}
               </Carousel>
