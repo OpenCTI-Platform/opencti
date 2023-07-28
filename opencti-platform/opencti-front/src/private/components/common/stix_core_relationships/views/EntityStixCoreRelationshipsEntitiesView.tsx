@@ -12,7 +12,7 @@ import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreat
 import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { PaginationOptions } from '../../../../../components/list_lines';
+import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
@@ -68,46 +68,10 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
     availableFilterKeys = [...availableFilterKeys, 'targets'];
   }
 
-  const selectedTypes: string[] = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
-  const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
-
-  const paginationOptions = {
-    types: selectedTypes,
-    relationship_type: selectedRelationshipTypes,
-    elementId: entityId,
-    search: searchTerm,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-    filters: convertFilters(
-      R.omit(['relationship_type', 'entity_type'], cleanFilters(filters, availableFilterKeys)),
-    ),
-  } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
-
-  const backgroundTaskFilters = {
-    ...filters,
-    entity_type:
-      (selectedTypes?.length > 0)
-        ? selectedTypes.map((n) => ({ id: n, value: n }))
-        : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-    [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
-      { id: entityId, value: entityId },
-    ],
-  };
-
-  const {
-    selectedElements,
-    numberOfSelectedElements,
-    deSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-  } = useEntityToggle(localStorageKey);
-
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
-  const dataColumns = {
+  const dataColumns: DataColumns = {
     entity_type: {
       label: 'Type',
       width: '10%',
@@ -149,6 +113,42 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
       width: '10%',
     },
   };
+
+  const selectedTypes: string[] = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
+  const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
+
+  const paginationOptions = {
+    types: selectedTypes,
+    relationship_type: selectedRelationshipTypes,
+    elementId: entityId,
+    search: searchTerm,
+    orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
+    orderMode: orderAsc ? 'asc' : 'desc',
+    filters: convertFilters(
+      R.omit(['relationship_type', 'entity_type'], cleanFilters(filters, availableFilterKeys)),
+    ),
+  } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
+
+  const backgroundTaskFilters = {
+    ...filters,
+    entity_type:
+      (selectedTypes?.length > 0)
+        ? selectedTypes.map((n) => ({ id: n, value: n }))
+        : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+    [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
+      { id: entityId, value: entityId },
+    ],
+  };
+
+  const {
+    selectedElements,
+    numberOfSelectedElements,
+    deSelectedElements,
+    selectAll,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    onToggleEntity,
+  } = useEntityToggle(localStorageKey);
 
   const finalView = currentView || view;
   return (

@@ -6,7 +6,7 @@ import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 import ItemPatternType from '../../../../../../components/ItemPatternType';
 import EntityStixCoreRelationshipsIndicatorsContextualViewLines from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
-import { Filters, PaginationOptions } from '../../../../../../components/list_lines';
+import { DataColumns, Filters, PaginationOptions } from '../../../../../../components/list_lines';
 import { isEmptyField, isNotEmptyField } from '../../../../../../utils/utils';
 import { EntityStixCoreRelationshipsIndicatorsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewQuery.graphql';
 import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
@@ -149,42 +149,9 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     'containers',
   ];
 
-  const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
-    .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
-
-  const cleanedFilters = cleanFilters(filters, availableFilterKeys);
-
-  const finalFilters = {
-    ...R.omit(['entity_type', 'containers'], cleanedFilters),
-    objectContains: handleFilterOnContainers(containers, cleanedFilters),
-  };
-
-  const paginationOptions = {
-    search: searchTerm,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-    containersIds: containers.map((r) => r.id),
-    filters: convertFilters(finalFilters),
-  } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
-
-  const backgroundTaskFilters = {
-    ...finalFilters,
-    entity_type: [{ id: 'Indicator', value: 'Indicator' }],
-  };
-
-  const {
-    selectedElements,
-    numberOfSelectedElements,
-    deSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-  } = useEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>(localStorageKey);
-
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
-  const dataColumns = {
+  const dataColumns: DataColumns = {
     pattern_type: {
       label: 'Type',
       width: '10%',
@@ -246,16 +213,49 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
         const linkAnalyses = `${link}/analyses`;
         return (
-        <Chip
-          classes={{ root: classes.chip }}
-          label={n(stixCoreObject.containers?.edges?.length)}
-          component={Link}
-          to={linkAnalyses}
-        />
+          <Chip
+            classes={{ root: classes.chip }}
+            label={n(stixCoreObject.containers?.edges?.length)}
+            component={Link}
+            to={linkAnalyses}
+          />
         );
       },
     },
   };
+
+  const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
+    .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
+
+  const cleanedFilters = cleanFilters(filters, availableFilterKeys);
+
+  const finalFilters = {
+    ...R.omit(['entity_type', 'containers'], cleanedFilters),
+    objectContains: handleFilterOnContainers(containers, cleanedFilters),
+  };
+
+  const paginationOptions = {
+    search: searchTerm,
+    orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
+    orderMode: orderAsc ? 'asc' : 'desc',
+    containersIds: containers.map((r) => r.id),
+    filters: convertFilters(finalFilters),
+  } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
+
+  const backgroundTaskFilters = {
+    ...finalFilters,
+    entity_type: [{ id: 'Indicator', value: 'Indicator' }],
+  };
+
+  const {
+    selectedElements,
+    numberOfSelectedElements,
+    deSelectedElements,
+    selectAll,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    onToggleEntity,
+  } = useEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>(localStorageKey);
 
   return (
     <>

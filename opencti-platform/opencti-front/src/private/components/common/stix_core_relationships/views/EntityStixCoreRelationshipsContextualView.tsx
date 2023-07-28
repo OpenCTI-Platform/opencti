@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { defaultValue } from '../../../../../utils/Graph';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../../components/ItemMarkings';
-import { Filters, PaginationOptions } from '../../../../../components/list_lines';
+import { DataColumns, Filters, PaginationOptions } from '../../../../../components/list_lines';
 import { cleanFilters, convertFilters } from '../../../../../utils/ListParameters';
 import ToolBar from '../../../data/ToolBar';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
@@ -146,48 +146,10 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     'containers',
   ];
 
-  const selectedTypes = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
-  const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
-    .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
-
-  const cleanedFilters = cleanFilters(filters, availableFilterKeys);
-
-  const finalFilters = {
-    ...R.omit(['entity_type', 'containers'], cleanedFilters),
-    objectContains: handleFilterOnContainers(containers, cleanedFilters),
-  };
-
-  const paginationOptions = {
-    search: searchTerm,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-    types: selectedTypes,
-    containersIds: containers.map((r) => r.id),
-    filters: convertFilters(finalFilters),
-  } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables; // Because of FilterMode
-
-  const backgroundTaskFilters = {
-    ...finalFilters,
-    entity_type:
-    selectedTypes.length > 0
-      ? selectedTypes.map((node) => ({ id: node, value: node }))
-      : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-  };
-
-  const {
-    selectedElements,
-    numberOfSelectedElements,
-    deSelectedElements,
-    selectAll,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-  } = useEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>(localStorageKey);
-
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
-  const dataColumns = {
+  const dataColumns: DataColumns = {
     entity_type: {
       label: 'Type',
       width: '10%',
@@ -275,6 +237,44 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       },
     },
   };
+
+  const selectedTypes = filters?.entity_type?.map((o) => o.id) as string[] ?? stixCoreObjectTypes;
+  const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
+    .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
+
+  const cleanedFilters = cleanFilters(filters, availableFilterKeys);
+
+  const finalFilters = {
+    ...R.omit(['entity_type', 'containers'], cleanedFilters),
+    objectContains: handleFilterOnContainers(containers, cleanedFilters),
+  };
+
+  const paginationOptions = {
+    search: searchTerm,
+    orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'entity_type',
+    orderMode: orderAsc ? 'asc' : 'desc',
+    types: selectedTypes,
+    containersIds: containers.map((r) => r.id),
+    filters: convertFilters(finalFilters),
+  } as unknown as EntityStixCoreRelationshipsContextualViewLinesQuery$variables; // Because of FilterMode
+
+  const backgroundTaskFilters = {
+    ...finalFilters,
+    entity_type:
+    selectedTypes.length > 0
+      ? selectedTypes.map((node) => ({ id: node, value: node }))
+      : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
+  };
+
+  const {
+    selectedElements,
+    numberOfSelectedElements,
+    deSelectedElements,
+    selectAll,
+    handleClearSelectedElements,
+    handleToggleSelectAll,
+    onToggleEntity,
+  } = useEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>(localStorageKey);
 
   return (
     <>

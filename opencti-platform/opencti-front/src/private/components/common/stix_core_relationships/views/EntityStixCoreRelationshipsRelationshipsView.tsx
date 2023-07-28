@@ -20,7 +20,7 @@ import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreat
 import Security from '../../../../../utils/Security';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { Filters, PaginationOptions } from '../../../../../components/list_lines';
+import { DataColumns, Filters, PaginationOptions } from '../../../../../components/list_lines';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -77,13 +77,69 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     'created_end_date',
   ];
 
+  const { platformModuleHelpers } = useAuth();
+  const isObservables = isStixCyberObservables(stixCoreObjectTypes);
+  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const dataColumns: DataColumns = {
+    relationship_type: {
+      label: 'Relationship type',
+      width: '8%',
+      isSortable: true,
+    },
+    entity_type: {
+      label: 'Entity type',
+      width: '10%',
+      isSortable: false,
+    },
+    [isObservables ? 'observable_value' : 'name']: {
+      label: isObservables ? 'Value' : 'Name',
+      width: '20%',
+      isSortable: false,
+    },
+    createdBy: {
+      label: 'Author',
+      width: '10%',
+      isSortable: isRuntimeSort,
+    },
+    creator: {
+      label: 'Creators',
+      width: '10%',
+      isSortable: isRuntimeSort,
+    },
+    start_time: {
+      label: 'Start time',
+      width: '8%',
+      isSortable: true,
+    },
+    stop_time: {
+      label: 'Stop time',
+      width: '8%',
+      isSortable: true,
+    },
+    created_at: {
+      label: 'Creation date',
+      width: '8%',
+      isSortable: true,
+    },
+    confidence: {
+      label: 'Confidence',
+      isSortable: true,
+      width: '6%',
+    },
+    objectMarking: {
+      label: 'Marking',
+      isSortable: isRuntimeSort,
+      width: '8%',
+    },
+  };
+
   const selectedTypes = filters?.entity_type?.map((o) => o.id) ?? stixCoreObjectTypes;
   const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
 
   let paginationOptions = {
     relationship_type: selectedRelationshipTypes,
     search: searchTerm,
-    orderBy: sortBy,
+    orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'relationship_type',
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: convertFilters(
       R.omit(['relationship_type', 'entity_type'], cleanFilters(filters, availableFilterKeys)),
@@ -159,62 +215,6 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     onToggleEntity,
   } = useEntityToggle(localStorageKey);
 
-  const { platformModuleHelpers } = useAuth();
-
-  const isObservables = isStixCyberObservables(stixCoreObjectTypes);
-  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
-  const dataColumns = {
-    relationship_type: {
-      label: 'Relationship type',
-      width: '8%',
-      isSortable: true,
-    },
-    entity_type: {
-      label: 'Entity type',
-      width: '10%',
-      isSortable: false,
-    },
-    [isObservables ? 'observable_value' : 'name']: {
-      label: isObservables ? 'Value' : 'Name',
-      width: '20%',
-      isSortable: false,
-    },
-    createdBy: {
-      label: 'Author',
-      width: '10%',
-      isSortable: isRuntimeSort,
-    },
-    creator: {
-      label: 'Creators',
-      width: '10%',
-      isSortable: isRuntimeSort,
-    },
-    start_time: {
-      label: 'Start time',
-      width: '8%',
-      isSortable: true,
-    },
-    stop_time: {
-      label: 'Stop time',
-      width: '8%',
-      isSortable: true,
-    },
-    created_at: {
-      label: 'Creation date',
-      width: '8%',
-      isSortable: true,
-    },
-    confidence: {
-      label: 'Confidence',
-      isSortable: true,
-      width: '6%',
-    },
-    objectMarking: {
-      label: 'Marking',
-      isSortable: isRuntimeSort,
-      width: '8%',
-    },
-  };
   const finalView = currentView || view;
   return (
         <>
