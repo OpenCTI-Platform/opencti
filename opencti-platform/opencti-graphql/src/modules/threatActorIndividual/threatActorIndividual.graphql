@@ -146,6 +146,7 @@ enum ThreatActorsIndividualFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 input ThreatActorsIndividualFiltering {

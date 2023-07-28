@@ -293,6 +293,8 @@ class Entities extends Component {
                 'labelledBy',
                 'markedBy',
                 'createdBy',
+                'source_reliability',
+                'confidence',
                 'creator',
                 'created_start_date',
                 'created_end_date',

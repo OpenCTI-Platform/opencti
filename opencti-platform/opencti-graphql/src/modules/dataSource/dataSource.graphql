@@ -145,6 +145,7 @@ enum DataSourcesFilter {
     revoked
     x_opencti_workflow_id
     confidence
+    source_reliability
 }
 
 input DataSourcesFiltering {

@@ -849,6 +849,7 @@ export enum AttackPatternsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XMitreId = 'x_mitre_id',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -1684,6 +1685,7 @@ export enum CampaignsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -2268,6 +2270,7 @@ export enum CaseIncidentsFilter {
   Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -2573,6 +2576,7 @@ export enum CaseRfisFilter {
   Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -2878,6 +2882,7 @@ export enum CaseRftsFilter {
   Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -2957,6 +2962,7 @@ export enum CasesFilter {
   Modified = 'modified',
   Name = 'name',
   Participant = 'participant',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -3216,6 +3222,7 @@ export enum ChannelsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -3828,6 +3835,7 @@ export enum ContainersFilter {
   ObjectContains = 'objectContains',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -4426,6 +4434,7 @@ export enum CoursesOfActionFilter {
   MitigatedBy = 'mitigatedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   XMitreId = 'x_mitre_id',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -5069,6 +5078,7 @@ export enum DataComponentsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -5327,6 +5337,7 @@ export enum DataSourcesFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -7647,6 +7658,7 @@ export enum GroupingsFilter {
   ObjectContains = 'objectContains',
   ObjectLabel = 'objectLabel',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -9004,6 +9016,7 @@ export enum IncidentsFilter {
   Participant = 'participant',
   Severity = 'severity',
   Source = 'source',
+  SourceReliability = 'source_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -9338,6 +9351,7 @@ export enum IndicatorsFilter {
   PatternVersion = 'pattern_version',
   Revoked = 'revoked',
   SightedBy = 'sightedBy',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
@@ -9668,7 +9682,6 @@ export type IndividualsFiltering = {
 };
 
 export enum IndividualsOrdering {
-  Confidence = 'confidence',
   Created = 'created',
   Firstname = 'firstname',
   Lastname = 'lastname',
@@ -9968,6 +9981,7 @@ export enum InfrastructuresFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -10301,6 +10315,7 @@ export enum IntrusionSetsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -11558,6 +11573,7 @@ export enum MalwareAnalysesFilter {
   Product = 'product',
   ResultName = 'result_name',
   Sample = 'sample',
+  SourceReliability = 'source_reliability',
   Submitted = 'submitted',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -15053,6 +15069,7 @@ export enum NotesFilter {
   AssigneeTo = 'assigneeTo',
   AttributeAbstract = 'attribute_abstract',
   Authors = 'authors',
+  Confidence = 'confidence',
   Content = 'content',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -15065,6 +15082,7 @@ export enum NotesFilter {
   NoteTypes = 'note_types',
   ObjectContains = 'objectContains',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -15464,6 +15482,7 @@ export enum ObservedDatasFilter {
   NumberObserved = 'number_observed',
   ObjectContains = 'objectContains',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -15817,6 +15836,7 @@ export enum OpinionsFilter {
   ObjectContains = 'objectContains',
   Opinion = 'opinion',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -20666,7 +20686,6 @@ export type SectorEditMutationsRelationDeleteArgs = {
 export enum SectorsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
-  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -20688,7 +20707,6 @@ export type SectorsFiltering = {
 };
 
 export enum SectorsOrdering {
-  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Description = 'description',
@@ -21400,6 +21418,7 @@ export enum StixCoreObjectsFilter {
   RelationshipType = 'relationship_type',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   StartTime = 'start_time',
   StopTime = 'stop_time',
   Subject = 'subject',
@@ -21414,6 +21433,7 @@ export enum StixCoreObjectsFilter {
   XOpenctiDetection = 'x_opencti_detection',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -22373,6 +22393,7 @@ export enum StixDomainObjectsFilter {
   ResultName = 'result_name',
   Revoked = 'revoked',
   Severity = 'severity',
+  SourceReliability = 'source_reliability',
   Submitted = 'submitted',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
@@ -22380,6 +22401,7 @@ export enum StixDomainObjectsFilter {
   XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -25115,6 +25137,7 @@ export enum ThreatActorsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   Targets = 'targets',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -25140,6 +25163,7 @@ export enum ThreatActorsIndividualFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -25447,6 +25471,7 @@ export enum ToolsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -26493,6 +26518,7 @@ export enum VulnerabilitiesFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiAttackVector = 'x_opencti_attack_vector',
   XOpenctiBaseScore = 'x_opencti_base_score',

@@ -176,6 +176,7 @@ enum CaseRftsFilter {
   participant
   x_opencti_workflow_id
   confidence
+  source_reliability
   severity
   priority
 }

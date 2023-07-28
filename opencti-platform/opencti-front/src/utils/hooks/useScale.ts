@@ -72,7 +72,7 @@ const notSpecifiedLevel = {
   color: '#607d8b',
 };
 
-const defaultScale: ScaleConfig = { ...standardScale };
+const defaultScale: ScaleConfig = { ...admiraltyScale };
 
 export const customScaleName = 'Custom';
 export const allScales: { name: string, scale: ScaleConfig, json: string }[] = [

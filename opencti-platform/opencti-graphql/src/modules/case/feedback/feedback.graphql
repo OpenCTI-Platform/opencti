@@ -172,6 +172,7 @@ enum FeedbacksFilter {
   x_opencti_workflow_id
   rating
   confidence
+  source_reliability
 }
 
 input FeedbacksFiltering {

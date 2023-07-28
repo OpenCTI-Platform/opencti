@@ -1842,6 +1842,8 @@ enum StixCoreObjectsFilter {
   objectContains
   indicates
   confidence
+  source_reliability
+  x_opencti_reliability
   valid_from
   valid_until
   pattern_type
@@ -2042,6 +2044,8 @@ enum StixDomainObjectsFilter {
   objectContains
   indicates
   confidence
+  source_reliability
+  x_opencti_reliability
   valid_from
   valid_until
   pattern_type
@@ -2232,6 +2236,7 @@ enum AttackPatternsFilter {
   labelledBy
   mitigatedBy
   revoked
+  source_reliability
   x_opencti_workflow_id
   creator
 }
@@ -2424,6 +2429,7 @@ enum CampaignsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 input CampaignsFiltering {
@@ -2597,6 +2603,7 @@ enum ContainersOrdering {
 enum ContainersFilter {
   entity_type
   confidence
+  source_reliability
   attribute_abstract
   report_types
   context
@@ -2781,6 +2788,8 @@ enum NotesFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  confidence
+  source_reliability
   note_types
   likelihood
   creator
@@ -3011,6 +3020,7 @@ enum ObservedDatasFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
 }
 input ObservedDatasFiltering {
   key: [ObservedDatasFilter!]!
@@ -3214,6 +3224,7 @@ enum OpinionsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 input OpinionsFiltering {
@@ -3649,6 +3660,7 @@ enum CoursesOfActionFilter {
   mitigatedBy
   x_opencti_workflow_id
   x_mitre_id
+  source_reliability
   creator
 }
 input CoursesOfActionFiltering {
@@ -3989,7 +4001,6 @@ input IdentityAddInput {
 ################ Individuals
 enum IndividualsOrdering {
   name
-  confidence
   firstname
   lastname
   created
@@ -4392,7 +4403,6 @@ input OrganizationAddInput {
 enum SectorsOrdering {
   name
   description
-  confidence
   created
   modified
   created_at
@@ -4403,7 +4413,6 @@ enum SectorsOrdering {
 enum SectorsFilter {
   name
   aliases
-  confidence
   created
   modified
   created_at
@@ -4805,6 +4814,7 @@ enum IndicatorsFilter {
   revoked
   creator
   confidence
+  source_reliability
 }
 input IndicatorsFiltering {
   key: [IndicatorsFilter!]!
@@ -5008,6 +5018,7 @@ enum InfrastructuresFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 input InfrastructuresFiltering {
@@ -5189,6 +5200,7 @@ enum IntrusionSetsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 input IntrusionSetsFiltering {
@@ -6476,6 +6488,7 @@ enum ThreatActorsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
   targets
 }
@@ -6818,6 +6831,7 @@ enum ToolsFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  source_reliability
 }
 input ToolsFiltering {
   key: [ToolsFilter!]!
@@ -7002,6 +7016,7 @@ enum VulnerabilitiesFilter {
   x_opencti_workflow_id
   creator
   confidence
+  source_reliability
 }
 input VulnerabilitiesFiltering {
   key: [VulnerabilitiesFilter!]!
@@ -7197,6 +7212,7 @@ enum IncidentsFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  source_reliability
   creator
 }
 input IncidentsFiltering {

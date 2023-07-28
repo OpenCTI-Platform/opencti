@@ -140,10 +140,11 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           availableFilterKeys={[
             'x_opencti_workflow_id',
             'labelledBy',
-            'createdBy',
-            'creator',
             'markedBy',
+            'createdBy',
+            'source_reliability',
             'confidence',
+            'creator',
             'created_start_date',
             'created_end_date',
           ]}

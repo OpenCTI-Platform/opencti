@@ -139,11 +139,14 @@ class CoursesOfAction extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'x_opencti_workflow_id',
           'labelledBy',
           'markedBy',
+          'createdBy',
+          'source_reliability',
+          'creator',
           'created_start_date',
           'created_end_date',
-          'createdBy',
           'revoked',
         ]}
       >
