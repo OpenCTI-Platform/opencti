@@ -1730,21 +1730,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-dev-translations@npm:^38.0.0":
-  version: 38.1.2
-  resolution: "@ckeditor/ckeditor5-dev-translations@npm:38.1.2"
-  dependencies:
-    "@babel/parser": ^7.18.9
-    "@babel/traverse": ^7.18.9
-    chalk: ^4.0.0
-    pofile: ^1.0.9
-    rimraf: ^3.0.2
-    webpack-sources: ^2.0.1
-  checksum: 125748ee84911ba60c3e736c329ae99d9ad4a950327e9fd1cdf3b77043737ddad94a187b7475a445d2f6bd78d1990813edb21e809a688e6da68ad807aa381a3f
-  languageName: node
-  linkType: hard
-
-"@ckeditor/ckeditor5-dev-translations@npm:^38.1.3":
+"@ckeditor/ckeditor5-dev-translations@npm:^38.0.0, @ckeditor/ckeditor5-dev-translations@npm:^38.1.3":
   version: 38.1.3
   resolution: "@ckeditor/ckeditor5-dev-translations@npm:38.1.3"
   dependencies:
