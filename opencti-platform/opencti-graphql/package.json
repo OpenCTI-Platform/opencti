@@ -155,7 +155,7 @@
     "@typescript-eslint/parser": "5.62.0",
     "@vitest/coverage-istanbul": "0.31.1",
     "cross-env": "7.0.3",
-    "esbuild": "0.18.16",
+    "esbuild": "0.18.17",
     "esbuild-plugin-import-glob": "0.1.1",
     "eslint": "8.46.0",
     "eslint-config-airbnb": "19.0.4",
