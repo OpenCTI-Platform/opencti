@@ -102,16 +102,20 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
         style={{ marginBottom: 30 }}
       >
         <EntitySettingSettings entitySettingsData={subType.settings} />
-        <div style={{ marginTop: 10 }}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Workflow')}
-            <SubTypeStatusPopover subTypeId={subType.id} />
-          </Typography>
-        </div>
-        <ItemStatusTemplate
-          statuses={subType.statuses}
-          disabled={!subType.workflowEnabled}
-        />
+        {subType.settings?.availableSettings.includes('workflow_configuration')
+          && <>
+            <div style={{ marginTop: 10 }}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Workflow')}
+                <SubTypeStatusPopover subTypeId={subType.id} />
+              </Typography>
+            </div>
+            <ItemStatusTemplate
+              statuses={subType.statuses}
+              disabled={!subType.workflowEnabled}
+            />
+          </>
+        }
       </Paper>
       {subType.settings?.availableSettings.includes('attributes_configuration')
         && <>
