@@ -40,7 +40,6 @@ import { dayAgo, monthsAgo, yearsAgo } from '../../utils/Time';
 import Chart from './common/charts/Chart';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
-import TopBar from './nav/TopBar';
 import DashboardView from './workspaces/dashboards/Dashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 
@@ -1112,7 +1111,6 @@ const DashboardComponent = ({ queryRef }) => {
   return (
     <UserContext.Provider value={{ me: { ...currentMe, ...me }, ...context }}>
       <div className={classes.root}>
-        <TopBar />
         {defaultDashboard ? (
           <CustomDashboard
             dashboard={defaultDashboard}

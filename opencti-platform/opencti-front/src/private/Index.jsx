@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, useLocation } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -38,10 +38,8 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-const noTopBarLocations = ['/dashboard'];
 
 const Index = ({ settings }) => {
-  const location = useLocation();
   const theme = useTheme();
   const classes = useStyles();
   const {
@@ -71,7 +69,7 @@ const Index = ({ settings }) => {
         }}
       >
         <CssBaseline />
-        {!noTopBarLocations.includes(location.pathname) && <TopBar />}
+        <TopBar />
         <LeftBar />
         <Message />
         <Box component="main" sx={boxSx}>
