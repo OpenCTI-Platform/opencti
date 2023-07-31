@@ -1,4 +1,3 @@
-import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
@@ -21,6 +20,19 @@ const useStyles = makeStyles(() => ({
     marginBottom: 20,
   },
 }));
+
+export const getCountriesQuery = graphql`
+  query CountryGetAllQuery {
+    countries (first:5000) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
 
 export const countryFragment = graphql`
   fragment Country_country on Country {

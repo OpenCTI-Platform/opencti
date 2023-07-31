@@ -26,6 +26,7 @@ import {
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import {
+  RELATION_BORN_IN,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
@@ -37,7 +38,7 @@ import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer,
+  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_LOCATION_COUNTRY, isStixDomainObjectContainer,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
@@ -112,6 +113,10 @@ export const findById = async (context, user, stixCoreObjectId) => {
 
 export const batchCreatedBy = async (context, user, stixCoreObjectIds) => {
   return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+};
+
+export const batchBornIn = async (context, user, stixCoreObjectIds) => {
+  return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_BORN_IN, ENTITY_TYPE_LOCATION_COUNTRY);
 };
 
 export const batchContainers = async (context, user, stixCoreObjectIds, args = {}) => {

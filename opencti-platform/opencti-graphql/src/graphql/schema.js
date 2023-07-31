@@ -58,6 +58,7 @@ import { authDirectiveBuilder } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
 import globalTypeDefs from '../../config/schema/opencti.graphql';
+import mcasTypeDefs from '../../config/schema/mcas.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
 import taxiiResolvers from '../resolvers/taxii';
 import feedResolvers from '../resolvers/feed';
@@ -71,7 +72,7 @@ import { isSupportedStixType } from '../schema/identifier';
 import stixRefRelationshipResolvers from '../resolvers/stixRefRelationship';
 import stixMetaObjectResolvers from '../resolvers/stixMetaObject';
 
-const schemaTypeDefs = [globalTypeDefs];
+const schemaTypeDefs = [globalTypeDefs, mcasTypeDefs];
 
 const validateStixId = (stixId) => {
   if (!stixId.includes('--')) {

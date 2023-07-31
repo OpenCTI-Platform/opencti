@@ -18,6 +18,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rf
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'abstract';
@@ -102,6 +103,7 @@ export const isStixDomainObjectLocation = (type: string): boolean => schemaTypes
 
 const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
 ];
 schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THREAT_ACTORS);
 export const isStixDomainObjectThreatActor = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)

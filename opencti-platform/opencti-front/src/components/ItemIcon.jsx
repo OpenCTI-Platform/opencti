@@ -402,6 +402,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'attributed-to':
     case 'variant-of':
     case 'part-of':
+    case 'employed-by':
+    case 'resides-in':
+    case 'citizen-of':
     case 'drops':
     case 'delivers':
     case 'compromises':

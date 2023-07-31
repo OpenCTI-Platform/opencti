@@ -11,6 +11,8 @@ import StixCoreObjectExternalReferences from '../../analyses/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import ThreatActorIndividualBiographics from './ThreatActorIndividualBiographics';
+import ThreatActorIndividualDemographics from './ThreatActorIndividualDemographics';
 import ThreatActorIndividualDetails from './ThreatActorIndividualDetails';
 import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
@@ -82,6 +84,24 @@ export const threatActorIndividualFragment = graphql`
       }
     }
     workflowEnabled
+    x_mcas_eye_color
+    x_mcas_hair_color
+    x_mcas_height {
+      date_seen
+      height_in
+      height_cm
+    }
+    x_mcas_weight {
+      date_seen
+      weight_lb
+      weight_kg
+    }
+    x_mcas_date_of_birth
+    x_mcas_nationality
+    x_mcas_ethnicity
+    x_mcas_gender
+    x_mcas_marital_status
+    x_mcas_job_title
     ...ThreatActorIndividualDetails_ThreatActorIndividual
   }
 `;
@@ -116,6 +136,12 @@ const ThreatActorIndividualComponent = ({
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview stixDomainObject={threatActorIndividual} />
+        </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 45 }}>
+          <ThreatActorIndividualDemographics threatActorIndividual={threatActorIndividual} />
+        </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 45 }}>
+          <ThreatActorIndividualBiographics threatActorIndividual={threatActorIndividual} />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

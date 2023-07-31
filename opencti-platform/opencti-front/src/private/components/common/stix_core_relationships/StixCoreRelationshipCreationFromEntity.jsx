@@ -677,7 +677,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const relationshipTypes = R.filter(
+          const relationshipTypes = R.uniq(R.filter(
             (n) => R.isNil(allowedRelationshipTypes)
               || allowedRelationshipTypes.length === 0
               || allowedRelationshipTypes.includes('stix-core-relationship')
@@ -687,7 +687,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
               toEntities[0].entity_type,
               schema.schemaRelationsTypesMapping,
             ),
-          );
+          ));
           return (
             <>
               <div className={classes.header}>

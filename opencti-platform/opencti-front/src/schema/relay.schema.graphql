@@ -84,6 +84,11 @@ enum EditOperation {
   remove
 }
 
+enum SimpleEditOperation {
+  replace
+  remove
+}
+
 input EditInput {
   key: String!
   value: [String]!
@@ -9108,6 +9113,9 @@ type Mutation {
   threatActorIndividualAdd(input: ThreatActorIndividualAddInput!): ThreatActorIndividual
   threatActorIndividualDelete(id: ID!): ID
   threatActorIndividualFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorIndividual
+  threatActorIndividualHeightEdit(id: ID!, input: HeightTupleInput!, sort: Boolean): ThreatActorIndividual
+  threatActorIndividualWeightEdit(id: ID!, input: WeightTupleInput!, sort: Boolean): ThreatActorIndividual
+  threatActorIndividualHeightWeightSort(id: ID!): ThreatActorIndividual
   threatActorIndividualContextPatch(id: ID!, input: EditContext): ThreatActorIndividual
   threatActorIndividualContextClean(id: ID!): ThreatActorIndividual
   threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -9139,6 +9147,286 @@ type Mutation {
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+}
+
+enum Gender {
+  Male
+  Female
+  Nonbinary
+  Other
+  Unknown
+}
+
+enum MaritalStatus {
+  Annulled
+  Divorced
+  DomesticPartner
+  LegallySeparated
+  Separated
+  Married
+  NeverMarried
+  Polygamous
+  Single
+  Widowed
+  Unknown
+}
+
+enum Origin {
+  Afghan
+  Albanian
+  Algerian
+  American
+  Andorran
+  Angolan
+  Antiguans
+  Argentinean
+  Armenian
+  Australian
+  Austrian
+  Azerbaijani
+  Bahamian
+  Bahraini
+  Bangladeshi
+  Barbadian
+  Barbudans
+  Batswana
+  Belarusian
+  Belgian
+  Belizean
+  Beninese
+  Bhutanese
+  Bolivian
+  Bosnian
+  Brazilian
+  British
+  Bruneian
+  Bulgarian
+  Burkinabe
+  Burmese
+  Burundian
+  Cambodian
+  Cameroonian
+  Canadian
+  Cape_Verdean
+  Central_African
+  Chadian
+  Chilean
+  Chinese
+  Colombian
+  Comoran
+  Congolese
+  Costa_Rican
+  Croatian
+  Cuban
+  Cypriot
+  Czech
+  Danish
+  Djibouti
+  Dominican
+  Dutch
+  Dutchman
+  Dutchwoman
+  East_Timorese
+  Ecuadorean
+  Egyptian
+  Emirian
+  Equatorial_Guinean
+  Eritrean
+  Estonian
+  Ethiopian
+  Fijian
+  Filipino
+  Finnish
+  French
+  Gabonese
+  Gambian
+  Georgian
+  German
+  Ghanaian
+  Greek
+  Grenadian
+  Guatemalan
+  Guinea_Bissauan
+  Guinean
+  Guyanese
+  Haitian
+  Herzegovinian
+  Honduran
+  Hungarian
+  I_Kiribati
+  Icelander
+  Indian
+  Indonesian
+  Iranian
+  Iraqi
+  Irish
+  Israeli
+  Italian
+  Ivorian
+  Jamaican
+  Japanese
+  Jordanian
+  Kazakhstani
+  Kenyan
+  Kittian_And_Nevisian
+  Kuwaiti
+  Kyrgyz
+  Laotian
+  Latvian
+  Lebanese
+  Liberian
+  Libyan
+  Liechtensteiner
+  Lithuanian
+  Luxembourger
+  Macedonian
+  Malagasy
+  Malawian
+  Malaysian
+  Maldivan
+  Malian
+  Maltese
+  Marshallese
+  Mauritanian
+  Mauritian
+  Mexican
+  Micronesian
+  Moldovan
+  Monacan
+  Mongolian
+  Moroccan
+  Mosotho
+  Motswana
+  Mozambican
+  Namibian
+  Nauruan
+  Nepalese
+  Netherlander
+  New_Zealander
+  Ni_Vanuatu
+  Nicaraguan
+  Nigerian
+  Nigerien
+  North_Korean
+  Northern_Irish
+  Norwegian
+  Omani
+  Pakistani
+  Palauan
+  Panamanian
+  Papua_New_Guinean
+  Paraguayan
+  Peruvian
+  Polish
+  Portuguese
+  Qatari
+  Romanian
+  Russian
+  Rwandan
+  Saint_Lucian
+  Salvadoran
+  Samoan
+  San_Marinese
+  Sao_Tomean
+  Saudi
+  Scottish
+  Senegalese
+  Serbian
+  Seychellois
+  Sierra_Leonean
+  Singaporean
+  Slovakian
+  Slovenian
+  Solomon_Islander
+  Somali
+  South_African
+  South_Korean
+  Spanish
+  Sri_Lankan
+  Sudanese
+  Surinamer
+  Swazi
+  Swedish
+  Swiss
+  Syrian
+  Taiwanese
+  Tajik
+  Tanzanian
+  Thai
+  Togolese
+  Tongan
+  Trinidadian_Or_Tobagonian
+  Tunisian
+  Turkish
+  Tuvaluan
+  Ugandan
+  Ukrainian
+  Uruguayan
+  Uzbekistani
+  Venezuelan
+  Vietnamese
+  Welsh
+  Yemenite
+  Zambian
+  Zimbabwean
+  Unknown
+}
+
+enum EyeColor {
+  Black
+  Brown
+  Green
+  Blue
+  Other
+  Unknown
+}
+
+enum HairColor {
+  Black
+  Brown
+  Blond
+  Red
+  Blue
+  Green
+  Yellow
+  Other
+  Unknown
+}
+
+type HeightTuple {
+  height_in: Float
+  height_cm: Float
+  date_seen: DateTime
+}
+
+input HeightTupleInputValues {
+  height_in: Float
+  height_cm: Float
+  date_seen: DateTime
+}
+
+input HeightTupleInput {
+  values: [HeightTupleInputValues]
+  index: Int
+  operation: EditOperation
+}
+
+type WeightTuple {
+  weight_lb: Float
+  weight_kg: Float
+  date_seen: DateTime
+}
+
+input WeightTupleInputValues {
+  weight_lb: Float
+  weight_kg: Float
+  date_seen: DateTime
+}
+
+input WeightTupleInput {
+  values: [WeightTupleInputValues]
+  index: Int
+  operation: EditOperation
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11728,6 +12016,17 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
+  x_mcas_date_of_birth: DateTime
+  x_mcas_ethnicity: Origin
+  x_mcas_gender: Gender
+  x_mcas_job_title: String
+  x_mcas_marital_status: MaritalStatus
+  x_mcas_nationality: Origin
+  x_mcas_eye_color: EyeColor
+  x_mcas_hair_color: HairColor
+  x_mcas_height: [HeightTuple]
+  x_mcas_weight: [WeightTuple]
+  bornIn: Country
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String): FileConnection
@@ -11758,6 +12057,7 @@ enum ThreatActorsIndividualFilter {
   created_at
   updated_at
   createdBy
+  bornIn
   markedBy
   assigneeTo
   labelledBy
@@ -11801,6 +12101,16 @@ input ThreatActorIndividualAddInput {
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
+  x_mcas_date_of_birth: DateTime
+  x_mcas_ethnicity: Origin
+  x_mcas_gender: Gender
+  x_mcas_job_title: String
+  x_mcas_marital_status: MaritalStatus
+  x_mcas_nationality: Origin
+  x_mcas_eye_color: EyeColor
+  x_mcas_hair_color: HairColor
+  x_mcas_height: [HeightTupleInputValues]
+  x_mcas_weight: [WeightTupleInputValues]
   confidence: Int
   revoked: Boolean
   lang: String
@@ -11809,6 +12119,7 @@ input ThreatActorIndividualAddInput {
   objectOrganization: [String]
   objectAssignee: [String]
   objectLabel: [String]
+  bornIn: String
   externalReferences: [String]
   created: DateTime
   modified: DateTime

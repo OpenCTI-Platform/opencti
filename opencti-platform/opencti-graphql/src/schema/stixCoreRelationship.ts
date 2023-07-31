@@ -50,6 +50,9 @@ export const RELATION_SUBNARRATIVE_OF = 'subnarrative-of'; // Extension (OpenCTI
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
 export const RELATION_DETECTS = 'detects'; // Extension (MITRE)
+export const RELATION_EMPLOYED_BY = 'employed-by'; // Extension (TIM)
+export const RELATION_RESIDES_IN = 'resides-in'; // Extension (TIM)
+export const RELATION_CITIZEN_OF = 'citizen-of'; // Extension (TIM)
 // endregion
 
 export const STIX_CORE_RELATIONSHIPS = [
@@ -97,6 +100,9 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_PUBLISHES,
   RELATION_AMPLIFIES,
   RELATION_SUBNARRATIVE_OF,
+  RELATION_EMPLOYED_BY,
+  RELATION_RESIDES_IN,
+  RELATION_CITIZEN_OF,
 ];
 
 schemaTypesDefinition.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);

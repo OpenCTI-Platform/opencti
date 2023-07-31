@@ -64,6 +64,7 @@ import {
   ATTRIBUTE_NAME,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_LOCATION_COUNTRY,
   isStixObjectAliased,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
@@ -583,6 +584,34 @@ const elCreateIndexTemplate = async (index) => {
                 },
               },
             },
+            x_mcas_height: {
+              type: 'object',
+              properties: {
+                height_in: {
+                  type: 'float',
+                },
+                height_cm: {
+                  type: 'float',
+                },
+                date_seen: {
+                  type: 'date',
+                },
+              },
+            },
+            x_mcas_weight: {
+              type: 'object',
+              properties: {
+                weight_lb: {
+                  type: 'float',
+                },
+                weight_kg: {
+                  type: 'float',
+                },
+                date_seen: {
+                  type: 'date',
+                },
+              },
+            },
             timestamp: {
               type: 'date',
             },
@@ -761,6 +790,31 @@ export const RUNTIME_ATTRIBUTES = {
         connectionFormat: false,
       });
       return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.name })));
+    },
+  },
+  bornIn: {
+    field: 'bornIn.keyword',
+    type: 'keyword',
+    getSource: async () => `
+      if (doc.containsKey('rel_born-in.internal_id)) {
+        def countryId = doc['rel_born-in.internal_id.keyword'];
+        if (countryId.size() == 1) {
+          def countryName = params[countryId[0]];
+          emit(countryName != null ? creatorName : 'Unknown')
+        } else {
+          emit('Unknown')
+        }
+      } else {
+        emit('Unknown')
+      }
+    `,
+    getParams: async (context, user) => {
+      const countries = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+        types: [ENTITY_TYPE_LOCATION_COUNTRY],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
     },
   },
   creator: {

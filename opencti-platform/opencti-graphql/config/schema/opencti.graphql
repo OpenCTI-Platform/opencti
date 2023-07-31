@@ -89,6 +89,10 @@ enum EditOperation {
   replace
   remove
 }
+enum SimpleEditOperation {
+  replace
+  remove
+}
 input EditInput {
   key: String! # Field name to change
   value: [String]! # Values to apply
@@ -5889,7 +5893,6 @@ input CityAddInput {
   file: Upload
 }
 
-################ Countries
 enum CountriesOrdering {
   name
   description

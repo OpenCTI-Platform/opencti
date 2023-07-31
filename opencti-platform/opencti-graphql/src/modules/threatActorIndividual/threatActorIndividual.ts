@@ -2,7 +2,7 @@ import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { objectOrganization } from '../../schema/stixRefRelationship';
+import { bornIn, objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
 import threatActorIndividualResolvers from './threatActorIndividual-resolvers';
@@ -11,6 +11,9 @@ import {
   RELATION_ATTRIBUTED_TO,
   RELATION_COMPROMISES,
   RELATION_COOPERATES_WITH,
+  RELATION_EMPLOYED_BY,
+  RELATION_RESIDES_IN,
+  RELATION_CITIZEN_OF,
   RELATION_HOSTS,
   RELATION_IMPERSONATES,
   RELATION_LOCATED_AT,
@@ -85,6 +88,21 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'primary_motivation', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Primary motivation' },
     { name: 'secondary_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: true, label: 'Secondary motivations' },
     { name: 'personal_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: false, label: 'Personal motivations' },
+    { name: 'x_mcas_date_of_birth', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_ethnicity', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_gender', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_job_title', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_marital_status', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_nationality', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_eye_color', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_hair_color', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_height', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'height_in', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'height_cm', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'x_mcas_weight', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'weight_lb', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'weight_kg', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'date_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   relations: [
     {
@@ -177,9 +195,26 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },
       ]
     },
+    { name: RELATION_EMPLOYED_BY,
+      targets: [
+        { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_EXTENDED },
+        { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_RESIDES_IN,
+      targets: [
+        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
+      ]
+    },
+    { name: RELATION_CITIZEN_OF,
+      targets: [
+        { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_EXTENDED },
+      ]
+    },
   ],
   relationsRefs: [
     objectOrganization,
+    bornIn,
   ],
   representative: (stix: StixThreatActorIndividual) => {
     return stix.name;

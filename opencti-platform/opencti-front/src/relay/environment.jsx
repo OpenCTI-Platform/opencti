@@ -106,6 +106,15 @@ const buildErrorMessages = (error) => map(
   error.res.errors,
 );
 
+export const defaultCommitMutation = {
+  updater: undefined,
+  optimisticUpdater: undefined,
+  optimisticResponse: undefined,
+  onCompleted: undefined,
+  onError: undefined,
+  setSubmitting: undefined,
+};
+
 // Relay functions
 export const commitMutation = ({
   mutation,

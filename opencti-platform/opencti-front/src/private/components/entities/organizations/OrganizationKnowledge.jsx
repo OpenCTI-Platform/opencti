@@ -191,7 +191,7 @@ class OrganizationKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={organization.id}
-                relationshipTypes={['targets']}
+                relationshipTypes={['targets', 'employed-by']}
                 stixCoreObjectTypes={['Threat-Actor']}
                 entityLink={link}
                 isRelationReversed={true}

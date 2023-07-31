@@ -11,6 +11,7 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
+import { Box, Tab, Tabs } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -28,12 +29,26 @@ import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import {
-  ThreatActorIndividualCreationMutation,
-  ThreatActorIndividualCreationMutation$variables,
-} from './__generated__/ThreatActorIndividualCreationMutation.graphql';
-import {
   ThreatActorsIndividualCardsPaginationQuery$variables,
 } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
+import {
+  HeightTupleInputValues,
+  MaritalStatus,
+  Origin,
+  ThreatActorIndividualCreationMutation,
+  ThreatActorIndividualCreationMutation$variables,
+  WeightTupleInputValues,
+} from './__generated__/ThreatActorIndividualCreationMutation.graphql';
+import OriginEnum from '../../common/form/mcas/OriginEnum';
+import OriginField from '../../common/form/mcas/OriginField';
+import DatePickerField from '../../../../components/DatePickerField';
+import MaritalStatusField, { MaritalStatus as MaritalStatuses } from '../../common/form/mcas/MaritalStatusField';
+import GenderField, { Genders } from '../../common/form/mcas/GenderField';
+import EyeColorField, { EyeColors } from '../../common/form/mcas/EyeColorField';
+import HairColorField, { HairColors } from '../../common/form/mcas/HairColorField';
+import HeightField from '../../common/form/mcas/HeightField';
+import WeightField from '../../common/form/mcas/WeightField';
+import CountryPickerField from '../../common/form/mcas/CountryPickerField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -99,6 +114,17 @@ interface ThreatActorIndividualAddInput {
   objectLabel: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
+  bornIn: string | null
+  x_mcas_date_of_birth: Date | null
+  x_mcas_nationality: OriginEnum | null
+  x_mcas_ethnicity: OriginEnum | null
+  x_mcas_gender: Genders | null
+  x_mcas_marital_status: MaritalStatuses | null
+  x_mcas_job_title: string | undefined
+  x_mcas_eye_color: EyeColors | null
+  x_mcas_hair_color: HairColors | null
+  x_mcas_height: HeightTupleInputValues[]
+  x_mcas_weight: WeightTupleInputValues[]
 }
 
 interface ThreatActorIndividualFormProps {
@@ -110,6 +136,116 @@ interface ThreatActorIndividualFormProps {
   defaultConfidence?: number;
   inputValue?: string;
 }
+
+enum HeightOrWeight {
+  HEIGHT = 'x_mcas_height',
+  WEIGHT = 'x_mcas_weight',
+}
+
+/**
+ * Helper function for roundAndConvert with height tuples.
+ *
+ * @param values List of height tuples to be rounded and converted.
+ * @returns Rounded and converted height tuples.
+ */
+const roundAndConvertHeight = (values: HeightTupleInputValues[]) => {
+  const inToCm = (inches: number) => inches * 2.54;
+  const cmToIn = (cm: number) => cm / 2.54;
+  const convertedValues: HeightTupleInputValues[] = [];
+
+  for (const value of values) {
+    const height_in = parseFloat(String(value.height_in));
+    const height_cm = parseFloat(String(value.height_cm));
+    const { date_seen } = value;
+    if (
+      height_in
+      && Math.round(height_cm) !== Math.round(inToCm(height_in))
+    ) {
+      convertedValues.push({
+        height_in,
+        height_cm: inToCm(height_in),
+        date_seen,
+      });
+    } else if (
+      height_cm
+      && Math.round(height_in) !== Math.round(cmToIn(height_cm))
+    ) {
+      convertedValues.push({
+        height_cm,
+        height_in: cmToIn(height_cm),
+        date_seen,
+      });
+    } else {
+      convertedValues.push({ height_in, height_cm, date_seen });
+    }
+  }
+
+  return convertedValues;
+};
+
+/**
+ * Helper function for roundAndConvert with weight tuples.
+ *
+ * @param values List of weight tuples to be rounded and converted.
+ * @returns Rounded and converted weight tuples.
+ */
+const roundAndConvertWeight = (values: WeightTupleInputValues[]) => {
+  const lbToKg = (lb: number) => lb * 0.453592;
+  const kgToLb = (kg: number) => kg / 0.453592;
+  const convertedValues: WeightTupleInputValues[] = [];
+
+  for (const value of values) {
+    const weight_lb = parseFloat(String(value.weight_lb));
+    const weight_kg = parseFloat(String(value.weight_kg));
+    const { date_seen } = value;
+    if (
+      weight_lb
+      && Math.round(weight_kg) !== Math.round(lbToKg(weight_lb))
+    ) {
+      convertedValues.push({
+        weight_lb,
+        weight_kg: lbToKg(weight_lb),
+        date_seen,
+      });
+    } else if (
+      weight_kg
+      && Math.round(weight_lb) !== Math.round(kgToLb(weight_kg))
+    ) {
+      convertedValues.push({
+        weight_kg,
+        weight_lb: kgToLb(weight_kg),
+        date_seen,
+      });
+    } else {
+      convertedValues.push({ weight_lb, weight_kg, date_seen });
+    }
+  }
+
+  return convertedValues;
+};
+
+/**
+ * Given an incomplete or incorrect pair of units, converts and corrects
+ * the units.
+ * e.g. Given height_in and no height_cm, this will return the appropriate
+ *  values for both.
+ * e.g. Given weight_lb and incorrect weight_kg conversion, this will
+ *  convert weight_lb to the correct weight_kg.
+ * This function favors imperial measurements over metric. This means that
+ * if it is given two values that do not convert to one another, this
+ * function uses the imperial measurement to override the metric one.
+ *
+ * @param key
+ * @param values
+ * @returns List of values to add.
+ */
+const roundAndConvert = (key: HeightOrWeight, values: HeightTupleInputValues[] | WeightTupleInputValues[]) => {
+  if (values && Array.isArray(values)) {
+    return key === HeightOrWeight.HEIGHT
+      ? roundAndConvertHeight(values as HeightTupleInputValues[])
+      : roundAndConvertWeight(values as WeightTupleInputValues[]);
+  } return [];
+};
 
 export const ThreatActorIndividualCreationForm: FunctionComponent<
 ThreatActorIndividualFormProps
@@ -124,11 +260,53 @@ ThreatActorIndividualFormProps
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const [currentTab, setCurrentTab] = useState(0);
+  const handleChangeTab = (_: React.SyntheticEvent, value: number) => setCurrentTab(value);
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
+    x_mcas_date_of_birth: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a date (yyyy-MM-dd)')),
+    bornIn: Yup.string().nullable(),
+    x_mcas_nationality: Yup.string()
+      .nullable()
+      .typeError(t('The value must be a string')),
+    x_mcas_ethnicity: Yup.string()
+      .nullable()
+      .typeError(t('The value must be a string')),
+    x_mcas_gender: Yup.string()
+      .nullable()
+      .typeError(t('The value must be a string')),
+    x_mcas_marital_status: Yup.string()
+      .nullable()
+      .typeError(t('The value must be a string')),
+    x_mcas_job_title: Yup.string()
+      .max(250, t('The value is too long')),
+    x_mcas_eye_color: Yup.string().nullable(),
+    x_mcas_hair_color: Yup.string().nullable(),
+    x_mcas_height: Yup.array().of(
+      Yup.object().shape({
+        height_in: Yup.number().min(0).nullable()
+          .typeError(t('The value must be a number')),
+        height_cm: Yup.number().min(0).nullable()
+          .typeError(t('The value must be a number')),
+        date_seen: Yup.date().nullable()
+          .typeError(t('The value must be a date (yyyy-MM-dd)')),
+      }),
+    ),
+    x_mcas_weight: Yup.array().of(
+      Yup.object().shape({
+        weight_lb: Yup.number().min(0).nullable()
+          .typeError(t('The value must be a number')),
+        weight_kg: Yup.number().min(0).nullable()
+          .typeError(t('The value must be a number')),
+        date_seen: Yup.date().nullable()
+          .typeError(t('The value must be a date (yyyy-MM-dd)')),
+      }),
+    ),
   };
   const threatActorIndividualValidator = useSchemaCreationValidation(
     THREAT_ACTOR_INDIVIDUAL_TYPE,
@@ -142,15 +320,26 @@ ThreatActorIndividualFormProps
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: ThreatActorIndividualCreationMutation$variables['input'] = {
-      name: values.name,
-      description: values.description,
-      threat_actor_types: values.threat_actor_types,
-      confidence: parseInt(String(values.confidence), 10),
-      createdBy: values.createdBy?.value,
-      objectMarking: values.objectMarking.map((v) => v.value),
-      objectLabel: values.objectLabel.map((v) => v.value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+      name: values?.name,
+      description: values?.description,
+      threat_actor_types: values?.threat_actor_types,
+      confidence: parseInt(String(values?.confidence), 10),
+      createdBy: values?.createdBy?.value,
+      objectMarking: values?.objectMarking.map((v) => v.value),
+      objectLabel: values?.objectLabel.map((v) => v.value),
+      externalReferences: values?.externalReferences.map(({ value }) => value),
+      file: values?.file,
+      bornIn: values?.bornIn,
+      x_mcas_date_of_birth: values?.x_mcas_date_of_birth,
+      x_mcas_nationality: values?.x_mcas_nationality as Origin,
+      x_mcas_ethnicity: values?.x_mcas_ethnicity as Origin,
+      x_mcas_gender: values?.x_mcas_gender,
+      x_mcas_marital_status: values?.x_mcas_marital_status as MaritalStatus,
+      x_mcas_job_title: values?.x_mcas_job_title,
+      x_mcas_eye_color: values?.x_mcas_eye_color,
+      x_mcas_hair_color: values?.x_mcas_hair_color,
+      x_mcas_height: roundAndConvert(HeightOrWeight.HEIGHT, values?.x_mcas_height),
+      x_mcas_weight: roundAndConvert(HeightOrWeight.WEIGHT, values?.x_mcas_weight),
     };
     commit({
       variables: {
@@ -185,6 +374,18 @@ ThreatActorIndividualFormProps
     objectLabel: [],
     externalReferences: [],
     file: undefined,
+    bornIn: null,
+    x_mcas_date_of_birth: null,
+    x_mcas_nationality: null,
+    x_mcas_ethnicity: null,
+    x_mcas_gender: null,
+    x_mcas_marital_status: null,
+    x_mcas_employer: [],
+    x_mcas_job_title: undefined,
+    x_mcas_eye_color: null,
+    x_mcas_hair_color: null,
+    x_mcas_height: [],
+    x_mcas_weight: [],
   });
 
   return (
@@ -195,62 +396,174 @@ ThreatActorIndividualFormProps
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            name="name"
-            label={t('Name')}
-            fullWidth={true}
-            detectDuplicate={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Malware',
-            ]}
-          />
-          <OpenVocabField
-            type="threat-actor-individual-type-ov"
-            name="threat_actor_types"
-            label={t('Threat actor types')}
-            multiple={true}
-            containerStyle={{ width: '100%', marginTop: 20 }}
-            onChange={setFieldValue}
-          />
-          <ConfidenceField
-            entityType="Threat-Actor-Individual"
-            containerStyle={{ width: '100%', marginTop: 20 }}
-          />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <CustomFileUploader setFieldValue={setFieldValue} />
+        <Form>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={currentTab} onChange={handleChangeTab}>
+              <Tab id='create-overview' label={t('Overview')} />
+              <Tab id='threat-demographics' label={t('Demographics')} />
+              <Tab id='threat-bio' label={t('Biographics')} />
+            </Tabs>
+          </Box>
+          {currentTab === 0 && (
+            <div>
+              <Field
+                component={TextField}
+                name="name"
+                label={t('Name')}
+                fullWidth={true}
+                detectDuplicate={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Malware',
+                ]}
+              />
+              <OpenVocabField
+                type="threat-actor-individual-type-ov"
+                name="threat_actor_types"
+                label={t('Threat actor types')}
+                multiple={true}
+                containerStyle={{ width: '100%', marginTop: 20 }}
+                onChange={setFieldValue}
+              />
+              <ConfidenceField
+                entityType="Threat-Actor-Individual"
+                containerStyle={{ width: '100%', marginTop: 20 }}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+              />
+              <CreatedByField
+                name="createdBy"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+              <ObjectLabelField
+                name="objectLabel"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+                values={values?.objectLabel}
+              />
+              <ObjectMarkingField
+                name="objectMarking"
+                style={fieldSpacingContainerStyle}
+              />
+              <ExternalReferencesField
+                name="externalReferences"
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+                values={values?.externalReferences}
+              />
+              <CustomFileUploader setFieldValue={setFieldValue}
+              />
+            </div>
+          )}
+          {currentTab === 1 && (
+            <div>
+              <OriginField
+                name="x_mcas_nationality"
+                label={t('Nationality')}
+                initialValue={values?.x_mcas_nationality}
+                style={fieldSpacingContainerStyle}
+                handleChange={(n: string, value) => setFieldValue(n, value)}
+              />
+              <OriginField
+                name="x_mcas_ethnicity"
+                label={t('Ethnicity')}
+                initialValue={values?.x_mcas_ethnicity}
+                style={fieldSpacingContainerStyle}
+                handleChange={(n: string, value) => setFieldValue(n, value)}
+              />
+              <CountryPickerField
+                id="PlaceOfBirth"
+                name="bornIn"
+                multi={false}
+                initialValues={values?.bornIn || undefined}
+                label={t('Place of Birth')}
+                style={fieldSpacingContainerStyle}
+                handleChange={setFieldValue}
+              />
+              <Field
+                id="DateOfBirth"
+                component={DatePickerField}
+                name="x_mcas_date_of_birth"
+                onSubmit={setFieldValue}
+                TextFieldProps={{
+                  label: t('Date of Birth'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
+              />
+              <MaritalStatusField
+                name="x_mcas_marital_status"
+                label={t('Marital Status')}
+                onChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+                editContext={[]}
+                variant="edit"
+              />
+              <GenderField
+                name="x_mcas_gender"
+                label={t('Gender')}
+                onChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+                editContext={[]}
+                variant="edit"
+              />
+              <Field
+                component={MarkdownField}
+                name="x_mcas_job_title"
+                id="x_mcas_job_title"
+                label={t('Job Title')}
+                fullWidth={true}
+                multiline={false}
+                rows="1"
+                style={{ marginTop: 20 }}
+                onSubmit={setFieldValue}
+              />
+            </div>
+          )}
+          {currentTab === 2 && (
+            <div>
+              <EyeColorField
+                name="x_mcas_eye_color"
+                label={t('Eye Color')}
+                variant="create"
+                onChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+              />
+              <HairColorField
+                name="x_mcas_hair_color"
+                label={t('Hair Color')}
+                variant="create"
+                onChange={setFieldValue}
+                containerStyle={fieldSpacingContainerStyle}
+              />
+              <HeightField
+                id='new_height'
+                name="x_mcas_height"
+                values={values?.x_mcas_height}
+                label={t('Heights')}
+                variant="create"
+                containerStyle={fieldSpacingContainerStyle}
+              />
+              <WeightField
+                id='new_weight'
+                name="x_mcas_weight"
+                values={values?.x_mcas_weight}
+                label={t('Weights')}
+                variant="create"
+                containerStyle={fieldSpacingContainerStyle}
+              />
+            </div>
+          )}
           <div className={classes.buttons}>
             <Button
               variant="contained"

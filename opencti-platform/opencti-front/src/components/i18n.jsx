@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
-import { bytesFormat, numberFormat } from '../utils/Number';
+import { bytesFormat, convertLength, convertWeight, numberFormat } from '../utils/Number';
+import { getLengthUnitForLocale, getWeightUnitForLocale } from '../utils/UnitSystems';
 
 export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
@@ -170,6 +171,47 @@ export const useFormatter = () => {
   const formatBytes = (number) => `${intl.formatNumber(bytesFormat(number).number)}${
     bytesFormat(number).symbol
   }`;
+
+  /**
+   * Formats a length number.
+   * @param {string | number} number Length to format.
+   * @param {string} toUnit Unit type to convert to. Optional.
+   * @param {string} fromUnit Unit type to convert from. Optional.
+   * @param {string} unitDisplay How to display the unit. Optional.
+   * @param {number} precision Amount of precision to use. Optional.
+   * @returns A formatted unit of length.
+   */
+  const formatLength = (number, toUnit = null, fromUnit = null, unitDisplay = 'long', precision = 0) => {
+    const localeUnit = getLengthUnitForLocale(intl.locale);
+    const converted = convertLength(number, toUnit || localeUnit, fromUnit || localeUnit) || {};
+    const formatOpts = { style: 'unit', maximumFractionDigits: precision, unitDisplay };
+    const formatted = [];
+    Object.entries(converted).forEach(([ unit, unitValue ]) => {
+      return formatted.push(intl.formatNumber(Number(unitValue), { unit, ...formatOpts }))
+    });
+    return formatted.join(' ');
+  };
+
+  /**
+   * Formats a weight number.
+   * @param {string | number} number Weight to format.
+   * @param {string} toUnit Unit type to convert to. Optional.
+   * @param {string} fromUnit Unit type to convert from. Optional.
+   * @param {string} unitDisplay How to display the unit. Optional.
+   * @param {number} precision Amount of precision to use. Optional.
+   * @returns A formatted unit of weight.
+   */
+  const formatWeight = (number, toUnit = null, fromUnit = null, unitDisplay = 'long', precision = 2) => {
+    const localeUnit = getWeightUnitForLocale(intl.locale);
+    const converted = convertWeight(number, toUnit || localeUnit, fromUnit || localeUnit);
+    const formatOpts = { style: 'unit', maximumFractionDigits: precision, unitDisplay };
+    const formatted = [];
+    Object.entries(converted).forEach(([ unit, unitValue ]) => formatted.push(
+      intl.formatNumber(Number(unitValue), { unit, ...formatOpts }),
+    ));
+    return formatted.join(' ');
+  };
+
   const longDate = (date) => {
     if (isNone(date)) {
       return '-';
@@ -290,6 +332,8 @@ export const useFormatter = () => {
     t: translate,
     n: formatNumber,
     b: formatBytes,
+    len: formatLength,
+    wgt: formatWeight,
     fld: longDate,
     fldt: longDateTime,
     fsd: shortDate,

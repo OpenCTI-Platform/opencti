@@ -7137,6 +7137,15 @@ export enum ExternalReferencesOrdering {
   Url = 'url'
 }
 
+export enum EyeColor {
+  Black = 'Black',
+  Blue = 'Blue',
+  Brown = 'Brown',
+  Green = 'Green',
+  Other = 'Other',
+  Unknown = 'Unknown'
+}
+
 export type Feed = {
   __typename?: 'Feed';
   authorized_members?: Maybe<Array<MemberAccess>>;
@@ -7563,6 +7572,14 @@ export enum FilterMode {
   Or = 'or'
 }
 
+export enum Gender {
+  Female = 'Female',
+  Male = 'Male',
+  Nonbinary = 'Nonbinary',
+  Other = 'Other',
+  Unknown = 'Unknown'
+}
+
 export type GetMetrics = {
   __typename?: 'GetMetrics';
   total?: Maybe<Scalars['String']['output']>;
@@ -7962,6 +7979,18 @@ export enum GroupsOrdering {
   UpdatedAt = 'updated_at'
 }
 
+export enum HairColor {
+  Black = 'Black',
+  Blond = 'Blond',
+  Blue = 'Blue',
+  Brown = 'Brown',
+  Green = 'Green',
+  Other = 'Other',
+  Red = 'Red',
+  Unknown = 'Unknown',
+  Yellow = 'Yellow'
+}
+
 export type Hash = {
   __typename?: 'Hash';
   algorithm: Scalars['String']['output'];
@@ -8153,6 +8182,25 @@ export type HashedObservableStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+export type HeightTuple = {
+  __typename?: 'HeightTuple';
+  date_seen?: Maybe<Scalars['DateTime']['output']>;
+  height_cm?: Maybe<Scalars['Float']['output']>;
+  height_in?: Maybe<Scalars['Float']['output']>;
+};
+
+export type HeightTupleInput = {
+  index?: InputMaybe<Scalars['Int']['input']>;
+  operation?: InputMaybe<EditOperation>;
+  values?: InputMaybe<Array<InputMaybe<HeightTupleInputValues>>>;
+};
+
+export type HeightTupleInputValues = {
+  date_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  height_cm?: InputMaybe<Scalars['Float']['input']>;
+  height_in?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -12372,6 +12420,20 @@ export enum MalwaresOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export enum MaritalStatus {
+  Annulled = 'Annulled',
+  Divorced = 'Divorced',
+  DomesticPartner = 'DomesticPartner',
+  LegallySeparated = 'LegallySeparated',
+  Married = 'Married',
+  NeverMarried = 'NeverMarried',
+  Polygamous = 'Polygamous',
+  Separated = 'Separated',
+  Single = 'Single',
+  Unknown = 'Unknown',
+  Widowed = 'Widowed'
+}
+
 export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'MarkingDefinition';
   created?: Maybe<Scalars['DateTime']['output']>;
@@ -13032,8 +13094,11 @@ export type Mutation = {
   threatActorIndividualContextPatch?: Maybe<ThreatActorIndividual>;
   threatActorIndividualDelete?: Maybe<Scalars['ID']['output']>;
   threatActorIndividualFieldPatch?: Maybe<ThreatActorIndividual>;
+  threatActorIndividualHeightEdit?: Maybe<ThreatActorIndividual>;
+  threatActorIndividualHeightWeightSort?: Maybe<ThreatActorIndividual>;
   threatActorIndividualRelationAdd?: Maybe<StixRefRelationship>;
   threatActorIndividualRelationDelete?: Maybe<ThreatActorIndividual>;
+  threatActorIndividualWeightEdit?: Maybe<ThreatActorIndividual>;
   token?: Maybe<Scalars['String']['output']>;
   toolAdd?: Maybe<Tool>;
   toolEdit?: Maybe<ToolEditMutations>;
@@ -14548,6 +14613,18 @@ export type MutationThreatActorIndividualFieldPatchArgs = {
 };
 
 
+export type MutationThreatActorIndividualHeightEditArgs = {
+  id: Scalars['ID']['input'];
+  input: HeightTupleInput;
+  sort?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type MutationThreatActorIndividualHeightWeightSortArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationThreatActorIndividualRelationAddArgs = {
   id: Scalars['ID']['input'];
   input: StixRefRelationshipAddInput;
@@ -14558,6 +14635,13 @@ export type MutationThreatActorIndividualRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationThreatActorIndividualWeightEditArgs = {
+  id: Scalars['ID']['input'];
+  input: WeightTupleInput;
+  sort?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -16852,6 +16936,207 @@ export enum OrganizationsOrdering {
   UpdatedAt = 'updated_at',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
+}
+
+export enum Origin {
+  Afghan = 'Afghan',
+  Albanian = 'Albanian',
+  Algerian = 'Algerian',
+  American = 'American',
+  Andorran = 'Andorran',
+  Angolan = 'Angolan',
+  Antiguans = 'Antiguans',
+  Argentinean = 'Argentinean',
+  Armenian = 'Armenian',
+  Australian = 'Australian',
+  Austrian = 'Austrian',
+  Azerbaijani = 'Azerbaijani',
+  Bahamian = 'Bahamian',
+  Bahraini = 'Bahraini',
+  Bangladeshi = 'Bangladeshi',
+  Barbadian = 'Barbadian',
+  Barbudans = 'Barbudans',
+  Batswana = 'Batswana',
+  Belarusian = 'Belarusian',
+  Belgian = 'Belgian',
+  Belizean = 'Belizean',
+  Beninese = 'Beninese',
+  Bhutanese = 'Bhutanese',
+  Bolivian = 'Bolivian',
+  Bosnian = 'Bosnian',
+  Brazilian = 'Brazilian',
+  British = 'British',
+  Bruneian = 'Bruneian',
+  Bulgarian = 'Bulgarian',
+  Burkinabe = 'Burkinabe',
+  Burmese = 'Burmese',
+  Burundian = 'Burundian',
+  Cambodian = 'Cambodian',
+  Cameroonian = 'Cameroonian',
+  Canadian = 'Canadian',
+  CapeVerdean = 'Cape_Verdean',
+  CentralAfrican = 'Central_African',
+  Chadian = 'Chadian',
+  Chilean = 'Chilean',
+  Chinese = 'Chinese',
+  Colombian = 'Colombian',
+  Comoran = 'Comoran',
+  Congolese = 'Congolese',
+  CostaRican = 'Costa_Rican',
+  Croatian = 'Croatian',
+  Cuban = 'Cuban',
+  Cypriot = 'Cypriot',
+  Czech = 'Czech',
+  Danish = 'Danish',
+  Djibouti = 'Djibouti',
+  Dominican = 'Dominican',
+  Dutch = 'Dutch',
+  Dutchman = 'Dutchman',
+  Dutchwoman = 'Dutchwoman',
+  EastTimorese = 'East_Timorese',
+  Ecuadorean = 'Ecuadorean',
+  Egyptian = 'Egyptian',
+  Emirian = 'Emirian',
+  EquatorialGuinean = 'Equatorial_Guinean',
+  Eritrean = 'Eritrean',
+  Estonian = 'Estonian',
+  Ethiopian = 'Ethiopian',
+  Fijian = 'Fijian',
+  Filipino = 'Filipino',
+  Finnish = 'Finnish',
+  French = 'French',
+  Gabonese = 'Gabonese',
+  Gambian = 'Gambian',
+  Georgian = 'Georgian',
+  German = 'German',
+  Ghanaian = 'Ghanaian',
+  Greek = 'Greek',
+  Grenadian = 'Grenadian',
+  Guatemalan = 'Guatemalan',
+  GuineaBissauan = 'Guinea_Bissauan',
+  Guinean = 'Guinean',
+  Guyanese = 'Guyanese',
+  Haitian = 'Haitian',
+  Herzegovinian = 'Herzegovinian',
+  Honduran = 'Honduran',
+  Hungarian = 'Hungarian',
+  IKiribati = 'I_Kiribati',
+  Icelander = 'Icelander',
+  Indian = 'Indian',
+  Indonesian = 'Indonesian',
+  Iranian = 'Iranian',
+  Iraqi = 'Iraqi',
+  Irish = 'Irish',
+  Israeli = 'Israeli',
+  Italian = 'Italian',
+  Ivorian = 'Ivorian',
+  Jamaican = 'Jamaican',
+  Japanese = 'Japanese',
+  Jordanian = 'Jordanian',
+  Kazakhstani = 'Kazakhstani',
+  Kenyan = 'Kenyan',
+  KittianAndNevisian = 'Kittian_And_Nevisian',
+  Kuwaiti = 'Kuwaiti',
+  Kyrgyz = 'Kyrgyz',
+  Laotian = 'Laotian',
+  Latvian = 'Latvian',
+  Lebanese = 'Lebanese',
+  Liberian = 'Liberian',
+  Libyan = 'Libyan',
+  Liechtensteiner = 'Liechtensteiner',
+  Lithuanian = 'Lithuanian',
+  Luxembourger = 'Luxembourger',
+  Macedonian = 'Macedonian',
+  Malagasy = 'Malagasy',
+  Malawian = 'Malawian',
+  Malaysian = 'Malaysian',
+  Maldivan = 'Maldivan',
+  Malian = 'Malian',
+  Maltese = 'Maltese',
+  Marshallese = 'Marshallese',
+  Mauritanian = 'Mauritanian',
+  Mauritian = 'Mauritian',
+  Mexican = 'Mexican',
+  Micronesian = 'Micronesian',
+  Moldovan = 'Moldovan',
+  Monacan = 'Monacan',
+  Mongolian = 'Mongolian',
+  Moroccan = 'Moroccan',
+  Mosotho = 'Mosotho',
+  Motswana = 'Motswana',
+  Mozambican = 'Mozambican',
+  Namibian = 'Namibian',
+  Nauruan = 'Nauruan',
+  Nepalese = 'Nepalese',
+  Netherlander = 'Netherlander',
+  NewZealander = 'New_Zealander',
+  NiVanuatu = 'Ni_Vanuatu',
+  Nicaraguan = 'Nicaraguan',
+  Nigerian = 'Nigerian',
+  Nigerien = 'Nigerien',
+  NorthKorean = 'North_Korean',
+  NorthernIrish = 'Northern_Irish',
+  Norwegian = 'Norwegian',
+  Omani = 'Omani',
+  Pakistani = 'Pakistani',
+  Palauan = 'Palauan',
+  Panamanian = 'Panamanian',
+  PapuaNewGuinean = 'Papua_New_Guinean',
+  Paraguayan = 'Paraguayan',
+  Peruvian = 'Peruvian',
+  Polish = 'Polish',
+  Portuguese = 'Portuguese',
+  Qatari = 'Qatari',
+  Romanian = 'Romanian',
+  Russian = 'Russian',
+  Rwandan = 'Rwandan',
+  SaintLucian = 'Saint_Lucian',
+  Salvadoran = 'Salvadoran',
+  Samoan = 'Samoan',
+  SanMarinese = 'San_Marinese',
+  SaoTomean = 'Sao_Tomean',
+  Saudi = 'Saudi',
+  Scottish = 'Scottish',
+  Senegalese = 'Senegalese',
+  Serbian = 'Serbian',
+  Seychellois = 'Seychellois',
+  SierraLeonean = 'Sierra_Leonean',
+  Singaporean = 'Singaporean',
+  Slovakian = 'Slovakian',
+  Slovenian = 'Slovenian',
+  SolomonIslander = 'Solomon_Islander',
+  Somali = 'Somali',
+  SouthAfrican = 'South_African',
+  SouthKorean = 'South_Korean',
+  Spanish = 'Spanish',
+  SriLankan = 'Sri_Lankan',
+  Sudanese = 'Sudanese',
+  Surinamer = 'Surinamer',
+  Swazi = 'Swazi',
+  Swedish = 'Swedish',
+  Swiss = 'Swiss',
+  Syrian = 'Syrian',
+  Taiwanese = 'Taiwanese',
+  Tajik = 'Tajik',
+  Tanzanian = 'Tanzanian',
+  Thai = 'Thai',
+  Togolese = 'Togolese',
+  Tongan = 'Tongan',
+  TrinidadianOrTobagonian = 'Trinidadian_Or_Tobagonian',
+  Tunisian = 'Tunisian',
+  Turkish = 'Turkish',
+  Tuvaluan = 'Tuvaluan',
+  Ugandan = 'Ugandan',
+  Ukrainian = 'Ukrainian',
+  Unknown = 'Unknown',
+  Uruguayan = 'Uruguayan',
+  Uzbekistani = 'Uzbekistani',
+  Venezuelan = 'Venezuelan',
+  Vietnamese = 'Vietnamese',
+  Welsh = 'Welsh',
+  Yemenite = 'Yemenite',
+  Zambian = 'Zambian',
+  Zimbabwean = 'Zimbabwean'
 }
 
 export type OtpElement = {
@@ -21881,6 +22166,11 @@ export type SettingsMessageInput = {
   message: Scalars['String']['input'];
 };
 
+export enum SimpleEditOperation {
+  Remove = 'remove',
+  Replace = 'replace'
+}
+
 export type Software = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Software';
   cases?: Maybe<CaseConnection>;
@@ -26088,6 +26378,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   __typename?: 'ThreatActorIndividual';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   avatar?: Maybe<OpenCtiFile>;
+  bornIn?: Maybe<Country>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -26144,6 +26435,16 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
+  x_mcas_date_of_birth?: Maybe<Scalars['DateTime']['output']>;
+  x_mcas_ethnicity?: Maybe<Origin>;
+  x_mcas_eye_color?: Maybe<EyeColor>;
+  x_mcas_gender?: Maybe<Gender>;
+  x_mcas_hair_color?: Maybe<HairColor>;
+  x_mcas_height?: Maybe<Array<Maybe<HeightTuple>>>;
+  x_mcas_job_title?: Maybe<Scalars['String']['output']>;
+  x_mcas_marital_status?: Maybe<MaritalStatus>;
+  x_mcas_nationality?: Maybe<Origin>;
+  x_mcas_weight?: Maybe<Array<Maybe<WeightTuple>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -26285,6 +26586,7 @@ export type ThreatActorIndividualStixCoreRelationshipsDistributionArgs = {
 
 export type ThreatActorIndividualAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  bornIn?: InputMaybe<Scalars['String']['input']>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
@@ -26312,6 +26614,16 @@ export type ThreatActorIndividualAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
+  x_mcas_date_of_birth?: InputMaybe<Scalars['DateTime']['input']>;
+  x_mcas_ethnicity?: InputMaybe<Origin>;
+  x_mcas_eye_color?: InputMaybe<EyeColor>;
+  x_mcas_gender?: InputMaybe<Gender>;
+  x_mcas_hair_color?: InputMaybe<HairColor>;
+  x_mcas_height?: InputMaybe<Array<InputMaybe<HeightTupleInputValues>>>;
+  x_mcas_job_title?: InputMaybe<Scalars['String']['input']>;
+  x_mcas_marital_status?: InputMaybe<MaritalStatus>;
+  x_mcas_nationality?: InputMaybe<Origin>;
+  x_mcas_weight?: InputMaybe<Array<InputMaybe<WeightTupleInputValues>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
 };
 
@@ -26356,6 +26668,7 @@ export type ThreatActorsFiltering = {
 export enum ThreatActorsIndividualFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
+  BornIn = 'bornIn',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -28042,6 +28355,25 @@ export type VulnerabilityEditMutationsRelationDeleteArgs = {
   toId: Scalars['StixRef']['input'];
 };
 
+export type WeightTuple = {
+  __typename?: 'WeightTuple';
+  date_seen?: Maybe<Scalars['DateTime']['output']>;
+  weight_kg?: Maybe<Scalars['Float']['output']>;
+  weight_lb?: Maybe<Scalars['Float']['output']>;
+};
+
+export type WeightTupleInput = {
+  index?: InputMaybe<Scalars['Int']['input']>;
+  operation?: InputMaybe<EditOperation>;
+  values?: InputMaybe<Array<InputMaybe<WeightTupleInputValues>>>;
+};
+
+export type WeightTupleInputValues = {
+  date_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  weight_kg?: InputMaybe<Scalars['Float']['input']>;
+  weight_lb?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'WindowsRegistryKey';
   attribute_key?: Maybe<Scalars['String']['output']>;
@@ -29188,6 +29520,7 @@ export type ResolversTypes = ResolversObject<{
   ExternalReferencesFilter: ExternalReferencesFilter;
   ExternalReferencesFiltering: ExternalReferencesFiltering;
   ExternalReferencesOrdering: ExternalReferencesOrdering;
+  EyeColor: EyeColor;
   Feed: ResolverTypeWrapper<BasicStoreEntityFeed>;
   FeedAddInput: FeedAddInput;
   FeedAttribute: ResolverTypeWrapper<FeedAttribute>;
@@ -29212,6 +29545,7 @@ export type ResolversTypes = ResolversObject<{
   FileMetadata: ResolverTypeWrapper<FileMetadata>;
   FilterMode: FilterMode;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
+  Gender: Gender;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
   Group: ResolverTypeWrapper<Omit<Group, 'default_dashboard' | 'members'> & { default_dashboard?: Maybe<ResolversTypes['Workspace']>, members?: Maybe<ResolversTypes['UserConnection']> }>;
   GroupAddInput: GroupAddInput;
@@ -29226,9 +29560,13 @@ export type ResolversTypes = ResolversObject<{
   GroupingsFiltering: GroupingsFiltering;
   GroupingsOrdering: GroupingsOrdering;
   GroupsOrdering: GroupsOrdering;
+  HairColor: HairColor;
   Hash: ResolverTypeWrapper<Hash>;
   HashInput: HashInput;
   HashedObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['HashedObservable']>;
+  HeightTuple: ResolverTypeWrapper<HeightTuple>;
+  HeightTupleInput: HeightTupleInput;
+  HeightTupleInputValues: HeightTupleInputValues;
   Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   HostnameAddInput: HostnameAddInput;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -29364,6 +29702,7 @@ export type ResolversTypes = ResolversObject<{
   MalwaresFilter: MalwaresFilter;
   MalwaresFiltering: MalwaresFiltering;
   MalwaresOrdering: MalwaresOrdering;
+  MaritalStatus: MaritalStatus;
   MarkingDefinition: ResolverTypeWrapper<MarkingDefinition>;
   MarkingDefinitionAddInput: MarkingDefinitionAddInput;
   MarkingDefinitionConnection: ResolverTypeWrapper<MarkingDefinitionConnection>;
@@ -29458,6 +29797,7 @@ export type ResolversTypes = ResolversObject<{
   OrganizationsFilter: OrganizationsFilter;
   OrganizationsFiltering: OrganizationsFiltering;
   OrganizationsOrdering: OrganizationsOrdering;
+  Origin: Origin;
   OtpElement: ResolverTypeWrapper<OtpElement>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -29552,6 +29892,7 @@ export type ResolversTypes = ResolversObject<{
   SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'deleteMessage' | 'editMessage' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, deleteMessage?: Maybe<ResolversTypes['Settings']>, editMessage?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
   SettingsMessage: ResolverTypeWrapper<SettingsMessage>;
   SettingsMessageInput: SettingsMessageInput;
+  SimpleEditOperation: SimpleEditOperation;
   Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']> }>;
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
@@ -29793,6 +30134,9 @@ export type ResolversTypes = ResolversObject<{
   VulnerabilityConnection: ResolverTypeWrapper<Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['VulnerabilityEdge']>>> }>;
   VulnerabilityEdge: ResolverTypeWrapper<Omit<VulnerabilityEdge, 'node'> & { node: ResolversTypes['Vulnerability'] }>;
   VulnerabilityEditMutations: ResolverTypeWrapper<Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Vulnerability']>, contextPatch?: Maybe<ResolversTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversTypes['Vulnerability']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Vulnerability']> }>;
+  WeightTuple: ResolverTypeWrapper<WeightTuple>;
+  WeightTupleInput: WeightTupleInput;
+  WeightTupleInputValues: WeightTupleInputValues;
   WindowsRegistryKey: ResolverTypeWrapper<Omit<WindowsRegistryKey, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
   WindowsRegistryValueType: ResolverTypeWrapper<Omit<WindowsRegistryValueType, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
@@ -30043,6 +30387,9 @@ export type ResolversParentTypes = ResolversObject<{
   Hash: Hash;
   HashInput: HashInput;
   HashedObservable: ResolversInterfaceTypes<ResolversParentTypes>['HashedObservable'];
+  HeightTuple: HeightTuple;
+  HeightTupleInput: HeightTupleInput;
+  HeightTupleInputValues: HeightTupleInputValues;
   Hostname: Omit<Hostname, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   HostnameAddInput: HostnameAddInput;
   ID: Scalars['ID']['output'];
@@ -30490,6 +30837,9 @@ export type ResolversParentTypes = ResolversObject<{
   VulnerabilityConnection: Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['VulnerabilityEdge']>>> };
   VulnerabilityEdge: Omit<VulnerabilityEdge, 'node'> & { node: ResolversParentTypes['Vulnerability'] };
   VulnerabilityEditMutations: Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Vulnerability']>, contextPatch?: Maybe<ResolversParentTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversParentTypes['Vulnerability']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Vulnerability']> };
+  WeightTuple: WeightTuple;
+  WeightTupleInput: WeightTupleInput;
+  WeightTupleInputValues: WeightTupleInputValues;
   WindowsRegistryKey: Omit<WindowsRegistryKey, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
   WindowsRegistryValueType: Omit<WindowsRegistryValueType, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
@@ -32982,6 +33332,13 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
+export type HeightTupleResolvers<ContextType = any, ParentType extends ResolversParentTypes['HeightTuple'] = ResolversParentTypes['HeightTuple']> = ResolversObject<{
+  date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  height_cm?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  height_in?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type HostnameResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hostname'] = ResolversParentTypes['Hostname']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<HostnameCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<HostnameConnectorsArgs>>;
@@ -34653,8 +35010,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   threatActorIndividualContextPatch?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualContextPatchArgs, 'id'>>;
   threatActorIndividualDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualDeleteArgs, 'id'>>;
   threatActorIndividualFieldPatch?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualFieldPatchArgs, 'id' | 'input'>>;
+  threatActorIndividualHeightEdit?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualHeightEditArgs, 'id' | 'input'>>;
+  threatActorIndividualHeightWeightSort?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualHeightWeightSortArgs, 'id'>>;
   threatActorIndividualRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationAddArgs, 'id' | 'input'>>;
   threatActorIndividualRelationDelete?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  threatActorIndividualWeightEdit?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualWeightEditArgs, 'id' | 'input'>>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
   toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
@@ -37733,6 +38093,7 @@ export type ThreatActorGroupEditMutationsResolvers<ContextType = any, ParentType
 export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorIndividual'] = ResolversParentTypes['ThreatActorIndividual']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
+  bornIn?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorIndividualConnectorsArgs>>;
@@ -37789,6 +38150,16 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  x_mcas_date_of_birth?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  x_mcas_ethnicity?: Resolver<Maybe<ResolversTypes['Origin']>, ParentType, ContextType>;
+  x_mcas_eye_color?: Resolver<Maybe<ResolversTypes['EyeColor']>, ParentType, ContextType>;
+  x_mcas_gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
+  x_mcas_hair_color?: Resolver<Maybe<ResolversTypes['HairColor']>, ParentType, ContextType>;
+  x_mcas_height?: Resolver<Maybe<Array<Maybe<ResolversTypes['HeightTuple']>>>, ParentType, ContextType>;
+  x_mcas_job_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_mcas_marital_status?: Resolver<Maybe<ResolversTypes['MaritalStatus']>, ParentType, ContextType>;
+  x_mcas_nationality?: Resolver<Maybe<ResolversTypes['Origin']>, ParentType, ContextType>;
+  x_mcas_weight?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeightTuple']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -38297,6 +38668,13 @@ export type VulnerabilityEditMutationsResolvers<ContextType = any, ParentType ex
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type WeightTupleResolvers<ContextType = any, ParentType extends ResolversParentTypes['WeightTuple'] = ResolversParentTypes['WeightTuple']> = ResolversObject<{
+  date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  weight_kg?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  weight_lb?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['WindowsRegistryKey'] = ResolversParentTypes['WindowsRegistryKey']> = ResolversObject<{
   attribute_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyCasesArgs>>;
@@ -38705,6 +39083,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   GroupingEdge?: GroupingEdgeResolvers<ContextType>;
   Hash?: HashResolvers<ContextType>;
   HashedObservable?: HashedObservableResolvers<ContextType>;
+  HeightTuple?: HeightTupleResolvers<ContextType>;
   Hostname?: HostnameResolvers<ContextType>;
   IPv4Addr?: IPv4AddrResolvers<ContextType>;
   IPv6Addr?: IPv6AddrResolvers<ContextType>;
@@ -39008,6 +39387,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   VulnerabilityConnection?: VulnerabilityConnectionResolvers<ContextType>;
   VulnerabilityEdge?: VulnerabilityEdgeResolvers<ContextType>;
   VulnerabilityEditMutations?: VulnerabilityEditMutationsResolvers<ContextType>;
+  WeightTuple?: WeightTupleResolvers<ContextType>;
   WindowsRegistryKey?: WindowsRegistryKeyResolvers<ContextType>;
   WindowsRegistryValueType?: WindowsRegistryValueTypeResolvers<ContextType>;
   Work?: WorkResolvers<ContextType>;

@@ -1,11 +1,12 @@
 import type { Checker, RelationRefDefinition } from './relationRef-definition';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS, INPUT_PARTICIPANT } from './general';
-import { isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, INPUT_ASSIGNEE, INPUT_BORN_IN, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS, INPUT_PARTICIPANT } from './general';
+import { ENTITY_TYPE_LOCATION_COUNTRY, isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_USER } from './internalObject';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
@@ -352,6 +353,7 @@ export const RELATION_KILL_CHAIN_PHASE = 'kill-chain-phase'; // kill_chain_phase
 export const RELATION_GRANTED_TO = 'granted'; // granted_refs (OpenCTI)
 export const RELATION_OBJECT_ASSIGNEE = 'object-assignee';
 export const RELATION_OBJECT_PARTICIPANT = 'object-participant';
+export const RELATION_BORN_IN = 'born-in'; // Extension (TIM)
 
 // EXTERNAL
 
@@ -420,6 +422,18 @@ export const objectParticipant: RelationRefDefinition = {
   datable: false,
 };
 
+export const bornIn: RelationRefDefinition = {
+  inputName: INPUT_BORN_IN,
+  databaseName: RELATION_BORN_IN,
+  stixName: 'born_in_ref',
+  mandatoryType: 'no',
+  multiple: false,
+  checker: (fromType, toType) => ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType
+    && ENTITY_TYPE_LOCATION_COUNTRY === toType,
+  label: 'Born In',
+  datable: false,
+};
+
 // INTERNAL
 
 export const objectLabel: RelationRefDefinition = {
@@ -459,6 +473,7 @@ export const META_RELATIONS: RelationRefDefinition[] = [
   externalReferences,
   killChainPhases,
   createdBy,
+  bornIn,
   objectMarking,
   objects,
   // OCTI

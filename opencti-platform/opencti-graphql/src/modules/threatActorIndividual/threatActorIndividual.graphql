@@ -112,6 +112,17 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
+  x_mcas_date_of_birth: DateTime
+  x_mcas_ethnicity: Origin
+  x_mcas_gender: Gender
+  x_mcas_job_title: String
+  x_mcas_marital_status: MaritalStatus
+  x_mcas_nationality: Origin
+  x_mcas_eye_color: EyeColor
+  x_mcas_hair_color: HairColor
+  x_mcas_height: [HeightTuple]
+  x_mcas_weight: [WeightTuple]
+  bornIn: Country
   # Technical
   creators: [Creator!]
   toStix: String
@@ -142,6 +153,7 @@ enum ThreatActorsIndividualFilter {
   created_at
   updated_at
   createdBy
+  bornIn
   markedBy
   assigneeTo
   labelledBy
@@ -182,6 +194,16 @@ input ThreatActorIndividualAddInput {
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
+  x_mcas_date_of_birth: DateTime
+  x_mcas_ethnicity: Origin
+  x_mcas_gender: Gender
+  x_mcas_job_title: String
+  x_mcas_marital_status: MaritalStatus
+  x_mcas_nationality: Origin
+  x_mcas_eye_color: EyeColor
+  x_mcas_hair_color: HairColor
+  x_mcas_height: [HeightTupleInputValues]
+  x_mcas_weight: [WeightTupleInputValues]
   confidence: Int
   revoked: Boolean
   lang: String
@@ -190,6 +212,7 @@ input ThreatActorIndividualAddInput {
   objectOrganization: [String]
   objectAssignee: [String]
   objectLabel: [String]
+  bornIn: String
   externalReferences: [String]
   created: DateTime
   modified: DateTime
@@ -217,6 +240,9 @@ type Mutation {
   threatActorIndividualAdd(input: ThreatActorIndividualAddInput!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   threatActorIndividualFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualHeightEdit(id: ID!, input: HeightTupleInput!, sort: Boolean): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualWeightEdit(id: ID!, input: WeightTupleInput!, sort: Boolean): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorIndividualHeightWeightSort(id: ID!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualContextPatch(id: ID!, input: EditContext): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualContextClean(id: ID!): ThreatActorIndividual @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])

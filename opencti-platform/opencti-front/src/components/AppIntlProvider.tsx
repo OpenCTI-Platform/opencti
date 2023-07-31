@@ -39,7 +39,7 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
     && me.language !== 'auto'
     ? me.language
     : platformLang) as ('es-es' | 'fr-fr' | 'ja-jp' | 'zh-cn' | 'en-us');
-  const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG];
+  const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG as keyof typeof i18n.messages];
   if (lang === 'fr-fr') {
     moment.locale('fr-fr');
   } else if (lang === 'es-es') {
