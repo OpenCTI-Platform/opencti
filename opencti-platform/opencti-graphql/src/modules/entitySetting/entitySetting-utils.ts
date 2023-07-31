@@ -71,6 +71,8 @@ export const getAvailableSettings = (targetType: string) => {
   let settings;
   if (isStixDomainObject(targetType)) {
     settings = availableSettings[targetType] ?? availableSettings[ABSTRACT_STIX_DOMAIN_OBJECT];
+  } else if (isStixCyberObservable(targetType)) {
+    settings = availableSettings[targetType] ?? availableSettings[ABSTRACT_STIX_CYBER_OBSERVABLE];
   } else {
     settings = availableSettings[targetType];
   }

@@ -48,7 +48,7 @@ const TopMenuObservations = () => {
         {t('Observables')}
       </Button>
       )}
-      {!useIsHiddenEntity('Stix-Cyber-Observable') && (
+      {!useIsHiddenEntity('Artifact') && (
       <Button
         component={Link}
         to="/dashboard/observations/artifacts"
