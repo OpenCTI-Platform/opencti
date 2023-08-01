@@ -1,7 +1,7 @@
+import { Agent } from 'node:https';
 import amqp from 'amqplib';
 import axios from 'axios';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { Agent } from 'node:https';
 import conf, { booleanConf, configureCA, loadCert } from '../config/conf';
 import { DatabaseError, UnknownError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
