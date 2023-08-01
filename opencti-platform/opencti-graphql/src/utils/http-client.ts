@@ -1,5 +1,5 @@
-import axios, { AxiosHeaders } from 'axios';
 import https from 'node:https';
+import axios, { AxiosHeaders } from 'axios';
 import { getPlatformHttpProxies } from '../config/conf';
 
 interface GetHttpClient {
