@@ -110,7 +110,7 @@ NoteEditionOverviewProps
       .min(0)
       .max(100)
       .transform((value) => (Number.isNaN(value) ? null : value))
-      .nullable(true),
+      .nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const noteValidator = useSchemaEditionValidation('Note', basicShape);

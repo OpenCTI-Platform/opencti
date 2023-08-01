@@ -3,8 +3,8 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { DeleteOutline } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
-import BaseSchema from 'yup/lib/schema';
 import IconButton from '@mui/material/IconButton';
+import { ObjectSchema } from 'yup';
 import TextField from '../../../../../components/TextField';
 import ColorPickerField from '../../../../../components/ColorPickerField';
 import { useFormatter } from '../../../../../components/i18n';
@@ -23,7 +23,7 @@ interface EntitySettingScaleTickLineProps {
   tick: Tick | UndefinedTick
   tickLabel: string
   deleteEnabled?: boolean
-  validation: (t: (v: string) => string, min: number, max: number) => BaseSchema
+  validation: (t: (v: string) => string, min: number, max: number) => ObjectSchema<{ [p: string]: unknown }>
   handleUpdate: (validateForm: (values?: Tick | UndefinedTick) => Promise<FormikErrors<Tick | UndefinedTick>>, name: keyof Tick, value: number | string) => void
   handleDelete?: () => void
   noMargin?: boolean

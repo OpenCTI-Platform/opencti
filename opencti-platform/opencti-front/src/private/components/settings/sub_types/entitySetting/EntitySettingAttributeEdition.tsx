@@ -76,7 +76,7 @@ const entitySettingAttributeEditionPatch = graphql`
 
 const attributeValidation = () => Yup.object().shape({
   mandatory: Yup.boolean().nullable(),
-  default_values: Yup.array().nullable(),
+  default_values: Yup.mixed().nullable(),
 });
 
 interface AttributeFormikValues {

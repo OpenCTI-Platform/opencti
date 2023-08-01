@@ -1,7 +1,6 @@
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
-import { ObjectShape } from 'yup/lib/object';
-import BaseSchema, { AnySchema } from 'yup/lib/schema';
+import { ObjectSchema, ObjectShape, Schema } from 'yup';
 import useAuth from './useAuth';
 import { useFormatter } from '../../components/i18n';
 import {
@@ -68,12 +67,12 @@ export const useIsEnforceReference = (id: string): boolean => {
   );
 };
 
-export const useYupSchemaBuilder = <TNextShape extends ObjectShape>(
+export const useYupSchemaBuilder = (
   id: string,
-  existingShape: TNextShape,
+  existingShape: ObjectShape,
   isCreation: boolean,
   exclusions?: string[],
-): BaseSchema => {
+): ObjectSchema<{ [p: string]: unknown }> => {
   const { t } = useFormatter();
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
@@ -85,12 +84,12 @@ export const useYupSchemaBuilder = <TNextShape extends ObjectShape>(
     mandatoryAttributes.push('externalReferences');
   }
   const existingKeys = Object.keys(existingShape);
-  const newShape = Object.fromEntries(
+  const newShape: ObjectShape = Object.fromEntries(
     mandatoryAttributes
       .filter((attr) => !(exclusions ?? []).includes(attr))
       .map((attrName: string) => {
         if (existingKeys.includes(attrName)) {
-          const validator = (existingShape[attrName] as AnySchema)
+          const validator: Schema = (existingShape[attrName] as Schema)
             .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
             .required(t('This field is required'));
           return [attrName, validator];
@@ -104,19 +103,19 @@ export const useYupSchemaBuilder = <TNextShape extends ObjectShape>(
   return Yup.object().shape({ ...existingShape, ...newShape });
 };
 
-export const useSchemaCreationValidation = <TNextShape extends ObjectShape>(
+export const useSchemaCreationValidation = (
   id: string,
-  existingShape: TNextShape,
+  existingShape: ObjectShape,
   exclusions?: string[],
-): BaseSchema => {
+): ObjectSchema<{ [p: string]: unknown }> => {
   return useYupSchemaBuilder(id, existingShape, true, exclusions);
 };
 
-export const useSchemaEditionValidation = <TNextShape extends ObjectShape>(
+export const useSchemaEditionValidation = (
   id: string,
-  existingShape: TNextShape,
+  existingShape: ObjectShape,
   exclusions?: string[],
-): BaseSchema => {
+): ObjectSchema<{ [p: string]: unknown }> => {
   return useYupSchemaBuilder(id, existingShape, false, exclusions);
 };
 
