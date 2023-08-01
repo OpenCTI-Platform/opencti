@@ -16,7 +16,7 @@ class SearchStixCoreObjectsLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'stixCoreObjects',
+      'globalSearch',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -383,7 +383,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixCoreObjects;
+      return props.data && props.data.globalSearch;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
