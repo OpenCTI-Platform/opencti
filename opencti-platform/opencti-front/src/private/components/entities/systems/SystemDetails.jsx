@@ -49,7 +49,7 @@ class SystemDetailsComponent extends Component {
                 {t('Reliability')}
               </Typography>
               <ItemOpenVocab
-                chipDisplay
+                displayMode="chip"
                 type="reliability_ov"
                 value={system.x_opencti_reliability}
               />

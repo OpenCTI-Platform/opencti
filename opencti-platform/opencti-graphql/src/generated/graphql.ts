@@ -7219,6 +7219,7 @@ export enum FeedbacksFilter {
   Modified = 'modified',
   Name = 'name',
   Rating = 'rating',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }

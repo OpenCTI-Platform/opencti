@@ -49,7 +49,7 @@ class IndividualDetailsComponent extends Component {
                 {t('Reliability')}
               </Typography>
               <ItemOpenVocab
-                chipDisplay
+                displayMode="chip"
                 type="reliability_ov"
                 value={individual.x_opencti_reliability}
               />

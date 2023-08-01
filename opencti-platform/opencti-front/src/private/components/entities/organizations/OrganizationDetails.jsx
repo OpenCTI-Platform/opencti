@@ -78,7 +78,7 @@ class OrganizationDetailsComponent extends Component {
                 {t('Reliability')}
               </Typography>
               <ItemOpenVocab
-                chipDisplay
+                displayMode="chip"
                 type="reliability_ov"
                 value={organization.x_opencti_reliability}
               />

@@ -1291,10 +1291,12 @@ const elQueryBodyBuilder = async (context, user, options) => {
         const reliabilityFilter = { key: ['x_opencti_reliability'], operator, values, localFilterMode };
         const opts = { types: authorTypes, connectionFormat: false, filters: [reliabilityFilter] };
         const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
-        arrayKeys.splice(0, 1);
-        arrayKeys.push('rel_created-by.internal_id');
-        values.splice(0, values.length);
-        authors.forEach((author) => values.push(author.internal_id));
+        if (authors?.length > 0) {
+          arrayKeys.splice(0, 1);
+          arrayKeys.push('rel_created-by.internal_id');
+          values.splice(0, values.length);
+          authors.forEach((author) => values.push(author.internal_id));
+        }
       }
       // In case of entity_type filters, we also look by default in the parent_types property.
       const validKeys = R.uniq(arrayKeys.includes('entity_type') ? [...arrayKeys, 'parent_types'] : arrayKeys);

@@ -223,16 +223,16 @@ const IndividualEditionOverviewComponent = (props) => {
               }
             />
             <OpenVocabField
-                label={t('Reliability')}
-                type="reliability_ov"
-                name="x_opencti_reliability"
-                onChange={setFieldValue}
-                onFocus={editor.changeFocus}
-                onSubmit={handleSubmitField}
-                multiple={false}
-                editContext={context}
-                variant="edit"
-                containerStyle={fieldSpacingContainerStyle}
+              label={t('Reliability')}
+              type="reliability_ov"
+              name="x_opencti_reliability"
+              onChange={setFieldValue}
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+              multiple={false}
+              editContext={context}
+              variant="edit"
+              containerStyle={fieldSpacingContainerStyle}
             />
             {individual.workflowEnabled && (
               <StatusField

@@ -217,12 +217,12 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
           style={{ marginTop: 20 }}
         />
         <OpenVocabField
-            label={t('Reliability')}
-            type="reliability_ov"
-            name="x_opencti_reliability"
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-            onChange={setFieldValue}
+          label={t('Reliability')}
+          type="reliability_ov"
+          name="x_opencti_reliability"
+          containerStyle={fieldSpacingContainerStyle}
+          multiple={false}
+          onChange={setFieldValue}
         />
         <CreatedByField
           name="createdBy"

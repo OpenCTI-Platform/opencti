@@ -173,10 +173,9 @@ class StixDomainObjectOverview extends Component {
                         )}
                       </Typography>
                       <ItemOpenVocab
-                        key="type"
+                        displayMode="chip"
                         type="reliability_ov"
                         value={reliability?.toString()}
-                        chipDisplay
                       />
                     </Grid>
                   )}

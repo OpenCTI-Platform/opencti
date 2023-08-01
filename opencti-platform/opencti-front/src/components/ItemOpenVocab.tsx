@@ -51,7 +51,7 @@ interface ItemOpenVocabProps {
   type: string;
   value?: string | null;
   small?: boolean;
-  chipDisplay?: boolean;
+  displayMode?: 'chip' | 'span';
   queryRef: PreloadedQuery<ItemOpenVocabQuery>;
 }
 
@@ -68,10 +68,10 @@ const itemOpenVocabQuery = graphql`
   }
 `;
 
-const ItemOpenVocabDummy = ({ small = true, chipDisplay = false }: { small?: boolean, chipDisplay?: boolean }) => {
+const ItemOpenVocabDummy = ({ small = true, displayMode = 'span' }: { small?: boolean, displayMode?: 'chip' | 'span' }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  if (chipDisplay) {
+  if (displayMode === 'chip') {
     return (
       <Tooltip title={t('No description')}>
         <Chip
@@ -98,7 +98,7 @@ const ItemOpenVocabDummy = ({ small = true, chipDisplay = false }: { small?: boo
 };
 const ItemOpenVocabComponent: FunctionComponent<
 Omit<ItemOpenVocabProps, 'type'>
-> = ({ value, small = true, chipDisplay = false, queryRef }) => {
+> = ({ value, small = true, displayMode = 'span', queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { vocabularies } = usePreloadedQuery<ItemOpenVocabQuery>(
@@ -111,7 +111,7 @@ Omit<ItemOpenVocabProps, 'type'>
     const openVocab = openVocabList.find((n) => n.name === value);
     description = openVocab?.description ? openVocab.description : t('No description');
   }
-  if (chipDisplay) {
+  if (displayMode === 'chip') {
     return (
       <Tooltip title={t(description)}>
         <Chip
@@ -147,7 +147,7 @@ const ItemOpenVocab: FunctionComponent<Omit<ItemOpenVocabProps, 'queryRef'>> = (
   return (
     <>
       {queryRef && (
-        <React.Suspense fallback={<ItemOpenVocabDummy small={props.small} chipDisplay={props.chipDisplay} />}>
+        <React.Suspense fallback={<ItemOpenVocabDummy small={props.small} displayMode={props.displayMode} />}>
           <ItemOpenVocabComponent {...props} queryRef={queryRef} />
         </React.Suspense>
       )}
