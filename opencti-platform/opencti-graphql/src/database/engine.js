@@ -1291,7 +1291,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
         const reliabilityFilter = { key: ['x_opencti_reliability'], operator, values, localFilterMode };
         const opts = { types: authorTypes, connectionFormat: false, filters: [reliabilityFilter] };
         const authors = await elList(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
-        if (authors?.length > 0) {
+        if (authors.length > 0) {
           arrayKeys.splice(0, 1);
           arrayKeys.push('rel_created-by.internal_id');
           values.splice(0, values.length);
