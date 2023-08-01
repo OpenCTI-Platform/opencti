@@ -1177,14 +1177,14 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
     return false;
   }
   // Well-define relationship type check
-  let definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`];
-  // if definition not found, check from toType parent observables
-  if (!definitions && isStixCyberObservable(instance.toType)) {
-    definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`];
+  const definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`] ?? [];
+  // check from toType parent observables
+  if (isStixCyberObservable(instance.toType)) {
+    definitions.push(...(stixCoreRelationshipsMapping[`${instance.fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] ?? []));
   }
-  // if definition not found, check from fromType parent observables
-  if (!definitions && isStixCyberObservable(instance.fromType)) {
-    definitions = stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${instance.toType}`];
+  // check from fromType parent observables
+  if (isStixCyberObservable(instance.fromType)) {
+    definitions.push(...(stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${instance.toType}`] ?? []));
   }
   // If definition found, check if the relation is build int
   if (definitions) {
