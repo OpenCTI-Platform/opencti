@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import {
   batchListThroughGetFrom,
   batchListThroughGetTo,
@@ -28,6 +27,7 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { cleanMarkings } from './markingDefinition';
 
 export const GROUP_DEFAULT = 'Default';
 
@@ -100,7 +100,7 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
       return Promise.all(defaultMarkings.map(async (d) => {
         return {
           entity_type: d.entity_type,
-          values: await cleanMarkingValues(context, d.values),
+          values: await cleanMarkings(context, d.values),
         };
       }));
     });
@@ -197,19 +197,8 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
 };
 
 // -- DEFAULT MARKING --
-
-const cleanMarkingValues = async (context, values) => {
-  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const defaultMarkingValues = values?.map((d) => markingsMap.get(d) ?? d) ?? [];
-  const defaultGroupedMarkings = R.groupBy((m) => m.definition_type, defaultMarkingValues);
-  return Object.entries(defaultGroupedMarkings).map(([_, key]) => {
-    const max = Math.max(...key.map((m) => m.x_opencti_order));
-    const results = key.filter((m) => m.x_opencti_order === max);
-    return R.uniqWith((a, b) => a.id === b.id, results);
-  }).flat();
-};
 export const groupEditDefaultMarking = async (context, user, groupId, defaultMarking) => {
-  const values = (await cleanMarkingValues(context, defaultMarking.values)).map((m) => m.id);
+  const values = (await cleanMarkings(context, defaultMarking.values)).map((m) => m.id);
 
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   const existingDefaultMarking = group.default_marking ?? [];
