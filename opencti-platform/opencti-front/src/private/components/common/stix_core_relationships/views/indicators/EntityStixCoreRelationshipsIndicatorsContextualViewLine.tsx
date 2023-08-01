@@ -18,7 +18,7 @@ import {
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
-    paddingLeft: theme.spacing(1.5),
+    paddingLeft: 10,
     height: 50,
   },
   itemIcon: {
@@ -31,11 +31,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: theme.spacing(1.5),
+    paddingRight: 10,
   },
   goIcon: {
     position: 'absolute',
-    right: theme.spacing(-1.5),
+    right: -10,
   },
 }));
 

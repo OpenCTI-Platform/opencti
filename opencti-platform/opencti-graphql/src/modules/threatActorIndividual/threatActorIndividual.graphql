@@ -85,6 +85,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  # StixDomainObject
   revoked: Boolean!
   confidence: Int
   lang: String

@@ -15,6 +15,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   paper: {
@@ -82,25 +83,27 @@ class ThreatActorGroupDetailsComponent extends Component {
               >
                 {t('Roles')}
               </Typography>
-              {threatActorGroup.roles && (
-                <List>
-                  {threatActorGroup.roles.map((role) => (
-                    <ListItem key={role} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <DramaMasks />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <ItemOpenVocab
-                            type="threat-actor-group-role-ov"
-                            value={role}
-                          />
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              <FieldOrEmpty source={threatActorGroup.roles}>
+                {threatActorGroup.roles && (
+                  <List>
+                    {threatActorGroup.roles.map((role) => (
+                      <ListItem key={role} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <DramaMasks />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <ItemOpenVocab
+                              type="threat-actor-group-role-ov"
+                              value={role}
+                            />
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -108,31 +111,35 @@ class ThreatActorGroupDetailsComponent extends Component {
               >
                 {t('Goals')}
               </Typography>
-              {threatActorGroup.goals && (
-                <List>
-                  {threatActorGroup.goals.map((goal) => (
-                    <ListItem key={goal} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <BullseyeArrow />
-                      </ListItemIcon>
-                      <ListItemText primary={goal} />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              <FieldOrEmpty source={threatActorGroup.goals}>
+                {threatActorGroup.goals && (
+                  <List>
+                    {threatActorGroup.goals.map((goal) => (
+                      <ListItem key={goal} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <BullseyeArrow />
+                        </ListItemIcon>
+                        <ListItemText primary={goal} />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </FieldOrEmpty>
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Threat actor group types')}
               </Typography>
-              {threatActorGroup.threat_actor_types
-                && threatActorGroup.threat_actor_types.map((threatActorGroupType) => (
-                  <Chip
-                    key={threatActorGroupType}
-                    classes={{ root: classes.chip }}
-                    label={threatActorGroupType}
-                  />
-                ))}
+              <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
+                {threatActorGroup.threat_actor_types
+                  && threatActorGroup.threat_actor_types.map((threatActorGroupType) => (
+                    <Chip
+                      key={threatActorGroupType}
+                      classes={{ root: classes.chip }}
+                      label={threatActorGroupType}
+                    />
+                  ))}
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -167,31 +174,33 @@ class ThreatActorGroupDetailsComponent extends Component {
               >
                 {t('Secondary motivations')}
               </Typography>
-              {threatActorGroup.secondary_motivations && (
-                <List>
-                  {threatActorGroup.secondary_motivations.map(
-                    (secondaryMotivation) => (
-                      <ListItem
-                        key={secondaryMotivation}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ArmFlexOutline />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <ItemOpenVocab
-                              type="attack-motivation-ov"
-                              value={secondaryMotivation}
-                            />
-                          }
-                        />
-                      </ListItem>
-                    ),
-                  )}
-                </List>
-              )}
+              <FieldOrEmpty source={threatActorGroup.secondary_motivations}>
+                {threatActorGroup.secondary_motivations && (
+                  <List>
+                    {threatActorGroup.secondary_motivations.map(
+                      (secondaryMotivation) => (
+                        <ListItem
+                          key={secondaryMotivation}
+                          dense={true}
+                          divider={true}
+                        >
+                          <ListItemIcon>
+                            <ArmFlexOutline />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <ItemOpenVocab
+                                type="attack-motivation-ov"
+                                value={secondaryMotivation}
+                              />
+                            }
+                          />
+                        </ListItem>
+                      ),
+                    )}
+                  </List>
+                )}
+              </FieldOrEmpty>
             </Grid>
           </Grid>
         </Paper>
