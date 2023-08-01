@@ -15,7 +15,7 @@ import { map, isEmpty, filter, pathOr, isNil } from 'ramda';
 import {
   urlMiddleware,
   RelayNetworkLayer,
-} from 'react-relay-network-modern/node8';
+} from 'react-relay-network-modern';
 import * as R from 'ramda';
 import uploadMiddleware from './uploadMiddleware';
 
