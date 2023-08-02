@@ -297,7 +297,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatAct
           {threatActorIndividual.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Threat-Actor"
+              type="Threat-Actor-Individual"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
