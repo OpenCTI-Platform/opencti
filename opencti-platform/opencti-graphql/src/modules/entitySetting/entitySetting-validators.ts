@@ -19,6 +19,8 @@ import { logApp } from '../../config/conf';
 // -- VALIDATORS --
 
 const optionsValidation = async (targetType: string, input: BasicStoreEntityEntitySetting) => {
+  logApp.info(`optionsValidation: ${targetType} / ${input}`);
+  logApp.info(console.trace());
   const settings = getAvailableSettings(targetType);
   const inputSettings = Object.entries(input);
   inputSettings.forEach(([key]) => {
