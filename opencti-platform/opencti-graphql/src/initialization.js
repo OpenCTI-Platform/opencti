@@ -323,6 +323,7 @@ const initializeDefaultValues = async (context, withMarkings = true) => {
     platform_theme: 'dark',
     platform_language: 'auto',
   });
+  await initCreateEntitySettings(context, SYSTEM_USER);
   await createDefaultStatusTemplates(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
@@ -376,7 +377,6 @@ const platformInit = async (withMarkings = true) => {
       await initializeMigration(context);
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
-      await initCreateEntitySettings(context, SYSTEM_USER);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       await initializeInternalQueues();
