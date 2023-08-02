@@ -54,7 +54,11 @@ class OrganizationComponent extends Component {
             <OrganizationDetails organization={organization} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={organization} />
+            <StixDomainObjectOverview
+              stixDomainObject={organization}
+              displayConfidence={false}
+              displayReliability={false}
+            />
           </Grid>
           {viewAs === 'knowledge' && (
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>
@@ -113,6 +117,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
       x_opencti_stix_ids
       spec_version
       revoked
+      x_opencti_reliability
       confidence
       created
       modified
@@ -123,6 +128,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

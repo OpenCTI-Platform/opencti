@@ -849,6 +849,7 @@ export enum AttackPatternsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XMitreId = 'x_mitre_id',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -1684,6 +1685,7 @@ export enum CampaignsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -2268,6 +2270,7 @@ export enum CaseIncidentsFilter {
   Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -2573,6 +2576,7 @@ export enum CaseRfisFilter {
   Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -2878,6 +2882,7 @@ export enum CaseRftsFilter {
   Participant = 'participant',
   Priority = 'priority',
   Severity = 'severity',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -2957,6 +2962,7 @@ export enum CasesFilter {
   Modified = 'modified',
   Name = 'name',
   Participant = 'participant',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -3216,6 +3222,7 @@ export enum ChannelsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -3828,6 +3835,7 @@ export enum ContainersFilter {
   ObjectContains = 'objectContains',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -4426,6 +4434,7 @@ export enum CoursesOfActionFilter {
   MitigatedBy = 'mitigatedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   XMitreId = 'x_mitre_id',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -5069,6 +5078,7 @@ export enum DataComponentsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -5327,6 +5337,7 @@ export enum DataSourcesFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -7208,6 +7219,7 @@ export enum FeedbacksFilter {
   Modified = 'modified',
   Name = 'name',
   Rating = 'rating',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -7647,6 +7659,7 @@ export enum GroupingsFilter {
   ObjectContains = 'objectContains',
   ObjectLabel = 'objectLabel',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -8506,6 +8519,7 @@ export type Identity = {
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
+  x_opencti_reliability?: Maybe<Scalars['String']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
@@ -9003,6 +9017,7 @@ export enum IncidentsFilter {
   Participant = 'participant',
   Severity = 'severity',
   Source = 'source',
+  SourceReliability = 'source_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -9337,6 +9352,7 @@ export enum IndicatorsFilter {
   PatternVersion = 'pattern_version',
   Revoked = 'revoked',
   SightedBy = 'sightedBy',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
@@ -9429,6 +9445,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_lastname?: Maybe<Scalars['String']>;
+  x_opencti_reliability?: Maybe<Scalars['String']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
@@ -9589,6 +9606,7 @@ export type IndividualAddInput = {
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_firstname?: InputMaybe<Scalars['String']>;
   x_opencti_lastname?: InputMaybe<Scalars['String']>;
+  x_opencti_reliability?: InputMaybe<Scalars['String']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
@@ -9653,6 +9671,7 @@ export enum IndividualsFilter {
   UpdatedAt = 'updated_at',
   XOpenctiFirstname = 'x_opencti_firstname',
   XOpenctiLastname = 'x_opencti_lastname',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -9664,7 +9683,6 @@ export type IndividualsFiltering = {
 };
 
 export enum IndividualsOrdering {
-  Confidence = 'confidence',
   Created = 'created',
   Firstname = 'firstname',
   Lastname = 'lastname',
@@ -9964,6 +9982,7 @@ export enum InfrastructuresFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -10297,6 +10316,7 @@ export enum IntrusionSetsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -11554,6 +11574,7 @@ export enum MalwareAnalysesFilter {
   Product = 'product',
   ResultName = 'result_name',
   Sample = 'sample',
+  SourceReliability = 'source_reliability',
   Submitted = 'submitted',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -11886,6 +11907,7 @@ export enum MalwaresFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -15048,6 +15070,7 @@ export enum NotesFilter {
   AssigneeTo = 'assigneeTo',
   AttributeAbstract = 'attribute_abstract',
   Authors = 'authors',
+  Confidence = 'confidence',
   Content = 'content',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -15060,6 +15083,7 @@ export enum NotesFilter {
   NoteTypes = 'note_types',
   ObjectContains = 'objectContains',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -15459,6 +15483,7 @@ export enum ObservedDatasFilter {
   NumberObserved = 'number_observed',
   ObjectContains = 'objectContains',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -15812,6 +15837,7 @@ export enum OpinionsFilter {
   ObjectContains = 'objectContains',
   Opinion = 'opinion',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -15898,7 +15924,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_organization_type?: Maybe<Scalars['String']>;
-  x_opencti_reliability?: Maybe<OrganizationReliability>;
+  x_opencti_reliability?: Maybe<Scalars['String']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
@@ -16067,7 +16093,7 @@ export type OrganizationAddInput = {
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_organization_type?: InputMaybe<Scalars['String']>;
-  x_opencti_reliability?: InputMaybe<OrganizationReliability>;
+  x_opencti_reliability?: InputMaybe<Scalars['String']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
@@ -16117,15 +16143,6 @@ export type OrganizationEditMutationsRelationDeleteArgs = {
 };
 
 export type OrganizationOrIndividual = Individual | Organization;
-
-export enum OrganizationReliability {
-  A = 'A',
-  B = 'B',
-  C = 'C',
-  D = 'D',
-  E = 'E',
-  F = 'F'
-}
 
 export enum OrganizationsFilter {
   Aliases = 'aliases',
@@ -19948,6 +19965,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_reliability?: Maybe<Scalars['String']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
@@ -20137,6 +20155,7 @@ export type ReportAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
   update?: InputMaybe<Scalars['Boolean']>;
+  x_opencti_reliability?: InputMaybe<Scalars['String']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
@@ -20207,6 +20226,7 @@ export enum ReportsFilter {
   PublishedDay = 'published_day',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -20457,6 +20477,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_reliability?: Maybe<Scalars['String']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
@@ -20666,7 +20687,6 @@ export type SectorEditMutationsRelationDeleteArgs = {
 export enum SectorsFilter {
   Aliases = 'aliases',
   AssigneeTo = 'assigneeTo',
-  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -20688,7 +20708,6 @@ export type SectorsFiltering = {
 };
 
 export enum SectorsOrdering {
-  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
   Description = 'description',
@@ -21400,6 +21419,7 @@ export enum StixCoreObjectsFilter {
   RelationshipType = 'relationship_type',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   StartTime = 'start_time',
   StopTime = 'stop_time',
   Subject = 'subject',
@@ -21414,6 +21434,7 @@ export enum StixCoreObjectsFilter {
   XOpenctiDetection = 'x_opencti_detection',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -22373,6 +22394,7 @@ export enum StixDomainObjectsFilter {
   ResultName = 'result_name',
   Revoked = 'revoked',
   Severity = 'severity',
+  SourceReliability = 'source_reliability',
   Submitted = 'submitted',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
@@ -22380,6 +22402,7 @@ export enum StixDomainObjectsFilter {
   XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiMainObservableType = 'x_opencti_main_observable_type',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -23562,6 +23585,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_lastname?: Maybe<Scalars['String']>;
+  x_opencti_reliability?: Maybe<Scalars['String']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
@@ -23722,6 +23746,7 @@ export type SystemAddInput = {
   x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_firstname?: InputMaybe<Scalars['String']>;
   x_opencti_lastname?: InputMaybe<Scalars['String']>;
+  x_opencti_reliability?: InputMaybe<Scalars['String']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
@@ -23782,6 +23807,7 @@ export enum SystemsFilter {
   Name = 'name',
   Revoked = 'revoked',
   UpdatedAt = 'updated_at',
+  XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -25112,6 +25138,7 @@ export enum ThreatActorsFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   Targets = 'targets',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -25137,6 +25164,7 @@ export enum ThreatActorsIndividualFilter {
   Modified = 'modified',
   Name = 'name',
   Revoked = 'revoked',
+  SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -25444,6 +25472,7 @@ export enum ToolsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -26414,6 +26443,7 @@ export enum VocabularyCategory {
   PermissionsOv = 'permissions_ov',
   PlatformsOv = 'platforms_ov',
   ProcessorArchitectureOv = 'processor_architecture_ov',
+  ReliabilityOv = 'reliability_ov',
   ReportTypesOv = 'report_types_ov',
   RequestForInformationTypesOv = 'request_for_information_types_ov',
   RequestForTakedownTypesOv = 'request_for_takedown_types_ov',
@@ -26489,6 +26519,7 @@ export enum VulnerabilitiesFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  SourceReliability = 'source_reliability',
   XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiAttackVector = 'x_opencti_attack_vector',
   XOpenctiBaseScore = 'x_opencti_base_score',
@@ -28113,7 +28144,6 @@ export type ResolversTypes = ResolversObject<{
   OrganizationEdge: ResolverTypeWrapper<Omit<OrganizationEdge, 'node'> & { node: ResolversTypes['Organization'] }>;
   OrganizationEditMutations: ResolverTypeWrapper<Omit<OrganizationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Organization']>, contextPatch?: Maybe<ResolversTypes['Organization']>, fieldPatch?: Maybe<ResolversTypes['Organization']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Organization']> }>;
   OrganizationOrIndividual: ResolverTypeWrapper<ResolversUnionTypes['OrganizationOrIndividual']>;
-  OrganizationReliability: OrganizationReliability;
   OrganizationsFilter: OrganizationsFilter;
   OrganizationsFiltering: OrganizationsFiltering;
   OrganizationsOrdering: OrganizationsOrdering;
@@ -31572,6 +31602,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<IdentityX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
@@ -31821,6 +31852,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -33486,7 +33518,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_organization_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_reliability?: Resolver<Maybe<ResolversTypes['OrganizationReliability']>, ParentType, ContextType>;
+  x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -34257,6 +34289,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ReportX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -34464,6 +34497,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<SectorX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -35448,6 +35482,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

@@ -1,7 +1,14 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import {
-  ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_DATA_SOURCE,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
@@ -217,7 +224,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: true,
     }]
   },
-  // R
+  // N
   note_types_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_NOTE],
     fields: [{
@@ -272,6 +279,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   // R
+  reliability_ov: {
+    description: 'Reliability is an open vocabulary based on Admiralty code used to assess the reliability of a source.',
+    entity_types: [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM],
+    fields: [{
+      key: 'x_opencti_reliability',
+      required: false,
+      multiple: false,
+    }]
+  },
   report_types_ov: {
     description: 'Report type is an open vocabulary to describe the primary purpose or subject of a report. For example, a report that contains malware and indicators for that malware should have a report type of malware to capture that the malware is the primary purpose. Report types are not mutually exclusive: a Report can be both a malware report and a tool report. Just because a report contains objects of a type does not mean that the report should include that type. If the objects are there to simply provide evidence or context for other objects, it is not necessary to include them in the type',
     entity_types: [ENTITY_TYPE_CONTAINER_REPORT],

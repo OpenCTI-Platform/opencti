@@ -153,12 +153,14 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
+            'x_opencti_workflow_id',
             'labelledBy',
-            'createdBy',
             'markedBy',
+            'createdBy',
+            'source_reliability',
+            'confidence',
             'created_start_date',
             'created_end_date',
-            'confidence',
           ]}
         >
           <QueryRenderer

@@ -9,7 +9,8 @@ import {
   iAliasedIds,
   lang,
   revoked,
-  xOpenctiAliases
+  xOpenctiAliases,
+  xOpenctiReliability
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
@@ -172,6 +173,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       upsert: true,
       label: 'Report types'
     },
+    xOpenctiReliability,
     { name: 'published', type: 'date', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'content', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'content_mapping', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -188,12 +190,14 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
   [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [
     xOpenctiAliases,
     iAliasedIds,
+    xOpenctiReliability,
     { name: 'x_opencti_firstname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_lastname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_IDENTITY_ORGANIZATION]: [
     xOpenctiAliases,
     iAliasedIds,
+    xOpenctiReliability,
     { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     {
       name: 'x_opencti_organization_type',
@@ -203,14 +207,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       upsert: false,
       label: 'Organization type'
     },
-    {
-      name: 'x_opencti_reliability',
-      type: 'string',
-      mandatoryType: 'no',
-      multiple: false,
-      upsert: false,
-      label: 'Reliability'
-    },
   ],
   [ENTITY_TYPE_IDENTITY_SECTOR]: [
     xOpenctiAliases,
@@ -219,6 +215,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
   [ENTITY_TYPE_IDENTITY_SYSTEM]: [
     xOpenctiAliases,
     iAliasedIds,
+    xOpenctiReliability,
   ],
   [ENTITY_TYPE_INDICATOR]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },

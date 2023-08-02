@@ -159,6 +159,7 @@ enum GroupingsFilter {
     created
     created_at
     confidence
+    source_reliability
     objectLabel
     createdBy
     markedBy

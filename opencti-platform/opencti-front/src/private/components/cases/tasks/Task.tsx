@@ -41,6 +41,7 @@ export const taskFragment = graphql`
         id
         name
         entity_type
+        x_opencti_reliability
       }
     }
     objectMarking {

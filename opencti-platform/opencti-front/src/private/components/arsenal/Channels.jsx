@@ -148,12 +148,14 @@ class Channels extends Component {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'channel_types',
+          'x_opencti_workflow_id',
           'labelledBy',
           'markedBy',
+          'createdBy',
+          'source_reliability',
+          'confidence',
           'created_start_date',
           'created_end_date',
-          'createdBy',
-          'confidence',
         ]}
       >
         <QueryRenderer

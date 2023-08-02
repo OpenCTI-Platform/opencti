@@ -141,6 +141,7 @@ enum ChannelsFilter {
     labelledBy
     x_opencti_workflow_id
     confidence
+    source_reliability
 }
 input ChannelsFiltering {
     key: [ChannelsFilter!]!

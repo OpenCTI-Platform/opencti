@@ -1905,6 +1905,8 @@ enum StixCoreObjectsFilter {
   objectContains
   indicates
   confidence
+  source_reliability
+  x_opencti_reliability
   valid_from
   valid_until
   pattern_type
@@ -2049,6 +2051,8 @@ enum StixDomainObjectsFilter {
   objectContains
   indicates
   confidence
+  source_reliability
+  x_opencti_reliability
   valid_from
   valid_until
   pattern_type
@@ -2183,6 +2187,7 @@ enum AttackPatternsFilter {
   labelledBy
   mitigatedBy
   revoked
+  source_reliability
   x_opencti_workflow_id
   creator
 }
@@ -2317,6 +2322,7 @@ enum CampaignsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 
@@ -2432,6 +2438,7 @@ enum ContainersOrdering {
 enum ContainersFilter {
   entity_type
   confidence
+  source_reliability
   attribute_abstract
   report_types
   context
@@ -2538,6 +2545,8 @@ enum NotesFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  confidence
+  source_reliability
   note_types
   likelihood
   creator
@@ -2692,6 +2701,7 @@ enum ObservedDatasFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
 }
 
 input ObservedDatasFiltering {
@@ -2816,6 +2826,7 @@ enum OpinionsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 
@@ -2961,6 +2972,7 @@ enum ReportsFilter {
   labelledBy
   objectContains
   x_opencti_workflow_id
+  x_opencti_reliability
   revoked
   creator
 }
@@ -3025,6 +3037,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   content: String
   content_mapping: String
   report_types: [String]
+  x_opencti_reliability: String
   published: DateTime
   objectParticipant: ParticipantConnection
   creators: [Creator!]
@@ -3049,6 +3062,7 @@ input ReportAddInput {
   content_mapping: String
   published: DateTime!
   report_types: [String]
+  x_opencti_reliability: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -3091,6 +3105,7 @@ enum CoursesOfActionFilter {
   mitigatedBy
   x_opencti_workflow_id
   x_mitre_id
+  source_reliability
   creator
 }
 
@@ -3279,6 +3294,7 @@ interface Identity {
   roles: [String]
   contact_information: String
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection
@@ -3315,7 +3331,6 @@ input IdentityAddInput {
 
 enum IndividualsOrdering {
   name
-  confidence
   firstname
   lastname
   created
@@ -3340,6 +3355,7 @@ enum IndividualsFilter {
   contact_information
   x_opencti_firstname
   x_opencti_lastname
+  x_opencti_reliability
   creator
 }
 
@@ -3401,6 +3417,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   x_opencti_firstname: String
   x_opencti_lastname: String
   organizations: OrganizationConnection
@@ -3427,6 +3444,7 @@ input IndividualAddInput {
   x_opencti_aliases: [String]
   x_opencti_firstname: String
   x_opencti_lastname: String
+  x_opencti_reliability: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -3503,15 +3521,6 @@ type MeOrganizationConnection {
   edges: [MeOrganizationEdge!]!
 }
 
-enum OrganizationReliability {
-  A
-  B
-  C
-  D
-  E
-  F
-}
-
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   id: ID!
   standard_id: String!
@@ -3553,8 +3562,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   subOrganizations: OrganizationConnection
@@ -3584,7 +3593,7 @@ input OrganizationAddInput {
   revoked: Boolean
   lang: String
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
+  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3599,7 +3608,6 @@ input OrganizationAddInput {
 enum SectorsOrdering {
   name
   description
-  confidence
   created
   modified
   created_at
@@ -3611,7 +3619,6 @@ enum SectorsOrdering {
 enum SectorsFilter {
   name
   aliases
-  confidence
   created
   modified
   created_at
@@ -3683,6 +3690,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   parentSectors: SectorConnection
   subSectors: SectorConnection
   isSubSector: Boolean
@@ -3743,6 +3751,7 @@ enum SystemsFilter {
   assigneeTo
   labelledBy
   x_opencti_workflow_id
+  x_opencti_reliability
   revoked
 }
 
@@ -3804,6 +3813,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   x_opencti_firstname: String
   x_opencti_lastname: String
   organizations: OrganizationConnection
@@ -3829,6 +3839,7 @@ input SystemAddInput {
   x_opencti_aliases: [String]
   x_opencti_firstname: String
   x_opencti_lastname: String
+  x_opencti_reliability: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -3891,6 +3902,7 @@ enum IndicatorsFilter {
   revoked
   creator
   confidence
+  source_reliability
 }
 
 input IndicatorsFiltering {
@@ -4036,6 +4048,7 @@ enum InfrastructuresFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 
@@ -4159,6 +4172,7 @@ enum IntrusionSetsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 
@@ -4905,6 +4919,7 @@ enum MalwaresFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  source_reliability
 }
 
 input MalwaresFiltering {
@@ -5036,6 +5051,7 @@ enum ThreatActorsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
   targets
 }
@@ -5245,6 +5261,7 @@ enum ToolsFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  source_reliability
 }
 
 input ToolsFiltering {
@@ -5371,6 +5388,7 @@ enum VulnerabilitiesFilter {
   x_opencti_workflow_id
   creator
   confidence
+  source_reliability
 }
 
 input VulnerabilitiesFiltering {
@@ -5508,6 +5526,7 @@ enum IncidentsFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  source_reliability
   creator
 }
 
@@ -8993,6 +9012,7 @@ enum ChannelsFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  source_reliability
 }
 
 input ChannelsFiltering {
@@ -9341,6 +9361,7 @@ enum GroupingsFilter {
   created
   created_at
   confidence
+  source_reliability
   objectLabel
   createdBy
   markedBy
@@ -9792,6 +9813,7 @@ enum DataComponentsFilter {
   revoked
   x_opencti_workflow_id
   confidence
+  source_reliability
 }
 
 input DataComponentsFiltering {
@@ -9909,6 +9931,7 @@ enum DataSourcesFilter {
   revoked
   x_opencti_workflow_id
   confidence
+  source_reliability
 }
 
 input DataSourcesFiltering {
@@ -9977,6 +10000,7 @@ enum VocabularyCategory {
   pattern_type_ov
   permissions_ov
   processor_architecture_ov
+  reliability_ov
   report_types_ov
   request_for_information_types_ov
   request_for_takedown_types_ov
@@ -10451,6 +10475,7 @@ enum CasesFilter {
   participant
   x_opencti_workflow_id
   confidence
+  source_reliability
 }
 
 input CasesFiltering {
@@ -10599,6 +10624,7 @@ enum CaseIncidentsFilter {
   severity
   priority
   confidence
+  source_reliability
 }
 
 input CaseIncidentsFiltering {
@@ -10737,6 +10763,7 @@ enum CaseRfisFilter {
   participant
   x_opencti_workflow_id
   confidence
+  source_reliability
   severity
   priority
 }
@@ -10878,6 +10905,7 @@ enum CaseRftsFilter {
   participant
   x_opencti_workflow_id
   confidence
+  source_reliability
   severity
   priority
 }
@@ -11015,6 +11043,7 @@ enum FeedbacksFilter {
   x_opencti_workflow_id
   rating
   confidence
+  source_reliability
 }
 
 input FeedbacksFiltering {
@@ -11278,6 +11307,7 @@ enum MalwareAnalysesFilter {
   markedBy
   x_opencti_workflow_id
   confidence
+  source_reliability
   result_name
   product
   submitted
@@ -11427,6 +11457,7 @@ enum ThreatActorsIndividualFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  source_reliability
   creator
 }
 

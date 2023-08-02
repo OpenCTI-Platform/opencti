@@ -9,6 +9,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -84,6 +85,7 @@ const SystemEditionOverviewComponent = (props) => {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
+    x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -155,6 +157,7 @@ const SystemEditionOverviewComponent = (props) => {
       'references',
       'description',
       'contact_information',
+      'x_opencti_reliability',
       'createdBy',
       'objectMarking',
       'x_opencti_workflow_id',
@@ -218,6 +221,18 @@ const SystemEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="contact_information" />
               }
             />
+            <OpenVocabField
+                label={t('Reliability')}
+                type="reliability_ov"
+                name="x_opencti_reliability"
+                onChange={setFieldValue}
+                onFocus={editor.changeFocus}
+                onSubmit={handleSubmitField}
+                multiple={false}
+                editContext={context}
+                variant="edit"
+                containerStyle={fieldSpacingContainerStyle}
+            />
             {system.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
@@ -271,6 +286,7 @@ export default createFragmentContainer(SystemEditionOverviewComponent, {
         name
         description
         contact_information
+        x_opencti_reliability
         createdBy {
           ... on Identity {
             id

@@ -1722,7 +1722,7 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
-                        if (R.includes(attribute, vocabularyAttributes)) {
+                        if (R.includes(attribute, vocabularyAttributes) && fieldToCategory(type, attribute)) {
                           return (
                             <OpenVocabField
                               label={attribute}
@@ -2454,7 +2454,7 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
-                        if (R.includes(attribute, vocabularyAttributes)) {
+                        if (R.includes(attribute, vocabularyAttributes) && fieldToCategory(observableType, attribute)) {
                           return (
                             <OpenVocabField
                               label={attribute}
@@ -2653,7 +2653,7 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
-                        if (R.includes(attribute, vocabularyAttributes)) {
+                        if (R.includes(attribute, vocabularyAttributes) && fieldToCategory(containerType, attribute)) {
                           return (
                             <OpenVocabField
                               label={attribute}

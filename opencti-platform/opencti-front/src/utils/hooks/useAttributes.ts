@@ -28,6 +28,7 @@ export const workbenchAttributes = [
   'case_type',
   'pattern',
   'x_opencti_description',
+  'x_opencti_reliability',
   'first_seen',
   'last_seen',
   'start_time',

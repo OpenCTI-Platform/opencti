@@ -54,7 +54,11 @@ class IndividualComponent extends Component {
             <IndividualDetails individual={individual} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={individual} />
+            <StixDomainObjectOverview
+              stixDomainObject={individual}
+              displayConfidence={false}
+              displayReliability={false}
+            />
           </Grid>
           {viewAs === 'knowledge' && (
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>
@@ -115,6 +119,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
       x_opencti_stix_ids
       spec_version
       revoked
+      x_opencti_reliability
       confidence
       created
       modified
@@ -126,6 +131,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

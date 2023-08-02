@@ -87,6 +87,7 @@ const Report = createFragmentContainer(ReportComponent, {
       x_opencti_stix_ids
       spec_version
       revoked
+      x_opencti_reliability
       confidence
       created
       modified
@@ -97,6 +98,7 @@ const Report = createFragmentContainer(ReportComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

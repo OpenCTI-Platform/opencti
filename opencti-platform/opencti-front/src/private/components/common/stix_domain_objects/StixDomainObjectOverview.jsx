@@ -35,6 +35,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemAssignees from '../../../../components/ItemAssignees';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -112,12 +113,16 @@ class StixDomainObjectOverview extends Component {
       withPattern,
       displayAssignees,
       displayParticipants,
+      displayConfidence = true,
+      displayReliability = true,
     } = this.props;
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
       (n) => n !== stixDomainObject.standard_id,
       otherStixIds,
     );
+    const isReliabilityOfSource = !stixDomainObject.x_opencti_reliability;
+    const reliability = isReliabilityOfSource ? stixDomainObject.createdBy?.x_opencti_reliability : stixDomainObject.x_opencti_reliability;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -154,6 +159,43 @@ class StixDomainObjectOverview extends Component {
               <ItemAuthor
                 createdBy={R.propOr(null, 'createdBy', stixDomainObject)}
               />
+              {(displayConfidence || displayReliability) && (
+                <Grid container={true} columnSpacing={1}>
+                  {displayReliability && (
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}>
+                        {t('Reliability')}
+                        {isReliabilityOfSource && (
+                          <span style={{ fontStyle: 'italic' }}> ({t('of author')})</span>
+                        )}
+                      </Typography>
+                      <ItemOpenVocab
+                        displayMode="chip"
+                        type="reliability_ov"
+                        value={reliability?.toString()}
+                      />
+                    </Grid>
+                  )}
+                  {displayConfidence && (
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Confidence level')}
+                      </Typography>
+                      <ItemConfidence
+                        confidence={stixDomainObject.confidence}
+                        entityType={stixDomainObject.entity_type}
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+              )}
               <StixCoreObjectOpinions
                 stixCoreObjectId={stixDomainObject.id}
                 variant="inEntity"
@@ -243,14 +285,6 @@ class StixDomainObjectOverview extends Component {
                 marginTop={20}
                 entity_type={stixDomainObject.entity_type}
               />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Confidence level')}
-              </Typography>
-              <ItemConfidence confidence={stixDomainObject.confidence} entityType={stixDomainObject.entity_type} />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -371,6 +405,8 @@ StixDomainObjectOverview.propTypes = {
   withoutMarking: PropTypes.bool,
   displayAssignees: PropTypes.bool,
   displayParticipants: PropTypes.bool,
+  displayConfidence: PropTypes.bool,
+  displayReliability: PropTypes.bool,
 };
 
 export default R.compose(

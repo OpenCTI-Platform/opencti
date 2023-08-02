@@ -871,26 +871,6 @@ const indexCreatedElement = async (context, user, { type, element, update, relat
     }
   }
 };
-const computeConfidenceLevel = (input) => {
-  let confidence = 15;
-  const creator = input.createdBy;
-  if (creator) {
-    switch (creator.x_opencti_reliability) {
-      case 'A':
-        confidence = 85;
-        break;
-      case 'B':
-        confidence = 75;
-        break;
-      case 'C':
-        confidence = 50;
-        break;
-      default:
-        confidence = 15;
-    }
-  }
-  return confidence;
-};
 export const updatedInputsToData = (instance, inputs) => {
   const inputPairs = R.map((input) => {
     const { key, value } = input;
@@ -2673,7 +2653,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
     }
     data.x_opencti_stix_ids = stixIds;
     data.revoked = R.isNil(input.revoked) ? false : input.revoked;
-    data.confidence = R.isNil(input.confidence) ? computeConfidenceLevel(input) : input.confidence;
+    data.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
     data.lang = R.isNil(input.lang) ? 'en' : input.lang;
     data.created = R.isNil(input.created) ? today : input.created;
     data.modified = R.isNil(input.modified) ? today : input.modified;
@@ -3054,7 +3034,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   if (isStixDomainObject(type)) {
     data = R.pipe(
       R.assoc('revoked', R.isNil(input.revoked) ? false : input.revoked),
-      R.assoc('confidence', R.isNil(input.confidence) ? computeConfidenceLevel(input) : input.confidence),
+      R.assoc('confidence', R.isNil(input.confidence) ? 0 : input.confidence),
       R.assoc('lang', R.isNil(input.lang) ? 'en' : input.lang),
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)

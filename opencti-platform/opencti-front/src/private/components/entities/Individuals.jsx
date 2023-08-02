@@ -150,6 +150,7 @@ class Individuals extends Component {
           'created_start_date',
           'created_end_date',
           'createdBy',
+          'x_opencti_reliability',
         ]}
       >
         <QueryRenderer

@@ -133,13 +133,15 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
         iconExtension={true}
         availableFilterKeys={[
           'x_opencti_workflow_id',
+          'labelledBy',
+          'markedBy',
+          'createdBy',
+          'source_reliability',
+          'confidence',
           'assigneeTo',
           'participant',
-          'markedBy',
           'severity',
           'priority',
-          'labelledBy',
-          'createdBy',
           'creator',
           'created_start_date',
           'created_end_date',

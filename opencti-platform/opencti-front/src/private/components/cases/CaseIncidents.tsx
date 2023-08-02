@@ -137,13 +137,15 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         iconExtension={true}
         availableFilterKeys={[
           'x_opencti_workflow_id',
+          'labelledBy',
+          'markedBy',
+          'createdBy',
+          'source_reliability',
+          'confidence',
           'assigneeTo',
           'participant',
           'priority',
           'severity',
-          'markedBy',
-          'labelledBy',
-          'createdBy',
           'creator',
           'created_start_date',
           'created_end_date',

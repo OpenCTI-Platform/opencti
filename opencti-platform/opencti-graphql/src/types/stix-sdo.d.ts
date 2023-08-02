@@ -7,7 +7,7 @@ import type {
   StixContainerExtension
 } from './stix-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from './stix-extensions';
-import { OrganizationReliability, StixOpenctiExtensionSDO, StixDate } from './stix-common';
+import { StixOpenctiExtensionSDO, StixDate } from './stix-common';
 
 // Attack Pattern Specific Properties
 // name, description, aliases, kill_chain_phases
@@ -50,7 +50,7 @@ export interface StixIdentityExtension extends StixOpenctiExtension {
   firstname: string;
   lastname: string;
   organization_type: string;
-  reliability: OrganizationReliability;
+  reliability: string;
 }
 // name, description, roles, identity_class, sectors, contact_information
 export interface StixIdentity extends StixDomainObject {
@@ -256,6 +256,7 @@ export interface StixReportExtension extends StixOpenctiExtension {
   content: string;
   content_mapping: string;
   object_refs_inferred?: Array<StixId>; // optional
+  reliability: string;
 }
 
 export interface StixReport extends StixContainer {

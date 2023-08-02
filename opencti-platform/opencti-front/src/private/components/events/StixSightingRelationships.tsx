@@ -136,15 +136,15 @@ const StixSightingRelationships = () => {
           secondaryAction={true}
           iconExtension={true}
           availableFilterKeys={[
+            'x_opencti_workflow_id',
             'labelledBy',
             'markedBy',
-            'x_opencti_workflow_id',
+            'createdBy',
+            'confidence',
             'created_start_date',
             'created_end_date',
-            'createdBy',
             'toSightingId',
             'x_opencti_negative',
-            'confidence',
           ]}
         >
           <QueryRenderer

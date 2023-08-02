@@ -24,6 +24,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { insertNode } from '../../../../utils/store';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import {
   SystemCreationMutation,
   SystemCreationMutation$variables,
@@ -94,6 +95,7 @@ const SYSTEM_TYPE = 'System';
 interface SystemAddInput {
   name: string;
   description: string;
+  x_opencti_reliability: string | undefined;
   createdBy: Option | undefined;
   objectMarking: Option[];
   objectLabel: Option[];
@@ -126,6 +128,8 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       .required(t('This field is required')),
     description: Yup.string()
       .nullable(),
+    x_opencti_reliability: Yup.string()
+      .nullable(),
   };
   const systemValidator = useSchemaCreationValidation(SYSTEM_TYPE, basicShape);
 
@@ -142,6 +146,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     const input: SystemCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
+      x_opencti_reliability: values.x_opencti_reliability,
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
@@ -176,6 +181,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     {
       name: inputValue ?? '',
       description: '',
+      x_opencti_reliability: undefined,
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
@@ -215,6 +221,14 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <OpenVocabField
+            label={t('Reliability')}
+            type="reliability_ov"
+            name="x_opencti_reliability"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            onChange={setFieldValue}
           />
           <CreatedByField
             name="createdBy"

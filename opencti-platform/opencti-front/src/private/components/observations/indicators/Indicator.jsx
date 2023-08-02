@@ -109,6 +109,7 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

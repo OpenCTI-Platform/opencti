@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
-import ItemReliability from '../../../../components/ItemReliability';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
@@ -77,9 +77,10 @@ class OrganizationDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Reliability')}
               </Typography>
-              <ItemReliability
-                reliability={organization.x_opencti_reliability}
-                label={t(`reliability_${organization.x_opencti_reliability}`)}
+              <ItemOpenVocab
+                displayMode="chip"
+                type="reliability_ov"
+                value={organization.x_opencti_reliability}
               />
               <Typography
                 variant="h3"

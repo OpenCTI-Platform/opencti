@@ -133,15 +133,16 @@ class IntrusionSets extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'x_opencti_workflow_id',
           'labelledBy',
           'markedBy',
+          'createdBy',
+          'source_reliability',
+          'confidence',
+          'creator',
           'created_start_date',
           'created_end_date',
-          'createdBy',
-          'creator',
           'revoked',
-          'confidence',
-          'x_opencti_workflow_id',
           'targets',
         ]}
       >

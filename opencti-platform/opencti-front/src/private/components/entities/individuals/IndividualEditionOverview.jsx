@@ -13,6 +13,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -87,6 +88,7 @@ const IndividualEditionOverviewComponent = (props) => {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
+    x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -158,6 +160,7 @@ const IndividualEditionOverviewComponent = (props) => {
       'references',
       'description',
       'contact_information',
+      'x_opencti_reliability',
       'createdBy',
       'objectMarking',
       'x_opencti_workflow_id',
@@ -219,6 +222,18 @@ const IndividualEditionOverviewComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="contact_information" />
               }
             />
+            <OpenVocabField
+              label={t('Reliability')}
+              type="reliability_ov"
+              name="x_opencti_reliability"
+              onChange={setFieldValue}
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+              multiple={false}
+              editContext={context}
+              variant="edit"
+              containerStyle={fieldSpacingContainerStyle}
+            />
             {individual.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
@@ -272,6 +287,7 @@ export default createFragmentContainer(IndividualEditionOverviewComponent, {
         name
         description
         contact_information
+        x_opencti_reliability
         createdBy {
           ... on Identity {
             id

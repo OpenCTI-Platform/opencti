@@ -93,16 +93,18 @@ const Vulnerabilities = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'x_opencti_workflow_id',
           'labelledBy',
           'markedBy',
-          'created_start_date',
-          'created_end_date',
+          'createdBy',
+          'source_reliability',
+          'confidence',
           'x_opencti_base_score',
           'x_opencti_base_severity',
           'x_opencti_attack_vector',
-          'createdBy',
           'creator',
-          'confidence',
+          'created_start_date',
+          'created_end_date',
         ]}
       >
         {queryRef && (

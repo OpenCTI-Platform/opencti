@@ -43,6 +43,7 @@ const administrativeAreaFragment = graphql`
         id
         name
         entity_type
+        x_opencti_reliability
       }
     }
     creators {
@@ -124,7 +125,7 @@ const AdministrativeArea = ({
           />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={administrativeArea} />
+          <StixDomainObjectOverview stixDomainObject={administrativeArea} displayConfidence={false} />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

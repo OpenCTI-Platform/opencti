@@ -156,6 +156,7 @@ class Organizations extends Component {
           'createdBy',
           'created_start_date',
           'created_end_date',
+          'x_opencti_reliability',
         ]}
       >
         <QueryRenderer

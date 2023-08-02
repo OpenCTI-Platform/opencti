@@ -47,7 +47,7 @@ class CourseOfActionComponent extends Component {
             <CourseOfActionDetails courseOfAction={courseOfAction} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={courseOfAction} />
+            <StixDomainObjectOverview stixDomainObject={courseOfAction} displayConfidence={false} />
           </Grid>
           <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -108,6 +108,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

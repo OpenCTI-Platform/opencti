@@ -33,6 +33,7 @@ import {
 import { OrganizationsLinesPaginationQuery$variables } from './__generated__/OrganizationsLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -96,7 +97,7 @@ const ORGANIZATION_TYPE = 'Organization';
 interface OrganizationAddInput {
   name: string
   description: string
-  x_opencti_reliability: undefined | null
+  x_opencti_reliability: string | undefined
   x_opencti_organization_type: string
   createdBy: Option | undefined
   objectMarking: Option[]
@@ -237,21 +238,14 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           <MenuItem value="vendor">{t('Vendor')}</MenuItem>
           <MenuItem value="other">{t('Other')}</MenuItem>
         </Field>
-        <Field
-          component={SelectField}
-          variant="standard"
-          name="x_opencti_reliability"
+        <OpenVocabField
           label={t('Reliability')}
-          fullWidth={true}
-          containerstyle={fieldSpacingContainerStyle}
-        >
-          <MenuItem value="A">{t('reliability_A')}</MenuItem>
-          <MenuItem value="B">{t('reliability_B')}</MenuItem>
-          <MenuItem value="C">{t('reliability_C')}</MenuItem>
-          <MenuItem value="D">{t('reliability_D')}</MenuItem>
-          <MenuItem value="E">{t('reliability_E')}</MenuItem>
-          <MenuItem value="F">{t('reliability_F')}</MenuItem>
-        </Field>
+          type="reliability_ov"
+          name="x_opencti_reliability"
+          containerStyle={fieldSpacingContainerStyle}
+          multiple={false}
+          onChange={setFieldValue}
+        />
         <CreatedByField
           name="createdBy"
           style={fieldSpacingContainerStyle}

@@ -84,7 +84,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
           />
         </Grid>
         <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={position} />
+          <StixDomainObjectOverview stixDomainObject={position} displayConfidence={false} />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -136,6 +136,7 @@ const Position = createFragmentContainer(PositionComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

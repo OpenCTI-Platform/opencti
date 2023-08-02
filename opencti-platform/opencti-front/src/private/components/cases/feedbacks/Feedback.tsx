@@ -42,6 +42,7 @@ const feedbackFragment = graphql`
         id
         name
         entity_type
+        x_opencti_reliability
       }
     }
     creators {
@@ -122,6 +123,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
           <StixDomainObjectOverview
             stixDomainObject={feedbackData}
             displayAssignees={true}
+            displayConfidence={false}
           />
         </Grid>
         <Grid item={true} xs={12} style={{ marginTop: 30 }}>

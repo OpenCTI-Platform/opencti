@@ -1,17 +1,16 @@
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import * as Yup from 'yup';
-import Typography from '@mui/material/Typography';
 import { FormikErrors, FormikValues } from 'formik';
 import { clone } from 'ramda';
-import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
-import Paper from '@mui/material/Paper';
+import { FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Typography } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
-import ScaleConfigurationLine from './ScaleConfigurationLine';
 import { Theme } from '../../../../../components/Theme';
-import ScaleBar from './ScaleBar';
+import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
 import { ScaleConfig, Tick, UndefinedTick } from './scale';
+import ScaleConfigurationLine from './ScaleConfigurationLine';
+import ScaleBar from './ScaleBar';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -118,6 +117,7 @@ interface EntitySettingScaleProps {
     shouldValidate?: boolean
   ) => void;
   setErrors: (errors: FormikErrors<FormikValues>) => void;
+  customScale?: ScaleConfig | null;
   style?: Record<string, string | number>;
 }
 
@@ -126,6 +126,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   fieldName,
   setFieldValue,
   setErrors,
+  customScale,
   style,
 }) => {
   const { t } = useFormatter();
@@ -188,6 +189,16 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
     });
   };
 
+  const currentScaleName = findSelectedScaleName(tickDefinition);
+  const selectorScales = customScale ? [{ name: customScaleName, scale: customScale }, ...allScales] : [...allScales];
+  const selectScale = (name: string) => {
+    const scaleSelected = selectorScales.find((scale) => scale.name === name);
+    if (scaleSelected) {
+      const newState = clone(scaleSelected.scale);
+      update(newState);
+    }
+  };
+
   return (
     <div style={style}>
       <Typography variant="h4" gutterBottom={true}>
@@ -195,7 +206,30 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <div className={classes.container}>
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 140, margin: 0 }}>
+            <InputLabel id="scale-selector">{t('Selected scale template')}</InputLabel>
+            <Select
+              variant="standard"
+              labelId="scale-selector"
+              value={currentScaleName}
+              onChange={(event) => selectScale(event.target.value)}
+            >
+              {selectorScales.map((scale, i: number) => {
+                return (
+                  <MenuItem
+                    key={i}
+                    value={scale.name}
+                  >
+                    {scale.name}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
           <ScaleBar scale={tickDefinition} />
+          <Typography variant="h4">
+            {t('Customize scale')}
+          </Typography>
           <Typography variant="h3" gutterBottom={true}>
             {t('Limits')}
           </Typography>

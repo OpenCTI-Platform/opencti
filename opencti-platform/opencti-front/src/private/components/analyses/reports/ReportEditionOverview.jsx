@@ -98,6 +98,7 @@ const ReportEditionOverviewComponent = (props) => {
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
     report_types: Yup.array().nullable(),
+    x_opencti_reliability: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
@@ -192,6 +193,7 @@ const ReportEditionOverviewComponent = (props) => {
       'objectAssignee',
       'objectParticipant',
       'confidence',
+      'x_opencti_reliability',
       'x_opencti_workflow_id',
     ]),
   )(report);
@@ -249,6 +251,18 @@ const ReportEditionOverviewComponent = (props) => {
             variant="edit"
             multiple={true}
             editContext={context}
+          />
+          <OpenVocabField
+            label={t('Reliability')}
+            type="reliability_ov"
+            name="x_opencti_reliability"
+            onChange={setFieldValue}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            multiple={false}
+            editContext={context}
+            variant="edit"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -343,6 +357,7 @@ export default createFragmentContainer(ReportEditionOverviewComponent, {
       report_types
       published
       confidence
+      x_opencti_reliability
       createdBy {
         ... on Identity {
           id

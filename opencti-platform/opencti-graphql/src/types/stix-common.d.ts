@@ -6,15 +6,6 @@ import type { StixInternalExternalReference } from './stix-smo';
 export type StixDate = string | undefined;
 type StixId = `${string}--${v4 | v5}`;
 
-export enum OrganizationReliability {
-  A = 'A',
-  B = 'B',
-  C = 'C',
-  D = 'D',
-  E = 'E',
-  F = 'F'
-}
-
 interface StixMitreExtension {
   'extension_type': 'property-extension' | 'new-sdo',
   id: string;

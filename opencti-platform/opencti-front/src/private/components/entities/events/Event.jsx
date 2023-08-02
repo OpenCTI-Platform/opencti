@@ -46,7 +46,7 @@ class EventComponent extends Component {
             <EventDetails event={event} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={event} />
+            <StixDomainObjectOverview stixDomainObject={event} displayConfidence={false} />
           </Grid>
           <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -105,6 +105,7 @@ const Event = createFragmentContainer(EventComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

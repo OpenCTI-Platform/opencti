@@ -53,7 +53,11 @@ class SystemComponent extends Component {
             <SystemDetails system={system} />
           </Grid>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={system} />
+            <StixDomainObjectOverview
+              stixDomainObject={system}
+              displayConfidence={false}
+              displayReliability={false}
+            />
           </Grid>
           {viewAs === 'knowledge' && (
             <Grid item={true} xs={6} style={{ marginTop: 30 }}>
@@ -110,6 +114,7 @@ const System = createFragmentContainer(SystemComponent, {
       x_opencti_stix_ids
       spec_version
       revoked
+      x_opencti_reliability
       confidence
       created
       modified
@@ -120,6 +125,7 @@ const System = createFragmentContainer(SystemComponent, {
           id
           name
           entity_type
+          x_opencti_reliability
         }
       }
       creators {

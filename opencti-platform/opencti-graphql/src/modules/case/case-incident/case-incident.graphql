@@ -179,6 +179,7 @@ enum CaseIncidentsFilter {
   severity
   priority
   confidence
+  source_reliability
 }
 
 input CaseIncidentsFiltering {

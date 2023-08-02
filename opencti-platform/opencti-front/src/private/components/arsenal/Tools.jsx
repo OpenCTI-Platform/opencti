@@ -142,12 +142,14 @@ class Tools extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'x_opencti_workflow_id',
           'labelledBy',
           'markedBy',
+          'createdBy',
+          'source_reliability',
+          'confidence',
           'created_start_date',
           'created_end_date',
-          'createdBy',
-          'confidence',
         ]}
       >
         <QueryRenderer
