@@ -31,9 +31,10 @@ const optionsValidation = async (targetType: string, input: BasicStoreEntityEnti
 };
 
 export const validateSetting = (typeId: string, setting: string) => {
+  console.log(`validateSetting: ${typeId} / ${setting}`);
   const settings = getAvailableSettings(typeId);
   if (!settings.includes(setting)) {
-    throw UnsupportedError('This setting is not available for this entity', {
+    throw UnsupportedError('This setting is not available for this entity: ', {
       setting,
       entity: typeId
     });
