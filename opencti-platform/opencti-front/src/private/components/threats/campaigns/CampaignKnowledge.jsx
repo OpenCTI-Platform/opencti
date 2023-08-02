@@ -245,7 +245,7 @@ class CampaignKnowledgeComponent extends Component {
               <EntityStixCoreRelationshipsIndicators
                 {...routeProps}
                 entityId={campaign.id}
-                entityLink={`/dashboard/threats/campaigns/${campaign.id}/indicators`}
+                entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
               />

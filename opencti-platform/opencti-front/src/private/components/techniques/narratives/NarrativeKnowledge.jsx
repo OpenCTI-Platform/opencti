@@ -216,7 +216,7 @@ class NarrativeKnowledgeComponent extends Component {
               <EntityStixCoreRelationshipsIndicators
                 {...routeProps}
                 entityId={narrative.id}
-                entityLink={`/dashboard/techniques/narratives/${narrative.id}/indicators`}
+                entityLink={link}
                 defaultStartTime={narrative.first_seen}
                 defaultStopTime={narrative.last_seen}
               />

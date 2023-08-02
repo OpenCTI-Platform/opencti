@@ -145,7 +145,7 @@ class InfrastructureKnowledgeComponent extends Component {
             <EntityStixCoreRelationshipsIndicators
               {...routeProps}
               entityId={infrastructure.id}
-              entityLink={`/dashboard/observations/infrastructures/${infrastructure.id}/indicators`}
+              entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
             />

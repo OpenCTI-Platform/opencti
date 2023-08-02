@@ -255,7 +255,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
             <EntityStixCoreRelationshipsIndicators
               {...routeProps}
               entityId={threatActorGroup.id}
-              entityLink={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/indicators`}
+              entityLink={link}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
             />

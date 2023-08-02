@@ -169,7 +169,7 @@ class AttackPatternKnowledgeComponent extends Component {
               <EntityStixCoreRelationshipsIndicators
                 {...routeProps}
                 entityId={attackPattern.id}
-                entityLink={`/dashboard/techniques/attack_patterns/${attackPattern.id}/indicators`}
+                entityLink={link}
                 defaultStartTime={attackPattern.first_seen}
                 defaultStopTime={attackPattern.last_seen}
               />

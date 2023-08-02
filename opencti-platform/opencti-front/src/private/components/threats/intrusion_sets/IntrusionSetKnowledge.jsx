@@ -245,7 +245,7 @@ class IntrusionSetKnowledgeComponent extends Component {
               <EntityStixCoreRelationshipsIndicators
                 {...routeProps}
                 entityId={intrusionSet.id}
-                entityLink={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/indicators`}
+                entityLink={link}
                 defaultStartTime={intrusionSet.first_seen}
                 defaultStopTime={intrusionSet.last_seen}
               />

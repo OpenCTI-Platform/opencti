@@ -211,7 +211,7 @@ class ChannelKnowledgeComponent extends Component {
               <EntityStixCoreRelationshipsIndicators
                 {...routeProps}
                 entityId={channel.id}
-                entityLink={`/dashboard/arsenal/channels/${channel.id}/indicators`}
+                entityLink={link}
                 defaultStartTime={channel.first_seen}
                 defaultStopTime={channel.last_seen}
               />

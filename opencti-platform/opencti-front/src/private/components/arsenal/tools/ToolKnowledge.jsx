@@ -185,7 +185,7 @@ class ToolKnowledgeComponent extends Component {
               <EntityStixCoreRelationshipsIndicators
                 {...routeProps}
                 entityId={tool.id}
-                entityLink={`/dashboard/arsenal/tools/${tool.id}/indicators`}
+                entityLink={link}
                 defaultStartTime={tool.first_seen}
                 defaultStopTime={tool.last_seen}
               />
