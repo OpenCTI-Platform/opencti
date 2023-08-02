@@ -33,6 +33,7 @@ class Identity:
                     roles
                     contact_information
                     x_opencti_aliases
+                    x_opencti_reliability
                     created
                     modified
                     objectLabel {
@@ -47,7 +48,6 @@ class Identity:
                 }
                 ... on Organization {
                     x_opencti_organization_type
-                    x_opencti_reliability
                 }
                 ... on Individual {
                     x_opencti_firstname
@@ -115,6 +115,7 @@ class Identity:
             name
             description
             x_opencti_aliases
+            x_opencti_reliability
             contact_information
             ... on Individual {
                 x_opencti_firstname
@@ -122,7 +123,6 @@ class Identity:
             }
             ... on Organization {
                 x_opencti_organization_type
-                x_opencti_reliability
             }
             importFiles {
                 edges {
@@ -355,7 +355,23 @@ class Identity:
                 """
                 input_variables["x_opencti_firstname"] = x_opencti_firstname
                 input_variables["x_opencti_lastname"] = x_opencti_lastname
+                input_variables["x_opencti_reliability"] = x_opencti_reliability
                 result_data_field = "individualAdd"
+            elif type == IdentityTypes.SYSTEM.value:
+                query = """
+                    mutation SystemAdd($input: SystemAddInput!) {
+                        systemAdd(input: $input) {
+                            id
+                            standard_id
+                            entity_type
+                            parent_types
+                        }
+                    }
+                """
+                input_variables["x_opencti_firstname"] = x_opencti_firstname
+                input_variables["x_opencti_lastname"] = x_opencti_lastname
+                input_variables["x_opencti_reliability"] = x_opencti_reliability
+                result_data_field = "systemAdd"
             else:
                 query = """
                     mutation IdentityAdd($input: IdentityAddInput!) {

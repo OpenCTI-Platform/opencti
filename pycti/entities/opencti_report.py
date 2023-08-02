@@ -34,6 +34,7 @@ class Report:
                     roles
                     contact_information
                     x_opencti_aliases
+                    x_opencti_reliability
                     created
                     modified
                     objectLabel {
@@ -48,7 +49,6 @@ class Report:
                 }
                 ... on Organization {
                     x_opencti_organization_type
-                    x_opencti_reliability
                 }
                 ... on Individual {
                     x_opencti_firstname
@@ -109,6 +109,7 @@ class Report:
                 }
             }
             revoked
+            x_opencti_reliability
             confidence
             created
             modified
@@ -465,6 +466,7 @@ class Report:
         description = kwargs.get("description", None)
         report_types = kwargs.get("report_types", None)
         published = kwargs.get("published", None)
+        x_opencti_reliability = kwargs.get("x_opencti_reliability", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
@@ -501,6 +503,7 @@ class Report:
                         "description": description,
                         "report_types": report_types,
                         "published": published,
+                        "x_opencti_reliability": x_opencti_reliability,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "update": update,
                     }
@@ -620,6 +623,10 @@ class Report:
                 stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
                     "granted_refs", stix_object
                 )
+            if "x_opencti_reliability" not in stix_object:
+                stix_object[
+                    "x_opencti_reliability"
+                ] = self.opencti.get_attribute_in_extension("reliability", stix_object)
 
             return self.create(
                 stix_id=stix_object["id"],
@@ -657,6 +664,9 @@ class Report:
                 else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
+                else None,
+                x_opencti_reliability=stix_object["x_opencti_reliability"]
+                if "x_opencti_reliability" in stix_object
                 else None,
                 objectOrganization=stix_object["x_opencti_granted_refs"]
                 if "x_opencti_granted_refs" in stix_object

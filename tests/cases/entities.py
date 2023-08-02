@@ -36,6 +36,10 @@ class EntityTestCases:
         return IdentitySectorTest(api_client)
 
     @staticmethod
+    def case_identity_system(api_client):
+        return IdentitySystemTest(api_client)
+
+    @staticmethod
     def case_incident(api_client):
         return IncidentTest(api_client)
 
@@ -235,6 +239,15 @@ class IdentitySectorTest(IdentityTest):
             "type": IdentityTypes.SECTOR.value,
             "name": "Energetic",
             "description": "The energetic sector",
+        }
+
+
+class IdentitySystemTest(IdentityTest):
+    def data(self) -> Dict:
+        return {
+            "type": IdentityTypes.SYSTEM.value,
+            "name": "System A",
+            "description": "The system A",
         }
 
 
