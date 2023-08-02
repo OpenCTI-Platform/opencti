@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { UnsupportedError, ValidationError } from '../../config/errors';
 import type { BasicStoreEntityEntitySetting, Scale } from './entitySetting-types';
@@ -7,6 +8,7 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { validateFormatSchemaAttribute } from '../../schema/schema-validator';
 import { internalFindByIds } from '../../database/middleware-loader';
 import {
+  availableSettings,
   getAttributesConfiguration,
   getAvailableSettings,
   getDefaultValues
@@ -16,15 +18,15 @@ import { isEmptyField } from '../../database/utils';
 import { INPUT_MARKINGS } from '../../schema/general';
 import { logApp } from '../../config/conf';
 
+const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());
+
 // -- VALIDATORS --
 
 const optionsValidation = async (targetType: string, input: BasicStoreEntityEntitySetting) => {
-  logApp.info(`optionsValidation: ${targetType} / ${input}`);
-  logApp.info(Error.toString());
   const settings = getAvailableSettings(targetType);
   const inputSettings = Object.entries(input);
   inputSettings.forEach(([key]) => {
-    if (!settings.includes(key)) {
+    if (keyAvailableSetting.includes(key) && !settings.includes(key)) {
       throw UnsupportedError('This setting is not available for this entity', {
         setting: key,
         entity: targetType
@@ -34,10 +36,9 @@ const optionsValidation = async (targetType: string, input: BasicStoreEntityEnti
 };
 
 export const validateSetting = (typeId: string, setting: string) => {
-  logApp.info(`validateSetting: ${typeId} / ${setting}`);
   const settings = getAvailableSettings(typeId);
   if (!settings.includes(setting)) {
-    throw UnsupportedError('This setting is not available for this entity: ', {
+    throw UnsupportedError('This setting is not available for this entity', {
       setting,
       entity: typeId
     });

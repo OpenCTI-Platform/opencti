@@ -34,6 +34,7 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   platform_hidden_type: boolean;
   enforce_reference: boolean;
   attributes_configuration?: string;
+  workflow_configuration: boolean;
   availableSettings?: string[];
 }
 
@@ -43,6 +44,7 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   platform_hidden_type: boolean;
   enforce_reference: boolean;
   attributes_configuration?: string;
+  workflow_configuration: boolean;
   availableSettings?: string[];
 }
 
@@ -52,6 +54,7 @@ export interface StixEntitySetting extends StixObject {
   platform_hidden_type: boolean;
   enforce_reference: boolean;
   attributes_configuration?: string;
+  workflow_configuration: boolean;
   available_settings?: string[];
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
