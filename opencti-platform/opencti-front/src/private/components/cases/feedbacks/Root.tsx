@@ -8,7 +8,6 @@ import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { RootFeedbackSubscription } from './__generated__/RootFeedbackSubscription.graphql';
@@ -57,7 +56,6 @@ const feedbackQuery = graphql`
 `;
 
 const RootFeedbackComponent = ({ queryRef, caseId }) => {
-  const { me } = useAuth();
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootFeedbackSubscription>
   >(
@@ -75,7 +73,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
   return (
     <div>
-      <TopBar me={me} />
+      <TopBar/>
       <>
         {feedbackData ? (
           <Switch>

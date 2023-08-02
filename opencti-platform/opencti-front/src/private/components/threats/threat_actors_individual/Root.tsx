@@ -8,7 +8,6 @@ import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -67,7 +66,6 @@ const RootThreatActorIndividualComponent = ({
   queryRef,
   threatActorIndividualId,
 }) => {
-  const { me } = useAuth();
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
   >(
@@ -90,7 +88,7 @@ const RootThreatActorIndividualComponent = ({
 
   return (
     <div>
-      <TopBar me={me} />
+      <TopBar/>
       <Route path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}

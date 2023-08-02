@@ -8,7 +8,6 @@ import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -65,7 +64,6 @@ const caseRfiQuery = graphql`
 `;
 
 const RootCaseRfiComponent = ({ queryRef, caseId }) => {
-  const { me } = useAuth();
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>
   >(
@@ -83,7 +81,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootCaseRfiCaseQuery>(caseRfiQuery, queryRef);
   return (
     <div>
-      <TopBar me={me} />
+      <TopBar/>
       <>
         {caseData ? (
           <Switch>

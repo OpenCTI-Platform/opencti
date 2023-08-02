@@ -8,7 +8,6 @@ import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
@@ -17,8 +16,6 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import TopBar from '../../nav/TopBar';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
-import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
-import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
 import CaseIncident from './CaseIncident';
 import CaseIncidentPopover from './CaseIncidentPopover';
 import IncidentKnowledge from './IncidentKnowledge';
@@ -63,7 +60,6 @@ const caseIncidentQuery = graphql`
 `;
 
 const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
-  const { me } = useAuth();
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootIncidentSubscription>
   >(
@@ -81,7 +77,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   return (
     <div>
-      <TopBar me={me} />
+      <TopBar/>
       <>
         {caseData ? (
           <Switch>
