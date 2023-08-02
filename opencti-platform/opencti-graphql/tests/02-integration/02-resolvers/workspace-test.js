@@ -298,6 +298,34 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult.data.workspaceRelationAdd.to.id).toEqual(stixObjectInternalId);
   });
 
+  it('can retrieve the investigated entity object', async () => {
+    const anEntity = await elLoadById(testContext, ADMIN_USER, 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    const anEntityId = anEntity.internal_id;
+
+    const WORKSPACE_STIX_DOMAIN_ENTITIES = gql`
+      query workspace($id: String!) {
+        workspace(id: $id) {
+          id
+          objectsWithInvestigated {
+            edges {
+              node {
+                ... on BasicObject {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: WORKSPACE_STIX_DOMAIN_ENTITIES,
+      variables: { id: workspaceInternalId },
+    });
+
+    expect(queryResult.data.workspace.objectsWithInvestigated.edges[0].node.id).toEqual(anEntityId);
+  });
+
   it('should workspace stix objects or stix relationships accurate', async () => {
     const WORKSPACE_STIX_DOMAIN_ENTITIES = gql`
       query workspace($id: String!) {

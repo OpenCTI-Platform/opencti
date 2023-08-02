@@ -75,6 +75,24 @@ export const getOwnerId = (workspace: BasicStoreEntityWorkspace) => {
   return (Array.isArray(workspace.creator_id) && workspace.creator_id.length > 0) ? workspace.creator_id.at(0) : workspace.creator_id;
 };
 
+export const objectsWithInvestigated = async (context: AuthContext, user: AuthUser, { investigated_entities_ids }: BasicStoreEntityWorkspace, args: WorkspaceObjectsArgs) => {
+  const types = args.types ?? INVESTIGABLE_TYPES;
+
+  if (!investigated_entities_ids) {
+    return { edges: [] };
+  }
+
+  const filters = [
+    { key: 'internal_id', values: investigated_entities_ids },
+    ...(args.filters ?? [])
+  ];
+  const finalArgs = { ...args, filters };
+  if (args.all) {
+    return paginateAllThings(context, user, types, finalArgs);
+  }
+  return listThings(context, user, types, finalArgs);
+};
+
 export const objects = async (context: AuthContext, user: AuthUser, workspaceId: string, args: WorkspaceObjectsArgs) => {
   const key = buildRefRelationKey(RELATION_HAS_REFERENCE);
   const types = args.types ?? ['Stix-Meta-Object', 'Stix-Core-Object', 'stix-relationship'];
