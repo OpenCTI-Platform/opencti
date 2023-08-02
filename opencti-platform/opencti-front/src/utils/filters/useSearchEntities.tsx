@@ -251,7 +251,7 @@ const useSearchEntities = ({
 }: {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  searchContext: { entityTypes: string[], elementId: string[] };
+  searchContext: { entityTypes: string[], elementId?: string[] };
   searchScope: Record<string, string[]>;
   setInputValues: Dispatch<Record<string, string | Date>>;
   allEntityTypes?: boolean;

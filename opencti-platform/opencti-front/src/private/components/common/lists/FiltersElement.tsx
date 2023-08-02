@@ -23,7 +23,7 @@ interface FiltersElementProps {
   variant?: string;
   keyword: string;
   availableFilterKeys: string[];
-  searchContext: { entityTypes: string[], elementId: string[] };
+  searchContext: { entityTypes: string[], elementId?: string[] };
   handleChangeKeyword: (event: React.SyntheticEvent) => void;
   noDirectFilters?: boolean;
   setInputValues: Dispatch<Record<string, string | Date>>;
