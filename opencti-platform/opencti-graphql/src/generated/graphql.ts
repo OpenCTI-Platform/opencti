@@ -114,6 +114,8 @@ export type AdministrativeAreaConnectorsArgs = {
 
 
 export type AdministrativeAreaContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -413,6 +415,8 @@ export type ArtifactConnectorsArgs = {
 
 
 export type ArtifactContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -640,6 +644,8 @@ export type AttackPatternConnectorsArgs = {
 
 
 export type AttackPatternContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -971,6 +977,8 @@ export type AutonomousSystemConnectorsArgs = {
 
 
 export type AutonomousSystemContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1261,6 +1269,8 @@ export type BankAccountConnectorsArgs = {
 
 
 export type BankAccountContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1478,6 +1488,8 @@ export type CampaignConnectorsArgs = {
 
 
 export type CampaignContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1828,6 +1840,8 @@ export type CaseConnectorsArgs = {
 
 
 export type CaseContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2063,6 +2077,8 @@ export type CaseIncidentConnectorsArgs = {
 
 
 export type CaseIncidentContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2371,6 +2387,8 @@ export type CaseRfiConnectorsArgs = {
 
 
 export type CaseRfiContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2676,6 +2694,8 @@ export type CaseRftConnectorsArgs = {
 
 
 export type CaseRftContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3052,6 +3072,8 @@ export type ChannelConnectorsArgs = {
 
 
 export type ChannelContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3351,6 +3373,8 @@ export type CityConnectorsArgs = {
 
 
 export type CityContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3642,6 +3666,8 @@ export type ContainerCasesArgs = {
 
 
 export type ContainerContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3828,6 +3854,7 @@ export enum ContainersFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  ElementId = 'elementId',
   EntityType = 'entity_type',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
@@ -3972,6 +3999,8 @@ export type CountryConnectorsArgs = {
 
 
 export type CountryContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4231,6 +4260,8 @@ export type CourseOfActionConnectorsArgs = {
 
 
 export type CourseOfActionContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4531,6 +4562,8 @@ export type CryptocurrencyWalletConnectorsArgs = {
 
 
 export type CryptocurrencyWalletContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4715,6 +4748,8 @@ export type CryptographicKeyConnectorsArgs = {
 
 
 export type CryptographicKeyContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4909,6 +4944,8 @@ export type DataComponentConnectorsArgs = {
 
 
 export type DataComponentContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5166,6 +5203,8 @@ export type DataSourceConnectorsArgs = {
 
 
 export type DataSourceContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5474,6 +5513,8 @@ export type DirectoryConnectorsArgs = {
 
 
 export type DirectoryContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5692,6 +5733,8 @@ export type DomainNameConnectorsArgs = {
 
 
 export type DomainNameContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5907,6 +5950,8 @@ export type EmailAddrConnectorsArgs = {
 
 
 export type EmailAddrContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -6098,6 +6143,8 @@ export type EmailMessageConnectorsArgs = {
 
 
 export type EmailMessageContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -6290,6 +6337,8 @@ export type EmailMimePartTypeConnectorsArgs = {
 
 
 export type EmailMimePartTypeContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -6534,6 +6583,8 @@ export type EventConnectorsArgs = {
 
 
 export type EventContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7019,6 +7070,8 @@ export type FeedbackConnectorsArgs = {
 
 
 export type FeedbackContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7459,6 +7512,8 @@ export type GroupingConnectorsArgs = {
 
 
 export type GroupingContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7755,6 +7810,8 @@ export type HashedObservableConnectorsArgs = {
 
 
 export type HashedObservableContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -7934,6 +7991,8 @@ export type HostnameConnectorsArgs = {
 
 
 export type HostnameContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8119,6 +8178,8 @@ export type IPv4AddrConnectorsArgs = {
 
 
 export type IPv4AddrContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8306,6 +8367,8 @@ export type IPv6AddrConnectorsArgs = {
 
 
 export type IPv6AddrContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8535,6 +8598,8 @@ export type IdentityConnectorsArgs = {
 
 
 export type IdentityContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8803,6 +8868,8 @@ export type IncidentConnectorsArgs = {
 
 
 export type IncidentContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -9126,6 +9193,8 @@ export type IndicatorConnectorsArgs = {
 
 
 export type IndicatorContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -9461,6 +9530,8 @@ export type IndividualConnectorsArgs = {
 
 
 export type IndividualContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -9772,6 +9843,8 @@ export type InfrastructureConnectorsArgs = {
 
 
 export type InfrastructureContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -10106,6 +10179,8 @@ export type IntrusionSetConnectorsArgs = {
 
 
 export type IntrusionSetContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -10581,6 +10656,8 @@ export type LanguageConnectorsArgs = {
 
 
 export type LanguageContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -10852,6 +10929,8 @@ export type LocationConnectorsArgs = {
 
 
 export type LocationContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11202,6 +11281,8 @@ export type MacAddrConnectorsArgs = {
 
 
 export type MacAddrContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11402,6 +11483,8 @@ export type MalwareConnectorsArgs = {
 
 
 export type MalwareContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11676,6 +11759,8 @@ export type MalwareAnalysisConnectorsArgs = {
 
 
 export type MalwareAnalysisContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -12138,6 +12223,8 @@ export type MediaContentConnectorsArgs = {
 
 
 export type MediaContentContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14168,6 +14255,8 @@ export type MutexConnectorsArgs = {
 
 
 export type MutexContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14364,6 +14453,8 @@ export type NarrativeConnectorsArgs = {
 
 
 export type NarrativeContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14620,6 +14711,8 @@ export type NetworkTrafficConnectorsArgs = {
 
 
 export type NetworkTrafficContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14826,6 +14919,8 @@ export type NoteConnectorsArgs = {
 
 
 export type NoteContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15252,6 +15347,8 @@ export type ObservedDataConnectorsArgs = {
 
 
 export type ObservedDataContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15585,6 +15682,8 @@ export type OpinionConnectorsArgs = {
 
 
 export type OpinionContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15940,6 +16039,8 @@ export type OrganizationConnectorsArgs = {
 
 
 export type OrganizationContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16281,6 +16382,8 @@ export type PaymentCardConnectorsArgs = {
 
 
 export type PaymentCardContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16468,6 +16571,8 @@ export type PhoneNumberConnectorsArgs = {
 
 
 export type PhoneNumberContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16666,6 +16771,8 @@ export type PositionConnectorsArgs = {
 
 
 export type PositionContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16969,6 +17076,8 @@ export type ProcessConnectorsArgs = {
 
 
 export type ProcessContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -19670,6 +19779,8 @@ export type RegionConnectorsArgs = {
 
 
 export type RegionContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -19981,6 +20092,8 @@ export type ReportConnectorsArgs = {
 
 
 export type ReportContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -20493,6 +20606,8 @@ export type SectorConnectorsArgs = {
 
 
 export type SectorContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -20896,6 +21011,8 @@ export type SoftwareConnectorsArgs = {
 
 
 export type SoftwareContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -21175,6 +21292,8 @@ export type StixCoreObjectConnectorsArgs = {
 
 
 export type StixCoreObjectContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -21540,6 +21659,8 @@ export type StixCoreRelationshipCasesArgs = {
 
 
 export type StixCoreRelationshipContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -21826,6 +21947,8 @@ export type StixCyberObservableConnectorsArgs = {
 
 
 export type StixCyberObservableContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -22125,6 +22248,8 @@ export type StixDomainObjectConnectorsArgs = {
 
 
 export type StixDomainObjectContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -22534,6 +22659,8 @@ export type StixFileConnectorsArgs = {
 
 
 export type StixFileContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -22833,6 +22960,8 @@ export type StixRefRelationshipCasesArgs = {
 
 
 export type StixRefRelationshipContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -23074,6 +23203,8 @@ export type StixSightingRelationshipCasesArgs = {
 
 
 export type StixSightingRelationshipContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -23601,6 +23732,8 @@ export type SystemConnectorsArgs = {
 
 
 export type SystemContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -23895,6 +24028,8 @@ export type TaskConnectorsArgs = {
 
 
 export type TaskContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -24267,6 +24402,8 @@ export type TextConnectorsArgs = {
 
 
 export type TextContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -24470,6 +24607,8 @@ export type ThreatActorConnectorsArgs = {
 
 
 export type ThreatActorContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -24681,6 +24820,8 @@ export type ThreatActorGroupConnectorsArgs = {
 
 
 export type ThreatActorGroupContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -24957,6 +25098,8 @@ export type ThreatActorIndividualConnectorsArgs = {
 
 
 export type ThreatActorIndividualContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -25268,6 +25411,8 @@ export type ToolConnectorsArgs = {
 
 
 export type ToolContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -25693,6 +25838,8 @@ export type UrlConnectorsArgs = {
 
 
 export type UrlContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -25940,6 +26087,8 @@ export type UserAccountConnectorsArgs = {
 
 
 export type UserAccountContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -26149,6 +26298,8 @@ export type UserAgentConnectorsArgs = {
 
 
 export type UserAgentContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -26618,6 +26769,8 @@ export type VulnerabilityConnectorsArgs = {
 
 
 export type VulnerabilityContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -26871,6 +27024,8 @@ export type WindowsRegistryKeyConnectorsArgs = {
 
 
 export type WindowsRegistryKeyContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -27059,6 +27214,8 @@ export type WindowsRegistryValueTypeConnectorsArgs = {
 
 
 export type WindowsRegistryValueTypeContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -27450,6 +27607,8 @@ export type X509CertificateConnectorsArgs = {
 
 
 export type X509CertificateContainersArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
   first?: InputMaybe<Scalars['Int']>;
 };
 

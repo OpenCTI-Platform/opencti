@@ -119,28 +119,6 @@ const TopMenuThreatActorIndividual = () => {
       >
         {t('Analyses')}
       </Button>
-      <Button
-        component={Link}
-        to={`/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/indicators`}
-        variant={
-          location.pathname.includes(
-            `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/indicators`,
-          )
-            ? 'contained'
-            : 'text'
-        }
-        size="small"
-        color={
-          location.pathname.includes(
-            `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/indicators`,
-          )
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        {t('Indicators')}
-      </Button>
       <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
         <Button
           component={Link}

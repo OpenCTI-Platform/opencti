@@ -18,7 +18,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     objectLabel: LabelConnection
     externalReferences(first: Int): ExternalReferenceConnection
     containersNumber: Number
-    containers(first: Int): ContainerConnection
+    containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
     reports(first: Int): ReportConnection
     notes(first: Int): NoteConnection
     opinions(first: Int): OpinionConnection

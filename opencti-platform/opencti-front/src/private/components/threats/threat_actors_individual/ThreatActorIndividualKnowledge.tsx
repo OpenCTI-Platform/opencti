@@ -18,6 +18,9 @@ import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import {
   ThreatActorIndividualKnowledge_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualKnowledge_ThreatActorIndividual.graphql';
+import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
+import EntityStixCoreRelationshipsIndicators
+  from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -268,20 +271,31 @@ const ThreatActorIndividualKnowledgeComponent = ({
           />
         )}
       />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/indicators"
+          render={(routeProps: any) => (
+            <EntityStixCoreRelationshipsIndicators
+              {...routeProps}
+              entityId={threatActorIndividual.id}
+              entityLink={link}
+              defaultStartTime={threatActorIndividual.first_seen}
+              defaultStopTime={threatActorIndividual.last_seen}
+            />
+          )}
+        />
       <Route
         exact
         path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/observables"
         render={(routeProps: any) => (
-          <EntityStixCoreRelationships
+          <EntityStixCoreRelationshipsStixCyberObservable
+            {...routeProps}
             entityId={threatActorIndividual.id}
-            relationshipTypes={['related-to']}
-            stixCoreObjectTypes={['Stix-Cyber-Observable']}
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
-            allDirections={true}
             isRelationReversed={true}
-            {...routeProps}
+            relationshipTypes={['related-to']}
           />
         )}
       />

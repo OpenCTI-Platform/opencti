@@ -271,7 +271,7 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 
 // Listing handle
 const batchListThrough = async (context, user, sources, sourceSide, relationType, targetEntityType, opts = {}) => {
-  const { paginate = true, withInferences = true, batched = true, first = null, search = null } = opts;
+  const { paginate = true, withInferences = true, batched = true, first = null, search = null, elementId = null } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
   const ids = Array.isArray(sources) ? sources : [sources];
@@ -287,7 +287,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   const oppositeTypeFilter = {
     key: 'connections',
     nested: [
-      { key: 'types', values: [targetEntityType] },
+      { key: 'types', values: Array.isArray(targetEntityType) ? targetEntityType : [targetEntityType] },
       { key: 'role', values: [`*_${opposite}`], operator: 'wildcard' },
     ],
   };
@@ -301,7 +301,13 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     search,
   });
   // For each relation resolved the target entity
-  const targets = await elFindByIds(context, user, R.uniq(relations.map((s) => s[`${opposite}Id`])), opts);
+  // Filter on element id if necessary
+  let targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));
+  if (isNotEmptyField(opts.elementId)) {
+    const elementIds = Array.isArray(elementId) ? elementId : [elementId];
+    targetIds = targetIds.filter((id) => elementIds.includes(id));
+  }
+  const targets = await elFindByIds(context, user, targetIds, opts);
   // Group and rebuild the result
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
   if (paginate) {

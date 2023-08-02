@@ -1,25 +1,12 @@
 import * as R from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  deleteElementById,
-  distributionEntities,
-  listThroughGetTo,
-  timeSeriesEntities,
-  updateAttribute,
-} from '../database/middleware';
+import { batchListThroughGetTo, createEntity, deleteElementById, distributionEntities, listThroughGetTo, timeSeriesEntities, updateAttribute, } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import {
-  isEmptyField,
-  isNotEmptyField,
-  READ_INDEX_INFERRED_ENTITIES,
-  READ_INDEX_STIX_DOMAIN_OBJECTS
-} from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -38,10 +25,7 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-typ
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
-import {
-  stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipDeleteRefRelation
-} from './stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];

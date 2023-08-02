@@ -25,7 +25,6 @@ class StixDomainObjectIndicatorsLines extends Component {
       initialLoading,
       dataColumns,
       relay,
-      entityLink,
       entityId,
       paginationOptions,
       onToggleEntity,
@@ -43,12 +42,11 @@ class StixDomainObjectIndicatorsLines extends Component {
         globalCount={
           this.props.data?.indicators?.pageInfo?.globalCount ?? nbOfRowsToLoad
         }
-        LineComponent={<StixDomainObjectIndicatorLine />}
-        DummyLineComponent={<StixDomainObjectIndicatorLineDummy />}
+        LineComponent={StixDomainObjectIndicatorLine}
+        DummyLineComponent={StixDomainObjectIndicatorLineDummy}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
-        entityLink={entityLink}
         entityId={entityId}
         selectedElements={selectedElements}
         deSelectedElements={deSelectedElements}
@@ -67,7 +65,6 @@ StixDomainObjectIndicatorsLines.propTypes = {
   relay: PropTypes.object,
   stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
-  entityLink: PropTypes.string,
   entityId: PropTypes.string,
   setNumberOfElements: PropTypes.func,
   onToggleEntity: PropTypes.func,

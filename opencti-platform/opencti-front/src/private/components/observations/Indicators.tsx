@@ -65,7 +65,7 @@ const Indicators = () => {
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle<IndicatorLine_node$data>('view-indicators');
+  } = useEntityToggle<IndicatorLine_node$data>(LOCAL_STORAGE_KEY);
   const queryRef = useQueryLoading<IndicatorsLinesPaginationQuery>(
     indicatorsLinesQuery,
     paginationOptions,

@@ -18,6 +18,7 @@ import {
   ViewListOutlined,
   ViewModuleOutlined,
 } from '@mui/icons-material';
+import AirlineStopsIcon from '@mui/icons-material/AirlineStops';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
@@ -180,10 +181,12 @@ class ListLines extends Component {
       availableRelationFilterTypes,
       enableNestedView,
       enableEntitiesView,
+      enableContextualView,
       currentView,
       handleSwitchRedirectionMode,
       redirectionMode,
       parametersWithPadding,
+      searchContext,
     } = this.props;
     return (
       <ExportContext.Consumer>
@@ -193,6 +196,10 @@ class ListLines extends Component {
               && numberOfElements.number > export_max_size)
               || (selectedIds.length === 0
                 && numberOfElements.number > export_max_size));
+          const searchContextFinal = {
+            ...(searchContext ?? {}),
+            entityTypes: exportEntityType ? [exportEntityType] : [],
+          };
           return (
             <div
               className={
@@ -219,9 +226,7 @@ class ListLines extends Component {
                   {extraFields}
                   {availableFilterKeys && availableFilterKeys.length > 0 && (
                     <Filters
-                      searchContext={{
-                        entityTypes: exportEntityType ? [exportEntityType] : [],
-                      }}
+                      searchContext={searchContextFinal}
                       availableFilterKeys={availableFilterKeys}
                       handleAddFilter={handleAddFilter}
                       handleSwitchFilter={handleSwitchFilter}
@@ -401,6 +406,21 @@ class ListLines extends Component {
                               <FormatListGroup
                                 fontSize="small"
                                 color="primary"
+                              />
+                            </Tooltip>
+                          </ToggleButton>
+                      )}
+                      {typeof handleChangeView === 'function'
+                        && enableContextualView && (
+                          <ToggleButton value="contextual" aria-label="contextual">
+                            <Tooltip title={t('Contextual view')}>
+                              <AirlineStopsIcon
+                                fontSize="small"
+                                color={
+                                  currentView === 'contextual' || !currentView
+                                    ? 'secondary'
+                                    : 'primary'
+                                }
                               />
                             </Tooltip>
                           </ToggleButton>
@@ -627,11 +647,13 @@ ListLines.propTypes = {
   availableRelationFilterTypes: PropTypes.object,
   enableNestedView: PropTypes.bool,
   enableEntitiesView: PropTypes.bool,
+  enableContextualView: PropTypes.bool,
   currentView: PropTypes.string,
   handleSwitchRedirectionMode: PropTypes.func,
   redirectionMode: PropTypes.string,
   parametersWithPadding: PropTypes.bool,
   inline: PropTypes.bool,
+  searchContext: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

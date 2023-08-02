@@ -34,6 +34,22 @@ import { buildScaleFilters } from '../hooks/useScale';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
+import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+
+const filtersStixCoreObjectsContainersSearchQuery = graphql`
+  query useSearchEntitiesStixCoreObjectsContainersSearchQuery($filters: [ContainersFiltering]) {
+    containers(filters: $filters) {
+      edges {
+        node {
+          id
+          entity_type
+          parent_types
+          representative
+        }
+      }
+    }
+  }
+`;
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -235,7 +251,7 @@ const useSearchEntities = ({
 }: {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  searchContext: { entityTypes: string[] };
+  searchContext: { entityTypes: string[], elementId?: string[] };
   searchScope: Record<string, string[]>;
   setInputValues: Dispatch<Record<string, string | Date>>;
   allEntityTypes?: boolean;
@@ -594,6 +610,26 @@ const useSearchEntities = ({
             unionSetEntities('indicates', indicatesEntities);
           });
         break;
+      case 'containers':
+        fetchQuery(filtersStixCoreObjectsContainersSearchQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 50,
+          filters: [{ key: 'objectContains', values: searchContext?.elementId ?? [] }],
+        })
+          .toPromise()
+          .then((data) => {
+            const containerEntities = (
+              (data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data)
+                ?.containers?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.representative,
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
+            unionSetEntities('containers', containerEntities);
+          });
+        break;
       case 'markedBy':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
@@ -871,23 +907,26 @@ const useSearchEntities = ({
           });
         break;
       case 'pattern_type':
-        // eslint-disable-next-line no-case-declarations
-        const patternTypesEntities = [
-          'stix',
-          'pcre',
-          'sigma',
-          'snort',
-          'suricata',
-          'yara',
-          'tanium-signal',
-          'spl',
-          'eql',
-        ].map((n) => ({
-          label: t(n),
-          value: n,
-          type: 'Vocabulary',
-        }));
-        unionSetEntities('pattern_type', patternTypesEntities);
+        fetchQuery(attributesSearchQuery, {
+          attributeName: 'pattern_type',
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            unionSetEntities(
+              'pattern_type',
+              ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+              ).map(
+                (n) => ({
+                  label: n?.node.value,
+                  value: n?.node.value,
+                  type: 'Vocabulary',
+                }),
+              ),
+            );
+          });
         break;
       case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {

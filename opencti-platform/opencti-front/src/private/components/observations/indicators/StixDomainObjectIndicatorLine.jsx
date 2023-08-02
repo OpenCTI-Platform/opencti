@@ -2,21 +2,20 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert } from '@mui/icons-material';
-import { ShieldSearch } from 'mdi-material-ui';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import StixCoreRelationshipFromAndToPopover from '../../common/stix_core_relationships/StixCoreRelationshipFromAndToPopover';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
@@ -35,6 +34,10 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
@@ -52,8 +55,6 @@ class StixDomainObjectIndicatorLineComponent extends Component {
       classes,
       dataColumns,
       node,
-      paginationOptions,
-      entityId,
       onToggleEntity,
       selectedElements,
       deSelectedElements,
@@ -62,10 +63,10 @@ class StixDomainObjectIndicatorLineComponent extends Component {
       index,
     } = this.props;
     return (
-      <ListItem
+      <ListItemButton
+        key={node.id}
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         component={Link}
         to={`/dashboard/observations/indicators/${node.id}`}
       >
@@ -87,7 +88,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ShieldSearch />
+          <ItemIcon type="Indicator" />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -138,17 +139,10 @@ class StixDomainObjectIndicatorLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <StixCoreRelationshipFromAndToPopover
-            fromId={node.id}
-            toId={entityId}
-            nodeId={node.id}
-            relationshipType="indicates"
-            paginationOptions={paginationOptions}
-            connectionKey="Pagination_indicators"
-          />
-        </ListItemSecondaryAction>
-      </ListItem>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
+      </ListItemButton>
     );
   }
 }
@@ -303,9 +297,9 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+          <KeyboardArrowRight />
+        </ListItemIcon>
       </ListItem>
     );
   }

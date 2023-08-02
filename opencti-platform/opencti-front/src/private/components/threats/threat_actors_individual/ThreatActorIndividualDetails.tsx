@@ -96,17 +96,21 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                 source={data.description}
                 limit={400}
               />
-              <Typography variant="h3" gutterBottom={true}>
+              <Typography variant="h3"
+                          gutterBottom={true}
+                          style={{ marginTop: 20 }}>
                 {t('Threat actor individual types')}
               </Typography>
-              {data.threat_actor_types
-                && data.threat_actor_types.map((threatActorIndividualType) => (
-                  <Chip
-                    key={threatActorIndividualType}
-                    classes={{ root: classes.chip }}
-                    label={threatActorIndividualType}
-                  />
-                ))}
+              <FieldOrEmpty source={data.threat_actor_types}>
+                {data.threat_actor_types
+                  && data.threat_actor_types.map((threatActorIndividualType) => (
+                    <Chip
+                      key={threatActorIndividualType}
+                      classes={{ root: classes.chip }}
+                      label={threatActorIndividualType}
+                    />
+                  ))}
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -138,26 +142,28 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               >
                 {t('Roles')}
               </Typography>
-              {data.roles && (
-                <List>
-                  {data.roles.map((role) => (
-                    <ListItem key={role} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <DramaMasks />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <ItemOpenVocab
-                            type="threat-actor-individual-role-ov"
-                            value={role}
-                            small
-                          />
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              <FieldOrEmpty source={data.roles}>
+                {data.roles && (
+                  <List>
+                    {data.roles.map((role) => (
+                      <ListItem key={role} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <DramaMasks />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <ItemOpenVocab
+                              type="threat-actor-individual-role-ov"
+                              value={role}
+                              small
+                            />
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -165,18 +171,20 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               >
                 {t('Goals')}
               </Typography>
-              {data.goals && (
-                <List>
-                  {data.goals.map((goal) => (
-                    <ListItem key={goal} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <BullseyeArrow />
-                      </ListItemIcon>
-                      <ListItemText primary={goal} />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+              <FieldOrEmpty source={data.goals}>
+                {data.goals && (
+                  <List>
+                    {data.goals.map((goal) => (
+                      <ListItem key={goal} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <BullseyeArrow />
+                        </ListItemIcon>
+                        <ListItemText primary={goal} />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </FieldOrEmpty>
             </Grid>
             <Grid item={true} xs={6}>
               <FieldOrEmpty source={data.images}>
@@ -231,32 +239,34 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               >
                 {t('Secondary motivations')}
               </Typography>
-              {data.secondary_motivations && (
-                <List>
-                  {data.secondary_motivations.map(
-                    (secondaryMotivation) => (
-                      <ListItem
-                        key={secondaryMotivation}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ArmFlexOutline />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <ItemOpenVocab
-                              type="attack-motivation-ov"
-                              value={secondaryMotivation}
-                              small
-                            />
-                          }
-                        />
-                      </ListItem>
-                    ),
-                  )}
-                </List>
-              )}
+              <FieldOrEmpty source={data.secondary_motivations}>
+                {data.secondary_motivations && (
+                  <List>
+                    {data.secondary_motivations.map(
+                      (secondaryMotivation) => (
+                        <ListItem
+                          key={secondaryMotivation}
+                          dense={true}
+                          divider={true}
+                        >
+                          <ListItemIcon>
+                            <ArmFlexOutline />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <ItemOpenVocab
+                                type="attack-motivation-ov"
+                                value={secondaryMotivation}
+                                small
+                              />
+                            }
+                          />
+                        </ListItem>
+                      ),
+                    )}
+                  </List>
+                )}
+              </FieldOrEmpty>
             </Grid>
           </Grid>
         </Paper>

@@ -9,43 +9,12 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
-import {
-  VisibilityOutlined,
-  WifiTetheringOutlined,
-  BugReportOutlined,
-  AccountBalanceOutlined,
-  DomainOutlined,
-  FlagOutlined,
-  GroupOutlined,
-  LinkOutlined,
-  WebAssetOutlined,
-  TerminalOutlined,
-  SurroundSoundOutlined,
-  PublicOutlined,
-  MapOutlined,
-  SpeakerNotesOutlined,
-  RouterOutlined,
-} from '@mui/icons-material';
-import {
-  Gauge,
-  LockPattern,
-  Target,
-  SourcePull,
-  Biohazard,
-  Fire,
-  DiamondOutline,
-  ChessKnight,
-  HexagonMultipleOutline,
-  ShieldSearch,
-  SourceFork,
-  CityVariantOutline,
-  FlaskOutline,
-  LaptopAccount,
-  GlobeModel,
-} from 'mdi-material-ui';
+import { DomainOutlined, GroupOutlined, LinkOutlined, TerminalOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { FlaskOutline, Gauge, GlobeModel, SourceFork, SourcePull, Target } from 'mdi-material-ui';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles((theme) => ({
   drawer: {
@@ -106,7 +75,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <DomainOutlined />
+                    <ItemIcon type='Sector' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Sectors')} />
                 </MenuItem>
@@ -122,7 +91,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <PublicOutlined />
+                    <ItemIcon type='Region' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Regions')} />
                 </MenuItem>
@@ -138,7 +107,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <FlagOutlined />
+                    <ItemIcon type='Country' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Countries')} />
                 </MenuItem>
@@ -152,7 +121,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <MapOutlined />
+                    <ItemIcon type='Administrative-Area' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Areas')} />
                 </MenuItem>
@@ -168,7 +137,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <CityVariantOutline />
+                    <ItemIcon type='City' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Cities')} />
                 </MenuItem>
@@ -184,7 +153,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <AccountBalanceOutlined />
+                    <ItemIcon type='Organization' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Organizations')} />
                 </MenuItem>
@@ -232,7 +201,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <WebAssetOutlined />
+                    <ItemIcon type='Tool' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Used tools')} />
                 </MenuItem>
@@ -251,6 +220,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
+                    <ItemIcon type='Sector' color='white'/>
                     <DomainOutlined />
                   </ListItemIcon>
                   <ListItemText primary={t('Sectors')} />
@@ -267,7 +237,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <PublicOutlined />
+                    <ItemIcon type='Region' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Regions')} />
                 </MenuItem>
@@ -283,7 +253,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <FlagOutlined />
+                    <ItemIcon type='Country' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Countries')} />
                 </MenuItem>
@@ -297,7 +267,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <MapOutlined />
+                    <ItemIcon type='Administrative-Area' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Areas')} />
                 </MenuItem>
@@ -313,7 +283,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <CityVariantOutline />
+                    <ItemIcon type='City' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Cities')} />
                 </MenuItem>
@@ -345,7 +315,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <AccountBalanceOutlined />
+                    <ItemIcon type='Identity' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Organizations')} />
                 </MenuItem>
@@ -377,7 +347,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                   classes={{ root: classes.item }}
                 >
                   <ListItemIcon style={{ minWidth: 35 }}>
-                    <WebAssetOutlined />
+                    <ItemIcon type='Tool' color='white'/>
                   </ListItemIcon>
                   <ListItemText primary={t('Used tools')} />
                 </MenuItem>
@@ -458,7 +428,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <LaptopAccount />
+                  <ItemIcon type='Threat-Actor-Individual' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Threat actors')} />
               </MenuItem>
@@ -474,7 +444,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <DiamondOutline />
+                  <ItemIcon type='Intrusion-Set' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Intrusion sets')} />
               </MenuItem>
@@ -490,7 +460,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ChessKnight />
+                  <ItemIcon type='Campaign' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Campaigns')} />
               </MenuItem>
@@ -542,7 +512,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <Biohazard />
+                  <ItemIcon type='Malware' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Malwares')} />
               </MenuItem>
@@ -558,7 +528,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <SurroundSoundOutlined />
+                  <ItemIcon type='Channel' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Channels')} />
               </MenuItem>
@@ -588,7 +558,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <BugReportOutlined />
+                  <ItemIcon type='Vulnerability' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Vulnerabilities')} />
               </MenuItem>
@@ -616,7 +586,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <LockPattern />
+                  <ItemIcon type='Attack-Pattern' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Attack patterns')} />
               </MenuItem>
@@ -632,7 +602,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <SpeakerNotesOutlined />
+                  <ItemIcon type='Narrative' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Narratives')} />
               </MenuItem>
@@ -654,22 +624,6 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
               </ListSubheader>
             }
           >
-            {includes('observables', availableSections) && (
-              <MenuItem
-                component={Link}
-                to={`${stixCoreObjectLink}/observables`}
-                selected={
-                  location.pathname === `${stixCoreObjectLink}/observables`
-                }
-                dense={false}
-                classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <HexagonMultipleOutline />
-                </ListItemIcon>
-                <ListItemText primary={t('Observables')} />
-              </MenuItem>
-            )}
             {includes('indicators', availableSections) && (
               <MenuItem
                 component={Link}
@@ -681,9 +635,25 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ShieldSearch />
+                  <ItemIcon type='Indicator' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Indicators')} />
+              </MenuItem>
+            )}
+            {includes('observables', availableSections) && (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/observables`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/observables`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ItemIcon type='Stix-Cyber-Observable' color='white'/>
+                </ListItemIcon>
+                <ListItemText primary={t('Observables')} />
               </MenuItem>
             )}
             {includes('infrastructures', availableSections) && (
@@ -697,7 +667,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <RouterOutlined />
+                  <ItemIcon type='Infrastructure' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Infrastructures')} />
               </MenuItem>
@@ -725,7 +695,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <Fire />
+                  <ItemIcon type='Incident' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Incidents')} />
               </MenuItem>
@@ -741,7 +711,7 @@ const StixCoreObjectKnowledgeBar = ({ stixCoreObjectLink, availableSections }) =
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <WifiTetheringOutlined />
+                  <ItemIcon type='Observed-Data' color='white'/>
                 </ListItemIcon>
                 <ListItemText primary={t('Observed data')} />
               </MenuItem>
