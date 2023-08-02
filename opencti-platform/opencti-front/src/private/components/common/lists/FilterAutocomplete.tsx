@@ -40,7 +40,7 @@ interface OptionValue extends Option {
 
 interface FilterAutocompleteProps {
   filterKey: string;
-  searchContext: { entityTypes: string[] };
+  searchContext: { entityTypes: string[], elementId: string[] };
   defaultHandleAddFilter: HandleAddFilter;
   inputValues: Record<string, string | Date>;
   setInputValues: Dispatch<Record<string, string | Date>>;
