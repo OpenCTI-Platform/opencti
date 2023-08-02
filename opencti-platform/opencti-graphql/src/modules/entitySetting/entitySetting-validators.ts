@@ -16,7 +16,6 @@ import {
 import { telemetry } from '../../config/tracing';
 import { isEmptyField } from '../../database/utils';
 import { INPUT_MARKINGS } from '../../schema/general';
-import { logApp } from '../../config/conf';
 
 const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());
 
