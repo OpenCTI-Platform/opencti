@@ -162,28 +162,127 @@ describe('Workspace resolver standard behavior', () => {
     });
     expect(queryResult.data.workspaceContextClean.id).toEqual(workspaceInternalId);
   });
+
+  it('can not investigate on an entity that does not exists', async () => {
+    const nonExistingEntityId = 'non-existing-entity-id';
+
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation addEntityToInvestigation($id: ID!, $input: [EditInput!]!) {
+          workspaceFieldPatch(id: $id, input: $input) {
+            investigated_entities_ids
+          }
+        }
+      `,
+      variables: {
+        id: workspaceInternalId,
+        input: {
+          key: 'investigated_entities_ids',
+          operation: 'add',
+          value: nonExistingEntityId
+        },
+      },
+    });
+
+    expect(queryResult.errors[0].message).toEqual('Business validation');
+  });
+
+  it('can not investigate on an internal object', async () => {
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation investigateOnCity($id: ID!, $input: [EditInput!]!) {
+          workspaceFieldPatch(id: $id, input: $input) {
+            investigated_entities_ids
+          }
+        }
+      `,
+      variables: {
+        id: workspaceInternalId,
+        input: {
+          key: 'investigated_entities_ids',
+          operation: 'add',
+          value: workspaceInternalId
+        },
+      },
+    });
+
+    expect(queryResult.errors[0].message).toEqual('Business validation');
+  });
+
+  it('can investigate on an entity', async () => {
+    const anEntity = await elLoadById(testContext, ADMIN_USER, 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    const anEntityId = anEntity.internal_id;
+
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation investigateOnALocation($id: ID!, $input: [EditInput!]!) {
+          workspaceFieldPatch(id: $id, input: $input) {
+            id
+            investigated_entities_ids
+          }
+        }
+      `,
+      variables: {
+        id: workspaceInternalId,
+        input: {
+          key: 'investigated_entities_ids',
+          operation: 'add',
+          value: anEntityId
+        },
+      },
+    });
+
+    expect(queryResult.data.workspaceFieldPatch.investigated_entities_ids[0]).toEqual(anEntityId);
+  });
+
+  it('can not investigate twice on the same entity', async () => {
+    const anEntity = await elLoadById(testContext, ADMIN_USER, 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    const anEntityId = anEntity.internal_id;
+
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        mutation addEntityToInvestigation($id: ID!, $input: [EditInput!]!) {
+          workspaceFieldPatch(id: $id, input: $input) {
+            id
+            investigated_entities_ids
+          }
+        }
+      `,
+      variables: {
+        id: workspaceInternalId,
+        input: {
+          key: 'investigated_entities_ids',
+          operation: 'add',
+          value: anEntityId
+        },
+      },
+    });
+
+    expect(queryResult.data.workspaceFieldPatch.investigated_entities_ids).toHaveLength(1);
+  });
+
   it('should add relation in workspace', async () => {
     const city = await elLoadById(testContext, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c');
     stixObjectInternalId = city.internal_id;
 
     const RELATION_ADD_QUERY = gql`
-        mutation WorkspaceEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
-            workspaceRelationAdd(id: $id, input: $input) {
-                id
-                to {
-                    ... on BasicObject {
-                        id
-                        entity_type
-                        parent_types
-                    }
-                    ... on BasicRelationship {
-                        id
-                        entity_type
-                        parent_types
-                    }
-                }
+      mutation WorkspaceEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
+        workspaceRelationAdd(id: $id, input: $input) {
+          id
+          to {
+            ... on BasicObject {
+              id
+              entity_type
+              parent_types
             }
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+          }
         }
+      }
     `;
 
     const queryResult = await queryAsAdmin({
@@ -198,28 +297,29 @@ describe('Workspace resolver standard behavior', () => {
     });
     expect(queryResult.data.workspaceRelationAdd.to.id).toEqual(stixObjectInternalId);
   });
+
   it('should workspace stix objects or stix relationships accurate', async () => {
     const WORKSPACE_STIX_DOMAIN_ENTITIES = gql`
-            query workspace($id: String!) {
-                workspace(id: $id) {
-                    id
-                    objects {
-                        edges {
-                            node {
-                                ... on BasicObject {
-                                    id
-                                    standard_id
-                                }
-                                ... on BasicRelationship {
-                                    id
-                                    standard_id
-                                }
-                            }
-                        }
-                    }
+      query workspace($id: String!) {
+        workspace(id: $id) {
+          id
+          objects {
+            edges {
+              node {
+                ... on BasicObject {
+                  id
+                  standard_id
                 }
+                ... on BasicRelationship {
+                  id
+                  standard_id
+                }
+              }
             }
-        `;
+          }
+        }
+      }
+    `;
     const queryResult = await queryAsAdmin({
       query: WORKSPACE_STIX_DOMAIN_ENTITIES,
       variables: { id: workspaceInternalId },

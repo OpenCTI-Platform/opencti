@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import * as R from 'ramda';
 import {
   createEntity,
   createRelation,
@@ -29,17 +30,17 @@ import type {
   WorkspaceAddInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import {
-  MEMBER_ACCESS_RIGHT_ADMIN,
-  isValidMemberAccessRight,
-  getUserAccessRight
-} from '../../utils/access';
+import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { convertTypeToStixType } from '../../database/stix-converter';
 import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
+import { elFindByIds } from '../../database/engine';
+import type { BasicStoreEntity } from '../../types/store';
+
+const INVESTIGABLE_TYPES: string[] = ['Stix-Meta-Object', 'Stix-Core-Object', 'stix-relationship'];
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
   return storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -196,8 +197,45 @@ export const workspaceDeleteRelations = async (context: AuthContext, user: AuthU
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 
-export const workspaceEditField = async (context: AuthContext, user: AuthUser, workspaceId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, input);
+const isEntityInvestigable = (entity: BasicStoreEntity): boolean => {
+  const matching_types = INVESTIGABLE_TYPES
+    .filter((investigable_type) => entity.parent_types.includes(investigable_type));
+
+  return matching_types.length !== 0;
+};
+
+const checkEntitiesAreInvestigable = (entities: Array<BasicStoreEntity>): void => {
+  entities
+    .filter((entity) => !isEntityInvestigable(entity))
+    .forEach((entity) => { throw FunctionalError(`Entity with id '${entity.id}' of type '${entity.entity_type}' is not investigable.`); });
+};
+
+const checkMissingEntities = (AddedOrReplacedinvestigatedEntitiesIds: (string | null)[], entities: Array<BasicStoreEntity>): void => {
+  const missingEntitiesIds = R.difference(AddedOrReplacedinvestigatedEntitiesIds, entities.map((entity) => entity.id));
+
+  if (missingEntitiesIds.length > 0) {
+    throw FunctionalError(`Entities with ids '${missingEntitiesIds.join(', ')}' were not found. Cannot conduct investigation.`);
+  }
+};
+
+const checkInvestigatedEntitiesInputs = async (AddedOrReplacedInvestigatedEntitiesIds: (string | null)[], context: AuthContext, user: AuthUser): Promise<void> => {
+  const entities = await elFindByIds(context, user, AddedOrReplacedInvestigatedEntitiesIds) as Array<BasicStoreEntity>;
+
+  checkMissingEntities(AddedOrReplacedInvestigatedEntitiesIds, entities);
+  checkEntitiesAreInvestigable(entities);
+};
+
+export const workspaceEditField = async (context: AuthContext, user: AuthUser, workspaceId: string, inputs: EditInput[]) => {
+  const addedOrReplacedInvestigatedEntitiesIds = inputs
+    .filter(({ key, operation }) => key === 'investigated_entities_ids' && (operation === 'add' || operation === 'replace'))
+    .flatMap(({ value }) => value);
+
+  if (addedOrReplacedInvestigatedEntitiesIds.length > 0) {
+    await checkInvestigatedEntitiesInputs(addedOrReplacedInvestigatedEntitiesIds, context, user);
+  }
+
+  const { element } = await updateAttribute(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
+
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
 };
 
