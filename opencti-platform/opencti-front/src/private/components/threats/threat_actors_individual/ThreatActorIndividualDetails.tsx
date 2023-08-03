@@ -197,8 +197,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                   animation='fade'
                 >
                   {carouselImages.map((file) => (
-                      <Tooltip title={file.description} key={file.id} placement='right'>
-                      <Tooltip title={file.description} key={file.id} placement='right'>
+                    <Tooltip title={file.description} key={file.id} placement='right'>
                     <img
                         style={{ height: '100%' }}
                         src={getFileUri(file.id)}
