@@ -989,6 +989,7 @@ const useSearchEntities = ({
         fetchQuery(statusFieldStatusesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           first: 50,
+          filters: [{ key: 'type', values: [entityType] }],
         })
           .toPromise()
           .then((data) => {
