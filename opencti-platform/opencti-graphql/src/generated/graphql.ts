@@ -7353,16 +7353,6 @@ export type FileMetadata = {
   version?: Maybe<Scalars['String']['output']>;
 };
 
-export type OpenCtiFile = {
-  __typename?: 'OpenCtiFile';
-  description?: Maybe<Scalars['String']>;
-  id: Scalars['ID'];
-  inCarousel?: Maybe<Scalars['Boolean']>;
-  mime_type: Scalars['String'];
-  name: Scalars['String'];
-  order?: Maybe<Scalars['Int']>;
-};
-
 export enum FilterMode {
   And = 'and',
   Or = 'or'
@@ -15901,7 +15891,6 @@ export enum ObservedDatasOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
-<<<<<<< HEAD
 export type OpenCtiFile = {
   __typename?: 'OpenCtiFile';
   description?: Maybe<Scalars['String']['output']>;
@@ -15912,8 +15901,6 @@ export type OpenCtiFile = {
   order?: Maybe<Scalars['Int']['output']>;
 };
 
-=======
->>>>>>> 1ba31b3e1 ([backend/frontend] add picture management (#issue/2540))
 export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Opinion';
   authors?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -28643,7 +28630,6 @@ export type ResolversTypes = ResolversObject<{
   FileConnection: ResolverTypeWrapper<Omit<FileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['FileEdge']>>> }>;
   FileEdge: ResolverTypeWrapper<Omit<FileEdge, 'node'> & { node: ResolversTypes['File'] }>;
   FileMetadata: ResolverTypeWrapper<Omit<FileMetadata, 'entity'> & { entity?: Maybe<ResolversTypes['StixCoreObject']> }>;
-  OpenCtiFile: ResolverTypeWrapper<OpenCtiFile>;
   FilterMode: FilterMode;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
@@ -28871,6 +28857,7 @@ export type ResolversTypes = ResolversObject<{
   ObservedDatasFilter: ObservedDatasFilter;
   ObservedDatasFiltering: ObservedDatasFiltering;
   ObservedDatasOrdering: ObservedDatasOrdering;
+  OpenCtiFile: ResolverTypeWrapper<OpenCtiFile>;
   Opinion: ResolverTypeWrapper<Omit<Opinion, 'cases' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, relatedContainers?: Maybe<ResolversTypes['ContainerConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   OpinionAddInput: OpinionAddInput;
   OpinionConnection: ResolverTypeWrapper<Omit<OpinionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['OpinionEdge']>>> }>;
@@ -29417,12 +29404,8 @@ export type ResolversParentTypes = ResolversObject<{
   FileConnection: Omit<FileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['FileEdge']>>> };
   FileEdge: Omit<FileEdge, 'node'> & { node: ResolversParentTypes['File'] };
   FileMetadata: Omit<FileMetadata, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixCoreObject']> };
-<<<<<<< HEAD
   Float: Scalars['Float']['output'];
-=======
   OpenCtiFile: OpenCtiFile;
-  Float: Scalars['Float'];
->>>>>>> 1ba31b3e1 ([backend/frontend] add picture management (#issue/2540))
   GetMetrics: GetMetrics;
   Group: Omit<Group, 'default_dashboard' | 'members'> & { default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, members?: Maybe<ResolversParentTypes['UserConnection']> };
   GroupAddInput: GroupAddInput;
@@ -29601,6 +29584,7 @@ export type ResolversParentTypes = ResolversObject<{
   ObservedDataEdge: Omit<ObservedDataEdge, 'node'> & { node: ResolversParentTypes['ObservedData'] };
   ObservedDataEditMutations: Omit<ObservedDataEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['ObservedData']>, contextPatch?: Maybe<ResolversParentTypes['ObservedData']>, fieldPatch?: Maybe<ResolversParentTypes['ObservedData']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['ObservedData']> };
   ObservedDatasFiltering: ObservedDatasFiltering;
+  OpenCtiFile: OpenCtiFile;
   Opinion: Omit<Opinion, 'cases' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, relatedContainers?: Maybe<ResolversParentTypes['ContainerConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   OpinionAddInput: OpinionAddInput;
   OpinionConnection: Omit<OpinionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['OpinionEdge']>>> };
@@ -32038,16 +32022,6 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type FileOpenCtiResolvers<ContextType = any, ParentType extends ResolversParentTypes['OpenCtiFile'] = ResolversParentTypes['OpenCtiFile']> = ResolversObject<{
-  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  inCarousel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  mime_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type GetMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['GetMetrics'] = ResolversParentTypes['GetMetrics']> = ResolversObject<{
   total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -34290,6 +34264,16 @@ export type ObservedDataEditMutationsResolvers<ContextType = any, ParentType ext
   fieldPatch?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type OpenCtiFileResolvers<ContextType = any, ParentType extends ResolversParentTypes['OpenCtiFile'] = ResolversParentTypes['OpenCtiFile']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  inCarousel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  mime_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -37699,7 +37683,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   FileConnection?: FileConnectionResolvers<ContextType>;
   FileEdge?: FileEdgeResolvers<ContextType>;
   FileMetadata?: FileMetadataResolvers<ContextType>;
-  OpenCtiFile?: FileOpenCtiResolvers<ContextType>;
   GetMetrics?: GetMetricsResolvers<ContextType>;
   Group?: GroupResolvers<ContextType>;
   GroupConnection?: GroupConnectionResolvers<ContextType>;
@@ -37820,6 +37803,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ObservedDataConnection?: ObservedDataConnectionResolvers<ContextType>;
   ObservedDataEdge?: ObservedDataEdgeResolvers<ContextType>;
   ObservedDataEditMutations?: ObservedDataEditMutationsResolvers<ContextType>;
+  OpenCtiFile?: OpenCtiFileResolvers<ContextType>;
   Opinion?: OpinionResolvers<ContextType>;
   OpinionConnection?: OpinionConnectionResolvers<ContextType>;
   OpinionEdge?: OpinionEdgeResolvers<ContextType>;
