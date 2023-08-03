@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 import vitestMigrationPlugin from './builder/plugin/vitestMigrationPlugin';
+import type { TestSequencer, WorkspaceSpec } from 'vitest/node';
 
 export const buildTestConfig = (include: string[]) => defineConfig({
   plugins: [graphql() as PluginOption, vitestMigrationPlugin() as PluginOption],
@@ -18,14 +19,14 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     },
     sequence: {
       shuffle: false,
-      sequencer: class Sequencer {
+      sequencer: class Sequencer implements TestSequencer {
         // eslint-disable-next-line class-methods-use-this
-        async shard(files: string[]): Promise<string[]> {
+        async shard(files: WorkspaceSpec[]): Promise<WorkspaceSpec[]> {
           return files;
         }
 
         // eslint-disable-next-line class-methods-use-this
-        async sort(files: string[]): Promise<string[]> {
+        async sort(files: WorkspaceSpec[]): Promise<WorkspaceSpec[]> {
           return files.sort((testA, testB) => (testA > testB ? 1 : -1));
         }
       },
