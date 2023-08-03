@@ -1,11 +1,10 @@
-import { createError } from 'apollo-errors';
+import { GraphQLError } from 'graphql/index';
 
 const CATEGORY_TECHNICAL = 'technical';
 const CATEGORY_BUSINESS = 'business';
 
 const error = (type, message, data) => {
-  const Exception = createError(type, { data, message });
-  return new Exception();
+  return new GraphQLError(message, { extensions: { code: type, name: type, data } });
 };
 
 export const AUTH_FAILURE = 'AuthFailure';

@@ -29,7 +29,7 @@ class ErrorBoundaryComponent extends React.Component {
     if (this.state.error) {
       const baseErrors = this.state.error.res?.errors ?? [];
       const retroErrors = this.state.error.data?.res?.errors ?? [];
-      const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
+      const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
       // Access error must be forwarded
       if (
         includes('ForbiddenAccess', types)

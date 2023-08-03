@@ -1,3 +1,5 @@
+import { ApolloServerErrorCode } from '@apollo/server/errors';
+import { GraphQLError } from 'graphql';
 import { GraphQLDateTime } from 'graphql-scalars';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
@@ -5,7 +7,6 @@ import { constraintDirective } from 'graphql-constraint-directive';
 // eslint-disable-next-line import/extensions
 import { GraphQLScalarType, Kind } from 'graphql/index.js';
 import { validate as uuidValidate } from 'uuid';
-import { UserInputError } from 'apollo-server-express';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
@@ -75,14 +76,14 @@ const schemaTypeDefs = [globalTypeDefs];
 
 const validateStixId = (stixId) => {
   if (!stixId.includes('--')) {
-    throw new UserInputError(`Provided value ${stixId} is not a valid STIX ID`);
+    throw new GraphQLError(`Provided value ${stixId} is not a valid STIX ID`, { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
   }
   const [type, uuid] = stixId.split('--');
   if (!isSupportedStixType(type.replace('x-mitre-', '').replace('x-opencti-', ''))) {
-    throw new UserInputError(`Provided value ${stixId} is not a valid STIX ID (type ${type} not supported)`);
+    throw new GraphQLError(`Provided value ${stixId} is not a valid STIX ID (type ${type} not supported)`, { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
   }
   if (!uuidValidate(uuid)) {
-    throw new UserInputError(`Provided value ${stixId} is not a valid STIX ID (UUID not valid)`);
+    throw new GraphQLError(`Provided value ${stixId} is not a valid STIX ID (UUID not valid)`, { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
   }
   return stixId;
 };
@@ -97,7 +98,7 @@ const validateStixRef = (stixRef) => {
   if (uuidValidate(stixRef)) {
     return stixRef;
   }
-  throw new UserInputError('Provided value is not a valid STIX Reference');
+  throw new GraphQLError('Provided value is not a valid STIX Reference', { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
 };
 
 const globalResolvers = {
@@ -116,7 +117,7 @@ const globalResolvers = {
       if (ast.kind === Kind.STRING) {
         return validateStixId(ast.value);
       }
-      throw new UserInputError('Provided value is not a valid STIX ID');
+      throw new GraphQLError('Provided value is not a valid STIX ID', { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
     },
   }),
   StixRef: new GraphQLScalarType({
@@ -132,7 +133,7 @@ const globalResolvers = {
       if (ast.kind === Kind.STRING) {
         return validateStixRef(ast.value);
       }
-      throw new UserInputError('Provided value is not a valid STIX ID');
+      throw new GraphQLError('Provided value is not a valid STIX ID', { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
     },
   }),
 };

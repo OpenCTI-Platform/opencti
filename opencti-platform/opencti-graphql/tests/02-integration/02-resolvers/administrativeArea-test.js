@@ -76,7 +76,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('ForbiddenAccess');
   });
   it('Editor should fail administrativeArea creation', async () => {
     const CREATE_QUERY = gql`
@@ -103,7 +103,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('MissingReferenceError');
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('MissingReferenceError');
   });
   it('should administrativeArea created', async () => {
     const CREATE_QUERY = gql`

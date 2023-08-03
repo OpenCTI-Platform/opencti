@@ -103,7 +103,7 @@ describe('Create and Update Validation', () => {
     const dataComponent = { name: 'entity name', stix_id: dataComponentStixId }; // Missed description
     const queryResult = await queryAsAdmin({ query: CREATE_DATA_COMPONENT_QUERY, variables: { input: dataComponent } });
     expect(queryResult.errors.length > 0).toBeTruthy();
-    expect(queryResult.errors[0].originalError.data.message).toEqual('This attribute is mandatory');
+    expect(queryResult.errors[0].extensions.data.message).toEqual('This attribute is mandatory');
   });
 
   it('should validate schema at update', async () => {
@@ -134,7 +134,7 @@ describe('Create and Update Validation', () => {
       variables: { id: dataComponentStixId, input: { key: 'description', value: [''] } },
     });
     expect(queryResult.errors.length > 0).toBeTruthy();
-    expect(queryResult.errors[0].originalError.data.message).toEqual('This attribute is mandatory');
+    expect(queryResult.errors[0].extensions.data.message).toEqual('This attribute is mandatory');
   });
   afterAll(async () => {
     await queryAsAdmin({ query: DELETE_DATA_COMPONENT_QUERY, variables: { id: dataComponentStixId } });
