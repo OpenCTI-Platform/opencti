@@ -1884,11 +1884,9 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
           throw UnsupportedError('This update can produce a merge, only one update action supported');
         }
         // Everything ok, let merge
-        const target = existingEntities.shift();
-        const sources = [updated, ...existingEntities];
-        hashMergeValidation([target, ...sources]);
-        const sourceEntityIds = sources.map((c) => c.internal_id);
-        const merged = await mergeEntities(context, user, target.internal_id, sourceEntityIds, { locks: participantIds });
+        hashMergeValidation([updated, ...existingEntities]);
+        const sourceEntityIds = existingEntities.map((c) => c.internal_id);
+        const merged = await mergeEntities(context, user, updated.internal_id, sourceEntityIds, { locks: participantIds });
         logApp.info(`[OPENCTI] Success merge of entity ${merged.id}`);
         // Return merged element after waiting for it.
         return { element: merged };
