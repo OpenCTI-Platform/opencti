@@ -12,7 +12,6 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import NarrativePopover from './NarrativePopover';
-import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
 const styles = () => ({
@@ -206,19 +205,6 @@ class NarrativeKnowledgeComponent extends Component {
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/indicators"
-            render={(routeProps) => (
-              <EntityStixCoreRelationshipsIndicators
-                {...routeProps}
-                entityId={narrative.id}
-                entityLink={link}
-                defaultStartTime={narrative.first_seen}
-                defaultStopTime={narrative.last_seen}
               />
             )}
           />

@@ -95,7 +95,6 @@ class RootChannel extends Component {
               'malwares',
               'attack_patterns',
               'vulnerabilities',
-              'indicators',
               'observables',
               'sightings',
               'channels',

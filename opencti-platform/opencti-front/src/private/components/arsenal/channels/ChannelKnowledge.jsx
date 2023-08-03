@@ -13,7 +13,6 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
-import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
 const styles = () => ({
@@ -201,19 +200,6 @@ class ChannelKnowledgeComponent extends Component {
                 entityLink={link}
                 isRelationReversed={true}
                 {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/arsenal/channels/:channelId/knowledge/indicators"
-            render={(routeProps) => (
-              <EntityStixCoreRelationshipsIndicators
-                {...routeProps}
-                entityId={channel.id}
-                entityLink={link}
-                defaultStartTime={channel.first_seen}
-                defaultStopTime={channel.last_seen}
               />
             )}
           />

@@ -29,7 +29,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
 }) => {
   const classes = useStyles();
 
-  const relationshipTypes = ['indicates', 'related-to'];
+  const relationshipTypes = ['indicates'];
   const entityTypes = ['Indicator'];
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
