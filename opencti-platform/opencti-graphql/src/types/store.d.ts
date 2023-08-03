@@ -569,6 +569,17 @@ interface BasicWorkflowStatusEntity extends BasicStoreEntity {
   disabled: boolean;
 }
 
+interface BasicIdentityEntity extends BasicStoreEntity {
+  name: string
+  description: string
+  roles: string[]
+  identity_class: string
+  contact_information: string
+  x_opencti_aliases?: string[]
+}
+
+interface StoreEntityIdentity extends StoreEntity, BasicIdentityEntity {}
+
 interface BasicGroupEntity extends BasicStoreEntity {
   [RELATION_MEMBER_OF]: string[];
 }

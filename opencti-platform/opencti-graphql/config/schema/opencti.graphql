@@ -12519,17 +12519,6 @@ type Query {
     search: String
     toStix: Boolean
   ): IndividualConnection @auth(for: [KNOWLEDGE])
-  organization(id: String): Organization @auth(for: [KNOWLEDGE])
-  organizations(
-    first: Int
-    after: ID
-    orderBy: OrganizationsOrdering
-    orderMode: OrderingMode
-    filters: [OrganizationsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): OrganizationConnection @auth(for: [KNOWLEDGE])
   sector(id: String): Sector @auth(for: [KNOWLEDGE])
   sectors(
     first: Int
@@ -13320,15 +13309,6 @@ type IndividualEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-type OrganizationEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Organization
-  @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-}
 type SectorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13673,8 +13653,6 @@ type Mutation {
   identityEdit(id: ID!): IdentityEditMutations
   individualAdd(input: IndividualAddInput!): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
   individualEdit(id: ID!): IndividualEditMutations
-  organizationAdd(input: OrganizationAddInput!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationEdit(id: ID!): OrganizationEditMutations
   sectorAdd(input: SectorAddInput!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   sectorEdit(id: ID!): SectorEditMutations
   systemAdd(input: SystemAddInput!): System @auth(for: [KNOWLEDGE_KNUPDATE])

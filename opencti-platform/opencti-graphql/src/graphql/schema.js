@@ -27,7 +27,6 @@ import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelation
 import identityResolvers from '../resolvers/identity';
 import individualResolvers from '../resolvers/individual';
 import userResolvers from '../resolvers/user';
-import organizationResolvers from '../resolvers/organization';
 import sectorResolvers from '../resolvers/sector';
 import systemResolvers from '../resolvers/system';
 import locationResolvers from '../resolvers/location';
@@ -183,7 +182,6 @@ const schemaResolvers = [
   // Identities
   identityResolvers,
   individualResolvers,
-  organizationResolvers,
   sectorResolvers,
   systemResolvers,
   // Others

@@ -22,7 +22,7 @@ export const settingsOrganizationsLinesQuery = graphql`
     $cursor: ID
     $orderBy: OrganizationsOrdering
     $orderMode: OrderingMode
-    $filters: [OrganizationsFiltering]
+    $filters: [OrganizationsFiltering!]
   ) {
     ...SettingsOrganizationsLines_data
     @arguments(
@@ -44,7 +44,7 @@ export const settingsOrganizationsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "OrganizationsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[OrganizationsFiltering]" }
+    filters: { type: "[OrganizationsFiltering!]" }
   ) @refetchable(queryName: "SettingsOrganizationsLinesRefetchQuery") {
     organizations(
       search: $search

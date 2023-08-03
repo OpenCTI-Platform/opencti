@@ -16,7 +16,7 @@ import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
-import { findById } from '../domain/organization';
+import { findById } from '../modules/organization/organization-domain';
 import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
 import { getEntityFromCache } from '../database/cache';

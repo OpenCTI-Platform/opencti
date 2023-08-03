@@ -12,7 +12,7 @@ import { RELATION_PART_OF } from '../../src/schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../src/schema/stixRefRelationship';
 import ReportRefsIdentityPartOfRule from '../../src/rules/report-refs-identity-part-of/ReportRefIdentityPartOfRule';
 import { addReport } from '../../src/domain/report';
-import { addOrganization } from '../../src/domain/organization';
+import { addOrganization } from '../../src/modules/organization/organization-domain';
 import { elDeleteElements } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../src/schema/general';

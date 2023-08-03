@@ -13,7 +13,6 @@ import { RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
   isStixDomainObjectShareableContainer,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
@@ -33,6 +32,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { publishUserAction } from '../listener/UserActionListener';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);

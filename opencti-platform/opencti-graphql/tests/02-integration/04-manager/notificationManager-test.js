@@ -4,7 +4,6 @@ import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_RESOLVED_FILTERS
 } from '../../../src/schema/stixDomainObject';
@@ -22,6 +21,7 @@ import { RELATION_DELIVERS } from '../../../src/schema/stixCoreRelationship';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../src/schema/general';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from "../../../src/modules/organization/organization-types";
 
 // !!!!
 // These tests enable to protect the notificationManager code, and especially the instance trigger notification system behavior.
@@ -184,9 +184,7 @@ const DELETE_REPORT_QUERY = gql`
 `;
 const DELETE_ORGANIZATION_QUERY = gql`
   mutation organizationDelete($id: ID!) {
-    organizationEdit(id: $id) {
-      delete
-    }
+      organizationDelete(id: $id)
   }
 `;
 const DELETE_ATTACKPATTERN_QUERY = gql`

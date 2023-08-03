@@ -201,6 +201,7 @@ class RootOrganization extends Component {
                             entityType={'Organization'}
                             disableSharing={true}
                             stixDomainObject={props.organization}
+                            isOpenctiAlias={true}
                             PopoverComponent={<OrganizationPopover />}
                           />
                           <EntityStixSightingRelationships
@@ -222,6 +223,7 @@ class RootOrganization extends Component {
                             entityType={'Organization'}
                             disableSharing={true}
                             stixDomainObject={props.organization}
+                            isOpenctiAlias={true}
                             PopoverComponent={<OrganizationPopover />}
                           />
                           <FileManager
@@ -243,6 +245,7 @@ class RootOrganization extends Component {
                             entityType={'Organization'}
                             disableSharing={true}
                             stixDomainObject={props.organization}
+                            isOpenctiAlias={true}
                             PopoverComponent={<OrganizationPopover />}
                           />
                           <StixCoreObjectHistory

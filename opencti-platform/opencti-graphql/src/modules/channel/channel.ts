@@ -11,7 +11,6 @@ import {
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_LOCATION_CITY,
@@ -40,6 +39,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
 const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
   type: {

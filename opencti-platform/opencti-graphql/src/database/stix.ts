@@ -7,7 +7,6 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_INCIDENT,
@@ -89,6 +88,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
 import { FunctionalError, UnknownError, UnsupportedError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -282,35 +282,6 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
   ],
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_MEDIA_CONTENT}`]: [
-    { name: RELATION_PUBLISHES, type: REL_NEW }
-  ],
-  // endregion
-  // region ORGANIZATION
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW }
-  ],
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [
-    { name: RELATION_PART_OF, type: REL_NEW }
-  ],
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
-    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
-  ],
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_LOCATION_CITY}`]: [
-    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
-  ],
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA}`]: [
-    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
-  ],
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [
-    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
-  ],
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_LOCATION_REGION}`]: [
-    { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
-  ],
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_TOOL}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED }
-  ],
-  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_MEDIA_CONTENT}`]: [
     { name: RELATION_PUBLISHES, type: REL_NEW }
   ],
   // endregion

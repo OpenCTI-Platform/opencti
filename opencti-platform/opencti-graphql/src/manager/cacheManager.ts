@@ -2,6 +2,12 @@ import { Promise as Bluebird } from 'bluebird';
 import * as R from 'ramda';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { dynamicCacheUpdater, resetCacheForEntity, writeCacheForEntity } from '../database/cache';
+import type { AuthContext } from '../types/user';
+import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { OrderingMode } from '../generated/graphql';
+import { extractFilterIdsToResolve } from '../utils/filtering';
+import { BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { stixLoadByIds } from '../database/middleware';
 import { EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
@@ -25,6 +31,7 @@ import type { BasicStoreRelation, BasicStreamEntity, BasicTriggerEntity, BasicWo
 import type { AuthContext } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { extractFilterIdsToResolve } from '../utils/filtering';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {

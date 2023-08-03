@@ -21,6 +21,7 @@ import type { BasicStoreEntityWorkspace } from '../modules/workspace/workspace-t
 import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
 import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
@@ -12712,7 +12713,12 @@ export type Mutation = {
   opinionAdd?: Maybe<Opinion>;
   opinionEdit?: Maybe<OpinionEditMutations>;
   organizationAdd?: Maybe<Organization>;
-  organizationEdit?: Maybe<OrganizationEditMutations>;
+  organizationContextClean?: Maybe<Organization>;
+  organizationContextPatch?: Maybe<Organization>;
+  organizationDelete?: Maybe<Scalars['ID']>;
+  organizationFieldPatch?: Maybe<Organization>;
+  organizationRelationAdd?: Maybe<StixRefRelationship>;
+  organizationRelationDelete?: Maybe<Organization>;
   otpActivation?: Maybe<MeUser>;
   otpDeactivation?: Maybe<MeUser>;
   otpLogin?: Maybe<Scalars['Boolean']['output']>;
@@ -13665,8 +13671,40 @@ export type MutationOrganizationAddArgs = {
 };
 
 
-export type MutationOrganizationEditArgs = {
+export type MutationOrganizationContextCleanArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationOrganizationContextPatchArgs = {
+  id: Scalars['ID'];
+  input: EditContext;
+};
+
+
+export type MutationOrganizationDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationOrganizationFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID'];
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type MutationOrganizationRelationAddArgs = {
+  id: Scalars['ID'];
+  input: StixRefRelationshipAddInput;
+};
+
+
+export type MutationOrganizationRelationDeleteArgs = {
+  id: Scalars['ID'];
+  relationship_type: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -16483,39 +16521,6 @@ export type OrganizationEdge = {
   node: Organization;
 };
 
-export type OrganizationEditMutations = {
-  __typename?: 'OrganizationEditMutations';
-  contextClean?: Maybe<Organization>;
-  contextPatch?: Maybe<Organization>;
-  delete?: Maybe<Scalars['ID']['output']>;
-  fieldPatch?: Maybe<Organization>;
-  relationAdd?: Maybe<StixRefRelationship>;
-  relationDelete?: Maybe<Organization>;
-};
-
-
-export type OrganizationEditMutationsContextPatchArgs = {
-  input?: InputMaybe<EditContext>;
-};
-
-
-export type OrganizationEditMutationsFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']['input']>;
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type OrganizationEditMutationsRelationAddArgs = {
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type OrganizationEditMutationsRelationDeleteArgs = {
-  relationship_type: Scalars['String']['input'];
-  toId: Scalars['StixRef']['input'];
-};
-
 export type OrganizationOrIndividual = Individual | Organization;
 
 export enum OrganizationsFilter {
@@ -18897,14 +18902,14 @@ export type QueryOpinionsTimeSeriesArgs = {
 
 
 export type QueryOrganizationArgs = {
-  id?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['String']>;
 };
 
 
 export type QueryOrganizationsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<OrganizationsFiltering>>>;
+  filters?: InputMaybe<Array<OrganizationsFiltering>>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<OrganizationsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -28743,11 +28748,10 @@ export type ResolversTypes = ResolversObject<{
   OpinionsFiltering: OpinionsFiltering;
   OpinionsOrdering: OpinionsOrdering;
   OrderingMode: OrderingMode;
-  Organization: ResolverTypeWrapper<Omit<Organization, 'cases' | 'containers' | 'createdBy' | 'default_dashboard' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'members' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentOrganizations' | 'pendingFiles' | 'reports' | 'sectors' | 'stixCoreRelationships' | 'subOrganizations'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, default_dashboard?: Maybe<ResolversTypes['Workspace']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, members?: Maybe<ResolversTypes['UserConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, parentOrganizations?: Maybe<ResolversTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, sectors?: Maybe<ResolversTypes['SectorConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, subOrganizations?: Maybe<ResolversTypes['OrganizationConnection']> }>;
+  Organization: ResolverTypeWrapper<BasicStoreEntityOrganization>;
   OrganizationAddInput: OrganizationAddInput;
   OrganizationConnection: ResolverTypeWrapper<Omit<OrganizationConnection, 'edges'> & { edges: Array<ResolversTypes['OrganizationEdge']> }>;
   OrganizationEdge: ResolverTypeWrapper<Omit<OrganizationEdge, 'node'> & { node: ResolversTypes['Organization'] }>;
-  OrganizationEditMutations: ResolverTypeWrapper<Omit<OrganizationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Organization']>, contextPatch?: Maybe<ResolversTypes['Organization']>, fieldPatch?: Maybe<ResolversTypes['Organization']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Organization']> }>;
   OrganizationOrIndividual: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['OrganizationOrIndividual']>;
   OrganizationsFilter: OrganizationsFilter;
   OrganizationsFiltering: OrganizationsFiltering;
@@ -29464,11 +29468,10 @@ export type ResolversParentTypes = ResolversObject<{
   OpinionEditMutations: Omit<OpinionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Opinion']>, contextPatch?: Maybe<ResolversParentTypes['Opinion']>, fieldPatch?: Maybe<ResolversParentTypes['Opinion']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Opinion']> };
   OpinionUserAddInput: OpinionUserAddInput;
   OpinionsFiltering: OpinionsFiltering;
-  Organization: Omit<Organization, 'cases' | 'containers' | 'createdBy' | 'default_dashboard' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'members' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentOrganizations' | 'pendingFiles' | 'reports' | 'sectors' | 'stixCoreRelationships' | 'subOrganizations'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, members?: Maybe<ResolversParentTypes['UserConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, parentOrganizations?: Maybe<ResolversParentTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, sectors?: Maybe<ResolversParentTypes['SectorConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, subOrganizations?: Maybe<ResolversParentTypes['OrganizationConnection']> };
+  Organization: BasicStoreEntityOrganization;
   OrganizationAddInput: OrganizationAddInput;
   OrganizationConnection: Omit<OrganizationConnection, 'edges'> & { edges: Array<ResolversParentTypes['OrganizationEdge']> };
   OrganizationEdge: Omit<OrganizationEdge, 'node'> & { node: ResolversParentTypes['Organization'] };
-  OrganizationEditMutations: Omit<OrganizationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Organization']>, contextPatch?: Maybe<ResolversParentTypes['Organization']>, fieldPatch?: Maybe<ResolversParentTypes['Organization']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Organization']> };
   OrganizationOrIndividual: ResolversUnionTypes<ResolversParentTypes>['OrganizationOrIndividual'];
   OrganizationsFiltering: OrganizationsFiltering;
   OtpElement: OtpElement;
@@ -33587,7 +33590,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   opinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationOpinionAddArgs, 'input'>>;
   opinionEdit?: Resolver<Maybe<ResolversTypes['OpinionEditMutations']>, ParentType, ContextType, RequireFields<MutationOpinionEditArgs, 'id'>>;
   organizationAdd?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationAddArgs, 'input'>>;
-  organizationEdit?: Resolver<Maybe<ResolversTypes['OrganizationEditMutations']>, ParentType, ContextType, RequireFields<MutationOrganizationEditArgs, 'id'>>;
+  organizationContextClean?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationContextCleanArgs, 'id'>>;
+  organizationContextPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationContextPatchArgs, 'id' | 'input'>>;
+  organizationDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationOrganizationDeleteArgs, 'id'>>;
+  organizationFieldPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationFieldPatchArgs, 'id' | 'input'>>;
+  organizationRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationOrganizationRelationAddArgs, 'id' | 'input'>>;
+  organizationRelationDelete?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   otpActivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, Partial<MutationOtpActivationArgs>>;
   otpDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
   otpLogin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationOtpLoginArgs>>;
@@ -34291,16 +34299,6 @@ export type OrganizationEdgeResolvers<ContextType = any, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type OrganizationEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationEditMutations'] = ResolversParentTypes['OrganizationEditMutations']> = ResolversObject<{
-  contextClean?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
-  contextPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<OrganizationEditMutationsContextPatchArgs>>;
-  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  fieldPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<OrganizationEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<OrganizationEditMutationsRelationAddArgs, 'input'>>;
-  relationDelete?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<OrganizationEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type OrganizationOrIndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationOrIndividual'] = ResolversParentTypes['OrganizationOrIndividual']> = ResolversObject<{
   __resolveType: TypeResolveFn<'Individual' | 'Organization', ParentType, ContextType>;
 }>;
@@ -34733,7 +34731,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   opinionsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryOpinionsDistributionArgs, 'field' | 'operation'>>;
   opinionsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryOpinionsNumberArgs>>;
   opinionsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryOpinionsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
-  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<QueryOrganizationArgs>>;
+  organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<QueryOrganizationArgs, 'id'>>;
   organizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;
   otpGeneration?: Resolver<Maybe<ResolversTypes['OtpElement']>, ParentType, ContextType>;
   participants?: Resolver<Maybe<ResolversTypes['ParticipantConnection']>, ParentType, ContextType, Partial<QueryParticipantsArgs>>;
@@ -37663,7 +37661,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationConnection?: OrganizationConnectionResolvers<ContextType>;
   OrganizationEdge?: OrganizationEdgeResolvers<ContextType>;
-  OrganizationEditMutations?: OrganizationEditMutationsResolvers<ContextType>;
   OrganizationOrIndividual?: OrganizationOrIndividualResolvers<ContextType>;
   OtpElement?: OtpElementResolvers<ContextType>;
   OverviewMetrics?: OverviewMetricsResolvers<ContextType>;

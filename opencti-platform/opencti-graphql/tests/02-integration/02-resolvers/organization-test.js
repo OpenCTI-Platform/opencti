@@ -9,7 +9,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: OrganizationsOrdering
     $orderMode: OrderingMode
-    $filters: [OrganizationsFiltering]
+    $filters: [OrganizationsFiltering!]
     $filterMode: FilterMode
     $search: String
   ) {
@@ -139,11 +139,9 @@ describe('Organization resolver standard behavior', () => {
   it('should update organization', async () => {
     const UPDATE_QUERY = gql`
       mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-        organizationEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            name
-          }
+        organizationFieldPatch(id: $id, input: $input) {
+          id
+          name
         }
       }
     `;
@@ -151,15 +149,13 @@ describe('Organization resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: organizationInternalId, input: { key: 'name', value: ['Organization - test'] } },
     });
-    expect(queryResult.data.organizationEdit.fieldPatch.name).toEqual('Organization - test');
+    expect(queryResult.data.organizationFieldPatch.name).toEqual('Organization - test');
   });
   it('should context patch organization', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation OrganizationEdit($id: ID!, $input: EditContext) {
-        organizationEdit(id: $id) {
-          contextPatch(input: $input) {
-            id
-          }
+        organizationContextPatch(id: $id, input: $input) {
+          id
         }
       }
     `;
@@ -167,15 +163,13 @@ describe('Organization resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: organizationInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.organizationEdit.contextPatch.id).toEqual(organizationInternalId);
+    expect(queryResult.data.organizationContextPatch.id).toEqual(organizationInternalId);
   });
   it('should context clean organization', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation OrganizationEdit($id: ID!) {
-        organizationEdit(id: $id) {
-          contextClean {
-            id
-          }
+        organizationContextClean(id: $id) {
+          id
         }
       }
     `;
@@ -183,21 +177,19 @@ describe('Organization resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: organizationInternalId },
     });
-    expect(queryResult.data.organizationEdit.contextClean.id).toEqual(organizationInternalId);
+    expect(queryResult.data.organizationContextClean.id).toEqual(organizationInternalId);
   });
   it('should add relation in organization', async () => {
     const RELATION_ADD_QUERY = gql`
       mutation OrganizationEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
-        organizationEdit(id: $id) {
-          relationAdd(input: $input) {
-            id
-            from {
-              ... on Organization {
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                    }
+        organizationRelationAdd(id: $id, input: $input) {
+          id
+          from {
+            ... on Organization {
+              objectMarking {
+                edges {
+                  node {
+                    id
                   }
                 }
               }
@@ -216,19 +208,17 @@ describe('Organization resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.organizationEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    expect(queryResult.data.organizationRelationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in organization', async () => {
     const RELATION_DELETE_QUERY = gql`
       mutation OrganizationEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-        organizationEdit(id: $id) {
-          relationDelete(toId: $toId, relationship_type: $relationship_type) {
-            id
-            objectMarking {
-              edges {
-                node {
-                  id
-                }
+        organizationRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+          id
+          objectMarking {
+            edges {
+              node {
+                id
               }
             }
           }
@@ -243,14 +233,12 @@ describe('Organization resolver standard behavior', () => {
         relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.organizationEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+    expect(queryResult.data.organizationRelationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should organization deleted', async () => {
     const DELETE_QUERY = gql`
       mutation organizationDelete($id: ID!) {
-        organizationEdit(id: $id) {
-          delete
-        }
+        organizationDelete(id: $id)
       }
     `;
     // Delete the organization

@@ -40,6 +40,7 @@ generates:
         ThreatActorIndividual: ../modules/threatActorIndividual/threatActorIndividual-types#BasicStoreEntityThreatActorIndividual
         IngestionRss: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionRss
         IngestionTaxii: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionTaxii
+        Organization: ../modules/organization/organization-types#BasicStoreEntityOrganization
   ./graphql.schema.json:
     plugins:
       - "introspection"

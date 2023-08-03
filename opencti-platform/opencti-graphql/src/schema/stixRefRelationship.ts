@@ -1,10 +1,11 @@
 import type { Checker, RelationRefDefinition } from './relationRef-definition';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS, INPUT_PARTICIPANT } from './general';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION, isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
+import { isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_USER } from './internalObject';
 import { schemaTypesDefinition } from './schema-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 

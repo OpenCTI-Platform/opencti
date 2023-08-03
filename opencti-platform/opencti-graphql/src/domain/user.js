@@ -18,7 +18,7 @@ import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/ge
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
   BYPASS,
@@ -36,6 +36,7 @@ import { now } from '../utils/format';
 import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
