@@ -6,6 +6,9 @@ import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql/index.js';
 import nconf from 'nconf';
 import express from 'express';
+import { expressMiddleware } from '@apollo/server/express4';
+import { json } from 'body-parser';
+import cors from 'cors';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
@@ -13,6 +16,7 @@ import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
 import { checkSystemDependencies } from '../initialization';
 import { executionContext } from '../utils/access';
+import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -78,7 +82,7 @@ const createHttpServer = async () => {
       path: `${basePath}${apolloServer.graphqlPath}`,
     }
   );
-  apolloServer.plugins.push({
+  apolloServer.addPlugin({
     async serverWillStart() {
       return {
         async drainServer() {
@@ -90,13 +94,28 @@ const createHttpServer = async () => {
   await apolloServer.start();
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(graphqlUploadExpress());
-  apolloServer.applyMiddleware({
-    app,
-    cors: true,
-    bodyParserConfig: { limit: requestSizeLimit },
-    onHealthCheck,
-    path: `${basePath}/graphql`,
-  });
+  app.use(
+    '/graphql',
+    cors({ origin: basePath }),
+    json(),
+    expressMiddleware(apolloServer, {
+      app,
+      bodyParserConfig: { limit: requestSizeLimit },
+      onHealthCheck,
+      path: `${basePath}/graphql`,
+      context: async ({ req, res }) => {
+        const executeContext = executionContext('api');
+        executeContext.req = req;
+        executeContext.res = res;
+        executeContext.workId = req.headers['opencti-work-id'];
+        const user = await authenticateUserFromRequest(executeContext, req, res);
+        if (user) {
+          executeContext.user = userWithOrigin(req, user);
+        }
+        return executeContext;
+      }
+    })
+  );
   const { sseMiddleware } = await createApp(app);
   return { httpServer, sseMiddleware };
 };

@@ -1,4 +1,4 @@
-import { ApolloServer } from 'apollo-server-express';
+import { ApolloServer } from '@apollo/server';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { print } from 'graphql';
@@ -9,20 +9,10 @@ import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../.
 
 // region static graphql modules
 import '../../src/modules/index';
-import type { AuthUser } from '../../src/types/user';
+import type { AuthContext, AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
-import {
-  generateStandardId,
-  MARKING_TLP_AMBER,
-  MARKING_TLP_AMBER_STRICT,
-  MARKING_TLP_GREEN
-} from '../../src/schema/identifier';
-import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_USER
-} from '../../src/schema/internalObject';
+import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN } from '../../src/schema/identifier';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/schema/stixDomainObject';
 // endregion
 
@@ -83,7 +73,13 @@ export const adminQuery = async (query: unknown, variables = {}) => {
 };
 
 // Roles
-interface Role { id: string, name: string, description: string, capabilities: string[] }
+interface Role {
+  id: string,
+  name: string,
+  description: string,
+  capabilities: string[]
+}
+
 const ROLE_PARTICIPATE: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge and participate' }),
   name: 'Access knowledge and participate',
@@ -103,8 +99,15 @@ export const ROLE_SECURITY: Role = {
   description: 'Knowledge/exploration/settings edit/delete',
   capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES']
 };
+
 // Groups
-interface Group { id: string, name: string, markings: string[], roles: Role[] }
+interface Group {
+  id: string,
+  name: string,
+  markings: string[],
+  roles: Role[]
+}
+
 export const GREEN_GROUP: Group = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'GREEN GROUP' }),
   name: 'GREEN GROUP',
@@ -126,7 +129,10 @@ export const AMBER_STRICT_GROUP: Group = {
 };
 
 // Organization
-interface Organization { name: string, id: string }
+interface Organization {
+  name: string,
+  id: string
+}
 
 const TEST_ORGANIZATION: Organization = {
   name: 'TestOrganization',
@@ -134,7 +140,16 @@ const TEST_ORGANIZATION: Organization = {
 };
 
 // Users
-interface User { id: string, email: string, password: string, roles?: Role[], organizations?: Organization[], groups: Group[], client: AxiosInstance }
+interface User {
+  id: string,
+  email: string,
+  password: string,
+  roles?: Role[],
+  organizations?: Organization[],
+  groups: Group[],
+  client: AxiosInstance
+}
+
 export const ADMIN_USER: AuthUser = {
   entity_type: 'User',
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
@@ -418,19 +433,19 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
   };
 };
 
-export const serverFromUser = (user = ADMIN_USER) => {
-  return new ApolloServer({
-    schema: createSchema(),
-    introspection: true,
-    persistedQueries: false,
-    context: () => {
-      return executionContext('test', user);
-    },
-  });
-};
+const serverFromUser = new ApolloServer<AuthContext>({
+  schema: createSchema(),
+  introspection: true,
+  persistedQueries: false,
+});
 
-const adminApolloServer = serverFromUser();
-export const queryAsAdmin = (request: any) => adminApolloServer.executeOperation(request);
+export const queryAsAdmin = async (request: any) => {
+  const { body } = await serverFromUser.executeOperation(request, { contextValue: executionContext('test', ADMIN_USER) });
+  if (body.kind === 'single') {
+    return body.singleResult;
+  }
+  return body.initialResult;
+};
 
 export const isSorted = (arr: []) => {
   let second_index;

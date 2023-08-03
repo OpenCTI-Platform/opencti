@@ -357,7 +357,7 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('ForbiddenAccess');
   });
 
   it('User with edit access right updates workspace2', async () => {
@@ -397,7 +397,7 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('ForbiddenAccess');
   });
 
   it('User with admin access right deletes workspace1', async () => {

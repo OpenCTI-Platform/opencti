@@ -1,23 +1,17 @@
-import { ApolloServer, UserInputError } from 'apollo-server-express';
-import { ApolloServerPluginLandingPageGraphQLPlayground, ApolloServerPluginLandingPageDisabled } from 'apollo-server-core';
+import { ApolloServer } from '@apollo/server';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
+import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
+import { ApolloServerPluginLandingPageGraphQLPlayground } from '@apollo/server-plugin-landing-page-graphql-playground';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
-import {
-  basePath,
-  DEV_MODE,
-  PLAYGROUND_INTROSPECTION_DISABLED,
-  ENABLED_TRACING,
-  PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED
-} from '../config/conf';
-import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
+import { basePath, DEV_MODE, ENABLED_TRACING, GRAPHQL_ARMOR_ENABLED, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
 import { ForbiddenAccess, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
-import { executionContext } from '../utils/access';
 
 const createApolloServer = () => {
   const schema = createSchema();
@@ -79,24 +73,14 @@ const createApolloServer = () => {
     introspection: true, // Will be disabled by plugin if needed
     persistedQueries: false,
     validationRules: apolloValidationRules,
-    async context({ req, res }) {
-      const executeContext = executionContext('api');
-      executeContext.req = req;
-      executeContext.res = res;
-      executeContext.workId = req.headers['opencti-work-id'];
-      const user = await authenticateUserFromRequest(executeContext, req, res);
-      if (user) {
-        executeContext.user = userWithOrigin(req, user);
-      }
-      return executeContext;
-    },
     tracing: DEV_MODE,
     plugins: apolloPlugins,
-    formatError: (error) => {
-      let e = apolloFormatError(error);
-      if (e instanceof UserInputError) {
-        if (e.originalError instanceof ConstraintDirectiveError) {
-          const { originalError } = e.originalError;
+    formatError: (error, initialError) => {
+      let e = error;
+      const formattedError = apolloFormatError(initialError);
+      if (error.extensions?.code === ApolloServerErrorCode.BAD_USER_INPUT) {
+        if (formattedError.originalError instanceof ConstraintDirectiveError) {
+          const { originalError } = formattedError.originalError;
           const { fieldName } = originalError;
           const ConstraintError = ValidationError(fieldName, originalError);
           e = apolloFormatError(ConstraintError);

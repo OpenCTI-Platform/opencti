@@ -799,7 +799,7 @@ describe('Upsert and merge entities', () => {
       stop_time: '2021-10-08T22:00:00.000Z',
     });
     await expect(createBadRelation()).rejects.toHaveProperty(
-      'data.reason',
+      'extensions.data.reason',
       'You cant create a relation with a start_time less than the stop_time'
     );
     const rel = await createRelation(testContext, ADMIN_USER, {
@@ -812,7 +812,7 @@ describe('Upsert and merge entities', () => {
     const inputUpdate = { key: 'start_time', value: ['2021-10-20T22:00:00.000Z'] };
     const update = () => updateAttribute(testContext, ADMIN_USER, rel.id, RELATION_USES, [inputUpdate]);
     await expect(update()).rejects.toHaveProperty(
-      'data.reason',
+      'extensions.data.reason',
       'You cant update an element with stop_time less than start_time'
     );
     await deleteElementById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);

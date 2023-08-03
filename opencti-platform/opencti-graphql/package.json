@@ -33,6 +33,7 @@
     "node": ">= 16.*"
   },
   "dependencies": {
+    "@apollo/server": "4.0.0",
     "@aws-sdk/client-s3": "3.383.0",
     "@aws-sdk/credential-provider-node": "3.382.0",
     "@aws-sdk/lib-storage": "3.383.0",
@@ -59,8 +60,6 @@
     "amqplib": "0.10.3",
     "antlr4": "4.13.0",
     "apollo-errors": "1.9.0",
-    "@apollo/server": "4.0.0",
-    "@apollo/server": "4.0.0",
     "async-lock": "1.4.0",
     "axios": "1.4.0",
     "axios-cookiejar-support": "4.0.7",
