@@ -1,19 +1,20 @@
 import { elLoadById } from '../database/engine';
-import { READ_PLATFORM_INDICES } from '../database/utils';
+import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD } from '../database/utils';
 import { storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
-import { createRelation, createRelations, deleteRelationsByFromAndTo } from '../database/middleware';
+import { createRelations, deleteRelationsByFromAndTo, patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixRefRelationshipAddInput, StixRefRelationshipsAddInput } from '../generated/graphql';
+import type { BasicStoreObject } from '../types/store';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
 
-export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
-  return elLoadById(context, user, id, { indices: READ_PLATFORM_INDICES });
+export const findById = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser, id: string) : Promise<T> => {
+  return await elLoadById(context, user, id, { indices: READ_PLATFORM_INDICES }) as unknown as T;
 };
 
 export const stixObjectOrRelationshipAddRefRelation = async (
@@ -31,9 +32,12 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   if (!isStixRefRelationship(finalInput.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
   }
-  const relation = await createRelation(context, user, finalInput);
-  await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, relation.from, user);
-  return relation;
+  // Create relation
+  const patch = { [input.fieldName as string]: [input.toId] };
+  const operations = { [input.fieldName as string]: UPDATE_OPERATION_ADD };
+  const { element } = await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { operations });
+  await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, element, user);
+  return element;
 };
 export const stixObjectOrRelationshipAddRefRelations = async (
   context: AuthContext,

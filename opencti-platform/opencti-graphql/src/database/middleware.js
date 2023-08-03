@@ -235,6 +235,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
+import { cleanMarkings } from '../domain/markingDefinition';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 
@@ -1979,7 +1980,28 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         if (relType === RELATION_GRANTED_TO && !isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
           throw ForbiddenAccess();
         }
-        const { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
+
+        let { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
+
+        const currentMarkings = initial.objectMarking;
+        if (relType === RELATION_OBJECT_MARKING && currentMarkings) {
+          const [markingAdded] = await internalFindByIds(context, user, refs);
+          const targetTypeExist = currentMarkings.some((marking) => marking.definition_type === markingAdded.definition_type);
+
+          if (targetTypeExist) {
+            const newValues = [...new Set(currentMarkings.flatMap((currentMarking) => {
+              const isSameType = currentMarking.definition_type === markingAdded.definition_type;
+              const isSameOrder = currentMarking.x_opencti_order === markingAdded.x_opencti_order;
+
+              if (isSameType && !isSameOrder) return markingAdded.id;
+              if (isSameType && isSameOrder) return [markingAdded.id, currentMarking.id];
+              return currentMarking.id;
+            }).filter((marking) => marking))];
+            // update current values of markings
+            ({ operation, refs } = { operation: UPDATE_OPERATION_REPLACE, refs: newValues });
+          }
+        }
+
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
           const currentRels = await listAllRelations(context, user, relType, { fromId: id });
@@ -2299,6 +2321,7 @@ const buildRelationInput = (input) => {
 };
 const buildInnerRelation = (from, to, type) => {
   const targets = Array.isArray(to) ? to : [to];
+
   if (!to || R.isEmpty(targets)) return [];
   const relations = [];
   for (let i = 0; i < targets.length; i += 1) {
@@ -2680,16 +2703,16 @@ const buildRelationData = async (context, user, input, opts = {}) => {
       // If user is not part of the platform organization, put its own organizations
       relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
+    const markingsFiltered = await cleanMarkings(context, input.objectMarking);
+    relToCreate.push(...buildInnerRelation(data, markingsFiltered, RELATION_OBJECT_MARKING));
   }
   if (isStixCoreRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
     relToCreate.push(...buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
     relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
   }
   if (isStixSightingRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
   }
   // 05. Prepare the final data
   const created = R.pipe(
@@ -3001,7 +3024,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
   const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o));
-  const appendMetaRelationships = (inputField, relType) => {
+  const appendMetaRelationships = async (inputField, relType) => {
     if (input[inputField] || relType === RELATION_GRANTED_TO) {
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
@@ -3011,6 +3034,9 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
           // If user is not part of the platform organization, put its own organizations
           relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
+      } else if (relType === RELATION_OBJECT_MARKING) {
+        const markingsFiltered = await cleanMarkings(context, input[inputField]);
+        relToCreate.push(...buildInnerRelation(data, markingsFiltered, relType));
       } else if (input[inputField]) {
         const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
         relToCreate.push(...buildInnerRelation(data, instancesToCreate, relType));
@@ -3036,7 +3062,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
   for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
     const inputField = inputFields[fieldIndex];
-    appendMetaRelationships(inputField.inputName, inputField.databaseName);
+    await appendMetaRelationships(inputField.inputName, inputField.databaseName);
   }
 
   // Transaction succeed, complete the result to send it back
