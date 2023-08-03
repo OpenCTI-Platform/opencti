@@ -1864,7 +1864,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       existingEntityPromise = internalLoadById(context, user, eventualNewStandardId);
     }
     if (isStixCyberObservableHashedObservable(initial.entity_type)) {
-      existingByHashedPromise = listEntitiesByHashes(user, initial.entity_type, updated.hashes)
+      existingByHashedPromise = listEntitiesByHashes(context, user, initial.entity_type, updated.hashes)
         .then((entities) => entities.filter((e) => e.id !== id));
     }
     const [existingEntity, existingByHashed] = await Promise.all([existingEntityPromise, existingByHashedPromise]);
