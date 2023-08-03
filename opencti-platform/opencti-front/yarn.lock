@@ -13053,7 +13053,7 @@ __metadata:
     react-markdown: 8.0.7
     react-material-ui-carousel: 3.4.2
     react-mde: 11.5.0
-    react-otp-input: 2.4.0
+    react-otp-input: 3.0.4
     react-pdf: 6.2.2
     react-rectangle-selection: 1.0.4
     react-relay: 15.0.0
@@ -14496,13 +14496,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-otp-input@npm:2.4.0":
-  version: 2.4.0
-  resolution: "react-otp-input@npm:2.4.0"
+"react-otp-input@npm:3.0.4":
+  version: 3.0.4
+  resolution: "react-otp-input@npm:3.0.4"
   peerDependencies:
-    react: ^16.2.0
-    react-dom: ^16.2.0
-  checksum: c73230be43fcc4d4abf8c39e9fe546a40637dae3e9633dc0af1727bc6ef14839b7e2d455216208ab718697c40513781740c95a2c300e8c5513954842e18c1dbf
+    react: ">=16.8.6 || ^17.0.0 || ^18.0.0"
+    react-dom: ">=16.8.6 || ^17.0.0 || ^18.0.0"
+  checksum: 9ecf932b62fed6a2a5852fe65782cbd0515c965a0be17f98df671c99ab66122fd92b03f77eb7b235c3820a725d1f027a8d71740fe4bf6998c164ca681d7baaf1
   languageName: node
   linkType: hard
 

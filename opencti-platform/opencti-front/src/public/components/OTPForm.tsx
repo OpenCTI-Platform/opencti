@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
-import OtpInput from 'react-otp-input';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../components/i18n';
 import { Theme } from '../../components/Theme';
-
-const OPT_CODE_SIZE = 6;
+import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   otp: {
@@ -18,24 +16,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   input: {
     display: 'flex',
     justifyContent: 'center',
-  },
-  inputStyle: {
-    outline: 'none',
-    border: `1px solid rgba(${
-      theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
-    },.15)`,
-    borderRadius: 4,
-    minWidth: '54px',
-    height: '54px',
-    fontSize: '16px',
-    fontWeight: '400',
-    backgroundColor: 'transparent',
-    margin: '0 5px 0 5px',
-    color: theme.palette.primary.main,
-  },
-  focusStyle: {
-    border: `2px solid ${theme.palette.primary.main}`,
-    outline: 'none',
   },
 }));
 
@@ -66,7 +46,7 @@ const OTPForm = () => {
       onCompleted: () => window.location.reload(),
     });
   };
-  if (code.length === OPT_CODE_SIZE && !inputDisable) {
+  if (code.length === OTP_CODE_SIZE && !inputDisable) {
     setInputDisable(true);
     commitOtpMutation({
       variables: {
@@ -104,15 +84,10 @@ const OTPForm = () => {
         </Alert>
       )}
       <div className={classes.input}>
-        <OtpInput
+        <OtpInputField
           value={code}
           onChange={handleChange}
-          numInputs={OPT_CODE_SIZE}
           isDisabled={inputDisable}
-          isInputNum={true}
-          shouldAutoFocus={true}
-          inputStyle={classes.inputStyle}
-          focusStyle={classes.focusStyle}
         />
       </div>
       <Button

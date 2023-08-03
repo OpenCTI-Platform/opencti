@@ -15,7 +15,6 @@ import { LockOutlined, NoEncryptionOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
-import OtpInput from 'react-otp-input';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
 import inject18n, { useFormatter } from '../../../components/i18n';
@@ -30,9 +29,9 @@ import { OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
-import { OTP_CODE_SIZE } from '../../../public/components/OtpActivation';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
+import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInputField';
 
 const styles = () => ({
   container: {
@@ -177,32 +176,10 @@ const Otp = ({ closeFunction, secret, uri }) => {
           {t('Type the code generated in your application')}
         </Alert>
       )}
-      <OtpInput
+      <OtpInputField
         value={code}
         onChange={handleChange}
-        numInputs={OTP_CODE_SIZE}
-        isDIsabled={inputDisable}
-        isInputNum={true}
-        shouldAutoFocus={true}
-        inputStyle={{
-          outline: 'none',
-          border: `1px solid rgba(${
-            theme.palette.mode === 'dark' ? '255,255,255' : '0,0,0'
-          },.15)`,
-          borderRadius: 4,
-          boxSizing: 'border-box',
-          width: '54px',
-          height: '54px',
-          fontSize: '16px',
-          fontWeight: '400',
-          backgroundColor: 'transparent',
-          margin: '0 5px 0 5px',
-          color: theme.palette.text.primary,
-        }}
-        focusStyle={{
-          border: `2px solid ${theme.palette.primary.main}`,
-          outline: 'none',
-        }}
+        isDisabled={inputDisable}
       />
     </div>
   );

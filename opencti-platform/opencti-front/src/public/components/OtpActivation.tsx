@@ -1,7 +1,6 @@
 import { makeStyles } from "@mui/styles";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import Alert from "@mui/material/Alert";
-import OtpInput from "react-otp-input";
 import { graphql, useMutation } from "react-relay";
 import qrcode from "qrcode";
 import { useTheme } from "@mui/material/styles";
@@ -10,34 +9,14 @@ import { QueryRenderer } from "../../relay/environment";
 import { useFormatter } from "../../components/i18n";
 import { OtpActivationQuery$data } from "./__generated__/OtpActivationQuery.graphql";
 import { Theme } from "../../components/Theme";
+import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   input: {
     display: "flex",
     justifyContent: "center",
   },
-  inputStyle: {
-    outline: "none",
-    border: `1px solid rgba(${
-      theme.palette.mode === "dark" ? "255,255,255" : "0,0,0"
-    },.15)`,
-    borderRadius: 4,
-    boxSizing: "border-box",
-    minWidth: "54px",
-    height: "54px",
-    fontSize: "16px",
-    fontWeight: "400",
-    backgroundColor: "transparent",
-    margin: "0 5px 0 5px",
-    color: theme.palette.primary.main,
-  },
-  focusStyle: {
-    border: `2px solid ${theme.palette.primary.main}`,
-    outline: "none",
-  },
 }));
-
-export const OTP_CODE_SIZE = 6;
 
 const generateOTP = graphql`
   query OtpActivationQuery {
@@ -126,15 +105,10 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
         </Alert>
       )}
       <div className={classes.input}>
-        <OtpInput
+        <OtpInputField
           value={code}
           onChange={handleChange}
-          numInputs={OTP_CODE_SIZE}
           isDisabled={inputDisable}
-          isInputNum={true}
-          shouldAutoFocus={true}
-          inputStyle={classes.inputStyle}
-          focusStyle={classes.focusStyle}
         />
       </div>
     </div>
