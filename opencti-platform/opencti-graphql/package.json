@@ -40,6 +40,8 @@
     "node": ">= 17.*"
   },
   "dependencies": {
+    "@apollo/server": "4.9.3",
+    "@apollo/server-plugin-landing-page-graphql-playground": "4.0.1",
     "@aws-sdk/client-s3": "3.621.0",
     "@aws-sdk/client-sts": "3.621.0",
     "@aws-sdk/credential-provider-node": "3.621.0",
@@ -73,8 +75,6 @@
     "amqplib": "0.10.4",
     "antlr4": "4.13.1",
     "apollo-errors": "1.9.0",
-    "apollo-server-core": "3.13.0",
-    "apollo-server-express": "3.13.0",
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
@@ -109,6 +109,7 @@
     "graphql-scalars": "1.23.0",
     "graphql-subscriptions": "2.0.0",
     "graphql-upload": "16.0.2",
+    "graphql-ws": "5.14.0",
     "helmet": "7.1.0",
     "http-proxy-agent": "7.0.2",
     "https-proxy-agent": "7.0.5",
@@ -148,7 +149,6 @@
     "set-interval-async": "3.0.3",
     "showdown": "2.1.0",
     "source-map-support": "0.5.21",
-    "subscriptions-transport-ws": "0.11.0",
     "tough-cookie": "4.1.4",
     "turndown": "7.2.0",
     "unzipper": "0.10.14",
@@ -157,6 +157,7 @@
     "validator": "13.11.0",
     "winston": "3.13.0",
     "winston-daily-rotate-file": "5.0.0",
+    "ws": "8.14.2",
     "xml2js": "0.6.2"
   },
   "devDependencies": {
@@ -184,6 +185,7 @@
     "@typescript-eslint/eslint-plugin": "7.3.1",
     "@typescript-eslint/parser": "7.3.1",
     "@vitest/coverage-v8": "1.4.0",
+    "apollo-server-errors": "3.3.1",
     "cross-env": "7.0.3",
     "esbuild": "0.23.0",
     "esbuild-plugin-import-glob": "0.1.1",

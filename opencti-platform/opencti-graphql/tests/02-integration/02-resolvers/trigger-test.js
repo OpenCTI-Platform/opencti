@@ -221,7 +221,7 @@ describe('Trigger resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('FORBIDDEN_ACCESS');
   });
   it('security user should group trigger deleted', async () => {
     // Delete the trigger
@@ -265,7 +265,7 @@ describe('Trigger resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('FORBIDDEN_ACCESS');
   });
   it('security user should organization trigger deleted', async () => {
     // Delete the trigger

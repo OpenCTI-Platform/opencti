@@ -75,7 +75,7 @@ class ErrorBoundaryComponent extends React.Component {
     if (this.state.error) {
       const baseErrors = this.state.error.res?.errors ?? [];
       const retroErrors = this.state.error.data?.res?.errors ?? [];
-      const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
+      const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {
         return <DedicatedWarning title={'Complex search'} description={'Your search have too much terms to be executed. Please limit the number of words or the complexity'}/>;

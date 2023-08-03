@@ -943,7 +943,7 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('FORBIDDEN_ACCESS');
   });
 
   it('User with edit access right updates workspace2', async () => {
@@ -1000,10 +1000,8 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FUNCTIONAL_ERROR');
-    expect(queryResult.errors.at(0).message).toEqual(
-      'It should have at least one valid member with admin access',
-    );
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('FUNCTIONAL_ERROR');
+    expect(queryResult.errors.at(0).extensions?.data.reason).toEqual('It should have at least one valid member with admin access');
   });
 
   it('User with edit access right should not update workspace members', async () => {
@@ -1023,7 +1021,7 @@ describe('Workspace member access behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.errors.length).toEqual(1);
-    expect(queryResult.errors.at(0).name).toEqual('FORBIDDEN_ACCESS');
+    expect(queryResult.errors.at(0).extensions?.code).toEqual('FORBIDDEN_ACCESS');
   });
 
   it('User with admin access right deletes workspace1', async () => {

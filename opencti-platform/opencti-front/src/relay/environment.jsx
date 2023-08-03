@@ -1,12 +1,13 @@
-import { Environment, RecordSource, Store, Observable } from 'relay-runtime';
-import { SubscriptionClient } from 'subscriptions-transport-ws';
+import { Environment, Observable, RecordSource, Store } from 'relay-runtime';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';
-import { commitLocalUpdate as CLU, commitMutation as CM, QueryRenderer as QR, requestSubscription as RS, fetchQuery as FQ } from 'react-relay';
+import { commitLocalUpdate as CLU, commitMutation as CM, fetchQuery as FQ, QueryRenderer as QR, requestSubscription as RS } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import * as R from 'ramda';
+import { RelayNetworkLayer, urlMiddleware, } from 'react-relay-network-modern';
+import { createClient } from 'graphql-ws';
 import uploadMiddleware from './uploadMiddleware';
 
 // Service bus
@@ -42,16 +43,17 @@ const subscriptionUrl = `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`;
 const subscribeFn = (request, variables) => {
   if (!subscriptionClient) {
     // Lazy creation of the subscription client to connect only after auth
-    subscriptionClient = new SubscriptionClient(subscriptionUrl, {
-      reconnect: true,
+    subscriptionClient = createClient({
+      url: subscriptionUrl,
     });
   }
-  const subscribeObservable = subscriptionClient.request({
-    query: request.text,
-    operationName: request.name,
-    variables,
+  return Observable.create((sink) => {
+    return subscriptionClient.subscribe({
+      query: request.text,
+      operationName: request.name,
+      variables,
+    }, sink);
   });
-  return Observable.from(subscribeObservable);
 };
 const fetchMiddleware = urlMiddleware({
   url: `${APP_BASE_PATH}/graphql`,
@@ -68,7 +70,8 @@ export class QueryRenderer extends Component {
   render() {
     const { variables, query, render } = this.props;
     return (
-      <QR environment={environment}
+      <QR
+        environment={environment}
         query={query}
         variables={variables}
         render={(data) => {
@@ -82,6 +85,7 @@ export class QueryRenderer extends Component {
     );
   }
 }
+
 QueryRenderer.propTypes = {
   variables: PropTypes.object,
   render: PropTypes.func,
@@ -164,7 +168,7 @@ export const handleErrorInForm = (error, setErrors) => {
   if (formattedError.data && formattedError.data.field) {
     setErrors({
       [formattedError.data.field]:
-        formattedError.data.message || formattedError.data.reason,
+      formattedError.data.message || formattedError.data.reason,
     });
   } else {
     const messages = R.map(

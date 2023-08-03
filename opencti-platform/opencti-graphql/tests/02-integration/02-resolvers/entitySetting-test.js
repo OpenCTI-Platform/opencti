@@ -102,7 +102,7 @@ describe('EntitySetting resolver standard behavior', () => {
       variables: { ids: [entitySettingIdNote], input: { key: 'enforce_reference', value: ['true'] } },
     });
     expect(queryResult.errors.length > 0).toBeTruthy();
-    expect(queryResult.errors[0].originalError.message).toEqual('This setting is not available for this entity');
+    expect(queryResult.errors[0].extensions.message).toEqual('This setting is not available for this entity');
   });
   it('should update entity settings by ids - valid mandatory attributes', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'attribute_abstract', mandatory: true }]);
@@ -125,7 +125,7 @@ describe('EntitySetting resolver standard behavior', () => {
       variables: { ids: [entitySettingIdNote], input: { key: 'attributes_configuration', value: [attributesConfiguration] } },
     });
     expect(queryResult.errors.length > 0).toBeTruthy();
-    expect(queryResult.errors[0].originalError.data.message).toEqual('This attribute is not customizable for this entity');
+    expect(queryResult.errors[0].extensions.data.message).toEqual('This attribute is not customizable for this entity');
   });
   it('should update entity settings by ids - valid default value', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'createdBy', default_values: ['identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f'] }]);
