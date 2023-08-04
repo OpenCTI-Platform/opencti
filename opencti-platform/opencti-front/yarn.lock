@@ -1916,14 +1916,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-link@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-link@npm:38.1.1"
+"@ckeditor/ckeditor5-link@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-link@npm:39.0.0"
   dependencies:
-    "@ckeditor/ckeditor5-ui": 38.1.1
-    ckeditor5: 38.1.1
-    lodash-es: ^4.17.15
-  checksum: 7a675eebe276ed20aa7d8a8968aa2358a5b592953bf7ed2b0996d0281560caac9c01b1b4ed02509b1250b0b7f3c7b0e36b7881ab81e428e43feb972b55951e97
+    "@ckeditor/ckeditor5-ui": 39.0.0
+    ckeditor5: 39.0.0
+    lodash-es: 4.17.21
+  checksum: ad092612f86e038a54ad8a77e37f06115d1885afe04fac872e7ed474be559f00ee2c27c103d05496cc3bd0a9331368bb12455df4ed65d9707e760d9ab8d41616
   languageName: node
   linkType: hard
 
@@ -6222,7 +6222,7 @@ __metadata:
     "@ckeditor/ckeditor5-horizontal-line": ^38.0.1
     "@ckeditor/ckeditor5-image": ^38.0.1
     "@ckeditor/ckeditor5-indent": ^38.0.1
-    "@ckeditor/ckeditor5-link": ^38.0.1
+    "@ckeditor/ckeditor5-link": ^39.0.0
     "@ckeditor/ckeditor5-list": ^38.0.1
     "@ckeditor/ckeditor5-media-embed": ^38.0.1
     "@ckeditor/ckeditor5-mention": ^38.0.1
