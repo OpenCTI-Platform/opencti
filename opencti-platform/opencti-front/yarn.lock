@@ -1878,12 +1878,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-highlight@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-highlight@npm:38.1.1"
+"@ckeditor/ckeditor5-highlight@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-highlight@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-  checksum: 93dfc773961450d8609411820bdfefe779eac3735d911ae2a176ed63062f5b1c575ff160431f1da35ff66069e4caefb254af332f3587d471c996284308d5fb15
+    ckeditor5: 39.0.0
+  checksum: 8152d76107e4b6a600f3345bf58adc7e55e57f8c2a99d13bbc79e3d9e1ae3612290847803e6c2ffa5404836b6137319eea98f04f2e76d465682199fa3eaa5ad7
   languageName: node
   linkType: hard
 
@@ -6218,7 +6218,7 @@ __metadata:
     "@ckeditor/ckeditor5-essentials": ^39.0.0
     "@ckeditor/ckeditor5-font": ^39.0.0
     "@ckeditor/ckeditor5-heading": ^39.0.0
-    "@ckeditor/ckeditor5-highlight": ^38.0.1
+    "@ckeditor/ckeditor5-highlight": ^39.0.0
     "@ckeditor/ckeditor5-horizontal-line": ^39.0.0
     "@ckeditor/ckeditor5-image": ^38.0.1
     "@ckeditor/ckeditor5-indent": ^39.0.0
