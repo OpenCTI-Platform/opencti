@@ -54,10 +54,10 @@ const ThreatActorGroupValidation = (t) => Yup.object().shape({
   last_seen: Yup.date()
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  sophistication: Yup.object().nullable(),
-  resource_level: Yup.object().nullable(),
+  sophistication: Yup.string().nullable(),
+  resource_level: Yup.string().nullable(),
   roles: Yup.array().nullable(),
-  primary_motivation: Yup.object().nullable(),
+  primary_motivation: Yup.string().nullable(),
   secondary_motivations: Yup.array().nullable(),
   personal_motivations: Yup.array().nullable(),
   goals: Yup.string().nullable(),
