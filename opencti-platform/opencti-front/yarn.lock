@@ -2003,12 +2003,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-remove-format@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-remove-format@npm:38.1.1"
+"@ckeditor/ckeditor5-remove-format@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-remove-format@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-  checksum: fa4d86605527f28acd5efa70fe39af88ad89ee9a12fb775232409c74d4b8f606afaba88b2e31ff2f6f37d3b3be0c16eb8cf4a6144a01a288654422ac58d960a2
+    ckeditor5: 39.0.0
+  checksum: adc5a56630bfcf68d8c46cae619a1e5c71c8425904a1ee3b3cb0f1edfab207bc86914cad3eb9eb23ccc342c1d401d386235d7878a8d14311d71e9dfc26e6c9f2
   languageName: node
   linkType: hard
 
@@ -6237,7 +6237,7 @@ __metadata:
     "@ckeditor/ckeditor5-mention": ^38.0.1
     "@ckeditor/ckeditor5-paragraph": ^38.0.1
     "@ckeditor/ckeditor5-paste-from-office": ^39.0.0
-    "@ckeditor/ckeditor5-remove-format": ^38.0.1
+    "@ckeditor/ckeditor5-remove-format": ^39.0.0
     "@ckeditor/ckeditor5-source-editing": ^38.0.1
     "@ckeditor/ckeditor5-special-characters": ^39.0.0
     "@ckeditor/ckeditor5-table": ^38.0.1
