@@ -22505,6 +22505,7 @@ export enum StixDomainObjectsFilter {
   IncidentType = 'incident_type',
   Indicates = 'indicates',
   IndicatorTypes = 'indicator_types',
+  KillChainPhase = 'killChainPhase',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
