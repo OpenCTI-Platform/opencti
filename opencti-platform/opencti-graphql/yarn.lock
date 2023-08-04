@@ -488,15 +488,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-s3@npm:3.383.0":
-  version: 3.383.0
-  resolution: "@aws-sdk/client-s3@npm:3.383.0"
+"@aws-sdk/client-s3@npm:3.385.0":
+  version: 3.385.0
+  resolution: "@aws-sdk/client-s3@npm:3.385.0"
   dependencies:
     "@aws-crypto/sha1-browser": 3.0.0
     "@aws-crypto/sha256-browser": 3.0.0
     "@aws-crypto/sha256-js": 3.0.0
-    "@aws-sdk/client-sts": 3.382.0
-    "@aws-sdk/credential-provider-node": 3.382.0
+    "@aws-sdk/client-sts": 3.385.0
+    "@aws-sdk/credential-provider-node": 3.385.0
     "@aws-sdk/middleware-bucket-endpoint": 3.378.0
     "@aws-sdk/middleware-expect-continue": 3.378.0
     "@aws-sdk/middleware-flexible-checksums": 3.383.0
@@ -546,48 +546,7 @@ __metadata:
     "@smithy/util-waiter": ^2.0.1
     fast-xml-parser: 4.2.5
     tslib: ^2.5.0
-  checksum: 0d3302e132e99e598db0628e697579828abc8a3ff68cf60b25113d077a62e05ca8438a822ae9601bb90420d7446caa6dc590bc5daf4d3bd9c48fd0527a928de6
-  languageName: node
-  linkType: hard
-
-"@aws-sdk/client-sso-oidc@npm:3.382.0":
-  version: 3.382.0
-  resolution: "@aws-sdk/client-sso-oidc@npm:3.382.0"
-  dependencies:
-    "@aws-crypto/sha256-browser": 3.0.0
-    "@aws-crypto/sha256-js": 3.0.0
-    "@aws-sdk/middleware-host-header": 3.379.1
-    "@aws-sdk/middleware-logger": 3.378.0
-    "@aws-sdk/middleware-recursion-detection": 3.378.0
-    "@aws-sdk/middleware-user-agent": 3.382.0
-    "@aws-sdk/types": 3.378.0
-    "@aws-sdk/util-endpoints": 3.382.0
-    "@aws-sdk/util-user-agent-browser": 3.378.0
-    "@aws-sdk/util-user-agent-node": 3.378.0
-    "@smithy/config-resolver": ^2.0.1
-    "@smithy/fetch-http-handler": ^2.0.1
-    "@smithy/hash-node": ^2.0.1
-    "@smithy/invalid-dependency": ^2.0.1
-    "@smithy/middleware-content-length": ^2.0.1
-    "@smithy/middleware-endpoint": ^2.0.1
-    "@smithy/middleware-retry": ^2.0.1
-    "@smithy/middleware-serde": ^2.0.1
-    "@smithy/middleware-stack": ^2.0.0
-    "@smithy/node-config-provider": ^2.0.1
-    "@smithy/node-http-handler": ^2.0.1
-    "@smithy/protocol-http": ^2.0.1
-    "@smithy/smithy-client": ^2.0.1
-    "@smithy/types": ^2.0.2
-    "@smithy/url-parser": ^2.0.1
-    "@smithy/util-base64": ^2.0.0
-    "@smithy/util-body-length-browser": ^2.0.0
-    "@smithy/util-body-length-node": ^2.0.0
-    "@smithy/util-defaults-mode-browser": ^2.0.1
-    "@smithy/util-defaults-mode-node": ^2.0.1
-    "@smithy/util-retry": ^2.0.0
-    "@smithy/util-utf8": ^2.0.0
-    tslib: ^2.5.0
-  checksum: 8e63db2ed9d27326d4afe897f7debbe4d7f6c2b27015d5a5e2ce0656adc3757860c313403c1f0e5bfb6790e610d63c8ef3d6ce103abaa07155b4578e4fae768d
+  checksum: 783d3b6f59f2bd2fec9e57c9c66fd504fc71b975a5855e34600a0f490aa0f4caccc27dcc5ec073ab1dde4751186701a75d471993d2279ff58b8e32da276283b9
   languageName: node
   linkType: hard
 
@@ -632,13 +591,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sts@npm:3.382.0":
-  version: 3.382.0
-  resolution: "@aws-sdk/client-sts@npm:3.382.0"
+"@aws-sdk/client-sts@npm:3.385.0":
+  version: 3.385.0
+  resolution: "@aws-sdk/client-sts@npm:3.385.0"
   dependencies:
     "@aws-crypto/sha256-browser": 3.0.0
     "@aws-crypto/sha256-js": 3.0.0
-    "@aws-sdk/credential-provider-node": 3.382.0
+    "@aws-sdk/credential-provider-node": 3.385.0
     "@aws-sdk/middleware-host-header": 3.379.1
     "@aws-sdk/middleware-logger": 3.378.0
     "@aws-sdk/middleware-recursion-detection": 3.378.0
@@ -673,7 +632,7 @@ __metadata:
     "@smithy/util-utf8": ^2.0.0
     fast-xml-parser: 4.2.5
     tslib: ^2.5.0
-  checksum: e13fe8cfc271ea8fb56718e3e844a9715960165b65f6f8b226f02859d34344f1380987a4ce808530444c78853033ec37048dd4fa9c93ac0df8de89eeba71bd8e
+  checksum: 395a5c708ed1cd8cb68dfb638496f08aadf0d5329b5390e732651b411bfc9c21fceb0a9ba84e05980d5a479956a2b0b0d1af766aa736ceeee0821b8508621b1d
   languageName: node
   linkType: hard
 
@@ -689,13 +648,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-ini@npm:3.382.0":
-  version: 3.382.0
-  resolution: "@aws-sdk/credential-provider-ini@npm:3.382.0"
+"@aws-sdk/credential-provider-ini@npm:3.385.0":
+  version: 3.385.0
+  resolution: "@aws-sdk/credential-provider-ini@npm:3.385.0"
   dependencies:
     "@aws-sdk/credential-provider-env": 3.378.0
     "@aws-sdk/credential-provider-process": 3.378.0
-    "@aws-sdk/credential-provider-sso": 3.382.0
+    "@aws-sdk/credential-provider-sso": 3.385.0
     "@aws-sdk/credential-provider-web-identity": 3.378.0
     "@aws-sdk/types": 3.378.0
     "@smithy/credential-provider-imds": ^2.0.0
@@ -703,18 +662,18 @@ __metadata:
     "@smithy/shared-ini-file-loader": ^2.0.0
     "@smithy/types": ^2.0.2
     tslib: ^2.5.0
-  checksum: c52c431f03864d46d23e3515516c62a91af175995fba9dadb7cff4e005d7d2ed19b9b5508859768ce4d98746da260709e7caf703c7211b1a21c62a6a1606ef5d
+  checksum: 93b316712e0c4765ff76e24ab43acf79f1eb417e5ae72abe5da55e9ddaa2792fc73b9d854f7d624660200608701a603e9d0ca14af6ad31a5d9e8d681819eba1b
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-node@npm:3.382.0":
-  version: 3.382.0
-  resolution: "@aws-sdk/credential-provider-node@npm:3.382.0"
+"@aws-sdk/credential-provider-node@npm:3.385.0":
+  version: 3.385.0
+  resolution: "@aws-sdk/credential-provider-node@npm:3.385.0"
   dependencies:
     "@aws-sdk/credential-provider-env": 3.378.0
-    "@aws-sdk/credential-provider-ini": 3.382.0
+    "@aws-sdk/credential-provider-ini": 3.385.0
     "@aws-sdk/credential-provider-process": 3.378.0
-    "@aws-sdk/credential-provider-sso": 3.382.0
+    "@aws-sdk/credential-provider-sso": 3.385.0
     "@aws-sdk/credential-provider-web-identity": 3.378.0
     "@aws-sdk/types": 3.378.0
     "@smithy/credential-provider-imds": ^2.0.0
@@ -722,7 +681,7 @@ __metadata:
     "@smithy/shared-ini-file-loader": ^2.0.0
     "@smithy/types": ^2.0.2
     tslib: ^2.5.0
-  checksum: 895405b84fc938b0c3e34f73c63b5426761de3bc2dcfa06e1a06f55ae0f8135d81530c0340c0b1b33b4bcb479f5048a9ec0390288503a261c692a0df2a0b933d
+  checksum: e40bebeb6fabb106ad1aac22014b5789b53db29aa1fd5fa2022c4bb0cf9dbcd4f7bc247bba44326f90602ca36b0643d6d3e74f02d0b4872eca6d2666fb440a21
   languageName: node
   linkType: hard
 
@@ -739,18 +698,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-sso@npm:3.382.0":
-  version: 3.382.0
-  resolution: "@aws-sdk/credential-provider-sso@npm:3.382.0"
+"@aws-sdk/credential-provider-sso@npm:3.385.0":
+  version: 3.385.0
+  resolution: "@aws-sdk/credential-provider-sso@npm:3.385.0"
   dependencies:
     "@aws-sdk/client-sso": 3.382.0
-    "@aws-sdk/token-providers": 3.382.0
+    "@aws-sdk/token-providers": 3.385.0
     "@aws-sdk/types": 3.378.0
     "@smithy/property-provider": ^2.0.0
     "@smithy/shared-ini-file-loader": ^2.0.0
     "@smithy/types": ^2.0.2
     tslib: ^2.5.0
-  checksum: ec0d216077a0dd5724fed30cdbc4a235b998c5b5821ba250be749e0e4c0410ce1e06c1a2531281570798b77fbe7a9ff36a0d9960853d8f6b2d98247702649d68
+  checksum: f1bcbad656a95442c728c1ccf17c13b0382157c0606d243f367e549dbfa923f1627fad8a088a7222b131bb0954f049a1b272eba375fea5d938dd62e91fec8b1d
   languageName: node
   linkType: hard
 
@@ -766,9 +725,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/lib-storage@npm:3.383.0":
-  version: 3.383.0
-  resolution: "@aws-sdk/lib-storage@npm:3.383.0"
+"@aws-sdk/lib-storage@npm:3.385.0":
+  version: 3.385.0
+  resolution: "@aws-sdk/lib-storage@npm:3.385.0"
   dependencies:
     "@smithy/abort-controller": ^2.0.1
     "@smithy/middleware-endpoint": ^2.0.1
@@ -779,7 +738,7 @@ __metadata:
     tslib: ^2.5.0
   peerDependencies:
     "@aws-sdk/client-s3": ^3.0.0
-  checksum: fca3fe53d4631449e3a929151a4e1aed4b70a2b4442f9360ec1edea5db7a83c82abbe1a1eefee51b647290b903eae7341798f7f3418b15fce21e1b3243af3976
+  checksum: f74f4d6a02c233b1e8bbc042cd681c80e3f665af757c44dc95053db70683b7d927cfd42748332100ec435c869f7f9268df34a641a0d8526fe9c190670235722f
   languageName: node
   linkType: hard
 
@@ -963,17 +922,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/token-providers@npm:3.382.0":
-  version: 3.382.0
-  resolution: "@aws-sdk/token-providers@npm:3.382.0"
+"@aws-sdk/token-providers@npm:3.385.0":
+  version: 3.385.0
+  resolution: "@aws-sdk/token-providers@npm:3.385.0"
   dependencies:
-    "@aws-sdk/client-sso-oidc": 3.382.0
     "@aws-sdk/types": 3.378.0
     "@smithy/property-provider": ^2.0.0
     "@smithy/shared-ini-file-loader": ^2.0.0
     "@smithy/types": ^2.0.2
     tslib: ^2.5.0
-  checksum: 813dc973f616c2d7ec6f71da14e92d7c4b84c28309ac4d8426fe88d0c6bbe70006f9df0a984985cfcf232976188afc3d17ac5168e832e717ae4db41a21c6d67d
+  checksum: 8ee04c94333b39534f3622aa490728393f5dc66a3e1e3e897ca42cf881036e3b46aa4c8c8bc94368333501f6739423fbc1e88fb5c37472bd92e79be040635581
   languageName: node
   linkType: hard
 
@@ -10686,9 +10644,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-graphql@workspace:."
   dependencies:
-    "@aws-sdk/client-s3": 3.383.0
-    "@aws-sdk/credential-provider-node": 3.382.0
-    "@aws-sdk/lib-storage": 3.383.0
+    "@aws-sdk/client-s3": 3.385.0
+    "@aws-sdk/credential-provider-node": 3.385.0
+    "@aws-sdk/lib-storage": 3.385.0
     "@aws-sdk/property-provider": 3.374.0
     "@elastic/elasticsearch": 8.9.0
     "@escape.tech/graphql-armor": 1.8.2
