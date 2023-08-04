@@ -1907,12 +1907,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-indent@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-indent@npm:38.1.1"
+"@ckeditor/ckeditor5-indent@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-indent@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-  checksum: a39ab6f64e6496e880d3889d98b6886057cb30750c1fac435a0630cb041d8f29bc24960069f9a097b72eea6e0d90a5a4e66ea8457269b509c1447657aeb48c0e
+    ckeditor5: 39.0.0
+  checksum: 74cf3648baf1409a20c36aaa056faf7da540b1e274c865094d91c570511ddea6aef53398b8cf86a83c5f968949d1af4cbe8026aeaef54de3aafeeaa75f0c60a7
   languageName: node
   linkType: hard
 
@@ -6230,7 +6230,7 @@ __metadata:
     "@ckeditor/ckeditor5-highlight": ^38.0.1
     "@ckeditor/ckeditor5-horizontal-line": ^38.0.1
     "@ckeditor/ckeditor5-image": ^38.0.1
-    "@ckeditor/ckeditor5-indent": ^38.0.1
+    "@ckeditor/ckeditor5-indent": ^39.0.0
     "@ckeditor/ckeditor5-link": ^39.0.0
     "@ckeditor/ckeditor5-list": ^38.0.1
     "@ckeditor/ckeditor5-media-embed": ^39.0.0
