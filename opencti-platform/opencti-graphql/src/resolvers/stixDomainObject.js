@@ -95,7 +95,7 @@ const stixDomainObjectResolvers = {
           () => pubSubAsyncIterator([bus.EDIT_TOPIC, bus.CONTEXT_TOPIC]),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.user.id !== context.user.id && payload.instance.id === id;
+            return payload.instance.id === id;
           }
         )(_, { id }, context);
         return withCancel(filtering, () => {
