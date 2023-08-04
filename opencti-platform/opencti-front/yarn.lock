@@ -1947,13 +1947,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-mention@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-mention@npm:38.1.1"
+"@ckeditor/ckeditor5-mention@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-mention@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-    lodash-es: ^4.17.15
-  checksum: b02f4418885313bb1a2308636ed49dfc016aeb4ca9211faf89bb378e7912abdcc1d72d1a61beccc233d9a81af128f6cde90708ba84fe0f0361622eee35ad3ef6
+    ckeditor5: 39.0.0
+    lodash-es: 4.17.21
+  checksum: 32c74d4d896fff24cc061df208a21262ae693abcf1beb1579361ef8c853541520c33546726f96af78d3b9abb0f928fae024e0da94a257c071724f1add8572519
   languageName: node
   linkType: hard
 
@@ -6234,7 +6234,7 @@ __metadata:
     "@ckeditor/ckeditor5-link": ^39.0.0
     "@ckeditor/ckeditor5-list": ^39.0.0
     "@ckeditor/ckeditor5-media-embed": ^39.0.0
-    "@ckeditor/ckeditor5-mention": ^38.0.1
+    "@ckeditor/ckeditor5-mention": ^39.0.0
     "@ckeditor/ckeditor5-paragraph": ^39.0.0
     "@ckeditor/ckeditor5-paste-from-office": ^39.0.0
     "@ckeditor/ckeditor5-remove-format": ^39.0.0
