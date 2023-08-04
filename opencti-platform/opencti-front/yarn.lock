@@ -1957,7 +1957,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-paragraph@npm:38.1.1, @ckeditor/ckeditor5-paragraph@npm:^38.0.1":
+"@ckeditor/ckeditor5-paragraph@npm:38.1.1":
   version: 38.1.1
   resolution: "@ckeditor/ckeditor5-paragraph@npm:38.1.1"
   dependencies:
@@ -1968,7 +1968,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-paragraph@npm:39.0.0":
+"@ckeditor/ckeditor5-paragraph@npm:39.0.0, @ckeditor/ckeditor5-paragraph@npm:^39.0.0":
   version: 39.0.0
   resolution: "@ckeditor/ckeditor5-paragraph@npm:39.0.0"
   dependencies:
@@ -6235,7 +6235,7 @@ __metadata:
     "@ckeditor/ckeditor5-list": ^38.0.1
     "@ckeditor/ckeditor5-media-embed": ^39.0.0
     "@ckeditor/ckeditor5-mention": ^38.0.1
-    "@ckeditor/ckeditor5-paragraph": ^38.0.1
+    "@ckeditor/ckeditor5-paragraph": ^39.0.0
     "@ckeditor/ckeditor5-paste-from-office": ^39.0.0
     "@ckeditor/ckeditor5-remove-format": ^38.0.1
     "@ckeditor/ckeditor5-source-editing": ^38.0.1
