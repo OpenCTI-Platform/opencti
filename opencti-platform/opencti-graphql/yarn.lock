@@ -10775,7 +10775,7 @@ __metadata:
     typescript: 4.9.5
     uuid: 9.0.0
     uuid-time: 1.0.0
-    validator: 13.9.0
+    validator: 13.11.0
     vitest: 0.34.1
     winston: 3.10.0
     winston-daily-rotate-file: 4.7.1
@@ -13067,7 +13067,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"validator@npm:13.9.0, validator@npm:^13.6.0":
+"validator@npm:13.11.0":
+  version: 13.11.0
+  resolution: "validator@npm:13.11.0"
+  checksum: d1e0c27022681420756da25bc03eb08d5f0c66fb008f8ff02ebc95812b77c6be6e03d3bd05cf80ca702e23eeb73dadd66b4b3683173ea2a0bc7cc72820bee131
+  languageName: node
+  linkType: hard
+
+"validator@npm:^13.6.0":
   version: 13.9.0
   resolution: "validator@npm:13.9.0"
   checksum: e2c936f041f61faa42bafd17c6faddf939498666cd82e88d733621c286893730b008959f4cb12ab3e236148a4f3805c30b85e3dcf5e0efd8b0cbcd36c02bfc0c
