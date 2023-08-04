@@ -2040,6 +2040,7 @@ enum StixDomainObjectsFilter {
   assigneeTo
   participant
   labelledBy
+  killChainPhase
   hasExternalReference
   objectContains
   indicates
