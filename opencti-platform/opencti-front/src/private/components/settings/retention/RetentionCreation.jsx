@@ -266,6 +266,7 @@ const RetentionCreation = (props) => {
                       'revoked',
                       'confidence',
                       'pattern_type',
+                      'x_opencti_main_observable_type',
                     ]}
                     currentFilters={[]}
                     handleAddFilter={handleAddFilter}

@@ -1,23 +1,23 @@
-import React, { Component } from "react";
-import * as PropTypes from "prop-types";
-import { compose } from "ramda";
-import withStyles from "@mui/styles/withStyles";
-import { graphql, createPaginationContainer } from "react-relay";
-import ListItem from "@mui/material/ListItem";
-import { Link } from "react-router-dom";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
-import Chip from "@mui/material/Chip";
-import { interval } from "rxjs";
-import inject18n from "../../../../components/i18n";
-import ItemIcon from "../../../../components/ItemIcon";
-import StixNestedRefRelationshipPopover from "../../common/stix_nested_ref_relationships/StixNestedRefRelationshipPopover";
-import { resolveLink } from "../../../../utils/Entity";
-import { defaultValue } from "../../../../utils/Graph";
-import { hexToRGB, itemColor } from "../../../../utils/Colors";
-import { TEN_SECONDS } from "../../../../utils/Time";
-import { stixCyberObservableEntitiesLinesQuery } from "./StixCyberObservableEntitiesLines";
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import { graphql, createPaginationContainer } from 'react-relay';
+import ListItem from '@mui/material/ListItem';
+import { Link } from 'react-router-dom';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Chip from '@mui/material/Chip';
+import { interval } from 'rxjs';
+import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
+import StixNestedRefRelationshipPopover from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipPopover';
+import { resolveLink } from '../../../../utils/Entity';
+import { defaultValue } from '../../../../utils/Graph';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { TEN_SECONDS } from '../../../../utils/Time';
+import { stixCyberObservableEntitiesLinesQuery } from './StixCyberObservableEntitiesLines';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -31,34 +31,34 @@ const styles = (theme) => ({
   },
   itemHead: {
     paddingLeft: 10,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
   },
   bodyItem: {
     height: 20,
     fontSize: 13,
-    float: "left",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     paddingRight: 10,
   },
   goIcon: {
-    position: "absolute",
+    position: 'absolute',
     right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
   placeholder: {
-    display: "inline-block",
-    height: "1em",
+    display: 'inline-block',
+    height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
   chipInList: {
     fontSize: 12,
     height: 20,
-    float: "left",
-    textTransform: "uppercase",
+    float: 'left',
+    textTransform: 'uppercase',
     borderRadius: 0,
   },
 });
@@ -75,19 +75,17 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
   }
 
   render() {
-    const { stixCyberObservableId, t, fsd, paginationOptions, data, classes } =
-      this.props;
+    const { stixCyberObservableId, t, fsd, paginationOptions, data, classes } = this.props;
     return (
       <div>
-        {data &&
-          data.stixNestedRefRelationships &&
-          data.stixNestedRefRelationships.edges.map(
+        {data
+          && data.stixNestedRefRelationships
+          && data.stixNestedRefRelationships.edges.map(
             (stixNestedRefRelationEdge) => {
               const stixNestedRefRelationship = stixNestedRefRelationEdge.node;
-              const stixCoreObject =
-                stixNestedRefRelationship.from.id === stixCyberObservableId
-                  ? stixNestedRefRelationship.to
-                  : stixNestedRefRelationship.from;
+              const stixCoreObject = stixNestedRefRelationship.from.id === stixCyberObservableId
+                ? stixNestedRefRelationship.to
+                : stixNestedRefRelationship.from;
               const link = `${resolveLink(stixCoreObject.entity_type)}/${
                 stixCoreObject.id
               }`;
@@ -108,7 +106,7 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                       <div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: "10%" }}
+                          style={{ width: '10%' }}
                         >
                           <Chip
                             variant="outlined"
@@ -116,24 +114,24 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                             style={{ width: 120 }}
                             color="primary"
                             label={t(
-                              `relationship_${stixNestedRefRelationship.relationship_type}`
+                              `relationship_${stixNestedRefRelationship.relationship_type}`,
                             )}
                           />
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: "10%" }}
+                          style={{ width: '10%' }}
                         >
                           <Chip
                             classes={{ root: classes.chipInList }}
                             style={{
                               backgroundColor: hexToRGB(
                                 itemColor(stixCoreObject.entity_type),
-                                0.08
+                                0.08,
                               ),
                               color: itemColor(stixCoreObject.entity_type),
                               border: `1px solid ${itemColor(
-                                stixCoreObject.entity_type
+                                stixCoreObject.entity_type,
                               )}`,
                             }}
                             label={t(`entity_${stixCoreObject.entity_type}`)}
@@ -141,27 +139,27 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: "22%" }}
+                          style={{ width: '22%' }}
                         >
                           {defaultValue(stixCoreObject)}
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: "12%" }}
+                          style={{ width: '12%' }}
                         >
                           {(stixCoreObject.creators ?? [])
                             .map((c) => c?.name)
-                            .join(", ")}
+                            .join(', ')}
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: "15%" }}
+                          style={{ width: '15%' }}
                         >
                           {fsd(stixNestedRefRelationship.start_time)}
                         </div>
                         <div
                           className={classes.bodyItem}
-                          style={{ width: "15%" }}
+                          style={{ width: '15%' }}
                         >
                           {fsd(stixNestedRefRelationship.stop_time)}
                         </div>
@@ -176,7 +174,7 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                   </ListItemSecondaryAction>
                 </ListItem>
               );
-            }
+            },
           )}
       </div>
     );
@@ -522,7 +520,7 @@ const StixCyberObservableNestedEntitiesLines = createPaginationContainer(
     `,
   },
   {
-    direction: "forward",
+    direction: 'forward',
     getConnectionFromProps(props) {
       return props.data && props.data.stixNestedRefRelationships;
     },
@@ -543,10 +541,10 @@ const StixCyberObservableNestedEntitiesLines = createPaginationContainer(
       };
     },
     query: stixCyberObservableEntitiesLinesQuery,
-  }
+  },
 );
 
 export default compose(
   inject18n,
-  withStyles(styles)
+  withStyles(styles),
 )(StixCyberObservableNestedEntitiesLines);

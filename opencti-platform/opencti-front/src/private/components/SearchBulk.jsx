@@ -356,7 +356,7 @@ const SearchBulk = () => {
                           value: defaultValue(resolvedStixCoreObject),
                           labels: resolvedStixCoreObject.objectLabel,
                           markings: resolvedStixCoreObject.objectMarking,
-                          containers: resolvedStixCoreObject.containers,
+                          containersNumber: resolvedStixCoreObject.containersNumber,
                           updated_at: resolvedStixCoreObject.updated_at,
                           author: R.pathOr(
                             '',
