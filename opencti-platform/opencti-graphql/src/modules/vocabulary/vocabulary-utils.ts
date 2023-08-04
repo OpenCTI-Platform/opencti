@@ -1161,7 +1161,7 @@ export const updateElasticVocabularyValue = async (oldNames: string[], name: str
     wait_for_completion: false,
     body: {
       script: {
-        source: 'for(field in params.category.fields) for(oldName in params.oldNames) if(ctx._source[field.key] instanceof List){ ctx._source[field.key][ctx._source[field.key].indexOf(oldName)] = params.name; ctx._source[field.key] = ctx._source[field.key].stream().distinct().collect(Collectors.toList()) } else ctx._source[field.key] = params.name;',
+        source: 'for(field in params.category.fields) for(oldName in params.oldNames) if(ctx._source[field.key] instanceof List && ctx._source[field.key].indexOf(oldName) > -1){ ctx._source[field.key][ctx._source[field.key].indexOf(oldName)] = params.name; ctx._source[field.key] = ctx._source[field.key].stream().distinct().collect(Collectors.toList()) } else if (ctx._source[field.key] == oldName) ctx._source[field.key] = params.name;',
         lang: 'painless',
         params: { oldNames, name, category },
       },
