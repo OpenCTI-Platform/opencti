@@ -28014,6 +28014,7 @@ export type Workspace = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   toStixReportBundle?: Maybe<Scalars['String']['output']>;
+  toStixReportBundleInvestigated?: Maybe<Scalars['String']['output']>;
   type?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
 };
@@ -28033,15 +28034,15 @@ export type WorkspaceObjectsArgs = {
 
 
 export type WorkspaceObjectsWithInvestigatedArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  all?: InputMaybe<Scalars['Boolean']>;
+  after?: InputMaybe<Scalars['ID']['input']>;
+  all?: InputMaybe<Scalars['Boolean']['input']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixObjectOrStixRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<StixObjectOrStixRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']>;
-  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export type WorkspaceAddInput = {
@@ -37481,6 +37482,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   toStixReportBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStixReportBundleInvestigated?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

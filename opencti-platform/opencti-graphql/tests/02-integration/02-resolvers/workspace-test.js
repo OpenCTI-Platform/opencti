@@ -100,12 +100,13 @@ const UPDATE_MEMBERS_QUERY = gql`
 describe('Workspace resolver standard behavior', () => {
   let workspaceInternalId;
   let stixObjectInternalId;
+  const workspaceName = 'an investigation';
   it('should workspace created', async () => {
     // Create the workspace
     const WORKSPACE_TO_CREATE = {
       input: {
-        type: 'dashboard',
-        name: 'custom dashboard',
+        type: 'investigation',
+        name: workspaceName,
       },
     };
     const workspace = await queryAsAdmin({
@@ -114,7 +115,7 @@ describe('Workspace resolver standard behavior', () => {
     });
     expect(workspace).not.toBeNull();
     expect(workspace.data.workspaceAdd).not.toBeNull();
-    expect(workspace.data.workspaceAdd.name).toEqual('custom dashboard');
+    expect(workspace.data.workspaceAdd.name).toEqual(workspaceName);
     workspaceInternalId = workspace.data.workspaceAdd.id;
   });
   it('should workspace loaded by internal id', async () => {
@@ -128,11 +129,15 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult.data.workspaces.edges.length).toEqual(1);
   });
   it('should update workspace', async () => {
+    const updatedName = `${workspaceName} - updated`;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: workspaceInternalId, input: { key: 'name', value: ['custom dashboard - updated'] } },
+      variables: {
+        id: workspaceInternalId,
+        input: { key: 'name', value: updatedName }
+      },
     });
-    expect(queryResult.data.workspaceFieldPatch.name).toEqual('custom dashboard - updated');
+    expect(queryResult.data.workspaceFieldPatch.name).toEqual(updatedName);
   });
   it('should context patch workspace', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -324,6 +329,27 @@ describe('Workspace resolver standard behavior', () => {
     });
 
     expect(queryResult.data.workspace.objectsWithInvestigated.edges[0].node.id).toEqual(anEntityId);
+  });
+
+  it('exports the investigation as a report along with the investigated entity', async () => {
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        query exportInvestigation($id: String!) {
+          workspace(id: $id) {
+            id
+            toStixReportBundleInvestigated
+          }
+        }
+      `,
+      variables: { id: workspaceInternalId }
+    });
+
+    const exportedInvestigationObjects = JSON.parse(queryResult.data.workspace.toStixReportBundleInvestigated).objects;
+    const exportedInvestigationObjectsTypes = exportedInvestigationObjects.map((object) => object.type);
+
+    expect(exportedInvestigationObjectsTypes).toHaveLength(2);
+    expect(exportedInvestigationObjectsTypes).toContain('report');
+    expect(exportedInvestigationObjectsTypes).toContain('malware');
   });
 
   it('should workspace stix objects or stix relationships accurate', async () => {

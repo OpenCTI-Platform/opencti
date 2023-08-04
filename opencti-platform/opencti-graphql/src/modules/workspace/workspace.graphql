@@ -40,6 +40,7 @@ type Workspace implements InternalObject & BasicObject {
     authorizedMembers: [MemberAccess!]!
     currentUserAccessRight: String
     toStixReportBundle: String
+    toStixReportBundleInvestigated: String
 }
 
 # Ordering
