@@ -2044,12 +2044,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-special-characters@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-special-characters@npm:38.1.1"
+"@ckeditor/ckeditor5-special-characters@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-special-characters@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-  checksum: f522ce8e91b7e7c46d26d773e2d68a66883ff2d7ee8019ba35b998113b85383dbcd61cb368e1a0e100047da50ec539a9082ae235fabe824a7381dd046ec71315
+    ckeditor5: 39.0.0
+  checksum: 5599b5b4ee9128ddd04c9769897e5d407c7f5f9ff45f98c6cf01aaeb083d644c134e6110a53a385fb46a9e461c0245a062a4d98fd78c12b0f10104835702da18
   languageName: node
   linkType: hard
 
@@ -6230,7 +6230,7 @@ __metadata:
     "@ckeditor/ckeditor5-paste-from-office": ^38.0.1
     "@ckeditor/ckeditor5-remove-format": ^38.0.1
     "@ckeditor/ckeditor5-source-editing": ^38.0.1
-    "@ckeditor/ckeditor5-special-characters": ^38.0.1
+    "@ckeditor/ckeditor5-special-characters": ^39.0.0
     "@ckeditor/ckeditor5-table": ^38.0.1
     "@ckeditor/ckeditor5-theme-lark": ^38.0.1
     "@ckeditor/ckeditor5-upload": ^38.0.1
