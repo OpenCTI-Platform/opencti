@@ -1927,13 +1927,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-list@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-list@npm:38.1.1"
+"@ckeditor/ckeditor5-list@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-list@npm:39.0.0"
   dependencies:
-    "@ckeditor/ckeditor5-ui": 38.1.1
-    ckeditor5: 38.1.1
-  checksum: 29f24a21d6d2eeae4c81c08a798e01fa9f43e6186eb3b5c73c10b35170f5b11ef8c19e1f9322112f5b78458840a4eb42431348e47f997f1614a582baa1c0c2e5
+    "@ckeditor/ckeditor5-ui": 39.0.0
+    ckeditor5: 39.0.0
+  checksum: 0993bf728747c41d3369859560d67753c0225092d5abb8926c0b396a2ae10bf2a3f7a1866dc7db864afe5eecb4bea19a47d6901f450103c41db9202ea8ebdf9a
   languageName: node
   linkType: hard
 
@@ -6232,7 +6232,7 @@ __metadata:
     "@ckeditor/ckeditor5-image": ^38.0.1
     "@ckeditor/ckeditor5-indent": ^38.0.1
     "@ckeditor/ckeditor5-link": ^39.0.0
-    "@ckeditor/ckeditor5-list": ^38.0.1
+    "@ckeditor/ckeditor5-list": ^39.0.0
     "@ckeditor/ckeditor5-media-embed": ^39.0.0
     "@ckeditor/ckeditor5-mention": ^38.0.1
     "@ckeditor/ckeditor5-paragraph": ^38.0.1
