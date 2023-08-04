@@ -63,6 +63,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import { convertMarking } from '../../../../utils/edition';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -257,6 +258,8 @@ const StixCyberObservableCreation = ({
   inputValue,
   paginationKey,
   paginationOptions,
+  defaultCreatedBy = null,
+  defaultMarkingDefinitions = null,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -419,11 +422,15 @@ const StixCyberObservableCreation = ({
         variables={{ elementType: [status.type] }}
         render={({ props }) => {
           if (props && props.schemaAttributes) {
+            const baseCreatedBy = defaultCreatedBy
+              ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
+              : undefined;
+            const baseMarkingDefinitions = (defaultMarkingDefinitions ?? []).map((n) => convertMarking(n));
             const initialValues = {
               x_opencti_description: '',
               x_opencti_score: 50,
-              createdBy: '',
-              objectMarking: [],
+              createdBy: baseCreatedBy,
+              objectMarking: baseMarkingDefinitions,
               objectLabel: [],
               externalReferences: [],
               createIndicator: false,

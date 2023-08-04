@@ -109,6 +109,11 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
             targetStixCoreObjectTypes={
               types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
             }
+            defaultCreatedBy={container.createdBy ?? null}
+            defaultMarkingDefinitions={(
+              container.objectMarking?.edges ?? []
+            ).map((n) => n.node)}
+            confidence={container.confidence}
           />
         </Security>
       )}
@@ -154,9 +159,24 @@ const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
     container: graphql`
       fragment ContainerStixObjectsOrStixRelationships_container on Container {
         id
+        confidence
         createdBy {
-          id
-          name
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
         }
         creators {
           id

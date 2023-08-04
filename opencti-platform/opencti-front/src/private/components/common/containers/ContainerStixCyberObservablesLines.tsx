@@ -63,6 +63,25 @@ const ContainerStixCyberObservablesLinesFragment = graphql`
   @refetchable(queryName: "ContainerStixCyberObservablesLinesRefetchQuery") {
     container(id: $id) {
       id
+      confidence
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
       objects(
         types: $types
         search: $search
@@ -177,6 +196,11 @@ ContainerStixCyberObservablesLinesProps
             targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
             onTypesChange={onTypesChange}
             openExports={openExports}
+            defaultCreatedBy={data?.container.createdBy ?? null}
+            defaultMarkingDefinitions={(
+              data?.container.objectMarking?.edges ?? []
+            ).map((n) => n.node)}
+            confidence={data?.container.confidence}
           />
         </Security>
       )}

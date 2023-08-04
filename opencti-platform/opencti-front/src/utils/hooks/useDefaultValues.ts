@@ -79,7 +79,7 @@ const useDefaultValues = <Values extends FormikValues>(
   );
 
   // Default confidence
-  if (keys.includes('confidence') && isEmptyField(defaultValues.confidence)) {
+  if (keys.includes('confidence') && isEmptyField(initialValues.confidence) && isEmptyField(defaultValues.confidence)) {
     defaultValues.confidence = 75;
   }
 
