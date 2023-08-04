@@ -11,7 +11,7 @@
     "@ckeditor/ckeditor5-autoformat": "^39.0.0",
     "@ckeditor/ckeditor5-basic-styles": "^39.0.0",
     "@ckeditor/ckeditor5-block-quote": "^39.0.0",
-    "@ckeditor/ckeditor5-code-block": "^38.0.1",
+    "@ckeditor/ckeditor5-code-block": "^39.0.0",
     "@ckeditor/ckeditor5-dev-translations": "^38.0.0",
     "@ckeditor/ckeditor5-dev-utils": "^38.0.0",
     "@ckeditor/ckeditor5-editor-classic": "^39.0.0",

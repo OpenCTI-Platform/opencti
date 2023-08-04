@@ -1724,12 +1724,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-code-block@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-code-block@npm:38.1.1"
+"@ckeditor/ckeditor5-code-block@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-code-block@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-  checksum: 051e0741bff683ea6c00c3f04159ae4941daeae3bf8c1afe27907439746279bf590dbecccda49776af71b910561d65ea0e3d00825a268a58b99326dbf9164de7
+    ckeditor5: 39.0.0
+  checksum: 51b6f251bb275dd5a79add7b6208efa83140dab5f7f27ca77c9a9cee3e80961e8d67301ea1080d39170e31b653d0a2ae6c121e9bdbf3b6a7efdd27a6a57e23d3
   languageName: node
   linkType: hard
 
@@ -6220,7 +6220,7 @@ __metadata:
     "@ckeditor/ckeditor5-autoformat": ^39.0.0
     "@ckeditor/ckeditor5-basic-styles": ^39.0.0
     "@ckeditor/ckeditor5-block-quote": ^39.0.0
-    "@ckeditor/ckeditor5-code-block": ^38.0.1
+    "@ckeditor/ckeditor5-code-block": ^39.0.0
     "@ckeditor/ckeditor5-dev-translations": ^38.0.0
     "@ckeditor/ckeditor5-dev-utils": ^38.0.0
     "@ckeditor/ckeditor5-editor-classic": ^39.0.0
