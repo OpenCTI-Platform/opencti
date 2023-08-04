@@ -2063,12 +2063,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-theme-lark@npm:38.1.1, @ckeditor/ckeditor5-theme-lark@npm:^38.0.1":
+"@ckeditor/ckeditor5-theme-lark@npm:38.1.1":
   version: 38.1.1
   resolution: "@ckeditor/ckeditor5-theme-lark@npm:38.1.1"
   dependencies:
     "@ckeditor/ckeditor5-ui": 38.1.1
   checksum: 7251b8c7c7970b067b6ec691acc00ec03043caf9f9b2a4fd16fffc65c4c859e1980c59daedbde363bd530bacbf0f10548286fb809273cb35a9228e2ccfd6a5c5
+  languageName: node
+  linkType: hard
+
+"@ckeditor/ckeditor5-theme-lark@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-theme-lark@npm:39.0.0"
+  dependencies:
+    "@ckeditor/ckeditor5-ui": 39.0.0
+  checksum: e4a4549a101b644989b69f7f8d5936380cae618a8a37530769a6ecc7060bde7ddbc8a46494f5f3031093a93aef0b3e7d5ee84eb0be37b3a9cd1991aee8bab838
   languageName: node
   linkType: hard
 
@@ -6232,7 +6241,7 @@ __metadata:
     "@ckeditor/ckeditor5-source-editing": ^38.0.1
     "@ckeditor/ckeditor5-special-characters": ^39.0.0
     "@ckeditor/ckeditor5-table": ^38.0.1
-    "@ckeditor/ckeditor5-theme-lark": ^38.0.1
+    "@ckeditor/ckeditor5-theme-lark": ^39.0.0
     "@ckeditor/ckeditor5-upload": ^38.0.1
     css-loader: ^5.2.7
     postcss: ^8.4.23
