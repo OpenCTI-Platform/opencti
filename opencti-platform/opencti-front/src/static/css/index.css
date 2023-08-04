@@ -54,6 +54,8 @@ div.break {
   word-break: break-word;
 }
 
+/* region markdown */
+
 div.markdown p {
   margin: 0 0 10px 0;
   overflow: hidden;
@@ -63,6 +65,18 @@ div.markdown p {
 div.markdown p:last-child {
   margin: 0 !important;
 }
+
+/* .mde-preview .mde-preview-content table th, .mde-preview .mde-preview-content table td */
+div.markdown table th, div.markdown table td {
+  padding: 6px 13px;
+  border: 1px solid #c8ccd0;
+}
+/* .mde-preview .mde-preview-content table */
+div.markdown table {
+  border-collapse: collapse;
+}
+
+/* end region markdown*/
 
 .leaflet-container {
   width: 100%;
