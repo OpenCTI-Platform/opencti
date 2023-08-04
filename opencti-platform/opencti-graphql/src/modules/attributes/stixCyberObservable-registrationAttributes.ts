@@ -246,11 +246,11 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'holder_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_MEDIA_CONTENT]: [
-    { name: 'title', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'content', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'media_category', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'title', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'content', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'media_category', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'url', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'publication_date', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'publication_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixCyberObservablesAttributes);
