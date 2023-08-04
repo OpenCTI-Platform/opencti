@@ -74,6 +74,11 @@ class ContainerStixDomainObjectsLines extends Component {
               targetStixCoreObjectTypes={['Stix-Domain-Object']}
               onTypesChange={this.props.onTypesChange}
               openExports={openExports}
+              defaultCreatedBy={container.createdBy ?? null}
+              defaultMarkingDefinitions={(
+                container.objectMarking?.edges ?? []
+              ).map((n) => n.node)}
+              confidence={container.confidence}
             />
           </Security>
         )}
@@ -144,6 +149,25 @@ export default createPaginationContainer(
         filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
       ) {
         id
+        confidence
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+        }
         objects(
           types: $types
           search: $search
