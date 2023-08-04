@@ -4059,10 +4059,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.4.4":
-  version: 20.4.4
-  resolution: "@types/node@npm:20.4.4"
-  checksum: 43f3c4a8acc38ae753e15a0e79bae0447d255b3742fa87f8e065d7b9d20ecb0e03d6c5b46c00d5d26f4552160381a00255f49205595a8ee48c2423e00263c930
+"@types/node@npm:20.4.7":
+  version: 20.4.7
+  resolution: "@types/node@npm:20.4.7"
+  checksum: a40d7003f66b56220a2028179e49f950b46fa6dbf860a4a6ecbd6ba7976f05b2f0b31ced39689ec88a7d9e32d07e088c6a06d270b99d5bc13a28291ac2f30ca7
   languageName: node
   linkType: hard
 
@@ -12958,7 +12958,7 @@ __metadata:
     "@mui/x-date-pickers": 5.0.20
     "@rollup/plugin-graphql": 2.0.3
     "@testing-library/react": 14.0.0
-    "@types/node": 20.4.4
+    "@types/node": 20.4.7
     "@types/qrcode": 1.5.1
     "@types/ramda": 0.29.3
     "@types/react": 18.2.15
