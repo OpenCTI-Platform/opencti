@@ -1851,12 +1851,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-essentials@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-essentials@npm:38.1.1"
+"@ckeditor/ckeditor5-essentials@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-essentials@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-  checksum: a324aa7422ca6329658669bd9a48aafad7f4c5cb62f09703e315ca753891ed687981a35e05a9b8140614406ab275d65fcb67054f26e0f54866ef3fc558a049f3
+    ckeditor5: 39.0.0
+  checksum: 66b65885cdb60fb3387e5e8fb014720133bad9fa3750bfcf670fbb3ddf0cf7f328f94357d76b43323cc9be6b1a65ef3a94bc0a3c43cc1d640db5a014bedc230f
   languageName: node
   linkType: hard
 
@@ -6224,7 +6224,7 @@ __metadata:
     "@ckeditor/ckeditor5-dev-translations": ^38.0.0
     "@ckeditor/ckeditor5-dev-utils": ^38.0.0
     "@ckeditor/ckeditor5-editor-classic": ^39.0.0
-    "@ckeditor/ckeditor5-essentials": ^38.0.1
+    "@ckeditor/ckeditor5-essentials": ^39.0.0
     "@ckeditor/ckeditor5-font": ^39.0.0
     "@ckeditor/ckeditor5-heading": ^38.0.1
     "@ckeditor/ckeditor5-highlight": ^38.0.1
