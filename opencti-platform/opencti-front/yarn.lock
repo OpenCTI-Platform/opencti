@@ -1730,6 +1730,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ckeditor/ckeditor5-core@npm:39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-core@npm:39.0.0"
+  dependencies:
+    "@ckeditor/ckeditor5-engine": 39.0.0
+    "@ckeditor/ckeditor5-utils": 39.0.0
+    lodash-es: 4.17.21
+  checksum: d74ab35828a0e00472a0682a211fdd3b3f2fd38167f57e5e062f3b662fd3e66ddbb6d5812677e983487443e63571d09ef5fbc71e603a1ee9c564f4bc67ec550e
+  languageName: node
+  linkType: hard
+
 "@ckeditor/ckeditor5-dev-translations@npm:^38.0.0, @ckeditor/ckeditor5-dev-translations@npm:^38.1.3":
   version: 38.2.1
   resolution: "@ckeditor/ckeditor5-dev-translations@npm:38.2.1"
@@ -1791,6 +1802,16 @@ __metadata:
     "@ckeditor/ckeditor5-utils": 38.1.1
     lodash-es: ^4.17.15
   checksum: 299d1506bfff9fd84f486738432af7e5e649e6a7a9186b62f6847275929aa2e956620fdda8f60204fa62bada9c8285eae0aeb10f289e0fe33e612ae8bd9674da
+  languageName: node
+  linkType: hard
+
+"@ckeditor/ckeditor5-engine@npm:39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-engine@npm:39.0.0"
+  dependencies:
+    "@ckeditor/ckeditor5-utils": 39.0.0
+    lodash-es: 4.17.21
+  checksum: 8f55e79c299c6dfa6fd7913d34e831dfff90c552b8d30d4a979a126fcb7db6d1c1412ad3ca2ef2ad99cda12b3de1197437b9ba70755f8888add70b7f68876f75
   languageName: node
   linkType: hard
 
@@ -1996,12 +2017,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-theme-lark@npm:38.1.1, @ckeditor/ckeditor5-theme-lark@npm:^38.0.1":
+"@ckeditor/ckeditor5-theme-lark@npm:38.1.1":
   version: 38.1.1
   resolution: "@ckeditor/ckeditor5-theme-lark@npm:38.1.1"
   dependencies:
     "@ckeditor/ckeditor5-ui": 38.1.1
   checksum: 7251b8c7c7970b067b6ec691acc00ec03043caf9f9b2a4fd16fffc65c4c859e1980c59daedbde363bd530bacbf0f10548286fb809273cb35a9228e2ccfd6a5c5
+  languageName: node
+  linkType: hard
+
+"@ckeditor/ckeditor5-theme-lark@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-theme-lark@npm:39.0.0"
+  dependencies:
+    "@ckeditor/ckeditor5-ui": 39.0.0
+  checksum: e4a4549a101b644989b69f7f8d5936380cae618a8a37530769a6ecc7060bde7ddbc8a46494f5f3031093a93aef0b3e7d5ee84eb0be37b3a9cd1991aee8bab838
   languageName: node
   linkType: hard
 
@@ -2028,6 +2058,20 @@ __metadata:
     lodash-es: ^4.17.15
     vanilla-colorful: 0.7.2
   checksum: 665f492260e6005e12610aa82aae11f09b0be8199bae8a10dccd7d97e7711d7fedf33b493e6d91fe8572b1bfaf862c0a88081daa80ac66079b6c30c67766994b
+  languageName: node
+  linkType: hard
+
+"@ckeditor/ckeditor5-ui@npm:39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-ui@npm:39.0.0"
+  dependencies:
+    "@ckeditor/ckeditor5-core": 39.0.0
+    "@ckeditor/ckeditor5-utils": 39.0.0
+    color-convert: 2.0.1
+    color-parse: 1.4.2
+    lodash-es: 4.17.21
+    vanilla-colorful: 0.7.2
+  checksum: f1ede1439aa40116e11a8318ac3e99f60f9b130f7136c07967d6609be25d1b816858ee55fc9d20fe9b1d199c45a57d0ba44c1c5e0a91849521444c930d4cf66a
   languageName: node
   linkType: hard
 
@@ -2059,6 +2103,15 @@ __metadata:
   dependencies:
     lodash-es: ^4.17.15
   checksum: ca3f0b75a04242acdbf16a954b2863480944ab095a16cdd014927376698cf6916f0e5bb079a4ca3cc2a3f15f264494ee427e829070e05685ce6f3c629fc9fbd7
+  languageName: node
+  linkType: hard
+
+"@ckeditor/ckeditor5-utils@npm:39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-utils@npm:39.0.0"
+  dependencies:
+    lodash-es: 4.17.21
+  checksum: 3bcd794a26f94b8725834c4a870ec92d1512a5e254150a7041db680963cf3bd6b1c54f5d6cc5ce5cc5d36eefa6f3b6af5c171927eb7b547f9a688cda4132a340
   languageName: node
   linkType: hard
 
@@ -6084,7 +6137,7 @@ __metadata:
     "@ckeditor/ckeditor5-source-editing": ^38.0.1
     "@ckeditor/ckeditor5-special-characters": ^38.0.1
     "@ckeditor/ckeditor5-table": ^38.0.1
-    "@ckeditor/ckeditor5-theme-lark": ^38.0.1
+    "@ckeditor/ckeditor5-theme-lark": ^39.0.0
     "@ckeditor/ckeditor5-upload": ^38.0.1
     css-loader: ^5.2.7
     postcss: ^8.4.23
@@ -11213,7 +11266,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash-es@npm:4, lodash-es@npm:^4.17.15, lodash-es@npm:^4.17.21":
+"lodash-es@npm:4, lodash-es@npm:4.17.21, lodash-es@npm:^4.17.15, lodash-es@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash-es@npm:4.17.21"
   checksum: 05cbffad6e2adbb331a4e16fbd826e7faee403a1a04873b82b42c0f22090f280839f85b95393f487c1303c8a3d2a010048bf06151a6cbe03eee4d388fb0a12d2
