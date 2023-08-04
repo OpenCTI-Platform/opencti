@@ -1,4 +1,4 @@
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { useFragment, useMutation } from 'react-relay';
 import { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItem from '@mui/material/ListItem';
@@ -12,10 +12,11 @@ import Checkbox from '@mui/material/Checkbox';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '../../../../components/Theme';
 import { getFileUri } from '../../../../utils/utils';
-import { PictureLine_node$key } from './__generated__/PictureLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
-import { PictureLineMutation } from './__generated__/PictureLineMutation.graphql';
 import PictureManagementEdition from './PictureManagementEdition';
+import { pictureManagementUtilsFragment, pictureManagementUtilsMutation } from './PictureManagementUtils';
+import { PictureManagementUtils_node$key } from './__generated__/PictureManagementUtils_node.graphql';
+import { PictureManagementUtilsMutation } from './__generated__/PictureManagementUtilsMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -49,42 +50,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const pictureLineMutation = graphql`
-  mutation PictureLineMutation(
-    $id: ID!
-    $input: StixDomainObjectFileEditInput
-  ) {
-    stixDomainObjectEdit(id: $id) {
-      stixDomainObjectFileEdit(input: $input) {
-        x_opencti_files(prefixMimeType: "image/") {
-          ...PictureLine_node
-        }
-      }
-    }
-  }
-`;
-
-export const PictureLineFragment = graphql`
-  fragment PictureLine_node on OpenCtiFile {
-    id
-    name
-    description
-    order
-    inCarousel
-  }
-`;
-
 interface PictureLineComponentProps {
-  picture: PictureLine_node$key;
+  picture: PictureManagementUtils_node$key;
   dataColumns: DataColumns;
   entityId: string;
 }
 
 const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, dataColumns, entityId }) => {
   const classes = useStyles();
-  const data = useFragment(PictureLineFragment, picture);
+  const data = useFragment(pictureManagementUtilsFragment, picture);
   const [isInCarousel, setIsInCarousel] = useState(!!data.inCarousel);
-  const [commit] = useMutation<PictureLineMutation>(pictureLineMutation);
+  const [commit] = useMutation<PictureManagementUtilsMutation>(pictureManagementUtilsMutation);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleCheckbox = () => {
     const updatedValue = !isInCarousel;

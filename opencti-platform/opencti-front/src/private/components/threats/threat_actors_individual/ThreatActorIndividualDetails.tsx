@@ -99,9 +99,11 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                 source={data.description}
                 limit={400}
               />
-              <Typography variant="h3"
-                          gutterBottom={true}
-                          style={{ marginTop: 20 }}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Threat actor individual types')}
               </Typography>
               <FieldOrEmpty source={data.threat_actor_types}>
@@ -190,7 +192,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               </FieldOrEmpty>
             </Grid>
             <Grid item={true} xs={6}>
-              <FieldOrEmpty source={data.images}>
+              <FieldOrEmpty source={carouselImages}>
                 <Carousel
                   height='150px'
                   className={classes.carousel}

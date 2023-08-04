@@ -14,6 +14,7 @@ const ThreatActorIndividualCardFragment = graphql`
     images: x_opencti_files(prefixMimeType: "image/") {
       id
       name
+      inCarousel
     }
     objectLabel {
       edges {

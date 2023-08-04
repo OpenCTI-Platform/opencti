@@ -148,7 +148,7 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={ node.images && node.images.length > 0 ? (
+            avatar={ node.images && node.images.length > 0 && node.images[0].inCarousel ? (
               <img
                 style={{ height: '30px' }}
                 src={getFileUri(node.images[0].id)}
@@ -254,6 +254,7 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
             images: x_opencti_files(prefixMimeType: "image/") {
               id
               name
+              inCarousel
             }
           }
         }

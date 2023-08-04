@@ -12,15 +12,14 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import SwitchField from '../../../../components/SwitchField';
 import {
   StixDomainObjectFileEditInput,
 } from './__generated__/PictureManagementEditionMutation.graphql';
 import { Theme } from '../../../../components/Theme';
-import { pictureLineMutation } from './PictureLine';
-import { PictureLineMutation } from './__generated__/PictureLineMutation.graphql';
-import { PictureLine_node$data } from './__generated__/PictureLine_node.graphql';
 import { handleErrorInForm } from '../../../../relay/environment';
+import { pictureManagementUtilsMutation } from './PictureManagementUtils';
+import { PictureManagementUtils_node$data } from './__generated__/PictureManagementUtils_node.graphql';
+import { PictureManagementUtilsMutation } from './__generated__/PictureManagementUtilsMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -54,7 +53,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface PictureManagementEditionProps {
-  picture: PictureLine_node$data
+  picture: PictureManagementUtils_node$data
   entityId: string
   handleClose: () => void;
 }
@@ -63,7 +62,6 @@ interface PictureManagementEditionFormValues {
   id: string
   description: string | null;
   order: number | null;
-  inCarousel: boolean | null;
 }
 
 const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({
@@ -73,11 +71,10 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [commit] = useMutation<PictureLineMutation>(pictureLineMutation);
+  const [commit] = useMutation<PictureManagementUtilsMutation>(pictureManagementUtilsMutation);
   const pictureValidation = () => Yup.object().shape({
     description: Yup.string().nullable(),
     order: Yup.number().nullable().integer(t('The value must be a number')),
-    inCarousel: Yup.boolean(),
   });
   const onSubmit: FormikConfig<PictureManagementEditionFormValues>['onSubmit'] = (
     values,
@@ -87,7 +84,6 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
       id: values.id,
       description: values.description,
       order: values.order,
-      inCarousel: values.inCarousel,
     };
     commit({
       variables: {
@@ -128,7 +124,6 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
             id: picture.id,
             description: picture.description,
             order: picture.order,
-            inCarousel: picture.inCarousel,
           }}
           validationSchema={pictureValidation}
           onSubmit={onSubmit}
@@ -152,13 +147,6 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
               fullWidth={true}
               type="number"
               style={{ marginTop: 20 }}
-            />
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              name="inCarousel"
-              label={t('In Carousel?')}
-              containerstyle={fieldSpacingContainerStyle}
             />
             <div className={classes.buttons}>
               <Button

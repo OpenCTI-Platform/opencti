@@ -436,7 +436,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       prevent_indexing: true,
       context_data: contextData
     });
-    await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, instance, user);
+    await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, { ...instance, id: entityId }, user);
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {

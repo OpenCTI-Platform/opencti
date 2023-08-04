@@ -1,18 +1,16 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
-import { graphql, useFragment, useSubscription } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import PictureLine from './PictureLine';
 import {
   PictureManagementViewer_entity$data,
   PictureManagementViewer_entity$key,
 } from './__generated__/PictureManagementViewer_entity.graphql';
-import { PictureManagementViewerSubscription } from './__generated__/PictureManagementViewerSubscription.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 
 const useStyles = makeStyles(() => ({
@@ -25,25 +23,12 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const subscription = graphql`
-  subscription PictureManagementViewerSubscription($id: ID!) {
-    stixDomainObject(id: $id) {
-      id
-      ...PictureManagementViewer_entity
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-      ...WorkbenchFileViewer_entity
-    }
-  }
-`;
-
 const pictureManagementViewerFragment = graphql`
   fragment PictureManagementViewer_entity on StixDomainObject {
     id
     entity_type
     images: x_opencti_files(prefixMimeType: "image/") {
-      ...PictureLine_node
+      ...PictureManagementUtils_node
     }
   }
 `;
@@ -60,14 +45,7 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
     pictureManagementViewerFragment,
     entity,
   );
-  const subConfig = useMemo<GraphQLSubscriptionConfig<PictureManagementViewerSubscription>>(
-    () => ({
-      subscription,
-      variables: { id: data.id },
-    }),
-    [data.id],
-  );
-  useSubscription(subConfig);
+
   const dataColumns = {
     description: {
       label: 'Description',
