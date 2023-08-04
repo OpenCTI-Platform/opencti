@@ -1980,12 +1980,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-paste-from-office@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-paste-from-office@npm:38.1.1"
+"@ckeditor/ckeditor5-paste-from-office@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-paste-from-office@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-  checksum: b4df7b63067c1917da3d09789bacf71f01b3633db4b510d4aa195c962af46352a120ec38f1fa6fa2f4e84d7ff71a80d08353d57f47d2c90a0c54759ac3c00b36
+    ckeditor5: 39.0.0
+  checksum: 45b2525ae1a518bcf475bad6d09b9f760930920fa7f3e4d94324543db7437faf326b474ea533e4cef68e3c5ecfa1755f7c339ad0845a5af3349167e3690565cb
   languageName: node
   linkType: hard
 
@@ -6228,7 +6228,7 @@ __metadata:
     "@ckeditor/ckeditor5-media-embed": ^38.0.1
     "@ckeditor/ckeditor5-mention": ^38.0.1
     "@ckeditor/ckeditor5-paragraph": ^38.0.1
-    "@ckeditor/ckeditor5-paste-from-office": ^38.0.1
+    "@ckeditor/ckeditor5-paste-from-office": ^39.0.0
     "@ckeditor/ckeditor5-remove-format": ^38.0.1
     "@ckeditor/ckeditor5-source-editing": ^38.0.1
     "@ckeditor/ckeditor5-special-characters": ^38.0.1
