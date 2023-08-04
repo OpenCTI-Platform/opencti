@@ -16,7 +16,7 @@ export const up = async (next) => {
       }
     }
   };
-  elUpdateByQueryForMigration('[MIGRATION] Fix broken secondary_motivations', READ_DATA_INDICES, query);
+  await elUpdateByQueryForMigration('[MIGRATION] Fix broken secondary_motivations', READ_DATA_INDICES, query);
   next();
 };
 
