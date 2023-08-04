@@ -1678,12 +1678,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-basic-styles@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-basic-styles@npm:38.1.1"
+"@ckeditor/ckeditor5-basic-styles@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-basic-styles@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-  checksum: 3c0c253d6cba304fbeed6b56fd1b4549ec3b075bf55c17c6c8d6792f82eb4bcfab5e35eddd81781f05524fe680ff7e34832479d06d9891c0608e99d7c2e5e3a0
+    ckeditor5: 39.0.0
+  checksum: 521fa837efb346bc18fc1f0d27d83b0651510d1c189101a0dc3f52e2fb829894f86783b9d16e3adbbe059e3d2ef0b621d5c6619d2bd6ad05a4192b83b64c39f3
   languageName: node
   linkType: hard
 
@@ -6218,7 +6218,7 @@ __metadata:
   dependencies:
     "@ckeditor/ckeditor5-alignment": ^39.0.0
     "@ckeditor/ckeditor5-autoformat": ^39.0.0
-    "@ckeditor/ckeditor5-basic-styles": ^38.0.1
+    "@ckeditor/ckeditor5-basic-styles": ^39.0.0
     "@ckeditor/ckeditor5-block-quote": ^39.0.0
     "@ckeditor/ckeditor5-code-block": ^38.0.1
     "@ckeditor/ckeditor5-dev-translations": ^38.0.0
