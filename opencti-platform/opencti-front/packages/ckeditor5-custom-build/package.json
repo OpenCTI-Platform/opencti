@@ -23,7 +23,7 @@
     "@ckeditor/ckeditor5-image": "^38.0.1",
     "@ckeditor/ckeditor5-indent": "^38.0.1",
     "@ckeditor/ckeditor5-link": "^39.0.0",
-    "@ckeditor/ckeditor5-list": "^38.0.1",
+    "@ckeditor/ckeditor5-list": "^39.0.0",
     "@ckeditor/ckeditor5-media-embed": "^39.0.0",
     "@ckeditor/ckeditor5-mention": "^38.0.1",
     "@ckeditor/ckeditor5-paragraph": "^39.0.0",
