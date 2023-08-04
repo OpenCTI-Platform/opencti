@@ -2053,13 +2053,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-table@npm:^38.0.1":
-  version: 38.1.1
-  resolution: "@ckeditor/ckeditor5-table@npm:38.1.1"
+"@ckeditor/ckeditor5-table@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-table@npm:39.0.0"
   dependencies:
-    ckeditor5: 38.1.1
-    lodash-es: ^4.17.15
-  checksum: e33b83f1be12412cc5c7ee13a5ca2a198e7be1430f6e2b339751c3b928621dc8b1d2d67eee9c45593fe33b966715abae8d20fc9554e805eaccd4a736ee6368a9
+    ckeditor5: 39.0.0
+    lodash-es: 4.17.21
+  checksum: d3fea07208e4599f9f4fda34d2dca29c6f72b60dddc795109fb83a1998f573c111091002cb49989209bf3a61f6bf0f4767e96090461f64cc86b2b78dae6cd6a7
   languageName: node
   linkType: hard
 
@@ -6240,7 +6240,7 @@ __metadata:
     "@ckeditor/ckeditor5-remove-format": ^38.0.1
     "@ckeditor/ckeditor5-source-editing": ^38.0.1
     "@ckeditor/ckeditor5-special-characters": ^39.0.0
-    "@ckeditor/ckeditor5-table": ^38.0.1
+    "@ckeditor/ckeditor5-table": ^39.0.0
     "@ckeditor/ckeditor5-theme-lark": ^39.0.0
     "@ckeditor/ckeditor5-upload": ^38.0.1
     css-loader: ^5.2.7
