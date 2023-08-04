@@ -4179,7 +4179,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:*, @types/react@npm:16 || 17 || 18, @types/react@npm:18.2.15":
+"@types/react@npm:*, @types/react@npm:16 || 17 || 18":
   version: 18.2.15
   resolution: "@types/react@npm:18.2.15"
   dependencies:
@@ -4187,6 +4187,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: 36989f638201bfe2f4110b06c119180f6df9c0e13d7060481e82e7a745f81745a01ae543c478a25b61e0767cb52e82da2ad5b0dedacabf99339e523d06176705
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:18.2.18":
+  version: 18.2.18
+  resolution: "@types/react@npm:18.2.18"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 2e0d75de2b618e76780019e52478b1bec2b015a9187aea30f84518c0c3ddc639055bdfea50864aece937bad0cb0544d0100b80d30f5461e72fbc1c3c0be8b140
   languageName: node
   linkType: hard
 
@@ -12961,7 +12972,7 @@ __metadata:
     "@types/node": 20.4.4
     "@types/qrcode": 1.5.1
     "@types/ramda": 0.29.3
-    "@types/react": 18.2.15
+    "@types/react": 18.2.18
     "@types/react-dom": 18.2.7
     "@types/react-relay": 14.1.4
     "@types/react-router-dom": 5.3.3
