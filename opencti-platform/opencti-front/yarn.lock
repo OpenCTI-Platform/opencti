@@ -5095,9 +5095,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apexcharts@npm:3.41.0":
-  version: 3.41.0
-  resolution: "apexcharts@npm:3.41.0"
+"apexcharts@npm:3.41.1":
+  version: 3.41.1
+  resolution: "apexcharts@npm:3.41.1"
   dependencies:
     svg.draggable.js: ^2.2.2
     svg.easing.js: ^2.0.0
@@ -5105,7 +5105,7 @@ __metadata:
     svg.pathmorphing.js: ^0.1.3
     svg.resize.js: ^1.4.3
     svg.select.js: ^3.0.1
-  checksum: b578d2473ffeffa66026dfc9c0c7f39a40663d3b1cfdd9732cf9b6624e3e9348474a3cbdfaf5ada0924cb296f52a59a1ffc4dc3930899cdb5df690b4970a3762
+  checksum: 096830c583f16093a16b940fc9268c5da620f084217df5695810a85b50aeb077f67b58aa3839c72e1c78a2ee4af6b4053286cf9f6599478789030ebbdff482fa
   languageName: node
   linkType: hard
 
@@ -13149,7 +13149,7 @@ __metadata:
     "@types/relay-test-utils": 14.1.0
     "@types/uuid": 9.0.2
     "@vitejs/plugin-react": 4.0.3
-    apexcharts: 3.41.0
+    apexcharts: 3.41.1
     axios: 1.4.0
     babel-plugin-relay: 15.0.0
     chokidar: 3.5.3
