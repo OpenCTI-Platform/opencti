@@ -6069,7 +6069,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^2.0.0, chalk@npm:^2.3.0, chalk@npm:^2.4.2":
+"chalk@npm:^2.0.0, chalk@npm:^2.3.0":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
   dependencies:
@@ -6080,7 +6080,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^4.0.0, chalk@npm:^4.0.2, chalk@npm:^4.1.0, chalk@npm:^4.1.1":
+"chalk@npm:^4.0.0, chalk@npm:^4.0.2, chalk@npm:^4.1.0, chalk@npm:^4.1.1, chalk@npm:^4.1.2":
   version: 4.1.2
   resolution: "chalk@npm:4.1.2"
   dependencies:
@@ -6564,10 +6564,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dateformat@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "dateformat@npm:3.0.3"
-  checksum: ca4911148abb09887bd9bdcd632c399b06f3ecad709a18eb594d289a1031982f441e08e281db77ffebcb2cbcbfa1ac578a7cbfbf8743f41009aa5adc1846ed34
+"dateformat@npm:^4.6.3":
+  version: 4.6.3
+  resolution: "dateformat@npm:4.6.3"
+  checksum: c3aa0617c0a5b30595122bc8d1bee6276a9221e4d392087b41cbbdf175d9662ae0e50d0d6dcdf45caeac5153c4b5b0844265f8cd2b2245451e3da19e39e3b65d
   languageName: node
   linkType: hard
 
@@ -9749,18 +9749,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"migrate@npm:1.8.0":
-  version: 1.8.0
-  resolution: "migrate@npm:1.8.0"
+"migrate@npm:2.0.0":
+  version: 2.0.0
+  resolution: "migrate@npm:2.0.0"
   dependencies:
-    chalk: ^2.4.2
+    chalk: ^4.1.2
     commander: ^2.20.3
-    dateformat: ^3.0.3
+    dateformat: ^4.6.3
     dotenv: ^16.0.0
     inherits: ^2.0.3
-    minimatch: ^5.0.1
-    mkdirp: ^0.5.1
-    slug: ^5.3.0
+    minimatch: ^9.0.1
+    mkdirp: ^3.0.1
+    slug: ^8.2.2
   bin:
     migrate: bin/migrate
     migrate-create: bin/migrate-create
@@ -9768,7 +9768,7 @@ __metadata:
     migrate-init: bin/migrate-init
     migrate-list: bin/migrate-list
     migrate-up: bin/migrate-up
-  checksum: 61eeaf5be81ec03bac8679dcc78b052b16e8fcd635d1c9dc80294ee47f5738163a78578c794b1b4329d079c582745bfe531ab8108a163e05814006ab2f86e566
+  checksum: d7e5f476d32c638e7c6ee15e36e0a049f69ad3cb011011623658defa656cba2c75c0128d005ed0a06ea6d6426200297d809d1338db63cd580c03e8d42001a7bd
   languageName: node
   linkType: hard
 
@@ -9931,23 +9931,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^0.5.1":
-  version: 0.5.6
-  resolution: "mkdirp@npm:0.5.6"
-  dependencies:
-    minimist: ^1.2.6
-  bin:
-    mkdirp: bin/cmd.js
-  checksum: 0c91b721bb12c3f9af4b77ebf73604baf350e64d80df91754dc509491ae93bf238581e59c7188360cec7cb62fc4100959245a42cfe01834efedc5e9d068376c2
-  languageName: node
-  linkType: hard
-
 "mkdirp@npm:^1.0.3":
   version: 1.0.4
   resolution: "mkdirp@npm:1.0.4"
   bin:
     mkdirp: bin/cmd.js
   checksum: a96865108c6c3b1b8e1d5e9f11843de1e077e57737602de1b82030815f311be11f96f09cce59bd5b903d0b29834733e5313f9301e3ed6d6f6fba2eae0df4298f
+  languageName: node
+  linkType: hard
+
+"mkdirp@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "mkdirp@npm:3.0.1"
+  bin:
+    mkdirp: dist/cjs/src/bin.js
+  checksum: 972deb188e8fb55547f1e58d66bd6b4a3623bf0c7137802582602d73e6480c1c2268dcbafbfb1be466e00cc7e56ac514d7fd9334b7cf33e3e2ab547c16f83a8d
   languageName: node
   linkType: hard
 
@@ -10485,7 +10483,7 @@ __metadata:
     jwt-decode: 3.1.2
     lru-cache: 7.18.3
     merge-graphql-schemas: 1.7.8
-    migrate: 1.8.0
+    migrate: 2.0.0
     mime-types: 2.1.35
     moment: 2.29.4
     moment-range: 4.0.2
@@ -11834,10 +11832,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slug@npm:^5.3.0":
-  version: 5.3.0
-  resolution: "slug@npm:5.3.0"
-  checksum: 24fce3b96bc9c26f54f0cd4fc224b17113fa048574bd5ceb61d1a22d7a28f221ebf5a4d134a30087eadad24685a1e477c6f3d3b3004f246aed7e556455d59780
+"slug@npm:^8.2.2":
+  version: 8.2.3
+  resolution: "slug@npm:8.2.3"
+  bin:
+    slug: cli.js
+  checksum: eb2fbf8d13df0a94f09ffd7c20e02d5e88c1fdd51e178fe8e670937747dec5a97efd172956b914efd5eb3fadd65a306a68f4eed0327a8c5c9a8af30f2c95a46b
   languageName: node
   linkType: hard
 
