@@ -34,7 +34,7 @@
     "@ckeditor/ckeditor5-table": "^39.0.0",
     "@ckeditor/ckeditor5-theme-lark": "^39.0.0",
     "@ckeditor/ckeditor5-upload": "^39.0.0",
-    "css-loader": "^5.2.7",
+    "css-loader": "^6.0.0",
     "postcss": "^8.4.23",
     "postcss-loader": "^4.3.0",
     "raw-loader": "^4.0.2",
