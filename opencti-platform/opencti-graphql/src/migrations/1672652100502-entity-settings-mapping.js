@@ -27,7 +27,7 @@ export const up = async (next) => {
     if (migrationEntitySetting.platform_entity_files_ref(entityType)
       || migrationEntitySetting.platform_hidden_type(entityType)
       || migrationEntitySetting.enforce_reference(entityType)) {
-      const entitySetting = findByType(context, SYSTEM_USER, entityType);
+      const entitySetting = await findByType(context, SYSTEM_USER, entityType);
       const inputs = [];
 
       if (migrationEntitySetting.platform_entity_files_ref(entityType)) {

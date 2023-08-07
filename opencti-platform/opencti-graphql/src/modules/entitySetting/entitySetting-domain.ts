@@ -15,15 +15,15 @@ import { telemetry } from '../../config/tracing';
 
 // -- LOADING --
 
-export const findById = (context: AuthContext, user: AuthUser, entitySettingId: string): BasicStoreEntityEntitySetting => {
-  return storeLoadById(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING) as unknown as BasicStoreEntityEntitySetting;
+export const findById = async (context: AuthContext, user: AuthUser, entitySettingId: string): Promise<BasicStoreEntityEntitySetting> => {
+  return storeLoadById(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING);
 };
 
-export const findByType = (context: AuthContext, user: AuthUser, targetType: string): BasicStoreEntityEntitySetting => {
-  const findByTypeFn = () => {
+export const findByType = async (context: AuthContext, user: AuthUser, targetType: string): Promise<BasicStoreEntityEntitySetting> => {
+  const findByTypeFn = async () => {
     return loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
       filters: [{ key: 'target_type', values: [targetType] }]
-    }) as unknown as BasicStoreEntityEntitySetting;
+    });
   };
   return telemetry(context, user, 'QUERY entitySetting', {
     [SemanticAttributes.DB_NAME]: 'entitySetting_domain',

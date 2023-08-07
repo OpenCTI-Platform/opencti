@@ -87,7 +87,7 @@ export const up = async (next) => {
   // endregion
 
   // region Delete the classic container case setting
-  const caseEntitySettings = findByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE);
+  const caseEntitySettings = await findByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE);
   if (caseEntitySettings?.id) {
     await deleteElementById(context, SYSTEM_USER, caseEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING);
   }
