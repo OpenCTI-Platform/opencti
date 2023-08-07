@@ -1,3 +1,5 @@
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import {
   createEntity,
@@ -25,8 +27,6 @@ import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { elCount } from '../database/engine';
 import { publishUserAction } from '../listener/UserActionListener';
 import { telemetry } from '../config/tracing';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import * as R from 'ramda';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
@@ -54,7 +54,7 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
       filters: [{ key: [StatusFilter.Type], values: [type] }],
     };
     return findAll(context, user, args);
-  }
+  };
   return telemetry(context, user, 'QUERY type statuses', {
     [SemanticAttributes.DB_NAME]: 'statuses_domain',
     [SemanticAttributes.DB_OPERATION]: 'read',
@@ -71,12 +71,12 @@ export const batchStatusesByType = async (context: AuthContext, user: AuthUser, 
     const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
     const statusesGrouped = R.groupBy((e) => e.type, statuses);
     return types.map((type) => statusesGrouped[type] || []);
-  }
+  };
   return telemetry(context, user, 'BATCH type statuses', {
     [SemanticAttributes.DB_NAME]: 'statuses_domain',
     [SemanticAttributes.DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
-}
+};
 export const createStatusTemplate = async (context: AuthContext, user: AuthUser, input: StatusTemplateAddInput) => {
   const { element } = await createEntity(context, user, input, ENTITY_TYPE_STATUS_TEMPLATE, { complete: true });
   await publishUserAction({

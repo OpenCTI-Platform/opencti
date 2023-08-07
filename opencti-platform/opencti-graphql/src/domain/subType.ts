@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildPagination } from '../database/utils';
@@ -7,7 +8,6 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ABSTRACT_STIX_NESTED_REF_RELATIONSHIP } from '../schema/stixRefRelationship';
 import { telemetry } from '../config/tracing';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../types/user';
 
 // -- ENTITY TYPES --
@@ -24,7 +24,7 @@ export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser,
       R.uniqBy(R.path(['node', 'id'])),
     )(types);
     return buildPagination(0, null, finalResult, finalResult.length);
-  }
+  };
 
   return telemetry(context, user, 'QUERY default subtypes', {
     [SemanticAttributes.DB_NAME]: 'subtypes_domain',
@@ -63,4 +63,4 @@ export const findById = (subTypeId: string) => querySubType(subTypeId);
 
 export const findAll = (context: AuthContext, user: AuthUser, args : { type: string | null, search?: string | null }) => {
   return querySubTypes(context, user, args);
-}
+};

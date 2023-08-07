@@ -1,7 +1,7 @@
 import { findAll, findById as findSubTypeById, findById } from '../domain/subType';
 import { batchStatusesByType, createStatus, getTypeStatuses, statusDelete, statusEditField } from '../domain/status';
-import { batchEntitySettingsByType, findByType } from '../modules/entitySetting/entitySetting-domain';
-import { batchLoader } from "../database/middleware";
+import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
+import { batchLoader } from '../database/middleware';
 
 const statusesByTypeLoader = batchLoader(batchStatusesByType);
 const entitySettingsByTypeLoader = batchLoader(batchEntitySettingsByType);

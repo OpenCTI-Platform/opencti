@@ -1,8 +1,9 @@
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
-import { listAllEntities, listEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { EditInput, QueryEntitySettingsArgs } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
@@ -11,7 +12,6 @@ import { defaultEntitySetting, getAvailableSettings, typeAvailableSetting } from
 import { queryDefaultSubTypes } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { telemetry } from '../../config/tracing';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 
 // -- LOADING --
 
@@ -24,7 +24,7 @@ export const findByType = (context: AuthContext, user: AuthUser, targetType: str
     return loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
       filters: [{ key: 'target_type', values: [targetType] }]
     }) as unknown as BasicStoreEntityEntitySetting;
-  }
+  };
   return telemetry(context, user, 'QUERY entitySetting', {
     [SemanticAttributes.DB_NAME]: 'entitySetting_domain',
     [SemanticAttributes.DB_OPERATION]: 'read',
@@ -37,12 +37,12 @@ export const batchEntitySettingsByType = async (context: AuthContext, user: Auth
       filters: [{ key: 'target_type', values: targetTypes }],
       connectionFormat: false
     });
-  }
+  };
   return telemetry(context, user, 'BATCH entitySettings', {
     [SemanticAttributes.DB_NAME]: 'entitySetting_domain',
     [SemanticAttributes.DB_OPERATION]: 'read',
   }, findByTypeFn);
-}
+};
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntitySettingsArgs) => {
   return listEntitiesPaginated<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], opts);
