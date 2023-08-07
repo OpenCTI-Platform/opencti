@@ -538,6 +538,7 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
     $operation: StatsOperation!
     $relationship_type: [String]
     $toTypes: [String]
+    $isTo: Boolean
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
@@ -548,6 +549,7 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
       operation: $operation
       relationship_type: $relationship_type
       toTypes: $toTypes
+      isTo: $isTo
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
@@ -600,6 +602,7 @@ const TargetedCountries = ({ timeField }) => {
     operation: 'count',
     relationship_type: 'targets',
     toTypes: ['Country'],
+    isTo: true,
     startDate: monthsAgo(3),
     dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
     limit: 20,

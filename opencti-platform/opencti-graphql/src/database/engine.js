@@ -1628,13 +1628,13 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
   };
 };
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, searchOptions, aggregationOptions } = options;
+  const { types = [], field = null, limit = MAX_AGGREGATION_SIZE, searchOptions, aggregationOptions } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
   const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
-  body.size = MAX_SEARCH_AGGREGATION_SIZE;
+  body.size = 0;
   body.aggs = {
     connections: {
       nested: {
@@ -1646,7 +1646,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
           aggs: {
             genres: {
               terms: {
-                size: MAX_AGGREGATION_SIZE,
+                size: limit,
                 field: field === 'internal_id' ? 'connections.internal_id.keyword' : 'connections.types.keyword',
               },
               aggs: {
