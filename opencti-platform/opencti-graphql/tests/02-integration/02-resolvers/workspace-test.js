@@ -311,7 +311,7 @@ describe('Workspace resolver standard behavior', () => {
       query workspace($id: String!) {
         workspace(id: $id) {
           id
-          objectsWithInvestigated {
+          objects {
             edges {
               node {
                 ... on BasicObject {
@@ -328,7 +328,7 @@ describe('Workspace resolver standard behavior', () => {
       variables: { id: workspaceInternalId },
     });
 
-    expect(queryResult.data.workspace.objectsWithInvestigated.edges[0].node.id).toEqual(anEntityId);
+    expect(queryResult.data.workspace.objects.edges[0].node.id).toEqual(anEntityId);
   });
 
   it('exports the investigation as a report along with the investigated entity', async () => {
@@ -337,14 +337,14 @@ describe('Workspace resolver standard behavior', () => {
         query exportInvestigation($id: String!) {
           workspace(id: $id) {
             id
-            toStixReportBundleInvestigated
+            toStixReportBundle
           }
         }
       `,
       variables: { id: workspaceInternalId }
     });
 
-    const exportedInvestigationObjects = JSON.parse(queryResult.data.workspace.toStixReportBundleInvestigated).objects;
+    const exportedInvestigationObjects = JSON.parse(queryResult.data.workspace.toStixReportBundle).objects;
     const exportedInvestigationObjectsTypes = exportedInvestigationObjects.map((object) => object.type);
 
     expect(exportedInvestigationObjectsTypes).toHaveLength(2);

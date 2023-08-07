@@ -6,8 +6,8 @@ import {
   findById,
   getCurrentUserAccessRight,
   getOwnerId,
-  objects, objectsWithInvestigated,
-  toStixReportBundle, workspaceAddRelation,
+  objects,
+  workspaceAddRelation,
   workspaceAddRelations,
   workspaceCleanContext,
   workspaceDelete,
@@ -23,7 +23,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { batchLoader } from '../../database/middleware';
 import { batchCreator } from '../../domain/user';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { toStixReportInvestigatedBundle } from './investigation-domain';
+import { toStixReportBundle } from './investigation-domain';
 
 const creatorLoader = batchLoader(batchCreator);
 
@@ -36,11 +36,9 @@ const workspaceResolvers: Resolvers = {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
     owner: (workspace, _, context) => creatorLoader.load(getOwnerId(workspace), context, context.user),
-    objects: (workspace, args, context) => objects(context, context.user, workspace.id, args),
-    objectsWithInvestigated: (workspace, args, context) => objectsWithInvestigated(context, context.user, workspace, args),
+    objects: (workspace, args, context) => objects(context, context.user, workspace, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
     toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),
-    toStixReportBundleInvestigated: (workspace, _, context) => toStixReportInvestigatedBundle(context, context.user, workspace),
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {

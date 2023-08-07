@@ -262,32 +262,39 @@ export const elRawSearch = (context, user, types, query) => {
 export const elRawDeleteByQuery = (query) => engine.deleteByQuery(query).then((r) => oebp(r));
 export const elRawBulk = (args) => engine.bulk(args).then((r) => oebp(r));
 export const elRawUpdateByQuery = (query) => engine.updateByQuery(query).then((r) => oebp(r));
-const elGetTask = (taskId) => engine.tasks.get({ task_id: taskId }).then((r) => oebp(r));
-export const elUpdateByQueryForMigration = async (message, index, body) => {
-  logApp.info(`${message} > started`);
-  // Execute the update by query in async mode
-  const queryAsync = await elRawUpdateByQuery({
-    index,
-    refresh: true,
-    wait_for_completion: false,
-    body
-  }).catch((err) => {
-    throw DatabaseError(`${message} > elastic error (migration)`, { error: err });
-  });
-  logApp.info(`${message} > elastic running task ${queryAsync.task}`);
-  // Wait 10 seconds for task to initialize
-  await waitInSec(10);
-  // Monitor the task until completion
-  let taskStatus = await elGetTask(queryAsync.task);
-  while (!taskStatus.completed) {
-    const { total, updated } = taskStatus.task.status;
-    logApp.info(`${message} > in progress - ${updated}/${total}`);
-    await waitInSec(5);
-    taskStatus = await elGetTask(queryAsync.task);
-  }
-  const timeSec = Math.round(taskStatus.task.running_time_in_nanos / 1e9);
-  logApp.info(`${message} > done in ${timeSec} seconds`);
+
+const elOperationForMigration = (operation) => {
+  const elGetTask = (taskId) => engine.tasks.get({ task_id: taskId }).then((r) => oebp(r));
+
+  return async (message, index, body) => {
+    logApp.info(`${message} > started`);
+    // Execute the update by query in async mode
+    const queryAsync = await operation({
+      index,
+      refresh: true,
+      wait_for_completion: false,
+      body
+    }).catch((err) => {
+      throw DatabaseError(`${message} > elastic error (migration)`, { error: err });
+    });
+    logApp.info(`${message} > elastic running task ${queryAsync.task}`);
+    // Wait 10 seconds for task to initialize
+    await waitInSec(10);
+    // Monitor the task until completion
+    let taskStatus = await elGetTask(queryAsync.task);
+    while (!taskStatus.completed) {
+      const { total, updated } = taskStatus.task.status;
+      logApp.info(`${message} > in progress - ${updated}/${total}`);
+      await waitInSec(5);
+      taskStatus = await elGetTask(queryAsync.task);
+    }
+    const timeSec = Math.round(taskStatus.task.running_time_in_nanos / 1e9);
+    logApp.info(`${message} > done in ${timeSec} seconds`);
+  };
 };
+
+export const elUpdateByQueryForMigration = elOperationForMigration(elRawUpdateByQuery);
+export const elDeleteByQueryForMigration = elOperationForMigration(elRawDeleteByQuery);
 
 const buildDataRestrictions = async (context, user, opts = {}) => {
   const must = [];

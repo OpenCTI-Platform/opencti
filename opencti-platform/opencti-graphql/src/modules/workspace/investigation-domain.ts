@@ -47,7 +47,7 @@ const buildStixReportBundle = (stixObjects: (StixReportForExport | StixObject)[]
   });
 };
 
-export const toStixReportInvestigatedBundle = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace): Promise<string> => {
+export const toStixReportBundle = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace): Promise<string> => {
   if (workspace.type !== 'investigation') {
     throw FunctionalError('You can only export investigation objects as a stix report bundle.');
   }

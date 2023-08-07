@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import * as R from 'ramda';
 import {
   createEntity,
@@ -9,7 +8,6 @@ import {
   listThings,
   paginateAllThings,
   patchAttribute,
-  stixLoadByFilters,
   updateAttribute,
 } from '../../database/middleware';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
@@ -17,8 +15,8 @@ import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import { FunctionalError } from '../../config/errors';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, buildRefRelationKey } from '../../schema/general';
-import { isInternalRelationship, RELATION_HAS_REFERENCE } from '../../schema/internalRelationship';
+import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../../schema/general';
+import { isInternalRelationship } from '../../schema/internalRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
@@ -32,10 +30,6 @@ import type {
 } from '../../generated/graphql';
 import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { STIX_SPEC_VERSION } from '../../database/stix';
-import { convertTypeToStixType } from '../../database/stix-converter';
-import { generateStandardId } from '../../schema/identifier';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
@@ -75,7 +69,7 @@ export const getOwnerId = (workspace: BasicStoreEntityWorkspace) => {
   return (Array.isArray(workspace.creator_id) && workspace.creator_id.length > 0) ? workspace.creator_id.at(0) : workspace.creator_id;
 };
 
-export const objectsWithInvestigated = async (context: AuthContext, user: AuthUser, { investigated_entities_ids }: BasicStoreEntityWorkspace, args: WorkspaceObjectsArgs) => {
+export const objects = async (context: AuthContext, user: AuthUser, { investigated_entities_ids }: BasicStoreEntityWorkspace, args: WorkspaceObjectsArgs) => {
   const types = args.types ?? INVESTIGABLE_TYPES;
 
   if (!investigated_entities_ids) {
@@ -91,41 +85,6 @@ export const objectsWithInvestigated = async (context: AuthContext, user: AuthUs
     return paginateAllThings(context, user, types, finalArgs);
   }
   return listThings(context, user, types, finalArgs);
-};
-
-export const objects = async (context: AuthContext, user: AuthUser, workspaceId: string, args: WorkspaceObjectsArgs) => {
-  const key = buildRefRelationKey(RELATION_HAS_REFERENCE);
-  const types = args.types ?? ['Stix-Meta-Object', 'Stix-Core-Object', 'stix-relationship'];
-  const filters = [{ key, values: [workspaceId] }, ...(args.filters || [])];
-  const finalArgs = { ...args, filters };
-  if (args.all) {
-    return paginateAllThings(context, user, types, finalArgs);
-  }
-  return listThings(context, user, types, finalArgs);
-};
-
-export const toStixReportBundle = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace): Promise<string> => {
-  if (workspace.type !== 'investigation') {
-    throw FunctionalError('You can only export investigation objects as a stix report bundle');
-  }
-  const stixTypes = ['Stix-Core-Object', 'Stix-Core-Relationship', 'Stix-Sighting-Relationship'];
-  const filters = [{ key: buildRefRelationKey(RELATION_HAS_REFERENCE), values: [workspace.id] }];
-  const stixObjects = await stixLoadByFilters(context, user, stixTypes, { filters });
-  const reportData = {
-    name: workspace.name,
-    published: workspace.created_at,
-    type: convertTypeToStixType(ENTITY_TYPE_CONTAINER_REPORT),
-    object_refs: stixObjects.map((s) => s.id),
-    spec_version: STIX_SPEC_VERSION,
-  };
-  const report = { ...reportData, id: generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, reportData) };
-  const allObjects = [...stixObjects, report];
-  const bundle = {
-    id: `bundle--${uuidv4()}`,
-    type: 'bundle',
-    objects: allObjects,
-  };
-  return JSON.stringify(bundle);
 };
 
 export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
