@@ -77,15 +77,11 @@ export const subTypeWorkflowEditionFragment = graphql`
     label
     workflowEnabled
     statuses {
-      edges {
-        node {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
+      id
+      order
+      template {
+        name
+        color
       }
     }
   }
@@ -131,10 +127,8 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
             aria-labelledby="nested-list-subheader"
             className={classes.root}
           >
-            {subType.statuses?.edges
-              .filter((currentObject) => Boolean(currentObject.node.template))
-              .map((statusEdge, idx) => {
-                const status = statusEdge.node;
+            {subType.statuses?.filter((status) => Boolean(status.template))
+              .map((status, idx) => {
                 if (status === null || status.template === null) {
                   return (
                     <ListItemText

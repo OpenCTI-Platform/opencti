@@ -4,6 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ArrowRightAltOutlined } from '@mui/icons-material';
 import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
+import { SubType_subType$data } from '../private/components/settings/sub_types/__generated__/SubType_subType.graphql';
 
 const useStyles = makeStyles(() => ({
   chip: {
@@ -27,16 +28,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface Status {
-  id: string
-  order: number
-  template: {
-    color: string
-    name: string
-  } | null
-}
-
-const ItemStatusTemplate: FunctionComponent<{ statuses: Status[], disabled: boolean }> = ({
+const ItemStatusTemplate: FunctionComponent<{ statuses: SubType_subType$data['statuses'], disabled: boolean }> = ({
   statuses,
   disabled,
 }) => {

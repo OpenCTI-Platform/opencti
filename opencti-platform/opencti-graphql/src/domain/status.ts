@@ -24,6 +24,9 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { elCount } from '../database/engine';
 import { publishUserAction } from '../listener/UserActionListener';
+import { telemetry } from '../config/tracing';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import * as R from 'ramda';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
@@ -44,13 +47,36 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryStatuse
   return listEntitiesPaginated<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
 };
 export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type: string) => {
-  const args = {
-    orderBy: StatusOrdering.Order,
-    orderMode: OrderingMode.Asc,
-    filters: [{ key: [StatusFilter.Type], values: [type] }],
-  };
-  return findAll(context, user, args);
+  const getTypeStatusesFn = async () => {
+    const args = {
+      orderBy: StatusOrdering.Order,
+      orderMode: OrderingMode.Asc,
+      filters: [{ key: [StatusFilter.Type], values: [type] }],
+    };
+    return findAll(context, user, args);
+  }
+  return telemetry(context, user, 'QUERY type statuses', {
+    [SemanticAttributes.DB_NAME]: 'statuses_domain',
+    [SemanticAttributes.DB_OPERATION]: 'read',
+  }, getTypeStatusesFn);
 };
+export const batchStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
+  const batchStatusesByTypeFn = async () => {
+    const args = {
+      orderBy: StatusOrdering.Order,
+      orderMode: OrderingMode.Asc,
+      filters: [{ key: [StatusFilter.Type], values: types }],
+      connectionFormat: false
+    };
+    const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], args);
+    const statusesGrouped = R.groupBy((e) => e.type, statuses);
+    return types.map((type) => statusesGrouped[type] || []);
+  }
+  return telemetry(context, user, 'BATCH type statuses', {
+    [SemanticAttributes.DB_NAME]: 'statuses_domain',
+    [SemanticAttributes.DB_OPERATION]: 'read',
+  }, batchStatusesByTypeFn);
+}
 export const createStatusTemplate = async (context: AuthContext, user: AuthUser, input: StatusTemplateAddInput) => {
   const { element } = await createEntity(context, user, input, ENTITY_TYPE_STATUS_TEMPLATE, { complete: true });
   await publishUserAction({

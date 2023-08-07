@@ -64,15 +64,11 @@ const subTypesLinesFragment = graphql`
       availableSettings
     }
     statuses {
-      edges {
-        node {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
+      id
+      order
+      template {
+        name
+        color
       }
     }
   }

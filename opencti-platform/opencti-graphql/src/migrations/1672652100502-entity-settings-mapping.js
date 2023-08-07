@@ -12,7 +12,7 @@ export const up = async (next) => {
   const refs = settings.platform_entities_files_ref ?? [];
   const hiddens = settings.platform_hidden_types ?? [];
   const enforceReferences = conf.get('app:enforce_references') ?? [];
-  const subTypes = await queryDefaultSubTypes();
+  const subTypes = await queryDefaultSubTypes(context, SYSTEM_USER);
 
   // Setup entity settings
   const migrationEntitySetting = {
@@ -27,7 +27,7 @@ export const up = async (next) => {
     if (migrationEntitySetting.platform_entity_files_ref(entityType)
       || migrationEntitySetting.platform_hidden_type(entityType)
       || migrationEntitySetting.enforce_reference(entityType)) {
-      const entitySetting = await findByType(context, SYSTEM_USER, entityType);
+      const entitySetting = findByType(context, SYSTEM_USER, entityType);
       const inputs = [];
 
       if (migrationEntitySetting.platform_entity_files_ref(entityType)) {

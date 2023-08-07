@@ -585,7 +585,7 @@ type SubTypeEdge {
 type SubType {
   id: ID!
   label: String!
-  statuses: StatusConnection
+  statuses: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting
 }
