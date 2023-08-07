@@ -4,31 +4,15 @@ import React, { FunctionComponent, ReactElement, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { Field } from 'formik';
-import { graphql, useMutation } from 'react-relay';
+import { useMutation } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { entitySettingPatch } from '../sub_types/entitySetting/EntitySettingSettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
-import { RoleEditionOverview_role$data } from '../roles/__generated__/RoleEditionOverview_role.graphql';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import HiddenInRolesContainer from './HiddenInRolesContainer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-export const hiddenTypesListRoleMutationFieldPatch = graphql`
-  mutation HiddenTypesListRoleEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
-    roleEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-        name
-        default_hidden_types
-      }
-    }
-  }
-`;
 
 export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Note', 'Malware-Analysis']],
@@ -87,10 +71,14 @@ interface EntitySettingHidden {
 }
 
 interface HiddenTypesListProps {
-  role?: RoleEditionOverview_role$data,
+  initialValues: string[]
+  handleChange: (newValues: string[]) => void
 }
 
-const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
+const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({
+  initialValues,
+  handleChange,
+}) => {
   const { t } = useFormatter();
 
   const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
@@ -113,8 +101,8 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
   );
 
   let initialEntitySettingsEntityType;
-  if (role) {
-    initialEntitySettingsEntityType = (role.default_hidden_types ?? []) as string[];
+  if (initialValues) {
+    initialEntitySettingsEntityType = initialValues;
   } else {
     initialEntitySettingsEntityType = entitySettings.filter((node) => node.hidden).map((node) => node.target_type);
   }
@@ -123,63 +111,38 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
     ...initialEntitySettingsEntityType,
   ]);
 
-  const mutation = role ? hiddenTypesListRoleMutationFieldPatch : entitySettingPatch;
-  const [commit] = useMutation(mutation);
+  const [commit] = useMutation(entitySettingPatch);
 
-  const handleChangeGlobal = (values: string[]) => {
+  const onChange = (values: string[]) => {
     const realValues = itemsFromGroup(values) ?? [];
-    const added = realValues.filter(
-      (x) => !entitySettingsEntityType.includes(x),
-    );
-    const removed = entitySettingsEntityType.filter(
-      (x) => !realValues.includes(x),
-    );
+    const added = realValues.filter((x) => !entitySettingsEntityType.includes(x));
+    const removed = entitySettingsEntityType.filter((x) => !realValues.includes(x));
+
     let entitySettingIds: string[] = [];
     let value;
+    let newValues: string[] = [];
     if (added.length > 0) {
       entitySettingIds = entitySettings
         .filter((el) => added.includes(el.target_type))
         .map((node) => node.id);
       value = true.toString();
-      setEntitySettingsEntityType(entitySettingsEntityType.concat(added));
+      newValues = entitySettingsEntityType.concat(added);
     } else if (removed.length > 0) {
       entitySettingIds = entitySettings
         .filter((el) => removed.includes(el.target_type))
         .map((node) => node.id);
       value = false.toString();
-      setEntitySettingsEntityType(
-        entitySettingsEntityType.filter((x) => !removed.includes(x)),
-      );
+      newValues = entitySettingsEntityType.filter((x) => !removed.includes(x));
     }
-    commit({
-      variables: {
-        ids: entitySettingIds,
-        input: { key: 'platform_hidden_type', value },
-      },
-    });
-  };
+    setEntitySettingsEntityType(newValues);
 
-  const handleChangeIfRole = (values: string[]) => {
-    const realValues = itemsFromGroup(values) ?? [];
-    const added = realValues.filter((x) => !entitySettingsEntityType.includes(x));
-    const removed = entitySettingsEntityType.filter((x) => !realValues.includes(x));
-
-    if (added.length > 0) {
-      const newEntitySettingsEntityType = entitySettingsEntityType.concat(added);
-      setEntitySettingsEntityType(newEntitySettingsEntityType);
+    if (handleChange) {
+      handleChange(newValues);
+    } else {
       commit({
         variables: {
-          id: role?.id,
-          input: { key: 'default_hidden_types', value: newEntitySettingsEntityType },
-        },
-      });
-    } else if (removed.length > 0) {
-      const newEntitySettingsEntityType = entitySettingsEntityType.filter((x) => !removed.includes(x));
-      setEntitySettingsEntityType(newEntitySettingsEntityType);
-      commit({
-        variables: {
-          id: role?.id,
-          input: { key: 'default_hidden_types', value: newEntitySettingsEntityType },
+          ids: entitySettingIds,
+          input: { key: 'platform_hidden_type', value },
         },
       });
     }
@@ -234,12 +197,12 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
       component={SelectField}
       variant="standard"
       name="platform_hidden_types"
-      label={role ? t('Default hidden entity types') : t('Hidden entity types')}
+      label={t('Hidden entity types')}
       fullWidth={true}
       multiple={true}
       containerstyle={fieldSpacingContainerStyle}
       value={entitySettingsEntityType}
-      onChange={(_: string, values: string[]) => (role ? handleChangeIfRole(values) : handleChangeGlobal(values))}
+      onChange={(_: string, values: string[]) => onChange(values)}
       renderValue={(selected: string[]) => (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {selected.map((value) => (
