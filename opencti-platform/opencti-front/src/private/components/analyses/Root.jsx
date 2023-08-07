@@ -21,12 +21,10 @@ const Root = () => {
     redirect = 'reports';
   } else if (!useIsHiddenEntity('Grouping')) {
     redirect = 'groupings';
-  } else if (!useIsHiddenEntity('MalwareAnalysis')) {
+  } else if (!useIsHiddenEntity('Malware-Analysis')) {
     redirect = 'malwareAnalyses';
   } else if (!useIsHiddenEntity('Note')) {
     redirect = 'notes';
-  } else if (!useIsHiddenEntity('Opinion')) {
-    redirect = 'opinions';
   } else {
     redirect = 'external_references';
   }
