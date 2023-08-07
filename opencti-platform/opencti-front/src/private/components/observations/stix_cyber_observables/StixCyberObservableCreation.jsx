@@ -526,6 +526,14 @@ const StixCyberObservableCreation = ({
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                name="hashes_SHA-512"
+                                label="hash_sha-512"
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                              />
                             </div>
                           );
                         }

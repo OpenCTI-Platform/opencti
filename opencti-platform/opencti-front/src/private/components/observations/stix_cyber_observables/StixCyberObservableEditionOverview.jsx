@@ -302,7 +302,7 @@ const StixCyberObservableEditionOverviewComponent = ({
               initialValues.hashes_MD5 = hashes.MD5;
               initialValues['hashes_SHA-1'] = hashes['SHA-1'];
               initialValues['hashes_SHA-256'] = hashes['SHA-256'];
-              initialValues['hashes_SHA-512'] = hashes['SGA-512'];
+              initialValues['hashes_SHA-512'] = hashes['SHA-512'];
             } else {
               initialValues[attribute.value] = stixCyberObservable[attribute.value];
             }
@@ -403,7 +403,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           <Field
                             component={TextField}
                             variant="standard"
-                            name="hashes.SHA-512"
+                            name="hashes_SHA-512"
                             label={t('hash_sha-512')}
                             fullWidth={true}
                             style={{ marginTop: 20 }}

@@ -408,7 +408,7 @@ export const defaultValue = (n, tooltip = false) => {
       || n.result_name
       || (n.content && truncate(n.content, 30))
       || (n.hashes
-        && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256']))
+        && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256'] || n.hashes['SHA-512']))
       || (n.source_ref_name
         && n.target_ref_name
         && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
@@ -438,7 +438,7 @@ export const defaultValue = (n, tooltip = false) => {
     || n.phase_name
     || n.result_name
     || (n.content && truncate(n.content, 30))
-    || (n.hashes && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256']))
+    || (n.hashes && (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256'] || n.hashes['SHA-512']))
     || (n.source_ref_name
       && n.target_ref_name
       && `${truncate(n.source_ref_name, 20)} ➡️ ${truncate(
