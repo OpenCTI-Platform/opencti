@@ -15,8 +15,6 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import ThreatActorGroupPopover from './ThreatActorGroupPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
@@ -102,6 +100,7 @@ class RootThreatActorGroup extends Component {
               'narratives',
               'tools',
               'vulnerabilities',
+              'indicators',
               'observables',
               'infrastructures',
               'sightings',
@@ -161,35 +160,6 @@ class RootThreatActorGroup extends Component {
                             }
                           />
                         </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Threat-Actor-Group'}
-                            stixDomainObject={props.threatActorGroup}
-                            PopoverComponent={<ThreatActorGroupPopover />}
-                            disableSharing={true}
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={threatActorGroupId}
-                            stixDomainObjectLink={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/indicators`}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/threat_actors_group/:threatActorGroupId/indicators/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={threatActorGroupId}
-                          {...routeProps}
-                        />
                       )}
                     />
                     <Route

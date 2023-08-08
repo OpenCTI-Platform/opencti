@@ -13,6 +13,10 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import EntityStixCoreRelationshipsIndicators
+  from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
+import EntityStixCoreRelationshipsStixCyberObservable
+  from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
 const styles = () => ({
   container: {
@@ -44,6 +48,7 @@ class InfrastructureKnowledgeComponent extends Component {
             'tools',
             'vulnerabilities',
             'infrastructures',
+            'indicators',
             'observables',
             'observed_data',
             'sightings',
@@ -135,17 +140,28 @@ class InfrastructureKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/observables"
+          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/indicators"
           render={(routeProps) => (
-            <EntityStixCoreRelationships
+            <EntityStixCoreRelationshipsIndicators
+              {...routeProps}
               entityId={infrastructure.id}
-              relationshipTypes={['communicates-with', 'consists-of']}
-              stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               defaultStartTime={infrastructure.first_seen}
               defaultStopTime={infrastructure.last_seen}
-              allDirections={true}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/observables"
+          render={(routeProps) => (
+            <EntityStixCoreRelationshipsStixCyberObservable
               {...routeProps}
+              entityId={infrastructure.id}
+              entityLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
+              relationshipTypes={['communicates-with', 'consists-of', 'related-to']}
             />
           )}
         />

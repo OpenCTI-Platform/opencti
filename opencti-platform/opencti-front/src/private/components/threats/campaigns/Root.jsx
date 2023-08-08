@@ -15,8 +15,6 @@ import CampaignPopover from './CampaignPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
@@ -100,6 +98,7 @@ class RootCampaign extends Component {
               'narratives',
               'attack_patterns',
               'vulnerabilities',
+              'indicators',
               'observables',
               'infrastructures',
               'sightings',
@@ -156,34 +155,6 @@ class RootCampaign extends Component {
                             }
                           />
                         </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/campaigns/:campaignId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Campaign'}
-                            stixDomainObject={props.campaign}
-                            PopoverComponent={<CampaignPopover />}
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={campaignId}
-                            stixDomainObjectLink={`/dashboard/threats/campaigns/${campaignId}/indicators`}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/campaigns/:campaignId/indicators/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={campaignId}
-                          {...routeProps}
-                        />
                       )}
                     />
                     <Route

@@ -14,6 +14,8 @@ import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/Sti
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
+import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
+import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
 const styles = () => ({
   container: {
@@ -238,18 +240,29 @@ class CampaignKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/threats/campaigns/:campaignId/knowledge/observables"
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/indicators"
             render={(routeProps) => (
-              <EntityStixCoreRelationships
+              <EntityStixCoreRelationshipsIndicators
+                {...routeProps}
                 entityId={campaign.id}
-                relationshipTypes={['related-to']}
-                stixCoreObjectTypes={['Stix-Cyber-Observable']}
                 entityLink={link}
                 defaultStartTime={campaign.first_seen}
                 defaultStopTime={campaign.last_seen}
-                allDirections={true}
-                isRelationReversed={true}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/threats/campaigns/:campaignId/knowledge/observables"
+            render={(routeProps) => (
+              <EntityStixCoreRelationshipsStixCyberObservable
                 {...routeProps}
+                entityId={campaign.id}
+                entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
+                isRelationReversed={true}
+                relationshipTypes={['related-to']}
               />
             )}
           />

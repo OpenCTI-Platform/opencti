@@ -130,29 +130,6 @@ class TopMenuNarrative extends Component {
         >
           {t('Analyses')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/techniques/narratives/${narrativeId}/indicators`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/techniques/narratives/${narrativeId}/indicators`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/techniques/narratives/${narrativeId}/indicators`,
-            )
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-          disabled={!narrativeId}
-        >
-          {t('Indicators')}
-        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}

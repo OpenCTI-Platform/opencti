@@ -125,29 +125,6 @@ class TopMenuInfrastructure extends Component {
         >
           {t('Analyses')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/observations/infrastructures/${infrastructureId}/indicators`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/observations/infrastructures/${infrastructureId}/indicators`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/observations/infrastructures/${infrastructureId}/indicators`,
-            )
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-          disabled={!infrastructureId}
-        >
-          {t('Indicators')}
-        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}

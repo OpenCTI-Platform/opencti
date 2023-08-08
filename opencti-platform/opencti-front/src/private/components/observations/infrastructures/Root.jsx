@@ -15,8 +15,6 @@ import InfrastructurePopover from './InfrastructurePopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixDomainObjectIndicators from '../indicators/StixDomainObjectIndicators';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
@@ -138,33 +136,6 @@ class RootInfrastructure extends Component {
                             }
                           />
                         </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/infrastructures/:infrastructureId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            stixDomainObject={props.infrastructure}
-                            PopoverComponent={<InfrastructurePopover />}
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={infrastructureId}
-                            stixDomainObjectLink={`/dashboard/observations/infrastructures/${infrastructureId}/indicators`}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/observations/infrastructures/:infrastructureId/indicators/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={infrastructureId}
-                          {...routeProps}
-                        />
                       )}
                     />
                     <Route

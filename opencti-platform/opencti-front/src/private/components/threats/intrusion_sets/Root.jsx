@@ -15,8 +15,6 @@ import IntrusionSetPopover from './IntrusionSetPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
@@ -101,6 +99,7 @@ class RootIntrusionSet extends Component {
               'channels',
               'narratives',
               'vulnerabilities',
+              'indicators',
               'observables',
               'infrastructures',
               'sightings',
@@ -161,34 +160,6 @@ class RootIntrusionSet extends Component {
                             }
                           />
                         </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Intrusion-Set'}
-                            stixDomainObject={props.intrusionSet}
-                            PopoverComponent={<IntrusionSetPopover />}
-                          />
-                          <StixDomainObjectIndicators
-                            {...routeProps}
-                            stixDomainObjectId={intrusionSetId}
-                            stixDomainObjectLink={`/dashboard/threats/intrusion_sets/${intrusionSetId}/indicators`}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators/relations/:relationId"
-                      render={(routeProps) => (
-                        <StixCoreRelationship
-                          entityId={intrusionSetId}
-                          {...routeProps}
-                        />
                       )}
                     />
                     <Route

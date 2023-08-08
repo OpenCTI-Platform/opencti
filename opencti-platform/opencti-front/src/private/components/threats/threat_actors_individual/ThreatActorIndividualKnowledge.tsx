@@ -271,19 +271,19 @@ const ThreatActorIndividualKnowledgeComponent = ({
           />
         )}
       />
-        <Route
-          exact
-          path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/indicators"
-          render={(routeProps: any) => (
-            <EntityStixCoreRelationshipsIndicators
-              {...routeProps}
-              entityId={threatActorIndividual.id}
-              entityLink={link}
-              defaultStartTime={threatActorIndividual.first_seen}
-              defaultStopTime={threatActorIndividual.last_seen}
-            />
-          )}
-        />
+      <Route
+        exact
+        path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/indicators"
+        render={(routeProps: any) => (
+          <EntityStixCoreRelationshipsIndicators
+            {...routeProps}
+            entityId={threatActorIndividual.id}
+            entityLink={link}
+            defaultStartTime={threatActorIndividual.first_seen}
+            defaultStopTime={threatActorIndividual.last_seen}
+          />
+        )}
+      />
       <Route
         exact
         path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge/observables"
