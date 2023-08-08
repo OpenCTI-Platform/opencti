@@ -90,13 +90,11 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, da
         button={false}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {data && (
-            <img
-              style={{ height: '33px', width: '33px' }}
-              src={getFileUri(data.id ? data.id : '')}
-              alt={data ? data.name : 'name'}
-            />
-          )}
+          <img
+            style={{ height: '33px', width: '33px' }}
+            src={getFileUri(data.id)}
+            alt={data.name}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
