@@ -22,6 +22,7 @@ import {
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { getFileUri } from '../../../../utils/utils';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import noImage from '../../../../static/images/entities/no-image.jpg';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -192,13 +193,12 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               </FieldOrEmpty>
             </Grid>
             <Grid item={true} xs={6}>
-              <FieldOrEmpty source={carouselImages}>
                 <Carousel
                   height='150px'
                   className={classes.carousel}
                   animation='fade'
                 >
-                  {carouselImages.map((file) => (
+                  {carouselImages.length > 0 ? carouselImages.map((file) => (
                     <Tooltip title={file.description} key={file.id} placement='right'>
                     <img
                         style={{ height: '100%' }}
@@ -206,9 +206,13 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                         alt={file.name}
                       />
                     </Tooltip>
-                  ))}
+                  )) : <img
+                    style={{ height: '100%' }}
+                    src={noImage}
+                    alt="No Image"
+                  />
+                }
               </Carousel>
-                </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}
