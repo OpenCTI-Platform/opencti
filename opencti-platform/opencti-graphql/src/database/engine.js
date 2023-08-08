@@ -64,7 +64,6 @@ import {
   ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   isStixObjectAliased,
   STIX_ORGANIZATIONS_UNRESTRICTED,
@@ -88,6 +87,7 @@ import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject
 import { telemetry } from '../config/tracing';
 import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const ELK_ENGINE = 'elk';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');

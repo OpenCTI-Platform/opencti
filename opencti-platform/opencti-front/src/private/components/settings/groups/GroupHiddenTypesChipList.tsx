@@ -1,6 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { GroupHiddenTypes_group$data } from './__generated__/GroupHiddenTypes_group.graphql';
+import { GroupHiddenTypes_group$key } from './__generated__/GroupHiddenTypes_group.graphql';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 import { Group_group$data } from './__generated__/Group_group.graphql';
 
@@ -15,9 +15,9 @@ const GroupHiddenTypesChipList = ({
 }: {
   groupData: Group_group$data
 }) => {
-  const group = useFragment(groupHiddenTypesFragment, groupData) as GroupHiddenTypes_group$data;
+  const group = useFragment(groupHiddenTypesFragment, groupData as unknown as GroupHiddenTypes_group$key);
 
-  const hiddenTypesGroup = group.default_hidden_types ?? [];
+  const hiddenTypesGroup = group?.default_hidden_types ?? [];
 
   return (
       <HiddenTypesChipList hiddenTypes={hiddenTypesGroup}/>

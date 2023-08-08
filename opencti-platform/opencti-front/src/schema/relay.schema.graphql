@@ -1173,7 +1173,7 @@ type Group implements InternalObject & BasicObject {
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
-  default_hidden_types: [String!]
+  default_hidden_types: [String]
   editContext: [EditUserContext!]
 }
 
@@ -3496,152 +3496,6 @@ input IndividualAddInput {
   confidence: Int
   revoked: Boolean
   lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
-  file: Upload
-}
-
-enum OrganizationsOrdering {
-  name
-  confidence
-  created
-  created_at
-  modified
-  updated_at
-  x_opencti_organization_type
-  x_opencti_workflow_id
-}
-
-enum OrganizationsFilter {
-  name
-  aliases
-  x_opencti_organization_type
-  x_opencti_reliability
-  created
-  modified
-  created_at
-  updated_at
-  createdBy
-  markedBy
-  assigneeTo
-  labelledBy
-  x_opencti_workflow_id
-  description
-  contact_information
-  revoked
-}
-
-input OrganizationsFiltering {
-  key: [OrganizationsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
-type OrganizationConnection {
-  pageInfo: PageInfo!
-  edges: [OrganizationEdge!]!
-}
-
-type OrganizationEdge {
-  cursor: String!
-  node: Organization!
-}
-
-type MeOrganization {
-  id: ID!
-  name: String!
-}
-
-type MeOrganizationEdge {
-  cursor: String!
-  node: MeOrganization!
-}
-
-type MeOrganizationConnection {
-  pageInfo: PageInfo!
-  edges: [MeOrganizationEdge!]!
-}
-
-type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
-  identity_class: String!
-  name: String!
-  description: String
-  contact_information: String
-  roles: [String]
-  x_opencti_aliases: [String]
-  x_opencti_reliability: String
-  x_opencti_organization_type: String
-  sectors: SectorConnection
-  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
-  subOrganizations: OrganizationConnection
-  parentOrganizations: OrganizationConnection
-  default_dashboard: Workspace
-  creators: [Creator!]
-  toStix: String
-  importFiles(first: Int): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-}
-
-input OrganizationAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  name: name_String_NotNull_minLength_2!
-  description: String
-  contact_information: String
-  roles: [String]
-  x_opencti_aliases: [String]
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  x_opencti_organization_type: String
-  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -11800,7 +11654,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int): ContainerConnection
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -11824,8 +11678,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   subOrganizations: OrganizationConnection
@@ -11841,15 +11695,6 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-}
-
-enum OrganizationReliability {
-  A
-  B
-  C
-  D
-  E
-  F
 }
 
 enum OrganizationsOrdering {
@@ -11911,7 +11756,7 @@ input OrganizationAddInput {
   revoked: Boolean
   lang: String
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
+  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]

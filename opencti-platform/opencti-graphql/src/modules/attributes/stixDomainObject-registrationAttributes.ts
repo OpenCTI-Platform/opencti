@@ -193,20 +193,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'x_opencti_firstname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_lastname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
-  [ENTITY_TYPE_IDENTITY_ORGANIZATION]: [
-    xOpenctiAliases,
-    iAliasedIds,
-    xOpenctiReliability,
-    { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    {
-      name: 'x_opencti_organization_type',
-      type: 'string',
-      mandatoryType: 'no',
-      multiple: false,
-      upsert: false,
-      label: 'Organization type'
-    },
-  ],
   [ENTITY_TYPE_IDENTITY_SECTOR]: [
     xOpenctiAliases,
     iAliasedIds,

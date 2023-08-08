@@ -18,7 +18,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
-  containers(first: Int): ContainerConnection
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
   opinions(first: Int): OpinionConnection
@@ -101,9 +101,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
+  x_opencti_reliability: String
   # Organization
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
   sectors: SectorConnection
   members(
     first: Int
@@ -126,15 +126,6 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-}
-
-enum OrganizationReliability {
-  A
-  B
-  C
-  D
-  E
-  F
 }
 
 # Ordering
@@ -213,7 +204,7 @@ input OrganizationAddInput {
   revoked: Boolean
   lang: String
   x_opencti_organization_type: String
-  x_opencti_reliability: OrganizationReliability
+  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]

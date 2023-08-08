@@ -5,7 +5,7 @@ import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import organizationTypeDefs from './organization.graphql';
 import organizationResolvers from './organization-resolver';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { iAliasedIds, xOpenctiAliases } from '../../schema/attribute-definition';
+import { iAliasedIds, xOpenctiAliases, xOpenctiReliability } from '../../schema/attribute-definition';
 import { RELATION_LOCATED_AT, RELATION_PART_OF, RELATION_PUBLISHES, RELATION_USES } from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_TOOL
@@ -38,6 +38,7 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
   attributes: [
     xOpenctiAliases,
     iAliasedIds,
+    xOpenctiReliability,
     { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     {
       name: 'x_opencti_organization_type',
@@ -46,14 +47,6 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
       multiple: false,
       upsert: false,
       label: 'Organization type'
-    },
-    {
-      name: 'x_opencti_reliability',
-      type: 'string',
-      mandatoryType: 'no',
-      multiple: false,
-      upsert: false,
-      label: 'Reliability'
     },
   ],
   relations: [
