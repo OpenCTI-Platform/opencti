@@ -22,7 +22,7 @@ import {
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { getFileUri } from '../../../../utils/utils';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import noImage from '../../../../static/images/entities/no-image.jpg';
+import noImage from '../../../../static/images/entities/no-image.svg';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
