@@ -14,6 +14,7 @@ import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../components/i18n';
 import { isStixNestedRefRelationship } from '../Relation';
+import StixMetaObjectDetails from './StixMetaObjectDetails';
 
 const useStyles = makeStyles<Theme>(() => ({
   drawerPaper: {
@@ -91,6 +92,13 @@ EntityDetailsRightsBarProps
       setSelectedEntity(entity);
     }
   };
+  const hasOverviewPage = !selectedEntity.parent_types.some((el) => isStixNestedRefRelationship(el))
+    && (!selectedEntity.parent_types.includes('Stix-Meta-Object')
+      || selectedEntity.entity_type === 'External-Reference'
+    );
+  const entityUrl = selectedEntity.entity_type === 'External-Reference'
+    ? `/dashboard/analyses/external_references/${selectedEntity.id}`
+    : `/dashboard/id/${selectedEntity.id}`;
   return (
     <Drawer
       open={true}
@@ -126,12 +134,12 @@ EntityDetailsRightsBarProps
           </Select>
         </FormControl>
         {/* Need to be handle */}
-        { !selectedEntity.parent_types.some((el) => isStixNestedRefRelationship(el))
+        { hasOverviewPage
           && <div className={classes.external}>
             <IconButton
               component={Link}
               target="_blank"
-              to={`/dashboard/id/${selectedEntity.id}`}
+              to={entityUrl}
               size="medium"
             >
               <OpenInNewOutlined fontSize="medium" />
@@ -148,10 +156,14 @@ EntityDetailsRightsBarProps
           paddingRight: 20,
         }}
       >
-        {selectedEntity.relationship_type ? (
+        {selectedEntity.relationship_type && (
           <RelationshipDetails relation={selectedEntity} />
-        ) : (
+        )}
+        {selectedEntity.parent_types.includes('Stix-Core-Object') && (
           <EntityDetails entity={selectedEntity} />
+        )}
+        {selectedEntity.parent_types.includes('Stix-Meta-Object') && (
+          <StixMetaObjectDetails entity={selectedEntity} />
         )}
       </div>
     </Drawer>
