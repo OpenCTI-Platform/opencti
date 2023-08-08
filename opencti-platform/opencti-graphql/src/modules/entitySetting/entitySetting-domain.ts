@@ -1,3 +1,4 @@
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting } from './entitySetting-types';
@@ -10,17 +11,37 @@ import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, getAvailableSettings, typeAvailableSetting } from './entitySetting-utils';
 import { queryDefaultSubTypes } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { telemetry } from '../../config/tracing';
 
 // -- LOADING --
 
-export const findById = (context: AuthContext, user: AuthUser, entitySettingId: string): BasicStoreEntityEntitySetting => {
-  return storeLoadById(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING) as unknown as BasicStoreEntityEntitySetting;
+export const findById = async (context: AuthContext, user: AuthUser, entitySettingId: string): Promise<BasicStoreEntityEntitySetting> => {
+  return storeLoadById(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING);
 };
 
-export const findByType = (context: AuthContext, user: AuthUser, targetType: string): BasicStoreEntityEntitySetting => {
-  return loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
-    filters: [{ key: 'target_type', values: [targetType] }]
-  }) as unknown as BasicStoreEntityEntitySetting;
+export const findByType = async (context: AuthContext, user: AuthUser, targetType: string): Promise<BasicStoreEntityEntitySetting> => {
+  const findByTypeFn = async () => {
+    return loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
+      filters: [{ key: 'target_type', values: [targetType] }]
+    });
+  };
+  return telemetry(context, user, 'QUERY entitySetting', {
+    [SemanticAttributes.DB_NAME]: 'entitySetting_domain',
+    [SemanticAttributes.DB_OPERATION]: 'read',
+  }, findByTypeFn);
+};
+
+export const batchEntitySettingsByType = async (context: AuthContext, user: AuthUser, targetTypes: string[]) => {
+  const findByTypeFn = async () => {
+    return listAllEntities(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
+      filters: [{ key: 'target_type', values: targetTypes }],
+      connectionFormat: false
+    });
+  };
+  return telemetry(context, user, 'BATCH entitySettings', {
+    [SemanticAttributes.DB_NAME]: 'entitySetting_domain',
+    [SemanticAttributes.DB_OPERATION]: 'read',
+  }, findByTypeFn);
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntitySettingsArgs) => {
@@ -51,9 +72,9 @@ export const addEntitySetting = async (context: AuthContext, user: AuthUser, ent
   await notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].ADDED_TOPIC, created, user);
 };
 
-export const initCreateEntitySettings = async (context: AuthContext) => {
+export const initCreateEntitySettings = async (context: AuthContext, user: AuthUser) => {
   // First check existing
-  const subTypes = await queryDefaultSubTypes();
+  const subTypes = await queryDefaultSubTypes(context, user);
   // Get all current settings
   const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING], { connectionFormat: false });
   const currentEntityTypes = entitySettings.map((e) => e.target_type);

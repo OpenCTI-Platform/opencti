@@ -376,14 +376,14 @@ const platformInit = async (withMarkings = true) => {
       await initializeMigration(context);
       await initializeData(context, withMarkings);
       await initializeAdminUser(context);
-      await initCreateEntitySettings(context);
+      await initCreateEntitySettings(context, SYSTEM_USER);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       await initializeInternalQueues();
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);
       await applyMigration(context);
-      await initCreateEntitySettings(context);
+      await initCreateEntitySettings(context, SYSTEM_USER);
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

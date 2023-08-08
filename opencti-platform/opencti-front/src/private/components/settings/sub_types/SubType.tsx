@@ -52,15 +52,11 @@ const subTypeFragment = graphql`
       ...EntitySettingAttributes_entitySetting
     }
     statuses {
-      edges {
-        node {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
+      id
+      order
+      template {
+        name
+        color
       }
     }
   }
@@ -70,7 +66,6 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const subType = useFragment(subTypeFragment, data);
-  const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
   const subTypeSettingsId = subType.settings?.id;
   if (subTypeSettingsId) {
     const config = useMemo<
@@ -113,7 +108,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
           </Typography>
         </div>
         <ItemStatusTemplate
-          statuses={statuses}
+          statuses={subType.statuses}
           disabled={!subType.workflowEnabled}
         />
       </Paper>

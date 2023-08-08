@@ -94,7 +94,7 @@ describe('Basic and utils', () => {
 
 describe('Loaders', () => {
   it('should load subTypes values', async () => {
-    const stixObservableSubTypes = await findAll({ type: 'Stix-Cyber-Observable' });
+    const stixObservableSubTypes = await findAll(testContext, ADMIN_USER, { type: 'Stix-Cyber-Observable' });
     expect(stixObservableSubTypes).not.toBeNull();
     expect(stixObservableSubTypes.edges.length).toEqual(29);
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);
