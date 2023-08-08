@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -29,6 +29,7 @@ import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import TaskScope from '../../../../components/TaskScope';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -156,7 +157,7 @@ class TasksListComponent extends Component {
 
   render() {
     const { classes, data, t, nsdt, n } = this.props;
-    const tasks = R.pathOr([], ['backgroundTasks', 'edges'], data);
+    const tasks = data?.backgroundTasks?.edges ?? [];
     return (
       <div>
         {tasks.length === 0 && (
@@ -350,21 +351,21 @@ class TasksListComponent extends Component {
                     </Grid>
                   </Grid>
                 </Grid>
-                <Grid item={true} xs={5}>
+                <Grid item={true} xs={7}>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={3}>
+                    <Grid item={true} xs={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Initiator')}
                       </Typography>
                       {task.initiator?.name}
                     </Grid>
-                    <Grid item={true} xs={3}>
+                    <Grid item={true} xs={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Task start time')}
                       </Typography>
                       {nsdt(task.created_at)}
                     </Grid>
-                    <Grid item={true} xs={3}>
+                    <Grid item={true} xs={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {task.completed
                           ? t('Task end time')
@@ -372,13 +373,19 @@ class TasksListComponent extends Component {
                       </Typography>
                       {nsdt(task.last_execution_date)}
                     </Grid>
-                    <Grid item={true} xs={3}>
+                    <Grid item={true} xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Scope')}
+                      </Typography>
+                      <TaskScope scope={task.scope} label={t(task.scope)} />
+                    </Grid>
+                    <Grid item={true} xs={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Status')}
                       </Typography>
                       <TaskStatus status={status} label={t(status)} />
                     </Grid>
-                    <Grid item={true} xs={12}>
+                    <Grid item={true} xs={10}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Progress')}
                       </Typography>
@@ -410,17 +417,28 @@ class TasksListComponent extends Component {
                 >
                   {task.errors.length} {t('errors')}
                 </Button>
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <Button
+                {task.scope // if task.scope exists = it is list task or a query task
+                  ? <Button
                     style={{ position: 'absolute', right: 10, bottom: 10 }}
                     variant="outlined"
                     onClick={this.handleDeleteTask.bind(this, task.id)}
                     size="small"
                   >
-                    <Delete fontSize="small" />
+                    <Delete fontSize="small"/>
                     &nbsp;&nbsp;{t('Delete')}
                   </Button>
-                </Security>
+                  : <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                    <Button
+                      style={{ position: 'absolute', right: 10, bottom: 10 }}
+                      variant="outlined"
+                      onClick={this.handleDeleteTask.bind(this, task.id)}
+                      size="small"
+                    >
+                    <Delete fontSize="small" />
+                      &nbsp;&nbsp;{t('Delete')}
+                    </Button>
+                  </Security>
+                }
               </Grid>
             </Paper>
           );
@@ -519,6 +537,7 @@ export const tasksListQuery = graphql`
     $count: Int
     $orderBy: BackgroundTasksOrdering
     $orderMode: OrderingMode
+    $includeAuthorities: Boolean
     $filters: [BackgroundTasksFiltering]
   ) {
     ...TasksList_data
@@ -526,6 +545,7 @@ export const tasksListQuery = graphql`
         count: $count
         orderBy: $orderBy
         orderMode: $orderMode
+        includeAuthorities: $includeAuthorities
         filters: $filters
       )
   }
@@ -540,12 +560,14 @@ const TasksList = createRefetchContainer(
         count: { type: "Int" }
         orderBy: { type: "BackgroundTasksOrdering", defaultValue: created_at }
         orderMode: { type: "OrderingMode", defaultValue: desc }
+        includeAuthorities: { type: "Boolean", defaultValue: true }
         filters: { type: "[BackgroundTasksFiltering]" }
       ) {
         backgroundTasks(
           first: $count
           orderBy: $orderBy
           orderMode: $orderMode
+          includeAuthorities: $includeAuthorities
           filters: $filters
         ) {
           edges {
@@ -575,10 +597,12 @@ const TasksList = createRefetchContainer(
               }
               ... on ListTask {
                 task_ids
+                scope
               }
               ... on QueryTask {
                 task_filters
                 task_search
+                scope
               }
             }
           }

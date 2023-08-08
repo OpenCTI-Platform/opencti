@@ -207,6 +207,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
             filters: jsonFilters,
             actions: finalActions,
             excluded_ids: Object.keys(deSelectedElements || {}),
+            scope: 'USER',
           },
         },
         onCompleted: () => {
@@ -219,6 +220,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
           input: {
             ids: Object.keys(selectedElements),
             actions: finalActions,
+            scope: 'USER',
           },
         },
         onCompleted: () => {

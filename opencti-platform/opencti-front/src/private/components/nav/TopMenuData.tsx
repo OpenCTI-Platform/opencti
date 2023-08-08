@@ -5,13 +5,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
-import useGranted, {
-  KNOWLEDGE,
-  KNOWLEDGE_KNUPDATE,
-  MODULES,
-  SETTINGS,
-  TAXIIAPI_SETCOLLECTIONS,
-} from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 import useAuth from '../../../utils/hooks/useAuth';
 
@@ -34,7 +28,6 @@ const TopMenuData = () => {
   const location = useLocation();
   const { platformModuleHelpers } = useAuth();
   const isKnowledgeReader = useGranted([KNOWLEDGE]);
-  const isKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const isConnectorReader = useGranted([MODULES]);
   const isSettingsManager = useGranted([SETTINGS]);
   const isSharingManager = useGranted([TAXIIAPI_SETCOLLECTIONS]);
@@ -103,25 +96,23 @@ const TopMenuData = () => {
           {t('Connectors')}
         </Button>
       )}
-      {isKnowledgeEditor && (
-        <Tooltip
-          title={platformModuleHelpers.generateDisableMessage(TASK_MANAGER)}
-        >
-          <span>
-            <Button
-              component={Link}
-              size="small"
-              to="/dashboard/data/tasks"
-              disabled={!platformModuleHelpers.isTasksManagerEnable()}
-              variant={getVariant('/dashboard/data/tasks')}
-              color={getColor('/dashboard/data/tasks')}
-              classes={{ root: classes.button }}
-            >
-              {t('Background tasks')}
-            </Button>
-          </span>
-        </Tooltip>
-      )}
+      <Tooltip
+        title={platformModuleHelpers.generateDisableMessage(TASK_MANAGER)}
+      >
+        <span>
+          <Button
+            component={Link}
+            size="small"
+            to="/dashboard/data/tasks"
+            disabled={!platformModuleHelpers.isTasksManagerEnable()}
+            variant={getVariant('/dashboard/data/tasks')}
+            color={getColor('/dashboard/data/tasks')}
+            classes={{ root: classes.button }}
+          >
+            {t('Background tasks')}
+          </Button>
+        </span>
+      </Tooltip>
     </div>
   );
 };

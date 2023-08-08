@@ -23,12 +23,14 @@ const Tasks = () => {
     count: 50,
     orderBy: 'created_at',
     orderMode: 'desc',
+    includeAuthorities: true,
     filters: [{ key: 'completed', values: ['false'] }],
   };
   const optionsFinished = {
     count: 50,
     orderBy: 'created_at',
     orderMode: 'desc',
+    includeAuthorities: true,
     filters: [{ key: 'completed', values: ['true'] }],
   };
   if (!platformModuleHelpers.isTasksManagerEnable()) {

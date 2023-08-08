@@ -1187,6 +1187,11 @@ export type BackgroundTaskError = {
   timestamp?: Maybe<Scalars['DateTime']['output']>;
 };
 
+export enum BackgroundTaskScope {
+  Knowledge = 'KNOWLEDGE',
+  User = 'USER'
+}
+
 export enum BackgroundTaskType {
   List = 'LIST',
   Query = 'QUERY',
@@ -10850,12 +10855,15 @@ export enum LanguagesOrdering {
 export type ListTask = BackgroundTask & {
   __typename?: 'ListTask';
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
+  authorized_authorities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  authorized_members?: Maybe<Array<MemberAccess>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
   initiator?: Maybe<Creator>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  scope: BackgroundTaskScope;
   task_expected_number?: Maybe<Scalars['Int']['output']>;
   task_ids?: Maybe<Array<Scalars['ID']['output']>>;
   task_processed_number?: Maybe<Scalars['Int']['output']>;
@@ -10865,6 +10873,7 @@ export type ListTask = BackgroundTask & {
 export type ListTaskAddInput = {
   actions: Array<InputMaybe<BackgroundTaskActionInput>>;
   ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  scope: BackgroundTaskScope;
 };
 
 export type Location = {
@@ -17607,6 +17616,7 @@ export type QueryBackgroundTasksArgs = {
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<BackgroundTasksFiltering>>>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
   orderBy?: InputMaybe<BackgroundTasksOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -19650,12 +19660,15 @@ export type QueryWorkspacesArgs = {
 export type QueryTask = BackgroundTask & {
   __typename?: 'QueryTask';
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
+  authorized_authorities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  authorized_members?: Maybe<Array<MemberAccess>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
   initiator?: Maybe<Creator>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  scope: BackgroundTaskScope;
   task_expected_number?: Maybe<Scalars['Int']['output']>;
   task_filters: Scalars['String']['output'];
   task_processed_number?: Maybe<Scalars['Int']['output']>;
@@ -19667,6 +19680,7 @@ export type QueryTaskAddInput = {
   actions: Array<InputMaybe<BackgroundTaskActionInput>>;
   excluded_ids?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   filters: Scalars['String']['input'];
+  scope: BackgroundTaskScope;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -27910,6 +27924,7 @@ export type ResolversTypes = ResolversObject<{
   BackgroundTaskContextInput: BackgroundTaskContextInput;
   BackgroundTaskContextType: BackgroundTaskContextType;
   BackgroundTaskError: ResolverTypeWrapper<BackgroundTaskError>;
+  BackgroundTaskScope: BackgroundTaskScope;
   BackgroundTaskType: BackgroundTaskType;
   BackgroundTasksFilter: BackgroundTasksFilter;
   BackgroundTasksFiltering: BackgroundTasksFiltering;
@@ -32393,12 +32408,15 @@ export type LanguageEdgeResolvers<ContextType = any, ParentType extends Resolver
 
 export type ListTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['ListTask'] = ResolversParentTypes['ListTask']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskAction']>>>, ParentType, ContextType>;
+  authorized_authorities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  scope?: Resolver<ResolversTypes['BackgroundTaskScope'], ParentType, ContextType>;
   task_expected_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   task_ids?: Resolver<Maybe<Array<ResolversTypes['ID']>>, ParentType, ContextType>;
   task_processed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -34266,12 +34284,15 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type QueryTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['QueryTask'] = ResolversParentTypes['QueryTask']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskAction']>>>, ParentType, ContextType>;
+  authorized_authorities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  scope?: Resolver<ResolversTypes['BackgroundTaskScope'], ParentType, ContextType>;
   task_expected_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   task_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   task_processed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

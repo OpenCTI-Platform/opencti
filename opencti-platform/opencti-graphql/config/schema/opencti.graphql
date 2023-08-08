@@ -786,6 +786,10 @@ type BackgroundTaskError {
   timestamp: DateTime
   message: String
 }
+enum BackgroundTaskScope {
+  KNOWLEDGE
+  USER
+}
 enum BackgroundTaskActionType {
   DELETE
   ADD
@@ -871,6 +875,10 @@ type ListTask implements BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  # QueryTask and ListTask
+  scope: BackgroundTaskScope!
+  authorized_members: [MemberAccess!],
+  authorized_authorities: [String]
   # ListTask
   task_ids: [ID!]
 }
@@ -886,6 +894,10 @@ type QueryTask implements BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  # QueryTask and ListTask
+  scope: BackgroundTaskScope!
+  authorized_members: [MemberAccess!],
+  authorized_authorities: [String]
   # QueryTask
   task_filters: String!
   task_search: String
@@ -913,12 +925,14 @@ input BackgroundTaskActionInput {
 input ListTaskAddInput {
   ids: [ID!]
   actions: [BackgroundTaskActionInput]!
+  scope: BackgroundTaskScope!
 }
 input QueryTaskAddInput {
   filters: String!
   search: String
   excluded_ids: [ID]
   actions: [BackgroundTaskActionInput]!
+  scope: BackgroundTaskScope!
 }
 
 input RetentionRuleAddInput {
@@ -12033,6 +12047,7 @@ type Query {
     after: ID
     orderBy: BackgroundTasksOrdering
     orderMode: OrderingMode
+    includeAuthorities: Boolean
     filters: [BackgroundTasksFiltering]
     filterMode: FilterMode
     search: String
@@ -13490,9 +13505,9 @@ type Mutation {
   workDelete(connectorId: String!): Boolean
 
   ### TASK
-  deleteBackgroundTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
-  listTaskAdd(input: ListTaskAddInput!): BackgroundTask! @auth(for: [KNOWLEDGE_KNUPDATE])
-  queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask! @auth(for: [KNOWLEDGE_KNUPDATE])
+  deleteBackgroundTask(id: ID!): ID!
+  listTaskAdd(input: ListTaskAddInput!): BackgroundTask!
+  queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask!
 
   ### RETENTION RULE
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS])

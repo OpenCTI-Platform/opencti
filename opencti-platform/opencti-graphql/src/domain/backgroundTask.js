@@ -3,16 +3,20 @@ import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_IN
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { convertFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
-import { SYSTEM_USER } from '../utils/access';
+import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
-import { checkActionValidity, createDefaultTask, isTaskEnabledEntity } from './backgroundTask-common';
+import {
+  checkActionValidity,
+  createDefaultTask,
+  isTaskEnabledEntity,
+  TASK_TYPE_QUERY,
+  TASK_TYPE_RULE
+} from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
+import { ForbiddenAccess } from '../config/errors';
 
 export const MAX_TASK_ELEMENTS = 500;
-
-export const TASK_TYPE_QUERY = 'QUERY';
-export const TASK_TYPE_RULE = 'RULE';
 
 export const ACTION_TYPE_ADD = 'ADD';
 export const ACTION_TYPE_REMOVE = 'REMOVE';
@@ -115,12 +119,18 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
 };
 
 export const createQueryTask = async (context, user, input) => {
-  const { actions, filters, excluded_ids = [], search = null } = input;
-  checkActionValidity(user, actions);
+  const { actions, filters, excluded_ids = [], search = null, scope } = input;
+  await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
   const queryData = await executeTaskQuery(context, user, filters, search);
   const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
-  const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected);
-  const queryTask = { ...task, actions, task_filters: filters, task_search: search, task_excluded_ids: excluded_ids };
+  const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected, scope);
+  const queryTask = {
+    ...task,
+    actions,
+    task_filters: filters,
+    task_search: search,
+    task_excluded_ids: excluded_ids,
+  };
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -141,6 +151,12 @@ export const deleteRuleTasks = async (context, user, ruleId) => {
 };
 
 export const deleteTask = async (context, user, taskId) => {
+  // check if the user has the right to delete the task
+  const taskToDelete = await findById(context, SYSTEM_USER, taskId);
+  if (taskToDelete && getUserAccessRight(user, taskToDelete) !== MEMBER_ACCESS_RIGHT_ADMIN) {
+    throw ForbiddenAccess();
+  }
+  // delete the task
   const deleted = await deleteElementById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
   await publishUserAction({
     user,
