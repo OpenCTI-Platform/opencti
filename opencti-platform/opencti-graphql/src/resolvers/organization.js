@@ -7,7 +7,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const sectorsLoader = batchLoader(batchSectors);
-const membersLoader = batchLoader(batchMembers);
+export const membersLoader = batchLoader(batchMembers);
 const subOrganizationsLoader = batchLoader(batchSubOrganizations);
 const parentOrganizationsLoader = batchLoader(batchParentOrganizations);
 

@@ -39,6 +39,7 @@ import { STIX_SPEC_VERSION } from '../../database/stix';
 import { convertTypeToStixType } from '../../database/stix-converter';
 import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
+import { containsValidAdmin } from '../../utils/authorizedMembers';
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string): BasicStoreEntityWorkspace => {
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE) as unknown as BasicStoreEntityWorkspace;
@@ -53,7 +54,8 @@ export const editAuthorizedMembers = async (context: AuthContext, user: AuthUser
   const filteredInput = input.filter((value, index, array) => {
     return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
   });
-  if (!filteredInput.some((e) => e.access_right === MEMBER_ACCESS_RIGHT_ADMIN)) {
+  const hasValidAdmin = await containsValidAdmin(context, filteredInput);
+  if (!hasValidAdmin) {
     throw FunctionalError('Workspace should have at least one admin');
   }
   const authorizedMembersInput = filteredInput.map((e) => {
