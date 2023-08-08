@@ -23,11 +23,11 @@ export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser,
       R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP } }),
       R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } }),
       R.append({ node: { id: ABSTRACT_STIX_CYBER_OBSERVABLE, label: ABSTRACT_STIX_CYBER_OBSERVABLE } }),
-    R.append({ node: { id: ENTITY_HASHED_OBSERVABLE_ARTIFACT, label: ENTITY_HASHED_OBSERVABLE_ARTIFACT } }),
-    R.uniqBy(R.path(['node', 'id'])),
-  )(types);
-  return buildPagination(0, null, finalResult, finalResult.length);
-};
+      R.append({ node: { id: ENTITY_HASHED_OBSERVABLE_ARTIFACT, label: ENTITY_HASHED_OBSERVABLE_ARTIFACT } }),
+      R.uniqBy(R.path(['node', 'id'])),
+    )(types);
+    return buildPagination(0, null, finalResult, finalResult.length);
+  };
 
   return telemetry(context, user, 'QUERY default subtypes', {
     [SemanticAttributes.DB_NAME]: 'subtypes_domain',
