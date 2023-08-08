@@ -8,7 +8,6 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionOverview_role$data } from './__generated__/RoleEditionOverview_role.graphql';
-import HiddenTypesListForRole from '../entity_settings/HiddenTypesListForRole';
 
 const roleMutationFieldPatch = graphql`
   mutation RoleEditionOverviewFieldPatchMutation(
@@ -110,7 +109,6 @@ const RoleEditionOverviewComponent: FunctionComponent<RoleEditionOverviewCompone
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <HiddenTypesListForRole role={role} />
           </Form>
         )}
       </Formik>
@@ -126,7 +124,6 @@ const RoleEditionOverview = createFragmentContainer(
         id
         name
         description
-        default_hidden_types
       }
     `,
   },

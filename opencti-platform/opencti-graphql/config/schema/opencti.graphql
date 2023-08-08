@@ -1120,6 +1120,7 @@ type Group implements InternalObject & BasicObject {
   ): [Role]
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
+  default_hidden_types: [String!]
   # Technical
   editContext: [EditUserContext!]
 }
@@ -1361,7 +1362,6 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   capabilities: [Capability]
   editContext: [EditUserContext!]
-  default_hidden_types: [String]
 }
 input RoleAddInput {
   name: String!

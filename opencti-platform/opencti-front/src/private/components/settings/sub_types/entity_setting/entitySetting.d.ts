@@ -1,4 +1,4 @@
-import { ScaleConfig } from '../scaleConfiguration/scale';
+import { ScaleConfig } from '../scale_configuration/scale';
 
 export interface DefaultValue {
   id: string

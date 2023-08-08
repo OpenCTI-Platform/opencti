@@ -255,8 +255,8 @@ export const batchRoleCapabilities = async (context, user, roleId) => {
   return batchListThroughGetTo(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, { paginate: false });
 };
 
-export const getDefaultHiddenTypes = async (context, userId, userRoles) => {
-  let userDefaultHiddenTypes = userRoles.map((role) => role.default_hidden_types).flat();
+export const getDefaultHiddenTypes = async (context, userId, userGroups) => {
+  let userDefaultHiddenTypes = userGroups.map((group) => group.default_hidden_types).flat();
   userDefaultHiddenTypes = uniq(userDefaultHiddenTypes.filter((type) => type !== undefined));
   return userDefaultHiddenTypes;
 };
@@ -918,7 +918,7 @@ export const buildCompleteUser = async (context, client) => {
   const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
   const roles = await getRoles(context, groups);
   const capabilitiesPromise = getCapabilities(context, client.id, roles, isUserPlatform);
-  const defaultHiddenTypesPromise = getDefaultHiddenTypes(context, client.id, roles);
+  const defaultHiddenTypesPromise = getDefaultHiddenTypes(context, client.id, groups);
   const [capabilities, default_hidden_types] = await Promise.all([capabilitiesPromise, defaultHiddenTypesPromise]);
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
   const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;

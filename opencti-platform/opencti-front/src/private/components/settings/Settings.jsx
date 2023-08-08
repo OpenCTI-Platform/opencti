@@ -31,7 +31,7 @@ import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
 import ColorPickerField from '../../../components/ColorPickerField';
 import { now } from '../../../utils/Time';
-import HiddenTypesList from './entity_settings/HiddenTypesList';
+import HiddenTypesField from './hidden_types/HiddenTypesField';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { isNotEmptyField } from '../../../utils/utils';
 import SettingsMessages from './settings_messages/SettingsMessages';
@@ -439,7 +439,7 @@ const Settings = () => {
                               <MenuItem value="ja-jp">日本語</MenuItem>
                               <MenuItem value="zh-cn">简化字</MenuItem>
                             </Field>
-                            <HiddenTypesList />
+                            <HiddenTypesField />
                           </Form>
                         )}
                       </Formik>

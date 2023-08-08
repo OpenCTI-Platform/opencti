@@ -9,7 +9,6 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Chip from '@mui/material/Chip';
 import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
@@ -35,8 +34,6 @@ import { RolePopoverEditionQuery$data } from './__generated__/RolePopoverEdition
 import CapabilitiesList from './CapabilitiesList';
 import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
-import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
-import { isEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -60,24 +57,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
-  },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 5,
-    color: theme.palette.text?.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
-  grey_chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.grey?.[700],
-    borderRadius: 5,
-    color: theme.palette.text?.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
   },
   editButton: {
     position: 'fixed',
@@ -109,7 +88,6 @@ const roleFragment = graphql`
       name
       description
     }
-    default_hidden_types
   }
 `;
 
@@ -131,9 +109,6 @@ const Role = ({
         : null))
       .filter((n) => n !== null && n !== undefined);
   };
-  const hiddenTypes = useEntitySettings()
-    .filter((entitySetting) => entitySetting.platform_hidden_type === true)
-    .map((hiddenType) => hiddenType.target_type);
   const role = useFragment<Role_role$key>(roleFragment, roleData);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
@@ -178,30 +153,6 @@ const Role = ({
                   {t('Description')}
                 </Typography>
                 {role.description}
-              </Grid>
-              <Grid item={true} xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Hidden entity types')}
-                </Typography>
-                {hiddenTypes.map((name) => (!role.default_hidden_types?.includes(name) ? (
-                    <Chip
-                      key={name}
-                      classes={{ root: classes.grey_chip }}
-                      label={t(`entity_${name}`)}
-                    />
-                ) : (
-                    <></>
-                )))}
-                {role.default_hidden_types
-                  && role.default_hidden_types.map((name) => (
-                    <Chip
-                      key={name}
-                      classes={{ root: classes.chip }}
-                      label={t(`entity_${name}`)}
-                    />
-                  ))}
-                {isEmptyField(hiddenTypes)
-                  && isEmptyField(role.default_hidden_types) && <div>{'-'}</div>}
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>

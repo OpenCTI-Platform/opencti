@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
-import EntitySettingHiddenInRoles from './EntitySettingHiddenInRoles';
+import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
 import Security from '../../../../../utils/Security';
 import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
 
@@ -109,7 +109,7 @@ const EntitySettingSettings = ({
           </FormGroup>
         </div>
         <Security needs={[SETTINGS_SETACCESSES]}>
-          <EntitySettingHiddenInRoles targetType={entitySetting.target_type}></EntitySettingHiddenInRoles>
+          <GroupEntitySettingHiddenTypesList targetType={entitySetting.target_type}></GroupEntitySettingHiddenTypesList>
         </Security>
       </Grid>
       <Grid item={true} xs={6}>

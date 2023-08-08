@@ -7369,6 +7369,7 @@ export type Group = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   default_assignation?: Maybe<Scalars['Boolean']['output']>;
   default_dashboard?: Maybe<Workspace>;
+  default_hidden_types?: Maybe<Array<Scalars['String']>>;
   default_marking?: Maybe<Array<DefaultMarking>>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -31905,6 +31906,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   default_assignation?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   default_dashboard?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
+  default_hidden_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   default_marking?: Resolver<Maybe<Array<ResolversTypes['DefaultMarking']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -35124,7 +35126,6 @@ export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType ex
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{
   capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  default_hidden_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

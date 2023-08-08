@@ -7,12 +7,12 @@ import { Field } from 'formik';
 import { useMutation } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { entitySettingPatch } from '../sub_types/entitySetting/EntitySettingSettings';
+import { entitySettingPatch } from '../sub_types/entity_setting/EntitySettingSettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import HiddenInRolesContainer from './HiddenInRolesContainer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import GroupHiddenTypesIndicator from '../groups/GroupHiddenTypesIndicator';
 
 export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Note', 'Malware-Analysis']],
@@ -70,12 +70,12 @@ interface EntitySettingHidden {
   group: string;
 }
 
-interface HiddenTypesListProps {
+interface HiddenTypesFieldProps {
   initialValues: string[]
   handleChange: (newValues: string[]) => void
 }
 
-const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({
+const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
   initialValues,
   handleChange,
 }) => {
@@ -182,10 +182,10 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({
           />
           {t(`entity_${platformHiddenType.target_type}`)}
           <Security needs={[SETTINGS_SETACCESSES]}>
-            <HiddenInRolesContainer
+            <GroupHiddenTypesIndicator
               targetTypes={entitySettings.map((n) => n.target_type)}
               platformHiddenTargetType={platformHiddenType.target_type}
-            ></HiddenInRolesContainer>
+            ></GroupHiddenTypesIndicator>
           </Security>
         </MenuItem>,
       ));
@@ -216,4 +216,4 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({
   );
 };
 
-export default HiddenTypesList;
+export default HiddenTypesField;
