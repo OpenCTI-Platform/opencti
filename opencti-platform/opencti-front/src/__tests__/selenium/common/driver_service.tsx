@@ -38,9 +38,19 @@ export default class DriverService {
       if (!(DriverService.driver instanceof WebDriver)) {
         if (config.headless) {
           chromeOptions = new chrome.Options().headless().windowSize(windowSize);
+          // Fix Floss manager not present, cannot set Floss enable/disable on Linux Docker images launched from CI/CD
+          chromeOptions.addArguments('--headless=new');
         } else {
           chromeOptions = new chrome.Options().windowSize(windowSize);
         }
+        // Full list of switches at: https://peter.sh/experiments/chromium-command-line-switches/
+        chromeOptions.addArguments('--disable-gpu'); // overcome limited resources of CI/CD pipeline images
+        chromeOptions.addArguments('--disable-dev-shm-usage'); // overcome limited resources of CI/CD pipeline images
+        chromeOptions.addArguments('--disable-extensions'); // disabling extensions not required for testing
+        chromeOptions.addArguments('--no-sandbox'); // Bypass OS security model - NOT RECOMMENDED
+        // chromeOptions.addArguments("--disable-software-rasterizer"); // Allow GPU to perform Raster
+        // chromeOptions.setChromeBinaryPath("/usr/bin/chromium-browser");
+
         DriverService.driver = await new Builder()
           .withCapabilities(capabilities)
           .forBrowser(capabilities.browser)

@@ -52,15 +52,64 @@ steps:
         - opencti-platform/opencti-graphql/coverage
 
   - name: frontend-tests
-    image: node:20-alpine
+    # image: node:20-alpine
+    # Adding Chrome support and compatibility with Redhat-based OS simulation
+    image: rockylinux/rockylinux
     volumes:    
     - name: cache-node-frontend
       path: /drone/src/opencti-platform/opencti-front/node_modules
+    - name: cache-node-backend
+      path: /drone/src/opencti-platform/opencti-graphql/node_modules
     - name: cache-python
       path: /usr/lib/python3.11
     commands:
-      - apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
+      ######################################################################################################################
+      # Migrating to Rocky Linux to support direct Chrome testing of the Frontend-GUI using Headless Selenium test
+      #
+      # Changes from the installed packages on the base node:20-alpine when using Rocky Linux
+      # The previous node:20-alpine image when using included installing the following add-on packages:
+      #  tini musl-dev
+      #
+      #   tini - not available directly for Rocky - it is a package specific to Alpine. It is not used by OpenCTI.
+      #   musl-dev - not available directly for Rocky - it is a package specific to Alpine. It is not used by OpenCTI.
+      #
+      ######################################################################################################################
+      ######################################################################################################################
+      # Update all packages on Rocky Image
+      ######################################################################################################################
+      - dnf update -y
+      ######################################################################################################################
+      # Install required base packages for OpenCTI build or run
+      ######################################################################################################################
+      - dnf -y install git gcc gcc-c++ make cargo python3 python3-devel postfix postfix-pcre libffi-devel
+      ######################################################################################################################
+      # Add Node (is pre-built into the previous node:20-alpine) not on Rocky by default
+      ######################################################################################################################
+      - dnf -y module install nodejs:18/common
+      ######################################################################################################################
+      # Add yarn (is pre-built into the previous node:20-alpine) not on Rocky by default
+      ######################################################################################################################
+      - npm install -g yarn --allow-root --unsafe-perm
+      ######################################################################################################################
+      # Add npm (is pre-built into the previous node:20-alpine) not on Rocky by default
+      # Add wget to fetch the Chrome RPM - should probably put RPM in a private Artifactory (or some git project owned)
+      ######################################################################################################################
+      - dnf -y install npm wget
+      ######################################################################################################################
+      # Add like done in the normal previous build
+      ######################################################################################################################
       - npm install -g node-gyp
+      ######################################################################################################################
+      # Install Chrome to support selenium headless GUI tests - should probably put RPM in a private 
+      # Artifactory (or some git project owned)
+      ######################################################################################################################
+      - wget https://dl.google.com/linux/linux_signing_key.pub 
+      - rpm --import linux_signing_key.pub
+      - wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+      - dnf -y install google-chrome-stable_current_x86_64.rpm
+      ######################################################################################################################
+      # Build and run tests connecting to "base_site":"frontend_tests_port" from the opencti-graphql/test.json file
+      ######################################################################################################################
       - cd opencti-platform/opencti-front
       - yarn install
       - yarn build
@@ -157,7 +206,7 @@ services:
     - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
     - name: cache-python
-      path: /usr/lib/python3.11    
+      path: /usr/lib/python3.11  
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
@@ -174,6 +223,18 @@ services:
     commands:
       - cp -a opencti-platform/* /tmp/live-start-platform/
       - apk add build-base git libffi-dev cargo
+      ######################################################################################
+      # Build frontend - a dependency for the Selenium components in frontend-tests stage
+      # Tests that need this are located in opencti-front/src/__tests__/selenium
+      ######################################################################################
+      - cd /tmp/live-start-platform/opencti-front
+      - yarn install
+      - yarn build
+      # - yarn check-ts
+      # - yarn lint
+      ###############################################################################
+      # Build and start backend (i.e. platform-graphql)
+      ###############################################################################
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python

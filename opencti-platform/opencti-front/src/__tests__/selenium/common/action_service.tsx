@@ -17,7 +17,9 @@ const SHORT_TIMEOUT = 2000;
 export async function getElementWithTimeout(locator: Locator, timeout = MED_TIMEOUT) {
   const driver: WebDriver = await new DriverService().driver;
   const element = await driver.wait(until.elementLocated(locator), timeout);
-  driver.executeScript('arguments[0].scrollIntoView(true)', element);
+  if (element !== null) {
+    driver.executeScript('arguments[0].scrollIntoView(true)', element);
+  }
   return element;
 }
 

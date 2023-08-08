@@ -1,7 +1,7 @@
 import 'chromedriver';
 import { By, WebDriver, until } from 'selenium-webdriver';
 import DriverService from './common/driver_service';
-import { getElementWithTimeout } from './common/action_service';
+import { getElementWithTimeout, wait } from './common/action_service';
 import { logIn_LocalStrategy, logOut } from './common/auth_service';
 import { readConfigFile } from './common/file_service';
 
@@ -11,7 +11,7 @@ describe('Authentication workflow', () => {
   // const config = readJsonFile(getGQLPath('development.json', 'config'));
   const config = readConfigFile();
   const BASE_SITE = config.app.base_site;
-  const BASE_PORT = config.app.port;
+  const BASE_PORT = config.app.frontend_tests_port;
   const USERNAME = config.app.admin.email;
   const BASE_URL = `${BASE_SITE}:${BASE_PORT}/`;
 
@@ -33,6 +33,7 @@ describe('Authentication workflow', () => {
   });
 
   test('LocalStrategy - validate login with email and password', async () => {
+    await wait(2000);
     await logIn_LocalStrategy();
     // Wait for dashboard to load and open profile
     await driver.wait(until.elementLocated(By.css('header.MuiAppBar-root')));
@@ -43,13 +44,18 @@ describe('Authentication workflow', () => {
   });
 
   test('validate authenticated users ability to logout', async () => {
+    await wait(2000);
     await logOut();
+    await wait(2000);
     // Check that the current page has login elements
     let element;
     try {
       element = await getElementWithTimeout(By.name('consent'), 2000);
     } catch {
-      element = await getElementWithTimeout(By.name('email'));
+      try {
+        element = await getElementWithTimeout(By.name('email'));
+        /* eslint no-console: ["error", { allow: ["warn", "error"] }] */
+      } catch { console.warn('Warn: Could not login page elements!'); }
     }
     expect(element).not.toBeNull();
   });

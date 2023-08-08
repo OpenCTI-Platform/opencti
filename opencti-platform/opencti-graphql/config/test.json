@@ -1,8 +1,8 @@
 {
   "app": {
     "port": 4010,
-    "base_path":"",
-    "base_site":"http://localhost",
+    "frontend_tests_port":4200,
+    "base_site":"http://opencti-live-start",
     "performance_logger": false,
     "sync_raw_start_remote_uri": "http://localhost:4200/graphql",
     "sync_live_start_remote_uri": "http://localhost:4200/graphql",

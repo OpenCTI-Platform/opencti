@@ -1,5 +1,6 @@
 import fs from 'fs';
 import * as R from 'ramda';
+import config from '../../config.json' assert { type: 'json' };
 
 // OPTIMIZE: Currently assumes a Linux-based path separator; Will not work on Windows
 const SEP = '/';
@@ -110,7 +111,7 @@ export function readJsonFile(filePath: string) {
  * Reads the contents of the given config file from the config directory. Returns a
  * config object.
  */
-export function readConfigFile(configName = 'development.json') {
+export function readConfigFile(configName = config.testing_config_file) {
   let returnValue = readJsonFile(getGQLPath(configName, 'config'));
   if (('error' in returnValue) && (returnValue.error === 'NOT_FOUND')) {
     /* eslint-disable no-console */
@@ -123,7 +124,7 @@ export function readConfigFile(configName = 'development.json') {
   }
   if (('error' in returnValue) && (returnValue.error === 'NOT_FOUND')) {
     /* eslint-disable no-console */
-    const err_msg = 'ERROR: Configuration file not found! Need a config/development.json or config/test.json';
+    const err_msg = 'ERROR: Configuration file not found! Need a config.testing_config_file or config/test.json';
     console.log('#'.repeat(87));
     console.log(err_msg);
     console.log('#'.repeat(87));
