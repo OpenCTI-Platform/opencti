@@ -141,8 +141,8 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   ],
   [ENTITY_NETWORK_TRAFFIC]: [
     { name: 'extensions', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'start', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'end', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'start', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'end', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'is_active', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'src_port', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'dst_port', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
