@@ -196,7 +196,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const orgaDefault = mappedConfig.organizations_default ?? [];
           const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
           const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
-          const availableOrgas = R.flatten(orgaPath.map((path) => R.path(path.split('.'), user) || []));
+          const availableOrgas = R.flatten(
+            orgaPath.map((path) => {
+              const value = R.path(path.split('.'), user) || [];
+              return Array.isArray(value) ? value : [value];
+            })
+          );
           const orgasMapper = genConfigMapper(orgasMapping);
           return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
         };
@@ -262,7 +267,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const orgaDefault = mappedConfig.organizations_default ?? [];
           const orgasMapping = mappedConfig.organizations_management?.organizations_mapping || [];
           const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
-          const availableOrgas = R.flatten(orgaPath.map((path) => R.path(path.split('.'), profile) || []));
+          const availableOrgas = R.flatten(
+            orgaPath.map((path) => {
+              const value = R.path(path.split('.'), profile) || [];
+              return Array.isArray(value) ? value : [value];
+            })
+          );
           const orgasMapper = genConfigMapper(orgasMapping);
           return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
         };
@@ -319,7 +329,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
             logApp.debug(`[OPENID] Roles mapping on decoded ${token}`, { decoded: decodedUser });
-            const availableRoles = R.flatten(rolesPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const availableRoles = R.flatten(rolesPath.map((path) => {
+              const value = R.path(path.split('.'), decodedUser) || [];
+              return Array.isArray(value) ? value : [value];
+            }));
             const rolesMapper = genConfigMapper(rolesMapping);
             return availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
           };
@@ -332,7 +345,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
             logApp.debug(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
-            const availableGroups = R.flatten(groupsPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const availableGroups = R.flatten(groupsPath.map((path) => {
+              const value = R.path(path.split('.'), decodedUser) || [];
+              return Array.isArray(value) ? value : [value];
+            }));
             const groupsMapper = genConfigMapper(groupsMapping);
             return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
           };
@@ -347,7 +363,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const token = mappedConfig.organizations_management?.token_reference || 'access_token';
             const orgaPath = mappedConfig.organizations_management?.organizations_path || ['organizations'];
             const decodedUser = jwtDecode(tokenset[token]);
-            const availableOrgas = R.flatten(orgaPath.map((path) => R.path(path.split('.'), decodedUser) || []));
+            const availableOrgas = R.flatten(orgaPath.map((path) => {
+              const value = R.path(path.split('.'), decodedUser) || [];
+              return Array.isArray(value) ? value : [value];
+            }));
             const orgasMapper = genConfigMapper(orgasMapping);
             return [...orgaDefault, ...availableOrgas.map((a) => orgasMapper[a]).filter((r) => isNotEmptyField(r))];
           };
