@@ -72,8 +72,8 @@ If you would like to use LDAP groups to automatically associate LDAP groups and 
             "groups_mapping": ["LDAP_Group_1:OpenCTI_Group_1", "LDAP_Group_2:OpenCTI_Group_2", ...]
         },
         "organizations_management": { // To map LDAP Groups to OpenCTI Organizations
-            "group_attribute": "cn",
-            "groups_mapping": ["LDAP_Group_1:OpenCTI_Organization_1", "LDAP_Group_2:OpenCTI_Organization_2", ...]
+            "organizations_path": "cn",
+            "organizations_mapping": ["LDAP_Group_1:OpenCTI_Organization_1", "LDAP_Group_2:OpenCTI_Organization_2", ...]
         }
     }
 }
@@ -141,12 +141,12 @@ OpenCTI support mapping SAML Roles/Groups on OpenCTI Groups. Here is an example:
         },
         // Organizations mapping
         "organizations_management": { // To map SAML Groups to OpenCTI Organizations
-            "group_attributes": ["Group"],
-            "groups_mapping": ["SAML_Group_1:OpenCTI_Organization_1", "SAML_Group_2:OpenCTI_Organization_2", ...]
+            "organizations_path": ["Group"],
+            "organizations_mapping": ["SAML_Group_1:OpenCTI_Organization_1", "SAML_Group_2:OpenCTI_Organization_2", ...]
         },
         "organizations_management": { // To map SAML Roles to OpenCTI Organizations
-            "group_attributes": ["Role"],
-            "groups_mapping": ["SAML_Role_1:OpenCTI_Organization_1", "SAML_Role_2:OpenCTI_Organization_2", ...]
+            "organizations_path": ["Role"],
+            "organizations_mapping": ["SAML_Role_1:OpenCTI_Organization_1", "SAML_Role_2:OpenCTI_Organization_2", ...]
         }
     }
 }
