@@ -37,6 +37,7 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   enableNestedView?: boolean
   paddingRightButtonAdd?: number
   role?: string,
+  handleChangeView?: (viewMode: string) => void
 }
 const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStixCoreRelationshipsRelationshipsViewProps> = ({
   entityId,
@@ -53,6 +54,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   enableNestedView,
   enableContextualView,
   paddingRightButtonAdd = null,
+  handleChangeView,
 }) => {
   const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
   const {
@@ -241,7 +243,9 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
               openExports={openExports}
               exportEntityType="stix-core-relationship"
               noPadding={true}
-              handleChangeView={storageHelpers.handleChangeView}
+              handleChangeView={
+                  handleChangeView || storageHelpers.handleChangeView
+              }
               enableNestedView={enableNestedView}
               enableContextualView={enableContextualView}
               disableCards={true}
