@@ -271,7 +271,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           const { nameID: email } = profile;
           const opts = {
-            groupOrganizations: groupsToAssociate,
+            providerGroups: groupsToAssociate,
             providerOrganizations: organizationsToAssociate,
             autoCreateGroup: mappedConfig.auto_create_group ?? false,
           };
