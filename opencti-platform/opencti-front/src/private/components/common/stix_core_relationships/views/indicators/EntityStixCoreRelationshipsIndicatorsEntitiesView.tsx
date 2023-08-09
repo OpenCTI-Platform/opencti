@@ -189,7 +189,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
             filters={cleanedFilters}
             search={searchTerm}
             handleClearSelectedElements={handleClearSelectedElements}
-            variant="large"
+            variant="medium"
             warning={true}
             warningMessage={t(
               'Be careful, you are about to delete the selected entities (not the relationships!).',
