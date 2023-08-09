@@ -155,7 +155,7 @@ OpenCTI support mapping SAML Roles/Groups on OpenCTI Groups. Here is an example:
 Here is an example of SAML Groups mapping configuration using environment variables:
 
 ```yaml
-- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_ATTRIBUTES=[\"Group\"]"
+- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUP_ATTRIBUTES=[\"Group\"]"
 - "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \"SAML_Group_2:OpenCTI_Group_2\", ...]"
 ```
 
