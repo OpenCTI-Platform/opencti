@@ -942,10 +942,11 @@ describe('Upsert and merge entities', () => {
       objectMarking: [testMarking, clearMarking, mitreMarking],
     });
     // merge by update
-    const md5Input = { key: 'hashes.MD5', value: [MD5] };
-    const patchSha1 = updateAttribute(testContext, SYSTEM_USER, sha1.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);
-    const patchSha256 = updateAttribute(testContext, SYSTEM_USER, sha256.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [
-      md5Input,
+    const sha1Input = { key: 'hashes.SHA-1', value: [SHA1] };
+    const sha256Input = { key: 'hashes.SHA-256', value: [SHA256] };
+    const patchSha1 = updateAttribute(testContext, SYSTEM_USER, md5.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [sha1Input]);
+    const patchSha256 = updateAttribute(testContext, SYSTEM_USER, md5.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [
+      sha256Input,
     ]);
     await Promise.all([patchSha1, patchSha256]);
     // Check
