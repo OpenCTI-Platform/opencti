@@ -90,6 +90,7 @@ import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } 
 import { convertTypeToStixType } from './stix-converter';
 
 const ELK_ENGINE = 'elk';
+const OPENSEARCH_ENGINE = 'opensearch';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
@@ -162,55 +163,6 @@ const openSearchClient = new OpenClient(searchConfiguration);
 let isRuntimeSortingEnable = false;
 let engine = openSearchClient;
 
-// Look for the engine version with OpenSearch client
-export const searchEngineVersion = () => {
-  return openSearchClient
-    .info()
-    .then((info) => info.body.version)
-    .catch(
-      /* istanbul ignore next */ () => {
-        return 'Disconnected';
-      }
-    );
-};
-export const searchEngineInit = async () => {
-  // region Check if search engine is accessible
-  await openSearchClient
-    .info()
-    .then((info) => {
-      /* istanbul ignore if */
-      if (info.meta.connection.status !== 'alive') {
-        throw ConfigurationError('[SEARCH] Search engine seems down (status not alive)');
-      }
-    })
-    .catch(
-      /* istanbul ignore next */ (e) => {
-        throw ConfigurationError('[SEARCH] Search engine seems down', { error: e.message });
-      }
-    );
-  // endregion
-  // Setup the platform runtime field option
-  const searchInfo = await searchEngineVersion();
-  const searchPlatform = searchInfo.distribution || ELK_ENGINE; // openSearch or elasticSearch
-  const searchVersion = searchInfo.number;
-  isRuntimeSortingEnable = searchPlatform === ELK_ENGINE && semver.satisfies(searchVersion, '>=7.12.x');
-  // Look for the right client to use
-  if (searchPlatform === ELK_ENGINE) {
-    logApp.info(
-      `[SEARCH] Elasticsearch (${searchVersion}) client selected / runtime sorting ${
-        isRuntimeSortingEnable ? 'enabled' : 'disabled'
-      }`
-    );
-    engine = elasticSearchClient;
-  } else {
-    logApp.info(`[SEARCH] OpenSearch (${searchVersion}) client selected / runtime sorting disabled`);
-    engine = openSearchClient;
-  }
-  // Everything is fine, return true
-  return true;
-};
-export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
-
 // The OpenSearch/ELK Body Parser (oebp)
 // Starting ELK8+, response are no longer inside a body envelop
 // Query wrapping is still accepted in ELK8
@@ -220,6 +172,61 @@ const oebp = (queryResult) => {
   }
   return queryResult.body;
 };
+
+// Look for the engine version with OpenSearch client
+export const searchEngineVersion = async (client) => {
+  const searchInfo = await client.info()
+    .then((info) => oebp(info).version)
+    .catch(
+      /* istanbul ignore next */ (e) => {
+        throw ConfigurationError('[SEARCH] Search engine seems down', { error: e.message });
+      }
+    );
+  const searchPlatform = searchInfo.distribution || ELK_ENGINE; // openSearch or elasticSearch
+  const searchVersion = searchInfo.number;
+  const localEngine = searchPlatform === ELK_ENGINE ? elasticSearchClient : openSearchClient;
+  return { platform: searchPlatform, version: searchVersion, engine: localEngine };
+};
+
+export const searchEngineInit = async () => {
+  // Select the correct engine
+  const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
+  let engineVersion;
+  let enginePlatform;
+  if (engineSelector === ELK_ENGINE) {
+    logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
+    engine = elasticSearchClient;
+    const searchVersion = await searchEngineVersion(engine);
+    if (searchVersion.platform !== ELK_ENGINE) {
+      throw ConfigurationError(`[SEARCH] Invalid Search engine selector, configured to ${engineSelector}, detected to ${searchVersion.platform}`);
+    }
+    enginePlatform = ELK_ENGINE;
+    engineVersion = searchVersion.version;
+  } else if (engineSelector === OPENSEARCH_ENGINE) {
+    logApp.info(`[SEARCH] Engine ${OPENSEARCH_ENGINE} client selected by configuration`);
+    engine = openSearchClient;
+    const searchVersion = await searchEngineVersion(engine);
+    if (searchVersion.platform !== OPENSEARCH_ENGINE) {
+      throw ConfigurationError(`[SEARCH] Invalid Search engine selector, configured to ${engineSelector}, detected to ${searchVersion.platform}`);
+    }
+    enginePlatform = OPENSEARCH_ENGINE;
+    engineVersion = searchVersion.version;
+  } else {
+    logApp.info(`[SEARCH] Engine client not specified, trying to discover it with ${OPENSEARCH_ENGINE} client`);
+    const searchVersion = await searchEngineVersion(openSearchClient);
+    enginePlatform = searchVersion.platform;
+    logApp.info(`[SEARCH] Engine detected to ${enginePlatform}`);
+    engine = searchVersion.engine;
+    engineVersion = searchVersion.version;
+  }
+  // Setup the platform runtime field option
+  isRuntimeSortingEnable = enginePlatform === ELK_ENGINE && semver.satisfies(engineVersion, '>=7.12.x');
+  const runtimeStatus = isRuntimeSortingEnable ? 'enabled' : 'disabled';
+  logApp.info(`[SEARCH] ${enginePlatform} (${engineVersion}) client selected / runtime sorting ${runtimeStatus}`);
+  // Everything is fine, return true
+  return true;
+};
+export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
 
 export const elRawSearch = (context, user, types, query) => {
   const elRawSearchFn = async () => engine.search(query).then((r) => {
