@@ -9,8 +9,9 @@ import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
+import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import {
   buildCorrelationData,
   computeTimeRangeInterval,
@@ -28,6 +29,9 @@ import {
 } from '../../../../utils/ListParameters';
 import GroupingKnowledgeGraphBar from './GroupingKnowledgeGraphBar';
 import { groupingMutationFieldPatch } from './GroupingEditionOverview';
+import LassoSelection from '../../../../utils/graph/LassoSelection';
+import { hexToRGB } from '../../../../utils/Colors';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -305,6 +309,19 @@ class GroupingKnowledgeCorrelationComponent extends Component {
     );
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
+      selectRectangleModeFree: R.propOr(
+        false,
+        'selectRectangleModeFree',
+        params,
+      ),
+      selectModeFree: params.selectModeFree ?? false,
+      selectModeFreeReady: false,
+      rectSelected: {
+        origin: [0, 0],
+        target: [0, 0],
+        shiftKey: false,
+        altKey: false,
+      },
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
@@ -314,6 +331,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
       keyword: '',
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
     const filterAdjust = {
       markedBy,
@@ -358,17 +376,22 @@ class GroupingKnowledgeCorrelationComponent extends Component {
   }
 
   componentDidMount() {
-    this.subscription = PARAMETERS$.subscribe({
+    this.subscription1 = PARAMETERS$.subscribe({
       next: () => this.saveParameters(),
     });
-    this.subscription = POSITIONS$.subscribe({
+    this.subscription2 = POSITIONS$.subscribe({
       next: () => this.savePositions(),
+    });
+    this.subscription3 = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
     this.initialize();
   }
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    this.subscription1.unsubscribe();
+    this.subscription2.unsubscribe();
+    this.subscription3.unsubscribe();
   }
 
   saveParameters(refreshGraphData = false) {
@@ -409,6 +432,30 @@ class GroupingKnowledgeCorrelationComponent extends Component {
 
   handleToggle3DMode() {
     this.setState({ mode3D: !this.state.mode3D }, () => this.saveParameters());
+  }
+
+  handleToggleRectangleSelectModeFree() {
+    this.setState(
+      {
+        selectRectangleModeFree: !this.state.selectRectangleModeFree,
+        selectModeFree: false,
+      },
+      () => {
+        this.saveParameters();
+      },
+    );
+  }
+
+  handleToggleSelectModeFree() {
+    this.setState(
+      {
+        selectModeFree: !this.state.selectModeFree,
+        selectRectangleModeFree: false,
+      },
+      () => {
+        this.saveParameters();
+      },
+    );
   }
 
   handleToggleTreeMode(modeTree) {
@@ -655,6 +702,70 @@ class GroupingKnowledgeCorrelationComponent extends Component {
     }, 1500);
   }
 
+  inSelectionRect(n) {
+    const graphOrigin = this.graph.current.screen2GraphCoords(
+      this.state.rectSelected.origin[0],
+      this.state.rectSelected.origin[1],
+    );
+    const graphTarget = this.graph.current.screen2GraphCoords(
+      this.state.rectSelected.target[0],
+      this.state.rectSelected.target[1],
+    );
+    return (
+      n.x >= graphOrigin.x
+      && n.x <= graphTarget.x
+      && n.y >= graphOrigin.y
+      && n.y <= graphTarget.y
+    );
+  }
+
+  handleRectSelectMove(e, coords) {
+    if (this.state.selectRectangleModeFree) {
+      const { left, top } = this.canvas.getBoundingClientRect();
+      this.state.rectSelected.origin[0] = R.min(coords.origin[0], coords.target[0]) - left;
+      this.state.rectSelected.origin[1] = R.min(coords.origin[1], coords.target[1]) - top;
+      this.state.rectSelected.target[0] = R.max(coords.origin[0], coords.target[0]) - left;
+      this.state.rectSelected.target[1] = R.max(coords.origin[1], coords.target[1]) - top;
+      this.state.rectSelected.shiftKey = e.shiftKey;
+      this.state.rectSelected.altKey = e.altKey;
+    }
+  }
+
+  handleRectSelectUp() {
+    if (
+      this.state.selectRectangleModeFree
+      && (this.state.rectSelected.origin[0]
+        !== this.state.rectSelected.target[0]
+        || this.state.rectSelected.origin[1] !== this.state.rectSelected.target[1])
+    ) {
+      if (
+        !this.state.rectSelected.shiftKey
+        && !this.state.rectSelected.altKey
+      ) {
+        this.selectedLinks.clear();
+        this.selectedNodes.clear();
+      }
+      if (this.state.rectSelected.altKey) {
+        R.map(
+          (n) => this.inSelectionRect(n) && this.selectedNodes.delete(n),
+          this.state.graphData.nodes,
+        );
+      } else {
+        R.map(
+          (n) => this.inSelectionRect(n) && this.selectedNodes.add(n),
+          this.state.graphData.nodes,
+        );
+      }
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
+    this.state.rectSelected = {
+      origin: [0, 0],
+      target: [0, 0],
+      shiftKey: false,
+      altKey: false,
+    };
+  }
+
   handleSelectAll() {
     this.selectedLinks.clear();
     this.selectedNodes.clear();
@@ -750,6 +861,10 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       numberOfSelectedLinks,
       displayTimeRange,
       selectedTimeRangeInterval,
+      selectRectangleModeFree,
+      selectModeFree,
+      selectModeFreeReady,
+      navOpen,
     } = this.state;
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
@@ -822,8 +937,13 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       timeRangeNodes,
     );
     return (
-      <div>
-        <GroupingKnowledgeGraphBar
+      <UserContext.Consumer>
+        {({ bannerSettings }) => {
+          const graphWidth = window.innerWidth - (navOpen ? 210 : 70);
+          const graphHeight = window.innerHeight - 180 - bannerSettings.bannerHeightNumber * 2;
+          return (
+            <>
+            <GroupingKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
           handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
@@ -836,8 +956,17 @@ class GroupingKnowledgeCorrelationComponent extends Component {
             this,
           )}
           handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
+          handleToggleRectangleSelectModeFree={this.handleToggleRectangleSelectModeFree.bind(
+            this,
+          )}
+          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
+            this,
+          )}
           stixCoreObjectsTypes={stixCoreObjectsTypes}
           currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
+          currentSelectRectangleModeFree={selectRectangleModeFree}
+          currentSelectModeFree={selectModeFree}
+          selectModeFreeReady={selectModeFreeReady}
           markedBy={markedBy}
           currentMarkedBy={currentMarkedBy}
           createdBy={createdBy}
@@ -867,6 +996,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}
           handleSearch={this.handleSearch.bind(this)}
+          navOpen={navOpen}
         />
         {mode3D ? (
           <ForceGraph3D
@@ -961,6 +1091,35 @@ class GroupingKnowledgeCorrelationComponent extends Component {
             }
           />
         ) : (
+          <>
+            <LassoSelection
+              width={graphWidth}
+              height={graphHeight}
+              activated={selectModeFree && selectModeFreeReady}
+              graphDataNodes={graphData.nodes}
+              graph={this.graph}
+              setSelectedNodes={(nodes) => {
+                this.selectedNodes.clear();
+                Array.from(nodes).forEach((n) => this.selectedNodes.add(n));
+                this.setState({ numberOfSelectedNodes: nodes.size });
+              }}
+            />
+            <RectangleSelection
+              onSelect={(e, coords) => {
+                this.handleRectSelectMove(e, coords);
+              }}
+              onMouseUp={(e) => {
+                this.handleRectSelectUp(e);
+              }}
+              style={{
+                backgroundColor: hexToRGB(
+                  theme.palette.background.accent,
+                  0.3,
+                ),
+                borderColor: theme.palette.warning.main,
+              }}
+              disabled={!selectRectangleModeFree}
+            >
           <ForceGraph2D
             ref={this.graph}
             width={width}
@@ -969,6 +1128,9 @@ class GroupingKnowledgeCorrelationComponent extends Component {
             onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
+            enablePanInteraction={
+              !selectRectangleModeFree && !selectModeFree
+            }
             nodeCanvasObject={(
               node,
               ctx, //
@@ -1049,8 +1211,13 @@ class GroupingKnowledgeCorrelationComponent extends Component {
                   : undefined
             }
           />
+          </RectangleSelection>
+          </>
         )}
-      </div>
+            </>
+          );
+        }}
+      </UserContext.Consumer>
     );
   }
 }
