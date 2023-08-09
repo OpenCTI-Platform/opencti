@@ -174,8 +174,8 @@ const oebp = (queryResult) => {
 };
 
 // Look for the engine version with OpenSearch client
-export const searchEngineVersion = async (client) => {
-  const searchInfo = await client.info()
+export const searchEngineVersion = async () => {
+  const searchInfo = await engine.info()
     .then((info) => oebp(info).version)
     .catch(
       /* istanbul ignore next */ (e) => {
@@ -196,7 +196,7 @@ export const searchEngineInit = async () => {
   if (engineSelector === ELK_ENGINE) {
     logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
     engine = elasticSearchClient;
-    const searchVersion = await searchEngineVersion(engine);
+    const searchVersion = await searchEngineVersion();
     if (searchVersion.platform !== ELK_ENGINE) {
       throw ConfigurationError(`[SEARCH] Invalid Search engine selector, configured to ${engineSelector}, detected to ${searchVersion.platform}`);
     }
@@ -205,7 +205,7 @@ export const searchEngineInit = async () => {
   } else if (engineSelector === OPENSEARCH_ENGINE) {
     logApp.info(`[SEARCH] Engine ${OPENSEARCH_ENGINE} client selected by configuration`);
     engine = openSearchClient;
-    const searchVersion = await searchEngineVersion(engine);
+    const searchVersion = await searchEngineVersion();
     if (searchVersion.platform !== OPENSEARCH_ENGINE) {
       throw ConfigurationError(`[SEARCH] Invalid Search engine selector, configured to ${engineSelector}, detected to ${searchVersion.platform}`);
     }
@@ -213,7 +213,8 @@ export const searchEngineInit = async () => {
     engineVersion = searchVersion.version;
   } else {
     logApp.info(`[SEARCH] Engine client not specified, trying to discover it with ${OPENSEARCH_ENGINE} client`);
-    const searchVersion = await searchEngineVersion(openSearchClient);
+    engine = openSearchClient;
+    const searchVersion = await searchEngineVersion();
     enginePlatform = searchVersion.platform;
     logApp.info(`[SEARCH] Engine detected to ${enginePlatform}`);
     engine = searchVersion.engine;
