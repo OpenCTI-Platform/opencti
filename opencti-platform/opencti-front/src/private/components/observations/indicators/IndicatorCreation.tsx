@@ -12,6 +12,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -54,6 +57,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 280,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  createButtonContextual: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -416,7 +428,9 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   );
 };
 
-const IndicatorCreation = ({ paginationOptions }: { paginationOptions: IndicatorsLinesPaginationQuery$variables }) => {
+interface IndicatorCreationProps { paginationOptions: IndicatorsLinesPaginationQuery$variables, contextual?: boolean, display?: boolean }
+
+const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
@@ -430,6 +444,36 @@ const IndicatorCreation = ({ paginationOptions }: { paginationOptions: Indicator
     paginationOptions,
     'indicatorAdd',
   );
+
+  if (contextual) {
+    return (
+      <div style={{ visibility: !display ? 'hidden' : 'visible' }}>
+        <Fab
+          onClick={handleOpen}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButtonContextual}
+          sx={{ zIndex: 1203 }}
+        >
+          <Add />
+        </Fab>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          PaperProps={{ elevation: 1 }}
+        >
+          <DialogTitle>{t('Create an indicator')}</DialogTitle>
+          <DialogContent>
+            <IndicatorCreationForm
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={onReset}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -464,7 +508,7 @@ const IndicatorCreation = ({ paginationOptions }: { paginationOptions: Indicator
         <div className={classes.container}>
           <IndicatorCreationForm
             updater={updater}
-            onCompleted={() => handleClose()}
+            onCompleted={handleClose}
             onReset={onReset}
           />
         </div>

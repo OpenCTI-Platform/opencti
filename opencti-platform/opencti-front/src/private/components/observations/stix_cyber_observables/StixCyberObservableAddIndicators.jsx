@@ -9,10 +9,8 @@ import { Close } from '@mui/icons-material';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import StixCyberObservableAddIndicatorsLines, {
-  stixCyberObservableAddIndicatorsLinesQuery,
-} from './StixCyberObservableAddIndicatorsLines';
-import StixCyberObservableCreation from './StixCyberObservableCreation';
+import StixCyberObservableAddIndicatorsLines, { stixCyberObservableAddIndicatorsLinesQuery, } from './StixCyberObservableAddIndicatorsLines';
+import IndicatorCreation from "../indicators/IndicatorCreation";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -140,13 +138,7 @@ class StixCyberObservableAddIndicators extends Component {
             />
           </div>
         </Drawer>
-        <StixCyberObservableCreation
-          display={open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationKey="Pagination_stixCyberObservables"
-          paginationOptions={paginationOptions}
-        />
+        <IndicatorCreation display={open} contextual paginationOptions={paginationOptions} />
       </>
     );
   }
