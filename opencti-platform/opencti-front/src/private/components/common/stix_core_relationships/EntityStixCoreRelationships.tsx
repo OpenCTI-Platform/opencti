@@ -27,6 +27,7 @@ interface EntityStixCoreRelationshipsProps {
   allDirections: boolean;
   role:string,
   paddingRightButtonAdd?: number,
+  handleChangeView?: (viewMode: string) => void
 }
 
 const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationshipsProps> = ({
@@ -43,6 +44,7 @@ const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationships
   allDirections,
   role,
   paddingRightButtonAdd,
+  handleChangeView,
 }) => {
   const classes = useStyles();
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
@@ -78,6 +80,7 @@ const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationships
               enableContextualView={enableContextualView}
               isRelationReversed={isRelationReversed}
               paddingRightButtonAdd={paddingRightButtonAdd}
+              handleChangeView={handleChangeView}
             />}
            {finalView === 'relationships'
             && <EntityStixCoreRelationshipsRelationshipsView
@@ -95,6 +98,7 @@ const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationships
             allDirections={allDirections}
             role={role}
             paddingRightButtonAdd={paddingRightButtonAdd}
+            handleChangeView={handleChangeView}
             />}
         </div>
       </ExportContextProvider>

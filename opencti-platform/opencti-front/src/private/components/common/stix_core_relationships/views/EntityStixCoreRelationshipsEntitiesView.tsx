@@ -27,6 +27,7 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
   enableNestedView?: boolean,
   enableContextualView: boolean,
   paddingRightButtonAdd?: number
+  handleChangeView?: (viewMode: string) => void
 }
 const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsEntitiesViewProps> = ({
   entityId,
@@ -40,6 +41,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
   enableNestedView,
   enableContextualView,
   paddingRightButtonAdd = null,
+  handleChangeView,
 }) => {
   const { t } = useFormatter();
   const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
@@ -161,7 +163,9 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<EntityStixCoreR
               handleSearch={storageHelpers.handleSearch}
               handleAddFilter={storageHelpers.handleAddFilter}
               handleRemoveFilter={storageHelpers.handleRemoveFilter}
-              handleChangeView={storageHelpers.handleChangeView}
+              handleChangeView={
+                handleChangeView || storageHelpers.handleChangeView
+              }
               onToggleEntity={onToggleEntity}
               handleToggleSelectAll={handleToggleSelectAll}
               paginationOptions={paginationOptions}
