@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, USER_EDITOR, queryAsAdmin, editorQuery, testContext, getUserIdByEmail } from '../../utils/testQuery';
+import {
+  ADMIN_USER,
+  editorQuery,
+  getUserIdByEmail,
+  queryAsAdmin,
+  testContext,
+  USER_EDITOR
+} from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
+import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 
 const LIST_QUERY = gql`
     query workspaces(
@@ -371,6 +379,24 @@ describe('Workspace member access behavior', () => {
   it('User with admin access right should update workspace members', async () => {
     const authorizedMembersUpdate = [{
       id: userEditorId,
+      access_right: 'admin',
+    }, {
+      id: ADMIN_USER.id,
+      access_right: 'admin'
+    }, {
+      id: MEMBER_ACCESS_ALL,
+      access_right: 'view'
+    }];
+    const queryResult = await editorQuery({
+      query: UPDATE_MEMBERS_QUERY,
+      variables: { id: workspace1InternalId, input: authorizedMembersUpdate },
+    });
+    expect(queryResult.data.workspaceEditAuthorizedMembers.authorizedMembers.length).toEqual(3);
+  });
+
+  it('A user can\'t modifiy authorized_members if the update leads to a workspace with no valid admin', async () => {
+    const authorizedMembersUpdate = [{
+      id: 'not_existing_id',
       access_right: 'admin'
     }, {
       id: ADMIN_USER.id,
@@ -380,7 +406,10 @@ describe('Workspace member access behavior', () => {
       query: UPDATE_MEMBERS_QUERY,
       variables: { id: workspace1InternalId, input: authorizedMembersUpdate },
     });
-    expect(queryResult.data.workspaceEditAuthorizedMembers.authorizedMembers.length).toEqual(2);
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).name).toEqual('FunctionalError');
+    expect(queryResult.errors.at(0).data.reason).toEqual('Workspace should have at least one admin');
   });
 
   it('User with edit access right should not update workspace members', async () => {
@@ -389,7 +418,7 @@ describe('Workspace member access behavior', () => {
       access_right: 'admin'
     }, {
       id: ADMIN_USER.id,
-      access_right: 'edit'
+      access_right: 'admin'
     }];
     const queryResult = await editorQuery({
       query: UPDATE_MEMBERS_QUERY,
