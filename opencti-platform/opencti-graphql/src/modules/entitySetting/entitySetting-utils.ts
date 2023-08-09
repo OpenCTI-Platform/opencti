@@ -29,6 +29,7 @@ export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
   platform_hidden_type: false,
   enforce_reference: false,
   attributes_configuration: JSON.stringify([]),
+  workflow_configuration: true,
 };
 
 export const defaultScale = JSON.stringify({
