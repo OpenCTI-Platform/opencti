@@ -7462,12 +7462,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-rate-limit@npm:6.8.1":
-  version: 6.8.1
-  resolution: "express-rate-limit@npm:6.8.1"
+"express-rate-limit@npm:6.9.0":
+  version: 6.9.0
+  resolution: "express-rate-limit@npm:6.9.0"
   peerDependencies:
     express: ^4 || ^5
-  checksum: 50b928b21d3a6e4fb6029e4c597ad3a90c326fe2b3f2e1810cb7ee6a44f25bc268c3444f13b79b88e70e932ac5c8fadeef85acddaf7bd5ff22f9799de5e1056a
+  checksum: a90662ecc1fb91f9accfcee5de90e4ee7ce486b6f806c22609213675ae0425c7c5d1b288c51907aeb347f1a5a492994032b805839a63f235c91c9235845c75f9
   languageName: node
   linkType: hard
 
@@ -10461,7 +10461,7 @@ __metadata:
     eslint-plugin-react-hooks: 4.6.0
     eventsource: 2.0.2
     express: 4.18.2
-    express-rate-limit: 6.8.1
+    express-rate-limit: 6.9.0
     express-session: 1.17.3
     fast-glob: 3.3.1
     fast-json-patch: 3.1.1
