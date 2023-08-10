@@ -255,6 +255,27 @@ const stixCoreRelationshipsListQuery = graphql`
               ... on Incident {
                 name
               }
+              ... on Event {
+                name
+              }
+              ... on Channel {
+                name
+              }
+              ... on Narrative {
+                name
+              }
+              ... on Language {
+                name
+              }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
+                name
+              }
+              ... on Case {
+                name
+              }
               ... on StixCoreRelationship {
                 id
                 relationship_type
@@ -341,6 +362,27 @@ const stixCoreRelationshipsListQuery = graphql`
                     name
                   }
                   ... on Incident {
+                    name
+                  }
+                  ... on Event {
+                    name
+                  }
+                  ... on Channel {
+                    name
+                  }
+                  ... on Narrative {
+                    name
+                  }
+                  ... on Language {
+                    name
+                  }
+                  ... on DataComponent {
+                    name
+                  }
+                  ... on DataSource {
+                    name
+                  }
+                  ... on Case {
                     name
                   }
                   ... on StixCyberObservable {
@@ -486,6 +528,27 @@ const stixCoreRelationshipsListQuery = graphql`
                             first_seen
                             last_seen
                           }
+                          ... on Event {
+                            name
+                          }
+                          ... on Channel {
+                            name
+                          }
+                          ... on Narrative {
+                            name
+                          }
+                          ... on Language {
+                            name
+                          }
+                          ... on DataComponent {
+                            name
+                          }
+                          ... on DataSource {
+                            name
+                          }
+                          ... on Case {
+                            name
+                          }
                           ... on StixCyberObservable {
                             observable_value
                             x_opencti_description
@@ -579,6 +642,27 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Incident {
                         name
                       }
+                      ... on Event {
+                        name
+                      }
+                      ... on Channel {
+                        name
+                      }
+                      ... on Narrative {
+                        name
+                      }
+                      ... on Language {
+                        name
+                      }
+                      ... on DataComponent {
+                        name
+                      }
+                      ... on DataSource {
+                        name
+                      }
+                      ... on Case {
+                        name
+                      }
                     }
                     to {
                       ... on BasicObject {
@@ -653,6 +737,27 @@ const stixCoreRelationshipsListQuery = graphql`
                         name
                       }
                       ... on Incident {
+                        name
+                      }
+                      ... on Event {
+                        name
+                      }
+                      ... on Channel {
+                        name
+                      }
+                      ... on Narrative {
+                        name
+                      }
+                      ... on Language {
+                        name
+                      }
+                      ... on DataComponent {
+                        name
+                      }
+                      ... on DataSource {
+                        name
+                      }
+                      ... on Case {
                         name
                       }
                       ... on ObservedData {
@@ -791,6 +896,27 @@ const stixCoreRelationshipsListQuery = graphql`
                                 first_seen
                                 last_seen
                               }
+                              ... on Event {
+                                name
+                              }
+                              ... on Channel {
+                                name
+                              }
+                              ... on Narrative {
+                                name
+                              }
+                              ... on Language {
+                                name
+                              }
+                              ... on DataComponent {
+                                name
+                              }
+                              ... on DataSource {
+                                name
+                              }
+                              ... on Case {
+                                name
+                              }
                               ... on StixCyberObservable {
                                 observable_value
                                 x_opencti_description
@@ -878,6 +1004,27 @@ const stixCoreRelationshipsListQuery = graphql`
                     name
                   }
                   ... on Incident {
+                    name
+                  }
+                  ... on Event {
+                    name
+                  }
+                  ... on Channel {
+                    name
+                  }
+                  ... on Narrative {
+                    name
+                  }
+                  ... on Language {
+                    name
+                  }
+                  ... on DataComponent {
+                    name
+                  }
+                  ... on DataSource {
+                    name
+                  }
+                  ... on Case {
                     name
                   }
                   ... on StixCyberObservable {
@@ -1019,6 +1166,27 @@ const stixCoreRelationshipsListQuery = graphql`
                             first_seen
                             last_seen
                           }
+                          ... on Event {
+                            name
+                          }
+                          ... on Channel {
+                            name
+                          }
+                          ... on Narrative {
+                            name
+                          }
+                          ... on Language {
+                            name
+                          }
+                          ... on DataComponent {
+                            name
+                          }
+                          ... on DataSource {
+                            name
+                          }
+                          ... on Case {
+                            name
+                          }
                           ... on StixCyberObservable {
                             observable_value
                             x_opencti_description
@@ -1111,6 +1279,27 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Incident {
                         name
                       }
+                      ... on Event {
+                        name
+                      }
+                      ... on Channel {
+                        name
+                      }
+                      ... on Narrative {
+                        name
+                      }
+                      ... on Language {
+                        name
+                      }
+                      ... on DataComponent {
+                        name
+                      }
+                      ... on DataSource {
+                        name
+                      }
+                      ... on Case {
+                        name
+                      }
                       ... on StixCyberObservable {
                         observable_value
                       }
@@ -1249,6 +1438,27 @@ const stixCoreRelationshipsListQuery = graphql`
                                 description
                                 first_seen
                                 last_seen
+                              }
+                              ... on Event {
+                                name
+                              }
+                              ... on Channel {
+                                name
+                              }
+                              ... on Narrative {
+                                name
+                              }
+                              ... on Language {
+                                name
+                              }
+                              ... on DataComponent {
+                                name
+                              }
+                              ... on DataSource {
+                                name
+                              }
+                              ... on Case {
+                                name
                               }
                               ... on StixCyberObservable {
                                 observable_value
@@ -1336,6 +1546,27 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Incident {
                         name
                       }
+                      ... on Event {
+                        name
+                      }
+                      ... on Channel {
+                        name
+                      }
+                      ... on Narrative {
+                        name
+                      }
+                      ... on Language {
+                        name
+                      }
+                      ... on DataComponent {
+                        name
+                      }
+                      ... on DataSource {
+                        name
+                      }
+                      ... on Case {
+                        name
+                      }
                       ... on StixCyberObservable {
                         observable_value
                       }
@@ -1474,6 +1705,27 @@ const stixCoreRelationshipsListQuery = graphql`
                                 description
                                 first_seen
                                 last_seen
+                              }
+                              ... on Event {
+                                name
+                              }
+                              ... on Channel {
+                                name
+                              }
+                              ... on Narrative {
+                                name
+                              }
+                              ... on Language {
+                                name
+                              }
+                              ... on DataComponent {
+                                name
+                              }
+                              ... on DataSource {
+                                name
+                              }
+                              ... on Case {
+                                name
                               }
                               ... on StixCyberObservable {
                                 observable_value
@@ -1568,6 +1820,27 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on Incident {
                     name
                   }
+                  ... on Event {
+                    name
+                  }
+                  ... on Channel {
+                    name
+                  }
+                  ... on Narrative {
+                    name
+                  }
+                  ... on Language {
+                    name
+                  }
+                  ... on DataComponent {
+                    name
+                  }
+                  ... on DataSource {
+                    name
+                  }
+                  ... on Case {
+                    name
+                  }
                   ... on StixCyberObservable {
                     observable_value
                   }
@@ -1707,6 +1980,27 @@ const stixCoreRelationshipsListQuery = graphql`
                             first_seen
                             last_seen
                           }
+                          ... on Event {
+                            name
+                          }
+                          ... on Channel {
+                            name
+                          }
+                          ... on Narrative {
+                            name
+                          }
+                          ... on Language {
+                            name
+                          }
+                          ... on DataComponent {
+                            name
+                          }
+                          ... on DataSource {
+                            name
+                          }
+                          ... on Case {
+                            name
+                          }
                           ... on StixCyberObservable {
                             observable_value
                             x_opencti_description
@@ -1797,6 +2091,27 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Incident {
                         name
                       }
+                      ... on Event {
+                        name
+                      }
+                      ... on Channel {
+                        name
+                      }
+                      ... on Narrative {
+                        name
+                      }
+                      ... on Language {
+                        name
+                      }
+                      ... on DataComponent {
+                        name
+                      }
+                      ... on DataSource {
+                        name
+                      }
+                      ... on Case {
+                        name
+                      }
                     }
                     to {
                       ... on BasicObject {
@@ -1871,6 +2186,27 @@ const stixCoreRelationshipsListQuery = graphql`
                         name
                       }
                       ... on Incident {
+                        name
+                      }
+                      ... on Event {
+                        name
+                      }
+                      ... on Channel {
+                        name
+                      }
+                      ... on Narrative {
+                        name
+                      }
+                      ... on Language {
+                        name
+                      }
+                      ... on DataComponent {
+                        name
+                      }
+                      ... on DataSource {
+                        name
+                      }
+                      ... on Case {
                         name
                       }
                       ... on ObservedData {
@@ -2008,6 +2344,27 @@ const stixCoreRelationshipsListQuery = graphql`
                                 description
                                 first_seen
                                 last_seen
+                              }
+                              ... on Event {
+                                name
+                              }
+                              ... on Channel {
+                                name
+                              }
+                              ... on Narrative {
+                                name
+                              }
+                              ... on Language {
+                                name
+                              }
+                              ... on DataComponent {
+                                name
+                              }
+                              ... on DataSource {
+                                name
+                              }
+                              ... on Case {
+                                name
                               }
                               ... on StixCyberObservable {
                                 observable_value
@@ -2098,6 +2455,27 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on Incident {
                     name
                   }
+                  ... on Event {
+                    name
+                  }
+                  ... on Channel {
+                    name
+                  }
+                  ... on Narrative {
+                    name
+                  }
+                  ... on Language {
+                    name
+                  }
+                  ... on DataComponent {
+                    name
+                  }
+                  ... on DataSource {
+                    name
+                  }
+                  ... on Case {
+                    name
+                  }
                   ... on StixCyberObservable {
                     observable_value
                   }
@@ -2237,6 +2615,27 @@ const stixCoreRelationshipsListQuery = graphql`
                             first_seen
                             last_seen
                           }
+                          ... on Event {
+                            name
+                          }
+                          ... on Channel {
+                            name
+                          }
+                          ... on Narrative {
+                            name
+                          }
+                          ... on Language {
+                            name
+                          }
+                          ... on DataComponent {
+                            name
+                          }
+                          ... on DataSource {
+                            name
+                          }
+                          ... on Case {
+                            name
+                          }
                           ... on StixCyberObservable {
                             observable_value
                             x_opencti_description
@@ -2329,6 +2728,27 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Incident {
                         name
                       }
+                      ... on Event {
+                        name
+                      }
+                      ... on Channel {
+                        name
+                      }
+                      ... on Narrative {
+                        name
+                      }
+                      ... on Language {
+                        name
+                      }
+                      ... on DataComponent {
+                        name
+                      }
+                      ... on DataSource {
+                        name
+                      }
+                      ... on Case {
+                        name
+                      }
                       ... on StixCyberObservable {
                         observable_value
                       }
@@ -2467,6 +2887,27 @@ const stixCoreRelationshipsListQuery = graphql`
                                 description
                                 first_seen
                                 last_seen
+                              }
+                              ... on Event {
+                                name
+                              }
+                              ... on Channel {
+                                name
+                              }
+                              ... on Narrative {
+                                name
+                              }
+                              ... on Language {
+                                name
+                              }
+                              ... on DataComponent {
+                                name
+                              }
+                              ... on DataSource {
+                                name
+                              }
+                              ... on Case {
+                                name
                               }
                               ... on StixCyberObservable {
                                 observable_value
@@ -2554,6 +2995,27 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on Incident {
                         name
                       }
+                      ... on Event {
+                        name
+                      }
+                      ... on Channel {
+                        name
+                      }
+                      ... on Narrative {
+                        name
+                      }
+                      ... on Language {
+                        name
+                      }
+                      ... on DataComponent {
+                        name
+                      }
+                      ... on DataSource {
+                        name
+                      }
+                      ... on Case {
+                        name
+                      }
                       ... on StixCyberObservable {
                         observable_value
                       }
@@ -2692,6 +3154,27 @@ const stixCoreRelationshipsListQuery = graphql`
                                 description
                                 first_seen
                                 last_seen
+                              }
+                              ... on Event {
+                                name
+                              }
+                              ... on Channel {
+                                name
+                              }
+                              ... on Narrative {
+                                name
+                              }
+                              ... on Language {
+                                name
+                              }
+                              ... on DataComponent {
+                                name
+                              }
+                              ... on DataSource {
+                                name
+                              }
+                              ... on Case {
+                                name
                               }
                               ... on StixCyberObservable {
                                 observable_value
@@ -2801,6 +3284,27 @@ const stixCoreRelationshipsListQuery = graphql`
             ... on Incident {
               name
             }
+            ... on Event {
+              name
+            }
+            ... on Channel {
+              name
+            }
+            ... on Narrative {
+              name
+            }
+            ... on Language {
+              name
+            }
+            ... on DataComponent {
+              name
+            }
+            ... on DataSource {
+              name
+            }
+            ... on Case {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -2940,6 +3444,27 @@ const stixCoreRelationshipsListQuery = graphql`
                       first_seen
                       last_seen
                     }
+                    ... on Event {
+                      name
+                    }
+                    ... on Channel {
+                      name
+                    }
+                    ... on Narrative {
+                      name
+                    }
+                    ... on Language {
+                      name
+                    }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
+                    ... on Case {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                       x_opencti_description
@@ -3030,6 +3555,27 @@ const stixCoreRelationshipsListQuery = graphql`
                 ... on Incident {
                   name
                 }
+                ... on Event {
+                  name
+                }
+                ... on Channel {
+                  name
+                }
+                ... on Narrative {
+                  name
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
+                  name
+                }
               }
               to {
                 ... on BasicObject {
@@ -3104,6 +3650,27 @@ const stixCoreRelationshipsListQuery = graphql`
                   name
                 }
                 ... on Incident {
+                  name
+                }
+                ... on Event {
+                  name
+                }
+                ... on Channel {
+                  name
+                }
+                ... on Narrative {
+                  name
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
                   name
                 }
               }
@@ -3186,6 +3753,27 @@ const stixCoreRelationshipsListQuery = graphql`
             ... on Incident {
               name
             }
+            ... on Event {
+              name
+            }
+            ... on Channel {
+              name
+            }
+            ... on Narrative {
+              name
+            }
+            ... on Language {
+              name
+            }
+            ... on DataComponent {
+              name
+            }
+            ... on DataSource {
+              name
+            }
+            ... on Case {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -3325,6 +3913,27 @@ const stixCoreRelationshipsListQuery = graphql`
                       first_seen
                       last_seen
                     }
+                    ... on Event {
+                      name
+                    }
+                    ... on Channel {
+                      name
+                    }
+                    ... on Narrative {
+                      name
+                    }
+                    ... on Language {
+                      name
+                    }
+                    ... on DataComponent {
+                      name
+                    }
+                    ... on DataSource {
+                      name
+                    }
+                    ... on Case {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                       x_opencti_description
@@ -3408,6 +4017,27 @@ const stixCoreRelationshipsListQuery = graphql`
                 ... on Incident {
                   name
                 }
+                ... on Event {
+                  name
+                }
+                ... on Channel {
+                  name
+                }
+                ... on Narrative {
+                  name
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -3478,6 +4108,27 @@ const stixCoreRelationshipsListQuery = graphql`
                   name
                 }
                 ... on Incident {
+                  name
+                }
+                ... on Event {
+                  name
+                }
+                ... on Channel {
+                  name
+                }
+                ... on Narrative {
+                  name
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
                   name
                 }
                 ... on StixCyberObservable {
