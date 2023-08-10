@@ -4,7 +4,7 @@
 
     Activity unified interface and logging are available under the "Filigran entreprise edition" license.
 
-    [Please read the dedicated page to have all information](/administration/enterprise)
+    [Please read the dedicated page to have all information](../enterprise.md)
 
 
 OpenCTI activity capability is the way to unified whats really happen in the platform.

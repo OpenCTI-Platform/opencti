@@ -32,7 +32,7 @@ As a reminder:
 
 ### Activity monitoring
 
-Audit logs help you answer "who did what, where, and when?" within your data with the maximum level of transparency. Please read [Activity monitoring page](/administration/audit) to get all information.
+Audit logs help you answer "who did what, where, and when?" within your data with the maximum level of transparency. Please read [Activity monitoring page](audit/overview.md) to get all information.
 
 ## More to come
 

@@ -20,7 +20,7 @@ When a new object is created in the platform or on the user request, it is possi
 
 ### Stream
 
-These connectors connect to a platform [data stream](reference/data-stream) and continously *do* something with the received events. In most cases, they are used to consume OpenCTI data and insert them in third-party platforms such as SIEMs, XDRs, EDRS, etc. In some cases, stream connectors can also query the external system on a regular basis and act as import connector for instance to gather alerts and sightings related to CTI data and push them to OpenCTI (bi-directional).
+These connectors connect to a platform [data stream](../reference/streaming.md) and continously *do* something with the received events. In most cases, they are used to consume OpenCTI data and insert them in third-party platforms such as SIEMs, XDRs, EDRS, etc. In some cases, stream connectors can also query the external system on a regular basis and act as import connector for instance to gather alerts and sightings related to CTI data and push them to OpenCTI (bi-directional).
 
 ### Import files
 
@@ -36,7 +36,7 @@ All connectors have to be able to access to the OpenCTI API. To allow this conne
 
 !!! warning "Connectors tokens"
     
-    Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to [**create a specific user for each of them**](administration/users).
+    Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to [**create a specific user for each of them**](../administration/users.md).
 
     Also, if all connectors users can run in with a user belonging to the `Connectors` group (with the `Connector` role), the `Internal Export Files` should be run with a user who is Administrator (with bypass capability) because they imperstonate the user requesting the export to avoid data leak.
 

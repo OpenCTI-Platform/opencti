@@ -4,7 +4,7 @@
 
     Activity unified interface and logging are available under the "Filigran entreprise edition" license.
 
-    [Please read the dedicated page to have all information](/administration/enterprise)
+    [Please read the dedicated page to have all information](../enterprise.md)
 
 As explained in [overview page](overview.md), all administration actions are listen by default. 
 However, all knowledge are not listened by default due to performance impact on the platform. 

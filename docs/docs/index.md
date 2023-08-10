@@ -47,6 +47,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     segregation, put retention policies and custom taxonomies.
 
     [:octicons-arrow-right-24:{ .middle } Customize](administration/introduction.md)
+
 </div>
 
 !!! info "Need more help?"
@@ -62,8 +63,15 @@ All tutorials are published directly on the [Medium blog](https://blog.filigran.
 
 <div class="grid cards" markdown>
 
+-   __Introducing malware analysis: enhance your cybersecurity triage with OpenCTI__<br />
+    <sub><sup>Jul 22, 2023</sup></sub>
+
+    As a cybersecurity analyst, you understand the importance of quickly identifying and analyzing suspicious or malicious files, URLs, and network traffic...
+
+    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/introducing-malware-analysis-enhance-your-cybersecurity-triage-with-opencti-900e41ccccf0)**
+
 -   __OpenCTI case management is ready for takeoff: what is available and what’s next__<br />
-    <sub><sup>Apr 18, 2023</sup></sub>
+    <sub><sup>Jul 3, 2023</sup></sub>
 
     As part of our 2023 strategic roadmap, we’ve worked since January on the case management system within the OpenCTI platform. This initiative comes from 2 simple statements...
 
@@ -75,13 +83,6 @@ All tutorials are published directly on the [Medium blog](https://blog.filigran.
     We are thrilled to announce that, from OpenCTI 5.8, Filigran is now providing some customers with an Enterprise Edition of the platform, whether on-premise...
 
     **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c)**
-
--   __How OpenCTI helps to fight disinformation and foreign interferences__<br />
-    <sub><sup>May 21, 2023</sup></sub>
-
-    In the past year, our product and engineering teams worked closely with multiple companies, public agencies and non profit organizations to extend a bit the...
-
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/how-opencti-helps-to-fight-desinformation-and-foreign-interferences-424a3d02f2c7)**
     
 </div>
 
