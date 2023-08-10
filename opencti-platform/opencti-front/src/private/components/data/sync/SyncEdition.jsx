@@ -90,7 +90,7 @@ const syncValidation = (t) => Yup.object().shape({
   uri: Yup.string().required(t('This field is required')),
   token: Yup.string(),
   stream_id: Yup.string().required(t('This field is required')),
-  current_state: Yup.date()
+  current_state_date: Yup.date()
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   listen_deletion: Yup.bool(),
@@ -107,7 +107,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
     ? { label: synchronizer.user.name, value: synchronizer.user.id }
     : '';
   const initialValues = R.pipe(
-    R.assoc('current_state', buildDate(synchronizer.current_state)),
+    R.assoc('current_state_date', buildDate(synchronizer.current_state_date)),
     R.assoc('user_id', relatedUser),
     R.pick([
       'name',
@@ -117,7 +117,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
       'user_id',
       'listen_deletion',
       'no_dependencies',
-      'current_state',
+      'current_state_date',
       'ssl_verify',
     ]),
   )(synchronizer);
@@ -281,7 +281,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
               />
               <Field
                 component={DateTimePickerField}
-                name="current_state"
+                name="current_state_date"
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
                   label: t('Starting synchronization (empty = from start)'),
@@ -340,7 +340,7 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       stream_id
       listen_deletion
       no_dependencies
-      current_state
+      current_state_date
       ssl_verify
       user {
         id

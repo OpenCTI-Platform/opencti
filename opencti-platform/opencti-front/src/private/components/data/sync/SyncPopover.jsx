@@ -91,7 +91,7 @@ const syncEditionQuery = graphql`
       listen_deletion
       no_dependencies
       ssl_verify
-      current_state
+      current_state_date
       user {
         id
         name

@@ -23739,7 +23739,7 @@ export type SubscriptionWorkspaceArgs = {
 
 export type Synchronizer = {
   __typename?: 'Synchronizer';
-  current_state?: Maybe<Scalars['String']['output']>;
+  current_state_date?: Maybe<Scalars['DateTime']['output']>;
   id: Scalars['ID']['output'];
   listen_deletion: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
@@ -23753,7 +23753,7 @@ export type Synchronizer = {
 };
 
 export type SynchronizerAddInput = {
-  current_state?: InputMaybe<Scalars['DateTime']['input']>;
+  current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
   listen_deletion: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
   no_dependencies: Scalars['Boolean']['input'];
@@ -23795,7 +23795,7 @@ export type SynchronizerFetchInput = {
 };
 
 export enum SynchronizersOrdering {
-  CurrentState = 'current_state',
+  CurrentStateDate = 'current_state_date',
   Id = 'id',
   Name = 'name',
   Running = 'running',
@@ -35788,7 +35788,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type SynchronizerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Synchronizer'] = ResolversParentTypes['Synchronizer']> = ResolversObject<{
-  current_state?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   listen_deletion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

@@ -660,7 +660,7 @@ input StatusTemplateAddInput {
 enum SynchronizersOrdering {
   id
   name
-  current_state
+  current_state_date
   running
   uri
   stream_id
@@ -674,7 +674,7 @@ type Synchronizer {
   stream_id: String!
   user: Creator
   running: Boolean!
-  current_state: String
+  current_state_date: DateTime
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
@@ -697,7 +697,7 @@ input SynchronizerAddInput {
   stream_id: stream_id_String_NotNull_minLength_2!
   user_id: String
   recover: DateTime
-  current_state: DateTime
+  current_state_date: DateTime
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean

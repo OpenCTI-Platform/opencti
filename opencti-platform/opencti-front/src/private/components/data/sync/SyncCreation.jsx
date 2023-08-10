@@ -108,7 +108,7 @@ const syncCreationValidation = (t) => Yup.object().shape({
   uri: Yup.string().required(t('This field is required')),
   token: Yup.string(),
   stream_id: Yup.string().required(t('This field is required')),
-  current_state: Yup.date()
+  current_state_date: Yup.date()
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   listen_deletion: Yup.bool(),
@@ -258,7 +258,7 @@ const SyncCreation = ({ paginationOptions }) => {
               name: '',
               uri: '',
               token: '',
-              current_state: dayStartDate(),
+              current_state_date: dayStartDate(),
               stream_id: '',
               no_dependencies: false,
               listen_deletion: true,
@@ -412,7 +412,7 @@ const SyncCreation = ({ paginationOptions }) => {
                   />
                   <Field
                     component={DateTimePickerField}
-                    name="current_state"
+                    name="current_state_date"
                     TextFieldProps={{
                       label: t('Starting synchronization (empty = from start)'),
                       variant: 'standard',

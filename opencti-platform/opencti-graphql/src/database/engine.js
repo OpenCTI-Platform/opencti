@@ -629,6 +629,9 @@ const elCreateIndexTemplate = async (index) => {
             atime: {
               type: 'date',
             },
+            current_state_date: {
+              type: 'date',
+            },
             confidence: {
               type: 'integer',
             },
@@ -2080,25 +2083,7 @@ export const elDeleteElements = async (context, user, elements, stixLoadById) =>
   return dependencyDeletions;
 };
 
-// export const prepareElementForIndexing = (element) => {
-//   const thing = {};
-//   Object.keys(element).forEach((key) => {
-//     const value = element[key];
-//     if (Array.isArray(value)) {
-//       const filteredArray = value.filter((i) => i);
-//       thing[key] = filteredArray.length > 0 ? filteredArray : [];
-//     } else if (isBooleanAttribute(key)) {
-//       // patch field is string generic so need to be cast to boolean
-//       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
-//     } else {
-//       thing[key] = value;
-//     }
-//   });
-//   return thing;
-// };
-
 export const prepareElementForIndexing = (element) => {
-  logApp.info('au commencement de prepareElementForIndexing', { element });
   const thing = {};
   Object.keys(element).forEach((key) => {
     const value = element[key];
@@ -2122,7 +2107,6 @@ export const prepareElementForIndexing = (element) => {
     } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
     } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
-      logApp.info('dans R.is(Object... prepareElementForIndexing', { element });
       thing[key] = prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default
       thing[key] = value.trim();
