@@ -1731,8 +1731,8 @@ __metadata:
   linkType: hard
 
 "@ckeditor/ckeditor5-dev-translations@npm:^38.0.0, @ckeditor/ckeditor5-dev-translations@npm:^38.2.1":
-  version: 38.2.1
-  resolution: "@ckeditor/ckeditor5-dev-translations@npm:38.2.1"
+  version: 38.3.1
+  resolution: "@ckeditor/ckeditor5-dev-translations@npm:38.3.1"
   dependencies:
     "@babel/parser": ^7.18.9
     "@babel/traverse": ^7.18.9
@@ -1740,7 +1740,7 @@ __metadata:
     pofile: ^1.0.9
     rimraf: ^3.0.2
     webpack-sources: ^2.0.1
-  checksum: 5aeed3ef50d0299a514323cfe4e32cc8cd77a516df3474787e6356934bac400ee59ad785159ac501038a0ee8a09293e55c33b825983875032e20ce2704a52c13
+  checksum: c08f62b4086af6c75887933d5a3362e9d41c1bfbe20b9caa02b30e3bc7b44471837bea68ddc92ac78ed28e86203d0b72ff35b46de20a7f79a25050b3d7bc0b2a
   languageName: node
   linkType: hard
 
