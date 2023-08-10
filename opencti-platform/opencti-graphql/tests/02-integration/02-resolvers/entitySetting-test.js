@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { initCreateEntitySettings } from '../../../src/modules/entitySetting/entitySetting-domain';
-import { executionContext } from '../../../src/utils/access';
+import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
@@ -61,7 +61,7 @@ describe('EntitySetting resolver standard behavior', () => {
   let entitySettingIdNote;
   it('should init entity settings', async () => {
     const context = executionContext('test');
-    await initCreateEntitySettings(context);
+    await initCreateEntitySettings(context, SYSTEM_USER);
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
     expect(queryResult.data.entitySettings.edges.length).toEqual(40);
 
