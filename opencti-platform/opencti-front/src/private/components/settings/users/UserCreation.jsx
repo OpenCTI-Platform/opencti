@@ -1,32 +1,31 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { Form, Formik, Field } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { compose, omit } from 'ramda';
+import { omit } from 'ramda';
 import * as Yup from 'yup';
+import { makeStyles } from '@mui/styles';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../../common/form/PasswordPolicies';
 import SelectField from '../../../../components/SelectField';
-import { UserAccountStatus } from './UserEditionOverview';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useAuth from '../../../../utils/hooks/useAuth';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -67,7 +66,7 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-});
+}));
 
 const userMutation = graphql`
   mutation UserCreationMutation($input: UserAddInput!) {
@@ -101,21 +100,16 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class UserCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false, users: [] };
-  }
+const UserCreation = ({ paginationOptions }) => {
+  const { settings } = useAuth();
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalValues = R.pipe(
       omit(['confirmation']),
       R.assoc('objectOrganization', R.pluck('value', values.objectOrganization)),
@@ -132,7 +126,7 @@ class UserCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
-          this.props.paginationOptions,
+          paginationOptions,
           newEdge,
         );
       },
@@ -140,22 +134,15 @@ class UserCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  onReset() {
-    this.handleClose();
-  }
-
-  render() {
-    const { t, classes } = this.props;
-    const default_account_status = UserAccountStatus.ACTIVE;
-    return (
+  return (
       <>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -163,18 +150,18 @@ class UserCreation extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
+              onClick={handleClose}
               size="large"
               color="primary"
             >
@@ -197,12 +184,12 @@ class UserCreation extends Component {
                 password: '',
                 confirmation: '',
                 objectOrganization: [],
-                account_status: default_account_status,
+                account_status: 'Active',
                 account_lock_after_date: null,
               }}
               validationSchema={userValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
+              onSubmit={onSubmit}
+              onReset={onReset}
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form>
@@ -277,18 +264,18 @@ class UserCreation extends Component {
                     name="account_status"
                     label={t('Account Status')}
                     fullWidth={true}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    containerstyle={fieldSpacingContainerStyle}
                     >
-                    <MenuItem value={UserAccountStatus.ACTIVE}>Active</MenuItem>
-                    <MenuItem value={UserAccountStatus.INACTIVE}>Inactive</MenuItem>
-                    <MenuItem value={UserAccountStatus.LOCKED}>Locked</MenuItem>
-                    <MenuItem value={UserAccountStatus.LOCKED_TRAINING}>Locked - Missing Training</MenuItem>
+                    {settings.platform_user_statuses.map((s) => {
+                      return <MenuItem key={s.status} value={s.status}>{s.status}</MenuItem>;
+                    })}
                   </Field>
                   <Field
                     component={DateTimePickerField}
                     name="account_lock_after_date"
                     TextFieldProps={{
                       label: t('Account Expire Date'),
+                      style: fieldSpacingContainerStyle,
                       variant: 'standard',
                       fullWidth: true,
                     }}
@@ -318,18 +305,7 @@ class UserCreation extends Component {
           </div>
         </Drawer>
       </>
-    );
-  }
-}
-
-UserCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(UserCreation);
+export default UserCreation;

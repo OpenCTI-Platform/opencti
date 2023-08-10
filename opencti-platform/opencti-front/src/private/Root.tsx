@@ -46,6 +46,10 @@ const rootPrivateQuery = graphql`
       id
       platform_demo
       platform_banner_text
+      platform_user_statuses {
+        status
+        message
+      }
       platform_banner_level
       platform_map_tile_server_dark
       platform_map_tile_server_light

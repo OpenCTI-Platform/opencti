@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { ACCOUNT_INACTIVE_MESSAGE, ACCOUNT_LOCKED_MESSAGE, ACCOUNT_LOCKED_TRAINING_MESSAGE, logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndices, elIndexExists, searchEngineInit } from './database/engine';
-import { initializeAdminUser, initUserAccountStatus } from './config/providers';
+import { initializeAdminUser } from './config/providers';
 import { initializeBucket, isStorageAlive } from './database/file-storage';
 import { rabbitMQIsAlive, registerConnectorQueues } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
@@ -389,7 +389,6 @@ const platformInit = async (withMarkings = true) => {
       await initializeAdminUser(context);
       await applyMigration(context);
       await initCreateEntitySettings(context, SYSTEM_USER);
-      await initUserAccountStatus();
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {

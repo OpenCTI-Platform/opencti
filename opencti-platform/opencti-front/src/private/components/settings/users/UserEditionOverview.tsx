@@ -15,6 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { UserEditionOverview_user$data } from './__generated__/UserEditionOverview_user.graphql';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -62,19 +63,6 @@ const userMutationGroupDelete = graphql`
   }
 `;
 
-export const userUserSessionsKillMutation = graphql`
-  mutation UserEditionOverviewUserSessionsKillMutation($id: ID!) {
-    userSessionsKill(id: $id)
-  }
-`;
-
-export const UserAccountStatus = {
-  ACTIVE: 'Active',
-  INACTIVE: 'Inactive',
-  LOCKED: 'Locked',
-  LOCKED_TRAINING: 'LockedTraining',
-};
-
 const userValidation = (t: (value: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   user_email: Yup.string()
@@ -102,11 +90,11 @@ const UserEditionOverviewComponent: FunctionComponent<
 UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t } = useFormatter();
+  const { settings } = useAuth();
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
   const [commitGroupAdd] = useMutation(userMutationGroupAdd);
   const [commitGroupDelete] = useMutation(userMutationGroupDelete);
-  const [commitUserSessionKill] = useMutation(userUserSessionsKillMutation);
 
   const external = user.external === true;
   const objectOrganization = convertOrganizations(user);
@@ -153,28 +141,6 @@ UserEditionOverviewComponentProps
         });
       })
       .catch(() => false);
-
-    if (name === 'account_status') {
-      // Kill any Active sessions for the user.
-      commitUserSessionKill({
-        variables: {
-          id: user.id,
-        },
-      });
-    } else if (name === 'account_lock_after_date' && value <= new Date()) {
-      commitFieldPatch({
-        variables: {
-          id: user.id,
-          input: { key: 'account_status', value: UserAccountStatus.LOCKED },
-        },
-      });
-      // Kill any Active sessions for the user.
-      commitUserSessionKill({
-        variables: {
-          id: user.id,
-        },
-      });
-    }
   };
 
   const handleChangeObjectOrganization = (
@@ -234,7 +200,7 @@ UserEditionOverviewComponentProps
             disabled={external}
             label={t('Email address')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -247,7 +213,7 @@ UserEditionOverviewComponentProps
             name="firstname"
             label={t('Firstname')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -260,12 +226,26 @@ UserEditionOverviewComponentProps
             name="lastname"
             label={t('Lastname')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="lastname" />
             }
+          />
+          <Field
+              component={MarkdownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={fieldSpacingContainerStyle}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="description" />
+              }
           />
           <Field
             component={SelectField}
@@ -313,17 +293,16 @@ UserEditionOverviewComponentProps
               name="account_status"
               label={t('Account Status')}
               fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
               onFocus={handleChangeFocus}
               onChange={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="account_status" />
               }
             >
-              <MenuItem value={UserAccountStatus.ACTIVE}>{t(UserAccountStatus.ACTIVE)}</MenuItem>
-              <MenuItem value={UserAccountStatus.INACTIVE}>{t(UserAccountStatus.INACTIVE)}</MenuItem>
-              <MenuItem value={UserAccountStatus.LOCKED}>{t(UserAccountStatus.LOCKED)}</MenuItem>
-              <MenuItem value={UserAccountStatus.LOCKED_TRAINING}>{t(UserAccountStatus.LOCKED_TRAINING)}</MenuItem>
+              {settings.platform_user_statuses.map((s) => {
+                return <MenuItem key={s.status} value={s.status}>{s.status}</MenuItem>;
+              })}
             </Field>
             <Field
               component={DateTimePickerField}
@@ -331,26 +310,12 @@ UserEditionOverviewComponentProps
               TextFieldProps={{
                 label: t('Account Expire Date'),
                 variant: 'standard',
+                style: fieldSpacingContainerStyle,
                 fullWidth: true,
               }}
-              containerstyle={{ marginTop: 20, width: '100%' }}
               onFocus={handleChangeFocus}
               onChange={handleSubmitField}
             />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows={4}
-            style={{ marginTop: 20 }}
-            onFocus={handleChangeFocus}
-            onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
-          />
         </Form>
       )}
     </Formik>
@@ -385,17 +350,11 @@ const UserEditionOverview = createFragmentContainer(
         otp_qr
         account_status
         account_lock_after_date
-        roles(
-            orderBy: $rolesOrderBy,
-            orderMode: $rolesOrderMode,
-        ) {
+        roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
           id
           name
         }
-        objectOrganization(
-          orderBy: $organizationsOrderBy
-          orderMode: $organizationsOrderMode
-        ) {
+        objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
           edges {
             node {
               id

@@ -3,12 +3,28 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import conf, { BUS_TOPICS, ENABLED_DEMO_MODE, DEFAULT_ACCOUNT_STATUS, logApp, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
-import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError } from '../config/errors';
+import conf, {
+  BUS_TOPICS,
+  ENABLED_DEMO_MODE,
+  DEFAULT_ACCOUNT_STATUS,
+  logApp,
+  OPENCTI_SESSION,
+  PLATFORM_VERSION,
+  ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED
+} from '../config/conf';
+import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
-import { internalFindByIds, listAllEntities, listAllEntitiesForFilter, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  internalFindByIds,
+  internalLoadById,
+  listAllEntities,
+  listAllEntitiesForFilter,
+  listAllRelations,
+  listEntities,
+  storeLoadById
+} from '../database/middleware-loader';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
 import { buildPagination, extractEntityRepresentative, isEmptyField, isNotEmptyField } from '../database/utils';
@@ -32,11 +48,10 @@ import {
   SYSTEM_USER
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
-import { now } from '../utils/format';
+import { now, utcDate } from '../utils/format';
 import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
-import { UserAccountStatus } from '../generated/graphql';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const BEARER = 'Bearer ';
@@ -513,27 +528,46 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 };
 
 // User related
-export const userEditField = async (context, user, userId, inputs) => {
-  for (let index = 0; index < inputs.length; index += 1) {
-    const input = inputs[index];
+export const userEditField = async (context, user, userId, rawInputs) => {
+  const inputs = [];
+  const userToUpdate = await internalLoadById(context, user, userId);
+  for (let index = 0; index < rawInputs.length; index += 1) {
+    const input = rawInputs[index];
     if (input.key === 'password') {
       const userPassword = R.head(input.value).toString();
       await checkPasswordFromPolicy(context, userPassword);
       input.value = [bcrypt.hashSync(userPassword)];
     }
+    if (input.key === 'account_status') {
+      // If account status is not active, kill all current user sessions
+      if (R.head(input.value) !== ACCOUNT_STATUS_ACTIVE) {
+        await killUserSessions(userId);
+      }
+      // If moving to unexpired status and expiration date is already in the past, reset the value
+      if (R.head(input.value) !== ACCOUNT_STATUS_EXPIRED && userToUpdate.account_lock_after_date
+          && utcDate().isAfter(userToUpdate.account_lock_after_date)) {
+        inputs.push({ key: 'account_lock_after_date', value: [null] });
+      }
+    }
+    if (input.key === 'account_lock_after_date' && utcDate().isAfter(utcDate(R.head(input.value)))) {
+      inputs.push({ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] });
+      await killUserSessions(userId);
+    }
+    inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
-  await publishUserAction({
+  const userAction = {
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: personalUpdate ? 'extended' : 'administration',
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
-  });
+  };
+  await publishUserAction(userAction);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
@@ -965,70 +999,34 @@ export const userRenewToken = async (context, user, userId) => {
 };
 
 /**
- * Get Account Status Messages from the conf/default.json file.
- * */
-const account_status_settings = {
-  account_inactive_message: conf.get('app:account_inactive_message'),
-  account_locked_message: conf.get('app:account_locked_message'),
-  account_locked_missing_training_message: conf.get('app:account_locked_missing_training_message'),
-};
-/**
  * Validates a user before granting authorization.
  *
- * @param {Object} user
- * @param {UserAccountStatus} user.account_status
+ * @param {AuthUser} user
  * @param {Object} settings
- * @throws {DatabaseError} if the user is missing the required 'account_status' field.
  * @throws {AuthenticationFailure} if the user has an invalid account status.
  */
 const validateUser = (user, settings) => {
-  // Check for required account_status field
-  if (typeof user !== 'undefined' && !('account_status' in user)) {
-    throw DatabaseError('User missing account status.');
+  // Check organization consistency
+  const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
+  if (!hasSetAccessCapability && settings.platform_organization && user.organizations.length === 0) {
+    throw AuthenticationFailure('You can\'t login without an organization');
   }
-
-  // Check for required account_status field
-  if (!(user?.account_status)) {
-    throw DatabaseError('User missing account status.');
-  }
-
   // Check account expiration date
-  if ('account_lock_after_date' in user) {
-    let expiresOn = user.account_lock_after_date;
-    if (!(expiresOn instanceof Date)) {
-      expiresOn = new Date(user.account_lock_after_date);
-    }
-    if (expiresOn <= new Date()) {
-      throw AuthenticationFailure('User account has expired.');
-    }
+  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
+    throw AuthenticationFailure('User account has expired.');
   }
   // Validate user's account status
-  switch (user.account_status) {
-    case UserAccountStatus.Inactive:
-      throw AuthenticationFailure(
-        settings?.account_inactive_message
-        ?? 'Your account is inactive.'
-      );
-    case UserAccountStatus.Locked:
-      throw AuthenticationFailure(
-        settings?.account_locked_message
-        ?? 'Your account is locked.'
-      );
-    case UserAccountStatus.LockedTraining:
-      throw AuthenticationFailure(
-        settings?.account_locked_missing_training_message
-        ?? 'Your account is missing trainings.'
-      );
-    default:
-      if (user.account_status !== UserAccountStatus.Active) {
-        throw AuthenticationFailure('Your account is not active.');
-      }
+  if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {
+    const statusesDefinition = conf.get('app:locked_account_statuses');
+    throw AuthenticationFailure(statusesDefinition[user.account_status]);
   }
 };
 
 export const internalAuthenticateUser = async (context, req, user, provider, token, isSessionRefresh = false) => {
   let impersonate;
   const logged = await buildCompleteUser(context, user);
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  validateUser(logged, settings);
   const applicantId = req.headers['opencti-applicant-id'];
   if (isNotEmptyField(applicantId) && logged.id !== applicantId) {
     if (isBypassUser(logged)) {
@@ -1040,7 +1038,6 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
       }
     }
   }
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
   const userOrigin = userWithOrigin(req, sessionUser);
   if (!isSessionRefresh) {
@@ -1051,11 +1048,6 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
       event_scope: 'login',
       context_data: { provider }
     });
-  }
-  validateUser(sessionUser, account_status_settings);
-  const hasSetAccessCapability = isUserHasCapability(logged, SETTINGS_SET_ACCESSES);
-  if (!hasSetAccessCapability && settings.platform_organization && logged.organizations.length === 0) {
-    throw AuthenticationFailure('You can\'t login without an organization');
   }
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
@@ -1146,7 +1138,7 @@ export const initAdmin = async (context, email, password, tokenValue) => {
   if (existingAdmin) {
     // If admin user exists, just patch the fields
     const patch = {
-      account_status: UserAccountStatus.Active,
+      account_status: ACCOUNT_STATUS_ACTIVE,
       user_email: email,
       password: bcrypt.hashSync(password),
       api_token: tokenValue,
@@ -1158,7 +1150,7 @@ export const initAdmin = async (context, email, password, tokenValue) => {
       internal_id: OPENCTI_ADMIN_UUID,
       external: true,
       user_email: email.toLowerCase(),
-      account_status: UserAccountStatus.Active,
+      account_status: ACCOUNT_STATUS_ACTIVE,
       name: 'admin',
       firstname: 'Admin',
       lastname: 'OpenCTI',
@@ -1190,5 +1182,4 @@ export const userEditContext = async (context, user, userId, input) => {
   await setEditContext(user, userId, input);
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
 };
-
 // endregion

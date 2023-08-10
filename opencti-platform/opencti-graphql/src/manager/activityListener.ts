@@ -28,7 +28,7 @@ import { EVENT_ACTIVITY_VERSION, storeActivityEvent } from '../database/redis';
 import type { UserOrigin } from '../types/user';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
-import { executionContext, INTERNAL_USERS, SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -80,18 +80,7 @@ const initActivityManager = () => {
     };
   };
   const activityLogger = async (action: UserAction, message: string): Promise<boolean> => {
-    const context = executionContext('activity_listener');
     const level = action.status === 'error' ? 'error' : 'info';
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    // If enterprise edition is not activated
-    if (isEmptyField(settings.enterprise_edition)) {
-      return false;
-    }
-    // If extended actions, is action is not for listened user
-    const isUserListening = (settings.activity_listeners_users ?? []).includes(action.user.id);
-    if (action.event_access === 'extended' && !isUserListening) {
-      return false;
-    }
     // If standard action, log and push to activity stream.
     const event = buildActivityStreamEvent(action, message);
     const meta = {
@@ -124,14 +113,20 @@ const initActivityManager = () => {
   const activityHandler: ActionListener = {
     id: 'ACTIVITY_MANAGER',
     next: async (action: UserAction) => {
-      // Internal users must not be tracked
-      if (INTERNAL_USERS[action.user.id]) {
+      const context = executionContext('activity_listener');
+      const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+      // 01. Check activity authorization
+      if (!['query', 'internal'].includes(action.user.origin.socket ?? '')) { // Subscription is not part of the listening
         return;
       }
-      // Subscription is not part of the listening
-      if (action.user.origin.socket !== 'query') {
+      if (isEmptyField(settings.enterprise_edition)) { // If enterprise edition is not activated
         return;
       }
+      const isUserListening = (settings.activity_listeners_users ?? []).includes(action.user.id);
+      if (action.event_access === 'extended' && !isUserListening) { // If extended actions, is action is not for listened user
+        return;
+      }
+      // 02. Handle activities
       if (action.event_type === 'authentication') {
         if (action.event_scope === 'login') {
           const { provider, username } = action.context_data;

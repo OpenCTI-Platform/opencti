@@ -14,8 +14,8 @@ import type { StixCoreObject } from '../types/stix-common';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { telemetry } from '../config/tracing';
-import { UserAccountStatus } from '../generated/graphql';
 import type { BasicStoreSettings } from '../types/settings';
+import { ACCOUNT_STATUS_ACTIVE } from '../config/conf';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
@@ -57,7 +57,7 @@ export const SYSTEM_USER: AuthUser = {
   name: 'SYSTEM',
   user_email: 'SYSTEM',
   inside_platform_organization: true,
-  origin: { user_id: OPENCTI_SYSTEM_UUID },
+  origin: { user_id: OPENCTI_SYSTEM_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
@@ -67,7 +67,8 @@ export const SYSTEM_USER: AuthUser = {
   default_marking: [],
   all_marking: [],
   api_token: '',
-  account_status: UserAccountStatus.Active,
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE
 };
 
 export const RETENTION_MANAGER_USER: AuthUser = {
@@ -78,7 +79,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   name: 'RETENTION MANAGER',
   user_email: 'RETENTION MANAGER',
   inside_platform_organization: true,
-  origin: { user_id: RETENTION_MANAGER_USER_UUID },
+  origin: { user_id: RETENTION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
@@ -88,7 +89,8 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   default_marking: [],
   all_marking: [],
   api_token: '',
-  account_status: UserAccountStatus.Active,
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
 };
 
 export const RULE_MANAGER_USER: AuthUser = {
@@ -99,7 +101,7 @@ export const RULE_MANAGER_USER: AuthUser = {
   name: 'RULE MANAGER',
   user_email: 'RULE MANAGER',
   inside_platform_organization: true,
-  origin: { user_id: RULE_MANAGER_USER_UUID },
+  origin: { user_id: RULE_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
@@ -109,7 +111,8 @@ export const RULE_MANAGER_USER: AuthUser = {
   default_marking: [],
   all_marking: [],
   api_token: '',
-  account_status: UserAccountStatus.Active,
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
 };
 
 export const REDACTED_USER: AuthUser = {
@@ -120,7 +123,7 @@ export const REDACTED_USER: AuthUser = {
   name: '*** Redacted ***',
   user_email: '*** Redacted ***',
   inside_platform_organization: false,
-  origin: { user_id: REDACTED_USER_UUID },
+  origin: { user_id: REDACTED_USER_UUID, socket: 'internal' },
   roles: [],
   groups: [],
   capabilities: [],
@@ -130,7 +133,8 @@ export const REDACTED_USER: AuthUser = {
   default_marking: [],
   all_marking: [],
   api_token: '',
-  account_status: UserAccountStatus.Active,
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
 };
 
 export interface AuthorizedMember { id: string, access_right: string }

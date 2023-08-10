@@ -1010,6 +1010,10 @@ type Provider {
   strategy: String
   provider: String
 }
+type UserStatus {
+  status: String!
+  message: String!
+}
 input SettingsMessageInput {
   id: ID
   message: String!
@@ -1039,6 +1043,7 @@ type Settings implements InternalObject & BasicObject {
   platform_modules: [Module!] @auth
   platform_url: String
   platform_providers: [Provider!]!
+  platform_user_statuses: [UserStatus!]!
   platform_language: String
   platform_theme: String
   platform_theme_dark_background: String
@@ -1288,17 +1293,12 @@ type User implements BasicObject & InternalObject {
   updated_at: DateTime!
   sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES])
   default_time_field: String
-  account_status: UserAccountStatus! @auth(for: [SETTINGS_SETACCESSES])
+  account_status: String! @auth(for: [SETTINGS_SETACCESSES])
   account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES])
   # Technical
   editContext: [EditUserContext!]
 }
-enum UserAccountStatus {
-  Active
-  Inactive
-  Locked
-  LockedTraining
-}
+
 type MeUser implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -1329,7 +1329,7 @@ type MeUser implements BasicObject & InternalObject {
   default_dashboards: [Workspace!]!
   default_dashboard: Workspace
   default_time_field: String
-  account_status: UserAccountStatus
+  account_status: String!
   account_lock_after_date: DateTime
 }
 type SessionDetail {
@@ -1352,7 +1352,7 @@ input UserAddInput {
   language: String
   theme: String
   objectOrganization: [ID!]
-  account_status: UserAccountStatus = Active
+  account_status: String!
   account_lock_after_date: DateTime
 }
 input UserLoginInput {

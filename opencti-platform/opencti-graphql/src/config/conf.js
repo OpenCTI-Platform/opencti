@@ -475,7 +475,29 @@ export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', fa
 export const ACCOUNT_INACTIVE_MESSAGE = nconf.get('app:account_inactive_message');
 export const ACCOUNT_LOCKED_MESSAGE = nconf.get('app:account_locked_message');
 export const ACCOUNT_LOCKED_TRAINING_MESSAGE = nconf.get('app:account_locked_missing_training_message');
-export const DEFAULT_ACCOUNT_STATUS = nconf.get('app:default_initialize_account_status') ?? 'Active';
+const computeAccountStatusChoices = () => {
+  const statusesDefinition = nconf.get('app:locked_account_statuses');
+  return {
+    [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
+    [ACCOUNT_STATUS_EXPIRED]: 'Your account has expired. Please contact your administrator.',
+    ...statusesDefinition
+  };
+};
+export const ACCOUNT_STATUS_ACTIVE = 'Active';
+export const ACCOUNT_STATUS_EXPIRED = 'Expired';
+export const ACCOUNT_STATUSES = computeAccountStatusChoices();
+export const computeDefaultAccountStatus = () => {
+  const defaultConf = nconf.get('app:account_statuses_default');
+  if (defaultConf) {
+    const accountStatus = ACCOUNT_STATUSES[defaultConf];
+    if (accountStatus) {
+      return accountStatus;
+    }
+    throw UnsupportedError(`Invalid default_initialize_account_status configuration ${defaultConf} (${Object.keys(ACCOUNT_STATUSES).join(', ')})`);
+  }
+  return ACCOUNT_STATUS_ACTIVE;
+};
+export const DEFAULT_ACCOUNT_STATUS = computeDefaultAccountStatus();
 
 const platformState = { stopping: false };
 export const getStoppingState = () => platformState.stopping;
