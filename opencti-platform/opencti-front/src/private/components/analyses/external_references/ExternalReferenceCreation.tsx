@@ -104,7 +104,7 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
   external_id: Yup.string().nullable(),
   url: Yup.string().url(t('The value must be an URL')).nullable(),
   description: Yup.string().nullable(),
-  file: Yup.object().nullable(),
+  file: Yup.mixed().nullable(),
 });
 
 interface ExternalReferenceCreationProps {
