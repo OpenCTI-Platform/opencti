@@ -19,6 +19,8 @@ import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.gra
 import CaseIncident from './CaseIncident';
 import CaseIncidentPopover from './CaseIncidentPopover';
 import IncidentKnowledge from './IncidentKnowledge';
+import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
+import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -77,120 +79,118 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   return (
     <div>
-      <TopBar/>
-      <>
-        {caseData ? (
-          <Switch>
-            <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId"
-              render={() => <CaseIncident data={caseData} />}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/entities"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <ContainerStixDomainObjects
-                    {...routeProps}
-                    container={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/observables"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <ContainerStixCyberObservables
-                    {...routeProps}
-                    container={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
+      {caseData ? (
+        <Switch>
+          <Route
+            exact
+            path="/dashboard/cases/incidents/:caseId"
+            render={() => <CaseIncident data={caseData} />}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/incidents/:caseId/entities"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  enableSuggestions={false}
                 />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/content"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <StixDomainObjectContent
-                    {...routeProps}
-                    stixDomainObject={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/knowledge/:mode"
-              render={(routeProps) => (
-                <IncidentKnowledge {...routeProps} caseData={caseData} />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/incidents/:caseId/files"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <StixCoreObjectFilesAndHistory
-                    {...routeProps}
-                    id={caseId}
-                    connectorsExport={connectorsForExport}
-                    connectorsImport={connectorsForImport}
-                    entity={caseData}
-                    withoutRelations={true}
-                    bypassEntityId={true}
-                  />
-                </React.Fragment>
-              )}
-            />
-          </Switch>
-        ) : (
-          <ErrorNotFound />
-        )}
-      </>
+                <ContainerStixDomainObjects
+                  {...routeProps}
+                  container={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/incidents/:caseId/observables"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <ContainerStixCyberObservables
+                  {...routeProps}
+                  container={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/incidents/:caseId/knowledge"
+            render={() => (
+              <Redirect
+                to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/incidents/:caseId/content"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <StixDomainObjectContent
+                  {...routeProps}
+                  stixDomainObject={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/incidents/:caseId/knowledge/:mode"
+            render={(routeProps) => (
+              <IncidentKnowledge {...routeProps} caseData={caseData} />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/incidents/:caseId/files"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <StixCoreObjectFilesAndHistory
+                  {...routeProps}
+                  id={caseId}
+                  connectorsExport={connectorsForExport}
+                  connectorsImport={connectorsForImport}
+                  entity={caseData}
+                  withoutRelations={true}
+                  bypassEntityId={true}
+                />
+              </React.Fragment>
+            )}
+          />
+        </Switch>
+      ) : (
+        <ErrorNotFound />
+      )}
     </div>
   );
 };
 
 const Root = () => {
-  const { caseId } = useParams() as { caseId: string };
+  const { caseId } = useParams();
   const queryRef = useQueryLoading<RootIncidentQuery>(caseIncidentQuery, {
     id: caseId,
   });
   return (
     <>
+      <TopBar/>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootCaseIncidentComponent queryRef={queryRef} caseId={caseId} />

@@ -8,7 +8,6 @@ import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -20,6 +19,7 @@ import CaseRftPopover from './CaseRftPopover';
 import CaseRftKnowledge from './CaseRftKnowledge';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
+import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graphql';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -63,7 +63,6 @@ const caseRftQuery = graphql`
 `;
 
 const RootCaseRftComponent = ({ queryRef, caseId }) => {
-  const { me } = useAuth();
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>
   >(
@@ -81,127 +80,124 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootCaseRftCaseQuery>(caseRftQuery, queryRef);
   return (
     <div>
-      <TopBar me={me} />
-      <>
-        {caseData ? (
-          <Switch>
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId"
-              render={() => <CaseRft data={caseData} />}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/entities"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRftPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <ContainerStixDomainObjects
-                    {...routeProps}
-                    container={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/observables"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRftPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <ContainerStixCyberObservables
-                    {...routeProps}
-                    container={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
+      {caseData ? (
+        <Switch>
+          <Route
+            exact
+            path="/dashboard/cases/rfts/:caseId"
+            render={() => <CaseRft data={caseData} />}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfts/:caseId/entities"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRftPopover id={caseData.id} />}
+                  enableSuggestions={false}
                 />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/content"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRftPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <StixDomainObjectContent
-                    {...routeProps}
-                    stixDomainObject={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/knowledge/:mode"
-              render={(routeProps) => (
-                <CaseRftKnowledge {...routeProps} caseData={caseData} />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/files"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRftPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <StixCoreObjectFilesAndHistory
-                    {...routeProps}
-                    id={caseId}
-                    connectorsExport={connectorsForExport}
-                    connectorsImport={connectorsForImport}
-                    entity={caseData}
-                    withoutRelations={true}
-                    bypassEntityId={true}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfts/:caseId/history"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRftPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                    disableSharing={true}
-                  />
-                  <StixCoreObjectHistory
-                    {...routeProps}
-                    stixCoreObjectId={caseId}
-                  />
-                </React.Fragment>
-              )}
-            />
-          </Switch>
-        ) : (
-          <ErrorNotFound />
-        )}
-      </>
+                <ContainerStixDomainObjects
+                  {...routeProps}
+                  container={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfts/:caseId/observables"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRftPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <ContainerStixCyberObservables
+                  {...routeProps}
+                  container={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfts/:caseId/knowledge"
+            render={() => (
+              <Redirect
+                to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfts/:caseId/content"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRftPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <StixDomainObjectContent
+                  {...routeProps}
+                  stixDomainObject={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfts/:caseId/knowledge/:mode"
+            render={(routeProps) => (
+              <CaseRftKnowledge {...routeProps} caseData={caseData} />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfts/:caseId/files"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRftPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <StixCoreObjectFilesAndHistory
+                  {...routeProps}
+                  id={caseId}
+                  connectorsExport={connectorsForExport}
+                  connectorsImport={connectorsForImport}
+                  entity={caseData}
+                  withoutRelations={true}
+                  bypassEntityId={true}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfts/:caseId/history"
+            render={(routeProps: any) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRftPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                  disableSharing={true}
+                />
+                <StixCoreObjectHistory
+                  {...routeProps}
+                  stixCoreObjectId={caseId}
+                />
+              </React.Fragment>
+            )}
+          />
+        </Switch>
+      ) : (
+        <ErrorNotFound />
+      )}
     </div>
   );
 };
@@ -211,12 +207,15 @@ const Root = () => {
   const queryRef = useQueryLoading<RootCaseRftCaseQuery>(caseRftQuery, {
     id: caseId,
   });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <RootCaseRftComponent queryRef={queryRef} caseId={caseId} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.container} />
+  return (
+    <>
+      <TopBar/>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <RootCaseRftComponent queryRef={queryRef} caseId={caseId} />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

@@ -70,71 +70,68 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
   return (
     <div>
-      <TopBar />
-      <>
-        {dataSource ? (
-          <Switch>
-            <Route
-              exact
-              path="/dashboard/techniques/data_sources/:dataSourceId"
-              render={() => <DataSource data={dataSource} />}
-            />
-            <Route
-              path="/dashboard/techniques/data_sources/:dataSourceId/knowledge"
-              render={(routeProps: any) => (
-                <DataSourceKnowledgeComponent
-                  {...routeProps}
-                  data={dataSource}
-                  enableReferences={settings.platform_enable_reference?.includes(
-                    'Data-Source',
-                  )}
+      {dataSource ? (
+        <Switch>
+          <Route
+            exact
+            path="/dashboard/techniques/data_sources/:dataSourceId"
+            render={() => <DataSource data={dataSource} />}
+          />
+          <Route
+            path="/dashboard/techniques/data_sources/:dataSourceId/knowledge"
+            render={(routeProps: any) => (
+              <DataSourceKnowledgeComponent
+                {...routeProps}
+                data={dataSource}
+                enableReferences={settings.platform_enable_reference?.includes(
+                  'Data-Source',
+                )}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/techniques/data_sources/:dataSourceId/files"
+            render={(routeProps: any) => (
+              <React.Fragment>
+                <StixDomainObjectHeader
+                  entityType={'Data-Source'}
+                  disableSharing={true}
+                  stixDomainObject={dataSource}
+                  PopoverComponent={<DataSourcePopover id={dataSource.id} />}
                 />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/techniques/data_sources/:dataSourceId/files"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'Data-Source'}
-                    disableSharing={true}
-                    stixDomainObject={dataSource}
-                    PopoverComponent={<DataSourcePopover id={dataSource.id} />}
-                  />
-                  <FileManager
-                    {...routeProps}
-                    id={dataSourceId}
-                    connectorsImport={connectorsForImport}
-                    connectorsExport={connectorsForExport}
-                    entity={dataSource}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/techniques/data_sources/:dataSourceId/history"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <StixDomainObjectHeader
-                    entityType={'Data-Source'}
-                    disableSharing={true}
-                    stixDomainObject={dataSource}
-                    PopoverComponent={<DataSourcePopover id={dataSource.id} />}
-                  />
-                  <StixCoreObjectHistory
-                    {...routeProps}
-                    stixCoreObjectId={dataSourceId}
-                  />
-                </React.Fragment>
-              )}
-            />
-          </Switch>
-        ) : (
-          <ErrorNotFound />
-        )}
-      </>
+                <FileManager
+                  {...routeProps}
+                  id={dataSourceId}
+                  connectorsImport={connectorsForImport}
+                  connectorsExport={connectorsForExport}
+                  entity={dataSource}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/techniques/data_sources/:dataSourceId/history"
+            render={(routeProps: any) => (
+              <React.Fragment>
+                <StixDomainObjectHeader
+                  entityType={'Data-Source'}
+                  disableSharing={true}
+                  stixDomainObject={dataSource}
+                  PopoverComponent={<DataSourcePopover id={dataSource.id} />}
+                />
+                <StixCoreObjectHistory
+                  {...routeProps}
+                  stixCoreObjectId={dataSourceId}
+                />
+              </React.Fragment>
+            )}
+          />
+        </Switch>
+      ) : (
+        <ErrorNotFound />
+      )}
     </div>
   );
 };
@@ -146,6 +143,7 @@ const RootDataSource = () => {
   });
   return (
     <>
+      <TopBar />
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootDataSourceComponent

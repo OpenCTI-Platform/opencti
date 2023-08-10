@@ -73,76 +73,73 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
   return (
     <div>
-      <TopBar/>
-      <>
-        {feedbackData ? (
-          <Switch>
-            <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId"
-              render={() => <Feedback data={feedbackData} />}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/content"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={feedbackData}
-                    PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
-                    disableSharing={true}
-                  />
-                  <StixDomainObjectContent
-                    {...routeProps}
-                    stixDomainObject={feedbackData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/files"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={feedbackData}
-                    PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
-                    enableSuggestions={false}
-                    disableSharing={true}
-                  />
-                  <FileManager
-                    {...routeProps}
-                    id={caseId}
-                    connectorsExport={connectorsForExport}
-                    connectorsImport={connectorsForImport}
-                    entity={feedbackData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/feedbacks/:caseId/history"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={feedbackData}
-                    PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
-                    enableSuggestions={false}
-                    disableSharing={true}
-                  />
-                  <StixCoreObjectHistory
-                    {...routeProps}
-                    stixCoreObjectId={caseId}
-                  />
-                </React.Fragment>
-              )}
-            />
-          </Switch>
-        ) : (
-          <ErrorNotFound />
-        )}
-      </>
+      {feedbackData ? (
+        <Switch>
+          <Route
+            exact
+            path="/dashboard/cases/feedbacks/:caseId"
+            render={() => <Feedback data={feedbackData} />}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/feedbacks/:caseId/content"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={feedbackData}
+                  PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
+                  disableSharing={true}
+                />
+                <StixDomainObjectContent
+                  {...routeProps}
+                  stixDomainObject={feedbackData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/feedbacks/:caseId/files"
+            render={(routeProps: any) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={feedbackData}
+                  PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
+                  enableSuggestions={false}
+                  disableSharing={true}
+                />
+                <FileManager
+                  {...routeProps}
+                  id={caseId}
+                  connectorsExport={connectorsForExport}
+                  connectorsImport={connectorsForImport}
+                  entity={feedbackData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/feedbacks/:caseId/history"
+            render={(routeProps: any) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={feedbackData}
+                  PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
+                  enableSuggestions={false}
+                  disableSharing={true}
+                />
+                <StixCoreObjectHistory
+                  {...routeProps}
+                  stixCoreObjectId={caseId}
+                />
+              </React.Fragment>
+            )}
+          />
+        </Switch>
+      ) : (
+        <ErrorNotFound />
+      )}
     </div>
   );
 };
@@ -154,6 +151,7 @@ const Root = () => {
   });
   return (
     <>
+      <TopBar/>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootFeedbackComponent queryRef={queryRef} caseId={caseId} />
