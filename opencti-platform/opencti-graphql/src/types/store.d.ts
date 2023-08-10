@@ -50,6 +50,7 @@ import {
 import type { StixId } from './stix-common';
 import type { PageInfo, EditOperation } from '../generated/graphql';
 import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-sco';
+import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 interface InternalEditInput {
   key: string;
@@ -529,7 +530,7 @@ interface BasicRuleEntity extends BasicStoreEntity {
 interface BasicManagerEntity extends BasicStoreEntity {
   errors: Array<{
     error: string;
-    source: Sstring;
+    source: string;
     timestamp: Date;
   }>;
   lastEventId: string;
@@ -564,6 +565,14 @@ interface BasicWorkflowStatusEntity extends BasicStoreEntity {
   type: string;
   order: number;
   disabled: boolean;
+}
+
+interface BasicGroupEntity extends BasicStoreEntity {
+  [RELATION_MEMBER_OF]: string[];
+}
+
+interface BasicOrganizationEntity extends BasicStoreEntity {
+  [RELATION_PARTICIPATE_TO]: string[];
 }
 
 type BasicStoreObject = BasicStoreEntity | BasicStoreCyberObservable | BasicStoreRelation;
