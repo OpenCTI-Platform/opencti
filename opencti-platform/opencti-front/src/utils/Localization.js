@@ -3747,7 +3747,7 @@ const i18n = {
       entity_Region: 'Région',
       entity_Position: 'Position',
       entity_Malware: 'Code malveillant',
-      'entity_Malware-Analysis': 'Analyse de code',
+      'entity_Malware-Analysis': 'Analyse de code malveillant',
       Product: 'Produit',
       'Report name': 'Nom du rapport',
       Result_name: 'Nom du résultat',
