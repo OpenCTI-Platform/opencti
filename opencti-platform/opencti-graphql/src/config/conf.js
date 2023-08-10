@@ -478,10 +478,11 @@ export const ACCOUNT_STATUS_ACTIVE = 'Active';
 export const ACCOUNT_STATUS_EXPIRED = 'Expired';
 const computeAccountStatusChoices = () => {
   const statusesDefinition = nconf.get('app:locked_account_statuses');
+  const validStatuses = R.omit([ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED], statusesDefinition);
   return {
     [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
     [ACCOUNT_STATUS_EXPIRED]: 'Your account has expired. Please contact your administrator.',
-    ...statusesDefinition
+    ...validStatuses
   };
 };
 export const ACCOUNT_STATUSES = computeAccountStatusChoices();
@@ -490,7 +491,7 @@ export const computeDefaultAccountStatus = () => {
   if (defaultConf) {
     const accountStatus = ACCOUNT_STATUSES[defaultConf];
     if (accountStatus) {
-      return accountStatus;
+      return defaultConf;
     }
     throw UnsupportedError(`Invalid default_initialize_account_status configuration ${defaultConf} (${Object.keys(ACCOUNT_STATUSES).join(', ')})`);
   }

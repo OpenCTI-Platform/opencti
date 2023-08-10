@@ -1,5 +1,5 @@
 import { elRawUpdateByQuery } from '../database/engine';
-import { READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { DEFAULT_ACCOUNT_STATUS } from '../config/conf';
 
@@ -14,7 +14,7 @@ export const up = async (next) => {
     },
   };
   await elRawUpdateByQuery({
-    index: [READ_INDEX_STIX_META_OBJECTS],
+    index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
     wait_for_completion: true,
     body: updateUserQuery
