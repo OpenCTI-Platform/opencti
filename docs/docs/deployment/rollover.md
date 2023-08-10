@@ -27,6 +27,7 @@ By default, a rollover policy is applied on all indices used by OpenCTI.
 * `opencti_stix_domain_objects`
 * `opencti_stix_meta_objects`
 * `opencti_stix_meta_relationships`
+* `opencti_stix_sighting_relationships`
 
 For your information, the indices which can grow rapidly are:
 
@@ -88,6 +89,7 @@ Create the following index templates:
 * `octi_stix_domain_objects`
 * `octi_stix_meta_objects`
 * `octi_stix_meta_relationships`
+* `octi_stix_sighting_relationships`
 
 Here is the overview of all templates (you should have something with `octi_` instead of `opencti_`).
 
