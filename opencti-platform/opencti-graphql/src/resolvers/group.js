@@ -10,7 +10,7 @@ import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const markingsLoader = batchLoader(batchMarkingDefinitions);
-export const membersLoader = batchLoader(batchMembers);
+const membersLoader = batchLoader(batchMembers);
 const rolesLoader = batchLoader(batchRoles);
 
 const groupResolvers = {

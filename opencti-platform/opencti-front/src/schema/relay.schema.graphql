@@ -1173,7 +1173,7 @@ type Group implements InternalObject & BasicObject {
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
-  default_hidden_types: [String]
+  default_hidden_types: [String!]
   editContext: [EditUserContext!]
 }
 
@@ -11685,6 +11685,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace
+  default_hidden_types: [String!]
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection

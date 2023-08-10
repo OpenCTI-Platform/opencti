@@ -1,6 +1,34 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Theme } from '../../../../components/Theme';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from '../../../../components/i18n';
+import { HiddenTypesIndicatorQuery } from './__generated__/HiddenTypesIndicatorQuery.graphql';
+
+const hiddenTypesIndicatorQuery = graphql`
+  query HiddenTypesIndicatorQuery {
+    groups {
+      edges {
+        node {
+          id
+          name
+          default_hidden_types
+        }
+      }
+    }
+    organizations {
+      edges {
+        node {
+          id
+          name
+          default_hidden_types
+        }
+      }
+    }
+  }
+`;
 
 const useStyles = makeStyles<Theme>((theme) => ({
   indication: {
@@ -9,54 +37,80 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface Entity {
-  readonly id: string;
-  readonly name: string;
-  readonly default_hidden_types: ReadonlyArray<string> | null;
-}
-
-interface HiddenTypesIndicatorProps {
-  targetTypes: string[]
+interface HiddenTypesIndicatorComponentProps {
   platformHiddenTargetType: string
-  nodes: Array<Entity | undefined>
-  label: string
+  queryRef: PreloadedQuery<HiddenTypesIndicatorQuery>
 }
 
-const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({
-  targetTypes,
+const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorComponentProps> = ({
   platformHiddenTargetType,
-  nodes,
-  label,
+  queryRef,
 }) => {
+  const { t } = useFormatter();
   const classes = useStyles();
 
-  let hiddenTypesGrouped = {} as Record<string, string[]>;
-  targetTypes.forEach((targetType) => {
-    hiddenTypesGrouped = {
-      ...hiddenTypesGrouped,
-      [targetType]: [],
-    };
+  const data = usePreloadedQuery<HiddenTypesIndicatorQuery>(hiddenTypesIndicatorQuery, queryRef);
+  const groups = data.groups?.edges?.map((e) => e?.node) ?? [];
+  const organizations = data.organizations?.edges?.map((e) => e?.node) ?? [];
+
+  const groupsName: string[] = [];
+
+  groups.forEach((group) => {
+    if (group?.default_hidden_types) {
+      if (group.default_hidden_types.includes(platformHiddenTargetType)) {
+        groupsName.push(group.name);
+      }
+    }
   });
 
-  nodes.forEach((node) => {
-    if (node?.default_hidden_types) {
-      node.default_hidden_types.forEach((hiddenType) => {
-        if (hiddenType) {
-          hiddenTypesGrouped[hiddenType].push(node.name);
-        }
-      });
+  const orgsName: string[] = [];
+
+  organizations.forEach((org) => {
+    if (org?.default_hidden_types) {
+      if (org.default_hidden_types.includes(platformHiddenTargetType)) {
+        orgsName.push(org.name);
+      }
     }
   });
 
   return (
     <span>
-      {hiddenTypesGrouped[platformHiddenTargetType].length > 0
+      {(groupsName.length > 0 || orgsName.length > 0)
         && (<span className={classes.indication}>
               &emsp;
-          {`(${label} : ${hiddenTypesGrouped[platformHiddenTargetType]})`}
+          {`(${t('Hidden in ')}`}
+          {groupsName.length > 0 && `${t('groups ')} : ${groupsName}`}
+          {(groupsName.length > 0 && orgsName.length > 0) && `${t(' and ')}`}
+          {orgsName.length > 0 && `${t('organizations ')} : ${orgsName}`}
+          {')'}
             </span>)
       }
     </span>
+  );
+};
+
+interface HiddenTypesIndicatorProps {
+  platformHiddenTargetType: string,
+}
+
+const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({
+  platformHiddenTargetType,
+}) => {
+  const queryRef = useQueryLoading<HiddenTypesIndicatorQuery>(hiddenTypesIndicatorQuery, {});
+
+  return (
+      <>
+        {queryRef && (
+            <React.Suspense
+                fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
+              <HiddenTypesIndicatorComponent
+                  queryRef={queryRef}
+                  platformHiddenTargetType={platformHiddenTargetType}
+              />
+            </React.Suspense>)
+        }
+      </>
   );
 };
 

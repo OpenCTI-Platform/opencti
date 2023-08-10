@@ -153,7 +153,7 @@ describe('Organization resolver standard behavior', () => {
   });
   it('should context patch organization', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: EditContext) {
+      mutation OrganizationEdit($id: ID!, $input: EditContext!) {
         organizationContextPatch(id: $id, input: $input) {
           id
         }

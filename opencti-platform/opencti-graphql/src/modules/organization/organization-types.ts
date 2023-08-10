@@ -1,5 +1,6 @@
 import type { BasicIdentityEntity, StoreEntityIdentity } from '../../types/store';
 import type { StixIdentity } from '../../types/stix-sdo';
+import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 
 export const ENTITY_TYPE_IDENTITY_ORGANIZATION = 'Organization';
 
@@ -9,9 +10,10 @@ export interface BasicStoreEntityOrganization extends BasicIdentityEntity {
   x_opencti_reliability: string
   sectors: string[]
   default_dashboard: string
+  [RELATION_PARTICIPATE_TO]: string[]
 }
 
-export interface StoreEntityOrganization extends StoreEntityIdentity, BasicStoreEntityOrganization { }
+export interface StoreEntityOrganization extends StoreEntityIdentity, BasicStoreEntityOrganization {}
 // endregion
 
 // region Stix type

@@ -551,11 +551,11 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   {t('Hidden entity types')}
                 </Typography>
                 <FieldOrEmpty source={user.default_hidden_types}>
-                  {user.default_hidden_types.map((name) => (
+                  {user.default_hidden_types.map((hiddenType) => (
                     <Chip
-                      key={name}
+                      key={hiddenType}
                       classes={{ root: classes.chip }}
-                      label={name}
+                      label={t(`entity_${hiddenType}`)}
                     />
                   ))}
                 </FieldOrEmpty>

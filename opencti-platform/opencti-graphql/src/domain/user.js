@@ -255,8 +255,8 @@ export const batchRoleCapabilities = async (context, user, roleId) => {
   return batchListThroughGetTo(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, { paginate: false });
 };
 
-export const getDefaultHiddenTypes = async (context, userId, userGroups) => {
-  let userDefaultHiddenTypes = userGroups.map((group) => group.default_hidden_types).flat();
+export const getDefaultHiddenTypes = (entities) => {
+  let userDefaultHiddenTypes = entities.map((entity) => entity.default_hidden_types).flat();
   userDefaultHiddenTypes = uniq(userDefaultHiddenTypes.filter((type) => type !== undefined));
   return userDefaultHiddenTypes;
 };
@@ -918,10 +918,14 @@ export const buildCompleteUser = async (context, client) => {
   const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
   const roles = await getRoles(context, groups);
   const capabilitiesPromise = getCapabilities(context, client.id, roles, isUserPlatform);
-  const defaultHiddenTypesPromise = getDefaultHiddenTypes(context, client.id, groups);
-  const [capabilities, default_hidden_types] = await Promise.all([capabilitiesPromise, defaultHiddenTypesPromise]);
+  const [capabilities] = await Promise.all([capabilitiesPromise]);
   const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
   const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
+
+  // Default hidden types
+  const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
+  const defaultHiddenTypesOrgs = getDefaultHiddenTypes(allowed_organizations);
+  const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
   return {
     ...client,
     roles,

@@ -12,7 +12,7 @@ import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import GroupHiddenTypesIndicator from '../groups/GroupHiddenTypesIndicator';
+import HiddenTypesIndicator from './HiddenTypesIndicator';
 
 export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Note', 'Malware-Analysis']],
@@ -182,10 +182,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
           />
           {t(`entity_${platformHiddenType.target_type}`)}
           <Security needs={[SETTINGS_SETACCESSES]}>
-            <GroupHiddenTypesIndicator
-              targetTypes={entitySettings.map((n) => n.target_type)}
-              platformHiddenTargetType={platformHiddenType.target_type}
-            ></GroupHiddenTypesIndicator>
+            <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
           </Security>
         </MenuItem>,
       ));

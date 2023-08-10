@@ -1120,7 +1120,7 @@ type Group implements InternalObject & BasicObject {
   ): [Role]
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
-  default_hidden_types: [String]
+  default_hidden_types: [String!]
   # Technical
   editContext: [EditUserContext!]
 }

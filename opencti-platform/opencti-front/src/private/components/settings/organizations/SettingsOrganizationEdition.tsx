@@ -26,6 +26,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import DashboardField from '../../common/form/DashboardField';
 import { Option } from '../../common/form/ReferenceField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
+import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {
@@ -350,6 +351,7 @@ const SettingsOrganizationEdition = ({
                   onChange={handleSubmitField}
                   context={context}
                 />
+                <SettingsOrganizationHiddenTypesField organizationData={organization} />
                 {enableReferences && (
                   <CommitMessage
                     submitForm={submitForm}

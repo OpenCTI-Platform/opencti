@@ -48,6 +48,7 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
       upsert: false,
       label: 'Organization type'
     },
+    { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [
     { name: RELATION_PART_OF,

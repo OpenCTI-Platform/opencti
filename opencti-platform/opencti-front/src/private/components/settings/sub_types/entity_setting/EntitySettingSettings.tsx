@@ -13,6 +13,8 @@ import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
 import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
 import Security from '../../../../../utils/Security';
 import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
+import SettingsOrganizationEntitySettingHiddenTypesList
+  from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
 
 const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {
@@ -109,7 +111,10 @@ const EntitySettingSettings = ({
           </FormGroup>
         </div>
         <Security needs={[SETTINGS_SETACCESSES]}>
-          <GroupEntitySettingHiddenTypesList targetType={entitySetting.target_type}></GroupEntitySettingHiddenTypesList>
+          <>
+            <GroupEntitySettingHiddenTypesList targetType={entitySetting.target_type}></GroupEntitySettingHiddenTypesList>
+            <SettingsOrganizationEntitySettingHiddenTypesList targetType={entitySetting.target_type}></SettingsOrganizationEntitySettingHiddenTypesList>
+          </>
         </Security>
       </Grid>
       <Grid item={true} xs={6}>
