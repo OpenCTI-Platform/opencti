@@ -81,128 +81,125 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   } = usePreloadedQuery<RootCaseRfiCaseQuery>(caseRfiQuery, queryRef);
   return (
     <div>
-      <TopBar/>
-      <>
-        {caseData ? (
-          <Switch>
-            ya
-            <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId"
-              render={() => <CaseRfi data={caseData} />}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/entities"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <ContainerStixDomainObjects
-                    {...routeProps}
-                    container={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/observables"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <ContainerStixCyberObservables
-                    {...routeProps}
-                    container={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/knowledge"
-              render={() => (
-                <Redirect
-                  to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`}
+      {caseData ? (
+        <Switch>
+          ya
+          <Route
+            exact
+            path="/dashboard/cases/rfis/:caseId"
+            render={() => <CaseRfi data={caseData} />}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfis/:caseId/entities"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  enableSuggestions={false}
                 />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/content"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <StixDomainObjectContent
-                    {...routeProps}
-                    stixDomainObject={caseData}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/knowledge/:mode"
-              render={(routeProps) => (
-                <CaseRfiKnowledge {...routeProps} caseData={caseData} />
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/files"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                  />
-                  <StixCoreObjectFilesAndHistory
-                    {...routeProps}
-                    id={caseId}
-                    connectorsExport={connectorsForExport}
-                    connectorsImport={connectorsForImport}
-                    entity={caseData}
-                    withoutRelations={true}
-                    bypassEntityId={true}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/rfis/:caseId/history"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-                    enableSuggestions={false}
-                    disableSharing={true}
-                  />
-                  <StixCoreObjectHistory
-                    {...routeProps}
-                    stixCoreObjectId={caseId}
-                  />
-                </React.Fragment>
-              )}
-            />
-          </Switch>
-        ) : (
-          <ErrorNotFound />
-        )}
-      </>
+                <ContainerStixDomainObjects
+                  {...routeProps}
+                  container={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfis/:caseId/observables"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <ContainerStixCyberObservables
+                  {...routeProps}
+                  container={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfis/:caseId/knowledge"
+            render={() => (
+              <Redirect
+                to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfis/:caseId/content"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <StixDomainObjectContent
+                  {...routeProps}
+                  stixDomainObject={caseData}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfis/:caseId/knowledge/:mode"
+            render={(routeProps) => (
+              <CaseRfiKnowledge {...routeProps} caseData={caseData} />
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfis/:caseId/files"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                />
+                <StixCoreObjectFilesAndHistory
+                  {...routeProps}
+                  id={caseId}
+                  connectorsExport={connectorsForExport}
+                  connectorsImport={connectorsForImport}
+                  entity={caseData}
+                  withoutRelations={true}
+                  bypassEntityId={true}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/rfis/:caseId/history"
+            render={(routeProps: any) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={caseData}
+                  PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  enableSuggestions={false}
+                  disableSharing={true}
+                />
+                <StixCoreObjectHistory
+                  {...routeProps}
+                  stixCoreObjectId={caseId}
+                />
+              </React.Fragment>
+            )}
+          />
+        </Switch>
+      ) : (
+        <ErrorNotFound />
+      )}
     </div>
   );
 };
@@ -214,6 +211,7 @@ const Root = () => {
   });
   return (
     <>
+      <TopBar/>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootCaseRfiComponent queryRef={queryRef} caseId={caseId} />

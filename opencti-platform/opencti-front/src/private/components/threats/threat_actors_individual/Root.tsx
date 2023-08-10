@@ -86,7 +86,6 @@ const RootThreatActorIndividualComponent = ({
 
   return (
     <div>
-      <TopBar/>
       <Route path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
@@ -218,6 +217,7 @@ const Root = () => {
   );
   return (
     <>
+      <TopBar/>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <RootThreatActorIndividualComponent

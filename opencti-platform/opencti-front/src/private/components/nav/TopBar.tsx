@@ -653,7 +653,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   );
 };
 
-const TopBar: FunctionComponent<TopBarProps> = ({ keyword }) => {
+const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = ({ keyword }) => {
   const queryRef = useQueryLoading<TopBarQuery>(topBarQuery, {});
   const classes = useStyles();
   return (

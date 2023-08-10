@@ -8,7 +8,6 @@ import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -58,7 +57,6 @@ const TaskQuery = graphql`
 `;
 
 const RootTaskComponent = ({ queryRef, taskId }) => {
-  const { me } = useAuth();
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootTaskSubscription>>(
     () => ({
       subscription,
@@ -74,77 +72,74 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
   return (
     <div>
-      <TopBar me={me} />
-      <>
-        {data ? (
-          <Switch>
-            <Route
-              exact
-              path="/dashboard/cases/tasks/:taskId"
-              render={() => <CaseTask data={data} />}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/tasks/:taskId/content"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={data}
-                    PopoverComponent={<TasksPopover id={data.id} />}
-                    enableSuggestions={false}
-                  />
-                  <StixDomainObjectContent
-                    {...routeProps}
-                    stixDomainObject={data}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/tasks/:taskId/files"
-              render={(routeProps) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={data}
-                    PopoverComponent={<TasksPopover id={data.id} />}
-                    enableSuggestions={false}
-                  />
-                  <StixCoreObjectFilesAndHistory
-                    {...routeProps}
-                    id={taskId}
-                    connectorsExport={connectorsForExport}
-                    connectorsImport={connectorsForImport}
-                    entity={data}
-                    withoutRelations={true}
-                    bypassEntityId={true}
-                  />
-                </React.Fragment>
-              )}
-            />
-            <Route
-              exact
-              path="/dashboard/cases/tasks/:taskId/history"
-              render={(routeProps: any) => (
-                <React.Fragment>
-                  <ContainerHeader
-                    container={data}
-                    PopoverComponent={<TasksPopover id={data.id} />}
-                    enableSuggestions={false}
-                    disableSharing={true}
-                  />
-                  <StixCoreObjectHistory
-                    {...routeProps}
-                    stixCoreObjectId={taskId}
-                  />
-                </React.Fragment>
-              )}
-            />
-          </Switch>
-        ) : (
-          <ErrorNotFound />
-        )}
-      </>
+      {data ? (
+        <Switch>
+          <Route
+            exact
+            path="/dashboard/cases/tasks/:taskId"
+            render={() => <CaseTask data={data} />}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/tasks/:taskId/content"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={data}
+                  PopoverComponent={<TasksPopover id={data.id} />}
+                  enableSuggestions={false}
+                />
+                <StixDomainObjectContent
+                  {...routeProps}
+                  stixDomainObject={data}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/tasks/:taskId/files"
+            render={(routeProps) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={data}
+                  PopoverComponent={<TasksPopover id={data.id} />}
+                  enableSuggestions={false}
+                />
+                <StixCoreObjectFilesAndHistory
+                  {...routeProps}
+                  id={taskId}
+                  connectorsExport={connectorsForExport}
+                  connectorsImport={connectorsForImport}
+                  entity={data}
+                  withoutRelations={true}
+                  bypassEntityId={true}
+                />
+              </React.Fragment>
+            )}
+          />
+          <Route
+            exact
+            path="/dashboard/cases/tasks/:taskId/history"
+            render={(routeProps: any) => (
+              <React.Fragment>
+                <ContainerHeader
+                  container={data}
+                  PopoverComponent={<TasksPopover id={data.id} />}
+                  enableSuggestions={false}
+                  disableSharing={true}
+                />
+                <StixCoreObjectHistory
+                  {...routeProps}
+                  stixCoreObjectId={taskId}
+                />
+              </React.Fragment>
+            )}
+          />
+        </Switch>
+      ) : (
+        <ErrorNotFound />
+      )}
     </div>
   );
 };
@@ -154,12 +149,15 @@ const Root = () => {
   const queryRef = useQueryLoading<RootTaskQuery>(TaskQuery, {
     id: taskId,
   });
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <RootTaskComponent queryRef={queryRef} taskId={taskId} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.container} />
+  return (
+    <>
+      <TopBar/>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <RootTaskComponent queryRef={queryRef} taskId={taskId} />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 
