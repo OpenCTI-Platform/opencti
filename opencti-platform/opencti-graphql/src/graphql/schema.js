@@ -70,6 +70,7 @@ import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
 import { isSupportedStixType } from '../schema/identifier';
 import stixRefRelationshipResolvers from '../resolvers/stixRefRelationship';
+import stixMetaObjectResolvers from '../resolvers/stixMetaObject';
 
 const schemaTypeDefs = [globalTypeDefs];
 
@@ -161,6 +162,7 @@ const schemaResolvers = [
   connectorResolvers,
   // STIX OBJECT ENTITIES
   // STIX META OBJECT ENTITIES
+  stixMetaObjectResolvers,
   markingDefinitionResolvers,
   labelResolvers,
   externalReferenceResolvers,
