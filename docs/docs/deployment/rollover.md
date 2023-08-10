@@ -51,17 +51,15 @@ Here is the recommended policy (initialized starting 5.9.X):
 
 Unfortunately, to be able to implement rollover policies on ElasticSearch / OpenSearch indices, it will be needed to re-index all the data in new indices using ElasticSearch capabilities.
 
-#### Step by step guide
-
-##### Shutdown
+#### Shutdown
 
 First step is to shutdown your OpenCTI platform.
 
-##### Change configuration
+#### Change configuration
 
 Then, in the [OpenCTI configuration](configuration.md), change the ElasticSearch / OpenSearch default prefix to `octi` (default is `opencti`).
 
-##### Create the rollover policy
+#### Create the rollover policy
 
 Create a rollover policy named `octi-ilm-policy` (in Kibana, `Management > Index Lifecycle Policies`):
 
@@ -71,7 +69,7 @@ Create a rollover policy named `octi-ilm-policy` (in Kibana, `Management > Index
 
 ![ILM Policy](assets/ilm-policy.png)
 
-##### Create index templates
+#### Create index templates
 
 In Kibana, clone the `opencti-index-template` to have one index template by OpenCTI index with the appropriate rollover policy, index pattern and rollover alias (in Kibana, `Management > Index Management > Index Templates`).
 
