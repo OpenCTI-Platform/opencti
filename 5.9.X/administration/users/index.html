@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.18+insiders-4.37.0">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21+insiders-4.39.0">
     
     
       
@@ -2599,10 +2599,105 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Roles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#list-of-capabilities" class="md-nav__link">
     <span class="md-ellipsis">
       
         List of capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manage-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Users
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Users">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manage-a-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage a user
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groups
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manage-a-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage a group
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#organizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Organizations
       
     </span>
   </a>
@@ -3716,10 +3811,105 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Roles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#list-of-capabilities" class="md-nav__link">
     <span class="md-ellipsis">
       
         List of capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manage-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Users
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Users">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manage-a-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage a user
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groups
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Groups">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manage-a-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage a group
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#organizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Organizations
       
     </span>
   </a>
@@ -3843,21 +4033,178 @@
 <p>In OpenCTI, the RBAC system not only related to what users can do or cannot do in the platform (aka. <code>Capabilities</code>) but also to the system of <a href="../segregation/">data segregation</a>. Also, platform behaviour such as default home dashboards, default triggers and digests as well as default hidden menus or entities can be defined across groups and organizations.</p>
 <h2 id="high-level-design">High level design</h2>
 <p><a class="glightbox" href="../assets/rbac.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="RBAC" src="../assets/rbac.png" /></a></p>
-<h2 id="list-of-capabilities">List of capabilities</h2>
+<h2 id="roles">Roles</h2>
+<p>Roles are used in the platform to grant the given groups with some <strong>capabilities</strong> to define what users in those groupes can do or cannot do.</p>
+<h3 id="list-of-capabilities">List of capabilities</h3>
 <table>
 <thead>
 <tr>
-<th align="left">Capability</th>
-<th align="left">Description</th>
+<th style="text-align: left;">Capability</th>
+<th style="text-align: left;">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left"></td>
-<td align="left">Nothing</td>
+<td style="text-align: left;"><code>Bypass all capabilities</code></td>
+<td style="text-align: left;">Just bypass everything including data segregation and enforcements.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Access knowledge</code></td>
+<td style="text-align: left;">Access in read-only to all the knowledge in the platform.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Access to collaborative creation</code></td>
+<td style="text-align: left;">Create notes and opinions (and modify its own) on entities and relations.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Create / Update knowledge</code></td>
+<td style="text-align: left;">Create and update existing entities and relationships.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Restrict organization access</code></td>
+<td style="text-align: left;">Share entities and relationships with other organizations.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Delete knowledge</code></td>
+<td style="text-align: left;">Delete entities and relationships.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Upload knowledge files</code></td>
+<td style="text-align: left;">Upload files in the <code>Data</code> and <code>Content</code> section of entities.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Download knowledge export</code></td>
+<td style="text-align: left;">Download the exports generated in the entities (in the <code>Data</code> section).</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Ask for knowledge enrichment</code></td>
+<td style="text-align: left;">Trigger an enrichment for a given entity.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Access exploration</code></td>
+<td style="text-align: left;">Access to workspaces whether custom dashboards or investigations.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Create / Update exploration</code></td>
+<td style="text-align: left;">Create and update existing workspaces whether custom dashboards or investigations.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Delete exploration</code></td>
+<td style="text-align: left;">Delete workspaces whether custom dashboards or investigations.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Access connectors</code></td>
+<td style="text-align: left;">Read information in the <code>Data &gt; Connectors</code> section.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage connector state</code></td>
+<td style="text-align: left;">Reset the connector state to restart ingestion from the beginning.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Access Taxii feed</code></td>
+<td style="text-align: left;">Access and consume TAXII collections.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage Taxii collections</code></td>
+<td style="text-align: left;">Create, update and delete TAXII collections.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Access administration</code></td>
+<td style="text-align: left;">Access and manage overall parameters of the platform in <code>Settings &gt; Parameters</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage credentials</code></td>
+<td style="text-align: left;">Access and manage roles, groups, users, organizations and security policies.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage marking definitions</code></td>
+<td style="text-align: left;">Update and delete marking definitions.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage labels &amp; Attributes</code></td>
+<td style="text-align: left;">Update and delete labels, custom taxonomies, workflow and case templates.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Connectors API usage: register, ping, export push ...</code></td>
+<td style="text-align: left;">Connectors specific permissions for register, ping, push export files, etc.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Connect and consume the platform streams (/stream, /stream/live)</code></td>
+<td style="text-align: left;">List and consume the OpenCTI live streams.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Bypass mandatory references if any</code></td>
+<td style="text-align: left;">If external references enforced in a type of entity, be able to bypass the enforcement.</td>
 </tr>
 </tbody>
 </table>
+<h3 id="manage-roles">Manage roles</h3>
+<p>You can manage the roles in <code>Settings &gt; Security &gt; Roles</code>.</p>
+<p>To create a role, just click on the <code>+</code> button:</p>
+<p><a class="glightbox" href="../assets/create-role.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create role" src="../assets/create-role.png" /></a></p>
+<p>Then you will be able to define the capabilities of the role:</p>
+<p><a class="glightbox" href="../assets/update-role.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Update role" src="../assets/update-role.png" /></a></p>
+<h2 id="users">Users</h2>
+<p>You can manage the users in <code>Settings &gt; Security &gt; Users</code>. If you are using <a href="../../deployment/authentication/">Single-Sign-On (SSO)</a>, the users in OpenCTI are automatically created upon login.</p>
+<p>To create a user, just click on the <code>+</code> button:</p>
+<p><a class="glightbox" href="../assets/create-user.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Create user" src="../assets/create-user.png" /></a></p>
+<h3 id="manage-a-user">Manage a user</h3>
+<p>When access to a user, it is possible to:</p>
+<ul>
+<li>Visualize information including the token</li>
+<li>Modify it, reset 2FA if necessary</li>
+<li>Manage its sessions</li>
+<li>Manage its triggers and digests</li>
+<li>Visualize the history and operations</li>
+</ul>
+<p><a class="glightbox" href="../assets/user-overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="User overview" src="../assets/user-overview.png" /></a></p>
+<h2 id="groups">Groups</h2>
+<p>Groups is the main vehicule to manage permissions and <a href="../segregation/">data segregation</a> as well as platform customization for the given users part of this group. You can manage the groups in <code>Settings &gt; Security &gt; Groups</code>.</p>
+<p>Here is the description of the group available parameters.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Parameter</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>Auto new markings</code></td>
+<td style="text-align: left;">If a new marking definition is created, this group will automatically be granted to it.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Default membership</code></td>
+<td style="text-align: left;">If a new user is created (manually or upon SSO), it will be added to this group.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Roles</code></td>
+<td style="text-align: left;">Roles and capabilities granted to the users belonging to this group.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Default dashboard</code></td>
+<td style="text-align: left;">Customize the home dashboard for the users belonging to this group.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Default markings</code></td>
+<td style="text-align: left;">In <code>Settings &gt; Customization &gt; Entity types</code>, if default marking definitions is enabled, default markings of the group is used.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Allowed markings</code></td>
+<td style="text-align: left;">Grant access to the group to the defined marking definitions, more details in <a href="../segregation/">data segregation</a>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Triggers and digests</code></td>
+<td style="text-align: left;">Define defaults triggers and digests for the users belonging to this group.</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/group-overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Group overview" src="../assets/group-overview.png" /></a></p>
+<h3 id="manage-a-group">Manage a group</h3>
+<p>When managing a group, you can define the members and all above configurations.</p>
+<p><a class="glightbox" href="../assets/update-group.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Update a group" src="../assets/update-group.png" /></a></p>
+<h2 id="organizations">Organizations</h2>
+<p>Users can belong to organizations, which is an additional layer of <a href="../segregation/">data segregation</a> and customization.</p>
 
   
     
@@ -3873,7 +4220,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-28T07:29:19+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-28</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-08-10T10:29:49+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-08-10</span>
       </span>
     
     

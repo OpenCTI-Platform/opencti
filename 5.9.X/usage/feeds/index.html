@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.18+insiders-4.37.0">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21+insiders-4.39.0">
     
     
       
@@ -3899,36 +3899,36 @@
 <table>
 <thead>
 <tr>
-<th align="left">Action</th>
-<th align="left">Result in stream (<code>resolve-dependencies=false</code>)</th>
-<th align="left">Result in stream (<code>resolve-dependencies=true</code>)</th>
+<th style="text-align: left;">Action</th>
+<th style="text-align: left;">Result in stream (<code>resolve-dependencies=false</code>)</th>
+<th style="text-align: left;">Result in stream (<code>resolve-dependencies=true</code>)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td align="left">1. Create an indicator</td>
-<td align="left">Nothing</td>
-<td align="left">Nothing</td>
+<td style="text-align: left;">1. Create an indicator</td>
+<td style="text-align: left;">Nothing</td>
+<td style="text-align: left;">Nothing</td>
 </tr>
 <tr>
-<td align="left">2. Add the label <code>detection</code></td>
-<td align="left">Create <code>TLP:GREEN</code>, create <code>CrowdStrike</code>, create the indicator</td>
-<td align="left">Create <code>TLP:GREEN</code>, create <code>CrowdStrike</code>, create the malware <code>Emotet</code>, create the indicator, create the relationship <code>indicates</code></td>
+<td style="text-align: left;">2. Add the label <code>detection</code></td>
+<td style="text-align: left;">Create <code>TLP:GREEN</code>, create <code>CrowdStrike</code>, create the indicator</td>
+<td style="text-align: left;">Create <code>TLP:GREEN</code>, create <code>CrowdStrike</code>, create the malware <code>Emotet</code>, create the indicator, create the relationship <code>indicates</code></td>
 </tr>
 <tr>
-<td align="left">3. Remove the label <code>detection</code></td>
-<td align="left">Delete the indicator</td>
-<td align="left">Delete the indicator</td>
+<td style="text-align: left;">3. Remove the label <code>detection</code></td>
+<td style="text-align: left;">Delete the indicator</td>
+<td style="text-align: left;">Delete the indicator</td>
 </tr>
 <tr>
-<td align="left">4. Add the label <code>detection</code></td>
-<td align="left">Create the indicator</td>
-<td align="left">Create the indicator, create the relationship <code>indicates</code></td>
+<td style="text-align: left;">4. Add the label <code>detection</code></td>
+<td style="text-align: left;">Create the indicator</td>
+<td style="text-align: left;">Create the indicator, create the relationship <code>indicates</code></td>
 </tr>
 <tr>
-<td align="left">5. Delete the indicator</td>
-<td align="left">Delete the indicator</td>
-<td align="left">Delete the indicator</td>
+<td style="text-align: left;">5. Delete the indicator</td>
+<td style="text-align: left;">Delete the indicator</td>
+<td style="text-align: left;">Delete the indicator</td>
 </tr>
 </tbody>
 </table>
