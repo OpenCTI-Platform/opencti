@@ -4,7 +4,7 @@ import { CookieJar } from 'tough-cookie';
 import { print } from 'graphql';
 import axios, { AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
-import conf, { PORT } from '../../src/config/conf';
+import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
@@ -24,7 +24,6 @@ import {
   ENTITY_TYPE_USER
 } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
-import { UserAccountStatus } from '../../src/generated/graphql';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -154,7 +153,8 @@ export const ADMIN_USER: AuthUser = {
   default_marking: [],
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
   api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
-  account_status: UserAccountStatus.Active,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  account_lock_after_date: undefined
 };
 const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
@@ -417,7 +417,8 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     default_marking: [],
     origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
     api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
-    account_status: UserAccountStatus.Active,
+    account_status: ACCOUNT_STATUS_ACTIVE,
+    account_lock_after_date: undefined
   };
 };
 
