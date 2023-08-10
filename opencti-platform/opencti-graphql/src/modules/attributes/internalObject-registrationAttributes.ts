@@ -63,9 +63,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'password_policy_min_uppercase', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'enterprise_edition', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'activity_listeners_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'account_inactive_message', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'account_locked_message', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'account_locked_missing_training_message', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'messages', type: 'json', mandatoryType: 'no', multiple: false, upsert: false, schemaDef: settingsMessages },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [

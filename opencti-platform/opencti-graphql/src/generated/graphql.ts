@@ -21274,9 +21274,6 @@ export type SessionDetail = {
 
 export type Settings = BasicObject & InternalObject & {
   __typename?: 'Settings';
-  account_inactive_message?: Maybe<Scalars['String']['output']>;
-  account_locked_message?: Maybe<Scalars['String']['output']>;
-  account_locked_missing_training_message?: Maybe<Scalars['String']['output']>;
   activity_listeners?: Maybe<Array<Member>>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
@@ -35435,9 +35432,6 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
-  account_inactive_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  account_locked_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  account_locked_missing_training_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;

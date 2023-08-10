@@ -1150,9 +1150,6 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
-  account_inactive_message: String
-  account_locked_message: String
-  account_locked_missing_training_message: String
   messages: [SettingsMessage!]
   editContext: [EditUserContext!]
 }

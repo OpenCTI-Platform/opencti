@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { ACCOUNT_INACTIVE_MESSAGE, ACCOUNT_LOCKED_MESSAGE, ACCOUNT_LOCKED_TRAINING_MESSAGE, logApp, PLATFORM_VERSION } from './config/conf';
+import { logApp, PLATFORM_VERSION } from './config/conf';
 import { elCreateIndices, elIndexExists, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, isStorageAlive } from './database/file-storage';
@@ -323,9 +323,6 @@ const initializeDefaultValues = async (context, withMarkings = true) => {
     platform_email: 'admin@opencti.io',
     platform_theme: 'dark',
     platform_language: 'auto',
-    account_inactive_message: ACCOUNT_INACTIVE_MESSAGE,
-    account_locked_message: ACCOUNT_LOCKED_MESSAGE,
-    account_locked_missing_training_message: ACCOUNT_LOCKED_TRAINING_MESSAGE,
   });
   await initCreateEntitySettings(context, SYSTEM_USER);
   await createDefaultStatusTemplates(context);

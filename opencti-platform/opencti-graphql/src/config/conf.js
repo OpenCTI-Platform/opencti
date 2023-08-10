@@ -464,6 +464,7 @@ export const ENABLED_RETENTION_MANAGER = booleanConf('retention_manager:enabled'
 export const ENABLED_NOTIFICATION_MANAGER = booleanConf('notification_manager:enabled', true);
 export const ENABLED_PUBLISHER_MANAGER = booleanConf('publisher_manager:enabled', true);
 export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
+
 // Default deactivated managers
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
@@ -471,10 +472,10 @@ export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
 export const ENABLED_INGESTION_MANAGER = booleanConf('ingestion_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
-// Default settings
-export const ACCOUNT_INACTIVE_MESSAGE = nconf.get('app:account_inactive_message');
-export const ACCOUNT_LOCKED_MESSAGE = nconf.get('app:account_locked_message');
-export const ACCOUNT_LOCKED_TRAINING_MESSAGE = nconf.get('app:account_locked_missing_training_message');
+
+// Default Accounts management
+export const ACCOUNT_STATUS_ACTIVE = 'Active';
+export const ACCOUNT_STATUS_EXPIRED = 'Expired';
 const computeAccountStatusChoices = () => {
   const statusesDefinition = nconf.get('app:locked_account_statuses');
   return {
@@ -483,8 +484,6 @@ const computeAccountStatusChoices = () => {
     ...statusesDefinition
   };
 };
-export const ACCOUNT_STATUS_ACTIVE = 'Active';
-export const ACCOUNT_STATUS_EXPIRED = 'Expired';
 export const ACCOUNT_STATUSES = computeAccountStatusChoices();
 export const computeDefaultAccountStatus = () => {
   const defaultConf = nconf.get('app:account_statuses_default');
@@ -499,6 +498,7 @@ export const computeDefaultAccountStatus = () => {
 };
 export const DEFAULT_ACCOUNT_STATUS = computeDefaultAccountStatus();
 
+// Default settings
 const platformState = { stopping: false };
 export const getStoppingState = () => platformState.stopping;
 export const setStoppingState = (state) => {

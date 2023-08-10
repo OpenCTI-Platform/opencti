@@ -3,9 +3,6 @@ import nconf from 'nconf';
 import * as R from 'ramda';
 import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, {
-  ACCOUNT_INACTIVE_MESSAGE,
-  ACCOUNT_LOCKED_MESSAGE,
-  ACCOUNT_LOCKED_TRAINING_MESSAGE,
   ACCOUNT_STATUSES,
   BUS_TOPICS,
   ENABLED_DEMO_MODE,
@@ -76,9 +73,6 @@ export const getSettings = async (context) => {
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
     ],
-    account_inactive_message: ACCOUNT_INACTIVE_MESSAGE,
-    account_locked_message: ACCOUNT_LOCKED_MESSAGE,
-    account_locked_missing_training_message: ACCOUNT_LOCKED_TRAINING_MESSAGE,
   };
 };
 
