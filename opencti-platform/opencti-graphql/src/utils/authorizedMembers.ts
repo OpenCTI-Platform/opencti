@@ -54,9 +54,13 @@ export const containsValidAdmin = async (
   const adminIds = authorized_members
     .filter((n) => n.access_right === MEMBER_ACCESS_RIGHT_ADMIN)
     .map((e) => e.id);
+  if (adminIds.length === 0) { // no admin
+    return false;
+  }
   if (adminIds.includes(MEMBER_ACCESS_ALL)) { // everyone is admin
     return true;
   }
+  // find the users that have admin rights
   const groups = (await Promise.all(adminIds.map((id) => findGroup(context, SYSTEM_USER, id))))
     .filter((n) => n) as BasicGroupEntity[];
   const organizations = (await Promise.all(adminIds.map((id) => findOrganization(context, SYSTEM_USER, id))))
@@ -67,7 +71,9 @@ export const containsValidAdmin = async (
     .filter((id) => !groups.map((o) => o.id).includes(id)
       && !organizations.map((o) => o.id).includes(id))
     .concat(groupsMembersIds, organizationsMembersIds);
+  // resolve the users
   const users: (AuthUser | undefined)[] = await Promise.all(userIds.map((userId) => findUser(context, SYSTEM_USER, userId)));
+  // restrict to the users that exist and have admin exploration capability
   const authorizedUsers = users.filter((u) => u && hasExplorationCapabilities(u));
   if (authorizedUsers.length > 0) { // at least 1 user with admin access and admin exploration capability
     return true;
