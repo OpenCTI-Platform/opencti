@@ -98,7 +98,7 @@
     "jwt-decode": "3.1.2",
     "lru-cache": "7.18.3",
     "merge-graphql-schemas": "1.7.8",
-    "migrate": "1.8.0",
+    "migrate": "2.0.0",
     "mime-types": "2.1.35",
     "moment": "2.29.4",
     "moment-range": "4.0.2",
