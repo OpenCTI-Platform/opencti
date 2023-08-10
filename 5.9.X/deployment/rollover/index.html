@@ -1010,18 +1010,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-by-step-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step by step guide
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step by step guide">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#shutdown" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1062,11 +1050,6 @@
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -3892,18 +3875,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-by-step-guide" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step by step guide
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step by step guide">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#shutdown" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3944,11 +3915,6 @@
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -4152,12 +4118,11 @@
 <p>Please read the following only if your platform has been initialized before 5.9.0, otherwise lifecycle policies has been created (but you can still cutomize them).</p>
 </div>
 <p>Unfortunately, to be able to implement rollover policies on ElasticSearch / OpenSearch indices, it will be needed to re-index all the data in new indices using ElasticSearch capabilities.</p>
-<h4 id="step-by-step-guide">Step by step guide</h4>
-<h5 id="shutdown">Shutdown</h5>
+<h4 id="shutdown">Shutdown</h4>
 <p>First step is to shutdown your OpenCTI platform.</p>
-<h5 id="change-configuration">Change configuration</h5>
+<h4 id="change-configuration">Change configuration</h4>
 <p>Then, in the <a href="../configuration/">OpenCTI configuration</a>, change the ElasticSearch / OpenSearch default prefix to <code>octi</code> (default is <code>opencti</code>).</p>
-<h5 id="create-the-rollover-policy">Create the rollover policy</h5>
+<h4 id="create-the-rollover-policy">Create the rollover policy</h4>
 <p>Create a rollover policy named <code>octi-ilm-policy</code> (in Kibana, <code>Management &gt; Index Lifecycle Policies</code>):</p>
 <ul>
 <li>Maximum primary shard size: <code>50 GB</code></li>
@@ -4165,7 +4130,7 @@
 <li>Maximum documents: <code>75,000,000</code></li>
 </ul>
 <p><a class="glightbox" href="../assets/ilm-policy.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="ILM Policy" src="../assets/ilm-policy.png" /></a></p>
-<h5 id="create-index-templates">Create index templates</h5>
+<h4 id="create-index-templates">Create index templates</h4>
 <p>In Kibana, clone the <code>opencti-index-template</code> to have one index template by OpenCTI index with the appropriate rollover policy, index pattern and rollover alias (in Kibana, <code>Management &gt; Index Management &gt; Index Templates</code>).</p>
 <p><a class="glightbox" href="../assets/index-template.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Index template" src="../assets/index-template.png" /></a></p>
 <p>Create the following index templates:</p>
@@ -4224,7 +4189,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-08-10T15:42:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-08-10</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-08-10T15:54:15+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-08-10</span>
       </span>
     
     
