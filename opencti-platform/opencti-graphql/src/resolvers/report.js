@@ -1,5 +1,5 @@
 import {
-  addReport, batchParticipants,
+  addReport, batchParticipants, exportAsInvestigation,
   findAll,
   findById,
   reportContainsStixObjectOrStixRelationship,
@@ -68,6 +68,7 @@ const reportResolvers = {
   Report: {
     deleteWithElementsCount: (report, args, context) => reportDeleteElementsCount(context, context.user, report.id),
     objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
+    exportAsInvestigation: (report, _, context) => exportAsInvestigation(context, report)
   },
   ReportsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

@@ -443,6 +443,16 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
   }
 `;
 
+const reportKnowledgeGraphComponenentExportAsInvestigationQuery = graphql`
+  query ReportKnowledgeGraphComponenentExportAsInvestigationQuery($id: String!) {
+     report(id: $id) {
+       exportAsInvestigation {
+         id
+       }
+     }
+  }
+`;
+
 class ReportKnowledgeGraphComponent extends Component {
   constructor(props) {
     super(props);
@@ -1346,6 +1356,19 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
+  exportAsInvestigation(reportId) {
+    console.log(`reportId: ${reportId}`);
+
+    fetchQuery(
+      reportKnowledgeGraphComponenentExportAsInvestigationQuery,
+      { id: reportId },
+    ).toPromise()
+      .then((data) => {
+        console.log(data);
+        console.log('investigation created');
+      });
+  }
+
   render() {
     const { report, theme, mode } = this.props;
     const {
@@ -1387,6 +1410,7 @@ class ReportKnowledgeGraphComponent extends Component {
             <>
               <ContainerHeader
                 container={report}
+                type={'report'}
                 PopoverComponent={<ReportPopover />}
                 link={`/dashboard/analyses/reports/${report.id}/knowledge`}
                 modes={[
@@ -1401,6 +1425,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 knowledge={true}
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
+                exportAsInvestigation={this.exportAsInvestigation.bind(this)}
               />
               <ReportKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}

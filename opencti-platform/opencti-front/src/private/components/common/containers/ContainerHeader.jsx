@@ -478,6 +478,7 @@ export const containerHeaderObjectsQuery = graphql`
 const ContainerHeader = (props) => {
   const {
     container,
+    type,
     PopoverComponent,
     popoverSecurity,
     link,
@@ -489,6 +490,7 @@ const ContainerHeader = (props) => {
     enableSuggestions,
     onApplied,
     enableQuickSubscription,
+    exportAsInvestigation,
   } = props;
   const classes = useStyles();
   const { t, fd } = useFormatter();
@@ -763,6 +765,8 @@ const ContainerHeader = (props) => {
             name={t('Report representation')}
             pixelRatio={currentMode === 'graph' ? 1 : 2}
             adjust={adjust}
+            reportId={type === 'report' ? container.id : null}
+            handleExportAsInvestigation={type === 'report' ? exportAsInvestigation : null}
           />
         </div>
       )}

@@ -24,6 +24,7 @@ import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } fr
 import { isStixId } from '../schema/schemaUtils';
 import { stixDomainObjectDelete } from './stixDomainObject';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { addWorkspace } from '../modules/workspace/workspace-domain';
 
 export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
@@ -157,5 +158,15 @@ export const reportDeleteWithElements = async (context, user, reportId) => {
 export const reportDeleteElementsCount = async (context, user, reportId) => {
   const filters = buildReportDeleteElementsFilter(reportId);
   return countAllThings(context, user, { indices: READ_DATA_INDICES_WITHOUT_INFERRED, filters });
+};
+
+export const exportAsInvestigation = async (context, report) => {
+  const investigationInput = {
+    type: 'investigation',
+    name: `investigation from report ${report.name}`,
+    investigated_entities_ids: report.object
+  };
+
+  return await addWorkspace(context, context.user, investigationInput);
 };
 // endregion

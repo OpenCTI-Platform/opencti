@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
-import { GetAppOutlined, ImageOutlined } from '@mui/icons-material';
-import { FilePdfBox, FileDelimitedOutline } from 'mdi-material-ui';
+import { ExploreOutlined, GetAppOutlined, ImageOutlined } from '@mui/icons-material';
+import { FileDelimitedOutline, FilePdfBox } from 'mdi-material-ui';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
@@ -164,6 +164,8 @@ class ExportButtons extends Component {
       csvData,
       csvFileName,
       handleDownloadAsStixReport,
+      reportId,
+      handleExportAsInvestigation,
     } = this.props;
     return (
       <div className={classes.exportButtons} id="export-buttons">
@@ -178,6 +180,13 @@ class ExportButtons extends Component {
               <FilePdfBox fontSize="small" color="primary" />
             </ToggleButton>
           </Tooltip>
+          {reportId && (
+            <Tooltip title="t('Export as Investigation')">
+              <ToggleButton onClick={handleExportAsInvestigation.bind(this, reportId)}>
+                <ExploreOutlined fontSize="small" color="primary" />
+              </ToggleButton>
+            </Tooltip>
+          )}
           {type === 'investigation' && (
             <Tooltip title={t('Download as STIX report')}>
               <ToggleButton onClick={handleDownloadAsStixReport.bind(this)}>

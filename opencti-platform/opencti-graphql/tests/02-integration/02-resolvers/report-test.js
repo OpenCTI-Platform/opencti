@@ -428,6 +428,27 @@ describe('Report resolver standard behavior', () => {
     });
     expect(queryResult.data.reportEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
+  it('should export as investigation', async () => {
+    const queryResult = await queryAsAdmin({
+      query: gql`
+        query StartInvestigationFromReport($id: String!) {
+          report(id: $id) {
+            exportAsInvestigation {
+              id
+              name
+            }
+          }
+        }
+      `,
+      variables: {
+        id: reportInternalId
+      },
+    });
+
+    console.log(queryResult);
+
+    expect(queryResult.data.report.startInvestigation.id).toBeDefined();
+  });
   it('should report deleted', async () => {
     const DELETE_QUERY = gql`
       mutation reportDelete($id: ID!) {
