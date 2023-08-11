@@ -3627,10 +3627,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/router@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@remix-run/router@npm:1.7.2"
-  checksum: ea43bb662f1f5c93965989b1667fb6e8a301cb69c44341ee92c81cb15ea685b494168e5905593b5777d59058f1455b4b58083d5b895f04382e49362e420d7af4
+"@remix-run/router@npm:1.8.0":
+  version: 1.8.0
+  resolution: "@remix-run/router@npm:1.8.0"
+  checksum: f754f02d3b4fc86791b88acf16065000609e2324b9436027844a76831c7107c0994067cb83abdd6093c282bd518a5c89b5e02aead585782978586e3a04534428
   languageName: node
   linkType: hard
 
@@ -13233,7 +13233,7 @@ __metadata:
     react-relay: 15.0.0
     react-relay-network-modern: 6.2.2
     react-router-dom: 5.3.4
-    react-router-dom-v5-compat: 6.14.2
+    react-router-dom-v5-compat: 6.15.0
     react-test-renderer: 18.2.0
     react-timeline-range-slider: 1.4.1
     react-virtualized: 9.22.5
@@ -14804,17 +14804,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom-v5-compat@npm:6.14.2":
-  version: 6.14.2
-  resolution: "react-router-dom-v5-compat@npm:6.14.2"
+"react-router-dom-v5-compat@npm:6.15.0":
+  version: 6.15.0
+  resolution: "react-router-dom-v5-compat@npm:6.15.0"
   dependencies:
     history: ^5.3.0
-    react-router: 6.14.2
+    react-router: 6.15.0
   peerDependencies:
     react: ">=16.8"
     react-dom: ">=16.8"
     react-router-dom: 4 || 5
-  checksum: 06de7b6a2c0f93695baa7b960c191fadf19a1ca4b5592faccd331be06b82eb37a1208d7e0cfffc1713334f5f1a0f287aff349fe6ac0006b847e9738660e440b3
+  checksum: d5430d6f935f26e8e768b2ac61c97495dbee2a3348dde2c7fba478e7d8ca437a552ef5cb44df714589300bde9af1fbee8eb25df3d27251e0ea7da58a50adc555
   languageName: node
   linkType: hard
 
@@ -14854,14 +14854,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:6.14.2":
-  version: 6.14.2
-  resolution: "react-router@npm:6.14.2"
+"react-router@npm:6.15.0":
+  version: 6.15.0
+  resolution: "react-router@npm:6.15.0"
   dependencies:
-    "@remix-run/router": 1.7.2
+    "@remix-run/router": 1.8.0
   peerDependencies:
     react: ">=16.8"
-  checksum: 7507bf5732b3a8ddbd901c2061216eebca73e194449bff58acc1445171e22bdda36b455b8af066e467748ebfb5875b3c0a565941c46af65c6f653a6ed0dc4fe4
+  checksum: 345b29277e13997f2625f0037f537eaf1955bb9f44ebfea80dd3ff83fc06273f7b64e1be944bfc75945fd2af5af917874133a8a93ed5ecaca523be8f045ae166
   languageName: node
   linkType: hard
 
