@@ -51,8 +51,8 @@ const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
                 <ItemIcon type={stixCoreObjectOrRelationship?.entity_type} />
               </ListItemIcon>
               <ListItemText
-                primary={stixCoreObjectOrRelationship.representative.main}
-                secondary={truncate(stixCoreObjectOrRelationship.representative.secondary, 150)}
+                primary={stixCoreObjectOrRelationship?.representative?.main}
+                secondary={truncate(stixCoreObjectOrRelationship?.representative?.secondary, 150)}
               />
             </ListItem>
           ))}
@@ -87,6 +87,12 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                   main
                   secondary
                 }
+                from {
+                  ... on StixCoreObject {
+                    id
+                    entity_type
+                  }
+                }
               }
               ... on StixSightingRelationship {
                 id
@@ -95,6 +101,12 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                 representative {
                   main
                   secondary
+                }
+                from {
+                  ... on StixCoreObject {
+                    id
+                    entity_type
+                  }
                 }
               }
               # Thats weird
