@@ -80,12 +80,43 @@ export const objects = async (context: AuthContext, user: AuthUser, { investigat
   return listThings(context, user, types, finalArgs);
 };
 
+const isEntityInvestigable = (entity: BasicStoreEntity): boolean => {
+  const matching_types = INVESTIGABLE_TYPES
+    .filter((investigable_type) => entity.parent_types.includes(investigable_type));
+
+  return matching_types.length !== 0;
+};
+
+const checkEntitiesAreInvestigable = (entities: Array<BasicStoreEntity>): void => {
+  entities
+    .filter((entity) => !isEntityInvestigable(entity))
+    .forEach((entity) => { throw FunctionalError(`Entity with id '${entity.id}' of type '${entity.entity_type}' is not investigable.`); });
+};
+
+const checkMissingEntities = (AddedOrReplacedinvestigatedEntitiesIds: (string | null)[], entities: Array<BasicStoreEntity>): void => {
+  const missingEntitiesIds = R.difference(AddedOrReplacedinvestigatedEntitiesIds, entities.map((entity) => entity.id));
+
+  if (missingEntitiesIds.length > 0) {
+    throw FunctionalError(`Entities with ids '${missingEntitiesIds.join(', ')}' were not found. Cannot conduct investigation.`);
+  }
+};
+
+const checkInvestigatedEntitiesInputs = async (context: AuthContext, user: AuthUser, AddedOrReplacedInvestigatedEntitiesIds: string[]): Promise<void> => {
+  const entities = await elFindByIds(context, user, AddedOrReplacedInvestigatedEntitiesIds) as Array<BasicStoreEntity>;
+
+  checkMissingEntities(AddedOrReplacedInvestigatedEntitiesIds, entities);
+  checkEntitiesAreInvestigable(entities);
+};
+
 export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
   const authorizedMembers = input.authorized_members ?? [];
   if (!authorizedMembers.some((e) => e.id === user.id)) {
     // add creator to authorized_members on creation
     authorizedMembers.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
   }
+
+  await checkInvestigatedEntitiesInputs(context, user, (input.investigated_entities_ids ?? []) as string[]);
+
   const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   await publishUserAction({
@@ -112,42 +143,12 @@ export const workspaceDelete = async (context: AuthContext, user: AuthUser, work
   return workspaceId;
 };
 
-const isEntityInvestigable = (entity: BasicStoreEntity): boolean => {
-  const matching_types = INVESTIGABLE_TYPES
-    .filter((investigable_type) => entity.parent_types.includes(investigable_type));
-
-  return matching_types.length !== 0;
-};
-
-const checkEntitiesAreInvestigable = (entities: Array<BasicStoreEntity>): void => {
-  entities
-    .filter((entity) => !isEntityInvestigable(entity))
-    .forEach((entity) => { throw FunctionalError(`Entity with id '${entity.id}' of type '${entity.entity_type}' is not investigable.`); });
-};
-
-const checkMissingEntities = (AddedOrReplacedinvestigatedEntitiesIds: (string | null)[], entities: Array<BasicStoreEntity>): void => {
-  const missingEntitiesIds = R.difference(AddedOrReplacedinvestigatedEntitiesIds, entities.map((entity) => entity.id));
-
-  if (missingEntitiesIds.length > 0) {
-    throw FunctionalError(`Entities with ids '${missingEntitiesIds.join(', ')}' were not found. Cannot conduct investigation.`);
-  }
-};
-
-const checkInvestigatedEntitiesInputs = async (AddedOrReplacedInvestigatedEntitiesIds: (string | null)[], context: AuthContext, user: AuthUser): Promise<void> => {
-  const entities = await elFindByIds(context, user, AddedOrReplacedInvestigatedEntitiesIds) as Array<BasicStoreEntity>;
-
-  checkMissingEntities(AddedOrReplacedInvestigatedEntitiesIds, entities);
-  checkEntitiesAreInvestigable(entities);
-};
-
 export const workspaceEditField = async (context: AuthContext, user: AuthUser, workspaceId: string, inputs: EditInput[]) => {
   const addedOrReplacedInvestigatedEntitiesIds = inputs
     .filter(({ key, operation }) => key === 'investigated_entities_ids' && (operation === 'add' || operation === 'replace'))
-    .flatMap(({ value }) => value);
+    .flatMap(({ value }) => value) as string[];
 
-  if (addedOrReplacedInvestigatedEntitiesIds.length > 0) {
-    await checkInvestigatedEntitiesInputs(addedOrReplacedInvestigatedEntitiesIds, context, user);
-  }
+  await checkInvestigatedEntitiesInputs(context, user, addedOrReplacedInvestigatedEntitiesIds);
 
   const { element } = await updateAttribute(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
 

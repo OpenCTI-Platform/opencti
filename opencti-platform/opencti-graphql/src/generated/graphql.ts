@@ -28018,6 +28018,7 @@ export type WorkspaceObjectsWithInvestigatedArgs = {
 export type WorkspaceAddInput = {
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
+  investigated_entities_ids?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name: Scalars['String']['input'];
   tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   type: Scalars['String']['input'];

@@ -11179,6 +11179,7 @@ input WorkspaceAddInput {
   description: String
   tags: [String]
   authorized_members: [MemberAccessInput!]
+  investigated_entities_ids: [String]
 }
 
 type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
