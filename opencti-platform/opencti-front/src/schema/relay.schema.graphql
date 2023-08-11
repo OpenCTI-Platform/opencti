@@ -8269,6 +8269,8 @@ type Query {
   threatActorIndividual(id: String!): ThreatActorIndividual
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
   threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  ingestion(id: String!): Ingestion
+  ingestions(first: Int, after: ID, orderBy: IngestionOrdering, orderMode: OrderingMode, filters: [IngestionFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionConnection
 }
 
 type Subscription {
@@ -8991,6 +8993,9 @@ type Mutation {
   threatActorIndividualContextClean(id: ID!): ThreatActorIndividual
   threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual
+  ingestionAdd(input: IngestionAddInput!): Ingestion
+  ingestionDelete(id: ID!): ID
+  ingestionFieldPatch(id: ID!, input: [EditInput!]!): Ingestion
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11637,4 +11642,62 @@ input ThreatActorIndividualAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+}
+
+type Ingestion implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  created_at: DateTime
+  updated_at: DateTime
+  name: String!
+  description: String
+  uri: String!
+  user_id: String
+  created_by_ref: String
+  object_marking_refs: [String!]
+  report_types: [String!]
+  current_state_date: DateTime
+  ingestion_running: Boolean
+}
+
+enum IngestionOrdering {
+  name
+  created_at
+  updated_at
+}
+
+enum IngestionFilter {
+  name
+  creator
+}
+
+input IngestionFiltering {
+  key: [IngestionFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type IngestionConnection {
+  pageInfo: PageInfo!
+  edges: [IngestionEdge!]!
+}
+
+type IngestionEdge {
+  cursor: String!
+  node: Ingestion!
+}
+
+input IngestionAddInput {
+  name: String!
+  description: String
+  uri: String!
+  user_id: String
+  created_by_ref: String
+  object_marking_refs: [String!]
+  report_types: [String!]
+  current_state_date: DateTime
+  ingestion_running: Boolean
 }

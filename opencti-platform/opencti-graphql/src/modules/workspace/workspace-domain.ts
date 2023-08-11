@@ -41,8 +41,8 @@ import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 
-export const findById = (context: AuthContext, user: AuthUser, workspaceId: string): BasicStoreEntityWorkspace => {
-  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE) as unknown as BasicStoreEntityWorkspace;
+export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
+  return storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {

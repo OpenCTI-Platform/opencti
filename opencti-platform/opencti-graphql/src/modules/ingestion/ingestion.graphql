@@ -1,0 +1,82 @@
+type Ingestion implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    created_at: DateTime
+    updated_at: DateTime
+    name: String!
+    description: String
+    uri: String!
+    user_id: String
+    created_by_ref: String
+    object_marking_refs: [String!]
+    report_types: [String!]
+    current_state_date: DateTime
+    ingestion_running: Boolean
+}
+
+# Ordering
+enum IngestionOrdering {
+    name
+    created_at
+    updated_at
+}
+
+# Filtering
+enum IngestionFilter {
+    name
+    creator
+}
+
+input IngestionFiltering {
+    key: [IngestionFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type IngestionConnection {
+    pageInfo: PageInfo!
+    edges: [IngestionEdge!]!
+}
+
+# Queries
+type Query {
+    ingestion(id: String!): Ingestion @auth(for: [CONNECTORAPI])
+    ingestions(
+        first: Int
+        after: ID
+        orderBy: IngestionOrdering
+        orderMode: OrderingMode
+        filters: [IngestionFiltering!]
+        filterMode: FilterMode
+        includeAuthorities: Boolean
+        search: String
+    ): IngestionConnection @auth(for: [CONNECTORAPI])
+}
+
+type IngestionEdge {
+    cursor: String!
+    node: Ingestion!
+}
+
+# Mutations
+input IngestionAddInput {
+    name: String! @constraint(minLength: 2)
+    description: String
+    uri: String! @constraint(minLength: 5)
+    user_id: String
+    created_by_ref: String
+    object_marking_refs: [String!]
+    report_types: [String!]
+    current_state_date: DateTime
+    ingestion_running: Boolean
+}
+
+type Mutation {
+    ingestionAdd(input: IngestionAddInput!): Ingestion @auth(for: [CONNECTORAPI])
+    ingestionDelete(id: ID!): ID @auth(for: [CONNECTORAPI])
+    ingestionFieldPatch(id: ID!, input: [EditInput!]!): Ingestion @auth(for: [CONNECTORAPI])
+}

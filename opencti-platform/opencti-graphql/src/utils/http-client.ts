@@ -2,10 +2,10 @@ import https from 'node:https';
 import axios, { AxiosHeaders } from 'axios';
 import { getPlatformHttpProxies } from '../config/conf';
 
-interface GetHttpClient {
+export interface GetHttpClient {
   rejectUnauthorized?: boolean
-  responseType: 'json' | 'arraybuffer'
-  headers: AxiosHeaders
+  responseType: 'json' | 'arraybuffer' | 'text'
+  headers?: AxiosHeaders
 }
 export const getHttpClient = ({ headers, rejectUnauthorized, responseType }: GetHttpClient) => {
   const proxies = getPlatformHttpProxies();

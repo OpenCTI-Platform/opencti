@@ -468,6 +468,7 @@ export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled'
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
 export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
+export const ENABLED_INGESTION_MANAGER = booleanConf('ingestion_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
 

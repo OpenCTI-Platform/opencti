@@ -38,6 +38,7 @@ generates:
         MalwareAnalysis: ../modules/malwareAnalysis/malwareAnalysis-types#BasicStoreEntityMalwareAnalysis
         Notifier: ../modules/notifier/notifier-types#BasicStoreEntityNotifier
         ThreatActorIndividual: ../modules/threatActorIndividual/threatActorIndividual-types#BasicStoreEntityThreatActorIndividual
+        Ingestion: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestion
   ./graphql.schema.json:
     plugins:
       - "introspection"

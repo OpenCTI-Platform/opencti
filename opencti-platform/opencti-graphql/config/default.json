@@ -123,6 +123,11 @@
     "lock_key": "sync_manager_lock",
     "interval": 10000
   },
+  "ingestion_manager": {
+    "enabled": true,
+    "lock_key": "ingestion_manager_lock",
+    "interval": 1000
+  },
   "retention_manager": {
     "enabled": true,
     "lock_key": "retention_manager_lock",
