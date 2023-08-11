@@ -61,7 +61,7 @@
     "react-router-dom-v5-compat": "6.14.2",
     "react-timeline-range-slider": "1.4.1",
     "react-virtualized": "9.22.5",
-    "recharts": "2.7.2",
+    "recharts": "2.7.3",
     "relay-runtime": "15.0.0",
     "remark-flexible-markers": "1.0.3",
     "remark-gfm": "3.0.1",
