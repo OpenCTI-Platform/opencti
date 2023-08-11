@@ -181,11 +181,10 @@ StixCoreObjectOpinionsRadarProps
           id: alreadyExistingOpinion,
           input: finalValues,
         },
+        updater: () => fetchQuery(),
         onCompleted: () => {
-          fetchQuery();
           setSubmitting(false);
           resetForm();
-          handleClose();
         },
       });
     } else {
@@ -194,11 +193,10 @@ StixCoreObjectOpinionsRadarProps
         variables: {
           input: inputValues,
         },
+        updater: () => fetchQuery(),
         onCompleted: () => {
-          fetchQuery();
           setSubmitting(false);
           resetForm();
-          handleClose();
         },
       });
     }
