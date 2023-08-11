@@ -13,10 +13,10 @@ const Root = () => {
   let redirect = null;
   if (!useIsHiddenEntity('Incident')) {
     redirect = 'incidents';
-  } else if (!useIsHiddenEntity('Observed-Data')) {
-    redirect = 'observed_data';
-  } else {
+  } else if (!useIsHiddenEntity('stix-sighting-relationship')) {
     redirect = 'sightings';
+  } else {
+    redirect = 'observed_data';
   }
   return (
     <Switch>

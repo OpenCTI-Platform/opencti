@@ -26,6 +26,7 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { elCount } from '../database/engine';
 import { publishUserAction } from '../listener/UserActionListener';
+import { validateSetting } from '../modules/entitySetting/entitySetting-validators';
 import { telemetry } from '../config/tracing';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
@@ -89,7 +90,9 @@ export const createStatusTemplate = async (context: AuthContext, user: AuthUser,
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, element, user);
 };
+
 export const createStatus = async (context: AuthContext, user: AuthUser, subTypeId: string, input: StatusAddInput) => {
+  validateSetting(subTypeId, 'workflow_configuration');
   const data = await createEntity(context, user, { type: subTypeId, ...input }, ENTITY_TYPE_STATUS);
   await publishUserAction({
     user,
@@ -102,6 +105,7 @@ export const createStatus = async (context: AuthContext, user: AuthUser, subType
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
 };
 export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
+  validateSetting(subTypeId, 'workflow_configuration');
   const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
   await publishUserAction({
     user,
@@ -127,6 +131,7 @@ export const statusTemplateEditField = async (context: AuthContext, user: AuthUs
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 export const statusDelete = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string) => {
+  validateSetting(subTypeId, 'workflow_configuration');
   const { element: deleted } = await internalDeleteElementById(context, user, statusId);
   await publishUserAction({
     user,

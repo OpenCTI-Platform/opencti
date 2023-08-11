@@ -63,7 +63,7 @@ describe('EntitySetting resolver standard behavior', () => {
     const context = executionContext('test');
     await initCreateEntitySettings(context, SYSTEM_USER);
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
-    expect(queryResult.data.entitySettings.edges.length).toEqual(40);
+    expect(queryResult.data.entitySettings.edges.length).toEqual(42);
 
     const entitySettingNote = queryResult.data.entitySettings.edges.filter((entitySetting) => entitySetting.node.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
     expect(entitySettingNote.platform_entity_files_ref).toBeFalsy();

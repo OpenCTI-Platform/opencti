@@ -1,12 +1,13 @@
 import * as R from 'ramda';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildPagination } from '../database/utils';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ABSTRACT_STIX_NESTED_REF_RELATIONSHIP } from '../schema/stixRefRelationship';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 
@@ -21,6 +22,8 @@ export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser,
       R.map((n) => ({ node: { id: n, label: n } })),
       R.append({ node: { id: ABSTRACT_STIX_CORE_RELATIONSHIP, label: ABSTRACT_STIX_CORE_RELATIONSHIP } }),
       R.append({ node: { id: STIX_SIGHTING_RELATIONSHIP, label: STIX_SIGHTING_RELATIONSHIP } }),
+      R.append({ node: { id: ABSTRACT_STIX_CYBER_OBSERVABLE, label: ABSTRACT_STIX_CYBER_OBSERVABLE } }),
+      R.append({ node: { id: ENTITY_HASHED_OBSERVABLE_ARTIFACT, label: ENTITY_HASHED_OBSERVABLE_ARTIFACT } }),
       R.uniqBy(R.path(['node', 'id'])),
     )(types);
     return buildPagination(0, null, finalResult, finalResult.length);

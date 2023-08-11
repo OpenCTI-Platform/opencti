@@ -34,6 +34,16 @@ const optionsValidation = async (targetType: string, input: BasicStoreEntityEnti
   });
 };
 
+export const validateSetting = (typeId: string, setting: string) => {
+  const settings = getAvailableSettings(typeId);
+  if (!settings.includes(setting)) {
+    throw UnsupportedError('This setting is not available for this entity', {
+      setting,
+      entity: typeId
+    });
+  }
+};
+
 const scaleValidation = (scale: Scale) => {
   if (scale?.local_config) {
     const minValue = scale.local_config.min.value;

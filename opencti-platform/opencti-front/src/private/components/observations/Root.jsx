@@ -9,13 +9,26 @@ import RootIndicator from './indicators/Root';
 import Infrastructures from './Infrastructures';
 import RootInfrastructure from './infrastructures/Root';
 import RootArtifact from './artifacts/Root';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
-const Root = () => (
-  <Switch>
+const Root = () => {
+  let redirect = null;
+  if (!useIsHiddenEntity('Stix-Cyber-Observable')) {
+    redirect = 'observables';
+  } else if (!useIsHiddenEntity('Artifact')) {
+    redirect = 'artifacts';
+  } else if (!useIsHiddenEntity('Indicator')) {
+    redirect = 'indicators';
+  } else if (!useIsHiddenEntity('Infrastructure')) {
+    redirect = 'infrastructures';
+  }
+
+  return (
+    <Switch>
     <BoundaryRoute
       exact
       path="/dashboard/observations"
-      render={() => <Redirect to="/dashboard/observations/observables" />}
+      render={() => <Redirect to={`/dashboard/observations/${redirect}`} />}
     />
     <BoundaryRoute
       exact
@@ -54,6 +67,7 @@ const Root = () => (
       component={RootInfrastructure}
     />
   </Switch>
-);
+  );
+};
 
 export default Root;

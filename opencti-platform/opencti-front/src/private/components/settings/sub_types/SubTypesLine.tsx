@@ -153,11 +153,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.workflow_status.width }}
             >
-              {nodeSubType.workflowEnabled ? (
-                <CheckCircleOutlined fontSize="small" color="success" />
-              ) : (
-                <DoNotDisturbOnOutlined fontSize="small" color="primary" />
-              )}
+              {renderOptionIcon('workflow_configuration')}
             </div>
             <div
               className={classes.bodyItem}

@@ -123,6 +123,23 @@ const LeftBar = () => {
     toData = '/dashboard/data/taxii';
   }
 
+  const hideAnalyses = useIsHiddenEntities(
+    'Report',
+    'Grouping',
+    'Note',
+    'Malware-Analysis',
+  );
+  const hideEvents = useIsHiddenEntities(
+    'stix-sighting-relationship',
+    'Incident',
+    'Observed-Data',
+  );
+  const hideObservations = useIsHiddenEntities(
+    'Stix-Cyber-Observable',
+    'Artifact',
+    'Indicator',
+    'Infrastructure',
+  );
   const hideThreats = useIsHiddenEntities(
     'Threat-Actor',
     'Intrusion-Set',
@@ -203,6 +220,7 @@ const LeftBar = () => {
       <Divider />
       <Security needs={[KNOWLEDGE]}>
         <MenuList component="nav">
+          {!hideAnalyses && (
           <StyledTooltip title={!navOpen && t('Analyses')} placement="right">
             <MenuItem
               component={Link}
@@ -222,6 +240,7 @@ const LeftBar = () => {
               )}
             </MenuItem>
           </StyledTooltip>
+          )}
           {!hideCases && (
             <StyledTooltip title={!navOpen && t('Cases')} placement="right">
               <MenuItem
@@ -243,6 +262,7 @@ const LeftBar = () => {
               </MenuItem>
             </StyledTooltip>
           )}
+          {!hideEvents && (
           <StyledTooltip title={!navOpen && t('Events')} placement="right">
             <MenuItem
               component={Link}
@@ -262,6 +282,8 @@ const LeftBar = () => {
               )}
             </MenuItem>
           </StyledTooltip>
+          )}
+          {!hideObservations && (
           <StyledTooltip
             title={!navOpen && t('Observations')}
             placement="right"
@@ -284,6 +306,7 @@ const LeftBar = () => {
               )}
             </MenuItem>
           </StyledTooltip>
+          )}
         </MenuList>
         <Divider />
         <MenuList component="nav">

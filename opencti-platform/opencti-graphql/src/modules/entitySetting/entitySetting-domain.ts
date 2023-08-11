@@ -33,10 +33,11 @@ export const findByType = async (context: AuthContext, user: AuthUser, targetTyp
 
 export const batchEntitySettingsByType = async (context: AuthContext, user: AuthUser, targetTypes: string[]) => {
   const findByTypeFn = async () => {
-    return listAllEntities(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
+    const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
       filters: [{ key: 'target_type', values: targetTypes }],
       connectionFormat: false
     });
+    return targetTypes.map((targetType) => entitySettings.find((entitySetting) => entitySetting.target_type === targetType));
   };
   return telemetry(context, user, 'BATCH entitySettings', {
     [SemanticAttributes.DB_NAME]: 'entitySetting_domain',

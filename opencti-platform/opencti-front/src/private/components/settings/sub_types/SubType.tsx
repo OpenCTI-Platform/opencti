@@ -48,6 +48,7 @@ const subTypeFragment = graphql`
     workflowEnabled
     settings {
       id
+      availableSettings
       ...EntitySettingSettings_entitySetting
       ...EntitySettingAttributes_entitySetting
     }
@@ -101,34 +102,42 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
         style={{ marginBottom: 30 }}
       >
         <EntitySettingSettings entitySettingsData={subType.settings} />
-        <div style={{ marginTop: 10 }}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Workflow')}
-            <SubTypeStatusPopover subTypeId={subType.id} />
+        {subType.settings?.availableSettings.includes('workflow_configuration')
+          && <>
+            <div style={{ marginTop: 10 }}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Workflow')}
+                <SubTypeStatusPopover subTypeId={subType.id} />
+              </Typography>
+            </div>
+            <ItemStatusTemplate
+              statuses={subType.statuses}
+              disabled={!subType.workflowEnabled}
+            />
+          </>
+        }
+      </Paper>
+      {subType.settings?.availableSettings.includes('attributes_configuration')
+        && <>
+          <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+            {t('Attributes')}
           </Typography>
-        </div>
-        <ItemStatusTemplate
-          statuses={subType.statuses}
-          disabled={!subType.workflowEnabled}
-        />
-      </Paper>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t('Attributes')}
-      </Typography>
-      <div style={{ float: 'right', marginTop: -12 }}>
-        <SearchInput
-          variant="thin"
-          onSubmit={helpers.handleSearch}
-          keyword={searchTerm}
-        />
-      </div>
-      <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} variant="outlined" style={{ paddingTop: 5 }}>
-        <EntitySettingAttributes
-          entitySettingsData={subType.settings}
-          searchTerm={searchTerm}
-        ></EntitySettingAttributes>
-      </Paper>
+          <div style={{ float: 'right', marginTop: -12 }}>
+            <SearchInput
+              variant="thin"
+              onSubmit={helpers.handleSearch}
+              keyword={searchTerm}
+            />
+          </div>
+          <div className="clearfix" />
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ paddingTop: 5 }}>
+            <EntitySettingAttributes
+              entitySettingsData={subType.settings}
+              searchTerm={searchTerm}
+            ></EntitySettingAttributes>
+          </Paper>
+        </>
+      }
     </div>
   );
 };
