@@ -33,7 +33,12 @@ async function removeInvestigationsReferencesFromInvestigatedEntities(investigat
     ],
     {
       script: {
-        source: 'for (def investigationId : params.investigationIds) { if (ctx._source[params.field].contains(investigationId)) { ctx._source[params.field].remove(ctx._source[params.field].indexOf(investigationId)) }}',
+        source: ''
+          + 'for (def investigationId : params.investigationIds) {'
+          + '  if (ctx._source[params.field].contains(investigationId)) {'
+          + '    ctx._source[params.field].remove(ctx._source[params.field].indexOf(investigationId)) '
+          + '  }'
+          + '}',
         params: {
           field: 'rel_has-reference.internal_id',
           investigationIds
@@ -68,7 +73,9 @@ async function updateInvestigationsField(oldField, newField) {
     [READ_INDEX_INTERNAL_OBJECTS],
     {
       script: {
-        source: 'ctx._source[params.newField] = ctx._source[params.oldField]; ctx._source.remove(params.oldField)',
+        source: ''
+          + 'ctx._source[params.newField] = ctx._source[params.oldField];'
+          + 'ctx._source.remove(params.oldField)',
         params: { oldField, newField }
       },
       query: {
