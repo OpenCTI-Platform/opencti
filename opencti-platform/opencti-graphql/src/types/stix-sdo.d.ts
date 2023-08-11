@@ -316,3 +316,19 @@ export interface StixVulnerability extends StixDomainObject {
     [STIX_EXT_OCTI]: StixVulnerabilityExtension;
   };
 }
+
+export interface StixFinancialAccount extends StixDomainObject {
+  currency_code: string;
+  name: string;
+  financial_account_number: string;
+  financial_account_status: string;
+  financial_account_type: string;
+  financial_account_balances: Array<string>;
+  international_bank_account_number: string;
+}
+
+export interface StixFinancialAsset extends StixDomainObject {
+  name: string;
+  asset_type: string;
+  asset_value: number;
+}

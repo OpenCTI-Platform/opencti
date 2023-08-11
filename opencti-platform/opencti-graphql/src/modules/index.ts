@@ -31,6 +31,7 @@ import './dataComponent/dataComponent';
 import './dataSource/dataSource';
 import './vocabulary/vocabulary';
 import './administrativeArea/administrativeArea';
+import './financialData/financialData';
 import './task/task';
 import './task/task-template/task-template';
 import './case/case';

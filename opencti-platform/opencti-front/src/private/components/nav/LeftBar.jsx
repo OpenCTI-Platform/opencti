@@ -11,6 +11,7 @@ import Drawer from '@mui/material/Drawer';
 import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
 import {
   AssignmentOutlined,
+  AttachMoney,
   CasesOutlined,
   ChevronLeft,
   ChevronRight,
@@ -178,6 +179,10 @@ const LeftBar = () => {
     'Country',
     'City',
     'Position',
+  );
+  const hideFinancials = useIsHiddenEntities(
+    'Financial-Account',
+    'Financial-Asset',
   );
   const {
     bannerSettings: { bannerHeightNumber },
@@ -422,6 +427,32 @@ const LeftBar = () => {
                 )}
               </MenuItem>
             </StyledTooltip>
+          )}
+        </MenuList>
+        <Divider />
+        <MenuList component="nav">
+          {!hideFinancials && (
+            <Security needs={[KNOWLEDGE]}>
+              <StyledTooltip title={!navOpen && t('Financial Data')} placement="right">
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/financial"
+                  selected={location.pathname.includes('/dashboard/financial')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                >
+                  <ListItemIcon style={{ minWidth: 20 }}>
+                    <AttachMoney />
+                  </ListItemIcon>
+                  {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t('Financial Data')}
+                    />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
+            </Security>
           )}
         </MenuList>
       </Security>

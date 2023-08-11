@@ -390,6 +390,7 @@ export const defaultKey = (n) => {
 };
 
 export const defaultValue = (n, tooltip = false) => {
+  // console.log(n);
   if (!n) return '';
   if (typeof n.definition === 'object') {
     return defaultValueMarking(n);

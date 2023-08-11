@@ -25,6 +25,8 @@ import {
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DOMAIN_NAME,
+  ENTITY_FINANCIAL_ACCOUNT,
+  ENTITY_FINANCIAL_ASSET,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HOSTNAME,
@@ -290,6 +292,20 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_MEDIA_CONTENT}`]: [
     { name: RELATION_PUBLISHES, type: REL_NEW }
+  ],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_FINANCIAL_ACCOUNT}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_FINANCIAL_ASSET}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
+  ],
+  // endregion
+  // region ORGANIZATION
+  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_FINANCIAL_ACCOUNT}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_FINANCIAL_ASSET}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
   ],
   // endregion
   // region SECTOR
@@ -866,6 +882,20 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
+  [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_FINANCIAL_ACCOUNT}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_FINANCIAL_ASSET}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
+  ],
+  // endregion
+  // region THREAT_ACTOR_INDIVIDUAL
+  [`${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}_${ENTITY_FINANCIAL_ACCOUNT}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}_${ENTITY_FINANCIAL_ASSET}`]: [
+    { name: RELATION_OWNS, type: REL_EXTENDED }
+  ],
   // endregion
   // region THREAT_ACTOR_INDIVIDUAL
   [`${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
@@ -1210,6 +1240,14 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_LOCATED_AT, type: REL_EXTENDED }
   ],
   // endregion
+  // Financials
+  // region FINANCIAL_ACCOUNT
+  [`${ENTITY_FINANCIAL_ACCOUNT}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_FINANCIAL_ACCOUNT}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
 };
 
 export const checkStixCoreRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {

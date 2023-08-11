@@ -55,6 +55,8 @@ export const RELATION_NATIONAL_OF = 'national-of'; // Extension (OpenCTI)
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
 export const RELATION_DETECTS = 'detects'; // Extension (MITRE)
+export const RELATION_PAID_BY = 'paid-by'; // Extension (MCAS)
+export const RELATION_PAID_TO = 'paid-to'; // Extension (MCAS)
 // endregion
 
 export const STIX_CORE_RELATIONSHIPS = [

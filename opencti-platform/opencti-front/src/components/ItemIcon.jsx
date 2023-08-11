@@ -57,6 +57,9 @@ import {
   NotificationsOutlined,
   LinkOutlined,
   VisibilityOutlined,
+  SavingsOutlined,
+  MonetizationOnOutlined,
+  AttachMoney,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -236,6 +239,12 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'position':
     case 'location':
       return <PlaceOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'financial':
+      return <AttachMoney style={style} fontSize={fontSize} role="img" />;
+    case 'financial-account':
+      return <SavingsOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'financial-asset':
+      return <MonetizationOnOutlined style={style} fontSize={fontSize} role="img" />;
     case 'administrative-area':
       return <MapOutlined style={style} fontSize={fontSize} role="img" />;
     case 'country':

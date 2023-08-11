@@ -11345,6 +11345,8 @@ union StixObjectOrStixRelationshipOrCreator =
   | Group
   | Workspace
   | CsvMapper
+  | FinancialAccount
+  | FinancialAsset
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -11425,6 +11427,8 @@ union StixObjectOrStixRelationship =
   | ManagerConfiguration
   | Workspace
   | CsvMapper
+  | FinancialAccount
+  | FinancialAsset
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -11499,6 +11503,8 @@ union StixCoreObjectOrStixCoreRelationship =
   | EntitySetting
   | ManagerConfiguration
   | Workspace
+  | FinancialAccount
+  | FinancialAsset
 
 enum StixRelationshipsOrdering {
   entity_type

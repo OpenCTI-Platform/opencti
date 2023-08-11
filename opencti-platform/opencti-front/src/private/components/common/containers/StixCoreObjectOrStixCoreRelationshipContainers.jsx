@@ -264,6 +264,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
                   'national-of',
                   'belongs-to',
                   'related-to',
+                  'owns',
                 ],
                 filters: paginationOptions.filters,
                 search: searchTerm,

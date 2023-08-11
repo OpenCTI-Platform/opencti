@@ -4,6 +4,7 @@ import {
   ABSTRACT_STIX_META_OBJECT,
   ABSTRACT_STIX_REF_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
+  ENTITY_TYPE_FINANCIAL_DATA,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
   ENTITY_TYPE_THREAT_ACTOR,
@@ -18,6 +19,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rf
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
+import { ENTITY_TYPE_FINANCIAL_ACCOUNT, ENTITY_TYPE_FINANCIAL_ASSET } from '../modules/financialData/financialData-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'abstract';
@@ -99,6 +101,13 @@ const STIX_DOMAIN_OBJECT_LOCATIONS: Array<string> = [
 schemaTypesDefinition.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATIONS);
 export const isStixDomainObjectLocation = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_LOCATION)
   || type === ENTITY_TYPE_LOCATION;
+
+const STIX_DOMAIN_OBJECT_FINANCIAL_DATA: Array<string> = [
+  ENTITY_TYPE_FINANCIAL_ACCOUNT,
+  ENTITY_TYPE_FINANCIAL_ASSET,
+];
+schemaTypesDefinition.register(ENTITY_TYPE_FINANCIAL_DATA, STIX_DOMAIN_OBJECT_FINANCIAL_DATA);
+export const isStixDomainObjectFinancialData = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_FINANCIAL_DATA);
 
 const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
   ENTITY_TYPE_THREAT_ACTOR_GROUP,

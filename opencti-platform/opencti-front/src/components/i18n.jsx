@@ -167,6 +167,12 @@ export const useFormatter = () => {
       numberFormat(number).symbol
     }`;
   };
+  const formatMoney = (amount, currencyCode = 'united_states_dollar__usd') => {
+    if (amount === null || amount === '') return '-';
+    const codeShort = currencyCode.split('__')[1].toUpperCase();
+    const formatter = new Intl.NumberFormat(intl.locale, { style: 'currency', currency: codeShort });
+    return formatter.format(amount);
+  };
   const formatBytes = (number) => `${intl.formatNumber(bytesFormat(number).number)}${
     bytesFormat(number).symbol
   }`;
@@ -290,6 +296,7 @@ export const useFormatter = () => {
     t: translate,
     n: formatNumber,
     b: formatBytes,
+    fm: formatMoney,
     fld: longDate,
     fldt: longDateTime,
     fsd: shortDate,

@@ -128,6 +128,12 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
       ... on AdministrativeArea {
         name
       }
+      ... on FinancialAccount {
+        name
+      }
+      ... on FinancialAsset {
+        name
+      }
       ... on Country {
         name
       }

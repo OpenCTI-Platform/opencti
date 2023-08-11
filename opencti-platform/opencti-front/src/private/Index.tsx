@@ -18,6 +18,7 @@ import RootArsenal from './components/arsenal/Root';
 import RootTechnique from './components/techniques/Root';
 import RootEntities from './components/entities/Root';
 import RootLocation from './components/locations/Root';
+import RootFinancial from './components/financial/Root';
 import RootSettings from './components/settings/Root';
 import RootActivity from './components/settings/activity/Root';
 import RootNotifications from './components/profile/Root';
@@ -145,6 +146,7 @@ const Index = ({ settings }: IndexProps) => {
               path="/dashboard/locations"
               component={RootLocation}
             />
+            <BoundaryRoute path="/dashboard/financial" component={RootFinancial} />
             <BoundaryRoute path="/dashboard/data" render={RootData} />
             <BoundaryRoute
               path="/dashboard/workspaces"

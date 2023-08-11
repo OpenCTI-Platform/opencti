@@ -81,6 +81,7 @@ import {
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor,
+  isStixDomainObjectFinancialData,
 } from '../schema/stixDomainObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -132,6 +133,7 @@ import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/f
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_FINANCIAL_ACCOUNT, type StoreEntityFinancialAsset, type StoreEntityFinancialAccount, ENTITY_TYPE_FINANCIAL_ASSET } from '../modules/financialData/financialData-types';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -696,6 +698,44 @@ const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpin
         object_refs_inferred: convertObjectReferences(instance, true),
       })
     }
+  };
+};
+export const convertFinancialAccountToStix = (
+  instance: StoreEntityFinancialAccount,
+  type: string = ENTITY_TYPE_FINANCIAL_ACCOUNT
+): SDO.StixFinancialAccount => {
+  if (!isStixDomainObjectFinancialData(type)) {
+    throw UnsupportedError(
+      `${instance.entity_type} not compatible with financial data`
+    );
+  }
+  const sdo = buildStixDomain(instance);
+  return {
+    ...sdo,
+    currency_code: instance.currency_code,
+    name: instance.name,
+    financial_account_number: instance.financial_account_number,
+    financial_account_status: instance.financial_account_status,
+    financial_account_type: instance.financial_account_type,
+    financial_account_balances: instance.financial_account_balances,
+    international_bank_account_number: instance.international_bank_account_number,
+  };
+};
+export const convertFinancialAssetToStix = (
+  instance: StoreEntityFinancialAsset,
+  type: string = ENTITY_TYPE_FINANCIAL_ASSET
+): SDO.StixFinancialAsset => {
+  if (!isStixDomainObjectFinancialData(type)) {
+    throw UnsupportedError(
+      `${instance.entity_type} not compatible with financial data`
+    );
+  }
+  const sdo = buildStixDomain(instance);
+  return {
+    ...sdo,
+    name: instance.name,
+    asset_type: instance.asset_type,
+    asset_value: instance.asset_value,
   };
 };
 

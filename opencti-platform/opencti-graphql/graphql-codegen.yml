@@ -25,6 +25,8 @@ generates:
         DataComponent: ../modules/dataComponent/dataComponent-types#BasicStoreEntityDataComponent
         Vocabulary: ../modules/vocabulary/vocabulary-types#BasicStoreEntityVocabulary
         AdministrativeArea: ../modules/administrativeArea/administrativeArea-types#BasicStoreEntityAdministrativeArea
+        FinancialAccount: ../modules/financialData/financialData-types#BasicStoreEntityFinancialAccount
+        FinancialAsset: ../modules/financialData/financialData-types#BasicStoreEntityFinancialAsset
         Task: ../modules/task/task-types#BasicStoreEntityTask
         Case: ../modules/case/case-types#BasicStoreEntityCase
         CaseTemplate: ../modules/case/case-template/case-template-types#BasicStoreEntityCaseTemplate
