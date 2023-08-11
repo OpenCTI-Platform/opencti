@@ -105,6 +105,7 @@ const createApp = async (app) => {
     },
   });
   // Init the http server
+  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
   app.use(limiter);
   if (DEV_MODE) {
     app.set('json spaces', 2);
