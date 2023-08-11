@@ -1412,7 +1412,7 @@ input UserAddInput {
   language: String
   theme: String
   objectOrganization: [ID!]
-  account_status: String!
+  account_status: String
   account_lock_after_date: DateTime
 }
 

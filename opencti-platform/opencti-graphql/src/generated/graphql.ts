@@ -26757,7 +26757,7 @@ export type UserAccountAddInput = {
 
 export type UserAddInput = {
   account_lock_after_date?: InputMaybe<Scalars['DateTime']['input']>;
-  account_status: Scalars['String']['input'];
+  account_status?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   firstname?: InputMaybe<Scalars['String']['input']>;
   language?: InputMaybe<Scalars['String']['input']>;

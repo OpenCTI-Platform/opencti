@@ -1013,7 +1013,8 @@ const validateUser = (user, settings) => {
   }
   // Check account expiration date
   if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
-    throw AuthenticationFailure('User account has expired.');
+    const statusesDefinition = conf.get('app:locked_account_statuses');
+    throw AuthenticationFailure(statusesDefinition['Expired']);
   }
   // Validate user's account status
   if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {

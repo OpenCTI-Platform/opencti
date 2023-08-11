@@ -47,6 +47,7 @@
     "request_timeout": 1200000,
     "session_timeout": 1200000,
     "locked_account_statuses": {
+      "Expired": "Your account has expired. If you would like to reactivate your account, please contact your administrator.",
       "Inactive": "Your account has been marked inactive. If you would like to reactivate your account, please contact your administrator.",
       "Locked (security)": "Your account has been locked for security reasons. Please contact your administrator.",
       "Locked (training)": "Your account has been locked because you are missing at least one of the required briefings. Please complete the requisite trainings / briefings before attempting to access this system."
