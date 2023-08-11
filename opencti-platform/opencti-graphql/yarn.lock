@@ -8302,16 +8302,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-constraint-directive@npm:5.1.1":
-  version: 5.1.1
-  resolution: "graphql-constraint-directive@npm:5.1.1"
+"graphql-constraint-directive@npm:5.2.0":
+  version: 5.2.0
+  resolution: "graphql-constraint-directive@npm:5.2.0"
   dependencies:
     "@graphql-tools/schema": ^9.0.0
     "@graphql-tools/utils": ^9.0.0
     validator: ^13.6.0
   peerDependencies:
     graphql: ">=14.0.0"
-  checksum: f2c2d59b36604822fbbc5f757d9dc752b36ec2d04977f52b551f68ef31c4b49fdeb07980311bad7034edbc069b97c5d520f19f3c8c944e74caa3e87382bf33dc
+  checksum: 9c1a52f418e4e6a2c4fc8389c2c950cff5ae3c91740af4cf86d32ab55b7e45d34a35e787d2a9f0eb9657f28c7bf12fb3398d16306e2a36ab3fbe2acebeacca14
   languageName: node
   linkType: hard
 
@@ -10578,7 +10578,7 @@ __metadata:
     fast-json-patch: 3.1.1
     github-api: 3.4.0
     graphql: 16.7.1
-    graphql-constraint-directive: 5.1.1
+    graphql-constraint-directive: 5.2.0
     graphql-import: 1.0.2
     graphql-redis-subscriptions: 2.6.0
     graphql-relay: 0.10.0
