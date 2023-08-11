@@ -6061,7 +6061,7 @@ __metadata:
     postcss: ^8.4.23
     postcss-loader: ^4.3.0
     raw-loader: ^4.0.2
-    style-loader: ^2.0.0
+    style-loader: ^3.0.0
     terser-webpack-plugin: ^5.0.0
     webpack: ^5.83.1
     webpack-cli: ^5.0.0
@@ -16573,6 +16573,15 @@ __metadata:
   peerDependencies:
     webpack: ^4.0.0 || ^5.0.0
   checksum: 21425246a5a8f14d1625a657a3a56f8a323193fa341a71af818a2ed2a429efa2385a328b4381cf2f12c2d0e6380801eb9e0427ed9c3a10ff95c86e383184d632
+  languageName: node
+  linkType: hard
+
+"style-loader@npm:^3.0.0":
+  version: 3.3.3
+  resolution: "style-loader@npm:3.3.3"
+  peerDependencies:
+    webpack: ^5.0.0
+  checksum: f59c953f56f6a935bd6a1dfa409f1128fed2b66b48ce4a7a75b85862a7156e5e90ab163878962762f528ec4d510903d828da645e143fbffd26f055dc1c094078
   languageName: node
   linkType: hard
 
