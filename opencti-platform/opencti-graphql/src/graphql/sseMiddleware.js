@@ -15,6 +15,7 @@ import {
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
   EVENT_TYPE_UPDATE,
+  filtersToJson,
   generateCreateMessage,
   isEmptyField,
   isNotEmptyField,
@@ -45,6 +46,7 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { generateCreateMessage } from '../database/generate-message';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
