@@ -36,7 +36,7 @@
     "@ckeditor/ckeditor5-upload": "^39.0.0",
     "css-loader": "^6.0.0",
     "postcss": "^8.4.23",
-    "postcss-loader": "^4.3.0",
+    "postcss-loader": "^7.0.0",
     "raw-loader": "^4.0.2",
     "style-loader": "^3.0.0",
     "terser-webpack-plugin": "^5.0.0",
