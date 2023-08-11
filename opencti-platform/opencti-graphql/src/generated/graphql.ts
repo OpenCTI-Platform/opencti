@@ -26389,7 +26389,7 @@ export type User = BasicObject & InternalObject & {
   api_token: Scalars['String']['output'];
   capabilities: Array<Maybe<Capability>>;
   created_at: Scalars['DateTime']['output'];
-  default_hidden_types: Array<Maybe<Scalars['String']['output']>>;
+  default_hidden_types: Array<Scalars['String']['output']>;
   default_time_field?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
@@ -36868,7 +36868,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   capabilities?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  default_hidden_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  default_hidden_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   default_time_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;

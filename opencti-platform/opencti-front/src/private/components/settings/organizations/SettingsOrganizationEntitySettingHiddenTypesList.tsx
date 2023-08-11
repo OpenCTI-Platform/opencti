@@ -39,6 +39,7 @@ const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionCompone
       nodes={organizations}
       label={t('Hidden in organizations')}
       link={'/dashboard/settings/accesses/organizations/'}
+      entityType={'Organization'}
     />
   );
 };

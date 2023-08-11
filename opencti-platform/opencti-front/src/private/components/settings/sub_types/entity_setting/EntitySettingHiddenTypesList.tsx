@@ -3,10 +3,10 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { SecurityOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
 import { isEmptyField } from '../../../../../utils/utils';
+import ItemIcon from '../../../../../components/ItemIcon';
 
 interface Entity {
   readonly id: string;
@@ -29,11 +29,13 @@ const EntitySettingHiddenTypesList: FunctionComponent<{
   nodes: Array<Entity | undefined>
   label: string
   link: string
+  entityType: string
 }> = ({
   targetType,
   nodes,
   label,
   link,
+  entityType,
 }) => {
   const hiddenEntities = computeHiddenEntities(nodes, targetType);
   return (
@@ -53,7 +55,7 @@ const EntitySettingHiddenTypesList: FunctionComponent<{
                 to={`${link}${hiddenEntity.id}`}
               >
                 <ListItemIcon>
-                  <SecurityOutlined color="primary" />
+                  <ItemIcon type={entityType} />
                 </ListItemIcon>
                 <ListItemText primary={hiddenEntity.name} />
               </ListItemButton>

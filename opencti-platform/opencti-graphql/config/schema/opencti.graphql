@@ -1254,7 +1254,7 @@ type User implements BasicObject & InternalObject {
     orderMode: OrderingMode
   ): [Role]!
   capabilities: [Capability]!
-  default_hidden_types: [String]!
+  default_hidden_types: [String!]!
   groups(
     orderBy: GroupsOrdering
     orderMode: OrderingMode

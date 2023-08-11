@@ -79,9 +79,9 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
         && (<span className={classes.indication}>
               &emsp;
           {`(${t('Hidden in ')}`}
-          {groupsName.length > 0 && `${t('groups ')} : ${groupsName}`}
-          {(groupsName.length > 0 && orgsName.length > 0) && `${t(' and ')}`}
-          {orgsName.length > 0 && `${t('organizations ')} : ${orgsName}`}
+          {groupsName.length > 0 && `${t('Groups')} : ${groupsName}`}
+          {(groupsName.length > 0 && orgsName.length > 0) && `${t(' & ')}`}
+          {orgsName.length > 0 && `${t('Organizations')} : ${orgsName}`}
           {')'}
             </span>)
       }
