@@ -14,7 +14,7 @@ export const onlyGroupOrganization = ['x_opencti_workflow_id'];
 export const directFilters = [
   'is_read',
   'channel_types',
-  'x_opencti_detection',
+  'pattern_type',
   'sightedBy',
   'container_type',
   'toSightingId',

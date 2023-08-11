@@ -14,23 +14,25 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface EntityStixCoreRelationshipsProps {
-  entityId: string
-  entityLink: string
-  defaultStartTime: string
-  defaultStopTime: string
-  relationshipTypes: string[]
-  stixCoreObjectTypes: string[]
-  currentView: string
-  enableNestedView?: boolean,
-  enableContextualView: boolean,
+  entityId: string;
+  entityLink: string;
+  defaultStartTime: string;
+  defaultStopTime: string;
+  relationshipTypes: string[];
+  stixCoreObjectTypes: string[];
+  currentView: string;
+  enableNestedView?: boolean;
+  enableContextualView: boolean;
   isRelationReversed: boolean;
   allDirections: boolean;
-  role:string,
-  paddingRightButtonAdd?: number,
-  handleChangeView?: (viewMode: string) => void
+  role: string;
+  paddingRightButtonAdd?: number;
+  handleChangeView?: (viewMode: string) => void;
 }
 
-const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationshipsProps> = ({
+const EntityStixCoreRelationships: FunctionComponent<
+EntityStixCoreRelationshipsProps
+> = ({
   entityId,
   entityLink,
   defaultStartTime,
@@ -61,29 +63,28 @@ const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationships
     },
   );
   const { view } = localStorage.viewStorage;
-
   const finalView = currentView || view;
-
   return (
-      <ExportContextProvider>
-        <div className={classes.container}>
-          {finalView === 'entities'
-            && <EntityStixCoreRelationshipsEntitiesView
-              localStorage={localStorage}
-              entityId={entityId}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
-              relationshipTypes={relationshipTypes}
-              stixCoreObjectTypes={stixCoreObjectTypes}
-              currentView={currentView}
-              enableNestedView={enableNestedView}
-              enableContextualView={enableContextualView}
-              isRelationReversed={isRelationReversed}
-              paddingRightButtonAdd={paddingRightButtonAdd}
-              handleChangeView={handleChangeView}
-            />}
-           {finalView === 'relationships'
-            && <EntityStixCoreRelationshipsRelationshipsView
+    <ExportContextProvider>
+      <div className={classes.container}>
+        {finalView === 'entities' && (
+          <EntityStixCoreRelationshipsEntitiesView
+            localStorage={localStorage}
+            entityId={entityId}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+            relationshipTypes={relationshipTypes}
+            stixCoreObjectTypes={stixCoreObjectTypes}
+            currentView={currentView}
+            enableNestedView={enableNestedView}
+            enableContextualView={enableContextualView}
+            isRelationReversed={isRelationReversed}
+            paddingRightButtonAdd={paddingRightButtonAdd}
+            handleChangeView={handleChangeView}
+          />
+        )}
+        {finalView === 'relationships' && (
+          <EntityStixCoreRelationshipsRelationshipsView
             localStorage={localStorage}
             entityId={entityId}
             entityLink={entityLink}
@@ -99,9 +100,10 @@ const EntityStixCoreRelationships: FunctionComponent<EntityStixCoreRelationships
             role={role}
             paddingRightButtonAdd={paddingRightButtonAdd}
             handleChangeView={handleChangeView}
-            />}
-        </div>
-      </ExportContextProvider>
+          />
+        )}
+      </div>
+    </ExportContextProvider>
   );
 };
 
