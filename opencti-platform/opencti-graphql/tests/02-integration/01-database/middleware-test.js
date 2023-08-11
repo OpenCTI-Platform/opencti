@@ -26,10 +26,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
 } from '../../../src/schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_REF_RELATIONSHIP,
-  buildRefRelationKey
-} from '../../../src/schema/general';
+import { ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../../../src/schema/general';
 import {
   RELATION_ATTRIBUTED_TO,
   RELATION_MITIGATES,
@@ -66,6 +63,8 @@ import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
 import { findAll } from '../../../src/domain/subType';
+import { addOrganization } from '../../../src/domain/organization';
+import { addReport } from '../../../src/domain/report';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -674,6 +673,10 @@ const createThreat = async (input) => {
   const threat = await addThreatActorGroup(testContext, ADMIN_USER, input);
   return storeLoadById(testContext, ADMIN_USER, threat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
 };
+const createOrganization = async (input) => {
+  const organization = await addOrganization(testContext, ADMIN_USER, input);
+  return storeLoadById(testContext, ADMIN_USER, organization.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+};
 const createFile = async (input) => {
   const observableSyntaxResult = checkObservableSyntax(ENTITY_HASHED_OBSERVABLE_STIX_FILE, input);
   if (observableSyntaxResult !== true) {
@@ -929,6 +932,42 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, malware02.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, malware03.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, loadedThreat.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+  });
+  it('should reports keep their author after organizations merging', async () => {
+    // 01. Create organizations
+    const organization1 = await createOrganization({ name: 'organization1' });
+    const organization2 = await createOrganization({ name: 'organization2' });
+    console.log('organization1', organization1);
+    // 02. Create reports with an organization as author
+    const report1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_01', createdBy: organization1.id });
+    const report2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_02', createdBy: organization2.id });
+    console.log('report1', report1);
+    // Merge with fully resolved entities
+    const merged = await mergeEntities(testContext, ADMIN_USER, organization1.internal_id, [
+      organization2.internal_id
+    ]);
+    const loadedMergedOrganization = await storeLoadByIdWithRefs(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    console.log('merged orga', JSON.stringify(loadedMergedOrganization));
+    // List of ids that should disappears
+    const idsThatShouldNotExists = [
+      organization2.internal_id
+    ];
+    const isExist = await isOneOfThisIdsExists(idsThatShouldNotExists);
+    expect(isExist).toBeFalsy();
+    // Test the merged data
+    expect(loadedMergedOrganization).not.toBeNull();
+    expect(loadedMergedOrganization.aliases.length).toEqual(1);
+    expect(loadedMergedOrganization.id).toEqual(organization1.id);
+    // Test the reports have kept a correct author
+    const report1AfterMerged = storeLoadById(testContext, ADMIN_USER, report1.id, ENTITY_TYPE_CONTAINER_REPORT);
+    const report2AfterMerged = storeLoadById(testContext, ADMIN_USER, report2.id, ENTITY_TYPE_CONTAINER_REPORT);
+    expect(report1AfterMerged.createdBy).toEqual(organization1.id);
+    expect(report2AfterMerged.createdBy).toEqual(organization1.id);
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    await deleteElementById(testContext, ADMIN_USER, report1.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, report2.id, ENTITY_TYPE_CONTAINER_REPORT);
   });
   it('should observable merged by update', async () => {
     // Merged 3 Stix File into one
