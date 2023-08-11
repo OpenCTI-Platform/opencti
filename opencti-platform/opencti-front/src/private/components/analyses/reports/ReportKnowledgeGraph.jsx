@@ -443,10 +443,10 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
   }
 `;
 
-const reportKnowledgeGraphComponenentExportAsInvestigationQuery = graphql`
-  query ReportKnowledgeGraphComponenentExportAsInvestigationQuery($id: String!) {
+const reportKnowledgeGraphComponenentStartInvestigationQuery = graphql`
+  query ReportKnowledgeGraphComponenentStartInvestigationQuery($id: String!) {
      report(id: $id) {
-       exportAsInvestigation {
+       startInvestigation {
          id
        }
      }
@@ -1356,13 +1356,13 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
-  exportAsInvestigation(reportId) {
+  handleStartInvestigation(reportId) {
     fetchQuery(
-      reportKnowledgeGraphComponenentExportAsInvestigationQuery,
+      reportKnowledgeGraphComponenentStartInvestigationQuery,
       { id: reportId },
     ).toPromise()
       .then(({ report }) => {
-        window.location.replace(`/dashboard/workspaces/investigations/${report.exportAsInvestigation.id}`);
+        window.location.replace(`/dashboard/workspaces/investigations/${report.startInvestigation.id}`);
       });
   }
 
@@ -1422,7 +1422,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 knowledge={true}
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
-                exportAsInvestigation={this.exportAsInvestigation.bind(this)}
+                startInvestigation={this.handleStartInvestigation.bind(this)}
               />
               <ReportKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}

@@ -428,12 +428,12 @@ describe('Report resolver standard behavior', () => {
     });
     expect(queryResult.data.reportEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
-  it('should export as investigation', async () => {
+  it('can start an investigation', async () => {
     const queryResult = await queryAsAdmin({
       query: gql`
         query StartInvestigationFromReport($id: String!) {
           report(id: $id) {
-            exportAsInvestigation {
+            startInvestigation {
               id
               name
             }

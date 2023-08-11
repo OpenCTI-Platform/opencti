@@ -160,7 +160,7 @@ export const reportDeleteElementsCount = async (context, user, reportId) => {
   return countAllThings(context, user, { indices: READ_DATA_INDICES_WITHOUT_INFERRED, filters });
 };
 
-export const exportAsInvestigation = async (context, report) => {
+export const startInvestigation = async (context, report) => {
   const investigationInput = {
     type: 'investigation',
     name: `investigation from report ${report.name}`,

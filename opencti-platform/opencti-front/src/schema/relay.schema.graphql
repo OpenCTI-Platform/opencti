@@ -3118,7 +3118,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   deleteWithElementsCount: Int
-  exportAsInvestigation: Workspace
+  startInvestigation: Workspace
 }
 
 input ReportAddInput {
