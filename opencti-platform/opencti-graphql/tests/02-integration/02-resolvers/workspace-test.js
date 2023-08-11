@@ -99,7 +99,6 @@ const UPDATE_MEMBERS_QUERY = gql`
 
 describe('Workspace resolver standard behavior', () => {
   let workspaceInternalId;
-  let stixObjectInternalId;
   const workspaceName = 'an investigation';
   it('should workspace created', async () => {
     // Create the workspace
@@ -266,43 +265,6 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult.data.workspaceFieldPatch.investigated_entities_ids).toHaveLength(1);
   });
 
-  it('should add relation in workspace', async () => {
-    const city = await elLoadById(testContext, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c');
-    stixObjectInternalId = city.internal_id;
-
-    const RELATION_ADD_QUERY = gql`
-      mutation WorkspaceEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
-        workspaceRelationAdd(id: $id, input: $input) {
-          id
-          to {
-            ... on BasicObject {
-              id
-              entity_type
-              parent_types
-            }
-            ... on BasicRelationship {
-              id
-              entity_type
-              parent_types
-            }
-          }
-        }
-      }
-    `;
-
-    const queryResult = await queryAsAdmin({
-      query: RELATION_ADD_QUERY,
-      variables: {
-        id: workspaceInternalId,
-        input: {
-          toId: stixObjectInternalId,
-          relationship_type: 'has-reference',
-        },
-      },
-    });
-    expect(queryResult.data.workspaceRelationAdd.to.id).toEqual(stixObjectInternalId);
-  });
-
   it('can retrieve the investigated entity object', async () => {
     const anEntity = await elLoadById(testContext, ADMIN_USER, 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const anEntityId = anEntity.internal_id;
@@ -381,24 +343,6 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.workspace).not.toBeNull();
     expect(queryResult.data.workspace.objects.edges.length).toEqual(1);
-  });
-  it('should delete relation in workspace', async () => {
-    const RELATION_DELETE_QUERY = gql`
-        mutation WorkspaceEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-            workspaceRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
-                id
-            }
-        }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: RELATION_DELETE_QUERY,
-      variables: {
-        id: workspaceInternalId,
-        toId: stixObjectInternalId,
-        relationship_type: 'has-reference',
-      },
-    });
-    expect(queryResult.data.workspaceRelationDelete.id).toEqual(workspaceInternalId);
   });
   it('should workspace deleted', async () => {
     // Delete the workspace

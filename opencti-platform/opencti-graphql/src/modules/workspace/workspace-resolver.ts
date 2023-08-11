@@ -7,12 +7,8 @@ import {
   getCurrentUserAccessRight,
   getOwnerId,
   objects,
-  workspaceAddRelation,
-  workspaceAddRelations,
   workspaceCleanContext,
   workspaceDelete,
-  workspaceDeleteRelation,
-  workspaceDeleteRelations,
   workspaceEditContext,
   workspaceEditField,
 } from './workspace-domain';
@@ -58,18 +54,6 @@ const workspaceResolvers: Resolvers = {
     },
     workspaceContextClean: (_, { id }, context) => {
       return workspaceCleanContext(context, context.user, id);
-    },
-    workspaceRelationAdd: (_, { id, input }, context) => {
-      return workspaceAddRelation(context, context.user, id, input);
-    },
-    workspaceRelationsAdd: (_, { id, input }, context) => {
-      return workspaceAddRelations(context, context.user, id, input);
-    },
-    workspaceRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
-      return workspaceDeleteRelation(context, context.user, id, toId, relationshipType);
-    },
-    workspaceRelationsDelete: (_, { id, toIds, relationship_type: relationshipType }, context) => {
-      return workspaceDeleteRelations(context, context.user, id, toIds, relationshipType);
     },
   },
   Subscription: {

@@ -1,30 +1,23 @@
 import * as R from 'ramda';
 import {
   createEntity,
-  createRelation,
-  createRelations,
   deleteElementById,
-  deleteRelationsByFromAndTo,
   listThings,
   paginateAllThings,
   patchAttribute,
   updateAttribute,
 } from '../../database/middleware';
-import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import { FunctionalError } from '../../config/errors';
-import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../../schema/general';
-import { isInternalRelationship } from '../../schema/internalRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
   MemberAccessInput,
   QueryWorkspacesArgs,
-  StixRefRelationshipAddInput,
-  StixRefRelationshipsAddInput,
   WorkspaceAddInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
@@ -117,61 +110,6 @@ export const workspaceDelete = async (context: AuthContext, user: AuthUser, work
     context_data: { id: workspaceId, entity_type: ENTITY_TYPE_WORKSPACE, input: deleted }
   });
   return workspaceId;
-};
-
-export const workspaceAddRelation = async (context: AuthContext, user: AuthUser, workspaceId: string, input: StixRefRelationshipAddInput) => {
-  const data = await internalLoadById(context, user, workspaceId);
-  if (data.entity_type !== ENTITY_TYPE_WORKSPACE || !isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError('Only stix-internal-relationship can be added through this method.', { workspaceId, input });
-  }
-  const finalInput = { ...input, fromId: workspaceId };
-  return createRelation(context, user, finalInput);
-};
-
-export const workspaceAddRelations = async (context: AuthContext, user: AuthUser, workspaceId: string, input: StixRefRelationshipsAddInput) => {
-  const workspace = await storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
-  if (!workspace) {
-    throw FunctionalError('Cannot add the relation, workspace cannot be found.');
-  }
-  if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
-  }
-  if (!input.toIds) {
-    throw FunctionalError('Cannot add relations, toIds argument is not defined.');
-  }
-  const finalInput = input.toIds.map(
-    (n) => ({ fromId: workspaceId, toId: n, relationship_type: input.relationship_type })
-  );
-  await createRelations(context, user, finalInput);
-  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) => {
-    return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user);
-  });
-};
-
-export const workspaceDeleteRelation = async (context: AuthContext, user: AuthUser, workspaceId: string, toId: string, relationshipType: string) => {
-  const workspace = await storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
-  if (!workspace) {
-    throw FunctionalError('Cannot delete the relation, workspace cannot be found.');
-  }
-  if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
-  }
-  await deleteRelationsByFromAndTo(context, user, workspaceId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
-};
-
-export const workspaceDeleteRelations = async (context: AuthContext, user: AuthUser, workspaceId: string, toIds: string[], relationshipType: string) => {
-  const workspace = await storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
-  if (!workspace) {
-    throw FunctionalError('Cannot delete the relation, workspace cannot be found.');
-  }
-  if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
-  }
-  for (let i = 0; i < toIds.length; i += 1) {
-    await deleteRelationsByFromAndTo(context, user, workspaceId, toIds[i], relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  }
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 
 const isEntityInvestigable = (entity: BasicStoreEntity): boolean => {

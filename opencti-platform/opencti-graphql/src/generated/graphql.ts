@@ -12836,10 +12836,6 @@ export type Mutation = {
   workspaceDelete?: Maybe<Scalars['ID']['output']>;
   workspaceEditAuthorizedMembers?: Maybe<Workspace>;
   workspaceFieldPatch?: Maybe<Workspace>;
-  workspaceRelationAdd?: Maybe<StixRefRelationship>;
-  workspaceRelationDelete?: Maybe<Workspace>;
-  workspaceRelationsAdd?: Maybe<Workspace>;
-  workspaceRelationsDelete?: Maybe<Workspace>;
 };
 
 
@@ -14409,32 +14405,6 @@ export type MutationWorkspaceEditAuthorizedMembersArgs = {
 export type MutationWorkspaceFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
-};
-
-
-export type MutationWorkspaceRelationAddArgs = {
-  id: Scalars['ID']['input'];
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type MutationWorkspaceRelationDeleteArgs = {
-  id: Scalars['ID']['input'];
-  relationship_type: Scalars['String']['input'];
-  toId: Scalars['StixRef']['input'];
-};
-
-
-export type MutationWorkspaceRelationsAddArgs = {
-  id: Scalars['ID']['input'];
-  input: StixRefRelationshipsAddInput;
-};
-
-
-export type MutationWorkspaceRelationsDeleteArgs = {
-  id: Scalars['ID']['input'];
-  relationship_type: Scalars['String']['input'];
-  toIds: Array<Scalars['String']['input']>;
 };
 
 export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -28015,7 +27985,6 @@ export type Workspace = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   toStixReportBundle?: Maybe<Scalars['String']['output']>;
-  toStixReportBundleInvestigated?: Maybe<Scalars['String']['output']>;
   type?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
 };
@@ -33865,10 +33834,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationWorkspaceDeleteArgs, 'id'>>;
   workspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceEditAuthorizedMembersArgs, 'id' | 'input'>>;
   workspaceFieldPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceFieldPatchArgs, 'id' | 'input'>>;
-  workspaceRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationWorkspaceRelationAddArgs, 'id' | 'input'>>;
-  workspaceRelationDelete?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  workspaceRelationsAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceRelationsAddArgs, 'id' | 'input'>>;
-  workspaceRelationsDelete?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceRelationsDeleteArgs, 'id' | 'relationship_type' | 'toIds'>>;
 }>;
 
 export type MutexResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutex'] = ResolversParentTypes['Mutex']> = ResolversObject<{
@@ -37484,7 +37449,6 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   toStixReportBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStixReportBundleInvestigated?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

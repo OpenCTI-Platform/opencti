@@ -8862,10 +8862,6 @@ type Mutation {
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
   workspaceContextPatch(id: ID!, input: EditContext!): Workspace
   workspaceContextClean(id: ID!): Workspace
-  workspaceRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  workspaceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Workspace
-  workspaceRelationsAdd(id: ID!, input: StixRefRelationshipsAddInput!): Workspace
-  workspaceRelationsDelete(id: ID!, toIds: [String!]!, relationship_type: String!): Workspace
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
   malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis
@@ -11144,7 +11140,6 @@ type Workspace implements InternalObject & BasicObject {
   authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
   toStixReportBundle: String
-  toStixReportBundleInvestigated: String
 }
 
 enum WorkspacesOrdering {
