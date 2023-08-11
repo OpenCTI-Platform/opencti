@@ -81,7 +81,7 @@
     "@types/node": "20.4.7",
     "@types/qrcode": "1.5.1",
     "@types/ramda": "0.29.3",
-    "@types/react": "18.2.18",
+    "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
     "@types/react-relay": "14.1.4",
     "@types/react-router-dom": "5.3.3",
