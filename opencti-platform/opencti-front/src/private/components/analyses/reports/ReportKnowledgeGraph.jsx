@@ -1357,15 +1357,12 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   exportAsInvestigation(reportId) {
-    console.log(`reportId: ${reportId}`);
-
     fetchQuery(
       reportKnowledgeGraphComponenentExportAsInvestigationQuery,
       { id: reportId },
     ).toPromise()
-      .then((data) => {
-        console.log(data);
-        console.log('investigation created');
+      .then(({ report }) => {
+        window.location.replace(`/dashboard/workspaces/investigations/${report.exportAsInvestigation.id}`);
       });
   }
 
