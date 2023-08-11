@@ -72,6 +72,7 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Pictures Management')}
         </Typography>
+
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {images && images.length > 0 ? (
@@ -97,6 +98,7 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
               >
                 {t('No file for the moment')}
               </span>
+              <></>
             </div>
           )}
         </Paper>

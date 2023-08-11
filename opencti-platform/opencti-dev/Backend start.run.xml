@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Backend start" type="js.build_tools.npm">
-    <package-json value="$PROJECT_DIR$/opencti-platform/opencti-graphql/package.json" />
+    <package-json value="$PROJECT_DIR$/opencti/opencti-platform/opencti-graphql/package.json" />
     <command value="start" />
     <node-interpreter value="project" />
     <package-manager value="yarn" />
