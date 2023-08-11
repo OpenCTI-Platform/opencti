@@ -12679,9 +12679,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-sass@npm:8.0.0":
-  version: 8.0.0
-  resolution: "node-sass@npm:8.0.0"
+"node-sass@npm:9.0.0":
+  version: 9.0.0
+  resolution: "node-sass@npm:9.0.0"
   dependencies:
     async-foreach: ^0.1.3
     chalk: ^4.1.2
@@ -12699,7 +12699,7 @@ __metadata:
     true-case-path: ^2.2.1
   bin:
     node-sass: bin/node-sass
-  checksum: 92c1c78600a89b9cc03ce1fe1212e107163973dbdd2c548751cd3187c56713c944952a477aedcb8f2c332fba6e098fd992e25ee62552c1ba80f75e252f6ef3c3
+  checksum: b15fa76b1564c37d65cde7556731e3c09b49c74a6919cd5cff6f71ddbe454bd1ad9e458f5f02f0f81f43919b8755b5f56cf657fa4e32a0a2644a48fbc07147bb
   languageName: node
   linkType: hard
 
