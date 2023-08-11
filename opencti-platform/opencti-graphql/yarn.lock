@@ -3063,16 +3063,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:10.0.4":
-  version: 10.0.4
-  resolution: "@graphql-tools/utils@npm:10.0.4"
+"@graphql-tools/utils@npm:10.0.5, @graphql-tools/utils@npm:^10.0.0, @graphql-tools/utils@npm:^10.0.2, @graphql-tools/utils@npm:^10.0.5":
+  version: 10.0.5
+  resolution: "@graphql-tools/utils@npm:10.0.5"
   dependencies:
     "@graphql-typed-document-node/core": ^3.1.1
     dset: ^3.1.2
     tslib: ^2.4.0
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: cb90c4c7f12dc6a5a519c4dfa5298b33d902ff921a4bc5d7cd15f5fe9e4eb3bf79cefd671de30661008d762cae5fef33420249f46bcbef5d7b38a949e5718f2d
+  checksum: 600eb668b0a80264a56d1bfc2b431073a620de8ffea959362a1d13c4e0dd5738b627cc508ead8ecdbd7c1a2da05d5664e43443e15d3b221a809fa1a0e2740193
   languageName: node
   linkType: hard
 
@@ -3084,19 +3084,6 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 8d1d8a11722e211dc8723cd3fd7a97fa5401ab22146e4240a0f9d45547792476c34814ff914524578beec961db7b0ff23a6ddff8fe059764537e594cff35c906
-  languageName: node
-  linkType: hard
-
-"@graphql-tools/utils@npm:^10.0.0, @graphql-tools/utils@npm:^10.0.2, @graphql-tools/utils@npm:^10.0.5":
-  version: 10.0.5
-  resolution: "@graphql-tools/utils@npm:10.0.5"
-  dependencies:
-    "@graphql-typed-document-node/core": ^3.1.1
-    dset: ^3.1.2
-    tslib: ^2.4.0
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 600eb668b0a80264a56d1bfc2b431073a620de8ffea959362a1d13c4e0dd5738b627cc508ead8ecdbd7c1a2da05d5664e43443e15d3b221a809fa1a0e2740193
   languageName: node
   linkType: hard
 
@@ -10524,7 +10511,7 @@ __metadata:
     "@graphql-codegen/typescript": 4.0.1
     "@graphql-codegen/typescript-resolvers": 4.0.1
     "@graphql-tools/schema": 10.0.0
-    "@graphql-tools/utils": 10.0.4
+    "@graphql-tools/utils": 10.0.5
     "@luckycatfactory/esbuild-graphql-loader": 3.8.1
     "@opensearch-project/opensearch": 2.3.1
     "@opentelemetry/api": 1.4.1
