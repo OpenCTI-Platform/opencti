@@ -12999,13 +12999,14 @@ type Query {
     field: String!
     operation: StatsOperation!
     relationship_type: [String]
+    isTo: Boolean
+    toRole: String
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
     dateAttribute: String
     limit: Int
     order: String
-    isTo: Boolean
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixRefRelationshipsNumber(types: [String!], fromId: StixRef, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
 

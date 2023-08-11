@@ -359,23 +359,25 @@ const dashboardStixRefRelationshipsDistributionQuery = graphql`
     $field: String!
     $operation: StatsOperation!
     $relationship_type: [String]
+    $isTo: Boolean
+    $toRole: String
     $toTypes: [String]
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
     $limit: Int
-    $isTo: Boolean
   ) {
     stixRefRelationshipsDistribution(
       field: $field
       operation: $operation
       relationship_type: $relationship_type
+      isTo: $isTo
+      toRole: $toRole
       toTypes: $toTypes
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
       limit: $limit
-      isTo: $isTo
     ) {
       label
       value
@@ -429,10 +431,11 @@ const TopLabelsCard = ({ classes }) => {
     field: 'internal_id',
     operation: 'count',
     relationship_type: 'object-label',
+    isTo: true,
+    toRole: 'object-label_to',
     toTypes: ['Label'],
     startDate: monthsAgo(3),
     limit: 9,
-    isTo: true,
   };
   const queryRef = useQueryLoading(
     dashboardStixRefRelationshipsDistributionQuery,
@@ -537,8 +540,9 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
     $field: String!
     $operation: StatsOperation!
     $relationship_type: [String]
-    $toTypes: [String]
     $isTo: Boolean
+    $toRole: String
+    $toTypes: [String]
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
@@ -548,8 +552,9 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
       field: $field
       operation: $operation
       relationship_type: $relationship_type
-      toTypes: $toTypes
       isTo: $isTo
+      toRole: $toRole
+      toTypes: $toTypes
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
@@ -601,11 +606,12 @@ const TargetedCountries = ({ timeField }) => {
     field: 'internal_id',
     operation: 'count',
     relationship_type: 'targets',
-    toTypes: ['Country'],
     isTo: true,
+    toRole: 'targets_to',
+    toTypes: ['Country'],
     startDate: monthsAgo(3),
     dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
-    limit: 20,
+    limit: 100,
   };
   const queryRef = useQueryLoading(
     dashboardStixCoreRelationshipsDistributionQuery,
