@@ -2,9 +2,10 @@ import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-commo
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StoreEntity, BasicStoreEntity } from '../../types/store';
 
-export const ENTITY_TYPE_INGESTION = 'Ingestion';
+// region Rss ingestion
+export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
 
-export interface BasicStoreEntityIngestion extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
   name: string
   description: string
   uri: string
@@ -16,7 +17,7 @@ export interface BasicStoreEntityIngestion extends BasicStoreEntity {
   ingestion_running: boolean
 }
 
-export interface StoreEntityIngestion extends StoreEntity {
+export interface StoreEntityIngestionRss extends StoreEntity {
   name: string
   description: string
   uri: string
@@ -24,7 +25,7 @@ export interface StoreEntityIngestion extends StoreEntity {
   ingestion_running: boolean
 }
 
-export interface StixIngestion extends StixObject {
+export interface StixIngestionRss extends StixObject {
   name: string
   description: string
   uri: string
@@ -34,3 +35,39 @@ export interface StixIngestion extends StixObject {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
 }
+// endregion
+
+// region Taxii ingestion
+export const ENTITY_TYPE_INGESTION_TAXII = 'IngestionTaxii';
+
+export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
+  name: string
+  description: string
+  uri: string
+  version: string
+  collection: string
+  authentication_type: 'none' | 'basic' | 'bearer'
+  authentication_value: string
+  user_id: string | undefined
+  added_after_start: Date | undefined
+  current_state_cursor: string | undefined
+  ingestion_running: boolean
+}
+
+export interface StoreEntityIngestionTaxii extends StoreEntity {
+  name: string
+  description: string
+  uri: string
+  ingestion_running: boolean
+}
+
+export interface StixIngestionTaxii extends StixObject {
+  name: string
+  description: string
+  uri: string
+  ingestion_running: boolean
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
+  }
+}
+// endregion

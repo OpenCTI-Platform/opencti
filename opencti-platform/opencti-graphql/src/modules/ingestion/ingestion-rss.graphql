@@ -1,4 +1,4 @@
-type Ingestion implements InternalObject & BasicObject {
+type IngestionRss implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
     standard_id: String!
@@ -15,68 +15,61 @@ type Ingestion implements InternalObject & BasicObject {
     current_state_date: DateTime
     ingestion_running: Boolean
 }
-
-# Ordering
-enum IngestionOrdering {
+enum IngestionRssOrdering {
     name
     created_at
     updated_at
 }
-
-# Filtering
-enum IngestionFilter {
+enum IngestionRssFilter {
     name
     creator
 }
-
-input IngestionFiltering {
-    key: [IngestionFilter!]!
+input IngestionRssFiltering {
+    key: [IngestionRssFilter!]!
     values: [String]
     operator: String
     filterMode: FilterMode
 }
-
-# Relay connections
-type IngestionConnection {
+type IngestionRssConnection {
     pageInfo: PageInfo!
-    edges: [IngestionEdge!]!
+    edges: [IngestionRssEdge!]!
+}
+type IngestionRssEdge {
+    cursor: String!
+    node: IngestionRss!
 }
 
 # Queries
 type Query {
-    ingestion(id: String!): Ingestion @auth(for: [CONNECTORAPI])
-    ingestions(
+    rssIngestion(id: String!): IngestionRss @auth(for: [CONNECTORAPI])
+    rssIngestions(
         first: Int
         after: ID
-        orderBy: IngestionOrdering
+        orderBy: IngestionRssOrdering
         orderMode: OrderingMode
-        filters: [IngestionFiltering!]
+        filters: [IngestionRssFiltering!]
         filterMode: FilterMode
         includeAuthorities: Boolean
         search: String
-    ): IngestionConnection @auth(for: [CONNECTORAPI])
-}
-
-type IngestionEdge {
-    cursor: String!
-    node: Ingestion!
+    ): IngestionRssConnection @auth(for: [CONNECTORAPI])
 }
 
 # Mutations
-input IngestionAddInput {
+input IngestionRssAddInput {
     name: String! @constraint(minLength: 2)
     description: String
     uri: String! @constraint(minLength: 5)
+    current_state_date: DateTime
+    ingestion_running: Boolean
+    # Data configuration
     user_id: String
     created_by_ref: String
     object_marking_refs: [String!]
     report_types: [String!]
-    current_state_date: DateTime
-    ingestion_running: Boolean
 }
 
 type Mutation {
-    ingestionAdd(input: IngestionAddInput!): Ingestion @auth(for: [CONNECTORAPI])
-    ingestionDelete(id: ID!): ID @auth(for: [CONNECTORAPI])
-    ingestionFieldPatch(id: ID!, input: [EditInput!]!): Ingestion @auth(for: [CONNECTORAPI])
+    rssIngestionAdd(input: IngestionRssAddInput!): IngestionRss @auth(for: [CONNECTORAPI])
+    rssIngestionDelete(id: ID!): ID @auth(for: [CONNECTORAPI])
+    rssIngestionFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [CONNECTORAPI])
 }
