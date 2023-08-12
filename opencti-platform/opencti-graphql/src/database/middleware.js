@@ -1030,20 +1030,26 @@ export const hashMergeValidation = (instances) => {
 // region mutation update
 const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
 const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
-const filterTargetByExisting = (sources, targets) => {
+const filterTargetByExisting = (targetEntity, sources, targets) => {
   const filtered = [];
   const cache = [];
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
+    // In case of single meta to move, check if the target have not already this relation.
+    // If yes, we keep it, if not we rewrite it
+    const isSingleMeta = isSingleRelationsRef(source.i_relation.fromType, source.i_relation.entity_type);
+    const relationInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(targetEntity.entity_type, source.i_relation.entity_type);
+    const existingSingleMeta = isSingleMeta && isNotEmptyField(targetEntity[relationInputName]);
+    // For single meta only rely on entity type to prevent relation duplications
+    const id = isSingleMeta ? source.entity_type : `${source.entity_type}-${source.internal_id}`;
     // If the relation source is already in target = filtered
     const finder = (t) => {
       const sameTarget = t.internal_id === source.internal_id;
       const sameRelationType = t.i_relation.entity_type === source.i_relation.entity_type;
       return sameRelationType && sameTarget && noDate(t.i_relation);
     };
-    const id = `${source.entity_type}-${source.internal_id}`;
-    const isSingleMeta = isSingleRelationsRef(source.i_relation.fromType, source.i_relation.entity_type);
-    if (!isSingleMeta && !R.find(finder, targets) && !cache.includes(id)) {
+    // Check and add the relation in the processing list if needed
+    if (!existingSingleMeta && !R.find(finder, targets) && !cache.includes(id)) {
       filtered.push(source);
       cache.push(id);
     }
@@ -1097,9 +1103,9 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
   // region CHANGING FROM
-  const relationsToRedirectFrom = filterTargetByExisting(sourcesDependencies[INTERNAL_FROM_FIELD], targetDependencies[INTERNAL_FROM_FIELD]);
+  const relationsToRedirectFrom = filterTargetByExisting(targetEntity, sourcesDependencies[INTERNAL_FROM_FIELD], targetDependencies[INTERNAL_FROM_FIELD]);
   // region CHANGING TO
-  const relationsFromRedirectTo = filterTargetByExisting(sourcesDependencies[INTERNAL_TO_FIELD], targetDependencies[INTERNAL_TO_FIELD]);
+  const relationsFromRedirectTo = filterTargetByExisting(targetEntity, sourcesDependencies[INTERNAL_TO_FIELD], targetDependencies[INTERNAL_TO_FIELD]);
   const updateConnections = [];
   const updateEntities = [];
   // FROM (x -> MERGED TARGET) --- (from) relation (to) ---- RELATED_ELEMENT
