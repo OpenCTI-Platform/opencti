@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import {
   createEntity,
@@ -14,8 +14,8 @@ import {
   timeSeriesRelations,
   updateAttribute,
 } from '../../../src/database/middleware';
-import {elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED} from '../../../src/database/engine';
-import {ADMIN_USER, testContext} from '../../utils/testQuery';
+import { elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -26,17 +26,17 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
 } from '../../../src/schema/stixDomainObject';
-import {ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey} from '../../../src/schema/general';
+import { ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../../../src/schema/general';
 import {
   RELATION_ATTRIBUTED_TO,
   RELATION_MITIGATES,
   RELATION_RELATED_TO,
   RELATION_USES
 } from '../../../src/schema/stixCoreRelationship';
-import {ENTITY_HASHED_OBSERVABLE_STIX_FILE} from '../../../src/schema/stixCyberObservable';
-import {RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING} from '../../../src/schema/stixRefRelationship';
-import {addLabel} from '../../../src/domain/label';
-import {ENTITY_TYPE_LABEL} from '../../../src/schema/stixMetaObject';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
+import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { addLabel } from '../../../src/domain/label';
+import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 import {
   dayFormat,
   escape,
@@ -47,10 +47,10 @@ import {
   utcDate,
   yearFormat,
 } from '../../../src/utils/format';
-import {READ_DATA_INDICES} from '../../../src/database/utils';
-import {executionContext, SYSTEM_USER} from '../../../src/utils/access';
-import {checkObservableSyntax} from '../../../src/utils/syntax';
-import {FunctionalError} from '../../../src/config/errors';
+import { READ_DATA_INDICES } from '../../../src/database/utils';
+import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
+import { checkObservableSyntax } from '../../../src/utils/syntax';
+import { FunctionalError } from '../../../src/config/errors';
 import {
   internalLoadById,
   listAllRelations,
@@ -58,13 +58,13 @@ import {
   listRelations,
   storeLoadById
 } from '../../../src/database/middleware-loader';
-import {addThreatActorGroup} from '../../../src/domain/threatActorGroup';
-import {addMalware} from '../../../src/domain/malware';
-import {addIntrusionSet} from '../../../src/domain/intrusionSet';
-import {addIndicator} from '../../../src/domain/indicator';
-import {findAll} from '../../../src/domain/subType';
-import {addOrganization} from '../../../src/domain/organization';
-import {addReport} from '../../../src/domain/report';
+import { addThreatActorGroup } from '../../../src/domain/threatActorGroup';
+import { addMalware } from '../../../src/domain/malware';
+import { addIntrusionSet } from '../../../src/domain/intrusionSet';
+import { addIndicator } from '../../../src/domain/indicator';
+import { findAll } from '../../../src/domain/subType';
+import { addOrganization } from '../../../src/domain/organization';
+import { addReport } from '../../../src/domain/report';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -948,8 +948,8 @@ describe('Upsert and merge entities', () => {
     const organization1 = await createOrganization({ name: 'organization1' });
     const organization2 = await createOrganization({ name: 'organization2' });
     // 02. Create reports with an organization as author
-    const report1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_01', createdBy: organization1.id });
-    const report2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_02', createdBy: organization2.id });
+    const report1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_01', published: '2022-10-06T22:00:00.000Z', createdBy: organization1.id });
+    const report2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
     // Merge with fully resolved entities
     const merged = await mergeEntities(testContext, ADMIN_USER, organization1.internal_id, [organization2.internal_id]);
     // List of ids that should disappear
@@ -976,9 +976,9 @@ describe('Upsert and merge entities', () => {
   it('should multiple createdBy correction merged to empty target', async () => {
     const organization1 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION01' });
     const organization2 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION02' });
-    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET' });
-    const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_01', createdBy: organization1.id });
-    const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_02', createdBy: organization2.id });
+    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET', published: '2022-10-06T22:00:00.000Z', });
+    const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_01', published: '2022-10-06T22:00:00.000Z', createdBy: organization1.id });
+    const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
     const merged = await mergeEntities(testContext, ADMIN_USER, reportTarget.internal_id, [reportSource1.internal_id, reportSource2.internal_id]);
     const idCount = await internalIdCounting([merged.id]);
     expect(idCount).toEqual(2); // Should be 2, one for the element and one for the created by
