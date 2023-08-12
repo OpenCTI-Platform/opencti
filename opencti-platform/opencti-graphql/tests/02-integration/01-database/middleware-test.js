@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import {describe, expect, it} from 'vitest';
 import * as R from 'ramda';
 import {
   createEntity,
@@ -14,8 +14,8 @@ import {
   timeSeriesRelations,
   updateAttribute,
 } from '../../../src/database/middleware';
-import { elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import {elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED} from '../../../src/database/engine';
+import {ADMIN_USER, testContext} from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -26,17 +26,17 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
 } from '../../../src/schema/stixDomainObject';
-import { ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey } from '../../../src/schema/general';
+import {ABSTRACT_STIX_REF_RELATIONSHIP, buildRefRelationKey} from '../../../src/schema/general';
 import {
   RELATION_ATTRIBUTED_TO,
   RELATION_MITIGATES,
   RELATION_RELATED_TO,
   RELATION_USES
 } from '../../../src/schema/stixCoreRelationship';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
-import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
-import { addLabel } from '../../../src/domain/label';
-import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
+import {ENTITY_HASHED_OBSERVABLE_STIX_FILE} from '../../../src/schema/stixCyberObservable';
+import {RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING} from '../../../src/schema/stixRefRelationship';
+import {addLabel} from '../../../src/domain/label';
+import {ENTITY_TYPE_LABEL} from '../../../src/schema/stixMetaObject';
 import {
   dayFormat,
   escape,
@@ -47,10 +47,10 @@ import {
   utcDate,
   yearFormat,
 } from '../../../src/utils/format';
-import { READ_DATA_INDICES } from '../../../src/database/utils';
-import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
-import { checkObservableSyntax } from '../../../src/utils/syntax';
-import { FunctionalError } from '../../../src/config/errors';
+import {READ_DATA_INDICES} from '../../../src/database/utils';
+import {executionContext, SYSTEM_USER} from '../../../src/utils/access';
+import {checkObservableSyntax} from '../../../src/utils/syntax';
+import {FunctionalError} from '../../../src/config/errors';
 import {
   internalLoadById,
   listAllRelations,
@@ -58,13 +58,13 @@ import {
   listRelations,
   storeLoadById
 } from '../../../src/database/middleware-loader';
-import { addThreatActorGroup } from '../../../src/domain/threatActorGroup';
-import { addMalware } from '../../../src/domain/malware';
-import { addIntrusionSet } from '../../../src/domain/intrusionSet';
-import { addIndicator } from '../../../src/domain/indicator';
-import { findAll } from '../../../src/domain/subType';
-import { addOrganization } from '../../../src/domain/organization';
-import { addReport } from '../../../src/domain/report';
+import {addThreatActorGroup} from '../../../src/domain/threatActorGroup';
+import {addMalware} from '../../../src/domain/malware';
+import {addIntrusionSet} from '../../../src/domain/intrusionSet';
+import {addIndicator} from '../../../src/domain/indicator';
+import {findAll} from '../../../src/domain/subType';
+import {addOrganization} from '../../../src/domain/organization';
+import {addReport} from '../../../src/domain/report';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -686,7 +686,7 @@ const createFile = async (input) => {
   const file = await createEntity(testContext, ADMIN_USER, input, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   return storeLoadById(testContext, ADMIN_USER, file.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
 };
-const isOneOfThisIdsExists = async (ids) => {
+const internalIdCounting = async (ids) => {
   const idsShould = ids.map((id) => ({ match_phrase: { 'internal_id.keyword': id } }));
   const connectionsShould = ids.map((id) => ({ match_phrase: { 'connections.internal_id.keyword': id } }));
   const relsShould = ids.map((id) => ({ multi_match: { query: id, type: 'phrase', fields: ['rel_*'] } }));
@@ -715,8 +715,10 @@ const isOneOfThisIdsExists = async (ids) => {
     },
   };
   const looking = await elRawSearch(executionContext('test'), SYSTEM_USER, 'Relastionships', query);
-  const numberOfResult = looking.hits.total.value;
-  return numberOfResult > 0;
+  return looking.hits.total.value;
+};
+const isOneOfThisIdsExists = async (ids) => {
+  return await internalIdCounting(ids) > 0;
 };
 
 const MD5 = '0a330361c8475ca475cbb5678643789b';
@@ -821,17 +823,20 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     await deleteElementById(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
   });
-  it('should entity merged', async () => {
+  it('should multiple threat actors merged', async () => {
     // 01. Create malware
     const malware01 = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_TEST_01' });
     const malware02 = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_TEST_02' });
     const malware03 = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_TEST_03' });
+    const organizationThreatTarget = await createOrganization({ name: 'organizationThreatTarget' });
+    const organizationThreatSource = await createOrganization({ name: 'organizationThreatSource' });
     // 02. Create threat actors
     // target
     const targetInput01 = {
       name: 'THREAT_MERGE',
       description: 'DESC',
       objectMarking: [testMarking],
+      createdBy: organizationThreatTarget.id,
       objectLabel: ['identity', 'malware'],
     };
     let target = await createThreat(targetInput01);
@@ -845,6 +850,7 @@ describe('Upsert and merge entities', () => {
     const sourceInput01 = {
       name: 'THREAT_SOURCE_01',
       goals: ['MY GOAL'],
+      createdBy: organizationThreatSource.id,
       objectMarking: [clearMarking, mitreMarking],
       objectLabel: ['report', 'opinion', 'malware'],
     };
@@ -920,6 +926,8 @@ describe('Upsert and merge entities', () => {
     expect(loadedThreat.aliases.length).toEqual(6); // [THREAT_SOURCE_01, THREAT_SOURCE_02, THREAT_SOURCE_03, THREAT_SOURCE_04, THREAT_SOURCE_05, THREAT_SOURCE_06]
     expect(loadedThreat.i_aliases_ids.length).toEqual(7);
     expect(loadedThreat.goals).toEqual(['MY GOAL']);
+    expect(loadedThreat.createdBy).not.toBeUndefined(); // [organizationThreatTarget]
+    expect(loadedThreat.createdBy.name).toEqual('organizationThreatTarget'); // [organizationThreatTarget]
     expect(loadedThreat.objectMarking.length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
     expect(loadedThreat.objectLabel.length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
     // expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
@@ -928,6 +936,8 @@ describe('Upsert and merge entities', () => {
     const tos = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { toId: loadedThreat.internal_id });
     expect(tos.length).toEqual(1); // [MALWARE_TEST_02]
     // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, organizationThreatTarget.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    await deleteElementById(testContext, ADMIN_USER, organizationThreatSource.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     await deleteElementById(testContext, ADMIN_USER, malware01.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, malware02.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, malware03.id, ENTITY_TYPE_MALWARE);
@@ -937,37 +947,48 @@ describe('Upsert and merge entities', () => {
     // 01. Create organizations
     const organization1 = await createOrganization({ name: 'organization1' });
     const organization2 = await createOrganization({ name: 'organization2' });
-    console.log('organization1', organization1);
     // 02. Create reports with an organization as author
     const report1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_01', createdBy: organization1.id });
     const report2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_02', createdBy: organization2.id });
-    console.log('report1', report1);
     // Merge with fully resolved entities
-    const merged = await mergeEntities(testContext, ADMIN_USER, organization1.internal_id, [
-      organization2.internal_id
-    ]);
-    const loadedMergedOrganization = await storeLoadByIdWithRefs(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-    console.log('merged orga', JSON.stringify(loadedMergedOrganization));
-    // List of ids that should disappears
-    const idsThatShouldNotExists = [
-      organization2.internal_id
-    ];
+    const merged = await mergeEntities(testContext, ADMIN_USER, organization1.internal_id, [organization2.internal_id]);
+    // List of ids that should disappear
+    const idsThatShouldNotExists = [organization2.internal_id];
     const isExist = await isOneOfThisIdsExists(idsThatShouldNotExists);
     expect(isExist).toBeFalsy();
     // Test the merged data
+    const loadedMergedOrganization = await storeLoadByIdWithRefs(testContext, ADMIN_USER, merged.id);
     expect(loadedMergedOrganization).not.toBeNull();
-    expect(loadedMergedOrganization.aliases.length).toEqual(1);
+    expect(loadedMergedOrganization.x_opencti_aliases.length).toEqual(1);
     expect(loadedMergedOrganization.id).toEqual(organization1.id);
     // Test the reports have kept a correct author
-    const report1AfterMerged = storeLoadById(testContext, ADMIN_USER, report1.id, ENTITY_TYPE_CONTAINER_REPORT);
-    const report2AfterMerged = storeLoadById(testContext, ADMIN_USER, report2.id, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(report1AfterMerged.createdBy).toEqual(organization1.id);
-    expect(report2AfterMerged.createdBy).toEqual(organization1.id);
+    const report1AfterMerged = await storeLoadByIdWithRefs(testContext, ADMIN_USER, report1.id);
+    expect(report1AfterMerged.createdBy).not.toBeUndefined();
+    expect(report1AfterMerged.createdBy.id).toEqual(organization1.id);
+    const report2AfterMerged = await storeLoadByIdWithRefs(testContext, ADMIN_USER, report2.id);
+    expect(report2AfterMerged.createdBy).not.toBeUndefined();
+    expect(report2AfterMerged.createdBy.id).toEqual(organization1.id);
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-    await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     await deleteElementById(testContext, ADMIN_USER, report1.id, ENTITY_TYPE_CONTAINER_REPORT);
     await deleteElementById(testContext, ADMIN_USER, report2.id, ENTITY_TYPE_CONTAINER_REPORT);
+  });
+  it('should multiple createdBy correction merged to empty target', async () => {
+    const organization1 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION01' });
+    const organization2 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION02' });
+    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET' });
+    const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_01', createdBy: organization1.id });
+    const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_02', createdBy: organization2.id });
+    const merged = await mergeEntities(testContext, ADMIN_USER, reportTarget.internal_id, [reportSource1.internal_id, reportSource2.internal_id]);
+    const idCount = await internalIdCounting([merged.id]);
+    expect(idCount).toEqual(2); // Should be 2, one for the element and one for the created by
+    const reportAfterMerged = await storeLoadByIdWithRefs(testContext, ADMIN_USER, merged.id);
+    expect(reportAfterMerged.createdBy).not.toBeUndefined();
+    expect(reportAfterMerged.createdBy.id).toEqual(organization1.id);
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
   it('should observable merged by update', async () => {
     // Merged 3 Stix File into one
