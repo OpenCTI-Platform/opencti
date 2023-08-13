@@ -91,6 +91,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
+    { name: 'aliases', type: 'string', mandatoryType: 'no', editDefault: true, multiple: true, upsert: true },
     {
       name: 'threat_actor_types',
       type: 'string',
@@ -117,6 +118,9 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'hair_color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'height', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure },
     { name: 'weight', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure },
+    { name: 'confidence', type: 'numeric', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
+    { name: 'revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
+    { name: 'lang', type: 'string', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true },
   ],
   relations: [
     {

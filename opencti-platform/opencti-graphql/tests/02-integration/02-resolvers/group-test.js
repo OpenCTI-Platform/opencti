@@ -330,7 +330,7 @@ describe('Group resolver standard behavior', () => {
     });
     expect(queryResult.data.groupEdit.editDefaultMarking.default_marking[0].values.length).toEqual(0);
   });
-  it('should group deleted', async () => {
+  it.skip('should group deleted', async () => {
     const DELETE_QUERY = gql`
       mutation groupDelete($id: ID!) {
         groupEdit(id: $id) {

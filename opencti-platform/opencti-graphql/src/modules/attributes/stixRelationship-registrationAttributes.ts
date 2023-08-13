@@ -1,5 +1,14 @@
 import type { AttributeDefinition } from '../../schema/attribute-definition';
-import { confidence, created, lang, modified, relationshipType, revoked, specVersion, xOpenctiStixIds } from '../../schema/attribute-definition';
+import {
+  confidence,
+  created,
+  lang,
+  modified,
+  revoked,
+  specVersion,
+  xOpenctiStixIds,
+  relationshipType
+} from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
 

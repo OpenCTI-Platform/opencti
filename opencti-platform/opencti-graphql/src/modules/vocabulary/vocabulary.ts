@@ -37,6 +37,7 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
     { name: 'description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'category', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
     { name: 'order', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'builtIn', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true },
   ],
   relations: [],
   depsKeys: generateInputDependencyKeys(),

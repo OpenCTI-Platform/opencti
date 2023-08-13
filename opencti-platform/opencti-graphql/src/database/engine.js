@@ -10,6 +10,7 @@ import {
   cursorToOffset,
   ES_INDEX_PREFIX,
   isEmptyField,
+  isEmptyField,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
@@ -75,7 +76,11 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
+import {
+  isBooleanAttribute,
+  isDateNumericOrBooleanAttribute,
+  schemaAttributesDefinition
+} from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -2723,35 +2728,83 @@ export const elDeleteElements = async (context, user, elements, loadByIdsWithRef
   return dependencyDeletions;
 };
 
+const isObject = (value) => {
+  return R.is(Object, value) && Object.keys(value).length > 0;
+};
+
+// export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json';
+const prepareElementFromDefinition = (entityType, attribute, value) => {
+  // If value is empty or undefined, no need to prepare
+  if (isEmptyField(value)) {
+    return value;
+  }
+  const key = attribute.name;
+  // Come from string or native type
+  if (attribute.type === 'date') { // No need to transform, natively supported by elastic
+    return value;
+  }
+  // Come from string or native type
+  if (attribute.type === 'boolean') { // Patch field is string generic so need to be cast to boolean
+    return typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
+  }
+  // Come from internal complex object only
+  if (attribute.type === 'object') { // For complex object, prepare inner elements
+    if (!isObject(value)) {
+      throw UnsupportedError('Invalid data type for object preparation', { type: entityType, attribute: key, value });
+    }
+    return value;
+  }
+  // Come from only in native type, should be prepared earlier
+  if (attribute.type === 'dictionary') { // For dictionary object, prepare inner elements
+    if (!isObject(value)) {
+      throw UnsupportedError('Invalid data type for dictionary preparation', { type: entityType, attribute: key, value });
+    }
+    const dictionary = {};
+    Object.keys(value).forEach((k) => {
+      const dictValue = value[k];
+      dictionary[k] = R.is(String, dictValue) ? dictValue.trim() : dictValue;
+    });
+    return dictionary;
+  }
+  // Come from string or native type
+  if (attribute.type === 'json') {
+    return R.is(Object, value) ? JSON.stringify(value) : value.trim();
+  }
+  // Only native type
+  if (attribute.type === 'string') { // For string, trim by default
+    if (!R.is(String, value)) {
+      throw UnsupportedError('Invalid data type for string preparation', { type: entityType, attribute: key, value });
+    }
+    return value.trim();
+  }
+  // For all other types (numeric, ...), no transform
+  return value;
+};
+
 export const prepareElementForIndexing = (element) => {
   const thing = {};
   Object.keys(element).forEach((key) => {
     const value = element[key];
-    if (Array.isArray(value)) { // Array of Date, objects, string or number
-      const filteredArray = value.filter((i) => i);
-      thing[key] = filteredArray.length > 0 ? filteredArray.map((f) => {
-        if (isDateAttribute(key)) { // Date is an object but natively supported
-          return f;
+    const attrDefinition = schemaAttributesDefinition.getAttribute(element.entity_type, key);
+    if (attrDefinition) {
+      if (attrDefinition.multiple) { // Array of Date, objects, string or number
+        const filteredArray = isNotEmptyField(value) ? value.filter((i) => isNotEmptyField(i)) : []; // Filter empty elements
+        // Ensure that element are all from the same type
+        const dataTypes = R.uniq(filteredArray.map((v) => typeof v));
+        if (dataTypes.length > 1) {
+          throw UnsupportedError(`Mapping list of different types are not supported for ${element.entity_type} / ${key}`, { types: dataTypes, value });
         }
-        if (R.is(String, f)) { // For string, trim by default
-          return f.trim();
-        }
-        if (R.is(Object, f) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
-          return prepareElementForIndexing(f);
-        }
-        // For all other types, no transform (list of boolean is not supported)
-        return f;
-      }) : [];
-    } else if (isDateAttribute(key)) { // Date is an object but natively supported
+        thing[key] = filteredArray.length > 0 ? filteredArray.map((f) => prepareElementFromDefinition(element.entity_type, attrDefinition, f)) : [];
+      } else {
+        thing[key] = prepareElementFromDefinition(element.entity_type, attrDefinition, value);
+      }
+    } else if (key.startsWith(REL_INDEX_PREFIX) || key.startsWith(RULE_PREFIX)) {
+      // export const REL_INDEX_PREFIX = 'rel_';
+      // export const INTERNAL_PREFIX = 'i_';
+      // export const RULE_PREFIX = 'i_rule_';
       thing[key] = value;
-    } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
-      thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
-    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
-      thing[key] = prepareElementForIndexing(value);
-    } else if (R.is(String, value)) { // For string, trim by default
-      thing[key] = value.trim();
-    } else { // For all other types (numeric, ...), no transform
-      thing[key] = value;
+    } else {
+      throw UnsupportedError(`Cant find attribute definition for ${element.entity_type} / ${key}`);
     }
   });
   return thing;
@@ -2782,8 +2835,6 @@ const prepareRelation = (thing) => {
   });
   return R.pipe(
     R.assoc('connections', connections),
-    R.dissoc(INTERNAL_TO_FIELD),
-    R.dissoc(INTERNAL_FROM_FIELD),
     // Dissoc from
     R.dissoc('from'),
     R.dissoc('fromId'),
@@ -2795,7 +2846,10 @@ const prepareRelation = (thing) => {
   )(thing);
 };
 const prepareEntity = (thing) => {
-  return R.pipe(R.dissoc(INTERNAL_TO_FIELD), R.dissoc(INTERNAL_FROM_FIELD))(thing);
+  return R.pipe(
+    R.dissoc(INTERNAL_TO_FIELD),
+    R.dissoc(INTERNAL_FROM_FIELD)
+  )(thing);
 };
 const prepareIndexingElement = async (thing) => {
   if (thing.base_type === BASE_TYPE_RELATION) {

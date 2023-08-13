@@ -58,7 +58,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_MIGRATION_STATUS }
     });
     let attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(8);
+    expect(attributes.length).toEqual(12);
     expect(attributes.map((node) => node.value).includes('entity_type')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('platformVersion')).toBeTruthy(); // Direct attribute
 
@@ -68,7 +68,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_VULNERABILITY }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(26);
+    expect(attributes.length).toEqual(30);
     expect(attributes.map((node) => node.value).includes('x_opencti_stix_ids')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('revoked')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('description')).toBeTruthy(); // Direct attribute
@@ -76,7 +76,7 @@ describe('Attribute resolver standard behavior', () => {
     // Stix Cyber Observable Object
     queryResult = await queryAsAdmin({ query: SCHEMA_ATTRIBUTES_QUERY, variables: { elementType: ENTITY_EMAIL_ADDR } });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(15);
+    expect(attributes.length).toEqual(19);
     expect(attributes.map((node) => node.value).includes('spec_version')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_description')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('display_name')).toBeTruthy(); // Direct attribute
@@ -87,7 +87,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_KILL_CHAIN_PHASE }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(14);
+    expect(attributes.length).toEqual(18);
     expect(attributes.map((node) => node.value).includes('entity_type')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('created')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('phase_name')).toBeTruthy(); // Direct attribute
@@ -98,7 +98,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_IDENTITY_INDIVIDUAL }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(26);
+    expect(attributes.length).toEqual(30);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('contact_information')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_firstname')).toBeTruthy(); // Direct attribute
@@ -109,7 +109,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_LOCATION_POSITION }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(26);
+    expect(attributes.length).toEqual(30);
     expect(attributes.map((node) => node.value).includes('lang')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('precision')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('postal_code')).toBeTruthy(); // Direct attribute
@@ -121,7 +121,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_PARTICIPATE_TO }
     });
     let attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(10);
+    expect(attributes.length).toEqual(18);
     expect(attributes.map((node) => node.value).includes('standard_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('i_inference_weight')).toBeTruthy(); // Direct attribute
     // Stix Ref Relationship
@@ -130,7 +130,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_OBJECT_LABEL }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(17);
+    expect(attributes.length).toEqual(24);
     expect(attributes.map((node) => node.value).includes('created')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('confidence')).toBeTruthy(); // Direct attribute
 
@@ -140,7 +140,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_HOSTS }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(19);
+    expect(attributes.length).toEqual(26);
     expect(attributes.map((node) => node.value).includes('spec_version')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_workflow_id')).toBeTruthy(); // Direct attribute
 
@@ -150,7 +150,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_OPERATING_SYSTEM }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(17);
+    expect(attributes.length).toEqual(24);
     expect(attributes.map((node) => node.value).includes('standard_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('revoked')).toBeTruthy(); // Direct attribute
 
@@ -160,7 +160,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: STIX_SIGHTING_RELATIONSHIP }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(21);
+    expect(attributes.length).toEqual(28);
     expect(attributes.map((node) => node.value).includes('creator_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('x_opencti_negative')).toBeTruthy(); // Direct attribute
   });

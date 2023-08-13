@@ -27,6 +27,7 @@ export const schemaAttributesDefinition = {
     numeric: new Map<string, void>(),
     boolean: new Map<string, void>(),
     dictionary: new Map<string, void>(),
+    object: new Map<string, void>(),
     json: new Map<string, void>(),
     object: new Map<string, void>(),
     runtime: new Map<string, void>(),
@@ -138,6 +139,9 @@ export const isBooleanAttribute = (k: string): boolean => (
 );
 export const isDateAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date')
+);
+export const isStringAttribute = (k: string): boolean => (
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'string')
 );
 export const isDictionaryAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'dictionary')

@@ -18,6 +18,23 @@ export interface AttributeDefinition {
 
 // -- GLOBAL --
 
+export const _index: AttributeDefinition = {
+  name: '_index',
+  type: 'string',
+  mandatoryType: 'no',
+  multiple: false,
+  upsert: false
+};
+
+export const id: AttributeDefinition = {
+  name: 'id',
+  type: 'string',
+  mandatoryType: 'no',
+  multiple: false,
+  upsert: false
+};
+
+// TODO Duplication of ID
 export const internalId: AttributeDefinition = {
   name: 'internal_id',
   type: 'string',
@@ -68,6 +85,22 @@ export const files: AttributeDefinition = {
 };
 
 // -- ENTITY TYPE --
+
+export const parentTypes: AttributeDefinition = {
+  name: 'parent_types',
+  type: 'string',
+  mandatoryType: 'internal',
+  multiple: true,
+  upsert: false
+};
+
+export const baseType: AttributeDefinition = {
+  name: 'base_type',
+  type: 'string',
+  mandatoryType: 'internal',
+  multiple: false,
+  upsert: false
+};
 
 export const entityType: AttributeDefinition = {
   name: 'entity_type',
