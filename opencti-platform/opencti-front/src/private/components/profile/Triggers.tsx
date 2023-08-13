@@ -40,10 +40,10 @@ const Triggers: FunctionComponent = () => {
         width: '15%',
         isSortable: true,
       },
-      outcomes: {
+      notifiers: {
         label: 'Notification',
         width: '20%',
-        isSortable: true,
+        isSortable: false,
       },
       event_types: {
         label: 'Triggering on',

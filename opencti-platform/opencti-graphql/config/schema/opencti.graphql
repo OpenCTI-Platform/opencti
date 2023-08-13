@@ -1439,8 +1439,10 @@ type Connector implements BasicObject & InternalObject {
   connector_type: String
   connector_scope: [String!]
   connector_state: String
+  connector_schema: String
+  connector_schema_ui: String
   connector_state_reset: Boolean
-  connector_user_id: ID!
+  connector_user_id: ID
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
@@ -11979,6 +11981,7 @@ type Query {
   connectorsForWorker: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
+  connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES])
   work(id: ID!): Work @auth(for: [MODULES])
   works(
     first: Int

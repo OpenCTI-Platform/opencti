@@ -42,6 +42,7 @@ export const buildRefRelationSearchKey = (type, field = ID_INTERNAL) => `${build
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
+export const CONNECTOR_INTERNAL_NOTIFICATION = 'INTERNAL_NOTIFICATION'; // Notifier connectors -> notifier-
 
 // General UUID
 export const OASIS_NAMESPACE = '00abedb4-aa42-466c-9c01-fed23315a9b7';

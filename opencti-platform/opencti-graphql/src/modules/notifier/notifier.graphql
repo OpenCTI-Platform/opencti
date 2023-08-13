@@ -1,0 +1,89 @@
+enum NotifierFilter {
+    created
+}
+input NotifierFiltering {
+    key: [NotifierFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+enum NotifierOrdering {
+    name
+    created
+    connector
+}
+
+type NotifierParameter {
+    key: String
+    value: String
+}
+
+type NotifierConnector {
+    id: ID! # internal_id
+    name: String!
+    connector_type: String
+    connector_schema: String
+    connector_schema_ui: String
+    built_in: Boolean
+}
+
+type Notifier implements InternalObject & BasicObject {
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    created: DateTime
+    modified: DateTime
+    name: String!
+    description: String
+    notifier_connector: NotifierConnector!
+    notifier_connector_id: String!
+    notifier_configuration: String!
+    authorized_members: [MemberAccess!] @auth(for: [SETTINGS])
+}
+
+type NotifierConnection {
+    pageInfo: PageInfo!
+    edges: [NotifierEdge]
+}
+type NotifierEdge {
+    cursor: String!
+    node: Notifier!
+}
+
+# Queries
+input NotifierTestInput {
+    notifier_test_id: String!
+    notifier_connector_id: String!
+    notifier_configuration: String!
+}
+
+type Query {
+    notificationNotifiers: [Notifier!]! @auth
+    notifier(id: String!): Notifier @auth(for: [SETTINGS])
+    notifierTest(input: NotifierTestInput!): String @auth(for: [SETTINGS])
+    notifiers(
+        first: Int
+        after: ID
+        orderBy: NotifierOrdering
+        orderMode: OrderingMode
+        filters: [NotifierFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): NotifierConnection @auth(for: [SETTINGS])
+}
+
+# Mutations
+input NotifierAddInput {
+    name: String! @constraint(minLength: 1)
+    description: String
+    notifier_connector_id: String!
+    notifier_configuration: String!
+    authorized_members: [MemberAccessInput!]
+}
+
+type Mutation {
+    notifierDelete(id: ID!): ID @auth(for: [SETTINGS])
+    notifierFieldPatch(id: ID!, input: [EditInput!]!): Notifier @auth(for: [SETTINGS])
+    notifierAdd(input: NotifierAddInput!): Notifier @auth(for: [SETTINGS])
+}

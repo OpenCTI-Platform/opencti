@@ -32,7 +32,7 @@ import {
 } from '../domain/work';
 import { batchCreator } from '../domain/user';
 import { now } from '../utils/format';
-import { connectors, connectorsForImport, connectorsForWorker } from '../database/repository';
+import { connectors, connectorsForImport, connectorsForNotification, connectorsForWorker } from '../database/repository';
 import { batchLoader } from '../database/middleware';
 
 const creatorLoader = batchLoader(batchCreator);
@@ -44,6 +44,7 @@ const connectorResolvers = {
     connectorsForWorker: (_, __, context) => connectorsForWorker(context, context.user),
     connectorsForExport: (_, __, context) => connectorsForExport(context, context.user),
     connectorsForImport: (_, __, context) => connectorsForImport(context, context.user),
+    connectorsForNotification: (_, __, context) => connectorsForNotification(context, context.user),
     works: (_, args, context) => findAll(context, context.user, args),
     work: (_, { id }, context) => findById(context, context.user, id),
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id),

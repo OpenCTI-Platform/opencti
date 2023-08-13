@@ -1,35 +1,33 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, useMutation } from 'react-relay';
-import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import { Field, Form, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import * as Yup from 'yup';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import TriggersField from './TriggersField';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
+import React, { FunctionComponent } from 'react';
+import { graphql, useMutation } from 'react-relay';
+import * as Yup from 'yup';
+import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
+import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
+import { Theme } from '../../../../components/Theme';
+import TimePickerField from '../../../../components/TimePickerField';
 import { handleErrorInForm } from '../../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import { dayStartDate, parse } from '../../../../utils/Time';
-import { useFormatter } from '../../../../components/i18n';
-import TimePickerField from '../../../../components/TimePickerField';
-import SelectField from '../../../../components/SelectField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { Theme } from '../../../../components/Theme';
+import NotifierField from '../../common/form/NotifierField';
+import { Option } from '../../common/form/ReferenceField';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import TriggersField from './TriggersField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -68,17 +66,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const triggerDigestCreationMutation = graphql`
-    mutation TriggerDigestCreationMutation($input: TriggerDigestAddInput!) {
-        triggerKnowledgeDigestAdd(input: $input) {
-            ...TriggerLine_node
-        }
+  mutation TriggerDigestCreationMutation($input: TriggerDigestAddInput!) {
+    triggerKnowledgeDigestAdd(input: $input) {
+      ...TriggerLine_node
     }
+  }
 `;
+
 interface TriggerDigestAddInput {
   name: string;
   description: string;
   period: string;
-  outcomes: string[];
+  notifiers: Option[];
   trigger_ids: { value: string }[];
   day: string;
   time: string;
@@ -92,8 +91,8 @@ const digestTriggerValidation = (t: (message: string) => string) => Yup.object()
     .min(1, t('Minimum one trigger'))
     .required(t('This field is required')),
   period: Yup.string().required(t('This field is required')),
-  outcomes: Yup.array()
-    .min(1, t('Minimum one outcome'))
+  notifiers: Yup.array()
+    .min(1, t('Minimum one notifier'))
     .required(t('This field is required')),
   day: Yup.string().nullable(),
   time: Yup.string().nullable(),
@@ -107,6 +106,7 @@ interface TriggerDigestCreationProps {
   recipientId?: string;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
+
 const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   contextual,
   inputValue,
@@ -124,15 +124,10 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     description: '',
     period: 'day',
     trigger_ids: [],
-    outcomes: [],
+    notifiers: [],
     day: '1',
     time: dayStartDate().toISOString(),
     recipients: recipientId ? [recipientId] : [],
-  };
-  const outcomesOptions: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
-    webhook: t('Webhook'),
   };
   const onDigestSubmit: FormikConfig<TriggerDigestAddInput>['onSubmit'] = (
     values: TriggerDigestAddInput,
@@ -150,7 +145,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     }
     const finalValues = {
       name: values.name,
-      outcomes: values.outcomes,
+      notifiers: values.notifiers.map(({ value }) => value),
       description: values.description,
       trigger_ids: values.trigger_ids.map(({ value }) => value),
       period: values.period,
@@ -270,49 +265,10 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           }}
         />
       )}
-      <Field
-        component={SelectField}
-        variant="standard"
-        name="outcomes"
-        label={t('Notification')}
-        fullWidth
-        multiple
+      <NotifierField
+        name="notifiers"
         onChange={setFieldValue}
-        inputProps={{ name: 'outcomes', id: 'outcomes' }}
-        containerstyle={fieldSpacingContainerStyle}
-        renderValue={(selected: Array<string>) => (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {selected.map((value) => (
-              <Chip key={value} label={outcomesOptions[value]} />
-            ))}
-          </Box>
-        )}
-      >
-        <MenuItem value="f4ee7b33-006a-4b0d-b57d-411ad288653d">
-          <Checkbox
-            checked={
-              values.outcomes.includes('f4ee7b33-006a-4b0d-b57d-411ad288653d')
-            }
-          />
-          <ListItemText
-            primary={outcomesOptions['f4ee7b33-006a-4b0d-b57d-411ad288653d']}
-          />
-        </MenuItem>
-        <MenuItem value="44fcf1f4-8e31-4b31-8dbc-cd6993e1b822">
-          <Checkbox
-            checked={
-              values.outcomes.includes('44fcf1f4-8e31-4b31-8dbc-cd6993e1b822')
-            }
-          />
-          <ListItemText
-            primary={outcomesOptions['44fcf1f4-8e31-4b31-8dbc-cd6993e1b822']}
-          />
-        </MenuItem>
-        <MenuItem value="webhook" disabled={true}>
-          <Checkbox checked={values.outcomes.includes('webhook')} />
-          <ListItemText primary={outcomesOptions.webhook} />
-        </MenuItem>
-      </Field>
+      />
     </React.Fragment>
   );
   const renderClassic = () => (

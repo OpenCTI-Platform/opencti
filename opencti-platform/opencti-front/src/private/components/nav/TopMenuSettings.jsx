@@ -111,6 +111,24 @@ const TopMenuSettings = () => {
       <Button
         component={Link}
         size="small"
+        to="/dashboard/settings/notification"
+        variant={
+          location.pathname.includes('/dashboard/settings/notification')
+            ? 'contained'
+            : 'text'
+        }
+        color={
+          location.pathname.includes('/dashboard/settings/notification')
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Notification')}
+      </Button>
+      <Button
+        component={Link}
+        size="small"
         to="/dashboard/settings/activity"
         variant={
           location.pathname.includes('/dashboard/settings/activity')

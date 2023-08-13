@@ -66,6 +66,7 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
   ids?: Array<string>;
   indices?: Array<string>;
+  includeAuthorities?: boolean | null
 }
 
 export const elList = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indices: Array<string>, options: ListFilter<T> = {}): Promise<Array<T>> => {

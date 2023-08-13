@@ -392,10 +392,3 @@ export const extractIdsFromStoreObject = (instance) => {
   }
   return ids;
 };
-
-export const filtersToJson = (filters/*: string */) => {
-  if (isNotEmptyField(filters)) {
-    return JSON.parse(filters);
-  }
-  return {};
-};

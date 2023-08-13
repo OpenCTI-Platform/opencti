@@ -115,7 +115,7 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
             id: string;
             modified: string | null;
             name: string;
-            outcomes: Array<string>;
+            notifiers: Array<{ id: string }>;
             trigger_type: TriggerType;
           };
         }[];

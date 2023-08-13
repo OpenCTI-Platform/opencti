@@ -1,31 +1,29 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, usePreloadedQuery, PreloadedQuery, useMutation } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import TextField from '../../../../../components/TextField';
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
+import MarkdownField from '../../../../../components/MarkdownField';
+import SelectField from '../../../../../components/SelectField';
+import TextField from '../../../../../components/TextField';
+import { Theme } from '../../../../../components/Theme';
+import TimePickerField from '../../../../../components/TimePickerField';
+import { convertNotifiers, convertTriggers } from '../../../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { dayStartDate, parse } from '../../../../../utils/Time';
+import ObjectMembersField from '../../../common/form/ObjectMembersField';
+import NotifierField from '../../../common/form/NotifierField';
 import { Option } from '../../../common/form/ReferenceField';
 import { AlertDigestEdition_trigger$key } from './__generated__/AlertDigestEdition_trigger.graphql';
-import { Theme } from '../../../../../components/Theme';
-import { alertEditionQuery } from './AlertEditionQuery';
 import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
-import MarkdownField from '../../../../../components/MarkdownField';
-import AutocompleteField from '../../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import { digestTriggerValidation } from './AlertDigestCreation';
-import ObjectMembersField from '../../../common/form/ObjectMembersField';
-import SelectField from '../../../../../components/SelectField';
-import TimePickerField from '../../../../../components/TimePickerField';
-import { dayStartDate, parse } from '../../../../../utils/Time';
-import { convertOutcomes, convertTriggers, outcomesOptions } from '../../../../../utils/edition';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import { digestTriggerValidation } from './AlertDigestCreation';
+import { alertEditionQuery } from './AlertEditionQuery';
 import AlertsField from './AlertsField';
 
 interface AlertDigestEditionProps {
@@ -36,8 +34,8 @@ interface AlertDigestEditionProps {
 
 interface AlertDigestFormValues {
   name?: string
-  outcomes: { value: string, label: string }[];
-  recipients: { value: string, label: string }[];
+  notifiers: Option[];
+  recipients: Option[];
   trigger_ids: { value: string }[];
   period: string;
 }
@@ -50,7 +48,10 @@ const alertDigestEditionFragment = graphql`
     event_types
     description
     filters
-    outcomes
+    notifiers{
+      id
+      name
+    }
     trigger_time
     period
     recipients {
@@ -180,7 +181,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
   const initialValues = {
     name: trigger?.name,
     description: trigger?.description,
-    outcomes: convertOutcomes(trigger),
+    notifiers: convertNotifiers(trigger),
     trigger_ids: convertTriggers(trigger),
     recipients: (trigger?.recipients ?? []).map((n) => ({ label: n?.name, value: n?.id })),
     period: trigger?.period,
@@ -189,132 +190,127 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
   };
 
   return (
-      <div>
-        <div className={classes.header}>
-          <IconButton aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary">
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an activity digest trigger')}
-          </Typography>
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <Formik enableReinitialize={true} initialValues={initialValues as never} onSubmit={onSubmit}>
-            {({ values, setFieldValue }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                      component={TextField}
-                      variant="standard"
-                      name="name"
-                      label={t('Name')}
-                      fullWidth={true}
-                      onSubmit={handleSubmitField}
-                  />
-                  <Field
-                      component={MarkdownField}
-                      name="description"
-                      label={t('Description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      onSubmit={handleSubmitField}
-                      style={{ marginTop: 20 }}
-                  />
-                  <AlertsField
-                      name="trigger_ids"
-                      setFieldValue={setFieldValue}
-                      values={values.trigger_ids}
-                      style={fieldSpacingContainerStyle}
-                      onChange={handleSubmitFieldOptions}
-                      paginationOptions={paginationOptions}
-                  />
-                  <Field component={SelectField}
-                      variant="standard"
-                      name="period"
-                      label={t('Period')}
-                      fullWidth={true}
-                      containerstyle={fieldSpacingContainerStyle}
-                      onChange={handleSubmitField}>
-                    <MenuItem value="hour">{t('hour')}</MenuItem>
-                    <MenuItem value="day">{t('day')}</MenuItem>
-                    <MenuItem value="week">{t('week')}</MenuItem>
-                    <MenuItem value="month">{t('month')}</MenuItem>
-                  </Field>
-                  {values.period === 'week' && (
-                      <Field component={SelectField}
-                          variant="standard"
-                          name="day"
-                          label={t('Week day')}
-                          fullWidth={true}
-                          containerstyle={fieldSpacingContainerStyle}
-                          onChange={handleSubmitDay}>
-                        <MenuItem value="1">{t('Monday')}</MenuItem>
-                        <MenuItem value="2">{t('Tuesday')}</MenuItem>
-                        <MenuItem value="3">{t('Wednesday')}</MenuItem>
-                        <MenuItem value="4">{t('Thursday')}</MenuItem>
-                        <MenuItem value="5">{t('Friday')}</MenuItem>
-                        <MenuItem value="6">{t('Saturday')}</MenuItem>
-                        <MenuItem value="7">{t('Sunday')}</MenuItem>
-                      </Field>
-                  )}
-                  {values.period === 'month' && (
-                      <Field component={SelectField}
-                          variant="standard"
-                          name="day"
-                          label={t('Month day')}
-                          fullWidth={true}
-                          containerstyle={fieldSpacingContainerStyle}
-                          onChange={handleSubmitDay}>
-                        {Array.from(Array(31).keys()).map((idx) => (
-                            <MenuItem key={idx} value={(idx + 1).toString()}>
-                              {(idx + 1).toString()}
-                            </MenuItem>
-                        ))}
-                      </Field>
-                  )}
-                  {values.period !== 'hour' && (
-                      <Field component={TimePickerField}
-                          name="time"
-                          withMinutes={true}
-                          onSubmit={handleSubmitTime}
-                          TextFieldProps={{
-                            label: t('Time'),
-                            variant: 'standard',
-                            fullWidth: true,
-                            style: { marginTop: 20 },
-                          }}
-                      />
-                  )}
-                  <Field component={AutocompleteField}
-                      name="outcomes"
-                      style={fieldSpacingContainerStyle}
-                      multiple={true}
-                      textfieldprops={{
-                        variant: 'standard',
-                        label: t('Notification'),
-                      }}
-                      options={outcomesOptions}
-                      onChange={(name: string, value: { value: string, label: string }[]) => handleSubmitField(name, value.map((n) => n.value))}
-                      renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: { value: string, label: string }) => (
-                          <MenuItem value={option.value} {...props}>
-                            <Checkbox checked={values.outcomes.map((n) => n.value).includes(option.value)}/>
-                            <ListItemText primary={option.label}/>
-                          </MenuItem>
-                      )}
-                  />
-                  <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
-                                      onChange={handleSubmitFieldOptions}
-                                      multiple={true} name={'recipients'} />
-                </Form>
-            )}
-          </Formik>
-        </div>
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+          color="primary">
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update an activity digest trigger')}
+        </Typography>
+        <div className="clearfix" />
       </div>
+      <div className={classes.container}>
+        <Formik enableReinitialize={true} initialValues={initialValues as never} onSubmit={onSubmit}>
+          {({ values, setFieldValue }) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="name"
+                label={t('Name')}
+                fullWidth={true}
+                onSubmit={handleSubmitField}
+              />
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                onSubmit={handleSubmitField}
+                style={{ marginTop: 20 }}
+              />
+              <AlertsField
+                name="trigger_ids"
+                setFieldValue={setFieldValue}
+                values={values.trigger_ids}
+                style={fieldSpacingContainerStyle}
+                onChange={handleSubmitFieldOptions}
+                paginationOptions={paginationOptions}
+              />
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="period"
+                label={t('Period')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitField}>
+                <MenuItem value="hour">{t('hour')}</MenuItem>
+                <MenuItem value="day">{t('day')}</MenuItem>
+                <MenuItem value="week">{t('week')}</MenuItem>
+                <MenuItem value="month">{t('month')}</MenuItem>
+              </Field>
+              {values.period === 'week' && (
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="day"
+                  label={t('Week day')}
+                  fullWidth={true}
+                  containerstyle={fieldSpacingContainerStyle}
+                  onChange={handleSubmitDay}>
+                  <MenuItem value="1">{t('Monday')}</MenuItem>
+                  <MenuItem value="2">{t('Tuesday')}</MenuItem>
+                  <MenuItem value="3">{t('Wednesday')}</MenuItem>
+                  <MenuItem value="4">{t('Thursday')}</MenuItem>
+                  <MenuItem value="5">{t('Friday')}</MenuItem>
+                  <MenuItem value="6">{t('Saturday')}</MenuItem>
+                  <MenuItem value="7">{t('Sunday')}</MenuItem>
+                </Field>
+              )}
+              {values.period === 'month' && (
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="day"
+                  label={t('Month day')}
+                  fullWidth={true}
+                  containerstyle={fieldSpacingContainerStyle}
+                  onChange={handleSubmitDay}>
+                  {Array.from(Array(31).keys()).map((idx) => (
+                    <MenuItem key={idx} value={(idx + 1).toString()}>
+                      {(idx + 1).toString()}
+                    </MenuItem>
+                  ))}
+                </Field>
+              )}
+              {values.period !== 'hour' && (
+                <Field
+                  component={TimePickerField}
+                  name="time"
+                  withMinutes={true}
+                  onSubmit={handleSubmitTime}
+                  TextFieldProps={{
+                    label: t('Time'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
+                />
+              )}
+              <NotifierField
+                name="notifiers"
+                onChange={(name, v) => handleSubmitField(name, v.map(({ value }) => value))}
+              />
+              <ObjectMembersField
+                label={'Recipients'}
+                style={fieldSpacingContainerStyle}
+                onChange={handleSubmitFieldOptions}
+                multiple={true} name={'recipients'}
+              />
+            </Form>
+          )}
+        </Formik>
+      </div>
+    </div>
 
   );
 };

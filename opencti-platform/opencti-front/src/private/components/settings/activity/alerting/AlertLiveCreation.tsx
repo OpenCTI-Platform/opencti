@@ -1,43 +1,35 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Close } from '@mui/icons-material';
+import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import { Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import { FormikConfig, FormikHelpers } from 'formik/dist/types';
+import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Drawer from '@mui/material/Drawer';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import * as R from 'ramda';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
-import { Theme } from '../../../../../components/Theme';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useMutation } from 'react-relay';
+import * as Yup from 'yup';
+import FilterIconButton from '../../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../../components/i18n';
+import MarkdownField from '../../../../../components/MarkdownField';
+import TextField from '../../../../../components/TextField';
+import { Theme } from '../../../../../components/Theme';
+import { handleErrorInForm } from '../../../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { isUniqFilter } from '../../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../../utils/store';
-import { handleErrorInForm } from '../../../../../relay/environment';
-import TextField from '../../../../../components/TextField';
-import MarkdownField from '../../../../../components/MarkdownField';
-import AutocompleteField from '../../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import FilterIconButton from '../../../../../components/FilterIconButton';
-import {
-  TriggersLinesPaginationQuery$variables,
-} from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
-import {
-  AlertLiveCreationActivityMutation,
-  AlertLiveCreationActivityMutation$data,
-} from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
-import Filters from '../../../common/lists/Filters';
+import NotifierField from '../../../common/form/NotifierField';
 import { Option } from '../../../common/form/ReferenceField';
+import Filters from '../../../common/lists/Filters';
+import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -91,15 +83,15 @@ export const triggerLiveActivityCreationMutation = graphql`
 export const liveActivityTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
-  outcomes: Yup.array().nullable(),
+  notifiers: Yup.array().nullable(),
   recipients: Yup.array().min(1, t('Minimum one recipient')).required(t('This field is required')),
 });
 
 interface TriggerActivityLiveAddInput {
   name: string;
   description: string;
-  outcomes: { value: string, label: string }[];
-  recipients: { value: string, label: string }[];
+  notifiers: Option[];
+  recipients: Option[];
 }
 
 interface TriggerLiveCreationProps {
@@ -121,19 +113,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<
-  Record<string, { id: string; value: string }[]>
-  >({});
-  const outcomesOptions = [
-    {
-      value: 'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-      label: t('User interface'),
-    },
-    {
-      value: '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
-      label: t('Email'),
-    },
-  ];
+  const [filters, setFilters] = useState<Record<string, { id: string; value: string }[]>>({});
   const onReset = () => {
     handleClose?.();
     setFilters({});
@@ -166,7 +146,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   const liveInitialValues: TriggerActivityLiveAddInput = {
     name: inputValue || '',
     description: '',
-    outcomes: outcomesOptions,
+    notifiers: [],
     recipients: [],
   };
 
@@ -177,7 +157,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     const jsonFilters = JSON.stringify(filters);
     const finalValues = {
       name: values.name,
-      outcomes: values.outcomes.map((n) => n.value),
+      notifiers: values.notifiers.map((n) => n.value),
       description: values.description,
       filters: jsonFilters,
       recipients: values.recipients.map((n) => n.value),
@@ -213,26 +193,26 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       <span>
         <div style={{ marginTop: 35 }}>
           <Filters
-              variant="text"
-              availableFilterKeys={[
-                'event_type',
-                'event_scope',
-                'members_user',
-                'members_group',
-                'members_organization',
-              ]}
-              handleAddFilter={handleAddFilter}
-              handleRemoveFilter={undefined}
-              handleSwitchFilter={undefined}
-              noDirectFilters={true}
-              disabled={undefined}
-              size={undefined}
-              fontSize={undefined}
-              availableEntityTypes={undefined}
-              availableRelationshipTypes={undefined}
-              allEntityTypes={undefined}
-              type={undefined}
-              availableRelationFilterTypes={undefined}
+            variant="text"
+            availableFilterKeys={[
+              'event_type',
+              'event_scope',
+              'members_user',
+              'members_group',
+              'members_organization',
+            ]}
+            handleAddFilter={handleAddFilter}
+            handleRemoveFilter={undefined}
+            handleSwitchFilter={undefined}
+            noDirectFilters={true}
+            disabled={undefined}
+            size={undefined}
+            fontSize={undefined}
+            availableEntityTypes={undefined}
+            availableRelationshipTypes={undefined}
+            allEntityTypes={undefined}
+            type={undefined}
+            availableRelationFilterTypes={undefined}
           />
         </div>
         <div className="clearfix" />
@@ -258,24 +238,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         rows="4"
         style={{ marginTop: 20 }}
       />
-      <Field
-        component={AutocompleteField}
-        name="outcomes"
-        style={fieldSpacingContainerStyle}
-        multiple={true}
-        textfieldprops={{ variant: 'standard', label: t('Notification') }}
-        options={outcomesOptions}
-        onChange={setFieldValue}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: { value: string, label: string },
-        ) => (
-          <MenuItem value={option.value} {...props}>
-            <Checkbox checked={values.outcomes.map((n: Option) => n.value).includes(option.value)}/>
-            <ListItemText primary={option.label}/>
-          </MenuItem>
-        )}
-      />
+      <NotifierField name="notifiers" onChange={setFieldValue} />
       {renderActivityTrigger(values, setFieldValue)}
       <FilterIconButton
         filters={filters}
@@ -354,13 +317,13 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
 
   const renderContextual = () => (
     <Dialog disableRestoreFocus={true}
-      open={open ?? false}
-      onClose={handleClose}
-      PaperProps={{ elevation: 1 }}>
+            open={open ?? false}
+            onClose={handleClose}
+            PaperProps={{ elevation: 1 }}>
       <Formik initialValues={liveInitialValues}
-        validationSchema={liveActivityTriggerValidation(t)}
-        onSubmit={onLiveSubmit}
-        onReset={onReset}>
+              validationSchema={liveActivityTriggerValidation(t)}
+              onSubmit={onLiveSubmit}
+              onReset={onReset}>
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <div>
             <DialogTitle>{t('Create a live activity trigger')}</DialogTitle>

@@ -2,9 +2,14 @@ import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
-import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
+import {
+  CONNECTOR_INTERNAL_ENRICHMENT,
+  CONNECTOR_INTERNAL_IMPORT_FILE,
+  CONNECTOR_INTERNAL_NOTIFICATION
+} from '../schema/general';
 import { listEntities } from './middleware-loader';
 import { INTERNAL_SYNC_QUEUE } from './utils';
+import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
 
 // region connectors
 export const completeConnector = (connector) => {
@@ -62,5 +67,10 @@ export const connectorsEnrichment = (instances, scope, onlyAlive = false, onlyAu
 
 export const connectorsForImport = async (context, user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto, onlyContextual);
+};
+
+export const connectorsForNotification = async (context, user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
+  const notificationConnectors = await connectorsFor(context, user, CONNECTOR_INTERNAL_NOTIFICATION, scope, onlyAlive, onlyAuto, onlyContextual);
+  return [...notificationConnectors, ...Object.values(BUILTIN_NOTIFIERS_CONNECTORS)];
 };
 // endregion
