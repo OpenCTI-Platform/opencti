@@ -239,6 +239,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const lastname = profile[mappedConfig.lastname_attribute] || '';
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
         const isGroupBaseAccess = isNotEmptyField(mappedConfig.groups_management) || isRoleBaseAccess;
+        logApp.debug('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
         // region roles mapping
         if (isRoleBaseAccess) {
           logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
@@ -278,6 +279,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         };
         const organizationsToAssociate = isOrgaMapping ? computeOrganizationsMapping() : [];
         // endregion
+        logApp.debug('[SAML] Login handler', { isGroupBaseAccess, groupsToAssociate });
         if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           const { nameID: email } = profile;
           const opts = {

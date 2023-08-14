@@ -175,8 +175,7 @@
     "reject_unauthorized": false,
     "port": 25,
     "username": "",
-    "password": "",
-    "from_email": "notifications@opencti.io"
+    "password": ""
   },
   "providers": {
     "local": {
