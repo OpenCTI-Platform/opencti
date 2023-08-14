@@ -3,7 +3,7 @@ import { getSettings } from '../domain/settings';
 import { entitySettingEditField, findByType } from '../modules/entitySetting/entitySetting-domain';
 import { queryDefaultSubTypes } from '../domain/subType';
 import conf from '../config/conf';
-import { elLoadById, elReplace, prepareElementForIndexing } from '../database/engine';
+import { elLoadById, elReplace, prepareDataFromSchemaDefinition } from '../database/engine';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 export const up = async (next) => {
@@ -50,7 +50,7 @@ export const up = async (next) => {
   settingsFromEl.platform_entities_files_ref = null;
   settingsFromEl.platform_hidden_types = null;
 
-  const esData = prepareElementForIndexing(settingsFromEl);
+  const esData = prepareDataFromSchemaDefinition(settingsFromEl);
   await elReplace(settingsFromEl._index, settingsFromEl.internal_id, { doc: esData });
 
   next();

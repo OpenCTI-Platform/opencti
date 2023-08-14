@@ -58,6 +58,7 @@ import {
   ES_MAX_CONCURRENCY,
   isImpactedTypeAndSide,
   MAX_BULK_OPERATIONS,
+  prepareDataFromSchemaDefinition,
   ROLE_FROM,
   ROLE_TO,
 } from './engine';
@@ -193,7 +194,6 @@ import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabu
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import {
   depsKeysRegister,
-  isBooleanAttribute,
   isDateAttribute,
   isDictionaryAttribute,
   isMultipleAttribute,
@@ -862,11 +862,11 @@ export const updatedInputsToData = (instance, inputs) => {
     }
     return { [key]: val };
   }, inputs);
-  return mergeDeepRightAll(...inputPairs);
+  const dataObject = mergeDeepRightAll(...inputPairs);
+  return prepareDataFromSchemaDefinition({ entity_type: instance.entity_type, ...dataObject });
 };
 export const mergeInstanceWithInputs = (instance, inputs) => {
-  // standard_id must be maintained
-  // const inputsWithoutId = inputs.filter((i) => i.key !== ID_STANDARD);
+  // Build object data from inputs
   const data = updatedInputsToData(instance, inputs);
   const updatedInstance = R.mergeRight(instance, data);
   return R.reject(R.equals(null))(updatedInstance);
@@ -1440,12 +1440,7 @@ const transformPatchToInput = (patch, operations = {}) => {
   )(patch);
 };
 const checkAttributeConsistency = (entityType, key) => {
-  if (key.startsWith(RULE_PREFIX)) {
-    return;
-  }
-  // Always ok for creator_id, need a stronger schema definition
-  // Waiting for merge of https://github.com/OpenCTI-Platform/opencti/issues/1850
-  if (key === 'creator_id') {
+  if (key.startsWith(RULE_PREFIX) || key.startsWith(REL_INDEX_PREFIX)) {
     return;
   }
   let masterKey = key;
@@ -1515,7 +1510,7 @@ const prepareAttributesForUpdate = (instance, elements, upsert) => {
     if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
       return {
         key: input.key,
-        value: input.value.map((v) => v.toLowerCase())
+        value: input.value.map((v) => v.toLowerCase().trim())
       };
     }
     // Specific case for name in aliased entities

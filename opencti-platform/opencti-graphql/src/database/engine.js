@@ -5,6 +5,7 @@ import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
+import moment from 'moment';
 import {
   buildPagination,
   cursorToOffset,
@@ -70,7 +71,7 @@ import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stix
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS, computeUserMemberAccessIds, INTERNAL_USERS, isBypassUser, MEMBER_ACCESS_ALL, } from '../utils/access';
-import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
+import { isSingleRelationsRef } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
@@ -2739,13 +2740,12 @@ const isObject = (value) => {
  * @param value object
  * @returns {object}
  */
-const prepareElementFromDefinition = (entityType, attribute, value) => {
+export const prepareElementFromDefinition = (entityType, attribute, value) => {
   // If value is empty or undefined, no need to prepare
   if (value === undefined || value === null) {
     return value;
   }
   const key = attribute.name;
-  // 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object';
   // Only native type
   if (attribute.type === 'string') { // For string, trim by default
     if (!R.is(String, value)) {
@@ -2755,7 +2755,10 @@ const prepareElementFromDefinition = (entityType, attribute, value) => {
   }
   // Come from string or native type
   if (attribute.type === 'date') { // No need to transform, natively supported by elastic
-    return value;
+    if (!R.is(String, value) && !(value instanceof Date) && !moment.isMoment(value)) {
+      throw UnsupportedError('Invalid data type for data preparation', { type: entityType, attribute, value });
+    }
+    return value; // utcDate(value).toDate();
   }
   // Come from string or native type
   if (attribute.type === 'numeric') { // Patch field is string generic so need to be cast to int
@@ -2811,7 +2814,7 @@ const prepareElementFromDefinition = (entityType, attribute, value) => {
   throw UnsupportedError('Invalid preparation type', { type: entityType, attribute, value });
 };
 
-export const prepareElementForIndexing = (element) => {
+export const prepareDataFromSchemaDefinition = (element) => {
   const thing = {};
   Object.keys(element).forEach((key) => {
     const value = element[key];
@@ -2899,10 +2902,12 @@ const prepareIndexing = async (elements) => {
   }
   return preparedElements;
 };
+export const prepareElementsIndexing = (elements) => elements.map((element) => prepareElementIndexing(element));
+
 export const elIndexElements = async (context, user, message, elements) => {
   const elIndexElementsFn = async () => {
     // 00. Relations must be transformed before indexing.
-    const transformedElements = await prepareIndexing(elements);
+    const transformedElements = prepareElementsIndexing(elements);
     // 01. Bulk the indexing of row elements
     const body = transformedElements.flatMap((doc) => [
       { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
@@ -3064,7 +3069,7 @@ const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
 };
 export const elUpdateElement = async (instance) => {
   // Update the element it self
-  const esData = prepareElementForIndexing(instance);
+  const esData = prepareDataFromSchemaDefinition(instance);
   // Set the cache
   const dataToReplace = R.dissoc('representative', esData);
   const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
