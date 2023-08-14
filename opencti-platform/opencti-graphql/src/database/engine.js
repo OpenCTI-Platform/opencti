@@ -2732,32 +2732,49 @@ const isObject = (value) => {
   return R.is(Object, value) && Object.keys(value).length > 0;
 };
 
-// export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json';
+/**
+ * prepareElementFromDefinition
+ * @param entityType string
+ * @param attribute AttributeDefinition
+ * @param value object
+ * @returns {object}
+ */
 const prepareElementFromDefinition = (entityType, attribute, value) => {
   // If value is empty or undefined, no need to prepare
   if (isEmptyField(value)) {
     return value;
   }
   const key = attribute.name;
+  // 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object';
+  // Only native type
+  if (attribute.type === 'string') { // For string, trim by default
+    if (!R.is(String, value)) {
+      throw UnsupportedError('Invalid data type for string preparation', { type: entityType, attribute: key, value });
+    }
+    return value.trim();
+  }
   // Come from string or native type
   if (attribute.type === 'date') { // No need to transform, natively supported by elastic
     return value;
   }
   // Come from string or native type
-  if (attribute.type === 'boolean') { // Patch field is string generic so need to be cast to boolean
-    return typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
-  }
-  // Come from internal complex object only
-  if (attribute.type === 'object') { // For complex object, prepare inner elements
-    if (!isObject(value)) {
-      throw UnsupportedError('Invalid data type for object preparation', { type: entityType, attribute: key, value });
+  if (attribute.type === 'numeric') { // Patch field is string generic so need to be cast to int
+    if (!R.is(String, value) && !R.is(Number, value)) {
+      throw UnsupportedError('Invalid data type for numeric preparation', { type: entityType, attribute, value });
     }
-    return value;
+    return R.is(Number, value) ? value : Number(value);
+  }
+  // Come from string or native type
+  if (attribute.type === 'boolean') { // Patch field is string generic so need to be cast to boolean
+    if (!R.is(String, value) && !(typeof value === 'boolean')) {
+      throw UnsupportedError('Invalid data type for boolean preparation', { type: entityType, attribute, value });
+    }
+    return typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
   }
   // Come from only in native type, should be prepared earlier
   if (attribute.type === 'dictionary') { // For dictionary object, prepare inner elements
     if (!isObject(value)) {
-      throw UnsupportedError('Invalid data type for dictionary preparation', { type: entityType, attribute: key, value });
+      throw UnsupportedError('Invalid data type for dictionary preparation', { type: entityType, attribute, value });
     }
     const dictionary = {};
     Object.keys(value).forEach((k) => {
@@ -2768,17 +2785,20 @@ const prepareElementFromDefinition = (entityType, attribute, value) => {
   }
   // Come from string or native type
   if (attribute.type === 'json') {
+    if (!R.is(String, value) && !isObject(value)) {
+      throw UnsupportedError('Invalid data type for boolean preparation', { type: entityType, attribute, value });
+    }
     return R.is(Object, value) ? JSON.stringify(value) : value.trim();
   }
-  // Only native type
-  if (attribute.type === 'string') { // For string, trim by default
-    if (!R.is(String, value)) {
-      throw UnsupportedError('Invalid data type for string preparation', { type: entityType, attribute: key, value });
+  // Come from internal complex object only
+  if (attribute.type === 'object') { // For complex object, prepare inner elements
+    if (!isObject(value)) {
+      throw UnsupportedError('Invalid data type for object preparation', { type: entityType, attribute, value });
     }
-    return value.trim();
+    return value;
   }
-  // For all other types (numeric, ...), no transform
-  return value;
+  // Type is unknown
+  throw UnsupportedError('Invalid preparation type', { type: entityType, attribute, value });
 };
 
 export const prepareElementForIndexing = (element) => {
@@ -2799,9 +2819,7 @@ export const prepareElementForIndexing = (element) => {
         thing[key] = prepareElementFromDefinition(element.entity_type, attrDefinition, value);
       }
     } else if (key.startsWith(REL_INDEX_PREFIX) || key.startsWith(RULE_PREFIX)) {
-      // export const REL_INDEX_PREFIX = 'rel_';
-      // export const INTERNAL_PREFIX = 'i_';
-      // export const RULE_PREFIX = 'i_rule_';
+      // Rules and Rels are managed internally and their dynamic nature is hard to check
       thing[key] = value;
     } else {
       throw UnsupportedError(`Cant find attribute definition for ${element.entity_type} / ${key}`);
