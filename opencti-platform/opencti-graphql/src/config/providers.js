@@ -164,7 +164,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const firstname = user[mappedConfig.firstname_attribute] || '';
         const lastname = user[mappedConfig.lastname_attribute] || '';
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        const isGroupBaseAccess = isNotEmptyField(mappedConfig.groups_management) || isRoleBaseAccess;
+        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
         // region roles mapping
         if (isRoleBaseAccess) {
           logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
@@ -238,8 +238,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const firstname = profile[mappedConfig.firstname_attribute] || '';
         const lastname = profile[mappedConfig.lastname_attribute] || '';
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        const isGroupBaseAccess = isNotEmptyField(mappedConfig.groups_management) || isRoleBaseAccess;
-        logApp.debug('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
+        const isGroupBaseAccess = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
+        logApp.debug('[SAML] Groups management configuration', { groupsManagement: mappedConfig.groups_management, isRoleBaseAccess });
         // region roles mapping
         if (isRoleBaseAccess) {
           logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
@@ -320,7 +320,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
           logApp.debug('[OPENID] Successfully logged', { userinfo });
           const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-          const isGroupMapping = isNotEmptyField(mappedConfig.groups_management);
+          const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping)) || isRoleBaseAccess;
           // region roles mapping
           if (isRoleBaseAccess) {
             logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
