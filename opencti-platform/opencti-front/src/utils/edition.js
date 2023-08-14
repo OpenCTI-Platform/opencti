@@ -52,7 +52,8 @@ export const convertExternalReferences = (element) => (element?.externalReferenc
   value: n.node.id,
 }));
 
-export const convertImagesToCarousel = (images) => {
+export const convertImagesToCarousel = (element) => {
+  const images = element.images ?? [];
   const carouselImages = images ? images.filter((file) => file?.inCarousel === true) : [];
 
   return carouselImages.map((file) => ({

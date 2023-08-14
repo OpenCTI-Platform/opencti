@@ -19,17 +19,26 @@ interface Image {
 }
 
 interface ImageCarouselProps {
-  images: readonly Image[] | null;
+  data: {
+    images: readonly Image[] | null;
+  }
 }
 
-const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ images }) => {
+interface CarouselImage {
+  tooltipTitle:string
+  imageSrc: string
+  altText: string
+  id: string
+}
+
+const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
   const classes = useStyles();
-  const imageArray = images ? [...images] : [];
+  const images = convertImagesToCarousel(data);
 
   return (
     <Carousel height='150px' className={classes.carousel} animation='fade'>
-      {imageArray.length > 0 ? (
-        convertImagesToCarousel(imageArray).map((file: any) => (
+      {images.length > 0 ? (
+        images.map((file: CarouselImage) => (
           <Tooltip title={file.tooltipTitle} key={file.id} placement='right'>
             <img
               style={{ height: '100%' }}

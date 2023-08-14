@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Frontend start" type="js.build_tools.npm">
-    <package-json value="$PROJECT_DIR$/opencti/opencti-platform/opencti-front/package.json" />
+    <package-json value="$PROJECT_DIR$/opencti-platform/opencti-front/package.json" />
     <command value="start" />
     <node-interpreter value="project" />
     <package-manager value="yarn" />

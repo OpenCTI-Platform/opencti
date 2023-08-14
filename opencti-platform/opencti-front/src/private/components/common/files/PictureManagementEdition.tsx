@@ -61,6 +61,7 @@ interface PictureManagementEditionProps {
 interface PictureManagementEditionFormValues {
   id: string
   description: string | null;
+  inCarousel: boolean | null;
   order: number | null;
 }
 
@@ -83,6 +84,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
     const input: StixDomainObjectFileEditInput = {
       id: values.id,
       description: values.description,
+      inCarousel: values.inCarousel,
       order: values.order,
     };
     commit({
@@ -123,6 +125,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
           initialValues={{
             id: picture.id,
             description: picture.description,
+            inCarousel: picture.inCarousel,
             order: picture.order,
           }}
           validationSchema={pictureValidation}

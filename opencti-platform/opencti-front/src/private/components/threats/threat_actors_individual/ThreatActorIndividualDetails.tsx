@@ -79,8 +79,6 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
     threatActorIndividualData,
   );
 
-  const images = data.images ?? [];
-
   return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -189,7 +187,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               </FieldOrEmpty>
             </Grid>
             <Grid item={true} xs={6}>
-              <ImageCarousel images={images} />
+              <ImageCarousel data={data} />
               <Typography
                 variant="h3"
                 gutterBottom={true}

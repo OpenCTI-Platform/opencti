@@ -59,7 +59,7 @@ interface PictureLineComponentProps {
 const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, dataColumns, entityId }) => {
   const classes = useStyles();
   const data = useFragment(pictureManagementUtilsFragment, picture);
-  const [isInCarousel, setIsInCarousel] = useState(!!data.inCarousel);
+  const [isInCarousel, setIsInCarousel] = useState<boolean>(!!data.inCarousel);
   const [commit] = useMutation<PictureManagementUtilsMutation>(pictureManagementUtilsMutation);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleCheckbox = () => {
