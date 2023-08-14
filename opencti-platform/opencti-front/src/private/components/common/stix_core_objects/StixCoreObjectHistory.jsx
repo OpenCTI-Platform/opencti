@@ -120,8 +120,12 @@ class StixCoreObjectHistory extends Component {
                     operator: 'wildcard',
                   },
                   {
+                    key: 'event_scope',
+                    values: ['create', 'delete', null], // if event_scope is null, event_type is not
+                  },
+                  {
                     key: 'event_type',
-                    values: ['mutation', 'create', 'update', 'delete', 'merge'],
+                    values: ['create', 'delete', 'mutation'], // retro-compatibility
                   },
                 ],
                 first: 20,
