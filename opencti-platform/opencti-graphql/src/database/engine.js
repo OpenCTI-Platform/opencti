@@ -2741,7 +2741,7 @@ const isObject = (value) => {
  */
 const prepareElementFromDefinition = (entityType, attribute, value) => {
   // If value is empty or undefined, no need to prepare
-  if (isEmptyField(value)) {
+  if (value === undefined || value === null) {
     return value;
   }
   const key = attribute.name;
@@ -2788,7 +2788,17 @@ const prepareElementFromDefinition = (entityType, attribute, value) => {
     if (!R.is(String, value) && !isObject(value)) {
       throw UnsupportedError('Invalid data type for boolean preparation', { type: entityType, attribute, value });
     }
-    return R.is(Object, value) ? JSON.stringify(value) : value.trim();
+    if (isEmptyField((value))) return '{}';
+    if (isObject(value)) {
+      return JSON.stringify(value);
+    }
+    // If string, check if json is valid
+    try {
+      JSON.parse(value);
+    } catch (e) {
+      throw UnsupportedError('Invalid data for json preparation', { type: typeof value, attribute: key, value });
+    }
+    return value.trim();
   }
   // Come from internal complex object only
   if (attribute.type === 'object') { // For complex object, prepare inner elements
@@ -2808,6 +2818,9 @@ export const prepareElementForIndexing = (element) => {
     const attrDefinition = schemaAttributesDefinition.getAttribute(element.entity_type, key);
     if (attrDefinition) {
       if (attrDefinition.multiple) { // Array of Date, objects, string or number
+        if (!Array.isArray(value)) {
+          throw UnsupportedError('Invalid data type for array preparation', { type: typeof value, attribute: key, value });
+        }
         const filteredArray = isNotEmptyField(value) ? value.filter((i) => isNotEmptyField(i)) : []; // Filter empty elements
         // Ensure that element are all from the same type
         const dataTypes = R.uniq(filteredArray.map((v) => typeof v));
