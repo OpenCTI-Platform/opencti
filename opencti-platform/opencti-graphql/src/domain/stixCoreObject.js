@@ -475,6 +475,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
     await elUpdateElement({
       _index: previous._index,
+      entity_type: previous.entity_type,
       internal_id: internalId,
       updated_at: now(),
       x_opencti_files: files
@@ -539,7 +540,13 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
     const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
-    await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });
+    await elUpdateElement({
+      _index: previous._index,
+      entity_type: previous.entity_type,
+      internal_id: entityId,
+      updated_at: now(),
+      x_opencti_files: files
+    });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``);
