@@ -10,8 +10,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
-import Carousel from 'react-material-ui-carousel';
-import Tooltip from '@mui/material/Tooltip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -20,9 +18,8 @@ import {
   ThreatActorIndividualDetails_ThreatActorIndividual$data,
   ThreatActorIndividualDetails_ThreatActorIndividual$key,
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
-import { getFileUri } from '../../../../utils/utils';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import noImage from '../../../../static/images/leaflet/no-image-placeholder.png';
+import ImageCarousel from '../../../../components/ImageCarousel';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -82,8 +79,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
     threatActorIndividualData,
   );
 
-  const image = data.images ?? [];
-  const carouselImages = image ? image.filter((file) => file?.inCarousel === true) : [];
+  const images = data.images ?? [];
 
   return (
       <div style={{ height: '100%' }}>
@@ -193,26 +189,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
               </FieldOrEmpty>
             </Grid>
             <Grid item={true} xs={6}>
-                <Carousel
-                  height='150px'
-                  className={classes.carousel}
-                  animation='fade'
-                >
-                  {carouselImages.length > 0 ? carouselImages.map((file) => (
-                    <Tooltip title={file.description} key={file.id} placement='right'>
-                    <img
-                        style={{ height: '100%' }}
-                        src={getFileUri(file.id)}
-                        alt={file.name}
-                      />
-                    </Tooltip>
-                  )) : <img
-                    style={{ height: '100%' }}
-                    src={noImage}
-                    alt="No Image"
-                  />
-                }
-              </Carousel>
+              <ImageCarousel images={images} />
               <Typography
                 variant="h3"
                 gutterBottom={true}

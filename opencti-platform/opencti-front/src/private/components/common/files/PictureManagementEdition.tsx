@@ -12,14 +12,14 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import {
-  StixDomainObjectFileEditInput,
-} from './__generated__/PictureManagementEditionMutation.graphql';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { pictureManagementUtilsMutation } from './PictureManagementUtils';
 import { PictureManagementUtils_node$data } from './__generated__/PictureManagementUtils_node.graphql';
-import { PictureManagementUtilsMutation } from './__generated__/PictureManagementUtilsMutation.graphql';
+import {
+  PictureManagementUtilsMutation,
+  StixDomainObjectFileEditInput,
+} from './__generated__/PictureManagementUtilsMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {

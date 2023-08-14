@@ -1,5 +1,5 @@
 import { truncate } from './String';
-import { isEmptyField } from './utils';
+import { getFileUri, isEmptyField } from './utils';
 
 export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null
   ? ''
@@ -51,6 +51,17 @@ export const convertExternalReferences = (element) => (element?.externalReferenc
   )}`,
   value: n.node.id,
 }));
+
+export const convertImagesToCarousel = (images) => {
+  const carouselImages = images ? images.filter((file) => file?.inCarousel === true) : [];
+
+  return carouselImages.map((file) => ({
+    tooltipTitle: file.description,
+    imageSrc: getFileUri(file.id),
+    altText: file.name,
+    id: file.id,
+  }));
+};
 
 export const convertCreatedBy = (element, field = 'createdBy') => (isEmptyField(element?.[field])
   ? ''

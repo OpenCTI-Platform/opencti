@@ -15894,9 +15894,9 @@ export enum ObservedDatasOrdering {
 export type OpenCtiFile = {
   __typename?: 'OpenCtiFile';
   description?: Maybe<Scalars['String']['output']>;
-  id: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
   inCarousel?: Maybe<Scalars['Boolean']['output']>;
-  mime_type?: Maybe<Scalars['String']['output']>;
+  mime_type: Scalars['String']['output'];
   name: Scalars['String']['output'];
   order?: Maybe<Scalars['Int']['output']>;
 };
@@ -29405,7 +29405,6 @@ export type ResolversParentTypes = ResolversObject<{
   FileEdge: Omit<FileEdge, 'node'> & { node: ResolversParentTypes['File'] };
   FileMetadata: Omit<FileMetadata, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixCoreObject']> };
   Float: Scalars['Float']['output'];
-  OpenCtiFile: OpenCtiFile;
   GetMetrics: GetMetrics;
   Group: Omit<Group, 'default_dashboard' | 'members'> & { default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, members?: Maybe<ResolversParentTypes['UserConnection']> };
   GroupAddInput: GroupAddInput;
