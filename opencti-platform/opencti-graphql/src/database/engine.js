@@ -2817,9 +2817,9 @@ export const prepareElementForIndexing = (element) => {
     const value = element[key];
     const attrDefinition = schemaAttributesDefinition.getAttribute(element.entity_type, key);
     if (attrDefinition) {
-      if (attrDefinition.multiple) { // Array of Date, objects, string or number
-        if (!Array.isArray(value)) {
-          throw UnsupportedError('Invalid data type for array preparation', { type: typeof value, attribute: key, value });
+      if (attrDefinition.multiple) {
+        if (value && !Array.isArray(value)) { // If not empty but not really an array
+          throw UnsupportedError('Invalid data type for array preparation', { type: element.entity_type, value_type: typeof value, attribute: key, value });
         }
         const filteredArray = isNotEmptyField(value) ? value.filter((i) => isNotEmptyField(i)) : []; // Filter empty elements
         // Ensure that element are all from the same type
