@@ -38,7 +38,7 @@ const objectiveScale: ScaleConfig = {
   ticks: [
     { value: 1, color: '#f57423', label: 'Told' },
     { value: 25, color: '#ff9800', label: 'Induced' },
-    { value: 51, color: '#f8e71c', label: 'Inferred' },
+    { value: 51, color: '#f8e71c', label: 'Deduced' },
     { value: 75, color: '#4caf50', label: 'Witnessed' },
   ],
 };
