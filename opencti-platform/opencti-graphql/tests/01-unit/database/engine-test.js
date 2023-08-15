@@ -19,4 +19,9 @@ describe('prepareElementForIndexing testing', () => {
     const element = prepareElementForIndexing({ test: { values: [20, '  trim01  ', '  trim 02    '] } });
     expect(element.test.values).toEqual([20, 'trim01', 'trim 02']);
   });
+  it('should do nothing with date value', () => {
+    const now = new Date();
+    const element = prepareElementForIndexing({ date: now });
+    expect(element.date).toEqual(now);
+  });
 });

@@ -6,7 +6,7 @@ import { addNotifier } from '../modules/notifier/notifier-domain';
 import { DEFAULT_TEAM_DIGEST_MESSAGE, DEFAULT_TEAM_MESSAGE } from '../modules/notifier/notifier-statics';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
-const message = '[MIGRATION] Renaming outcomes and adding default notifiers';
+const message = '[MIGRATION] Renaming outcomes to notifiers';
 
 export const up = async (next) => {
   logApp.info(`${message} > started`);
@@ -35,7 +35,6 @@ export const up = async (next) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
   logApp.info(`${message} > done`);
-  next();
   next();
 };
 

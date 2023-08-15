@@ -629,6 +629,9 @@ const elCreateIndexTemplate = async (index) => {
             atime: {
               type: 'date',
             },
+            current_state_date: {
+              type: 'date',
+            },
             confidence: {
               type: 'integer',
             },
@@ -2093,7 +2096,7 @@ export const prepareElementForIndexing = (element) => {
         if (R.is(String, f)) { // For string, trim by default
           return f.trim();
         }
-        if (R.is(Object, f)) { // For complex object, prepare inner elements
+        if (R.is(Object, f) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
           return prepareElementForIndexing(f);
         }
         // For all other types, no transform (list of boolean is not supported)
@@ -2103,7 +2106,7 @@ export const prepareElementForIndexing = (element) => {
       thing[key] = value;
     } else if (isBooleanAttribute(key)) { // Patch field is string generic so need to be cast to boolean
       thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
-    } else if (R.is(Object, value)) { // For complex object, prepare inner elements
+    } else if (R.is(Object, value) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
       thing[key] = prepareElementForIndexing(value);
     } else if (R.is(String, value)) { // For string, trim by default
       thing[key] = value.trim();

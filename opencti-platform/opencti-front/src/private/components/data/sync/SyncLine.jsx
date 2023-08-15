@@ -107,7 +107,7 @@ class SyncLineLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.current_state.width }}
               >
-                {nsdt(node.current_state)}
+                {nsdt(node.current_state_date)}
               </div>
             </div>
           }
@@ -141,7 +141,7 @@ const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {
       uri
       stream_id
       running
-      current_state
+      current_state_date
       ssl_verify
     }
   `,

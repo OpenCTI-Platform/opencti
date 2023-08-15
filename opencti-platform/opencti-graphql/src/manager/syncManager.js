@@ -104,7 +104,7 @@ const syncManagerInstance = (syncId) => {
     const eventDate = utcDate(dateTime).toISOString();
     if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
       logApp.info(`[OPENCTI] Sync ${syncId}: saving state from ${type} to ${eventId}/${eventDate}`);
-      await patchSync(context, SYSTEM_USER, syncId, { current_state: eventDate });
+      await patchSync(context, SYSTEM_USER, syncId, { current_state_date: eventDate });
       eventSource.updateUrl(createSyncHttpUri(sync, eventDate, false));
       lastState = dateTime;
       lastStateSaveTime = currentTime;
@@ -125,7 +125,7 @@ const syncManagerInstance = (syncId) => {
       const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
       const httpClientOptions = { headers, rejectUnauthorized: ssl, responseType: 'arraybuffer' };
       const httpClient = getHttpClient(httpClientOptions);
-      lastState = sync.current_state;
+      lastState = sync.current_state_date;
       const sseUri = createSyncHttpUri(sync, lastState, false);
       startStreamListening(sseUri, sync);
       let currentDelay = lDelay;
