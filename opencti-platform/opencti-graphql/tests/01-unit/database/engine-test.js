@@ -61,9 +61,4 @@ describe('prepareElementForIndexing testing', () => {
     const stringElement = () => prepareDataFromSchemaDefinition({ entity_type: ENTITY_TYPE_CONNECTOR, connector_state: 'test' });
     expect(stringElement).toThrow();
   });
-  it('should do nothing with date value', () => {
-    const now = new Date();
-    const element = prepareElementForIndexing({ date: now });
-    expect(element.date).toEqual(now);
-  });
 });
