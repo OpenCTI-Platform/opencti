@@ -2769,7 +2769,7 @@ export const prepareElementFromDefinition = (entityType, attribute, value) => {
   }
   // Come from string or native type
   if (attribute.type === 'boolean') { // Patch field is string generic so need to be cast to boolean
-    if (!R.is(String, value) && !(typeof value === 'boolean')) {
+    if (!R.is(String, value) && (typeof value !== 'boolean')) {
       throw UnsupportedError('Invalid data type for boolean preparation', { type: entityType, attribute, value });
     }
     return typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
