@@ -12712,7 +12712,11 @@ export type Mutation = {
   otpUserDeactivation?: Maybe<MeUser>;
   pingConnector?: Maybe<Connector>;
   playbookAdd?: Maybe<Playbook>;
+  playbookAddLink?: Maybe<Playbook>;
+  playbookAddNode?: Maybe<Playbook>;
   playbookDelete?: Maybe<Scalars['ID']['output']>;
+  playbookDeleteLink?: Maybe<Playbook>;
+  playbookDeleteNode?: Maybe<Playbook>;
   playbookFieldPatch?: Maybe<Playbook>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
@@ -13724,8 +13728,30 @@ export type MutationPlaybookAddArgs = {
 };
 
 
+export type MutationPlaybookAddLinkArgs = {
+  input: PlaybookAddLinkInput;
+};
+
+
+export type MutationPlaybookAddNodeArgs = {
+  input: PlaybookAddNodeInput;
+};
+
+
 export type MutationPlaybookDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationPlaybookDeleteLinkArgs = {
+  id: Scalars['ID']['input'];
+  linkId: Scalars['ID']['input'];
+};
+
+
+export type MutationPlaybookDeleteNodeArgs = {
+  id: Scalars['ID']['input'];
+  nodeId: Scalars['ID']['input'];
 };
 
 
@@ -16955,13 +16981,28 @@ export type Playbook = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  playbook_definition?: Maybe<Scalars['String']['output']>;
+  playbook_running?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
 export type PlaybookAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  update?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type PlaybookAddLinkInput = {
+  from_node: Scalars['String']['input'];
+  from_port: Scalars['String']['input'];
+  playbook_id: Scalars['ID']['input'];
+  to_node: Scalars['String']['input'];
+};
+
+export type PlaybookAddNodeInput = {
+  component_id: Scalars['String']['input'];
+  configuration?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  playbook_id: Scalars['ID']['input'];
 };
 
 export type PlaybookComponent = {
@@ -28994,6 +29035,8 @@ export type ResolversTypes = ResolversObject<{
   PhoneNumberAddInput: PhoneNumberAddInput;
   Playbook: ResolverTypeWrapper<BasicStoreEntityPlaybook>;
   PlaybookAddInput: PlaybookAddInput;
+  PlaybookAddLinkInput: PlaybookAddLinkInput;
+  PlaybookAddNodeInput: PlaybookAddNodeInput;
   PlaybookComponent: ResolverTypeWrapper<PlaybookComponent>;
   PlaybookComponentPort: ResolverTypeWrapper<PlaybookComponentPort>;
   PlaybookConnection: ResolverTypeWrapper<Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversTypes['PlaybookEdge']> }>;
@@ -29728,6 +29771,8 @@ export type ResolversParentTypes = ResolversObject<{
   PhoneNumberAddInput: PhoneNumberAddInput;
   Playbook: BasicStoreEntityPlaybook;
   PlaybookAddInput: PlaybookAddInput;
+  PlaybookAddLinkInput: PlaybookAddLinkInput;
+  PlaybookAddNodeInput: PlaybookAddNodeInput;
   PlaybookComponent: PlaybookComponent;
   PlaybookComponentPort: PlaybookComponentPort;
   PlaybookConnection: Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversParentTypes['PlaybookEdge']> };
@@ -33908,7 +33953,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
+  playbookAddLink?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'input'>>;
+  playbookAddNode?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'input'>>;
   playbookDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteArgs, 'id'>>;
+  playbookDeleteLink?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteLinkArgs, 'id' | 'linkId'>>;
+  playbookDeleteNode?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteNodeArgs, 'id' | 'nodeId'>>;
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
@@ -34751,6 +34800,8 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  playbook_definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  playbook_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

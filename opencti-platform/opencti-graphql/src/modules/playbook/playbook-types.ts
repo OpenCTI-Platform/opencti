@@ -10,8 +10,8 @@ export interface BasicStoreEntityPlaybook extends BasicStoreEntity {
   name: string
   description: string
   playbook_start: string
+  playbook_running: boolean
   playbook_definition: string
-  playbook_variables: string[]
 }
 
 export interface StoreEntityPlaybook extends StoreEntity {
@@ -52,16 +52,18 @@ export interface PlaybookComponent<T extends PlaybookComponentConfiguration> {
 
 export interface PortDefinition {
   id: string
-  type: 'in' | 'out' | 'empty'
+  type: 'in' | 'out'
 }
 
 export interface ComponentDefinition {
   nodes: {
     id: string,
+    name: string,
     component_id: string,
-    configuration: object
+    configuration: string // json
   }[]
   links: {
+    id: string,
     from: {
       port: string,
       id: string
@@ -81,10 +83,11 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
         type: 'object',
         properties: {
           id: { type: 'string' },
+          name: { type: 'string' },
           component_id: { type: 'string' },
-          configuration: { type: 'object' },
+          configuration: { type: 'string' },
         },
-        required: ['id', 'component_id', 'configuration'],
+        required: ['id', 'name', 'component_id', 'configuration'],
       },
     },
     links: {
@@ -92,6 +95,7 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
       items: {
         type: 'object',
         properties: {
+          id: { type: 'string' },
           from: {
             type: 'object',
             properties: {
@@ -108,7 +112,7 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
             required: ['id']
           },
         },
-        required: ['from', 'to'],
+        required: ['id', 'from', 'to'],
       },
     },
   },

@@ -6,6 +6,8 @@ type Playbook implements InternalObject & BasicObject {
     # Playbook
     name: String!
     description: String
+    playbook_running: Boolean
+    playbook_definition: String
 }
 
 type PlaybookComponentPort {
@@ -67,12 +69,29 @@ type Query {
 input PlaybookAddInput {
     name: String! @constraint(minLength: 2)
     description: String
-    update: Boolean
+}
+
+input PlaybookAddNodeInput {
+    playbook_id: ID!
+    name: String!
+    component_id: String!
+    configuration: String
+}
+
+input PlaybookAddLinkInput {
+    playbook_id: ID!
+    from_node: String!
+    from_port: String!
+    to_node: String!
 }
 
 # Mutations
 type Mutation {
     playbookAdd(input: PlaybookAddInput!): Playbook @auth
+    playbookAddNode(input: PlaybookAddNodeInput!): Playbook @auth
+    playbookAddLink(input: PlaybookAddLinkInput!): Playbook @auth
     playbookDelete(id: ID!): ID @auth
+    playbookDeleteNode(id: ID!, nodeId: ID!): Playbook @auth
+    playbookDeleteLink(id: ID!, linkId: ID!): Playbook @auth
     playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook @auth
 }

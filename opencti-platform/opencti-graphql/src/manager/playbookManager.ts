@@ -145,7 +145,9 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) =
       return;
     }
     const context = executionContext('playbook_manager');
-    const playbooks = await findAllPlaybooks(context, SYSTEM_USER, { connectionFormat: false }); // TODO need to be filter by INTERNAL_DATA_STREAM entry point
+    const opts = { /* filters: [{ key: 'playbook_running', values: [true] }], */ connectionFormat: false };
+    const playbooks = await findAllPlaybooks(context, SYSTEM_USER, opts);
+    // TODO need to be filter by INTERNAL_DATA_STREAM entry point
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data } } = streamEvent;

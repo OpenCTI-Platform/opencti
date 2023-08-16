@@ -1,16 +1,16 @@
+import { v4 as uuidv4 } from 'uuid';
 import { BUS_TOPICS } from '../../config/conf';
-import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { EntityOptions, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
-
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, TaskAddInput } from '../../generated/graphql';
-import { now } from '../../utils/format';
-import type { BasicStoreEntityPlaybook } from './playbook-types';
+import type { EditInput, PlaybookAddInput, PlaybookAddNodeInput, PlaybookAddLinkInput } from '../../generated/graphql';
+import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS } from './playbook-components';
+import { UnsupportedError } from '../../config/errors';
 
 export const findById: DomainFindById<BasicStoreEntityPlaybook> = (context: AuthContext, user: AuthUser, playbookId: string) => {
   return storeLoadById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
@@ -28,9 +28,92 @@ export const availableComponents = () => {
   return Object.values(PLAYBOOK_COMPONENTS);
 };
 
-export const playbookAdd = async (context: AuthContext, user: AuthUser, input: TaskAddInput) => {
-  const playbookToCreate = input.created ? input : { ...input, created: now() };
-  const created = await createEntity(context, user, playbookToCreate, ENTITY_TYPE_PLAYBOOK);
+export const playbookAddNode = async (context: AuthContext, user: AuthUser, input: PlaybookAddNodeInput) => {
+  const playbook = await findById(context, user, input.playbook_id);
+  const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
+  const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
+  if (!relatedComponent) {
+    throw UnsupportedError('Playbook related component not found');
+  }
+  const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
+  if (relatedComponent.is_entry_point && existingEntryPoint) {
+    throw UnsupportedError('Playbook multiple entrypoint is not supported');
+  }
+  const nodeId = uuidv4();
+  definition.nodes.push({
+    id: nodeId,
+    name: input.name,
+    component_id: input.component_id,
+    configuration: input.configuration ?? '{}' // TODO Check valid json
+  });
+  const patch: any = { playbook_definition: JSON.stringify(definition) };
+  if (relatedComponent.is_entry_point) {
+    patch.playbook_start = nodeId;
+  }
+  const { element: updatedElem } = await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+};
+
+export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  definition.nodes = definition.nodes.filter((n) => n.id !== nodeId);
+  const patch: any = { playbook_definition: JSON.stringify(definition) };
+  const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+};
+
+export const playbookAddLink = async (context: AuthContext, user: AuthUser, input: PlaybookAddLinkInput) => {
+  const playbook = await findById(context, user, input.playbook_id);
+  const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
+  // Check from consistency
+  const node = definition.nodes.find((n) => n.id === input.from_node);
+  if (!node) {
+    throw UnsupportedError('Playbook link node from not found');
+  }
+  const nodePort = PLAYBOOK_COMPONENTS[node.component_id].ports.find((p) => p.id === input.from_port);
+  if (!nodePort || nodePort.type === 'in') {
+    throw UnsupportedError('Playbook link invalid from configuration');
+  }
+  // Check existing link
+  const existingLink = definition.links.find((l) => l.from.id === input.from_node && l.from.port === input.from_port && l.to.id === input.to_node);
+  if (existingLink) {
+    throw UnsupportedError('Playbook link duplication is not possible');
+  }
+  // Check to consistency
+  const toNode = definition.nodes.find((n) => n.id === input.to_node);
+  if (!toNode) {
+    throw UnsupportedError('Playbook link node from not found');
+  }
+  // Build the link
+  definition.links.push({
+    id: uuidv4(),
+    from: {
+      id: input.from_node,
+      port: input.from_port
+    },
+    to: {
+      id: input.to_node
+    }
+  });
+  const patch = { playbook_definition: JSON.stringify(definition) };
+  const { element: updatedElem } = await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+};
+
+export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, id: string, linkId: string) => {
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  definition.links = definition.links.filter((n) => n.id !== linkId);
+  const patch: any = { playbook_definition: JSON.stringify(definition) };
+  const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+};
+
+export const playbookAdd = async (context: AuthContext, user: AuthUser, input: PlaybookAddInput) => {
+  const playbook_definition = JSON.stringify({ nodes: [], links: [] });
+  const playbook = { ...input, playbook_definition, playbook_running: false };
+  const created = await createEntity(context, user, playbook, ENTITY_TYPE_PLAYBOOK);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
 };
 

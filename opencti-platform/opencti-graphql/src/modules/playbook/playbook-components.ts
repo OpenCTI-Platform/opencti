@@ -32,7 +32,6 @@ const PLAYBOOK_CONSOLE_ERROR_COMPONENT: PlaybookComponent<ConsoleConfiguration> 
     return { output_port: undefined, data };
   }
 };
-
 /*
 interface ConnectorConfiguration extends PlaybookComponentConfiguration {
   connector_id: string
@@ -61,7 +60,6 @@ const PLAYBOOK_IP_EXTERNAL_CONNECTOR: PlaybookComponent<ConnectorConfiguration> 
   }
 };
 */
-
 // endregion
 
 // region built in playbook components
@@ -78,7 +76,6 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
     return ({ output_port: 'out', data });
   }
 };
-
 interface FilterConfiguration extends PlaybookComponentConfiguration {
   filters: string
 }
