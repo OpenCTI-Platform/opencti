@@ -120,7 +120,6 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
       targets: [
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
-        { name: ENTITY_TYPE_INCIDENT, type: REL_NEW },
       ]
     },
     { name: RELATION_IMPERSONATES,
