@@ -329,10 +329,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
 
-  let accountExpireDate = fldt(user.account_lock_after_date);
-  if (accountExpireDate === '-') {
-    accountExpireDate = 'None';
-  }
+  const accountExpireDate = fldt(user.account_lock_after_date);
 
   return (
     <div className={classes.container}>
@@ -423,7 +420,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Account Expire Date')}
                   </Typography>
-                  {accountExpireDate}
+                  {accountExpireDate || '-'}
               </Grid>
             </Grid>
           </Paper>
