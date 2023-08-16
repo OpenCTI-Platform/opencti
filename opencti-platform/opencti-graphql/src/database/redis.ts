@@ -17,7 +17,7 @@ import {
 } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { AlreadyDeletedError, DatabaseError, UnsupportedError } from '../config/errors';
-import { now, utcDate } from '../utils/format';
+import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -38,6 +38,7 @@ import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../manager/clusterManager';
 import type { ActivityStreamEvent } from '../manager/activityListener';
+import type { ExecutionEnvelop } from '../manager/playbookManager';
 import { generateCreateMessage, generateDeleteMessage, generateMergeMessage } from './generate-message';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
@@ -765,5 +766,20 @@ export const registerClusterInstance = async (instanceId: string, instanceConfig
 };
 export const getClusterInstances = async () => {
   return keysFromList(CLUSTER_LIST_KEY, CLUSTER_NODE_EXPIRE);
+};
+// endregion
+
+// playground handling
+export const redisPlaybookGet = async (playbookRunId: string) => {
+  const follow = await getClientBase().get(playbookRunId);
+  return follow ? JSON.parse(follow) : undefined;
+};
+export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
+  const clientBase = getClientBase();
+  const id = `playbook_${envelop.playbook_run_id}`;
+  const follow = await clientBase.get(id);
+  const objectFollow = follow ? JSON.parse(follow) : {};
+  const toUpdate = mergeDeepRightAll(objectFollow, envelop);
+  await clientBase.set(id, JSON.stringify(toUpdate), 'EX', 60 * 60 * 24); // 1 day
 };
 // endregion

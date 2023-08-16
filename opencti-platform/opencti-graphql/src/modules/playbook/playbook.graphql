@@ -1,0 +1,78 @@
+type Playbook implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    # Playbook
+    name: String!
+    description: String
+}
+
+type PlaybookComponentPort {
+    id: ID!
+    type: String!
+}
+type PlaybookComponent {
+    id: ID!
+    name: String!
+    description: String!
+    is_entry_point: Boolean
+    is_internal: Boolean
+    configuration_schema: String
+    ports: [PlaybookComponentPort!]!
+}
+
+# Ordering
+enum PlaybookOrdering {
+    name
+}
+
+# Filtering
+enum PlaybookFilter {
+    name
+}
+
+input PlaybookFiltering {
+    key: [PlaybookFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type PlaybookConnection {
+    pageInfo: PageInfo!
+    edges: [PlaybookEdge!]!
+}
+type PlaybookEdge {
+    cursor: String!
+    node: Playbook!
+}
+
+# Queries
+type Query {
+    playbook(id: String!): Playbook @auth
+    playbooks(
+        first: Int
+        after: ID
+        orderBy: PlaybookOrdering
+        orderMode: OrderingMode
+        filters: [PlaybookFiltering!]
+        filterMode: FilterMode
+        search: String
+    ): PlaybookConnection @auth
+    playbookComponents: [PlaybookComponent]! @auth
+}
+
+input PlaybookAddInput {
+    name: String! @constraint(minLength: 2)
+    description: String
+    update: Boolean
+}
+
+# Mutations
+type Mutation {
+    playbookAdd(input: PlaybookAddInput!): Playbook @auth
+    playbookDelete(id: ID!): ID @auth
+    playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook @auth
+}

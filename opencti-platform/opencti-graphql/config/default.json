@@ -121,6 +121,11 @@
     "lock_digest_key": "notification_digest_manager_lock",
     "interval": 10000
   },
+  "playbook_manager": {
+    "enabled": true,
+    "lock_key": "playbook_manager_lock",
+    "interval": 60000
+  },
   "publisher_manager": {
     "enabled": true,
     "lock_key": "publisher_manager_lock",
