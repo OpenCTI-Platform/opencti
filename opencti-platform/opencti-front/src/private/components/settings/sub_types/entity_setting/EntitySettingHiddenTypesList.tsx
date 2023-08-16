@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
-import { isEmptyField } from '../../../../../utils/utils';
 import ItemIcon from '../../../../../components/ItemIcon';
+import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
 
 interface Entity {
   readonly id: string;
@@ -44,24 +44,22 @@ const EntitySettingHiddenTypesList: FunctionComponent<{
         {label}
       </Typography>
       <List style={{ paddingTop: 0 }}>
-        {isEmptyField(hiddenEntities) ? <div>{'-'}</div> : (
-          <>
-            {hiddenEntities.map((hiddenEntity) => (
-              <ListItemButton
-                key={hiddenEntity.id}
-                dense={true}
-                divider={true}
-                component={Link}
-                to={`${link}${hiddenEntity.id}`}
-              >
-                <ListItemIcon>
-                  <ItemIcon type={entityType} />
-                </ListItemIcon>
-                <ListItemText primary={hiddenEntity.name} />
-              </ListItemButton>
-            ))}
-          </>
-        )}
+        <FieldOrEmpty source={hiddenEntities}>
+          {hiddenEntities.map((hiddenEntity) => (
+            <ListItemButton
+              key={hiddenEntity.id}
+              dense={true}
+              divider={true}
+              component={Link}
+              to={`${link}${hiddenEntity.id}`}
+            >
+              <ListItemIcon>
+                <ItemIcon type={entityType} />
+              </ListItemIcon>
+              <ListItemText primary={hiddenEntity.name} />
+            </ListItemButton>
+          ))}
+        </FieldOrEmpty>
       </List>
     </div>
   );

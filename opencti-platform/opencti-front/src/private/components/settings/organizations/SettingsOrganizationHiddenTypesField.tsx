@@ -38,10 +38,12 @@ const SettingsOrganizationHiddenTypesField = ({
     });
   };
 
-  return (<HiddenTypesField
+  return (
+    <HiddenTypesField
       initialValues={(organization.default_hidden_types ?? []) as string[]}
       handleChange={handleChange}
-    />);
+    />
+  );
 };
 
 export default SettingsOrganizationHiddenTypesField;

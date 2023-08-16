@@ -38,10 +38,12 @@ const GroupHiddenTypesField = ({
     });
   };
 
-  return (<HiddenTypesField
+  return (
+    <HiddenTypesField
       initialValues={(group.default_hidden_types ?? []) as string[]}
       handleChange={handleChange}
-    />);
+    />
+  );
 };
 
 export default GroupHiddenTypesField;
