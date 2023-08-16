@@ -30,6 +30,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import TaskScope from '../../../../components/TaskScope';
+import computeLabel from './TasksUtils';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -373,12 +374,14 @@ class TasksListComponent extends Component {
                       </Typography>
                       {nsdt(task.last_execution_date)}
                     </Grid>
-                    <Grid item={true} xs={2}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t('Scope')}
-                      </Typography>
-                      <TaskScope scope={task.scope} label={t(task.scope)} />
-                    </Grid>
+                    {computeLabel(task.type, task.scope)
+                      && <Grid item={true} xs={2}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t('Scope')}
+                        </Typography>
+                        <TaskScope scope={task.scope} label={t(computeLabel(task.type, task.scope))} />
+                      </Grid>
+                    }
                     <Grid item={true} xs={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Status')}
