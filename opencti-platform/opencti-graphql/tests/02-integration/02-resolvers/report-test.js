@@ -1,8 +1,11 @@
-import { expect, it, describe } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
+import { listAllEntities } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
+import { deleteElementById } from '../../../src/database/middleware';
 
 const LIST_QUERY = gql`
   query reports(
@@ -428,24 +431,42 @@ describe('Report resolver standard behavior', () => {
     });
     expect(queryResult.data.reportEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
-  it('can start an investigation', async () => {
-    const queryResult = await queryAsAdmin({
-      query: gql`
-        query StartInvestigationFromReport($id: String!) {
-          report(id: $id) {
-            startInvestigation {
-              id
-              name
-            }
-          }
+  describe('startInvestigation', () => {
+    afterAll(async () => {
+      const investigations = await listAllEntities(
+        testContext,
+        ADMIN_USER,
+        [ENTITY_TYPE_WORKSPACE],
+        {
+          filters: [{
+            key: 'type',
+            value: 'investigation'
+          }]
         }
-      `,
-      variables: {
-        id: reportInternalId
-      },
+      );
+
+      await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));
     });
 
-    expect(queryResult.data.report.startInvestigation.id).toBeDefined();
+    it('can start an investigation', async () => {
+      const queryResult = await queryAsAdmin({
+        query: gql`
+          query StartInvestigationFromReport($id: String!) {
+            report(id: $id) {
+              startInvestigation {
+                id
+                name
+              }
+            }
+          }
+        `,
+        variables: {
+          id: reportInternalId
+        },
+      });
+
+      expect(queryResult.data.report.startInvestigation.id).toBeDefined();
+    });
   });
   it('should report deleted', async () => {
     const DELETE_QUERY = gql`
