@@ -58,7 +58,7 @@ async function deleteInvestigationsInternalRelations() {
     {
       query: {
         term: {
-          fromType: {
+          'fromType.keyword': {
             value: 'Workspace'
           }
         }
