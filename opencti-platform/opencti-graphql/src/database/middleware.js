@@ -1041,7 +1041,7 @@ const filterTargetByExisting = (targetEntity, sources, targets) => {
     const relationInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(targetEntity.entity_type, source.i_relation.entity_type);
     const existingSingleMeta = isSingleMeta && isNotEmptyField(targetEntity[relationInputName]);
     // For single meta only rely on entity type to prevent relation duplications
-    const id = isSingleMeta ? source.entity_type : `${source.entity_type}-${source.internal_id}`;
+    const id = isSingleMeta ? source.i_relation.entity_type : `${source.i_relation.entity_type}-${source.internal_id}`;
     // If the relation source is already in target = filtered
     const finder = (t) => {
       const sameTarget = t.internal_id === source.internal_id;

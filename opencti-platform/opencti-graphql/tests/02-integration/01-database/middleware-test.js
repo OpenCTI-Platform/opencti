@@ -20,6 +20,7 @@ import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INTRUSION_SET,
@@ -65,6 +66,7 @@ import { addIndicator } from '../../../src/domain/indicator';
 import { findAll } from '../../../src/domain/subType';
 import { addOrganization } from '../../../src/domain/organization';
 import { addReport } from '../../../src/domain/report';
+import { addIndividual } from '../../../src/domain/individual';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -677,6 +679,10 @@ const createOrganization = async (input) => {
   const organization = await addOrganization(testContext, ADMIN_USER, input);
   return storeLoadById(testContext, ADMIN_USER, organization.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };
+const createIndividual = async (input) => {
+  const organization = await addIndividual(testContext, ADMIN_USER, input);
+  return storeLoadById(testContext, ADMIN_USER, organization.id, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
+};
 const createFile = async (input) => {
   const observableSyntaxResult = checkObservableSyntax(ENTITY_HASHED_OBSERVABLE_STIX_FILE, input);
   if (observableSyntaxResult !== true) {
@@ -976,9 +982,9 @@ describe('Upsert and merge entities', () => {
   it('should multiple createdBy correction merged to empty target', async () => {
     const organization1 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION01' });
     const organization2 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION02' });
-    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET', published: '2022-10-06T22:00:00.000Z', });
-    const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_01', published: '2022-10-06T22:00:00.000Z', createdBy: organization1.id });
-    const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
+    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_ORGANIZATION', published: '2022-10-06T22:00:00.000Z', });
+    const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_ORGANIZATION_01', published: '2022-10-06T22:00:00.000Z', createdBy: organization1.id });
+    const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_ORGANIZATION_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
     const merged = await mergeEntities(testContext, ADMIN_USER, reportTarget.internal_id, [reportSource1.internal_id, reportSource2.internal_id]);
     const idCount = await internalIdCounting([merged.id]);
     expect(idCount).toEqual(2); // Should be 2, one for the element and one for the created by
@@ -988,6 +994,23 @@ describe('Upsert and merge entities', () => {
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_CONTAINER_REPORT);
     await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  });
+  it('should multiple createdBy identity merged to empty target', async () => {
+    const individual1 = await createIndividual({ name: 'REPORT_CREATED_BY_INDIVIDUAL_01' });
+    const organization2 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION_02' });
+    const reportTarget = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_TARGET_INDIVIDUAL', published: '2022-10-06T22:00:00.000Z', });
+    const reportSource1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_INDIVIDUAL_01', published: '2022-10-06T22:00:00.000Z', createdBy: individual1.id });
+    const reportSource2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_CREATED_BY_INDIVIDUAL_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
+    const merged = await mergeEntities(testContext, ADMIN_USER, reportTarget.internal_id, [reportSource1.internal_id, reportSource2.internal_id]);
+    const idCount = await internalIdCounting([merged.id]);
+    expect(idCount).toEqual(2); // Should be 2, one for the element and one for the created by
+    const reportAfterMerged = await storeLoadByIdWithRefs(testContext, ADMIN_USER, merged.id);
+    expect(reportAfterMerged.createdBy).not.toBeUndefined();
+    expect(reportAfterMerged.createdBy.id).toEqual(individual1.id);
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, merged.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, individual1.id, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
     await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
   it('should observable merged by update', async () => {

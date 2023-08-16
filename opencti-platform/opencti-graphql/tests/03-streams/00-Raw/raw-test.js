@@ -20,15 +20,15 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['marking-definition'].length).toBe(8);
       expect(createEventsByTypes['external-reference'].length).toBe(17);
       expect(createEventsByTypes.label.length).toBe(15);
-      expect(createEventsByTypes.identity.length).toBe(26);
+      expect(createEventsByTypes.identity.length).toBe(28);
       expect(createEventsByTypes.relationship.length).toBe(123);
       expect(createEventsByTypes.indicator.length).toBe(30);
       expect(createEventsByTypes['attack-pattern'].length).toBe(7);
-      expect(createEventsByTypes.report.length).toBe(10);
+      expect(createEventsByTypes.report.length).toBe(13);
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(301); // 299 created at init + 2 created in tests
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(648);
+      expect(createEvents.length).toBe(653);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
@@ -51,7 +51,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(66);
+      expect(deleteEvents.length).toBe(69);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
@@ -60,7 +60,7 @@ describe('Raw streams tests', () => {
       }
       // 04 - CHECK MERGE EVENTS
       const mergeEvents = events.filter((e) => e.type === EVENT_TYPE_MERGE);
-      expect(mergeEvents.length).toBe(5);
+      expect(mergeEvents.length).toBe(6);
       for (let mergeIndex = 0; mergeIndex < mergeEvents.length; mergeIndex += 1) {
         const { data: insideData, origin } = mergeEvents[mergeIndex];
         const { context } = insideData;
