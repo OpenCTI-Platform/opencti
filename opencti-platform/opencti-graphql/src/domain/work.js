@@ -13,6 +13,7 @@ import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObjec
 import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
+import { AlreadyDeletedError } from '../config/errors';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -115,6 +116,9 @@ export const pingWork = async (context, user, workId) => {
 
 export const deleteWorkForConnector = async (context, user, connectorId) => {
   const connector = await elLoadById(context, user, connectorId, { type: ENTITY_TYPE_CONNECTOR });
+  if (!connector) {
+    throw AlreadyDeletedError({ connectorId });
+  }
   let works = await worksForConnector(context, user, connectorId, { first: 500 });
   while (works.length > 0) {
     await deleteWorksRaw(works);
