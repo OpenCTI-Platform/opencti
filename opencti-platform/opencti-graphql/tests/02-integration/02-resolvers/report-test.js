@@ -445,8 +445,6 @@ describe('Report resolver standard behavior', () => {
       },
     });
 
-    console.log(queryResult);
-
     expect(queryResult.data.report.startInvestigation.id).toBeDefined();
   });
   it('should report deleted', async () => {
