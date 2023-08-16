@@ -50,6 +50,7 @@ import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivation
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
+import ItemAccountStatus from '../../../../components/ItemAccountStatus';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -414,7 +415,11 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Account Status')}
                   </Typography>
-                  {t(user.account_status)}
+                  <ItemAccountStatus
+                    account_status={user.account_status}
+                    label={t(user.account_status || 'Unknown')}
+                    variant={'outlined'}
+                  />
               </Grid>
               <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
