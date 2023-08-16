@@ -288,6 +288,10 @@ class IndicatorTest(EntityTest):
             # TODO killchain phase
         }
 
+    def get_compare_exception_keys(self) -> List[str]:
+        # indicator objects include extracted creators field
+        return ["type", "update", "createdBy", "modified", "creators"]
+
     def teardown(self):
         self.api_client.stix_domain_object.delete(id=self.organization["id"])
 
@@ -869,9 +873,11 @@ class StixCyberObservableTest(EntityTest):
         # toId = to
         # simple_observable_key = entity_type
         # simple_observable_value = observable_value & value
+        # includes extracted creators field
         return [
             "type",
             "update",
+            "creators",
             "createdBy",
             "modified",
             "simple_observable_key",
