@@ -2561,7 +2561,7 @@ const i18n = {
       'Export to image': 'Exporter en image',
       'Export to PDF': 'Exporter en PDF',
       'Export to CSV': 'Exporter en CSV',
-      'start investigation from report': 'commencer une investigation à partir de ce rapport',
+      'start investigation from report': 'Commencer une investigation à partir de ce rapport',
       Periodicity: 'Périodicité',
       Period: 'Période',
       Time: 'Heure',
