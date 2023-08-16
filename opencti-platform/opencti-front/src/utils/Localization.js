@@ -1024,6 +1024,7 @@ const i18n = {
       'Background tasks': 'Tareas en segundo plano',
       KNOWLEDGE: 'CONOCIMIENTO',
       USER: 'USUARIO',
+      RULE: 'REGLA',
       Verify: 'Verificadorr',
       'Connection successfully verified': 'Conexión verificada con éxito',
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
@@ -3102,6 +3103,7 @@ const i18n = {
       'Background tasks': 'Tâches de fond',
       KNOWLEDGE: 'CONNAISSANCE',
       USER: 'UTILISATEUR',
+      RULE: 'RÈGLE',
       Verify: 'Vérifier',
       'Connection successfully verified':
         'La connexion a été vérifiée avec succès',
@@ -5126,6 +5128,7 @@ const i18n = {
       'Background tasks': 'バックグラウンドタスク',
       KNOWLEDGE: '知識',
       USER: '利用者',
+      RULE: '规则',
       Verify: '検証',
       'Connection successfully verified': '接続が正常に検証されました',
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
@@ -7035,6 +7038,7 @@ const i18n = {
       'Background tasks': '后台任务',
       KNOWLEDGE: '知識',
       USER: '使用者',
+      RULE: 'ルール',
       Verify: '验证',
       'Connection successfully verified': '已成功验证连接',
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":

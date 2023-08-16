@@ -373,12 +373,14 @@ class TasksListComponent extends Component {
                       </Typography>
                       {nsdt(task.last_execution_date)}
                     </Grid>
-                    <Grid item={true} xs={2}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t('Scope')}
-                      </Typography>
-                      <TaskScope scope={task.scope} label={t(task.scope)} />
-                    </Grid>
+                    {(task.scope ?? task.type)
+                      && <Grid item={true} xs={2}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t('Scope')}
+                        </Typography>
+                        <TaskScope scope={task.scope ?? task.type} label={t(task.scope ?? task.type)} />
+                      </Grid>
+                    }
                     <Grid item={true} xs={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t('Status')}
