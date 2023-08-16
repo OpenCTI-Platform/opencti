@@ -1580,6 +1580,37 @@ interface StixObject {
   x_opencti_inferences: [Inference]
 }
 
+enum StixMetaObjectsOrdering {
+  entity_type
+  created
+  modified
+  spec_version
+  created_at
+  updated_at
+}
+
+enum StixMetaObjectsFilter {
+  entity_type
+  is_inferred
+}
+
+input StixMetaObjectsFiltering {
+  key: [StixMetaObjectsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type StixMetaObjectConnection {
+  pageInfo: PageInfo!
+  edges: [StixMetaObjectEdge]
+}
+
+type StixMetaObjectEdge {
+  cursor: String!
+  node: StixMetaObject!
+}
+
 interface StixMetaObject {
   id: ID!
   standard_id: String!
@@ -8039,6 +8070,8 @@ type Query {
   synchronizer(id: String!): Synchronizer
   synchronizers(first: Int, after: ID, orderBy: SynchronizersOrdering, orderMode: OrderingMode, search: String): SynchronizerConnection
   synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection]
+  stixMetaObject(id: String!): StixMetaObject
+  stixMetaObjects(first: Int, after: ID, types: [String], orderBy: StixMetaObjectsOrdering, orderMode: OrderingMode, filters: [StixMetaObjectsFiltering], filterMode: FilterMode, search: String): StixMetaObjectConnection
   markingDefinition(id: String!): MarkingDefinition
   markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, filters: [MarkingDefinitionsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): MarkingDefinitionConnection
   label(id: String!): Label

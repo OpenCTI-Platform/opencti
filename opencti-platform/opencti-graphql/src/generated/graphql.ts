@@ -17552,6 +17552,8 @@ export type Query = {
   stixDomainObjectsExportFiles?: Maybe<FileConnection>;
   stixDomainObjectsNumber?: Maybe<Number>;
   stixDomainObjectsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
+  stixMetaObject?: Maybe<StixMetaObject>;
+  stixMetaObjects?: Maybe<StixMetaObjectConnection>;
   stixNestedRefRelationships?: Maybe<StixRefRelationshipConnection>;
   stixObjectOrStixRelationship?: Maybe<StixObjectOrStixRelationship>;
   stixRefRelationship?: Maybe<StixRefRelationship>;
@@ -19272,6 +19274,23 @@ export type QueryStixDomainObjectsTimeSeriesArgs = {
   operation: StatsOperation;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryStixMetaObjectArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryStixMetaObjectsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixMetaObjectsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixMetaObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
@@ -22966,6 +22985,39 @@ export type StixMetaObject = {
   updated_at: Scalars['DateTime']['output'];
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
+
+export type StixMetaObjectConnection = {
+  __typename?: 'StixMetaObjectConnection';
+  edges?: Maybe<Array<Maybe<StixMetaObjectEdge>>>;
+  pageInfo: PageInfo;
+};
+
+export type StixMetaObjectEdge = {
+  __typename?: 'StixMetaObjectEdge';
+  cursor: Scalars['String']['output'];
+  node: StixMetaObject;
+};
+
+export enum StixMetaObjectsFilter {
+  EntityType = 'entity_type',
+  IsInferred = 'is_inferred'
+}
+
+export type StixMetaObjectsFiltering = {
+  filterMode?: InputMaybe<FilterMode>;
+  key: Array<StixMetaObjectsFilter>;
+  operator?: InputMaybe<Scalars['String']['input']>;
+  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+export enum StixMetaObjectsOrdering {
+  Created = 'created',
+  CreatedAt = 'created_at',
+  EntityType = 'entity_type',
+  Modified = 'modified',
+  SpecVersion = 'spec_version',
+  UpdatedAt = 'updated_at'
+}
 
 export type StixObject = {
   created_at: Scalars['DateTime']['output'];
@@ -28610,6 +28662,11 @@ export type ResolversTypes = ResolversObject<{
   StixFileEdge: ResolverTypeWrapper<Omit<StixFileEdge, 'node'> & { node: ResolversTypes['StixFile'] }>;
   StixId: ResolverTypeWrapper<Scalars['StixId']['output']>;
   StixMetaObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixMetaObject']>;
+  StixMetaObjectConnection: ResolverTypeWrapper<StixMetaObjectConnection>;
+  StixMetaObjectEdge: ResolverTypeWrapper<StixMetaObjectEdge>;
+  StixMetaObjectsFilter: StixMetaObjectsFilter;
+  StixMetaObjectsFiltering: StixMetaObjectsFiltering;
+  StixMetaObjectsOrdering: StixMetaObjectsOrdering;
   StixObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixObject']>;
   StixObjectOrStixRelationship: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['StixObjectOrStixRelationship']>;
   StixObjectOrStixRelationshipConnection: ResolverTypeWrapper<StixObjectOrStixRelationshipConnection>;
@@ -29290,6 +29347,9 @@ export type ResolversParentTypes = ResolversObject<{
   StixFileEdge: Omit<StixFileEdge, 'node'> & { node: ResolversParentTypes['StixFile'] };
   StixId: Scalars['StixId']['output'];
   StixMetaObject: ResolversInterfaceTypes<ResolversParentTypes>['StixMetaObject'];
+  StixMetaObjectConnection: StixMetaObjectConnection;
+  StixMetaObjectEdge: StixMetaObjectEdge;
+  StixMetaObjectsFiltering: StixMetaObjectsFiltering;
   StixObject: ResolversInterfaceTypes<ResolversParentTypes>['StixObject'];
   StixObjectOrStixRelationship: ResolversUnionTypes<ResolversParentTypes>['StixObjectOrStixRelationship'];
   StixObjectOrStixRelationshipConnection: StixObjectOrStixRelationshipConnection;
@@ -34421,6 +34481,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixDomainObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsExportFilesArgs, 'type'>>;
   stixDomainObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixDomainObjectsNumberArgs>>;
   stixDomainObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
+  stixMetaObject?: Resolver<Maybe<ResolversTypes['StixMetaObject']>, ParentType, ContextType, RequireFields<QueryStixMetaObjectArgs, 'id'>>;
+  stixMetaObjects?: Resolver<Maybe<ResolversTypes['StixMetaObjectConnection']>, ParentType, ContextType, Partial<QueryStixMetaObjectsArgs>>;
   stixNestedRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixNestedRefRelationshipsArgs>>;
   stixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<QueryStixObjectOrStixRelationshipArgs, 'id'>>;
   stixRefRelationship?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, Partial<QueryStixRefRelationshipArgs>>;
@@ -35482,6 +35544,18 @@ export type StixMetaObjectResolvers<ContextType = any, ParentType extends Resolv
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+}>;
+
+export type StixMetaObjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaObjectConnection'] = ResolversParentTypes['StixMetaObjectConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixMetaObjectEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixMetaObjectEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaObjectEdge'] = ResolversParentTypes['StixMetaObjectEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['StixMetaObject'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObject'] = ResolversParentTypes['StixObject']> = ResolversObject<{
@@ -37353,6 +37427,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixFileEdge?: StixFileEdgeResolvers<ContextType>;
   StixId?: GraphQLScalarType;
   StixMetaObject?: StixMetaObjectResolvers<ContextType>;
+  StixMetaObjectConnection?: StixMetaObjectConnectionResolvers<ContextType>;
+  StixMetaObjectEdge?: StixMetaObjectEdgeResolvers<ContextType>;
   StixObject?: StixObjectResolvers<ContextType>;
   StixObjectOrStixRelationship?: StixObjectOrStixRelationshipResolvers<ContextType>;
   StixObjectOrStixRelationshipConnection?: StixObjectOrStixRelationshipConnectionResolvers<ContextType>;

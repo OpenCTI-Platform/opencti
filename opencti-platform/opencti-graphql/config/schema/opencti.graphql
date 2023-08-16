@@ -1516,7 +1516,32 @@ interface StixObject {
 }
 
 ######## STIX META OBJECT ENTITIES
-
+enum StixMetaObjectsOrdering {
+  entity_type
+  created
+  modified
+  spec_version
+  created_at
+  updated_at
+}
+enum StixMetaObjectsFilter {
+  entity_type
+  is_inferred
+}
+input StixMetaObjectsFiltering {
+  key: [StixMetaObjectsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type StixMetaObjectConnection {
+  pageInfo: PageInfo!
+  edges: [StixMetaObjectEdge]
+}
+type StixMetaObjectEdge {
+  cursor: String!
+  node: StixMetaObject!
+}
 interface StixMetaObject {
   id: ID! # internal_id
   standard_id: String!
@@ -12070,7 +12095,17 @@ type Query {
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
-
+  stixMetaObject(id: String!): StixMetaObject @auth(for: [KNOWLEDGE])
+  stixMetaObjects(
+    first: Int
+    after: ID
+    types: [String]
+    orderBy: StixMetaObjectsOrdering
+    orderMode: OrderingMode
+    filters: [StixMetaObjectsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): StixMetaObjectConnection @auth(for: [KNOWLEDGE])
   markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
   markingDefinitions(
     first: Int
