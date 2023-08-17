@@ -25,6 +25,7 @@ import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ConfidenceField from "../form/ConfidenceField";
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -140,6 +141,7 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
   aliases: Yup.string().nullable(),
   x_opencti_aliases: Yup.string().nullable(),
   references: Yup.array(),
+  confidence: Yup.number().nullable(),
 });
 
 const StixDomainObjectEditionContainer = (props) => {
@@ -183,6 +185,7 @@ const StixDomainObjectEditionContainer = (props) => {
       R.assoc('x_opencti_workflow_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -294,7 +297,7 @@ const StixDomainObjectEditionContainer = (props) => {
   let initialValues = R.pipe(
     R.assoc('createdBy', createdBy),
     R.assoc('objectMarking', objectMarking),
-    R.pick(['name', 'description', 'createdBy', 'objectMarking']),
+    R.pick(['name', 'description', 'createdBy', 'objectMarking', 'confidence']),
   )(stixDomainObject);
   if ('aliases' in stixDomainObject) {
     initialValues = R.assoc(
@@ -392,6 +395,15 @@ const StixDomainObjectEditionContainer = (props) => {
                   }
                 />
               )}
+              <ConfidenceField
+                variant="edit"
+                name="confidence"
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                editContext={editContext}
+                entityType={'Stix-Domain-Object'}
+              />
               {'description' in stixDomainObject && (
                 <Field
                   component={MarkdownField}
@@ -461,6 +473,7 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         id
         entity_type
         parent_types
+        confidence
         ... on AttackPattern {
           name
           description
@@ -481,6 +494,7 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         }
         ... on Report {
           name
+          description
         }
         ... on Grouping {
           name

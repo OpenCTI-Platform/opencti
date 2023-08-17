@@ -15,7 +15,6 @@ import { useFormatter } from '../../components/i18n';
 import ItemAuthor from '../../components/ItemAuthor';
 import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
-import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
@@ -26,6 +25,8 @@ import { defaultValue } from '../Graph';
 import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
 import ItemCreator from '../../components/ItemCreator';
+import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
+import ItemConfidence from '../../components/ItemConfidence';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   label: {
@@ -134,6 +135,7 @@ const entityDetailsQuery = graphql`
       }
       ... on StixDomainObject {
         created
+        confidence
       }
       ... on AttackPattern {
         name
@@ -247,6 +249,7 @@ const entityDetailsQuery = graphql`
       }
       ... on StixCyberObservable {
         observable_value
+        x_opencti_description
       }
       ... on StixFile {
         observableName: name
@@ -313,6 +316,7 @@ EntityDetailsComponentProps
   if (!stixCoreObject) {
     return <ErrorNotFound />;
   }
+  const entityDescription = stixCoreObject.description || stixCoreObject.x_opencti_description;
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
@@ -343,11 +347,22 @@ EntityDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Description')}
       </Typography>
-      {stixCoreObject.description && stixCoreObject.description.length > 0 ? (
-        <ExpandableMarkdown source={stixCoreObject.description} limit={400} />
+      {entityDescription && entityDescription.length > 0 ? (
+        <ExpandableMarkdown source={entityDescription} limit={400} />
       ) : (
         '-'
       )}
+      {!stixCoreObject.parent_types.includes('Stix-Cyber-Observable')
+        && (<div>
+          <Typography variant="h3" gutterBottom={true} className={classes.label}>
+            {t('Confidence level')}
+          </Typography>
+          {stixCoreObject.confidence
+            ? <ItemConfidence confidence={stixCoreObject.confidence} entityType="stix-core-object"/>
+            : ('-')
+          }
+        </div>)
+      }
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Marking')}
       </Typography>

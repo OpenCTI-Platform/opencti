@@ -20,6 +20,17 @@ const useStyles = makeStyles((theme) => ({
     }),
     padding: 0,
   },
+  drawerPaperInGraph: {
+    minHeight: '100vh',
+    width: '30%',
+    position: 'fixed',
+    overflow: 'auto',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
+  },
 }));
 
 export const stixSightingRelationshipEditionDeleteMutation = graphql`
@@ -30,37 +41,69 @@ export const stixSightingRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
-const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate }) => {
+const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate, inGraph }) => {
   const classes = useStyles();
   const queryRef = useQueryLoading(stixSightingRelationshipEditionOverviewQuery, { id: stixSightingRelationshipId });
-  return (
+
+  const renderInGraph = () => {
+    return (
       <Drawer open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
-          {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <StixSightingRelationshipEditionOverview
-                queryRef={queryRef}
-                handleClose={handleClose}
-                handleDelete={typeof handleDelete === 'function' ? handleDelete : null}
-                inferred={inferred}
-                noStoreUpdate={noStoreUpdate}
-              />
-            </React.Suspense>
-          )}
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaperInGraph }}
+              onClose={handleClose}>
+        {queryRef && (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <StixSightingRelationshipEditionOverview
+              queryRef={queryRef}
+              handleClose={handleClose}
+              handleDelete={typeof handleDelete === 'function' ? handleDelete : null}
+              inferred={inferred}
+              noStoreUpdate={noStoreUpdate}
+            />
+          </React.Suspense>
+        )}
       </Drawer>
-  );
+    );
+  };
+
+  const renderClassic = () => {
+    return (
+      <Drawer open={open}
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaper }}
+              onClose={handleClose}>
+        {queryRef && (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <StixSightingRelationshipEditionOverview
+              queryRef={queryRef}
+              handleClose={handleClose}
+              handleDelete={typeof handleDelete === 'function' ? handleDelete : null}
+              inferred={inferred}
+              noStoreUpdate={noStoreUpdate}
+            />
+          </React.Suspense>
+        )}
+      </Drawer>
+    );
+  };
+
+  if (inGraph) {
+    // in a graph bar
+    return renderInGraph();
+  }
+  return renderClassic();
 };
 
 // Workaround to prevent direct loading
-const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate }) => {
+const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate, inGraph }) => {
   if (stixSightingRelationshipId && open) {
     return <StixSightingRelationshipEditionInner open={open} stixSightingRelationshipId={stixSightingRelationshipId}
                                                  handleClose={handleClose} handleDelete={handleDelete}
-                                                 inferred={inferred} noStoreUpdate={noStoreUpdate} />;
+                                                 inferred={inferred} noStoreUpdate={noStoreUpdate} inGraph={inGraph} />;
   }
   return <></>;
 };

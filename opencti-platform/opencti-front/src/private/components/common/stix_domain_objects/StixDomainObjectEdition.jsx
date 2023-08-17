@@ -10,7 +10,7 @@ import StixDomainObjectEditionOverview from './StixDomainObjectEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
-  drawerPaper: {
+  drawerPaperInGraph: {
     minHeight: '100vh',
     width: '30%',
     position: 'fixed',
@@ -49,7 +49,7 @@ class StixDomainObjectEdition extends Component {
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
+        classes={{ paper: classes.drawerPaperInGraph }}
         onClose={handleClose.bind(this)}
       >
         {stixDomainObjectId ? (

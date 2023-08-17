@@ -659,7 +659,6 @@ interface RelationshipDetailsProps {
 const RelationshipDetails: FunctionComponent<
 Omit<RelationshipDetailsProps, 'queryRef'>
 > = ({ relation }) => {
-  console.log('relation', relation);
   const queryRef = useQueryLoading<RelationshipDetailsQuery>(
     relationshipDetailsQuery,
     { id: relation.id },

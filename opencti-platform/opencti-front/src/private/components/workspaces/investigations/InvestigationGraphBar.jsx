@@ -845,12 +845,14 @@ class InvestigationGraphBar extends Component {
                               stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
                               handleClose={this.handleCloseRelationEdition.bind(this)}
                               noStoreUpdate={true}
+                              inGraph={true}
                             />
                             <StixSightingRelationshipEdition
                               open={openEditSighting}
                               stixSightingRelationshipId={stixCoreObjectOrRelationshipId}
                               handleClose={this.handleCloseSightingEdition.bind(this)}
                               noStoreUpdate={true}
+                              inGraph={true}
                             />
                           </>
                         )}
