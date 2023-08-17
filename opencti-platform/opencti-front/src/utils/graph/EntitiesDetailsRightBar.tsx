@@ -99,6 +99,7 @@ EntityDetailsRightsBarProps
   const entityUrl = selectedEntity.entity_type === 'External-Reference'
     ? `/dashboard/analyses/external_references/${selectedEntity.id}`
     : `/dashboard/id/${selectedEntity.id}`;
+  console.log('selectedEntity', selectedEntity);
   return (
     <Drawer
       open={true}
@@ -156,7 +157,7 @@ EntityDetailsRightsBarProps
           paddingRight: 20,
         }}
       >
-        {selectedEntity.relationship_type && (
+        {selectedEntity.parent_types.includes('stix-relationship') && (
           <RelationshipDetails relation={selectedEntity} />
         )}
         {selectedEntity.parent_types.includes('Stix-Core-Object') && (

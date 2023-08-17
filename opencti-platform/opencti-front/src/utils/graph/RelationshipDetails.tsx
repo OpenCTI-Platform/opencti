@@ -21,7 +21,6 @@ import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import ItemAuthor from '../../components/ItemAuthor';
 import ItemConfidence from '../../components/ItemConfidence';
-import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
@@ -29,6 +28,7 @@ import { Theme } from '../../components/Theme';
 import ItemIcon from '../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../Colors';
 import ItemCreator from '../../components/ItemCreator';
+import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   label: {
@@ -254,6 +254,85 @@ const relationshipDetailsQuery = graphql`
           }
         }
       }
+      ... on StixSightingRelationship {
+          description
+          created
+          created_at
+          updated_at
+          relationship_type
+          first_seen
+          last_seen
+          from {
+            ... on StixCoreObject {
+              id
+              parent_types
+              entity_type
+            }
+            ... on StixCoreRelationship {
+              id
+              parent_types
+              entity_type
+              relationship_type
+            }
+          }
+          to {
+            ... on StixCoreObject {
+              id
+              parent_types
+              entity_type
+            }
+            ... on StixCoreRelationship {
+              id
+              parent_types
+              entity_type
+              relationship_type
+            }
+          }
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          creators {
+            id
+            name
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+          }
+          reports(first: 10) {
+          edges {
+            node {
+              id
+              entity_type
+              name
+              description
+              published
+              report_types
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+            }
+          }
+          pageInfo {
+            globalCount
+          }
+        }
+      }
     }
   }
 `;
@@ -350,11 +429,15 @@ RelationshipDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('First seen')}
       </Typography>
-      {fldt(stixRelationship.start_time)}
+      {stixRelationship.entity_type !== 'stix-sighting-relationship'
+        ? fldt(stixRelationship.start_time)
+        : fldt(stixRelationship.first_seen)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Last seen')}
       </Typography>
-      {fldt(stixRelationship.stop_time)}
+      {stixRelationship.entity_type !== 'stix-sighting-relationship'
+        ? fldt(stixRelationship.stop_time)
+        : fldt(stixRelationship.last_seen)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Description')}
       </Typography>
@@ -379,18 +462,20 @@ RelationshipDetailsComponentProps
         {t('Marking')}
       </Typography>
       {stixRelationship.objectMarking
-      && stixRelationship.objectMarking.edges.length > 0 ? (
-        <ItemMarkings
+      && stixRelationship.objectMarking.edges.length > 0
+        ? <ItemMarkings
           markingDefinitionsEdges={stixRelationship.objectMarking.edges}
           limit={2}
         />
-        ) : (
-          '-'
-        )}
+        : ('-')
+      }
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Author')}
       </Typography>
-      <ItemAuthor createdBy={stixRelationship.createdBy} />
+      {stixRelationship.createdBy
+        ? <ItemAuthor createdBy={stixRelationship.createdBy}/>
+        : ('-')
+      }
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Creators')}
       </Typography>
@@ -401,11 +486,11 @@ RelationshipDetailsComponentProps
               key={`creator-${c.id}`}
               style={{ float: 'left', marginRight: '10px' }}
             >
-              <ItemCreator creator={c} />
+              <ItemCreator creator={c}/>
             </div>
           );
         })}
-        <div style={{ clear: 'both' }} />
+        <div style={{ clear: 'both' }}/>
       </div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {`${t('Last')} ${
@@ -416,7 +501,8 @@ RelationshipDetailsComponentProps
           stixRelationship.reports?.pageInfo.globalCount
         }`}
       </Typography>
-      {reportsEdges && reportsEdges.length > 0 && (
+      {reportsEdges && reportsEdges.length > 0
+        ? (
         <List style={{ marginBottom: 0 }}>
           {reportsEdges.map((reportEdge) => {
             const report = reportEdge?.node;
@@ -452,7 +538,9 @@ RelationshipDetailsComponentProps
             return '';
           })}
         </List>
-      )}
+        )
+        : ('-')
+      }
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('External References')}
       </Typography>
@@ -536,6 +624,7 @@ interface RelationshipDetailsProps {
 const RelationshipDetails: FunctionComponent<
 Omit<RelationshipDetailsProps, 'queryRef'>
 > = ({ relation }) => {
+  console.log('relation', relation);
   const queryRef = useQueryLoading<RelationshipDetailsQuery>(
     relationshipDetailsQuery,
     { id: relation.id },
