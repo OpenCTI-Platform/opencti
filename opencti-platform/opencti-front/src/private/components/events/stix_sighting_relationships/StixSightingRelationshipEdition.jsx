@@ -11,7 +11,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
-    width: '30%',
+    width: '50%',
     position: 'fixed',
     overflow: 'auto',
     transition: theme.transitions.create('width', {

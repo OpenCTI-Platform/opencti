@@ -99,7 +99,6 @@ EntityDetailsRightsBarProps
   const entityUrl = selectedEntity.entity_type === 'External-Reference'
     ? `/dashboard/analyses/external_references/${selectedEntity.id}`
     : `/dashboard/id/${selectedEntity.id}`;
-  console.log('selectedEntity', selectedEntity);
   return (
     <Drawer
       open={true}
