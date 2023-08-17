@@ -301,7 +301,7 @@ UserEditionOverviewComponentProps
               }
             >
               {settings.platform_user_statuses.map((s) => {
-                return <MenuItem key={s.status} value={s.status}>{s.status}</MenuItem>;
+                return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
               })}
             </Field>
             <Field
