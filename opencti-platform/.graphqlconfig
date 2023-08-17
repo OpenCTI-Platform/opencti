@@ -1,5 +1,0 @@
-{
-  "name": "OpenCTI GraphQL Schema",
-  "schemaPath": "./opencti-graphql/config/schema/opencti.graphql",
-  "excludes": ["./opencti-front/src/schema/relay.schema.graphql"]
-}
