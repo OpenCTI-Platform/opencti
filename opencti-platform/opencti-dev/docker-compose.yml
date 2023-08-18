@@ -2,7 +2,7 @@ version: '3'
 services:
   opencti-dev-redis:
     container_name: opencti-dev-redis
-    image: redis:7.0.12
+    image: redis:7.2.0
     restart: unless-stopped
     ports:
       - 6379:6379
