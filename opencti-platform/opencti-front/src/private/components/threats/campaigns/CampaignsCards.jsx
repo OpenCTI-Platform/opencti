@@ -3,7 +3,8 @@ import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
-import { CampaignCard, CampaignCardDummy } from './CampaignCard';
+import CampaignCard from './CampaignCard';
+import { GenericAttackCardDummy } from '../../common/cards/GenericAttackCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectBookmarks, {
@@ -57,11 +58,11 @@ class CampaignsCards extends Component {
                 this.props.data,
               )}
               CardComponent={<CampaignCard />}
-              DummyCardComponent={<CampaignCardDummy />}
+              DummyCardComponent={<GenericAttackCardDummy />}
               nbOfCardsToLoad={nbOfCardsToLoad}
               onLabelClick={onLabelClick.bind(this)}
               bookmarkList={bookmarks}
-              rowHeight={340}
+              rowHeight={350}
             />
           </div>
         )}
