@@ -28,6 +28,7 @@ import StixCoreRelationshipCreationFromRelationStixCyberObservablesLines, {
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -497,38 +498,46 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       fromEntity = targetEntity;
       toEntity = sourceEntity;
     }
-    const relationshipTypes = R.filter(
-      (n) => R.isNil(allowedRelationshipTypes)
-        || allowedRelationshipTypes.length === 0
-        || allowedRelationshipTypes.includes(n),
-      resolveRelationsTypes(
-        R.includes('Stix-Cyber-Observable', fromEntity.parent_types)
-          ? 'observable'
-          : fromEntity.entity_type,
-        toEntity.entity_type,
-      ),
-    );
+
     return (
-      <>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={this.handleClose.bind(this)}
-            size="large"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a relationship')}</Typography>
-        </div>
-      <StixCoreRelationshipCreationForm
-        fromEntities={[fromEntity]}
-        toEntities={[toEntity]}
-        relationshipTypes={relationshipTypes}
-        handleResetSelection={this.handleResetSelection.bind(this)}
-        onSubmit={this.onSubmit.bind(this)}
-        handleClose={this.handleClose.bind(this)} />
-      </>
+        <UserContext.Consumer>
+          {({ schema }) => {
+            const relationshipTypes = R.filter(
+                (n) => R.isNil(allowedRelationshipTypes)
+                    || allowedRelationshipTypes.length === 0
+                    || allowedRelationshipTypes.includes(n),
+                resolveRelationsTypes(
+                    R.includes('Stix-Cyber-Observable', fromEntity.parent_types)
+                        ? 'observable'
+                        : fromEntity.entity_type,
+                    toEntity.entity_type,
+                    schema.schemaRelationsTypesMapping
+                ),
+            );
+            return (
+                <>
+                  <div className={classes.header}>
+                    <IconButton
+                      aria-label="Close"
+                      className={classes.closeButton}
+                      onClick={this.handleClose.bind(this)}
+                      size="large"
+                    >
+                      <Close fontSize="small" color="primary" />
+                    </IconButton>
+                    <Typography variant="h6">{t('Create a relationship')}</Typography>
+                  </div>
+                  <StixCoreRelationshipCreationForm
+                      fromEntities={[fromEntity]}
+                      toEntities={[toEntity]}
+                      relationshipTypes={relationshipTypes}
+                      handleResetSelection={this.handleResetSelection.bind(this)}
+                      onSubmit={this.onSubmit.bind(this)}
+                      handleClose={this.handleClose.bind(this)} />
+                </>
+            )
+          }}
+        </UserContext.Consumer>
     );
   }
 

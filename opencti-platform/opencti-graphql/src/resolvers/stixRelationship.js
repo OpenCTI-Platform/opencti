@@ -10,6 +10,13 @@ import {
   stixRelationshipsMultiTimeSeries,
   stixRelationshipsNumber
 } from '../domain/stixRelationship';
+import {
+  findAll,
+  findById,
+  getSpecVersionOrDefault,
+  stixRelationshipDelete,
+  schemaRelationsTypesMapping
+} from '../domain/stixRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
@@ -30,6 +37,7 @@ const stixRelationshipResolvers = {
     stixRelationshipsMultiTimeSeries: (_, args, context) => stixRelationshipsMultiTimeSeries(context, context.user, args),
     stixRelationshipsDistribution: (_, args, context) => stixRelationshipsDistribution(context, context.user, args),
     stixRelationshipsNumber: (_, args, context) => stixRelationshipsNumber(context, context.user, args),
+    schemaRelationsTypesMapping: (_, { entityTypes }) => schemaRelationsTypesMapping(entityTypes),
   },
   StixRelationship: {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),

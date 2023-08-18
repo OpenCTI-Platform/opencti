@@ -140,6 +140,7 @@ class StixDomainObjectVictimology extends Component {
                   'Region',
                   'Position',
                   'Event',
+                  'Administrative-Area',
                 ]}
                 relationshipTypes={['targets']}
                 isRelationReversed={false}

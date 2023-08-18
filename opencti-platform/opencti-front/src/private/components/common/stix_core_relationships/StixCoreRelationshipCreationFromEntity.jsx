@@ -18,7 +18,6 @@ import Skeleton from '@mui/material/Skeleton';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
-import { resolveRelationsTypes } from '../../../../utils/Relation';
 import StixCoreRelationshipCreationFromEntityStixDomainObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
 } from './StixCoreRelationshipCreationFromEntityStixDomainObjectsLines';
@@ -30,6 +29,8 @@ import SearchInput from '../../../../components/SearchInput';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { isNodeInConnection } from '../../../../utils/store';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
+import { resolveRelationsTypes } from '../../../../utils/Relation';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -518,37 +519,47 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       fromEntities = targetEntities;
       toEntities = [sourceEntity];
     }
-    const relationshipTypes = R.filter(
-      (n) => R.isNil(allowedRelationshipTypes)
-        || allowedRelationshipTypes.length === 0
-        || allowedRelationshipTypes.includes('stix-core-relationship')
-        || allowedRelationshipTypes.includes(n),
-      resolveRelationsTypes(fromEntities[0].entity_type, toEntities[0].entity_type),
-    );
     return (
-      <>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={this.handleClose.bind(this)}
-            size="large"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a relationship')}</Typography>
-        </div>
-      <StixCoreRelationshipCreationForm
-        fromEntities={fromEntities}
-        toEntities={toEntities}
-        relationshipTypes={relationshipTypes}
-        handleReverseRelation={this.props.handleReverseRelation}
-        handleResetSelection={this.handleResetSelection.bind(this)}
-        onSubmit={this.onSubmit.bind(this)}
-        handleClose={this.handleClose.bind(this)}
-        defaultStartTime={defaultStartTime}
-        defaultStopTime={defaultStopTime}/>
-    </>
+        <UserContext.Consumer>
+          {({ schema }) => {
+            const relationshipTypes = R.filter(
+                (n) => R.isNil(allowedRelationshipTypes)
+                    || allowedRelationshipTypes.length === 0
+                    || allowedRelationshipTypes.includes('stix-core-relationship')
+                    || allowedRelationshipTypes.includes(n),
+                resolveRelationsTypes(
+                    fromEntities[0].entity_type,
+                    toEntities[0].entity_type,
+                    schema.schemaRelationsTypesMapping
+                ),
+            );
+            return (
+                <>
+                  <div className={classes.header}>
+                    <IconButton
+                        aria-label="Close"
+                        className={classes.closeButton}
+                        onClick={this.handleClose.bind(this)}
+                        size="large"
+                    >
+                      <Close fontSize="small" color="primary" />
+                    </IconButton>
+                    <Typography variant="h6">{t('Create a relationship')}</Typography>
+                  </div>
+                  <StixCoreRelationshipCreationForm
+                      fromEntities={fromEntities}
+                      toEntities={toEntities}
+                      relationshipTypes={relationshipTypes}
+                      handleReverseRelation={this.props.handleReverseRelation}
+                      handleResetSelection={this.handleResetSelection.bind(this)}
+                      onSubmit={this.onSubmit.bind(this)}
+                      handleClose={this.handleClose.bind(this)}
+                      defaultStartTime={defaultStartTime}
+                      defaultStopTime={defaultStopTime}/>
+                </>
+            )
+          }}
+        </UserContext.Consumer>
     );
   }
 

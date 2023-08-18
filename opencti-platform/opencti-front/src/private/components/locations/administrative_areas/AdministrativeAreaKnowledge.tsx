@@ -212,7 +212,7 @@ const AdministrativeAreaKnowledge = ({
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={administrativeArea.id}
-              relationshipTypes={['targets']}
+              relationshipTypes={['targets', 'originates-from']}
               stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}

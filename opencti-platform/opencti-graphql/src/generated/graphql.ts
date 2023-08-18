@@ -17689,6 +17689,7 @@ export type Query = {
   rules?: Maybe<Array<Maybe<Rule>>>;
   runtimeAttributes?: Maybe<AttributeConnection>;
   schemaAttributes?: Maybe<AttributeConnection>;
+  schemaRelationsTypesMapping: Array<StixRelationshipSchema>;
   sector?: Maybe<Sector>;
   sectors?: Maybe<SectorConnection>;
   sessions?: Maybe<Array<Maybe<UserSession>>>;
@@ -19079,6 +19080,11 @@ export type QueryRuntimeAttributesArgs = {
 
 export type QuerySchemaAttributesArgs = {
   elementType: Array<InputMaybe<Scalars['String']['input']>>;
+};
+
+
+export type QuerySchemaRelationsTypesMappingArgs = {
+  entityTypes?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 
@@ -23597,6 +23603,12 @@ export type StixRelationshipEdge = {
 export type StixRelationshipEditMutations = {
   __typename?: 'StixRelationshipEditMutations';
   delete?: Maybe<Scalars['ID']['output']>;
+};
+
+export type StixRelationshipSchema = {
+  __typename?: 'StixRelationshipSchema';
+  key: Scalars['String']['output'];
+  values: Array<Scalars['String']['output']>;
 };
 
 export enum StixRelationshipsFilter {
@@ -29049,6 +29061,7 @@ export type ResolversTypes = ResolversObject<{
   StixRelationshipConnection: ResolverTypeWrapper<Omit<StixRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixRelationshipEdge']>>> }>;
   StixRelationshipEdge: ResolverTypeWrapper<Omit<StixRelationshipEdge, 'node'> & { node: ResolversTypes['StixRelationship'] }>;
   StixRelationshipEditMutations: ResolverTypeWrapper<StixRelationshipEditMutations>;
+  StixRelationshipSchema: ResolverTypeWrapper<StixRelationshipSchema>;
   StixRelationshipsFilter: StixRelationshipsFilter;
   StixRelationshipsFiltering: StixRelationshipsFiltering;
   StixRelationshipsOrdering: StixRelationshipsOrdering;
@@ -29740,6 +29753,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixRelationshipConnection: Omit<StixRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixRelationshipEdge']>>> };
   StixRelationshipEdge: Omit<StixRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixRelationship'] };
   StixRelationshipEditMutations: StixRelationshipEditMutations;
+  StixRelationshipSchema: StixRelationshipSchema;
   StixRelationshipsFiltering: StixRelationshipsFiltering;
   StixRelationshipsTimeSeriesParameters: StixRelationshipsTimeSeriesParameters;
   StixSightingRelationship: Omit<StixSightingRelationship, 'cases' | 'containers' | 'createdBy' | 'externalReferences' | 'from' | 'groupings' | 'notes' | 'objectOrganization' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
@@ -34885,6 +34899,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   rules?: Resolver<Maybe<Array<Maybe<ResolversTypes['Rule']>>>, ParentType, ContextType>;
   runtimeAttributes?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QueryRuntimeAttributesArgs, 'attributeName'>>;
   schemaAttributes?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QuerySchemaAttributesArgs, 'elementType'>>;
+  schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType, Partial<QuerySchemaRelationsTypesMappingArgs>>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
   sectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType, Partial<QuerySectorsArgs>>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserSession']>>>, ParentType, ContextType>;
@@ -36150,6 +36165,12 @@ export type StixRelationshipEdgeResolvers<ContextType = any, ParentType extends 
 
 export type StixRelationshipEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipEditMutations'] = ResolversParentTypes['StixRelationshipEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixRelationshipSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipSchema'] = ResolversParentTypes['StixRelationshipSchema']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -37896,6 +37917,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixRelationshipConnection?: StixRelationshipConnectionResolvers<ContextType>;
   StixRelationshipEdge?: StixRelationshipEdgeResolvers<ContextType>;
   StixRelationshipEditMutations?: StixRelationshipEditMutationsResolvers<ContextType>;
+  StixRelationshipSchema?: StixRelationshipSchemaResolvers<ContextType>;
   StixSightingRelationship?: StixSightingRelationshipResolvers<ContextType>;
   StixSightingRelationshipConnection?: StixSightingRelationshipConnectionResolvers<ContextType>;
   StixSightingRelationshipEditMutations?: StixSightingRelationshipEditMutationsResolvers<ContextType>;

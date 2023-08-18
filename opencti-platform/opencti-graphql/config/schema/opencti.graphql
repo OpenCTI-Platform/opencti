@@ -11314,6 +11314,10 @@ interface StixRelationship {
   # Technical
   creators: [Creator!]
 }
+type StixRelationshipSchema {
+  key: String!
+  values: [String!]!
+}
 
 ############## StixCoreRelationships
 enum StixCoreRelationshipsOrdering {
@@ -12695,6 +12699,7 @@ type Query {
     dynamicFrom: [StixCoreObjectsFiltering]
     dynamicTo: [StixCoreObjectsFiltering]
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  schemaRelationsTypesMapping(entityTypes: [String!]): [StixRelationshipSchema!]! @auth(for: [KNOWLEDGE])
 
   ######## STIX CORE RELATIONSHIPS
 
