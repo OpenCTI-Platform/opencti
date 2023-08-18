@@ -3957,7 +3957,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/hoist-non-react-statics@npm:^3.0.1, @types/hoist-non-react-statics@npm:^3.3.1":
+"@types/hoist-non-react-statics@npm:^3.3.1":
   version: 3.3.1
   resolution: "@types/hoist-non-react-statics@npm:3.3.1"
   dependencies:
@@ -9879,7 +9879,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hoist-non-react-statics@npm:^3.0.0, hoist-non-react-statics@npm:^3.1.0, hoist-non-react-statics@npm:^3.3.0, hoist-non-react-statics@npm:^3.3.1, hoist-non-react-statics@npm:^3.3.2":
+"hoist-non-react-statics@npm:^3.1.0, hoist-non-react-statics@npm:^3.3.0, hoist-non-react-statics@npm:^3.3.1, hoist-non-react-statics@npm:^3.3.2":
   version: 3.3.2
   resolution: "hoist-non-react-statics@npm:3.3.2"
   dependencies:
@@ -13371,7 +13371,7 @@ __metadata:
     react: 18.2.0
     react-apexcharts: 1.4.1
     react-color: 2.19.3
-    react-cookie: 4.1.1
+    react-cookie: 5.0.0
     react-csv: 2.2.2
     react-dom: 18.2.0
     react-force-graph-2d: 1.25.0
@@ -14624,16 +14624,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-cookie@npm:4.1.1":
-  version: 4.1.1
-  resolution: "react-cookie@npm:4.1.1"
+"react-cookie@npm:5.0.0":
+  version: 5.0.0
+  resolution: "react-cookie@npm:5.0.0"
   dependencies:
-    "@types/hoist-non-react-statics": ^3.0.1
-    hoist-non-react-statics: ^3.0.0
+    "@types/hoist-non-react-statics": ^3.3.1
+    hoist-non-react-statics: ^3.3.2
     universal-cookie: ^4.0.0
   peerDependencies:
     react: ">= 16.3.0"
-  checksum: b734dcad35d790ced8c8fc3b19e3eb1f546e0923c637bad888c7c0096dbe2c996668416a49b48827ec7ad2d81522f1b57567694c791e1a5fb89ca41b39158a74
+  checksum: b3dc3eabe61e1989b9a245c89c068527d42ae2f9779749bb7af932ae7c347ae8492bc42aee9739c4acd1759a44847bcd104cec6cbfca7c74bdd18f1093e5b45b
   languageName: node
   linkType: hard
 

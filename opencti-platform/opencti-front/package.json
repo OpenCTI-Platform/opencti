@@ -45,7 +45,7 @@
     "react": "18.2.0",
     "react-apexcharts": "1.4.1",
     "react-color": "2.19.3",
-    "react-cookie": "4.1.1",
+    "react-cookie": "5.0.0",
     "react-csv": "2.2.2",
     "react-dom": "18.2.0",
     "react-force-graph-2d": "1.25.0",
