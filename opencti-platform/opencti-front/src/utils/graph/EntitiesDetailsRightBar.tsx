@@ -16,6 +16,7 @@ import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../components/i18n';
 import { isStixNestedRefRelationship } from '../Relation';
 import StixMetaObjectDetails from './StixMetaObjectDetails';
+import BasicRelationshipDetails from './BasicRelationshipDetails';
 
 const useStyles = makeStyles<Theme>(() => ({
   drawerPaper: {
@@ -48,6 +49,9 @@ export interface SelectedEntity {
   fromType?: string;
   toId?: string;
   toType?: string;
+  source_id?: string;
+  target_id?: string;
+  markedBy?: { id: string, definition_type: string, definition: string, x_opencti_order: number, x_opencti_color: string }[];
 }
 
 interface EntityDetailsRightsBarProps {
@@ -96,7 +100,8 @@ EntityDetailsRightsBarProps
   const hasOverviewPage = !selectedEntity.parent_types.some((el) => isStixNestedRefRelationship(el))
     && (!selectedEntity.parent_types.includes('Stix-Meta-Object')
       || selectedEntity.entity_type === 'External-Reference'
-    );
+    )
+    && selectedEntity.entity_type !== 'basic-relationship';
   const entityUrl = selectedEntity.entity_type === 'External-Reference'
     ? `/dashboard/analyses/external_references/${selectedEntity.id}`
     : `/dashboard/id/${selectedEntity.id}`;
@@ -159,7 +164,10 @@ EntityDetailsRightsBarProps
           paddingRight: 20,
         }}
       >
-        {selectedEntity.parent_types.includes('stix-relationship') && (
+        {selectedEntity.entity_type === 'basic-relationship' && (
+          <BasicRelationshipDetails relation={selectedEntity} />
+        )}
+        {selectedEntity.parent_types.includes('stix-relationship') && selectedEntity.entity_type !== 'basic-relationship' && (
           <RelationshipDetails relation={selectedEntity} />
         )}
         {selectedEntity.parent_types.includes('Stix-Core-Object') && (
