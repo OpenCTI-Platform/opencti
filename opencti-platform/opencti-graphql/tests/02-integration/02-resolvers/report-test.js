@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
@@ -432,6 +432,38 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data.reportEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   describe('startInvestigation', () => {
+    let report;
+    let investigation;
+    let secondInvestigation;
+    let thirdInvestigation;
+
+    const startInvestigation = async () => {
+      return await queryAsAdmin({
+        query: gql`
+          query StartInvestigationFromReport($id: String!) {
+            report(id: $id) {
+              name
+              startInvestigation {
+                id
+                name
+              }
+            }
+          }
+        `,
+        variables: {
+          id: reportInternalId
+        },
+      });
+    };
+
+    beforeAll(async () => {
+      report = (await startInvestigation()).data.report;
+      investigation = report.startInvestigation;
+      secondInvestigation = (await startInvestigation()).data.report.startInvestigation;
+      thirdInvestigation = (await startInvestigation()).data.report.startInvestigation;
+      await startInvestigation();
+    });
+
     afterAll(async () => {
       const investigations = await listAllEntities(
         testContext,
@@ -448,24 +480,24 @@ describe('Report resolver standard behavior', () => {
       await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));
     });
 
-    it('can start an investigation', async () => {
-      const queryResult = await queryAsAdmin({
-        query: gql`
-          query StartInvestigationFromReport($id: String!) {
-            report(id: $id) {
-              startInvestigation {
-                id
-                name
-              }
-            }
-          }
-        `,
-        variables: {
-          id: reportInternalId
-        },
-      });
+    it('can start an investigation', () => {
+      expect(report.startInvestigation.id).toBeDefined();
+    });
 
-      expect(queryResult.data.report.startInvestigation.id).toBeDefined();
+    it('has a name composed with the report name', () => {
+      expect(investigation.name).toEqual(`investigation from report "${report.name}"`);
+    });
+
+    it('when other investigations are created, their name are suffixed with a number, starting at 2', async () => {
+      expect(secondInvestigation.name).toEqual(`investigation from report "${report.name}" 2`);
+      expect(thirdInvestigation.name).toEqual(`investigation from report "${report.name}" 3`);
+    });
+
+    it('the chosen suffix number is the highest number found + 1', async () => {
+      await deleteElementById(testContext, ADMIN_USER, thirdInvestigation.id, ENTITY_TYPE_WORKSPACE);
+      const fifthInvestigation = (await startInvestigation()).data.report.startInvestigation;
+
+      expect(fifthInvestigation.name).toEqual(`investigation from report "${report.name}" 5`);
     });
   });
   it('should report deleted', async () => {

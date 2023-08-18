@@ -25,6 +25,7 @@ import { isStixId } from '../schema/schemaUtils';
 import { stixDomainObjectDelete } from './stixDomainObject';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { addWorkspace } from '../modules/workspace/workspace-domain';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
@@ -160,10 +161,34 @@ export const reportDeleteElementsCount = async (context, user, reportId) => {
   return countAllThings(context, user, { indices: READ_DATA_INDICES_WITHOUT_INFERRED, filters });
 };
 
+const nameStartedInvestigationFromReport = async (context, reportName) => {
+  const startedInvestigationCanonicalName = `investigation from report "${reportName}"`;
+  const investigationsStartedFromReport = (await listEntities(context, context.user, [ENTITY_TYPE_WORKSPACE], {
+    filters: [{
+      key: 'name',
+      value: startedInvestigationCanonicalName
+    }]
+  })).edges;
+
+  if (investigationsStartedFromReport.length === 0) {
+    return startedInvestigationCanonicalName;
+  }
+
+  const highestInvestigationNumber = investigationsStartedFromReport
+    .map((investigation) => {
+      const matchedNumber = [...investigation.node.name.matchAll(/\d+$/g)][0];
+
+      return Number(matchedNumber === undefined ? 0 : matchedNumber[0]);
+    })
+    .sort((a, b) => b - a)[0];
+
+  return `${startedInvestigationCanonicalName} ${highestInvestigationNumber === 0 ? 2 : highestInvestigationNumber + 1}`;
+};
+
 export const startInvestigation = async (context, report) => {
   const investigationInput = {
     type: 'investigation',
-    name: `investigation from report ${report.name}`,
+    name: await nameStartedInvestigationFromReport(context, report.name),
     investigated_entities_ids: report.object
   };
 
