@@ -35,7 +35,7 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
     { name: 'user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'report_types', type: 'string', mandatoryType: 'external', multiple: true, upsert: true },
     { name: 'created_by_ref', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'object_marking_refs', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'object_marking_refs', type: 'string', mandatoryType: 'external', multiple: true, upsert: true },
     { name: 'current_state_date', type: 'date', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'ingestion_running', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: true },
   ],

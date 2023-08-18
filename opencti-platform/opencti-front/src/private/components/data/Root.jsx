@@ -10,6 +10,7 @@ import RootConnector from './connectors/Root';
 import Stream from './Stream';
 import Feed from './Feed';
 import Sync from './Sync';
+import ingestionRss from './IngestionRss';
 
 const Root = () => (
   <Switch>
@@ -44,6 +45,11 @@ const Root = () => (
       path="/dashboard/data/ingestion/sync"
       component={Sync}
     />
+      <BoundaryRoute
+          exact
+          path="/dashboard/data/ingestion/rss"
+          component={ingestionRss}
+      />
     <BoundaryRoute
       exact
       path="/dashboard/data/sharing"

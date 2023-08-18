@@ -17,7 +17,9 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
-import SyncEdition from './SyncEdition';
+import IngestionRssEdition, {
+  ingestionRssMutationFieldPatch,
+} from './IngestionRssEdition';
 import { deleteNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
@@ -42,65 +44,26 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const syncPopoverDeletionMutation = graphql`
-  mutation SyncPopoverDeletionMutation($id: ID!) {
-    synchronizerEdit(id: $id) {
-      delete
-    }
+const ingestionRssPopoverDeletionMutation = graphql`
+  mutation IngestionRssPopoverDeletionMutation($id: ID!) {
+    ingestionRssDelete(id: $id)
   }
 `;
 
-const syncPopoverStartMutation = graphql`
-  mutation SyncPopoverStartMutation($id: ID!) {
-    synchronizerStart(id: $id) {
+const ingestionRssEditionQuery = graphql`
+  query IngestionRssPopoverEditionQuery($id: String!) {
+    ingestionRss(id: $id) {
       id
       name
       uri
-      token
-      stream_id
-      listen_deletion
-      no_dependencies
-      ssl_verify
-    }
-  }
-`;
-
-const syncPopoverStopMutation = graphql`
-  mutation SyncPopoverStopMutation($id: ID!) {
-    synchronizerStop(id: $id) {
-      id
-      name
-      uri
-      token
-      stream_id
-      listen_deletion
-      no_dependencies
-      ssl_verify
-    }
-  }
-`;
-
-const syncEditionQuery = graphql`
-  query SyncPopoverEditionQuery($id: String!) {
-    synchronizer(id: $id) {
-      id
-      name
-      uri
-      token
-      stream_id
-      listen_deletion
-      no_dependencies
-      ssl_verify
+      ingestion_running
       current_state_date
-      user {
-        id
-        name
-      }
+      ...IngestionRssEdition_ingestionRss
     }
   }
 `;
 
-class SyncPopover extends Component {
+class IngestionRssPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -162,16 +125,16 @@ class SyncPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: syncPopoverDeletionMutation,
+      mutation: ingestionRssPopoverDeletionMutation,
       variables: {
-        id: this.props.syncId,
+        id: this.props.ingestionRssId,
       },
       updater: (store) => {
         deleteNode(
           store,
-          'Pagination_synchronizers',
+          'Pagination_ingestionRsss',
           this.props.paginationOptions,
-          this.props.syncId,
+          this.props.ingestionRssId,
         );
       },
       onCompleted: () => {
@@ -184,9 +147,10 @@ class SyncPopover extends Component {
   submitStart() {
     this.setState({ starting: true });
     commitMutation({
-      mutation: syncPopoverStartMutation,
+      mutation: ingestionRssMutationFieldPatch,
       variables: {
-        id: this.props.syncId,
+        id: this.props.ingestionRssId,
+        input: { key: 'ingestion_running', value: ['true'] },
       },
       onCompleted: () => {
         this.setState({ starting: false });
@@ -198,9 +162,10 @@ class SyncPopover extends Component {
   submitStop() {
     this.setState({ stopping: true });
     commitMutation({
-      mutation: syncPopoverStopMutation,
+      mutation: ingestionRssMutationFieldPatch,
       variables: {
-        id: this.props.syncId,
+        id: this.props.ingestionRssId,
+        input: { key: 'ingestion_running', value: ['false'] },
       },
       onCompleted: () => {
         this.setState({ stopping: false });
@@ -210,7 +175,7 @@ class SyncPopover extends Component {
   }
 
   render() {
-    const { classes, t, syncId, running } = this.props;
+    const { classes, t, ingestionRssId, running } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -252,13 +217,13 @@ class SyncPopover extends Component {
           onClose={this.handleCloseUpdate.bind(this)}
         >
           <QueryRenderer
-            query={syncEditionQuery}
-            variables={{ id: syncId }}
+            query={ingestionRssEditionQuery}
+            variables={{ id: ingestionRssId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <SyncEdition
-                    synchronizer={props.synchronizer}
+                  <IngestionRssEdition
+                    ingestionRss={props.ingestionRss}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );
@@ -276,7 +241,7 @@ class SyncPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this synchronizer?')}
+              {t('Do you want to delete this RSS ingester?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -304,7 +269,7 @@ class SyncPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to start this synchronizer?')}
+              {t('Do you want to start this RSS ingester?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -332,7 +297,7 @@ class SyncPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to stop this synchronizer?')}
+              {t('Do you want to stop this RSS ingester?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -356,12 +321,12 @@ class SyncPopover extends Component {
   }
 }
 
-SyncPopover.propTypes = {
-  syncId: PropTypes.string,
+IngestionRssPopover.propTypes = {
+  ingestionRssId: PropTypes.string,
   running: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(SyncPopover);
+export default compose(inject18n, withStyles(styles))(IngestionRssPopover);

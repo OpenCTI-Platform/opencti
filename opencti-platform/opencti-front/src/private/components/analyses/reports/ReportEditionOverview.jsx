@@ -318,7 +318,6 @@ const ReportEditionOverviewComponent = (props) => {
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
             }

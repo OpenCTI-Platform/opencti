@@ -8269,10 +8269,10 @@ type Query {
   threatActorIndividual(id: String!): ThreatActorIndividual
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
   threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  rssIngestion(id: String!): IngestionRss
-  rssIngestions(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: [IngestionRssFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionRssConnection
-  taxiiIngestion(id: String!): IngestionTaxii
-  taxiiIngestions(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: [IngestionTaxiiFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
+  ingestionRss(id: String!): IngestionRss
+  ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: [IngestionRssFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionRssConnection
+  ingestionTaxii(id: String!): IngestionTaxii
+  ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: [IngestionTaxiiFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
 }
 
 type Subscription {
@@ -8995,12 +8995,12 @@ type Mutation {
   threatActorIndividualContextClean(id: ID!): ThreatActorIndividual
   threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual
-  rssIngestionAdd(input: IngestionRssAddInput!): IngestionRss
-  rssIngestionDelete(id: ID!): ID
-  rssIngestionFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
-  taxiiIngestionAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
-  taxiiIngestionDelete(id: ID!): ID
-  taxiiIngestionFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+  ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss
+  ingestionRssDelete(id: ID!): ID
+  ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss
+  ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
+  ingestionTaxiiDelete(id: ID!): ID
+  ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11660,8 +11660,11 @@ type IngestionRss implements InternalObject & BasicObject {
   description: String
   uri: String!
   user_id: String
+  user: Creator
   created_by_ref: String
+  created_by: Identity
   object_marking_refs: [String!]
+  object_marking: [MarkingDefinition]
   report_types: [String!]
   current_state_date: DateTime
   ingestion_running: Boolean

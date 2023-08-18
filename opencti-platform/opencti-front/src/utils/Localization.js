@@ -4097,6 +4097,7 @@ const i18n = {
       PUBLISHER_MANAGER: 'Manager de publication de notifications',
       NOTIFICATION_MANAGER: 'Manager de génération de notifications',
       HISTORY_MANAGER: "Manager d'historique",
+      INGESTION_MANAGER: "Manager d'ingestion",
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
       'Update a status': 'Mettre à jour un statut',
@@ -8416,6 +8417,7 @@ const i18n = {
       PUBLISHER_MANAGER: 'Notification publishing manager',
       NOTIFICATION_MANAGER: 'Notification generation manager',
       HISTORY_MANAGER: 'History manager',
+      INGESTION_MANAGER: 'Ingestion manager',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       'suggestion_threats-arsenal':

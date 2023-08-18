@@ -10,6 +10,7 @@ export const HISTORY_MANAGER = 'HISTORY_MANAGER';
 export const TASK_MANAGER = 'TASK_MANAGER';
 export const EXPIRATION_SCHEDULER = 'EXPIRATION_SCHEDULER';
 export const SYNC_MANAGER = 'SYNC_MANAGER';
+export const INGESTION_MANAGER = 'INGESTION_MANAGER';
 export const RETENTION_MANAGER = 'RETENTION_MANAGER';
 
 export interface ModuleHelper {
@@ -20,6 +21,7 @@ export interface ModuleHelper {
   isTasksManagerEnable: () => boolean;
   isSyncManagerEnable: () => boolean;
   isRetentionManagerEnable: () => boolean;
+  isIngestionManagerEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
 }
 
@@ -51,6 +53,7 @@ const platformModuleHelper = (
   isTasksManagerEnable: () => isModuleEnable(settings, TASK_MANAGER),
   isSyncManagerEnable: () => isModuleEnable(settings, SYNC_MANAGER),
   isRetentionManagerEnable: () => isModuleEnable(settings, RETENTION_MANAGER),
+  isIngestionManagerEnable: () => isModuleEnable(settings, INGESTION_MANAGER),
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
 });
 

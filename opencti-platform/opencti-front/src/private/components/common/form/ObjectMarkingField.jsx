@@ -73,7 +73,7 @@ class ObjectMarkingField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
+    const { t, name, style, classes, onChange, helpertext, disabled, label } = this.props;
     return (
       <Field
         component={AutocompleteField}
@@ -83,7 +83,7 @@ class ObjectMarkingField extends Component {
         disabled={disabled}
         textfieldprops={{
           variant: 'standard',
-          label: t('Markings'),
+          label: label ?? t('Markings'),
           helperText: helpertext,
           onFocus: this.searchMarkingDefinitions.bind(this),
         }}

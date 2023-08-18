@@ -7,11 +7,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
-import { DatabaseImportOutline } from 'mdi-material-ui';
+import { RssBox } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
-import SyncPopover from './SyncPopover';
+import IngestionRssPopover from './IngestionRssPopover';
 import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
@@ -64,13 +64,13 @@ const styles = (theme) => ({
   },
 });
 
-class SyncLineLineComponent extends Component {
+class IngestionRssLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions, t, nsdt } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <DatabaseImportOutline />
+          <RssBox />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -89,18 +89,12 @@ class SyncLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.uri.width }}
-              >
-                <code>{node.stream_id}</code>
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.running.width }}
+                style={{ width: dataColumns.ingestion_running.width }}
               >
                 <ItemBoolean
                   variant="inList"
-                  label={node.running ? t('Yes') : t('No')}
-                  status={node.running}
+                  label={node.ingestion_running ? t('Yes') : t('No')}
+                  status={!!node.ingestion_running}
                 />
               </div>
               <div
@@ -113,10 +107,10 @@ class SyncLineLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <SyncPopover
-            syncId={node.id}
+          <IngestionRssPopover
+            ingestionRssId={node.id}
             paginationOptions={paginationOptions}
-            running={node.running}
+            running={node.ingestion_running}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -124,7 +118,7 @@ class SyncLineLineComponent extends Component {
   }
 }
 
-SyncLineLineComponent.propTypes = {
+IngestionRssLineLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   paginationOptions: PropTypes.object,
@@ -133,26 +127,27 @@ SyncLineLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {
-  node: graphql`
-    fragment SyncLine_node on Synchronizer {
-      id
-      name
-      uri
-      stream_id
-      running
-      current_state_date
-      ssl_verify
-    }
-  `,
-});
+const IngestionRssLineFragment = createFragmentContainer(
+  IngestionRssLineLineComponent,
+  {
+    node: graphql`
+      fragment IngestionRssLine_node on IngestionRss {
+        id
+        name
+        uri
+        ingestion_running
+        current_state_date
+      }
+    `,
+  },
+);
 
-export const SyncLine = compose(
+export const IngestionRssLine = compose(
   inject18n,
   withStyles(styles),
-)(SyncLineFragment);
+)(IngestionRssLineFragment);
 
-class SyncDummyComponent extends Component {
+class IngestionRssDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -192,18 +187,7 @@ class SyncDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.stream_id.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.running.width }}
+                style={{ width: dataColumns.ingestion_running.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -234,12 +218,12 @@ class SyncDummyComponent extends Component {
   }
 }
 
-SyncDummyComponent.propTypes = {
+IngestionRssDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const SyncLineDummy = compose(
+export const IngestionRssLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(SyncDummyComponent);
+)(IngestionRssDummyComponent);

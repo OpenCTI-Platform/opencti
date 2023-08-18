@@ -10097,6 +10097,7 @@ export enum InfrastructuresOrdering {
 export type IngestionRss = BasicObject & InternalObject & {
   __typename?: 'IngestionRss';
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  created_by?: Maybe<Identity>;
   created_by_ref?: Maybe<Scalars['String']['output']>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -10104,12 +10105,14 @@ export type IngestionRss = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
+  object_marking?: Maybe<Array<Maybe<MarkingDefinition>>>;
   object_marking_refs?: Maybe<Array<Scalars['String']['output']>>;
   parent_types: Array<Scalars['String']['output']>;
   report_types?: Maybe<Array<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
+  user?: Maybe<Creator>;
   user_id?: Maybe<Scalars['String']['output']>;
 };
 
@@ -12655,6 +12658,12 @@ export type Mutation = {
   individualEdit?: Maybe<IndividualEditMutations>;
   infrastructureAdd?: Maybe<Infrastructure>;
   infrastructureEdit?: Maybe<InfrastructureEditMutations>;
+  ingestionRssAdd?: Maybe<IngestionRss>;
+  ingestionRssDelete?: Maybe<Scalars['ID']['output']>;
+  ingestionRssFieldPatch?: Maybe<IngestionRss>;
+  ingestionTaxiiAdd?: Maybe<IngestionTaxii>;
+  ingestionTaxiiDelete?: Maybe<Scalars['ID']['output']>;
+  ingestionTaxiiFieldPatch?: Maybe<IngestionTaxii>;
   intrusionSetAdd?: Maybe<IntrusionSet>;
   intrusionSetEdit?: Maybe<IntrusionSetEditMutations>;
   killChainPhaseAdd?: Maybe<KillChainPhase>;
@@ -12725,9 +12734,6 @@ export type Mutation = {
   retentionRuleEdit?: Maybe<RetentionRuleEditMutations>;
   roleAdd?: Maybe<Role>;
   roleEdit?: Maybe<RoleEditMutations>;
-  rssIngestionAdd?: Maybe<IngestionRss>;
-  rssIngestionDelete?: Maybe<Scalars['ID']['output']>;
-  rssIngestionFieldPatch?: Maybe<IngestionRss>;
   ruleManagerClean: RuleManager;
   ruleSetActivation: Rule;
   runtimeAttributeEdit: Scalars['ID']['output'];
@@ -12783,9 +12789,6 @@ export type Mutation = {
   taskTemplateFieldPatch?: Maybe<TaskTemplate>;
   taxiiCollectionAdd?: Maybe<TaxiiCollection>;
   taxiiCollectionEdit?: Maybe<TaxiiCollectionEditMutations>;
-  taxiiIngestionAdd?: Maybe<IngestionTaxii>;
-  taxiiIngestionDelete?: Maybe<Scalars['ID']['output']>;
-  taxiiIngestionFieldPatch?: Maybe<IngestionTaxii>;
   threatActorGroupAdd?: Maybe<ThreatActorGroup>;
   threatActorGroupEdit?: Maybe<ThreatActorGroupEditMutations>;
   threatActorIndividualAdd?: Maybe<ThreatActorIndividual>;
@@ -13372,6 +13375,38 @@ export type MutationInfrastructureEditArgs = {
 };
 
 
+export type MutationIngestionRssAddArgs = {
+  input: IngestionRssAddInput;
+};
+
+
+export type MutationIngestionRssDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationIngestionRssFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
+export type MutationIngestionTaxiiAddArgs = {
+  input: IngestionTaxiiAddInput;
+};
+
+
+export type MutationIngestionTaxiiDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationIngestionTaxiiFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
 export type MutationIntrusionSetAddArgs = {
   input: IntrusionSetAddInput;
 };
@@ -13729,22 +13764,6 @@ export type MutationRoleAddArgs = {
 
 export type MutationRoleEditArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationRssIngestionAddArgs = {
-  input: IngestionRssAddInput;
-};
-
-
-export type MutationRssIngestionDeleteArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationRssIngestionFieldPatchArgs = {
-  id: Scalars['ID']['input'];
-  input: Array<EditInput>;
 };
 
 
@@ -14130,22 +14149,6 @@ export type MutationTaxiiCollectionAddArgs = {
 
 export type MutationTaxiiCollectionEditArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationTaxiiIngestionAddArgs = {
-  input: IngestionTaxiiAddInput;
-};
-
-
-export type MutationTaxiiIngestionDeleteArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
-export type MutationTaxiiIngestionFieldPatchArgs = {
-  id: Scalars['ID']['input'];
-  input: Array<EditInput>;
 };
 
 
@@ -17601,6 +17604,10 @@ export type Query = {
   individuals?: Maybe<IndividualConnection>;
   infrastructure?: Maybe<Infrastructure>;
   infrastructures?: Maybe<InfrastructureConnection>;
+  ingestionRss?: Maybe<IngestionRss>;
+  ingestionRsss?: Maybe<IngestionRssConnection>;
+  ingestionTaxii?: Maybe<IngestionTaxii>;
+  ingestionTaxiis?: Maybe<IngestionTaxiiConnection>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
   killChainPhase?: Maybe<KillChainPhase>;
@@ -17671,8 +17678,6 @@ export type Query = {
   retentionRules?: Maybe<RetentionRuleConnection>;
   role?: Maybe<Role>;
   roles?: Maybe<RoleConnection>;
-  rssIngestion?: Maybe<IngestionRss>;
-  rssIngestions?: Maybe<IngestionRssConnection>;
   rule?: Maybe<Rule>;
   ruleManagerInfo?: Maybe<RuleManager>;
   rules?: Maybe<Array<Maybe<Rule>>>;
@@ -17749,8 +17754,6 @@ export type Query = {
   tasks?: Maybe<TaskConnection>;
   taxiiCollection?: Maybe<TaxiiCollection>;
   taxiiCollections?: Maybe<TaxiiCollectionConnection>;
-  taxiiIngestion?: Maybe<IngestionTaxii>;
-  taxiiIngestions?: Maybe<IngestionTaxiiConnection>;
   threatActor?: Maybe<ThreatActor>;
   threatActorGroup?: Maybe<ThreatActorGroup>;
   threatActorIndividual?: Maybe<ThreatActorIndividual>;
@@ -18490,6 +18493,40 @@ export type QueryInfrastructuresArgs = {
 };
 
 
+export type QueryIngestionRssArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryIngestionRsssArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<IngestionRssFiltering>>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
+  orderBy?: InputMaybe<IngestionRssOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryIngestionTaxiiArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryIngestionTaxiisArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<IngestionTaxiiFiltering>>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
+  orderBy?: InputMaybe<IngestionTaxiiOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type QueryIntrusionSetArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -19012,23 +19049,6 @@ export type QueryRolesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<RolesOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryRssIngestionArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryRssIngestionsArgs = {
-  after?: InputMaybe<Scalars['ID']['input']>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<IngestionRssFiltering>>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
-  orderBy?: InputMaybe<IngestionRssOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -19788,23 +19808,6 @@ export type QueryTaxiiCollectionsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<TaxiiCollectionOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryTaxiiIngestionArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryTaxiiIngestionsArgs = {
-  after?: InputMaybe<Scalars['ID']['input']>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<IngestionTaxiiFiltering>>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
-  orderBy?: InputMaybe<IngestionTaxiiOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -32603,6 +32606,7 @@ export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType e
 
 export type IngestionRssResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRss'] = ResolversParentTypes['IngestionRss']> = ResolversObject<{
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  created_by?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_by_ref?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32610,12 +32614,14 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  object_marking?: Resolver<Maybe<Array<Maybe<ResolversTypes['MarkingDefinition']>>>, ParentType, ContextType>;
   object_marking_refs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -33527,6 +33533,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   individualEdit?: Resolver<Maybe<ResolversTypes['IndividualEditMutations']>, ParentType, ContextType, RequireFields<MutationIndividualEditArgs, 'id'>>;
   infrastructureAdd?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<MutationInfrastructureAddArgs, 'input'>>;
   infrastructureEdit?: Resolver<Maybe<ResolversTypes['InfrastructureEditMutations']>, ParentType, ContextType, RequireFields<MutationInfrastructureEditArgs, 'id'>>;
+  ingestionRssAdd?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssAddArgs, 'input'>>;
+  ingestionRssDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionRssDeleteArgs, 'id'>>;
+  ingestionRssFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssFieldPatchArgs, 'id' | 'input'>>;
+  ingestionTaxiiAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddArgs, 'input'>>;
+  ingestionTaxiiDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiDeleteArgs, 'id'>>;
+  ingestionTaxiiFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiFieldPatchArgs, 'id' | 'input'>>;
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
   killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseAddArgs, 'input'>>;
@@ -33597,9 +33609,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   retentionRuleEdit?: Resolver<Maybe<ResolversTypes['RetentionRuleEditMutations']>, ParentType, ContextType, RequireFields<MutationRetentionRuleEditArgs, 'id'>>;
   roleAdd?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<MutationRoleAddArgs, 'input'>>;
   roleEdit?: Resolver<Maybe<ResolversTypes['RoleEditMutations']>, ParentType, ContextType, RequireFields<MutationRoleEditArgs, 'id'>>;
-  rssIngestionAdd?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationRssIngestionAddArgs, 'input'>>;
-  rssIngestionDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationRssIngestionDeleteArgs, 'id'>>;
-  rssIngestionFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationRssIngestionFieldPatchArgs, 'id' | 'input'>>;
   ruleManagerClean?: Resolver<ResolversTypes['RuleManager'], ParentType, ContextType, Partial<MutationRuleManagerCleanArgs>>;
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;
   runtimeAttributeEdit?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationRuntimeAttributeEditArgs, 'current' | 'id' | 'previous'>>;
@@ -33655,9 +33664,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   taskTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['TaskTemplate']>, ParentType, ContextType, RequireFields<MutationTaskTemplateFieldPatchArgs, 'id' | 'input'>>;
   taxiiCollectionAdd?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<MutationTaxiiCollectionAddArgs, 'input'>>;
   taxiiCollectionEdit?: Resolver<Maybe<ResolversTypes['TaxiiCollectionEditMutations']>, ParentType, ContextType, RequireFields<MutationTaxiiCollectionEditArgs, 'id'>>;
-  taxiiIngestionAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationTaxiiIngestionAddArgs, 'input'>>;
-  taxiiIngestionDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTaxiiIngestionDeleteArgs, 'id'>>;
-  taxiiIngestionFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationTaxiiIngestionFieldPatchArgs, 'id' | 'input'>>;
   threatActorGroupAdd?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, RequireFields<MutationThreatActorGroupAddArgs, 'input'>>;
   threatActorGroupEdit?: Resolver<Maybe<ResolversTypes['ThreatActorGroupEditMutations']>, ParentType, ContextType, RequireFields<MutationThreatActorGroupEditArgs, 'id'>>;
   threatActorIndividualAdd?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualAddArgs, 'input'>>;
@@ -34675,6 +34681,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   individuals?: Resolver<Maybe<ResolversTypes['IndividualConnection']>, ParentType, ContextType, Partial<QueryIndividualsArgs>>;
   infrastructure?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<QueryInfrastructureArgs, 'id'>>;
   infrastructures?: Resolver<Maybe<ResolversTypes['InfrastructureConnection']>, ParentType, ContextType, Partial<QueryInfrastructuresArgs>>;
+  ingestionRss?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<QueryIngestionRssArgs, 'id'>>;
+  ingestionRsss?: Resolver<Maybe<ResolversTypes['IngestionRssConnection']>, ParentType, ContextType, Partial<QueryIngestionRsssArgs>>;
+  ingestionTaxii?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiArgs, 'id'>>;
+  ingestionTaxiis?: Resolver<Maybe<ResolversTypes['IngestionTaxiiConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiisArgs>>;
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
   killChainPhase?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<QueryKillChainPhaseArgs, 'id'>>;
@@ -34745,8 +34755,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   retentionRules?: Resolver<Maybe<ResolversTypes['RetentionRuleConnection']>, ParentType, ContextType, Partial<QueryRetentionRulesArgs>>;
   role?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<QueryRoleArgs, 'id'>>;
   roles?: Resolver<Maybe<ResolversTypes['RoleConnection']>, ParentType, ContextType, Partial<QueryRolesArgs>>;
-  rssIngestion?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<QueryRssIngestionArgs, 'id'>>;
-  rssIngestions?: Resolver<Maybe<ResolversTypes['IngestionRssConnection']>, ParentType, ContextType, Partial<QueryRssIngestionsArgs>>;
   rule?: Resolver<Maybe<ResolversTypes['Rule']>, ParentType, ContextType, RequireFields<QueryRuleArgs, 'id'>>;
   ruleManagerInfo?: Resolver<Maybe<ResolversTypes['RuleManager']>, ParentType, ContextType>;
   rules?: Resolver<Maybe<Array<Maybe<ResolversTypes['Rule']>>>, ParentType, ContextType>;
@@ -34823,8 +34831,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   tasks?: Resolver<Maybe<ResolversTypes['TaskConnection']>, ParentType, ContextType, Partial<QueryTasksArgs>>;
   taxiiCollection?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<QueryTaxiiCollectionArgs, 'id'>>;
   taxiiCollections?: Resolver<Maybe<ResolversTypes['TaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryTaxiiCollectionsArgs>>;
-  taxiiIngestion?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<QueryTaxiiIngestionArgs, 'id'>>;
-  taxiiIngestions?: Resolver<Maybe<ResolversTypes['IngestionTaxiiConnection']>, ParentType, ContextType, Partial<QueryTaxiiIngestionsArgs>>;
   threatActor?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, Partial<QueryThreatActorArgs>>;
   threatActorGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, Partial<QueryThreatActorGroupArgs>>;
   threatActorIndividual?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<QueryThreatActorIndividualArgs, 'id'>>;

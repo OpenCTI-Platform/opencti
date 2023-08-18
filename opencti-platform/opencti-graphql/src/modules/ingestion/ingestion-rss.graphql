@@ -9,8 +9,11 @@ type IngestionRss implements InternalObject & BasicObject {
     description: String
     uri: String!
     user_id: String
+    user: Creator
     created_by_ref: String
+    created_by: Identity
     object_marking_refs: [String!]
+    object_marking: [MarkingDefinition]
     report_types: [String!]
     current_state_date: DateTime
     ingestion_running: Boolean
@@ -41,8 +44,8 @@ type IngestionRssEdge {
 
 # Queries
 type Query {
-    rssIngestion(id: String!): IngestionRss @auth(for: [CONNECTORAPI])
-    rssIngestions(
+    ingestionRss(id: String!): IngestionRss @auth(for: [CONNECTORAPI])
+    ingestionRsss(
         first: Int
         after: ID
         orderBy: IngestionRssOrdering
@@ -69,7 +72,7 @@ input IngestionRssAddInput {
 }
 
 type Mutation {
-    rssIngestionAdd(input: IngestionRssAddInput!): IngestionRss @auth(for: [CONNECTORAPI])
-    rssIngestionDelete(id: ID!): ID @auth(for: [CONNECTORAPI])
-    rssIngestionFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [CONNECTORAPI])
+    ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss @auth(for: [CONNECTORAPI])
+    ingestionRssDelete(id: ID!): ID @auth(for: [CONNECTORAPI])
+    ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [CONNECTORAPI])
 }

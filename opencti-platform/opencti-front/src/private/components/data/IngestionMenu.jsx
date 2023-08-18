@@ -24,7 +24,9 @@ const SharingMenu = () => {
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   return (
@@ -34,7 +36,11 @@ const SharingMenu = () => {
       classes={{ paper: classes.drawer }}
     >
       <div className={classes.toolbar} />
-      <MenuList component="nav" style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }} sx={{ marginBottom: bannerHeightNumber }}>
+      <MenuList
+        component="nav"
+        style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
+        sx={{ marginBottom: bannerHeightNumber }}
+      >
         <MenuItem
           component={Link}
           to={'/dashboard/data/ingestion/sync'}
@@ -50,9 +56,16 @@ const SharingMenu = () => {
             '/dashboard/data/ingestion/taxii',
           )}
           dense={false}
-          disabled={true}
         >
           <ListItemText primary={t('TAXII Feeds')} />
+        </MenuItem>
+        <MenuItem
+          component={Link}
+          to={'/dashboard/data/ingestion/rss'}
+          selected={location.pathname.includes('/dashboard/data/ingestion/rss')}
+          dense={false}
+        >
+          <ListItemText primary={t('RSS Feeds')} />
         </MenuItem>
       </MenuList>
     </Drawer>
