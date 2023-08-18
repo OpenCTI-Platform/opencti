@@ -32,6 +32,7 @@ import { groupingMutationFieldPatch } from './GroupingEditionOverview';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
 import { hexToRGB } from '../../../../utils/Colors';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -866,6 +867,7 @@ class GroupingKnowledgeCorrelationComponent extends Component {
       selectModeFreeReady,
       navOpen,
     } = this.state;
+    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
@@ -998,6 +1000,12 @@ class GroupingKnowledgeCorrelationComponent extends Component {
           handleSearch={this.handleSearch.bind(this)}
           navOpen={navOpen}
         />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar
+            selectedEntities={selectedEntities}
+            navOpen={navOpen}
+          />
+        )}
         {mode3D ? (
           <ForceGraph3D
             ref={this.graph}

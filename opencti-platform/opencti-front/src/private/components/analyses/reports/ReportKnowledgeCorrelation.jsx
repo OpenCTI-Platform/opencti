@@ -36,6 +36,7 @@ import {
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -852,6 +853,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
       selectModeFreeReady,
       navOpen,
     } = this.state;
+    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const stixCoreObjectsTypes = R.pipe(
       R.map((n) => R.assoc(
@@ -984,6 +986,12 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
               />
+              {selectedEntities.length > 0 && (
+                <EntitiesDetailsRightsBar
+                  selectedEntities={selectedEntities}
+                  navOpen={navOpen}
+                />
+              )}
               {mode3D ? (
                 <ForceGraph3D
                   ref={this.graph}
