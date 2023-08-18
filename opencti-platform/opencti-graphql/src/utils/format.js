@@ -159,6 +159,8 @@ export const runtimeFieldObservableValueScript = () => {
     } else if (type == 'stixfile') {
        if (have(doc, 'hashes.SHA-256')) {
          emit(doc['hashes.SHA-256.keyword'].value)
+       } else if (have(doc, 'hashes.SHA-512')) {
+         emit(doc['hashes.SHA-512.keyword'].value)
        } else if (have(doc, 'hashes.SHA-1')) {
          emit(doc['hashes.SHA-1.keyword'].value)
        } else if (have(doc, 'hashes.MD5')) {
@@ -171,6 +173,8 @@ export const runtimeFieldObservableValueScript = () => {
     } else if (type == 'x509-certificate') {
        if (have(doc, 'hashes.SHA-256')) {
          emit(doc['hashes.SHA-256.keyword'].value)
+       } else if (have(doc, 'hashes.SHA-512')) {
+         emit(doc['hashes.SHA-512.keyword'].value)
        } else if (have(doc, 'hashes.SHA-1')) {
          emit(doc['hashes.SHA-1.keyword'].value)
        } else if (have(doc, 'hashes.MD5')) {

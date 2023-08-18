@@ -98,6 +98,10 @@ const createIndicatorFromObservable = async (context, user, input, observable) =
           key = `${entityType}_sha256`;
           value = observable.hashes['SHA-256'];
         }
+        if (observable.hashes['SHA-512']) {
+          key = `${entityType}_sha512`;
+          value = observable.hashes['SHA-512'];
+        }
         if (observable.hashes['SHA-1']) {
           key = key.length > 0 ? `${key}__${entityType}_sha1` : `${entityType}_sha1`;
           value = value.length > 0 ? `${value}__${observable.hashes['SHA-1']}` : observable.hashes['SHA-1'];
@@ -370,6 +374,7 @@ export const artifactImport = async (context, user, args) => {
         { algorithm: 'MD5', hash: await checksumFile('md5', createReadStream()) },
         { algorithm: 'SHA-1', hash: await checksumFile('sha1', createReadStream()) },
         { algorithm: 'SHA-256', hash: await checksumFile('sha256', createReadStream()) },
+        { algorithm: 'SHA-512', hash: await checksumFile('sha512', createReadStream()) },
       ],
     },
     createdBy,
