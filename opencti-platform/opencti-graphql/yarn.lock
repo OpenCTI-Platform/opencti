@@ -4729,6 +4729,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/turndown@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@types/turndown@npm:5.0.1"
+  checksum: 137c02fb863f96a2f032292fbfaf958fb784b62d97acb6a4968c012d365fa092997443584bd50205f89ad9128c729119efdf5db67cdda586f1cdd43049b26d6b
+  languageName: node
+  linkType: hard
+
 "@types/uuid@npm:9.0.2":
   version: 9.0.2
   resolution: "@types/uuid@npm:9.0.2"
@@ -4742,6 +4749,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: d00bf8070e6938e3ccf933010921c6ce78ac3606696ce37a393b27a9a603f7bd93ea64f3c5fa295a2f743575ba9c9a9fdb904af0f5fe2229bf2adf0630386e4a
+  languageName: node
+  linkType: hard
+
+"@types/xml2js@npm:0.4.11":
+  version: 0.4.11
+  resolution: "@types/xml2js@npm:0.4.11"
+  dependencies:
+    "@types/node": "*"
+  checksum: d0e7d2a8c7e0a53147c777a6756bdea0eb26a3de0d3c1f42c17e63332e4e2dc532f687c19ca26a0518336f5de60e1ec4345d7ef71e7ba0656fcf3390c9388eb5
   languageName: node
   linkType: hard
 
@@ -6809,6 +6825,13 @@ __metadata:
   dependencies:
     esutils: ^2.0.2
   checksum: fd7673ca77fe26cd5cba38d816bc72d641f500f1f9b25b83e8ce28827fe2da7ad583a8da26ab6af85f834138cf8dae9f69b0cd6ab925f52ddab1754db44d99ce
+  languageName: node
+  linkType: hard
+
+"domino@npm:2.1.6, domino@npm:^2.1.6":
+  version: 2.1.6
+  resolution: "domino@npm:2.1.6"
+  checksum: 9b1b6d2661efd8bf942b70d5e11ac0de6a63f17e49b7eb227d9a612fa7b7c12b7775520d64f498988a8ee334ea9c59a463c84ea510b0af17dd3e13fdce120410
   languageName: node
   linkType: hard
 
@@ -10630,7 +10653,9 @@ __metadata:
     "@types/nconf": 0.10.3
     "@types/ramda": 0.29.3
     "@types/tough-cookie": 4.0.2
+    "@types/turndown": 5.0.1
     "@types/uuid": 9.0.2
+    "@types/xml2js": 0.4.11
     "@typescript-eslint/eslint-plugin": 6.4.0
     "@typescript-eslint/parser": 6.4.0
     "@vitest/coverage-istanbul": 0.34.2
@@ -10652,6 +10677,7 @@ __metadata:
     cors: 2.8.5
     cross-env: 7.0.3
     dataloader: 2.2.2
+    domino: 2.1.6
     dot-object: 2.1.4
     ejs: 3.1.9
     esbuild: 0.19.2
@@ -10721,6 +10747,7 @@ __metadata:
     subscriptions-transport-ws: 0.11.0
     tough-cookie: 4.1.3
     ts-loader: 9.4.4
+    turndown: 7.1.2
     typescript: 4.9.5
     uuid: 9.0.0
     uuid-time: 1.0.0
@@ -10728,6 +10755,7 @@ __metadata:
     vitest: 0.34.2
     winston: 3.10.0
     winston-daily-rotate-file: 4.7.1
+    xml2js: 0.6.2
   languageName: unknown
   linkType: soft
 
@@ -12665,6 +12693,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"turndown@npm:7.1.2":
+  version: 7.1.2
+  resolution: "turndown@npm:7.1.2"
+  dependencies:
+    domino: ^2.1.6
+  checksum: 4779580c3439d0385e7dd71144bf0f72884cf7fb492bd2f5600ff256fa7c9ae9663ef284507021de90d54d62885fc027d740d578a3e11a1ae83e84a107eedd38
+  languageName: node
+  linkType: hard
+
 "type-check@npm:^0.4.0, type-check@npm:~0.4.0":
   version: 0.4.0
   resolution: "type-check@npm:0.4.0"
@@ -13504,6 +13541,16 @@ __metadata:
     escape-html: ^1.0.3
     xpath: 0.0.32
   checksum: a454445704c5e3aa3f992128c413c02f3c00c346cb0d63b01beae4b6a341cfc0a52a0219ccec47dcce250e336ba7b09d95909913b1f199ca43604961a00a1995
+  languageName: node
+  linkType: hard
+
+"xml2js@npm:0.6.2":
+  version: 0.6.2
+  resolution: "xml2js@npm:0.6.2"
+  dependencies:
+    sax: ">=0.6.0"
+    xmlbuilder: ~11.0.0
+  checksum: 458a83806193008edff44562c0bdb982801d61ee7867ae58fd35fab781e69e17f40dfeb8fc05391a4648c9c54012066d3955fe5d993ffbe4dc63399023f32ac2
   languageName: node
   linkType: hard
 
