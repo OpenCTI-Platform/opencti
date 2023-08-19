@@ -18,6 +18,8 @@ export const convertMarking = (element) => ({
 
 export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []).map((n) => convertMarking(n.node));
 
+export const convertMarkingsWithoutEdges = (element, field = 'objectMarking') => (element?.[field] ?? []).map((n) => convertMarking(n));
+
 export const convertTriggers = (element) => (element?.triggers ?? []).map((n) => ({
   label: n.name,
   value: n.id,
@@ -50,12 +52,20 @@ export const convertExternalReferences = (element) => (element?.externalReferenc
   value: n.node.id,
 }));
 
-export const convertCreatedBy = (element) => (isEmptyField(element?.createdBy)
+export const convertCreatedBy = (element, field = 'createdBy') => (isEmptyField(element?.[field])
   ? ''
   : {
-    label: element.createdBy.name,
-    value: element.createdBy.id,
-    type: element.createdBy.entity_type,
+    label: element[field].name,
+    value: element[field].id,
+    type: element[field].entity_type,
+  });
+
+export const convertUser = (element, field = 'user') => (isEmptyField(element?.[field])
+  ? ''
+  : {
+    label: element[field].name,
+    value: element[field].id,
+    type: element[field].entity_type,
   });
 
 export const convertNotifiers = (element) => (element?.notifiers?.map(({ id, name }) => ({ value: id, label: name })));

@@ -404,7 +404,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     </div>
                   </Alert>
                   <CreatorField
-                    name={'user_id'}
+                    name='user_id'
                     label={t(
                       'User responsible for data creation (empty = System)',
                     )}

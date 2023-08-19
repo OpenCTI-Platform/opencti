@@ -2,7 +2,7 @@ import conf, {
   ENABLED_API,
   ENABLED_CONNECTOR_MANAGER,
   ENABLED_EXPIRED_MANAGER,
-  ENABLED_HISTORY_MANAGER,
+  ENABLED_HISTORY_MANAGER, ENABLED_INGESTION_MANAGER,
   ENABLED_NOTIFICATION_MANAGER,
   ENABLED_PUBLISHER_MANAGER,
   ENABLED_RETENTION_MANAGER,
@@ -20,6 +20,7 @@ import httpServer from './http/httpServer';
 import expiredManager from './manager/expiredManager';
 import connectorManager from './manager/connectorManager';
 import retentionManager from './manager/retentionManager';
+import ingestionManager from './manager/ingestionManager';
 import taskManager from './manager/taskManager';
 import ruleEngine from './manager/ruleManager';
 import syncManager from './manager/syncManager';
@@ -80,6 +81,11 @@ const startModules = async () => {
     await syncManager.start();
   } else {
     logApp.info('[OPENCTI-MODULE] Sync manager not started (disabled by configuration)');
+  }
+  if (ENABLED_INGESTION_MANAGER) {
+    await ingestionManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Ingestion manager not started (disabled by configuration)');
   }
   // endregion
   // region History manager
@@ -142,9 +148,12 @@ const shutdownModules = async () => {
     stoppingPromises.push(ruleEngine.shutdown());
   }
   // endregion
-  // region Sync manager
+  // region Ingestion managers
   if (ENABLED_SYNC_MANAGER) {
     stoppingPromises.push(syncManager.shutdown());
+  }
+  if (ENABLED_INGESTION_MANAGER) {
+    stoppingPromises.push(ingestionManager.shutdown());
   }
   // endregion
   // region History manager

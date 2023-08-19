@@ -69,6 +69,7 @@ interface StoreFile {
 }
 
 interface BasicStoreIdentifier {
+  id: string;
   internal_id: string;
   standard_id?: StixId;
   x_opencti_stix_ids?: Array<StixId>;
@@ -77,9 +78,10 @@ interface BasicStoreIdentifier {
 interface BasicStoreBase extends BasicStoreIdentifier {
   _index: string;
   standard_id: StixId;
-  internal_id: string;
   entity_type: string;
   base_type: 'ENTITY' | 'RELATION';
+  parent_types: string[];
+  spec_version: string;
   created_at: Date;
   updated_at: Date;
   x_opencti_files?: Array<StoreFile>;
@@ -130,13 +132,13 @@ interface StoreConnection {
 interface StoreRawRule {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inferred: any;
-  explanation: Array<string>;
+  explanation: string[];
 }
 
 interface StoreRule {
   rule: string;
   attributes: Array<{ field: string, value: string }>;
-  explanation: Array<string>;
+  explanation: string[];
 }
 
 interface BasicStoreCommon extends BasicStoreBase {
@@ -573,6 +575,22 @@ interface BasicGroupEntity extends BasicStoreEntity {
 
 interface BasicOrganizationEntity extends BasicStoreEntity {
   [RELATION_PARTICIPATE_TO]: string[];
+}
+
+export interface BasicStoreEntityMarkingDefinition extends BasicStoreBase {
+  definition: string;
+  definition_type: string;
+  x_opencti_order: number;
+  revoked: boolean;
+  is_inferred: boolean;
+}
+
+export interface BasicStoreEntityIdentity extends BasicStoreBase {
+  name: string;
+  revoked: boolean;
+  description: string;
+  identity_class: string;
+  is_inferred: boolean;
 }
 
 type BasicStoreObject = BasicStoreEntity | BasicStoreCyberObservable | BasicStoreRelation;

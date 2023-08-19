@@ -14,6 +14,7 @@ import Skeleton from '@mui/material/Skeleton';
 import TaxiiPopover from './TaxiiPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import ItemCopy from '../../../../components/ItemCopy';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -81,7 +82,7 @@ class TaxiiLineLineComponent extends Component {
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
+            <>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
@@ -94,13 +95,19 @@ class TaxiiLineLineComponent extends Component {
               >
                 {node.description}
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.id.width, paddingRight: 10 }}
+              >
+                <ItemCopy content={node.id} variant="inLine" />
+              </div>
               <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}
                 classNameNumber={3}
                 styleNumber={3}
               />
-            </div>
+            </>
           }
         />
         <ListItemSecondaryAction>
@@ -154,10 +161,21 @@ class TaxiiDummyComponent extends Component {
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
+            <>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.id.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -188,7 +206,7 @@ class TaxiiDummyComponent extends Component {
                   height="100%"
                 />
               </div>
-            </div>
+            </>
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>

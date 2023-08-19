@@ -1,0 +1,75 @@
+type IngestionRss implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    created_at: DateTime
+    updated_at: DateTime
+    name: String!
+    description: String
+    uri: String!
+    user: Creator
+    defaultCreatedBy: Identity
+    defaultMarkingDefinitions: [MarkingDefinition]
+    report_types: [String!]
+    current_state_date: DateTime
+    ingestion_running: Boolean
+}
+enum IngestionRssOrdering {
+    name
+    created_at
+    updated_at
+}
+enum IngestionRssFilter {
+    name
+    creator
+}
+input IngestionRssFiltering {
+    key: [IngestionRssFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+type IngestionRssConnection {
+    pageInfo: PageInfo!
+    edges: [IngestionRssEdge!]!
+}
+type IngestionRssEdge {
+    cursor: String!
+    node: IngestionRss!
+}
+
+# Queries
+type Query {
+    ingestionRss(id: String!): IngestionRss @auth(for: [CONNECTORAPI])
+    ingestionRsss(
+        first: Int
+        after: ID
+        orderBy: IngestionRssOrdering
+        orderMode: OrderingMode
+        filters: [IngestionRssFiltering!]
+        filterMode: FilterMode
+        includeAuthorities: Boolean
+        search: String
+    ): IngestionRssConnection @auth(for: [CONNECTORAPI])
+}
+
+# Mutations
+input IngestionRssAddInput {
+    name: String! @constraint(minLength: 2)
+    description: String
+    uri: String! @constraint(minLength: 5)
+    current_state_date: DateTime
+    ingestion_running: Boolean
+    # Data configuration
+    user_id: String
+    created_by_ref: String
+    object_marking_refs: [String!]
+    report_types: [String!]
+}
+
+type Mutation {
+    ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss @auth(for: [CONNECTORAPI])
+    ingestionRssDelete(id: ID!): ID @auth(for: [CONNECTORAPI])
+    ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [CONNECTORAPI])
+}

@@ -1,18 +1,19 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
-import SyncCreation from './sync/SyncCreation';
+import IngestionRssLines, {
+  IngestionRssLinesQuery,
+} from './ingestionRss/IngestionRssLines';
+import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
-import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
+import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 
-const LOCAL_STORAGE_KEY = 'sync-view';
+const LOCAL_STORAGE_KEY = 'ingestionRss-view';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -21,8 +22,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const Sync = () => {
-  const theme = useTheme();
+const IngestionRss = () => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { platformModuleHelpers } = useAuth();
@@ -38,33 +38,29 @@ const Sync = () => {
   const dataColumns = {
     name: {
       label: 'Name',
-      width: '15%',
+      width: '20%',
       isSortable: true,
     },
     uri: {
       label: 'URL',
-      width: '20%',
+      width: '30%',
       isSortable: true,
     },
-    stream_id: {
-      label: 'Stream ID',
-      width: '20%',
-      isSortable: true,
-    },
-    running: {
+    ingestion_running: {
       label: 'Running',
       width: '20%',
       isSortable: false,
     },
     current_state_date: {
       label: 'Current state',
-      isSortable: true,
+      isSortable: false,
+      width: '15%',
     },
   };
-  if (!platformModuleHelpers.isSyncManagerEnable()) {
+  if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
       <Alert severity="info">
-        {t(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
+        {t(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
       </Alert>
     );
   }
@@ -80,27 +76,12 @@ const Sync = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
-        message={
-          <>
-            {t(
-              'You can configure your platform to consume remote OCTI streams. A list of public and commercial native feeds is available in the',
-            )}{' '}
-            <a
-              href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
-              target="_blank"
-              style={{ color: theme.palette.secondary.main }}
-            >
-              OpenCTI ecosystem space
-            </a>
-            .
-          </>
-        }
       >
         <QueryRenderer
-          query={SyncLinesQuery}
+          query={IngestionRssLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
           render={({ props }) => (
-            <SyncLines
+            <IngestionRssLines
               data={props}
               paginationOptions={paginationOptions}
               refetchPaginationOptions={{ count: 200, ...paginationOptions }}
@@ -110,9 +91,9 @@ const Sync = () => {
           )}
         />
       </ListLines>
-      <SyncCreation paginationOptions={paginationOptions} />
+      <IngestionRssCreation paginationOptions={paginationOptions} />
     </div>
   );
 };
 
-export default Sync;
+export default IngestionRss;

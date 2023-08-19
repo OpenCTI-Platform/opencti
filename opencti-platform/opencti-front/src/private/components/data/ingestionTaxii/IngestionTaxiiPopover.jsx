@@ -17,7 +17,9 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
-import SyncEdition from './SyncEdition';
+import IngestionTaxiiEdition, {
+  ingestionTaxiiMutationFieldPatch,
+} from './IngestionTaxiiEdition';
 import { deleteNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
@@ -42,65 +44,27 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const syncPopoverDeletionMutation = graphql`
-  mutation SyncPopoverDeletionMutation($id: ID!) {
-    synchronizerEdit(id: $id) {
-      delete
-    }
+const ingestionTaxiiPopoverDeletionMutation = graphql`
+  mutation IngestionTaxiiPopoverDeletionMutation($id: ID!) {
+    ingestionTaxiiDelete(id: $id)
   }
 `;
 
-const syncPopoverStartMutation = graphql`
-  mutation SyncPopoverStartMutation($id: ID!) {
-    synchronizerStart(id: $id) {
+const ingestionTaxiiEditionQuery = graphql`
+  query IngestionTaxiiPopoverEditionQuery($id: String!) {
+    ingestionTaxii(id: $id) {
       id
       name
       uri
-      token
-      stream_id
-      listen_deletion
-      no_dependencies
-      ssl_verify
+      version
+      ingestion_running
+      current_state_cursor
+      ...IngestionTaxiiEdition_ingestionTaxii
     }
   }
 `;
 
-const syncPopoverStopMutation = graphql`
-  mutation SyncPopoverStopMutation($id: ID!) {
-    synchronizerStop(id: $id) {
-      id
-      name
-      uri
-      token
-      stream_id
-      listen_deletion
-      no_dependencies
-      ssl_verify
-    }
-  }
-`;
-
-const syncEditionQuery = graphql`
-  query SyncPopoverEditionQuery($id: String!) {
-    synchronizer(id: $id) {
-      id
-      name
-      uri
-      token
-      stream_id
-      listen_deletion
-      no_dependencies
-      ssl_verify
-      current_state_date
-      user {
-        id
-        name
-      }
-    }
-  }
-`;
-
-class SyncPopover extends Component {
+class IngestionTaxiiPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -162,16 +126,16 @@ class SyncPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: syncPopoverDeletionMutation,
+      mutation: ingestionTaxiiPopoverDeletionMutation,
       variables: {
-        id: this.props.syncId,
+        id: this.props.ingestionTaxiiId,
       },
       updater: (store) => {
         deleteNode(
           store,
-          'Pagination_synchronizers',
+          'Pagination_ingestionTaxiis',
           this.props.paginationOptions,
-          this.props.syncId,
+          this.props.ingestionTaxiiId,
         );
       },
       onCompleted: () => {
@@ -184,9 +148,10 @@ class SyncPopover extends Component {
   submitStart() {
     this.setState({ starting: true });
     commitMutation({
-      mutation: syncPopoverStartMutation,
+      mutation: ingestionTaxiiMutationFieldPatch,
       variables: {
-        id: this.props.syncId,
+        id: this.props.ingestionTaxiiId,
+        input: { key: 'ingestion_running', value: ['true'] },
       },
       onCompleted: () => {
         this.setState({ starting: false });
@@ -198,9 +163,10 @@ class SyncPopover extends Component {
   submitStop() {
     this.setState({ stopping: true });
     commitMutation({
-      mutation: syncPopoverStopMutation,
+      mutation: ingestionTaxiiMutationFieldPatch,
       variables: {
-        id: this.props.syncId,
+        id: this.props.ingestionTaxiiId,
+        input: { key: 'ingestion_running', value: ['false'] },
       },
       onCompleted: () => {
         this.setState({ stopping: false });
@@ -210,7 +176,7 @@ class SyncPopover extends Component {
   }
 
   render() {
-    const { classes, t, syncId, running } = this.props;
+    const { classes, t, ingestionTaxiiId, running } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -252,13 +218,13 @@ class SyncPopover extends Component {
           onClose={this.handleCloseUpdate.bind(this)}
         >
           <QueryRenderer
-            query={syncEditionQuery}
-            variables={{ id: syncId }}
+            query={ingestionTaxiiEditionQuery}
+            variables={{ id: ingestionTaxiiId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <SyncEdition
-                    synchronizer={props.synchronizer}
+                  <IngestionTaxiiEdition
+                    ingestionTaxii={props.ingestionTaxii}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );
@@ -276,7 +242,7 @@ class SyncPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this synchronizer?')}
+              {t('Do you want to delete this TAXII ingester?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -304,7 +270,7 @@ class SyncPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to start this synchronizer?')}
+              {t('Do you want to start this TAXII ingester?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -332,7 +298,7 @@ class SyncPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to stop this synchronizer?')}
+              {t('Do you want to stop this TAXII ingester?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -356,12 +322,12 @@ class SyncPopover extends Component {
   }
 }
 
-SyncPopover.propTypes = {
-  syncId: PropTypes.string,
+IngestionTaxiiPopover.propTypes = {
+  ingestionTaxiiId: PropTypes.string,
   running: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(SyncPopover);
+export default compose(inject18n, withStyles(styles))(IngestionTaxiiPopover);

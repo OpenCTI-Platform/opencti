@@ -44,4 +44,6 @@ import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
 import './notifier/notifier';
 import './threatActorIndividual/threatActorIndividual';
+import './ingestion/ingestion-rss';
+import './ingestion/ingestion-taxii';
 // endregion

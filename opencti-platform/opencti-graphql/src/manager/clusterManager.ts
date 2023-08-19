@@ -9,6 +9,7 @@ import syncManager from './syncManager';
 import retentionManager from './retentionManager';
 import publisherManager from './publisherManager';
 import notificationManager from './notificationManager';
+import ingestionManager from './ingestionManager';
 import { registerClusterInstance } from '../database/redis';
 import activityManager from './activityManager';
 import { getEntityFromCache } from '../database/cache';
@@ -42,6 +43,7 @@ const initClusterManager = () => {
       retentionManager.status(),
       publisherManager.status(),
       notificationManager.status(),
+      ingestionManager.status(),
       activityManager.status(settings),
     ];
     const configData: ClusterConfig = { platform_id: platformId, managers };

@@ -44,7 +44,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   };
   identifier: {
     definition: {
-      [k: string]: Array<{ src: string }> | (() => string)
+      [k: string]: Array<{ src: string }> | string | (() => string)
     };
     resolvers?: {
       [f: string]: (data: object) => string

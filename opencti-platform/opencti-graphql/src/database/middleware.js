@@ -764,22 +764,20 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
       }, resolved)
     );
     const unresolvedIds = R.filter((n) => !R.includes(n, resolvedIds), expectedIds);
-    // We only accept missing objects_refs (Report, Opinion, Note, Observed-data)
-    const expectedUnresolvedIds = unresolvedIds.filter((u) => !(input[INPUT_OBJECTS] || []).includes(u));
+    // In case of missing from / to, fail directly
+    const expectedUnresolvedIds = unresolvedIds.filter((u) => u === input.fromId || u === input.toId);
     if (expectedUnresolvedIds.length > 0) {
-      // If unresolved ids come from default values, don't throw
-      const attributesConfiguration = getAttributesConfiguration(entitySetting);
-      const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
-      const expectedUnresolvedIdsNotDefault = expectedUnresolvedIds.filter((id) => !defaultValues.includes(id));
-      if (expectedUnresolvedIdsNotDefault) {
-        throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIdsNotDefault });
-      }
+      throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });
     }
-    // In case of objects missing reference, we reject twice before accepting
+    // In case of missing reference NOT from or to, we reject twice before accepting
+    // TODO this retry must be removed in favor of reworking the workers synchronization
     const retryNumber = user.origin?.call_retry_number;
-    const objectRefsUnresolvedIds = unresolvedIds.filter((u) => (input[INPUT_OBJECTS] ?? []).includes(u));
-    if (isNotEmptyField(retryNumber) && objectRefsUnresolvedIds.length > 0 && retryNumber <= 2) {
-      throw MissingReferenceError({ input, unresolvedIds });
+    const optionalRefsUnresolvedIds = unresolvedIds.filter((u) => u !== input.fromId || u !== input.toId);
+    const attributesConfiguration = getAttributesConfiguration(entitySetting);
+    const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
+    const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
+    if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber <= 2) {
+      throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIdsNotDefault });
     }
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
