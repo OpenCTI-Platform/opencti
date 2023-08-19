@@ -94,11 +94,11 @@ const IngestionRssEditionContainer = ({
   };
   const initialValues = R.pipe(
     R.assoc('report_types', ingestionRss.report_types ?? []),
-    R.assoc('created_by_ref', convertCreatedBy(ingestionRss, 'created_by')),
+    R.assoc('created_by_ref', convertCreatedBy(ingestionRss, 'defaultCreatedBy')),
     R.assoc('user_id', convertUser(ingestionRss, 'user')),
     R.assoc(
       'object_marking_refs',
-      convertMarkingsWithoutEdges(ingestionRss, 'object_marking'),
+      convertMarkingsWithoutEdges(ingestionRss, 'defaultMarkingDefinitions'),
     ),
     R.pick([
       'name',
@@ -216,12 +216,12 @@ const IngestionRssEditionFragment = createFragmentContainer(
           entity_type
           name
         }
-        created_by {
+        defaultCreatedBy {
           id
           entity_type
           name
         }
-        object_marking {
+        defaultMarkingDefinitions {
           id
           entity_type
           definition

@@ -11659,12 +11659,9 @@ type IngestionRss implements InternalObject & BasicObject {
   name: String!
   description: String
   uri: String!
-  user_id: String
   user: Creator
-  created_by_ref: String
-  created_by: Identity
-  object_marking_refs: [String!]
-  object_marking: [MarkingDefinition]
+  defaultCreatedBy: Identity
+  defaultMarkingDefinitions: [MarkingDefinition]
   report_types: [String!]
   current_state_date: DateTime
   ingestion_running: Boolean

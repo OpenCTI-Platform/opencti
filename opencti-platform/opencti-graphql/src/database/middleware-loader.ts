@@ -10,7 +10,14 @@ import {
 import { elAggregationsList, elCount, elFindByIds, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityConnection, StoreProxyRelation } from '../types/store';
+import type {
+  BasicStoreBase,
+  BasicStoreCommon,
+  BasicStoreEntity,
+  BasicStoreObject,
+  StoreEntityConnection,
+  StoreProxyRelation
+} from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
@@ -441,7 +448,7 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
   return await elFindByIds(context, user, ids, args) as unknown as T[];
 };
 
-export const internalLoadById = async <T extends BasicStoreObject>(
+export const internalLoadById = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   id: string | undefined,
@@ -451,7 +458,7 @@ export const internalLoadById = async <T extends BasicStoreObject>(
   return await elLoadById(context, user, id, opts) as unknown as T;
 };
 
-export const storeLoadById = async <T extends BasicStoreObject>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
+export const storeLoadById = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }
@@ -472,7 +479,7 @@ export const storeLoadById = async <T extends BasicStoreObject>(context: AuthCon
   return data;
 };
 
-export const storeLoadByIds = async <T extends BasicStoreObject>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {
+export const storeLoadByIds = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }

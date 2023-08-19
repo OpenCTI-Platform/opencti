@@ -34,13 +34,17 @@ export const MEMBER_ACCESS_RIGHT_EDIT = 'edit';
 export const MEMBER_ACCESS_RIGHT_VIEW = 'view';
 const MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
 
+const administratorRoleId = uuidv4();
 export const ADMINISTRATOR_ROLE: UserRole = {
-  internal_id: uuidv4(),
+  id: administratorRoleId,
+  internal_id: administratorRoleId,
   name: ROLE_ADMINISTRATOR
 };
 
+const defaultRoleId = uuidv4();
 export const DEFAULT_ROLE: UserRole = {
-  internal_id: uuidv4(),
+  id: defaultRoleId,
+  internal_id: defaultRoleId,
   name: ROLE_DEFAULT
 };
 

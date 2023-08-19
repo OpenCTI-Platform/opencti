@@ -10097,23 +10097,20 @@ export enum InfrastructuresOrdering {
 export type IngestionRss = BasicObject & InternalObject & {
   __typename?: 'IngestionRss';
   created_at?: Maybe<Scalars['DateTime']['output']>;
-  created_by?: Maybe<Identity>;
-  created_by_ref?: Maybe<Scalars['String']['output']>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
+  defaultCreatedBy?: Maybe<Identity>;
+  defaultMarkingDefinitions?: Maybe<Array<Maybe<MarkingDefinition>>>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
-  object_marking?: Maybe<Array<Maybe<MarkingDefinition>>>;
-  object_marking_refs?: Maybe<Array<Scalars['String']['output']>>;
   parent_types: Array<Scalars['String']['output']>;
   report_types?: Maybe<Array<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
-  user_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type IngestionRssAddInput = {
@@ -32609,23 +32606,20 @@ export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType e
 
 export type IngestionRssResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRss'] = ResolversParentTypes['IngestionRss']> = ResolversObject<{
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  created_by?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
-  created_by_ref?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  defaultCreatedBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  defaultMarkingDefinitions?: Resolver<Maybe<Array<Maybe<ResolversTypes['MarkingDefinition']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  object_marking?: Resolver<Maybe<Array<Maybe<ResolversTypes['MarkingDefinition']>>>, ParentType, ContextType>;
-  object_marking_refs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
-  user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
