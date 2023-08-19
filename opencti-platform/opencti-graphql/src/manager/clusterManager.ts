@@ -9,13 +9,13 @@ import syncManager from './syncManager';
 import retentionManager from './retentionManager';
 import publisherManager from './publisherManager';
 import notificationManager from './notificationManager';
+import ingestionManager from './ingestionManager';
 import { registerClusterInstance } from '../database/redis';
 import activityManager from './activityManager';
 import { getEntityFromCache } from '../database/cache';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
-import ingestionManager from "./ingestionManager";
 
 const SCHEDULE_TIME = 30000;
 const NODE_INSTANCE_ID = conf.get('app:node_identifier') || uuid();
