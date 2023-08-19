@@ -5,7 +5,12 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
-import useGranted, { KNOWLEDGE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE,
+  MODULES,
+  SETTINGS,
+  TAXIIAPI_SETCOLLECTIONS,
+} from '../../../utils/hooks/useGranted';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 import useAuth from '../../../utils/hooks/useAuth';
 
@@ -81,6 +86,23 @@ const TopMenuData = () => {
           {t('Data sharing')}
         </Button>
       )}
+      <Tooltip
+        title={platformModuleHelpers.generateDisableMessage(TASK_MANAGER)}
+      >
+        <span>
+          <Button
+            component={Link}
+            size="small"
+            to="/dashboard/data/processing"
+            disabled={!platformModuleHelpers.isTasksManagerEnable()}
+            variant={getVariant('/dashboard/data/processing')}
+            color={getColor('/dashboard/data/processing')}
+            classes={{ root: classes.button }}
+          >
+            {t('Processing')}
+          </Button>
+        </span>
+      </Tooltip>
       {isConnectorReader && (
         <Button
           component={Link}
@@ -93,23 +115,6 @@ const TopMenuData = () => {
           {t('Connectors')}
         </Button>
       )}
-      <Tooltip
-        title={platformModuleHelpers.generateDisableMessage(TASK_MANAGER)}
-      >
-        <span>
-          <Button
-            component={Link}
-            size="small"
-            to="/dashboard/data/tasks"
-            disabled={!platformModuleHelpers.isTasksManagerEnable()}
-            variant={getVariant('/dashboard/data/tasks')}
-            color={getColor('/dashboard/data/tasks')}
-            classes={{ root: classes.button }}
-          >
-            {t('Background tasks')}
-          </Button>
-        </span>
-      </Tooltip>
     </div>
   );
 };

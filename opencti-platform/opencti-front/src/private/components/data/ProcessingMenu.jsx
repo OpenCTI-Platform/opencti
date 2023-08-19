@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
 
-const SharingMenu = () => {
+const ProcessingMenu = () => {
   const location = useLocation();
   const classes = useStyles();
   const { t } = useFormatter();
@@ -42,31 +42,25 @@ const SharingMenu = () => {
       >
         <MenuItem
           component={Link}
-          to={'/dashboard/data/sharing/streams'}
-          selected={location.pathname === '/dashboard/data/sharing/streams'}
+          to={'/dashboard/data/processing/automation'}
+          selected={location.pathname.includes(
+            '/dashboard/data/processing/automation',
+          )}
           dense={false}
         >
-          <ListItemText primary={t('Live streams')} />
+          <ListItemText primary={t('Automation')} />
         </MenuItem>
         <MenuItem
           component={Link}
-          to={'/dashboard/data/sharing/feeds'}
-          selected={location.pathname.includes('/dashboard/data/sharing/feeds')}
+          to={'/dashboard/data/processing/tasks'}
+          selected={location.pathname === '/dashboard/data/processing/tasks'}
           dense={false}
         >
-          <ListItemText primary={t('CSV Feeds')} />
-        </MenuItem>
-        <MenuItem
-          component={Link}
-          to={'/dashboard/data/sharing/taxii'}
-          selected={location.pathname.includes('/dashboard/data/sharing/taxii')}
-          dense={false}
-        >
-          <ListItemText primary={t('TAXII collections')} />
+          <ListItemText primary={t('Tasks')} />
         </MenuItem>
       </MenuList>
     </Drawer>
   );
 };
 
-export default SharingMenu;
+export default ProcessingMenu;

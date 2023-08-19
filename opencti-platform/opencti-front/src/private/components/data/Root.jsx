@@ -12,6 +12,7 @@ import Feed from './Feed';
 import Sync from './Sync';
 import IngestionRss from './IngestionRss';
 import IngestionTaxiis from './IngestionTaxiis';
+import Playbooks from './Playbooks';
 
 const Root = () => (
   <Switch>
@@ -26,7 +27,6 @@ const Root = () => (
       path="/dashboard/data/relationships"
       component={Relationships}
     />
-    <BoundaryRoute exact path="/dashboard/data/tasks" component={Tasks} />
     <BoundaryRoute
       exact
       path="/dashboard/data/connectors"
@@ -75,6 +75,21 @@ const Root = () => (
       exact
       path="/dashboard/data/sharing/taxii"
       component={Taxii}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/processing"
+      render={() => <Redirect to="/dashboard/data/processing/automation" />}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/processing/automation"
+      component={Playbooks}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/processing/tasks"
+      component={Tasks}
     />
   </Switch>
 );

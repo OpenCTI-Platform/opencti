@@ -89,28 +89,34 @@ const observedDataCreationMutation = graphql`
 const OBSERVED_DATA_TYPE = 'Observed-Data';
 
 interface ObservedDataAddInput {
-  objects: { value: string }[]
-  first_observed: Date | null
-  last_observed: Date | null
-  number_observed: number
-  confidence: number | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined,
+  objects: { value: string }[];
+  first_observed: Date | null;
+  last_observed: Date | null;
+  number_observed: number;
+  confidence: number | undefined;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface ObservedDataFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: { id: string; name: string } | null,
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
 }
 
-export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> = ({
+export const ObservedDataCreationForm: FunctionComponent<
+ObservedDataFormProps
+> = ({
   updater,
   onReset,
   onCompleted,
@@ -135,14 +141,13 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
     OBSERVED_DATA_TYPE,
     basicShape,
   );
-
-  const [commit] = useMutation<ObservedDataCreationMutation>(observedDataCreationMutation);
-
-  const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (values, {
-    setSubmitting,
-    setErrors,
-    resetForm,
-  }) => {
+  const [commit] = useMutation<ObservedDataCreationMutation>(
+    observedDataCreationMutation,
+  );
+  const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: ObservedDataCreationMutation$variables['input'] = {
       objects: values.objects.map((v) => v.value),
       first_observed: parse(values.first_observed).format(),
@@ -177,23 +182,18 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
       },
     });
   };
-
-  const initialValues = useDefaultValues(
-    OBSERVED_DATA_TYPE,
-    {
-      objects: [],
-      first_observed: null,
-      last_observed: null,
-      number_observed: 1,
-      confidence: defaultConfidence,
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
-
+  const initialValues = useDefaultValues(OBSERVED_DATA_TYPE, {
+    objects: [],
+    first_observed: null,
+    last_observed: null,
+    number_observed: 1,
+    confidence: defaultConfidence,
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
   return (
     <Formik
       initialValues={initialValues}
@@ -289,26 +289,25 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
   );
 };
 
-const ObservedDataCreation = ({ paginationOptions }: {
-  paginationOptions: ObservedDatasLinesPaginationQuery$variables
+const ObservedDataCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_observedDatas',
     paginationOptions,
     'observedDataAdd',
   );
-
   return (
-    <div>
+    <>
       <Fab
         onClick={handleOpen}
         color="secondary"
@@ -345,7 +344,7 @@ const ObservedDataCreation = ({ paginationOptions }: {
           />
         </div>
       </Drawer>
-    </div>
+    </>
   );
 };
 

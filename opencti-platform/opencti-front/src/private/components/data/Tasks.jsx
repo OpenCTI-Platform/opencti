@@ -8,10 +8,12 @@ import TasksList, { tasksListQuery } from './tasks/TasksList';
 import Loader from '../../../components/Loader';
 import useAuth from '../../../utils/hooks/useAuth';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
+import ProcessingMenu from './ProcessingMenu';
 
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
+    padding: '0 200px 50px 0',
   },
 }));
 
@@ -42,6 +44,7 @@ const Tasks = () => {
   }
   return (
     <div className={classes.container}>
+      <ProcessingMenu />
       <Typography variant="h4" gutterBottom={true}>
         {t('In progress tasks')}
       </Typography>
