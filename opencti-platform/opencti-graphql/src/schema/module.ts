@@ -15,7 +15,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
 } from './general';
 import { UnsupportedError } from '../config/errors';
-import { type AttributeDefinition, iAliasedIds, standardId } from './attribute-definition';
+import { type AttributeDefinition, iAliasedIds } from './attribute-definition';
 import { depsKeysRegister, schemaAttributesDefinition } from './schema-attributes';
 import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 import type { ValidatorFn } from './validator-register';
@@ -130,7 +130,7 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
   registerModelIdentifier(definition.identifier);
 
   // Register model attributes
-  const attributes: AttributeDefinition[] = [standardId];
+  const attributes: AttributeDefinition[] = [];
   attributes.push(...definition.attributes.map((attr) => attr));
   if (definition.type.aliased) {
     attributes.push(...[resolveAliasesField(definition.type.name), iAliasedIds]);

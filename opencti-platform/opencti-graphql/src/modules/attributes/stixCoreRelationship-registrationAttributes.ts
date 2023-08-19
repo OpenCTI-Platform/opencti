@@ -1,7 +1,6 @@
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 
 export const stixCoreRelationshipsAttributes: Array<AttributeDefinition> = [
   { name: 'start_time', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false, label: 'first obs.' },
@@ -10,4 +9,3 @@ export const stixCoreRelationshipsAttributes: Array<AttributeDefinition> = [
   { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CORE_RELATIONSHIP, stixCoreRelationshipsAttributes);
-STIX_CORE_RELATIONSHIPS.map((type) => schemaAttributesDefinition.registerAttributes(type, stixCoreRelationshipsAttributes));

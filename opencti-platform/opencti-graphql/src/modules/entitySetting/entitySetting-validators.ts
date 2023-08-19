@@ -92,7 +92,7 @@ const attributesConfigurationValidation = async (context: AuthContext, user: Aut
         }
       }
       // Scale
-      if (attr.scale) {
+      if (attributeDefinition?.type === 'numeric' && attr.scale) {
         // Relation ref can't be scalable
         if (!attributeDefinition?.scalable) {
           throw ValidationError(attr.name, {

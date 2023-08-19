@@ -5,7 +5,7 @@ import '../../../src/modules/index';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_GROUP } from '../../../src/schema/internalObject';
 
-describe('prepareElementForIndexing testing', () => {
+describe('prepareDataFromSchemaDefinition testing', () => {
   it('should base trim applied', () => {
     const element = prepareDataFromSchemaDefinition({ entity_type: ENTITY_TYPE_INDICATOR, name: '  test' });
     expect(element.name).toBe('test');

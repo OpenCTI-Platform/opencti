@@ -473,17 +473,18 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   context: AuthContext,
   user: AuthUser,
   id: string | undefined,
-  opts?: { type?: string, baseData?: boolean },
+  opts?: { type?: string, baseData?: boolean, indices?: string[] },
 ): Promise<T> => {
   // TODO Remove when all Typescript
   return await elLoadById(context, user, id, opts) as unknown as T;
 };
 
-export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
+export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string,
+  type: string, opts?: { baseData?: boolean, indices?: string[] }): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }
-  const data = await internalLoadById<T>(context, user, id, { type });
+  const data = await internalLoadById<T>(context, user, id, { ...opts, type });
   if (data) {
     const contextData: UserReadActionContextData = {
       id,

@@ -1,6 +1,5 @@
 import { deleteTask, createQueryTask, findAll, findById } from '../domain/backgroundTask';
-import { createListTask } from '../domain/backgroundTask-common';
-import { batchLoader } from '../database/middleware';
+import { batchLoader, createListTask } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 
 const creatorLoader = batchLoader(batchCreator);

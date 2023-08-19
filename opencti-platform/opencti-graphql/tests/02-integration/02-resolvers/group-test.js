@@ -300,6 +300,7 @@ describe('Group resolver standard behavior', () => {
         },
       },
     });
+    console.log(JSON.stringify(queryResult));
     expect(queryResult.data.groupEdit.editDefaultMarking.default_marking[0].values.length).toEqual(1);
   });
   it('should delete default marking in group', async () => {

@@ -1,5 +1,4 @@
 import {
-  _index,
   AttributeDefinition,
   baseType,
   createdAt,
@@ -16,7 +15,6 @@ import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../../schema/general';
 
 const basicRelationshipAttributes: Array<AttributeDefinition> = [
-  _index,
   id,
   internalId,
   standardId,

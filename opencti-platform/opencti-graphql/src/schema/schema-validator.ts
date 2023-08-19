@@ -21,7 +21,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
 import { externalReferences } from './stixRefRelationship';
 import { telemetry } from '../config/tracing';
-import type { AttributeDefinition } from './attribute-definition';
+import type { AttributeDefinition, JsonAttribute } from './attribute-definition';
 import type { EditInput } from '../generated/graphql';
 import { EditOperation } from '../generated/graphql';
 import { utcDate } from '../utils/format';
@@ -46,14 +46,15 @@ export const validateAndFormatSchemaAttribute = (
 ) => {
   // Complex object must be completely enforced
   if (isJsonAttribute(attributeName) || isObjectAttribute(attributeName)) {
-    if (!attributeDefinition) {
+    const jsonAttribute = attributeDefinition as JsonAttribute;
+    if (!jsonAttribute) {
       throw ValidationError(attributeName, {
         message: 'This attribute is not declared for this type',
         data: { attribute: attributeName, entityType: instanceType }
       });
     }
-    if (attributeDefinition.schemaDef) {
-      const validate = ajv.compile(attributeDefinition.schemaDef);
+    if (jsonAttribute.schemaDef) {
+      const validate = ajv.compile(jsonAttribute.schemaDef);
       if (isJsonAttribute(attributeName)) {
         const jsonValue = R.head(editInput.value); // json cannot be multiple
         const valid = validate(JSON.parse(jsonValue as string));

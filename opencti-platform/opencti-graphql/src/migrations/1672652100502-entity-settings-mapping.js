@@ -3,7 +3,7 @@ import { getSettings } from '../domain/settings';
 import { entitySettingEditField, findByType } from '../modules/entitySetting/entitySetting-domain';
 import { queryDefaultSubTypes } from '../domain/subType';
 import conf from '../config/conf';
-import { elLoadById, elReplace, prepareDataFromSchemaDefinition } from '../database/engine';
+import { elLoadById, elReplace } from '../database/engine';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 export const up = async (next) => {
@@ -45,13 +45,9 @@ export const up = async (next) => {
   }
 
   // Remove setting property from DB
-
   const settingsFromEl = await elLoadById(context, SYSTEM_USER, settings.id, { type: ENTITY_TYPE_SETTINGS });
-  settingsFromEl.platform_entities_files_ref = null;
-  settingsFromEl.platform_hidden_types = null;
-
-  const esData = prepareDataFromSchemaDefinition(settingsFromEl);
-  await elReplace(settingsFromEl._index, settingsFromEl.internal_id, { doc: esData });
+  const update = { platform_entities_files_ref: null, platform_hidden_types: null };
+  await elReplace(settingsFromEl._index, settingsFromEl, update);
 
   next();
 };

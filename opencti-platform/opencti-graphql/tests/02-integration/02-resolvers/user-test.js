@@ -441,7 +441,6 @@ describe('User resolver standard behavior', () => {
 describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY, variables: { first: 20 } });
-    console.log(JSON.stringify(queryResult));
     expect(queryResult.data.members.edges.length).toEqual(16);
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(4);
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(5);

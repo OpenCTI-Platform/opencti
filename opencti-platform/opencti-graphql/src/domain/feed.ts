@@ -64,7 +64,7 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   if (!feed) {
     throw FunctionalError(`Feed ${id} cant be found`);
   }
-  await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: input });
+  await elReplace(INDEX_INTERNAL_OBJECTS, feed, input);
   await publishUserAction({
     user,
     event_type: 'mutation',

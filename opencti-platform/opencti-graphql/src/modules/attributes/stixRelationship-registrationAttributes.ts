@@ -5,7 +5,6 @@ import {
   lang,
   modified,
   revoked,
-  specVersion,
   xOpenctiStixIds,
   relationshipType
 } from '../../schema/attribute-definition';
@@ -14,7 +13,6 @@ import { ABSTRACT_STIX_RELATIONSHIP } from '../../schema/general';
 
 const stixRelationshipAttributes: Array<AttributeDefinition> = [
   xOpenctiStixIds,
-  specVersion,
   created,
   modified,
   revoked,

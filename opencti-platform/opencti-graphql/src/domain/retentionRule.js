@@ -1,9 +1,8 @@
-import { deleteElementById, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
-import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { elIndex, elPaginate } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { elPaginate } from '../database/engine';
+import { READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 import { utcDate } from '../utils/format';
 import { RETENTION_MANAGER_USER } from '../utils/access';
@@ -29,27 +28,17 @@ export const createRetentionRule = async (context, user, input) => {
     throw UnsupportedError('Retention rule must have valid filters');
   }
   // create the retention rule
-  const retentionRuleId = generateInternalId();
-  const retentionRule = {
-    id: retentionRuleId,
-    internal_id: retentionRuleId,
-    standard_id: generateStandardId(ENTITY_TYPE_RETENTION_RULE, input),
-    entity_type: ENTITY_TYPE_RETENTION_RULE,
-    last_execution_date: null,
-    last_deleted_count: null,
-    remaining_count: null,
-    ...input,
-  };
-  await elIndex(INDEX_INTERNAL_OBJECTS, retentionRule);
+  const retentionRule = { last_execution_date: null, last_deleted_count: null, remaining_count: null, ...input };
+  const created = await createEntity(context, user, retentionRule, ENTITY_TYPE_RETENTION_RULE);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
     event_access: 'administration',
     message: `creates retention rule \`${retentionRule.name}\``,
-    context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_RETENTION_RULE, input }
   });
-  return retentionRule;
+  return created;
 };
 
 export const retentionRuleEditField = async (context, user, retentionRuleId, input) => {

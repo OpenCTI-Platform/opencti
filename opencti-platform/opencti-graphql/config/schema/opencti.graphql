@@ -1122,7 +1122,7 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_words: Int @auth
   password_policy_min_lowercase: Int @auth
   password_policy_min_uppercase: Int @auth
-  messages: [SettingsMessage!] @auth
+  platform_messages: [SettingsMessage!] @auth
   analytics_google_analytics_v4: String @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS])

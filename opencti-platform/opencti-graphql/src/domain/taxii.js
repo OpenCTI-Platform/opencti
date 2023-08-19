@@ -1,11 +1,10 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { elIndex, elPaginate } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
-import { generateInternalId, generateStandardId } from '../schema/identifier';
+import { elPaginate } from '../database/engine';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -20,25 +19,16 @@ const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
 export const createTaxiiCollection = async (context, user, input) => {
-  const collectionId = generateInternalId();
-  const data = {
-    id: collectionId,
-    internal_id: collectionId,
-    standard_id: generateStandardId(ENTITY_TYPE_TAXII_COLLECTION, input),
-    entity_type: ENTITY_TYPE_TAXII_COLLECTION,
-    authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
-    ...input,
-  };
-  await elIndex(INDEX_INTERNAL_OBJECTS, data);
+  const created = await createEntity(context, user, input, ENTITY_TYPE_TAXII_COLLECTION);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
     event_access: 'administration',
     message: `creates Taxii collection \`${input.name}\``,
-    context_data: { id: collectionId, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input }
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input }
   });
-  return data;
+  return created;
 };
 export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);

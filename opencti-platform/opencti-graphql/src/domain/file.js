@@ -71,7 +71,7 @@ export const askJobImport = async (context, user, args) => {
   const entityId = bypassEntityId || file.metaData.entity_id;
   const opts = { manual: true, connectorId, configuration, bypassValidation };
   const entity = await internalLoadById(context, user, entityId);
-  const connectors = await uploadJobImport(context, user, file.id, file.metaData.mimetype, entityId, opts);
+  const connectors = await uploadJobImport(context, createEntity, user, file.id, file.metaData.mimetype, entityId, opts);
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
   const contextData = {

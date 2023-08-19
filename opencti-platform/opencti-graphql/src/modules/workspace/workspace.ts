@@ -7,6 +7,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import convertWorkspaceToStix from './workspace-converter';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWorkspace> = {
   type: {
@@ -37,7 +38,7 @@ const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWorkspace
     { name: 'tags', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
     { name: 'graph_data', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'investigated_entities_ids', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
-    { name: 'authorized_members', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
+    authorizedMembers,
   ],
   relations: [],
   representative: (stix: StixWorkspace) => {

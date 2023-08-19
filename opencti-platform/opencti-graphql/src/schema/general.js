@@ -36,6 +36,7 @@ export const INPUT_ETHNICITY = 'ethnicity'; // Extension (TIM)
 export const INPUT_AUTHORIZED_MEMBERS = 'authorized_members'; // Extension (TIM)
 
 // Specific prefix
+export const INDEX_FIELD = '_index';
 export const REL_INDEX_PREFIX = 'rel_';
 export const INTERNAL_PREFIX = 'i_';
 export const RULE_PREFIX = 'i_rule_';

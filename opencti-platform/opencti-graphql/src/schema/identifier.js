@@ -182,6 +182,7 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_TAXII_COLLECTION]: () => uuidv4(),
     [I.ENTITY_TYPE_BACKGROUND_TASK]: () => uuidv4(),
     [I.ENTITY_TYPE_RETENTION_RULE]: () => uuidv4(),
+    [I.ENTITY_TYPE_WORK]: () => uuidv4(),
     [I.ENTITY_TYPE_SYNC]: () => uuidv4(),
     [I.ENTITY_TYPE_STREAM_COLLECTION]: () => uuidv4(),
     // Stix Domain

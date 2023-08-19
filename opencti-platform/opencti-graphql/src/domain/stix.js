@@ -1,6 +1,12 @@
 import mime from 'mime-types';
 import { invertObj, map } from 'ramda';
-import { batchListThroughGetTo, deleteElementById, mergeEntities, updateAttribute } from '../database/middleware';
+import {
+  batchListThroughGetTo,
+  createEntity,
+  deleteElementById,
+  mergeEntities,
+  updateAttribute
+} from '../database/middleware';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -102,7 +108,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
       const path = `export/${entityType}`;
-      const work = await createWork(context, user, connector, fileIdentifier, path);
+      const work = await createWork(context, createEntity, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;
@@ -152,7 +158,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity.entity_type}/${entity.id}`;
-      const work = await createWork(context, user, connector, fileIdentifier, path);
+      const work = await createWork(context, createEntity, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;

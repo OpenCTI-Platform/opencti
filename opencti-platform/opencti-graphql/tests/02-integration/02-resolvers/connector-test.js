@@ -154,6 +154,7 @@ describe('Connector resolver standard behaviour', () => {
       query: UPDATE_WORK_QUERY,
       variables: { id: workId, message: 'Finished', inError: false },
     });
+    console.log(JSON.stringify(queryResult));
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.workEdit.toProcessed).toEqual(workId);
 

@@ -10,7 +10,6 @@ import { ENTITY_TYPE_LOCATION } from '../../schema/general';
 import type { StixLocation } from '../../types/stix-sdo';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import { entityLocationType } from '../../schema/attribute-definition';
 
 const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrativeArea, StixLocation> = {
   type: {

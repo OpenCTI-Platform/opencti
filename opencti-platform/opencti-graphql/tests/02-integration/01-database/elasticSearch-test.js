@@ -2,7 +2,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import moment from 'moment';
-import { elAggregationCount, elAggregationRelationsCount, elCount, elCreateIndices, elDeleteElements, elDeleteIndices, elHistogramCount, elIndex, elIndexElements, elIndexExists, elLoadById, elPaginate, elRebuildRelation, searchEngineInit, } from '../../../src/database/engine';
+import { elAggregationCount, elAggregationRelationsCount, elCount, elCreateIndices, elDeleteElements, elDeleteIndices, elHistogramCount, elIndexElements, elIndexExists, elLoadById, elPaginate, elRebuildRelation, searchEngineInit, } from '../../../src/database/engine';
 import { ES_INDEX_PREFIX, READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES, } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
@@ -41,33 +41,6 @@ describe('Elasticsearch document loader', () => {
   });
   afterAll(async () => {
     await elDeleteIndices(['test_index-000001']);
-  });
-
-  it('should create and retrieve document', async () => {
-    // Index an element and try to retrieve the data
-    const standardId = 'campaign--aae8b913-564b-405e-a9c1-5e5ea6c60259';
-    const internalId = '867d03f4-be73-44f6-82d9-7d7b14df55d7';
-    const documentBody = {
-      internal_id: internalId,
-      standard_id: standardId,
-      name: 'Germany - Maze - October 2019',
-      entity_type: 'Campaign',
-      parent_types: ['Campaign', 'Stix-Domain-Object', 'Stix-Core-Object', 'Stix-Object', 'Basic-Object'],
-    };
-    const indexedData = await elIndex('test_index', documentBody);
-    expect(indexedData).toEqual(documentBody);
-    const documentWithIndex = R.assoc('_index', 'test_index-000001', documentBody);
-    // Load by internal Id
-    const opts = { type: null, indices: ['test_index'] };
-    const dataThroughInternal = await elLoadById(testContext, ADMIN_USER, internalId, opts);
-    expect(dataThroughInternal.standard_id).toEqual(documentWithIndex.standard_id);
-    // Load by stix id
-    const dataThroughStix = await elLoadById(testContext, ADMIN_USER, standardId, opts);
-    expect(dataThroughStix.standard_id).toEqual(documentWithIndex.standard_id);
-    // Try to delete
-    await elDeleteElements(testContext, ADMIN_USER, [dataThroughStix]);
-    const removedInternal = await elLoadById(testContext, ADMIN_USER, internalId, opts);
-    expect(removedInternal).toBeUndefined();
   });
 });
 

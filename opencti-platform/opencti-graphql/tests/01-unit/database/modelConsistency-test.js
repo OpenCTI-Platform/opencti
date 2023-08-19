@@ -103,7 +103,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   isDateNumericOrBooleanAttribute,
   isJsonAttribute,
-  isMultipleAttribute,
+  isMultipleAttribute, isObjectAttribute, isStringAttribute,
   schemaAttributesDefinition
 } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
@@ -222,8 +222,9 @@ describe('Testing schema types definition', () => {
 
 describe('Testing schema attributes definition', () => {
   it('Attributes type testing', () => {
+    expect(isStringAttribute('name')).toBe(true);
     expect(isJsonAttribute('revoked')).toBe(false);
-    expect(isJsonAttribute('bookmarks')).toBe(true);
+    expect(isObjectAttribute('bookmarks')).toBe(true);
     expect(isDateNumericOrBooleanAttribute('bookmarks')).toBe(false);
     expect(isDateNumericOrBooleanAttribute('attribute_order')).toBe(true);
     expect(isDateNumericOrBooleanAttribute('start_time')).toBe(true);

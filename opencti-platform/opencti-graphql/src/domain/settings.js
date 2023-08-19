@@ -115,7 +115,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
 };
 
 export const getMessages = (user, settings) => {
-  const messages = JSON.parse(settings.messages ?? '[]');
+  const messages = JSON.parse(settings.platform_messages ?? '[]');
   return messages.filter(({ recipients }) => {
     // eslint-disable-next-line max-len
     return isEmptyField(recipients) || recipients.some((recipientId) => [user.id, ...user.groups.map(({ id }) => id), ...user.organizations.map(({ id }) => id)].includes(recipientId));
@@ -139,7 +139,7 @@ export const settingEditMessage = async (context, user, settingsId, message) => 
       id: generateInternalId()
     });
   }
-  const patch = { messages: JSON.stringify(messages) };
+  const patch = { platform_messages: JSON.stringify(messages) };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
@@ -154,7 +154,7 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   } else {
     throw UnsupportedError('This message does not exist', { messageId });
   }
-  const patch = { messages: JSON.stringify(messages) };
+  const patch = { platform_messages: JSON.stringify(messages) };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
