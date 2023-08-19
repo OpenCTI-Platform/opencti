@@ -11,6 +11,7 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -20,6 +21,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { insertNode } from '../../../../utils/store';
+import SelectField from '../../../../components/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
@@ -68,28 +70,31 @@ const styles = (theme) => ({
   },
 });
 
-const IngestionRssCreationMutation = graphql`
-  mutation IngestionRssCreationMutation($input: IngestionRssAddInput!) {
-    ingestionRssAdd(input: $input) {
-      ...IngestionRssLine_node
+const IngestionTaxiiCreationMutation = graphql`
+  mutation IngestionTaxiiCreationMutation($input: IngestionTaxiiAddInput!) {
+    ingestionTaxiiAdd(input: $input) {
+      ...IngestionTaxiiLine_node
     }
   }
 `;
 
-const ingestionRssCreationValidation = (t) => Yup.object().shape({
+const ingestionTaxiiCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   uri: Yup.string().required(t('This field is required')),
-  object_marking_refs: Yup.array().nullable(),
-  report_types: Yup.array().nullable(),
-  created_by_ref: Yup.object().nullable(),
+  version: Yup.string().required(t('This field is required')),
+  collection: Yup.string().required(t('This field is required')),
+  authentication_type: Yup.string().required(t('This field is required')),
+  authentication_value: Yup.string().nullable(),
+  username: Yup.string().nullable(),
+  password: Yup.string().nullable(),
+  cert: Yup.string().nullable(),
+  key: Yup.string().nullable(),
+  ca: Yup.string().nullable(),
   user_id: Yup.object().nullable(),
-  current_state_date: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
 });
 
-const IngestionRssCreation = (props) => {
+const IngestionTaxiiCreation = (props) => {
   const { t, classes } = props;
   const [open, setOpen] = useState(false);
   const handleOpen = () => {
@@ -99,27 +104,34 @@ const IngestionRssCreation = (props) => {
     setOpen(false);
   };
   const onSubmit = (values, { setSubmitting, resetForm }) => {
+    let authentifcationValue = values.authentication_value;
+    if (values.authentication_type === 'basic') {
+      authentifcationValue = `${values.username}:${values.password}`;
+    } else if (values.authentication_type === 'certificate') {
+      authentifcationValue = `${values.cert}:${values.key}:${values.ca}`;
+    }
     const input = {
       name: values.name,
       description: values.description,
       uri: values.uri,
-      report_types: values.report_types,
+      version: values.version,
+      collection: values.collection,
+      authentication_type: values.authentication_type,
+      authentication_value: authentifcationValue,
+      added_after_start: values.added_after_start,
       user_id: values.user_id?.value,
-      current_state_date: values.current_state_date,
-      created_by_ref: values.created_by_ref?.value,
-      object_marking_refs: values.object_marking_refs?.map((v) => v.value),
     };
     commitMutation({
-      mutation: IngestionRssCreationMutation,
+      mutation: IngestionTaxiiCreationMutation,
       variables: {
         input,
       },
       updater: (store) => {
         insertNode(
           store,
-          'Pagination_ingestionRsss',
+          'Pagination_ingestionTaxiis',
           props.paginationOptions,
-          'ingestionRssAdd',
+          'ingestionTaxiiAdd',
         );
       },
       setSubmitting,
@@ -161,7 +173,7 @@ const IngestionRssCreation = (props) => {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a RSS ingester')}</Typography>
+          <Typography variant="h6">{t('Create a TAXII ingester')}</Typography>
         </div>
         <div className={classes.container}>
           <Formik
@@ -169,17 +181,23 @@ const IngestionRssCreation = (props) => {
               name: '',
               description: '',
               uri: '',
-              report_types: [],
+              version: 'v21',
+              collection: '',
+              added_after_start: null,
+              authentication_type: 'none',
+              authentication_value: '',
               user_id: '',
-              createdBy: '',
-              objectMarking: [],
-              current_state_date: null,
+              username: '',
+              password: '',
+              cert: '',
+              key: '',
+              ca: '',
             }}
-            validationSchema={ingestionRssCreationValidation(t)}
+            validationSchema={ingestionTaxiiCreationValidation(t)}
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+            {({ submitForm, handleReset, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -200,10 +218,115 @@ const IngestionRssCreation = (props) => {
                   component={TextField}
                   variant="standard"
                   name="uri"
-                  label={t('RSS Feed URL')}
+                  label={t('TAXII server URL')}
                   fullWidth={true}
                   style={fieldSpacingContainerStyle}
                 />
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="version"
+                  label={t('TAXII version')}
+                  fullWidth={true}
+                  containerstyle={{
+                    width: '100%',
+                    marginTop: 20,
+                  }}
+                >
+                  <MenuItem value="v1" disabled={true}>
+                    {t('TAXII 1.0')}
+                  </MenuItem>
+                  <MenuItem value="v2" disabled={true}>
+                    {t('TAXII 2.0')}
+                  </MenuItem>
+                  <MenuItem value="v21">{t('TAXII 2.1')}</MenuItem>
+                </Field>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="collection"
+                  label={t('TAXII Collection')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="authentication_type"
+                  label={t('Authentication type')}
+                  fullWidth={true}
+                  containerstyle={{
+                    width: '100%',
+                    marginTop: 20,
+                  }}
+                >
+                  <MenuItem value="none">{t('None')}</MenuItem>
+                  <MenuItem value="basic">
+                    {t('Basic user / password')}
+                  </MenuItem>
+                  <MenuItem value="bearer">{t('Bearer token')}</MenuItem>
+                  <MenuItem value="certificate">
+                    {t('Client certificate')}
+                  </MenuItem>
+                </Field>
+                {values.authentication_type === 'basic' && (
+                  <>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="username"
+                      label={t('Username')}
+                      fullWidth={true}
+                      style={fieldSpacingContainerStyle}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="password"
+                      label={t('Password')}
+                      fullWidth={true}
+                      style={fieldSpacingContainerStyle}
+                    />
+                  </>
+                )}
+                {values.authentication_type === 'bearer' && (
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="authentication_value"
+                    label={t('Token')}
+                    fullWidth={true}
+                    style={fieldSpacingContainerStyle}
+                  />
+                )}
+                {values.authentication_type === 'certificate' && (
+                  <>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="cert"
+                      label={t('Certificate (base64)')}
+                      fullWidth={true}
+                      style={fieldSpacingContainerStyle}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="key"
+                      label={t('Key (base64)')}
+                      fullWidth={true}
+                      style={fieldSpacingContainerStyle}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="ca"
+                      label={t('CA certificate (base64)')}
+                      fullWidth={true}
+                      style={fieldSpacingContainerStyle}
+                    />
+                  </>
+                )}
                 <CreatorField
                   name="user_id"
                   label={t(
@@ -213,35 +336,15 @@ const IngestionRssCreation = (props) => {
                 />
                 <Field
                   component={DateTimePickerField}
-                  name="current_state_date"
+                  name="added_after_start"
                   TextFieldProps={{
                     label: t(
-                      'Import from date (empty = all RSS feed possible items)',
+                      'Import from date (empty = all TAXII collection possible items)',
                     ),
                     variant: 'standard',
                     fullWidth: true,
                     style: { marginTop: 20 },
                   }}
-                />
-                <OpenVocabField
-                  label={t('Default report types')}
-                  type="report_types_ov"
-                  name="report_types"
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  containerStyle={fieldSpacingContainerStyle}
-                  multiple={true}
-                />
-                <CreatedByField
-                  name="created_by_ref"
-                  label={t('Default author')}
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectMarkingField
-                  label={t('Default marking definitions')}
-                  name="object_marking_refs"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
                 />
                 <div className={classes.buttons}>
                   <Button
@@ -271,7 +374,7 @@ const IngestionRssCreation = (props) => {
   );
 };
 
-IngestionRssCreation.propTypes = {
+IngestionTaxiiCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -281,4 +384,4 @@ IngestionRssCreation.propTypes = {
 export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IngestionRssCreation);
+)(IngestionTaxiiCreation);

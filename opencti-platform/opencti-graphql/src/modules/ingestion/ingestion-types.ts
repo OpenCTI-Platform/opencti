@@ -46,7 +46,7 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   uri: string
   version: string
   collection: string
-  authentication_type: 'none' | 'basic' | 'bearer'
+  authentication_type: 'none' | 'basic' | 'bearer' | 'certificate'
   authentication_value: string
   user_id: string | undefined
   added_after_start: Date | undefined

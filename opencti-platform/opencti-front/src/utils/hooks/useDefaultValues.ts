@@ -5,6 +5,7 @@ import useAuth from './useAuth';
 import { Option } from '../../private/components/common/form/ReferenceField';
 import useVocabularyCategory from './useVocabularyCategory';
 import { isEmptyField } from '../utils';
+import { now } from '../Time';
 
 export const useComputeDefaultValues = (
   entityType: string,
@@ -81,6 +82,16 @@ const useDefaultValues = <Values extends FormikValues>(
   // Default confidence
   if (keys.includes('confidence') && isEmptyField(initialValues.confidence) && isEmptyField(defaultValues.confidence)) {
     defaultValues.confidence = 75;
+  }
+
+  // Default published
+  if (keys.includes('published') && isEmptyField(initialValues.published) && isEmptyField(defaultValues.published)) {
+    defaultValues.published = now();
+  }
+
+  // Default published
+  if (keys.includes('created') && isEmptyField(initialValues.created) && isEmptyField(defaultValues.created)) {
+    defaultValues.created = now();
   }
 
   const { me } = useAuth();

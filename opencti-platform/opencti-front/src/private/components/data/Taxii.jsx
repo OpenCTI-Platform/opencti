@@ -64,12 +64,17 @@ class Taxii extends Component {
       },
       description: {
         label: 'Description',
+        width: '15%',
+        isSortable: true,
+      },
+      id: {
+        label: 'Collection',
         width: '20%',
         isSortable: true,
       },
       filters: {
         label: 'Filters',
-        width: '60%',
+        width: '50%',
       },
     };
     return (

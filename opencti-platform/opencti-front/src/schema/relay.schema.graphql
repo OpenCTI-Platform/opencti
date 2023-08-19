@@ -11722,6 +11722,7 @@ enum TaxiiAuthType {
   none
   basic
   bearer
+  certificate
 }
 
 type IngestionTaxii implements InternalObject & BasicObject {
@@ -11734,10 +11735,12 @@ type IngestionTaxii implements InternalObject & BasicObject {
   name: String!
   description: String
   uri: String!
+  collection: String!
   version: TaxiiVersion!
   authentication_type: TaxiiAuthType!
-  authentication_value: String!
+  authentication_value: String
   user_id: String
+  user: Creator
   added_after_start: DateTime
   current_state_cursor: String
   ingestion_running: Boolean
@@ -11776,10 +11779,10 @@ input IngestionTaxiiAddInput {
   description: String
   version: TaxiiVersion!
   authentication_type: TaxiiAuthType!
-  authentication_value: String!
+  authentication_value: String
   uri: uri_String_NotNull_minLength_5!
   collection: collection_String_NotNull_minLength_5!
-  current_state_date: DateTime
+  added_after_start: DateTime
   ingestion_running: Boolean
   user_id: String
 }

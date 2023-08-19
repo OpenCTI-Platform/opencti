@@ -1,10 +1,9 @@
 import { addIngestion, findAllPaginated, findById, ingestionDelete, ingestionEditField, } from './ingestion-rss-domain';
-import type { Resolvers } from '../../generated/graphql';
-import { findById as findIdentityById } from '../../domain/identity';
-import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
-import { findById as findUserById } from '../../domain/user';
-import type { BasicStoreEntityIngestionRss } from './ingestion-types';
-import type { AuthContext } from '../../types/user';
+import type { Creator, Identity, MarkingDefinition, Resolvers } from '../../generated/graphql';
+import { storeLoadById } from '../../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const ingestionRssResolvers: Resolvers = {
   Query: {
@@ -12,11 +11,12 @@ const ingestionRssResolvers: Resolvers = {
     ingestionRsss: (_, args, context) => findAllPaginated(context, context.user, args),
   },
   IngestionRss: {
-    created_by: (ingestionRss, _, context: AuthContext) => findIdentityById(context, context.user, ingestionRss.created_by_ref),
-    object_marking: (ingestionRss, _, context: AuthContext) => ingestionRss.object_marking_refs?.map(
-      (id: string) => findMarkingDefinitionById(context, context.user, id)
+    // eslint-disable-next-line max-len
+    created_by: (ingestionRss, _, context) => (ingestionRss.created_by_ref ? storeLoadById(context, context.user, ingestionRss.created_by_ref, ENTITY_TYPE_IDENTITY) as unknown as Identity : null),
+    object_marking: (ingestionRss, _, context) => ingestionRss.object_marking_refs?.map(
+      (id: string) => storeLoadById(context, context.user, id, ENTITY_TYPE_MARKING_DEFINITION) as unknown as MarkingDefinition,
     ),
-    user: (ingestionRss: BasicStoreEntityIngestionRss, _, context: AuthContext) => findUserById(context, context.user, ingestionRss.user_id),
+    user: (ingestionRss, _, context) => (ingestionRss.user_id ? storeLoadById(context, context.user, ingestionRss.user_id, ENTITY_TYPE_USER) as unknown as Creator : null),
   },
   Mutation: {
     ingestionRssAdd: (_, { input }, context) => {

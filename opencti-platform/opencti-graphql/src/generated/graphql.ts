@@ -10162,7 +10162,8 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   __typename?: 'IngestionTaxii';
   added_after_start?: Maybe<Scalars['DateTime']['output']>;
   authentication_type: TaxiiAuthType;
-  authentication_value: Scalars['String']['output'];
+  authentication_value?: Maybe<Scalars['String']['output']>;
+  collection: Scalars['String']['output'];
   created_at?: Maybe<Scalars['DateTime']['output']>;
   current_state_cursor?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -10174,15 +10175,16 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
+  user?: Maybe<Creator>;
   user_id?: Maybe<Scalars['String']['output']>;
   version: TaxiiVersion;
 };
 
 export type IngestionTaxiiAddInput = {
+  added_after_start?: InputMaybe<Scalars['DateTime']['input']>;
   authentication_type: TaxiiAuthType;
-  authentication_value: Scalars['String']['input'];
+  authentication_value?: InputMaybe<Scalars['String']['input']>;
   collection: Scalars['String']['input'];
-  current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
@@ -24705,6 +24707,7 @@ export enum TasksOrdering {
 export enum TaxiiAuthType {
   Basic = 'basic',
   Bearer = 'bearer',
+  Certificate = 'certificate',
   None = 'none'
 }
 
@@ -32641,7 +32644,8 @@ export type IngestionRssEdgeResolvers<ContextType = any, ParentType extends Reso
 export type IngestionTaxiiResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionTaxii'] = ResolversParentTypes['IngestionTaxii']> = ResolversObject<{
   added_after_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   authentication_type?: Resolver<ResolversTypes['TaxiiAuthType'], ParentType, ContextType>;
-  authentication_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   current_state_cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32653,6 +32657,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   version?: Resolver<ResolversTypes['TaxiiVersion'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

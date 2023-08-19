@@ -31,7 +31,10 @@ import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
-import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/OtpInputField';
+import OtpInputField, {
+  OTP_CODE_SIZE,
+} from '../../../public/components/OtpInputField';
+import ItemCopy from '../../../components/ItemCopy';
 
 const styles = () => ({
   container: {
@@ -266,7 +269,8 @@ const ProfileOverviewComponent = (props) => {
         open={display2FA}
         PaperProps={{ elevation: 1 }}
         keepMounted={false}
-        onClose={() => setDisplay2FA(false)}>
+        onClose={() => setDisplay2FA(false)}
+      >
         <DialogTitle style={{ textAlign: 'center' }}>
           {t('Enable two-factor authentication')}
         </DialogTitle>
@@ -278,7 +282,11 @@ const ProfileOverviewComponent = (props) => {
         <Typography variant="h1" gutterBottom={true}>
           {t('Profile')} {external && `(${t('external')})`}
         </Typography>
-        <Formik enableReinitialize={true} initialValues={initialValues} validationSchema={userValidation(t)}>
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={userValidation(t)}
+        >
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -409,62 +417,65 @@ const ProfileOverviewComponent = (props) => {
           )}
         </div>
         <div className="clearfix" />
-        {!external && <Formik
-          enableReinitialize={true}
-          initialValues={{
-            current_password: '',
-            password: '',
-            confirmation: '',
-          }}
-          validationSchema={passwordValidation(t)}
-          onSubmit={handleSubmitPasswords}>
-          {({ submitForm, isSubmitting }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="current_password"
-                label={t('Current password')}
-                type="password"
-                fullWidth={true}
-                disabled={external}
-              />
-              <PasswordPolicies />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="password"
-                label={t('New password')}
-                type="password"
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                disabled={external}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="confirmation"
-                label={t('Confirmation')}
-                type="password"
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                disabled={external}
-              />
-              <div style={{ marginTop: 20 }}>
-                <Button
-                  variant="contained"
-                  type="button"
-                  color="primary"
-                  onClick={submitForm}
-                  disabled={external || isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Update')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>}
+        {!external && (
+          <Formik
+            enableReinitialize={true}
+            initialValues={{
+              current_password: '',
+              password: '',
+              confirmation: '',
+            }}
+            validationSchema={passwordValidation(t)}
+            onSubmit={handleSubmitPasswords}
+          >
+            {({ submitForm, isSubmitting }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="current_password"
+                  label={t('Current password')}
+                  type="password"
+                  fullWidth={true}
+                  disabled={external}
+                />
+                <PasswordPolicies />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="password"
+                  label={t('New password')}
+                  type="password"
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  disabled={external}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="confirmation"
+                  label={t('Confirmation')}
+                  type="password"
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  disabled={external}
+                />
+                <div style={{ marginTop: 20 }}>
+                  <Button
+                    variant="contained"
+                    type="button"
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={external || isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Update')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
       </Paper>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Typography variant="h1" gutterBottom={true}>
@@ -482,7 +493,7 @@ const ProfileOverviewComponent = (props) => {
           >
             {t('API key')}
           </Typography>
-          <pre>{me.api_token}</pre>
+          <pre><ItemCopy content={me.api_token} /></pre>
           {me.id !== OPENCTI_ADMIN_UUID && (
             <Button variant="contained" color="primary" onClick={renewToken}>
               {t('Renew')}

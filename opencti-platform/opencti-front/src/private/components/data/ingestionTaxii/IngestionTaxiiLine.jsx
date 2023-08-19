@@ -1,20 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
-import { DatabaseExportOutline } from 'mdi-material-ui';
+import { AccessPoint } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
-import TaxiiPopover from './TaxiiPopover';
+import IngestionTaxiiPopover from './IngestionTaxiiPopover';
 import inject18n from '../../../../components/i18n';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import ItemCopy from '../../../../components/ItemCopy';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -65,24 +64,17 @@ const styles = (theme) => ({
   },
 });
 
-class TaxiiLineLineComponent extends Component {
+class IngestionTaxiiLineLineComponent extends Component {
   render() {
-    const { classes, node, dataColumns, paginationOptions } = this.props;
-    const filters = JSON.parse(node.filters);
+    const { classes, node, dataColumns, paginationOptions, t } = this.props;
     return (
-      <ListItem
-        classes={{ root: classes.item }}
-        divider={true}
-        button={true}
-        component="a"
-        href={`/taxii2/root/collections/${node.id}/objects`}
-      >
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <DatabaseExportOutline />
+          <AccessPoint />
         </ListItemIcon>
         <ListItemText
           primary={
-            <>
+            <div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
@@ -91,29 +83,40 @@ class TaxiiLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
+                style={{ width: dataColumns.uri.width }}
               >
-                {node.description}
+                {node.uri}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.id.width, paddingRight: 10 }}
+                style={{ width: dataColumns.version.width }}
               >
-                <ItemCopy content={node.id} variant="inLine" />
+                {node.version}
               </div>
-              <FilterIconButton
-                filters={filters}
-                dataColumns={dataColumns}
-                classNameNumber={3}
-                styleNumber={3}
-              />
-            </>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.ingestion_running.width }}
+              >
+                <ItemBoolean
+                  variant="inList"
+                  label={node.ingestion_running ? t('Yes') : t('No')}
+                  status={!!node.ingestion_running}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.current_state_cursor.width }}
+              >
+                <code>{node.current_state_cursor}</code>
+              </div>
+            </div>
           }
         />
         <ListItemSecondaryAction>
-          <TaxiiPopover
-            taxiiCollectionId={node.id}
+          <IngestionTaxiiPopover
+            ingestionTaxiiId={node.id}
             paginationOptions={paginationOptions}
+            running={node.ingestion_running}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -121,7 +124,7 @@ class TaxiiLineLineComponent extends Component {
   }
 }
 
-TaxiiLineLineComponent.propTypes = {
+IngestionTaxiiLineLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   paginationOptions: PropTypes.object,
@@ -130,23 +133,28 @@ TaxiiLineLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const TaxiiLineFragment = createFragmentContainer(TaxiiLineLineComponent, {
-  node: graphql`
-    fragment TaxiiLine_node on TaxiiCollection {
-      id
-      name
-      description
-      filters
-    }
-  `,
-});
+const IngestionTaxiiLineFragment = createFragmentContainer(
+  IngestionTaxiiLineLineComponent,
+  {
+    node: graphql`
+      fragment IngestionTaxiiLine_node on IngestionTaxii {
+        id
+        name
+        uri
+        version
+        ingestion_running
+        current_state_cursor
+      }
+    `,
+  },
+);
 
-export const TaxiiLine = compose(
+export const IngestionTaxiiLine = compose(
   inject18n,
   withStyles(styles),
-)(TaxiiLineFragment);
+)(IngestionTaxiiLineFragment);
 
-class TaxiiDummyComponent extends Component {
+class IngestionTaxiiDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -161,7 +169,7 @@ class TaxiiDummyComponent extends Component {
         </ListItemIcon>
         <ListItemText
           primary={
-            <>
+            <div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
@@ -175,7 +183,7 @@ class TaxiiDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
+                style={{ width: dataColumns.uri.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -186,7 +194,7 @@ class TaxiiDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
+                style={{ width: dataColumns.version.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -197,7 +205,7 @@ class TaxiiDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
+                style={{ width: dataColumns.ingestion_running.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -206,7 +214,18 @@ class TaxiiDummyComponent extends Component {
                   height="100%"
                 />
               </div>
-            </>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.current_state_cursor.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={100}
+                  height="100%"
+                />
+              </div>
+            </div>
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
@@ -217,12 +236,12 @@ class TaxiiDummyComponent extends Component {
   }
 }
 
-TaxiiDummyComponent.propTypes = {
+IngestionTaxiiDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const TaxiiLineDummy = compose(
+export const IngestionTaxiiLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(TaxiiDummyComponent);
+)(IngestionTaxiiDummyComponent);

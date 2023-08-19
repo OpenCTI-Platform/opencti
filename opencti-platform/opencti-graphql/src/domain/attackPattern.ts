@@ -7,7 +7,7 @@ import { RELATION_DETECTS, RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '
 import { EntityOptions, listEntities, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
-import type { AttackPattern } from '../generated/graphql';
+import type { AttackPattern, AttackPatternAddInput } from '../generated/graphql';
 
 export const findById = (context: AuthContext, user: AuthUser, attackPatternId: string) => {
   return storeLoadById(context, user, attackPatternId, ENTITY_TYPE_ATTACK_PATTERN);
@@ -17,7 +17,7 @@ export const findAll = (context: AuthContext, user: AuthUser, args: EntityOption
   return listEntities(context, user, [ENTITY_TYPE_ATTACK_PATTERN], args);
 };
 
-export const addAttackPattern = async (context: AuthContext, user: AuthUser, attackPattern: AttackPattern) => {
+export const addAttackPattern = async (context: AuthContext, user: AuthUser, attackPattern: AttackPatternAddInput) => {
   const created = await createEntity(context, user, attackPattern, ENTITY_TYPE_ATTACK_PATTERN);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

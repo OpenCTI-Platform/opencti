@@ -3,17 +3,17 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import IngestionRssLines, {
-  IngestionRssLinesQuery,
-} from './ingestionRss/IngestionRssLines';
-import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
+import IngestionTaxiiLines, {
+  IngestionTaxiiLinesQuery,
+} from './ingestionTaxii/IngestionTaxiiLines';
+import IngestionTaxiiCreation from './ingestionTaxii/IngestionTaxiiCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 
-const LOCAL_STORAGE_KEY = 'ingestionRss-view';
+const LOCAL_STORAGE_KEY = 'ingestionTaxii-view';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const IngestionRss = () => {
+const IngestionTaxii = () => {
   const classes = useStyles();
   const { t } = useFormatter();
   const { platformModuleHelpers } = useAuth();
@@ -46,15 +46,20 @@ const IngestionRss = () => {
       width: '30%',
       isSortable: true,
     },
+    version: {
+      label: 'Version',
+      width: '10%',
+      isSortable: true,
+    },
     ingestion_running: {
       label: 'Running',
-      width: '20%',
+      width: '15%',
       isSortable: false,
     },
-    current_state_date: {
+    current_state_cursor: {
       label: 'Current state',
-      isSortable: false,
       width: '15%',
+      isSortable: false,
     },
   };
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
@@ -78,10 +83,10 @@ const IngestionRss = () => {
         keyword={viewStorage.searchTerm}
       >
         <QueryRenderer
-          query={IngestionRssLinesQuery}
+          query={IngestionTaxiiLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
           render={({ props }) => (
-            <IngestionRssLines
+            <IngestionTaxiiLines
               data={props}
               paginationOptions={paginationOptions}
               refetchPaginationOptions={{ count: 200, ...paginationOptions }}
@@ -91,9 +96,9 @@ const IngestionRss = () => {
           )}
         />
       </ListLines>
-      <IngestionRssCreation paginationOptions={paginationOptions} />
+      <IngestionTaxiiCreation paginationOptions={paginationOptions} />
     </div>
   );
 };
 
-export default IngestionRss;
+export default IngestionTaxii;

@@ -190,6 +190,11 @@ export const cursorToOffset = (cursor) => {
   return JSON.parse(str);
 };
 
+export const fromBase64 = (base64String) => {
+  const buff = Buffer.from(base64String, 'base64');
+  return buff.toString('utf-8');
+};
+
 export const buildPagination = (limit, searchAfter, instances, globalCount) => {
   const edges = R.pipe(
     R.mapObjIndexed((record) => {

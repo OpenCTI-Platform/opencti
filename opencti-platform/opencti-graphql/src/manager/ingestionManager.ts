@@ -178,7 +178,11 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii) : Promise
   if (ingestion.authentication_type === 'bearer') {
     headers.Authorization = `Bearer ${ingestion.authentication_value}`;
   }
-  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json' };
+  let certificates;
+  if (ingestion.authentication_type === 'certificate') {
+    certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[0] };
+  }
+  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
   const url = `${preparedUri}root/collections/${ingestion.collection}/objects`;
