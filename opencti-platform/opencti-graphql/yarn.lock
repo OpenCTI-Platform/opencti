@@ -6828,10 +6828,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"domino@npm:2.1.6, domino@npm:^2.1.6":
+"domino@npm:2.1.6":
   version: 2.1.6
   resolution: "domino@npm:2.1.6"
   checksum: 9b1b6d2661efd8bf942b70d5e11ac0de6a63f17e49b7eb227d9a612fa7b7c12b7775520d64f498988a8ee334ea9c59a463c84ea510b0af17dd3e13fdce120410
+  languageName: node
+  linkType: hard
+
+"domino@patch:domino@2.1.6#./patch/domino-2.1.6.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 2.1.6
+  resolution: "domino@patch:domino@npm%3A2.1.6#./patch/domino-2.1.6.patch::version=2.1.6&hash=d85c7f&locator=opencti-graphql%40workspace%3A."
+  checksum: 0403cefb550d648b0dcad8a47cb1d8b4b3ffe3710d2c6cca8e353bc6509dc71296c7344bb90b7ec5cf82e8032e4f163413cf82267d69e8d4ed500ac43220b3fa
   languageName: node
   linkType: hard
 

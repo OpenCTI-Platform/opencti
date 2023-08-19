@@ -186,7 +186,7 @@
     "nconf": "patch:nconf@0.12.0#./patch/nconf-0.12.0.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.7.7#./patch/node-calls-python-1.7.7.patch",
-    "dominio": "patch:domino@2.1.6#./patch/domino-2.1.6.patch"
+    "domino": "patch:domino@2.1.6#./patch/domino-2.1.6.patch"
   },
   "packageManager": "yarn@3.6.2"
 }
