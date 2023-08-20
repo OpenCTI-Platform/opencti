@@ -18,6 +18,9 @@ export const dateForEndAttributes = ['last_seen', 'stop_time', 'valid_until', 'l
 export const dateForLimitsAttributes = [...dateForStartAttributes, ...dateForEndAttributes];
 
 // Extract all not fuzzy algorithm values from a hash object
+export const extractNotFuzzyHash = (hashes: Record<string, string>): Array<string> => {
+  return Object.keys(hashes).filter((hashKey) => !FUZZY_HASH_ALGORITHMS.includes(hashKey.toUpperCase())).map((s) => `hashes.${s}`);
+};
 export const extractNotFuzzyHashValues = (hashes: Record<string, string>): Array<string> => {
   return Object.entries(hashes)
     .filter(([hashKey]) => !FUZZY_HASH_ALGORITHMS.includes(hashKey.toUpperCase()))
