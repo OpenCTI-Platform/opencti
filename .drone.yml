@@ -93,13 +93,9 @@ steps:
       webhook:
         from_secret: slack_webhook
       username: drone
-      icon_url: https://avatars.githubusercontent.com/oa/1284929
       channel: notifications
     when:
       status: [success, failure]
-      event:
-        exclude:
-          - pull_request
 
 services:
   - name: redis

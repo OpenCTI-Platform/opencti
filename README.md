@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://www.opencti.io"><img src="https://www.opencti.io/wp-content/uploads/2022/02/logo_github.png" alt="OpenCTI"></a>
+  <a href="https://www.opencti.io"><img src="https://www.filigran.io/wp-content/uploads/2023/08/opencti_github.png" alt="OpenCTI"></a>
 </h1>
 <p align="center">
   <a href="https://www.opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
@@ -88,7 +88,7 @@ If you need support or you wish to engage a discussion about the OpenCTI platfor
 
 OpenCTI is a product designed and developed by the company [Filigran](https://www.filigran.io).
 
-<a href="https://www.filigran.io" alt="Filigran"><img src="https://www.filigran.io/wp-content/uploads/2022/08/filigran_text_horizontal_dense_margin.png" width="230" /></a>
+<a href="https://www.filigran.io" alt="Filigran"><img src="https://www.filigran.io/wp-content/uploads/2023/08/filigran_text_small.png" width="200" /></a>
 
 ### GDPR and the OpenCTI OpenStreetMap server
 
