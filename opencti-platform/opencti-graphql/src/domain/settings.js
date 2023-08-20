@@ -43,7 +43,7 @@ export const getApplicationInfo = (context) => ({
   version: PLATFORM_VERSION,
   memory: getMemoryStatistics(),
   dependencies: [
-    { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.distribution || 'elk'} - ${v.number}`) },
+    { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.platform} - ${v.version}`) },
     { name: 'RabbitMQ', version: getRabbitMQVersion(context) },
     { name: 'Redis', version: getRedisVersion() },
   ],
