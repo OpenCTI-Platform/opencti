@@ -80,6 +80,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'auto_new_marking', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_marking', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   [ENTITY_TYPE_USER]: [
     { name: 'user_email', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
@@ -101,7 +102,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_RULE]: [

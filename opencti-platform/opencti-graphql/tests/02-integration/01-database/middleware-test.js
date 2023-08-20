@@ -21,7 +21,6 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_INDICATOR,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
@@ -64,9 +63,10 @@ import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
 import { findAll } from '../../../src/domain/subType';
-import { addOrganization } from '../../../src/domain/organization';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from "../../../src/modules/organization/organization-types";
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
+import { addOrganization } from "../../../src/modules/organization/organization-domain";
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {

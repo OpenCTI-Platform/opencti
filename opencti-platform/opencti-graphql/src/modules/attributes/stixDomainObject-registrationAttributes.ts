@@ -23,7 +23,6 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_INCIDENT,
@@ -193,20 +192,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiReliability,
     { name: 'x_opencti_firstname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_lastname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-  ],
-  [ENTITY_TYPE_IDENTITY_ORGANIZATION]: [
-    xOpenctiAliases,
-    iAliasedIds,
-    xOpenctiReliability,
-    { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    {
-      name: 'x_opencti_organization_type',
-      type: 'string',
-      mandatoryType: 'no',
-      multiple: false,
-      upsert: false,
-      label: 'Organization type'
-    },
   ],
   [ENTITY_TYPE_IDENTITY_SECTOR]: [
     xOpenctiAliases,

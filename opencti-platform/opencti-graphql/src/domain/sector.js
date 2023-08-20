@@ -9,10 +9,11 @@ import {
 import { listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
 import { RELATION_PART_OF, RELATION_TARGETS } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { buildPagination } from '../database/utils';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 export const findById = (context, user, sectorId) => {
   return storeLoadById(context, user, sectorId, ENTITY_TYPE_IDENTITY_SECTOR);

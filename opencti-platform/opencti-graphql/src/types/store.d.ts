@@ -21,7 +21,8 @@ import {
   INPUT_PARENT,
   INPUT_PARENT_DIRECTORY,
   INPUT_RAW_EMAIL,
-  INPUT_RESOLVES_TO, INPUT_SAMPLE,
+  INPUT_RESOLVES_TO,
+  INPUT_SAMPLE,
   INPUT_SENDER,
   INPUT_SERVICE_DLL,
   INPUT_SRC,
@@ -33,7 +34,8 @@ import {
   RELATION_GRANTED_TO,
   RELATION_OBJECT,
   RELATION_OBJECT_ASSIGNEE,
-  RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT
+  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_PARTICIPANT
 } from '../schema/stixRefRelationship';
 import {
   INPUT_ASSIGNEE,
@@ -45,12 +47,13 @@ import {
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_OBJECTS, INPUT_PARTICIPANT
+  INPUT_OBJECTS,
+  INPUT_PARTICIPANT
 } from '../schema/general';
 import type { StixId } from './stix-common';
-import type { PageInfo, EditOperation } from '../generated/graphql';
+import type { EditOperation, PageInfo } from '../generated/graphql';
 import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-sco';
-import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
 
 interface InternalEditInput {
   key: string;
@@ -568,6 +571,17 @@ interface BasicWorkflowStatusEntity extends BasicStoreEntity {
   order: number;
   disabled: boolean;
 }
+
+interface BasicIdentityEntity extends BasicStoreEntity {
+  name: string
+  description: string
+  roles: string[]
+  identity_class: string
+  contact_information: string
+  x_opencti_aliases?: string[]
+}
+
+interface StoreEntityIdentity extends StoreEntity, BasicIdentityEntity {}
 
 interface BasicGroupEntity extends BasicStoreEntity {
   [RELATION_MEMBER_OF]: string[];

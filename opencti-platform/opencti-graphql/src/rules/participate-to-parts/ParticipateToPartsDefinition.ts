@@ -2,7 +2,7 @@ import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import type { RuleDefinition } from '../../types/rules';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../modules/organization/organization-types';
 
 const id = 'participate-to_parts';
 const name = 'Organization propagation via participation';

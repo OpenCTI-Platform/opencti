@@ -23,7 +23,7 @@ import {
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_USER
 } from '../../src/schema/internalObject';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');

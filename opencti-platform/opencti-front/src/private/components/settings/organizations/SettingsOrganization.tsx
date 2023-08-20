@@ -24,6 +24,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationEdition from './SettingsOrganizationEdition';
+import SettingsOrganizationHiddenTypesChipList from './SettingsOrganizationHiddenTypesChipList';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -97,6 +98,8 @@ const settingsOrganizationFragment = graphql`
       name
       focusOn
     }
+    ...SettingsOrganizationHiddenTypesField_organization
+    ...SettingsOrganizationHiddenTypesChipList_organization
   }
 `;
 const SettingsOrganization = ({
@@ -144,6 +147,9 @@ const SettingsOrganization = ({
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
+                <Grid item={true} xs={12}>
+                  <SettingsOrganizationHiddenTypesChipList organizationData={organization} />
+                </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Parent organizations')}

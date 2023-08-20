@@ -28,6 +28,7 @@ import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupEdition from './GroupEdition';
 import GroupPopover from './GroupPopover';
 import ItemIcon from '../../../../components/ItemIcon';
+import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -125,6 +126,7 @@ const groupFragment = graphql`
         x_opencti_order
       }
     }
+    ...GroupHiddenTypesChipList_group
   }
 `;
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
@@ -181,6 +183,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   {t('Description')}
                 </Typography>
                 {group.description}
+              </Grid>
+              <Grid item={true} xs={12}>
+                <GroupHiddenTypesChipList groupData={group} />
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>

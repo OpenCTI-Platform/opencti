@@ -1173,6 +1173,7 @@ type Group implements InternalObject & BasicObject {
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
+  default_hidden_types: [String!]
   editContext: [EditUserContext!]
 }
 
@@ -1321,7 +1322,7 @@ type User implements BasicObject & InternalObject {
   external: Boolean
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]!
   capabilities: [Capability]!
-  default_hidden_types: [String]!
+  default_hidden_types: [String!]!
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   objectOrganization(orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   created_at: DateTime!
@@ -1427,7 +1428,6 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   capabilities: [Capability]
   editContext: [EditUserContext!]
-  default_hidden_types: [String]
 }
 
 input RoleAddInput {
@@ -3496,152 +3496,6 @@ input IndividualAddInput {
   confidence: Int
   revoked: Boolean
   lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
-  file: Upload
-}
-
-enum OrganizationsOrdering {
-  name
-  confidence
-  created
-  created_at
-  modified
-  updated_at
-  x_opencti_organization_type
-  x_opencti_workflow_id
-}
-
-enum OrganizationsFilter {
-  name
-  aliases
-  x_opencti_organization_type
-  x_opencti_reliability
-  created
-  modified
-  created_at
-  updated_at
-  createdBy
-  markedBy
-  assigneeTo
-  labelledBy
-  x_opencti_workflow_id
-  description
-  contact_information
-  revoked
-}
-
-input OrganizationsFiltering {
-  key: [OrganizationsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
-type OrganizationConnection {
-  pageInfo: PageInfo!
-  edges: [OrganizationEdge!]!
-}
-
-type OrganizationEdge {
-  cursor: String!
-  node: Organization!
-}
-
-type MeOrganization {
-  id: ID!
-  name: String!
-}
-
-type MeOrganizationEdge {
-  cursor: String!
-  node: MeOrganization!
-}
-
-type MeOrganizationConnection {
-  pageInfo: PageInfo!
-  edges: [MeOrganizationEdge!]!
-}
-
-type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
-  identity_class: String!
-  name: String!
-  description: String
-  contact_information: String
-  roles: [String]
-  x_opencti_aliases: [String]
-  x_opencti_reliability: String
-  x_opencti_organization_type: String
-  sectors: SectorConnection
-  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
-  subOrganizations: OrganizationConnection
-  parentOrganizations: OrganizationConnection
-  default_dashboard: Workspace
-  creators: [Creator!]
-  toStix: String
-  importFiles(first: Int): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-}
-
-input OrganizationAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  name: name_String_NotNull_minLength_2!
-  description: String
-  contact_information: String
-  roles: [String]
-  x_opencti_aliases: [String]
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  x_opencti_organization_type: String
-  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -8137,8 +7991,6 @@ type Query {
   identities(first: Int, after: ID, types: [String], orderBy: IdentitiesOrdering, orderMode: OrderingMode, search: String, filters: [IdentitiesFiltering], filterMode: FilterMode, toStix: Boolean): IdentityConnection
   individual(id: String!): Individual
   individuals(first: Int, after: ID, orderBy: IndividualsOrdering, orderMode: OrderingMode, filters: [IndividualsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): IndividualConnection
-  organization(id: String): Organization
-  organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: [OrganizationsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): OrganizationConnection
   sector(id: String): Sector
   sectors(first: Int, after: ID, orderBy: SectorsOrdering, orderMode: OrderingMode, filters: [SectorsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): SectorConnection
   system(id: String): System
@@ -8273,6 +8125,8 @@ type Query {
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: [IngestionRssFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: [IngestionTaxiiFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
+  organization(id: String!): Organization
+  organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: [OrganizationsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): OrganizationConnection
 }
 
 type Subscription {
@@ -8535,15 +8389,6 @@ type IndividualEditMutations {
   contextClean: Individual
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Individual
-}
-
-type OrganizationEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Organization
-  contextPatch(input: EditContext): Organization
-  contextClean: Organization
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): Organization
 }
 
 type SectorEditMutations {
@@ -8826,8 +8671,6 @@ type Mutation {
   identityEdit(id: ID!): IdentityEditMutations
   individualAdd(input: IndividualAddInput!): Individual
   individualEdit(id: ID!): IndividualEditMutations
-  organizationAdd(input: OrganizationAddInput!): Organization
-  organizationEdit(id: ID!): OrganizationEditMutations
   sectorAdd(input: SectorAddInput!): Sector
   sectorEdit(id: ID!): SectorEditMutations
   systemAdd(input: SystemAddInput!): System
@@ -9001,6 +8844,13 @@ type Mutation {
   ingestionTaxiiAdd(input: IngestionTaxiiAddInput!): IngestionTaxii
   ingestionTaxiiDelete(id: ID!): ID
   ingestionTaxiiFieldPatch(id: ID!, input: [EditInput!]!): IngestionTaxii
+  organizationAdd(input: OrganizationAddInput!): Organization
+  organizationDelete(id: ID!): ID
+  organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization
+  organizationContextPatch(id: ID!, input: EditContext!): Organization
+  organizationContextClean(id: ID!): Organization
+  organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11785,3 +11635,151 @@ input IngestionTaxiiAddInput {
 }
 
 scalar collection_String_NotNull_minLength_5
+
+
+type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  x_opencti_organization_type: String
+  sectors: SectorConnection
+  members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
+  subOrganizations: OrganizationConnection
+  parentOrganizations: OrganizationConnection
+  default_dashboard: Workspace
+  default_hidden_types: [String!]
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+
+enum OrganizationsOrdering {
+  name
+  confidence
+  created
+  created_at
+  modified
+  updated_at
+  x_opencti_organization_type
+  x_opencti_workflow_id
+}
+
+enum OrganizationsFilter {
+  name
+  aliases
+  x_opencti_organization_type
+  x_opencti_reliability
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  assigneeTo
+  labelledBy
+  x_opencti_workflow_id
+  description
+  contact_information
+  revoked
+}
+
+input OrganizationsFiltering {
+  key: [OrganizationsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type OrganizationConnection {
+  pageInfo: PageInfo!
+  edges: [OrganizationEdge!]!
+}
+
+type OrganizationEdge {
+  cursor: String!
+  node: Organization!
+}
+
+input OrganizationAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_2!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  x_opencti_organization_type: String
+  x_opencti_reliability: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+}
+
+type MeOrganization {
+  id: ID!
+  name: String!
+}
+
+type MeOrganizationEdge {
+  cursor: String!
+  node: MeOrganization!
+}
+
+type MeOrganizationConnection {
+  pageInfo: PageInfo!
+  edges: [MeOrganizationEdge!]!
+}

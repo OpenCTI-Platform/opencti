@@ -49,7 +49,7 @@ import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
-import type { StoreCyberObservable, StoreEntity, StoreObject, StoreRelation, } from '../types/store';
+import type { StoreCyberObservable, StoreEntity, StoreObject, StoreRelation, StoreEntityIdentity } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -364,7 +364,7 @@ const convertInternalToStix = (instance: StoreEntity, type: string): S.StixObjec
   return buildStixObject(instance);
 };
 // SDO
-const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIdentity => {
+export const convertIdentityToStix = (instance: StoreEntityIdentity, type: string): SDO.StixIdentity => {
   if (!isStixDomainObjectIdentity(type)) {
     throw UnsupportedError(`${instance.entity_type} not compatible with identity`);
   }

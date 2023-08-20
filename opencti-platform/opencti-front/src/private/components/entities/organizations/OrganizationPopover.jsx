@@ -47,9 +47,7 @@ Transition.displayName = 'TransitionSlide';
 
 const OrganizationPopoverDeletionMutation = graphql`
   mutation OrganizationPopoverDeletionMutation($id: ID!) {
-    organizationEdit(id: $id) {
-      delete
-    }
+    organizationDelete(id: $id)
   }
 `;
 

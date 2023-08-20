@@ -1,0 +1,246 @@
+type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
+  # Identity
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  # Organization
+  x_opencti_organization_type: String
+  sectors: SectorConnection
+  members(
+    first: Int
+    after: ID
+    orderBy: UsersOrdering
+    orderMode: OrderingMode
+    search: String
+  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  subOrganizations: OrganizationConnection
+  parentOrganizations: OrganizationConnection
+  default_dashboard: Workspace
+  default_hidden_types: [String!]
+  # Technical
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+
+# Ordering
+enum OrganizationsOrdering {
+  name
+  confidence
+  created
+  created_at
+  modified
+  updated_at
+  x_opencti_organization_type
+  x_opencti_workflow_id
+}
+
+# Filtering
+enum OrganizationsFilter {
+  name
+  aliases
+  x_opencti_organization_type
+  x_opencti_reliability
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  assigneeTo
+  labelledBy
+  x_opencti_workflow_id
+  description
+  contact_information
+  revoked
+}
+input OrganizationsFiltering {
+  key: [OrganizationsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+# Relay connections
+type OrganizationConnection {
+  pageInfo: PageInfo!
+  edges: [OrganizationEdge!]!
+}
+type OrganizationEdge {
+  cursor: String!
+  node: Organization!
+}
+
+# Queries
+type Query {
+  organization(id: String!): Organization @auth(for: [KNOWLEDGE])
+  organizations(
+    first: Int
+    after: ID
+    orderBy: OrganizationsOrdering
+    orderMode: OrderingMode
+    filters: [OrganizationsFiltering!]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): OrganizationConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input OrganizationAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 2)
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  x_opencti_organization_type: String
+  x_opencti_reliability: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+}
+
+type Mutation {
+  organizationAdd(input: OrganizationAddInput!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationContextPatch(id: ID!, input: EditContext!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationContextClean(id: ID!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+
+}
+
+################ Me Organizations
+
+type MeOrganization {
+  id: ID! # internal_id
+  name: String!
+}
+
+type MeOrganizationEdge {
+  cursor: String!
+  node: MeOrganization!
+}
+
+type MeOrganizationConnection {
+  pageInfo: PageInfo!
+  edges: [MeOrganizationEdge!]!
+}

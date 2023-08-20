@@ -259,7 +259,9 @@ const i18n = {
       'This configuration is not available for this entity type':
         'Esta configuración no está disponible para este tipo de entidad',
       'Hidden entity types': 'Tipos de entidad ocultos',
-      'Hidden in roles': 'Oculto en roles',
+      'Hidden in ': 'Oculto en ',
+      'Hidden in groups': 'Oculto en grupos',
+      'Hidden in organizations': 'Oculto en las organizaciones',
       'Hidden in interface': 'Oculto en la interfaz',
       'This configuration hides a specific entity type across the entire platform.':
         'Esta configuración oculta un tipo de entidad específico en toda la plataforma.',
@@ -2353,7 +2355,9 @@ const i18n = {
       'This configuration is not available for this entity type':
         "Cette configuration n'est pas disponible pour ce type d'entité",
       'Hidden entity types': "Types d'entité cachés",
-      'Hidden in roles': 'Caché dans les roles',
+      'Hidden in ': 'Caché dans ',
+      'Hidden in groups': 'Caché dans les groupes',
+      'Hidden in organizations': 'Caché dans les organisations',
       'Hidden in interface': "Caché dans l'interface",
       'This configuration hides a specific entity type across the entire platform.':
         "Cette configuration masque un type d'entité spécifique sur l'ensemble de la plateforme.",
@@ -4382,7 +4386,9 @@ const i18n = {
       'This configuration is not available for this entity type':
         'この構成は、このエンティティ タイプでは使用できません',
       'Hidden entity types': '非表示のエンティティ種別',
-      'Hidden in roles': 'ロールに隠されている',
+      'Hidden in ': 'に隠されています',
+      'Hidden in groups': 'グループに隠れている',
+      'Hidden in organizations': '組織に隠れて',
       'Hidden in interface': 'インターフェイスに隠されている',
       'This configuration hides a specific entity type across the entire platform.':
         'この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。',
@@ -6344,7 +6350,9 @@ const i18n = {
       'This configuration is not available for this entity type':
         '此配置不适用于此实体类型',
       'Hidden entity types': '隐藏的实体类型',
-      'Hidden in roles': '隱藏在角色中',
+      'Hidden in ': '隐藏在',
+      'Hidden in groups': '隐藏在群体中',
+      'Hidden in organizations': '隐藏在组织中',
       'Hidden in interface': '隐藏在界面中',
       'This configuration hides a specific entity type across the entire platform.':
         '此配置隐藏了整个平台的特定实体类型。',

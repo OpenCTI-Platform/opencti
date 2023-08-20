@@ -1,12 +1,12 @@
 import { uniq } from 'ramda';
 import { isEmptyField } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicGroupEntity, BasicOrganizationEntity, BasicStoreEntity } from '../types/store';
+import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
 import type { MemberAccess } from '../generated/graphql';
 import { AuthorizedMember, BYPASS, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER, validateUserAccessOperation } from './access';
 import { findAllMembers, findById as findUser } from '../domain/user';
 import { findById as findGroup } from '../domain/group';
-import { findById as findOrganization } from '../domain/organization';
+import { findById as findOrganization } from '../modules/organization/organization-domain';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 export const getAuthorizedMembers = async (
@@ -58,7 +58,7 @@ export const containsValidAdmin = async (
   const groups = (await Promise.all(adminIds.map((id) => findGroup(context, SYSTEM_USER, id))))
     .filter((n) => n) as BasicGroupEntity[];
   const organizations = (await Promise.all(adminIds.map((id) => findOrganization(context, SYSTEM_USER, id))))
-    .filter((n) => n) as BasicOrganizationEntity[];
+    .filter((n) => n);
   const groupsMembersIds = uniq(groups.map((group) => group[RELATION_MEMBER_OF]).flat()) as string[];
   const organizationsMembersIds = uniq(organizations.map((o) => o[RELATION_PARTICIPATE_TO]).flat());
   const userIds = adminIds

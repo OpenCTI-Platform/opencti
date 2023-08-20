@@ -50,6 +50,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
   filters?: Array<Filter> | null;
   filterMode?: FilterMode | undefined | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
+  types?: string[]
 }
 
 type InternalListEntities = <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>) => Promise<Array<T>>;

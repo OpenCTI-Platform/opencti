@@ -23,7 +23,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { interval } from 'rxjs';
 import { Link } from 'react-router-dom';
-import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { ApexOptions } from 'apexcharts';
@@ -50,6 +49,7 @@ import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEdition
 import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
+import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -547,18 +547,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item={true} xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('Hidden entity types')}
-                </Typography>
-                <FieldOrEmpty source={user.default_hidden_types}>
-                  {user.default_hidden_types.map((name) => (
-                    <Chip
-                      key={name}
-                      classes={{ root: classes.chip }}
-                      label={name}
-                    />
-                  ))}
-                </FieldOrEmpty>
+                <HiddenTypesChipList hiddenTypes={user.default_hidden_types ?? []}/>
               </Grid>
             </Grid>
           </Paper>

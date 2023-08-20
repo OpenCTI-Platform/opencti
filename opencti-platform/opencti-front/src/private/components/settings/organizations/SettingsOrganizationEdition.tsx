@@ -26,6 +26,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import DashboardField from '../../common/form/DashboardField';
 import { Option } from '../../common/form/ReferenceField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
+import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {
@@ -73,14 +74,13 @@ const organizationMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    organizationEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
-        ...SettingsOrganization_organization
-      }
+    organizationFieldPatch(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
+      ...SettingsOrganization_organization
     }
   }
 `;
@@ -90,10 +90,8 @@ export const organizationEditionOverviewFocus = graphql`
     $id: ID!
     $input: EditContext!
   ) {
-    organizationEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    organizationContextPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -103,11 +101,9 @@ const organizationMutationRelationAdd = graphql`
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    organizationEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...OrganizationEditionOverview_organization
-        }
+    organizationRelationAdd(id: $id, input: $input) {
+      from {
+        ...OrganizationEditionOverview_organization
       }
     }
   }
@@ -119,10 +115,8 @@ const organizationMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    organizationEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...OrganizationEditionOverview_organization
-      }
+    organizationRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+      ...OrganizationEditionOverview_organization
     }
   }
 `;
@@ -357,6 +351,7 @@ const SettingsOrganizationEdition = ({
                   onChange={handleSubmitField}
                   context={context}
                 />
+                <SettingsOrganizationHiddenTypesField organizationData={organization} />
                 {enableReferences && (
                   <CommitMessage
                     submitForm={submitForm}

@@ -9,6 +9,7 @@ import SwitchField from '../../../../components/SwitchField';
 import TextField from '../../../../components/TextField';
 import DashboardField from '../../common/form/DashboardField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
+import GroupHiddenTypesField from './GroupHiddenTypesField';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -163,6 +164,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                 />
               }
             />
+            <GroupHiddenTypesField groupData={group} />
           </Form>
         )}
       </Formik>
@@ -187,6 +189,7 @@ const GroupEditionOverview = createFragmentContainer(
             id
           }
         }
+        ...GroupHiddenTypesField_group
       }
     `,
   },

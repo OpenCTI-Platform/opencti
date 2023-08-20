@@ -33,6 +33,7 @@ class OrganizationKnowledgeComponent extends Component {
           entityType={'Organization'}
           disableSharing={true}
           stixDomainObject={organization}
+          isOpenctiAlias={true}
           PopoverComponent={<OrganizationPopover />}
           onViewAs={onViewAs.bind(this)}
           viewAs={viewAs}
