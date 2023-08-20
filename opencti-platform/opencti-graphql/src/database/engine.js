@@ -573,23 +573,30 @@ const elCreateIndexTemplate = async (index) => {
             schemaProperties[entityAttribute.name] = { type: 'boolean' };
         }
         if (entityAttribute.type === 'object') {
-            schemaProperties[entityAttribute.name] = { dynamic: 'strict', properties: entityAttribute.mapping };
-        }
-        if (entityAttribute.type === 'json') {
-            schemaProperties[entityAttribute.name] = { type: 'keyword' };
-        }
-        if (entityAttribute.type === 'dictionary') {
-            schemaProperties[entityAttribute.name] = { dynamic: true, properties: {} };
-        }
-        if (!schemaProperties[entityAttribute.name]) {
-            throw UnsupportedError(`Cant generated mapping based on type ${entityAttribute.type}`);
-        }
+            const type = entityAttribute.nested ? 'nested' : 'object';
+      schemaProperties[entityAttribute.name] = { type, dynamic: 'strict', properties: entityAttribute.mapping };
     }
-    const mappings = {
+    if (entityAttribute.type === 'json') {
+      schemaProperties[entityAttribute.name] = textMapping;
+    }
+    if (entityAttribute.type === 'dictionary') {
+      // content of dictionary cannot be predicted
+            schemaProperties[entityAttribute.name] = { type: 'flattened' };
+    }
+    if (!schemaProperties[entityAttribute.name]) {
+      throw UnsupportedError(`Cant generated mapping based on type ${entityAttribute.type}`);
+    }
+  }
+  const mappings = {
+    // Global option to prevent elastic to try any magic
+    date_detection: false,
+    numeric_detection: false,
+    // Properties
+    properties: schemaProperties,
         // Some dynamic mapping are required because key are generated
         dynamic_templates: [
             {
-                i_rule_: {
+                accept_rules: {
                     match: 'i_rule_*',
                     mapping: {
                         dynamic: 'strict',
@@ -597,40 +604,30 @@ const elCreateIndexTemplate = async (index) => {
                             explanation: textMapping,
                             dependencies: textMapping,
                             hash: textMapping,
-                            data: { dynamic: true, properties: {} },
+                            data: { type: 'flattened' },
                         }
                     }
                 }
             },
             {
-                rel_: {
-                    match: 'rel_*',
-                    mapping: {
-                        dynamic: 'strict',
-                        properties: {
-                            internal_id: textMapping,
-                            inferred_id: textMapping,
-                        }
-                    }
+                accept_denormalize_relations: {
+          match: 'rel_*',
+          mapping: {
+            dynamic: 'strict',
+            properties: {
+              internal_id: textMapping,
+              inferred_id: textMapping,
+            }
+          }
+        }
+      },
+      {
+        reject_others: {
+          match: '*',
+          mapping: { dynamic: 'strict' }
                 }
-            },
+            }
         ],
-        properties: {
-            ...schemaProperties,
-            // Internal case not defined in any schema definitions
-            // For standard and inferred relations
-            i_inference_weight: { type: 'integer', coerce: false },
-            connections: {
-                type: 'nested',
-                dynamic: 'strict',
-                properties: {
-                    internal_id: textMapping,
-                    name: textMapping,
-                    role: textMapping,
-                    types: textMapping,
-                }
-            },
-        },
     };
     await engine.indices.putIndexTemplate({
         name: index,

@@ -22,11 +22,25 @@ import {
   ENTITY_TYPE_USER,
   ENTITY_TYPE_FEED,
   ENTITY_TYPE_HISTORY,
+  ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_WORK
 } from '../../schema/internalObject';
 import { settingsMessages } from '../../domain/settings';
 
-const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
+const HistoryDefinition: AttributeDefinition[] = [
+  { name: 'event_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+  { name: 'event_status', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+  { name: 'event_access', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+  { name: 'event_scope', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+  { name: 'user_id', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+  { name: 'applicant_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'group_ids', type: 'string', mandatoryType: 'internal', multiple: true, upsert: false },
+  { name: 'organization_ids', type: 'string', mandatoryType: 'internal', multiple: true, upsert: false },
+  { name: 'timestamp', type: 'date', mandatoryType: 'internal', multiple: false, upsert: false },
+  { name: 'context_data', type: 'dictionary', mandatoryType: 'internal', multiple: false, upsert: false },
+];
+
+const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
   [ENTITY_TYPE_SETTINGS]: [
     { name: 'platform_title', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'platform_organization', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
@@ -87,7 +101,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'default_marking',
       type: 'object',
       mandatoryType: 'no',
-     editDefault: false, multiple: true,
+     editDefault: false, multiple: false,
       upsert: false,
       mapping: {
         entity_type: textMapping,
@@ -110,7 +124,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'bookmarks',
       type: 'object',
       mandatoryType: 'no',
-     editDefault: false, multiple: true,
+     editDefault: false, multiple: false,
       upsert: false,
       mapping: {
         id: textMapping,
@@ -211,7 +225,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       name: 'messages',
       type: 'object',
       mandatoryType: 'no',
-      multiple: true,
+      multiple: false,
       upsert: false,
       mapping: {
         timestamp: dateMapping,
@@ -225,7 +239,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
       name: 'actions',
       type: 'object',
       mandatoryType: 'internal',
-      multiple: true,
+      multiple: false,
       upsert: false,
       mapping: {
         type: textMapping,
@@ -274,16 +288,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'listen_deletion', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
     { name: 'no_dependencies', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
   ],
-  [ENTITY_TYPE_HISTORY]: [
-    { name: 'event_type', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
-    { name: 'event_scope', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
-    { name: 'user_id', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
-    { name: 'applicant_id', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'group_ids', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false },
-    { name: 'organization_ids', type: 'string', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false },
-    { name: 'timestamp', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
-    { name: 'context_data', type: 'dictionary', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false },
-  ]
+  [ENTITY_TYPE_HISTORY]: HistoryDefinition,
+  [ENTITY_TYPE_ACTIVITY]: HistoryDefinition
 };
 
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), internalObjectsAttributes);

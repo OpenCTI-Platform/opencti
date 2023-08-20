@@ -103,7 +103,7 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
-  INPUT_AUTHORIZED_MEMBERS,
+ INPUT_AUTHORIZED_MEMBERS,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
@@ -196,7 +196,8 @@ import { getEntitiesListFromCache } from './cache';
 import {
   ACTION_TYPE_SHARE,
   ACTION_TYPE_UNSHARE,
-  checkActionValidity, createDefaultTask,
+  checkActionValidity,
+  createDefaultTask,
   TASK_TYPE_LIST
 } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
@@ -1031,10 +1032,10 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
     return [];
   }
   const searchHashes = extractNotFuzzyHashValues(hashes); // Search hashes must filter the fuzzy hashes
-  return listEntities(context, user, [type], {
+  return await listEntities(context, user, [type], {
     filters: {
       mode: 'and',
-      filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
+      filters: [{ key: 'hashes', values: searchHashes, operator: 'match' }],
       filterGroups: [],
     },
     noFiltersChecking: true,

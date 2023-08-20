@@ -15,6 +15,7 @@ export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 type BasicDefinition = {
   name: string
   label?: string
+  multiple: boolean,
   mandatoryType: MandatoryType
   editDefault: boolean
   multiple: boolean
@@ -27,8 +28,8 @@ export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type DictionaryAttribute = { type: 'dictionary' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
 export type NumericAttribute = { type: 'numeric', scalable?: boolean } & BasicDefinition;
-export type JsonAttribute = { type: 'json', schemaDef?: Record<string, any> } & BasicDefinition;
-export type ObjectAttribute = { type: 'object', mapping: Record<string, any> } & BasicDefinition;
+export type JsonAttribute = { type: 'json', multiple: false, schemaDef?: Record<string, any> } & BasicDefinition;
+export type ObjectAttribute = { type: 'object', multiple: false, nested?: boolean, mapping: Record<string, any> } & BasicDefinition;
 
 export type AttributeDefinition = StringAttribute | JsonAttribute | ObjectAttribute | DictionaryAttribute |
 NumericAttribute | DateAttribute | BooleanAttribute;
@@ -88,7 +89,7 @@ export const files: AttributeDefinition = {
   type: 'object',
   mandatoryType: 'no',
   editDefault: false,
-  multiple: true,
+  multiple: false,
   upsert: false,
   update: false,
   mapping: {
@@ -103,7 +104,7 @@ export const authorizedMembers: AttributeDefinition = {
   name: 'authorized_members',
   type: 'object',
   mandatoryType: 'no',
-  multiple: true,
+  multiple: false,
   upsert: false,
   mapping: {
     id: textMapping,
@@ -180,7 +181,7 @@ export const errors: AttributeDefinition = {
   name: 'errors',
   type: 'object',
   mandatoryType: 'no',
-  multiple: true,
+  multiple: false,
   upsert: false,
   mapping: {
     id: textMapping,

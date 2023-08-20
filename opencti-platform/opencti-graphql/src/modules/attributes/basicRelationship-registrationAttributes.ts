@@ -9,6 +9,7 @@ import {
   parentTypes,
   relationshipType,
   standardId,
+  textMapping,
   updatedAt
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
@@ -28,6 +29,19 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   { name: 'fromType', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
   { name: 'toType', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
   { name: 'i_inference_weight', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
-  { name: 'connections', type: 'dictionary', mandatoryType: 'internal', multiple: true, upsert: false },
+  {
+    name: 'connections',
+    type: 'object',
+    nested: true,
+    mandatoryType: 'internal',
+    multiple: false,
+    upsert: false,
+    mapping: {
+      internal_id: textMapping,
+      name: textMapping,
+      role: textMapping,
+      types: textMapping,
+    }
+  },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_RELATIONSHIP, basicRelationshipAttributes);
