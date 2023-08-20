@@ -2,6 +2,7 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.12.5
   ms-teams: cloudradar-monitoring/ms-teams@0.0.1
+  kubernetes: circleci/kubernetes@1.3.1
 jobs:
   build_frontend:
     working_directory: ~/opencti
@@ -405,6 +406,16 @@ jobs:
           only_on_fail: true
           webhook_url: $MS_TEAMS_WEBHOOK_URL
 
+  deploy_testing:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-front
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-ingest
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-worker
+
   notify_rolling:
     docker:
       - image: "cimg/base:stable"
@@ -507,14 +518,17 @@ workflows:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
               ignore: /.*/
+      - deploy_testing:
+          requires:
+            - docker_build_platform_rolling
+            - docker_build_worker_rolling              
       - notify_rolling:
           requires:
             - deploy_demo
             - deploy_reference
+            - deploy_testing
             - package_rolling
             - package_rolling_musl
-            - docker_build_platform_rolling
-            - docker_build_worker_rolling
       - notify:
           requires:
             - docker_build_platform
