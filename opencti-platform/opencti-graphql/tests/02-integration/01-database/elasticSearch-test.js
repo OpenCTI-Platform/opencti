@@ -1,9 +1,34 @@
 /* eslint-disable no-underscore-dangle */
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import moment from 'moment';
-import { elAggregationCount, elAggregationRelationsCount, elCount, elCreateIndices, elDeleteElements, elDeleteIndices, elHistogramCount, elIndexElements, elIndexExists, elLoadById, elPaginate, elRebuildRelation, searchEngineInit, } from '../../../src/database/engine';
-import { ES_INDEX_PREFIX, READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES, } from '../../../src/database/utils';
+import {
+  elAggregationCount,
+  elAggregationRelationsCount,
+  elCount,
+  elHistogramCount,
+  elIndexElements,
+  elIndexExists,
+  elLoadById,
+  elPaginate,
+  elRebuildRelation,
+  searchEngineInit,
+} from '../../../src/database/engine';
+import {
+  ES_INDEX_PREFIX,
+  READ_DATA_INDICES,
+  READ_ENTITIES_INDICES,
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_INTERNAL_RELATIONSHIPS,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_META_OBJECTS,
+  READ_INDEX_STIX_META_RELATIONSHIPS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  READ_RELATIONSHIPS_INDICES,
+} from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
@@ -31,16 +56,6 @@ describe('Elasticsearch configuration test', () => {
     expect(elIndexExists(READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_INTERNAL_RELATIONSHIPS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_STIX_CYBER_OBSERVABLES)).toBeTruthy();
-  });
-});
-
-describe('Elasticsearch document loader', () => {
-  beforeAll(async () => {
-    await searchEngineInit();
-    await elCreateIndices(['test_index']);
-  });
-  afterAll(async () => {
-    await elDeleteIndices(['test_index-000001']);
   });
 });
 
@@ -152,7 +167,11 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Malware')).toEqual(1); // Because of date filtering
   });
   it('should invalid time histogram fail', async () => {
-    const histogramCount = elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
+    const histogramCount = elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      types: ['Stix-Domain-Object'],
+      field: 'created_at',
+      interval: 'minute'
+    });
     // noinspection ES6MissingAwait.toEqual(36);
     expect(histogramCount).rejects.toThrow();
   });
@@ -161,7 +180,13 @@ describe('Elasticsearch computation', () => {
       testContext,
       ADMIN_USER,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'day', startDate: '2019-09-29T00:00:00.000Z', endDate: new Date().toISOString() }
+      {
+        types: ['Stix-Domain-Object'],
+        field: 'created_at',
+        interval: 'day',
+        startDate: '2019-09-29T00:00:00.000Z',
+        endDate: new Date().toISOString()
+      }
     );
     expect(data.length).toEqual(1);
     // noinspection JSUnresolvedVariable
@@ -174,7 +199,13 @@ describe('Elasticsearch computation', () => {
       testContext,
       ADMIN_USER,
       READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { types: ['Stix-Domain-Object'], field: 'created', interval: 'month', startDate: '2019-09-23T00:00:00.000Z', endDate: '2020-03-02T00:00:00.000Z' }
+      {
+        types: ['Stix-Domain-Object'],
+        field: 'created',
+        interval: 'month',
+        startDate: '2019-09-23T00:00:00.000Z',
+        endDate: '2020-03-02T00:00:00.000Z'
+      }
     );
     expect(data.length).toEqual(7);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
