@@ -8302,6 +8302,9 @@ type Query {
   threatActorIndividual(id: String!): ThreatActorIndividual
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
   threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  playbook(id: String!): Playbook
+  playbooks(first: Int, after: ID, orderBy: PlaybookOrdering, orderMode: OrderingMode, filters: [PlaybookFiltering!], filterMode: FilterMode, search: String): PlaybookConnection
+  playbookComponents: [PlaybookComponent]!
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: [IngestionRssFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionRssConnection
   ingestionTaxii(id: String!): IngestionTaxii
@@ -8323,6 +8326,7 @@ type Subscription {
   markingDefinition(id: ID!): MarkingDefinition
   killChainPhase(id: ID!): KillChainPhase
   stixCoreObject(id: ID!): StixCoreObject
+  internalObject(id: ID!): InternalObject
   stixDomainObject(id: ID!): StixDomainObject
   stixCyberObservable(id: ID!): StixCyberObservable
   stixCoreRelationship(id: ID!): StixCoreRelationship
@@ -11698,6 +11702,76 @@ input ThreatActorIndividualAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+}
+
+type Playbook implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  description: String
+  playbook_running: Boolean
+  playbook_definition: String
+}
+
+type PlaybookComponentPort {
+  id: ID!
+  type: String!
+}
+
+type PlaybookComponent {
+  id: ID!
+  name: String!
+  description: String!
+  is_entry_point: Boolean
+  is_internal: Boolean
+  configuration_schema: String
+  ports: [PlaybookComponentPort!]!
+}
+
+enum PlaybookOrdering {
+  name
+}
+
+enum PlaybookFilter {
+  name
+}
+
+input PlaybookFiltering {
+  key: [PlaybookFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type PlaybookConnection {
+  pageInfo: PageInfo!
+  edges: [PlaybookEdge!]!
+}
+
+type PlaybookEdge {
+  cursor: String!
+  node: Playbook!
+}
+
+input PlaybookAddInput {
+  name: name_String_NotNull_minLength_2!
+  description: String
+}
+
+input PlaybookAddNodeInput {
+  playbook_id: ID!
+  name: String!
+  component_id: String!
+  configuration: String
+}
+
+input PlaybookAddLinkInput {
+  playbook_id: ID!
+  from_node: String!
+  from_port: String!
+  to_node: String!
 }
 
 type IngestionRss implements InternalObject & BasicObject {

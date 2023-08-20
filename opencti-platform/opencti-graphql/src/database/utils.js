@@ -186,7 +186,14 @@ export const cursorToOffset = (cursor) => {
   return JSON.parse(str);
 };
 
+export const toBase64 = (utf8String) => {
+  if (isEmptyField(utf8String)) return undefined;
+  const buff = Buffer.from(utf8String, 'utf-8');
+  return buff.toString('base64');
+};
+
 export const fromBase64 = (base64String) => {
+  if (isEmptyField(base64String)) return undefined;
   const buff = Buffer.from(base64String, 'base64');
   return buff.toString('utf-8');
 };

@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -14,12 +29,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { ConnectionHandler } from 'relay-runtime';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-
 import Loader from '../../../../components/Loader';
-import PlaybookEdition from './PlaybookEdition';
+import PlaybookEdition, { playbookMutationFieldPatch } from './PlaybookEdition';
+import { deleteNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   container: {
@@ -53,6 +68,8 @@ const playbookEditionQuery = graphql`
   query PlaybookPopoverEditionQuery($id: String!) {
     playbook(id: $id) {
       id
+      name
+      playbook_running
       ...PlaybookEdition_playbook
     }
   }
@@ -66,6 +83,10 @@ class PlaybookPopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
+      displayStart: false,
+      starting: false,
+      displayStop: false,
+      stopping: false,
     };
   }
 
@@ -95,6 +116,24 @@ class PlaybookPopover extends Component {
     this.setState({ displayDelete: false });
   }
 
+  handleOpenStart() {
+    this.setState({ displayStart: true });
+    this.handleClose();
+  }
+
+  handleCloseStart() {
+    this.setState({ displayStart: false });
+  }
+
+  handleOpenStop() {
+    this.setState({ displayStop: true });
+    this.handleClose();
+  }
+
+  handleCloseStop() {
+    this.setState({ displayStop: false });
+  }
+
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
@@ -103,25 +142,59 @@ class PlaybookPopover extends Component {
         id: this.props.playbookId,
       },
       updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('playbookEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_playbooks',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        if (this.props.paginationOptions) {
+          deleteNode(
+            store,
+            'Pagination_playbooks',
+            this.props.paginationOptions,
+            this.props.playbookId,
+          );
+        }
       },
       onCompleted: () => {
         this.setState({ deleting: false });
+        if (this.props.paginationOptions) {
+          this.handleCloseDelete();
+        } else {
+          this.props.history.push('/dashboard/data/processing/automation');
+        }
         this.handleCloseDelete();
       },
     });
   }
 
+  submitStart() {
+    this.setState({ starting: true });
+    commitMutation({
+      mutation: playbookMutationFieldPatch,
+      variables: {
+        id: this.props.playbookId,
+        input: { key: 'playbook_running', value: ['true'] },
+      },
+      onCompleted: () => {
+        this.setState({ starting: false });
+        this.handleCloseStart();
+      },
+    });
+  }
+
+  submitStop() {
+    this.setState({ stopping: true });
+    commitMutation({
+      mutation: playbookMutationFieldPatch,
+      variables: {
+        id: this.props.playbookId,
+        input: { key: 'playbook_running', value: ['false'] },
+      },
+      onCompleted: () => {
+        this.setState({ stopping: false });
+        this.handleCloseStop();
+      },
+    });
+  }
+
   render() {
-    const { classes, t, playbookId } = this.props;
+    const { classes, t, playbookId, running } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -137,6 +210,16 @@ class PlaybookPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
+          {!running && (
+            <MenuItem onClick={this.handleOpenStart.bind(this)}>
+              {t('Start')}
+            </MenuItem>
+          )}
+          {running && (
+            <MenuItem onClick={this.handleOpenStop.bind(this)}>
+              {t('Stop')}
+            </MenuItem>
+          )}
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -157,7 +240,6 @@ class PlaybookPopover extends Component {
             variables={{ id: playbookId }}
             render={({ props }) => {
               if (props) {
-                // Done
                 return (
                   <PlaybookEdition
                     playbook={props.playbook}
@@ -178,7 +260,7 @@ class PlaybookPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this collection?')}
+              {t('Do you want to delete this playbook?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -197,6 +279,62 @@ class PlaybookPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.displayStart}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseStart.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to start this playbook?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseStart.bind(this)}
+              disabled={this.state.starting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitStart.bind(this)}
+              color="secondary"
+              disabled={this.state.starting}
+            >
+              {t('Start')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.displayStop}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseStop.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to stop this playbook?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseStop.bind(this)}
+              disabled={this.state.stopping}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitStop.bind(this)}
+              color="secondary"
+              disabled={this.state.stopping}
+            >
+              {t('Stop')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -204,9 +342,14 @@ class PlaybookPopover extends Component {
 
 PlaybookPopover.propTypes = {
   playbookId: PropTypes.string,
+  running: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(PlaybookPopover);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(PlaybookPopover);

@@ -22,8 +22,8 @@ import type { BasicStoreEntityWorkspace } from '../modules/workspace/workspace-t
 import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityPlaybook } from '../modules/playbook/playbook-types';
 import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityPlaybook } from '../modules/playbook/playbook-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
@@ -24136,6 +24136,7 @@ export type Subscription = {
   entitySetting?: Maybe<EntitySetting>;
   externalReference?: Maybe<ExternalReference>;
   group?: Maybe<Group>;
+  internalObject?: Maybe<InternalObject>;
   killChainPhase?: Maybe<KillChainPhase>;
   label?: Maybe<Label>;
   markingDefinition?: Maybe<MarkingDefinition>;
@@ -24166,6 +24167,11 @@ export type SubscriptionExternalReferenceArgs = {
 
 
 export type SubscriptionGroupArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type SubscriptionInternalObjectArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -36595,6 +36601,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   entitySetting?: SubscriptionResolver<Maybe<ResolversTypes['EntitySetting']>, "entitySetting", ParentType, ContextType, RequireFields<SubscriptionEntitySettingArgs, 'id'>>;
   externalReference?: SubscriptionResolver<Maybe<ResolversTypes['ExternalReference']>, "externalReference", ParentType, ContextType, RequireFields<SubscriptionExternalReferenceArgs, 'id'>>;
   group?: SubscriptionResolver<Maybe<ResolversTypes['Group']>, "group", ParentType, ContextType, RequireFields<SubscriptionGroupArgs, 'id'>>;
+  internalObject?: SubscriptionResolver<Maybe<ResolversTypes['InternalObject']>, "internalObject", ParentType, ContextType, RequireFields<SubscriptionInternalObjectArgs, 'id'>>;
   killChainPhase?: SubscriptionResolver<Maybe<ResolversTypes['KillChainPhase']>, "killChainPhase", ParentType, ContextType, RequireFields<SubscriptionKillChainPhaseArgs, 'id'>>;
   label?: SubscriptionResolver<Maybe<ResolversTypes['Label']>, "label", ParentType, ContextType, RequireFields<SubscriptionLabelArgs, 'id'>>;
   markingDefinition?: SubscriptionResolver<Maybe<ResolversTypes['MarkingDefinition']>, "markingDefinition", ParentType, ContextType, RequireFields<SubscriptionMarkingDefinitionArgs, 'id'>>;

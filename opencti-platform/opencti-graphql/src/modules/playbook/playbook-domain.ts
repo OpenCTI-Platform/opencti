@@ -1,10 +1,25 @@
+/*
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import { v4 as uuidv4 } from 'uuid';
 import { BUS_TOPICS } from '../../config/conf';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { EntityOptions, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
-import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, PlaybookAddInput, PlaybookAddNodeInput, PlaybookAddLinkInput } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
@@ -51,7 +66,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, inpu
     patch.playbook_start = nodeId;
   }
   const { element: updatedElem } = await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
 export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {
@@ -60,7 +75,7 @@ export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, i
   definition.nodes = definition.nodes.filter((n) => n.id !== nodeId);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
 export const playbookAddLink = async (context: AuthContext, user: AuthUser, input: PlaybookAddLinkInput) => {
@@ -98,7 +113,7 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, inpu
   });
   const patch = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
 export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, id: string, linkId: string) => {
@@ -107,7 +122,7 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
   definition.links = definition.links.filter((n) => n.id !== linkId);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
 export const playbookAdd = async (context: AuthContext, user: AuthUser, input: PlaybookAddInput) => {
@@ -119,11 +134,11 @@ export const playbookAdd = async (context: AuthContext, user: AuthUser, input: P
 
 export const playbookDelete = async (context: AuthContext, user: AuthUser, id: string) => {
   const element = await deleteElementById(context, user, id, ENTITY_TYPE_PLAYBOOK);
-  await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, element, user);
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   return id;
 };
 
 export const playbookEdit = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, input);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElem, user);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };

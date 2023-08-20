@@ -46,7 +46,7 @@ const initClusterManager = () => {
       notificationManager.status(),
       ingestionManager.status(),
       activityManager.status(settings),
-      playbookManager.status(),
+      playbookManager.status(settings),
     ];
     const configData: ClusterConfig = { platform_id: platformId, managers };
     await registerClusterInstance(platformId, configData);

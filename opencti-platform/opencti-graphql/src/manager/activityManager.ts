@@ -21,7 +21,7 @@ import {
   storeNotificationEvent,
   type StreamProcessor
 } from '../database/redis';
-import conf, { ENABLED_DEMO_MODE, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
@@ -255,7 +255,7 @@ const initActivityManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'ACTIVITY_MANAGER',
-        enable: isNotEmptyField(settings?.enterprise_edition),
+        enable: isNotEmptyField(settings?.enterprise_edition) && booleanConf('activity_manager:enabled', false),
         running,
       };
     },

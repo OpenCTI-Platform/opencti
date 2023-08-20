@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -6,11 +21,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { MoreVert } from '@mui/icons-material';
-import { DatabaseExportOutline } from 'mdi-material-ui';
+import { MoreVert, PrecisionManufacturingOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
+import { Link } from 'react-router-dom';
 import PlaybookPopover from './PlaybookPopover';
 import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -72,11 +87,11 @@ class PlaybookLineLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         button={true}
-        component="a"
-        href={`/playbook2/root/collections/${node.id}/objects`}
+        component={Link}
+        to={`/dashboard/data/processing/automation/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <DatabaseExportOutline />
+          <PrecisionManufacturingOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -110,6 +125,7 @@ class PlaybookLineLineComponent extends Component {
           <PlaybookPopover
             playbookId={node.id}
             paginationOptions={paginationOptions}
+            running={node.playbook_running}
           />
         </ListItemSecondaryAction>
       </ListItem>

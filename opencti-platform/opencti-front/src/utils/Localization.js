@@ -67,7 +67,8 @@ const i18n = {
       Vocabularies: 'Vocabularios',
       'Create a vocabulary': 'Crear un vocabulario',
       'This item is built-in': 'Este artículo está integrado',
-      'Some fields in usage are mandatory': 'Algunos campos en uso son obligatorios',
+      'Some fields in usage are mandatory':
+        'Algunos campos en uso son obligatorios',
       'Used in': 'Utilizada en',
       Usages: 'Usos',
       Aliases: 'alias',
@@ -407,8 +408,10 @@ const i18n = {
       'Update an infrastructure': 'Actualizar una infrastructura',
       'Create a threat actor group': 'Crear un grupo de actores de amenazas',
       'Update a threat actor group': 'Actualizar un grupo de actor de amenazas',
-      'Create a threat actor individual': 'Crear un actor de amenazas individual',
-      'Update a threat actor individual': 'Actualizar a un actor de amenazas individual',
+      'Create a threat actor individual':
+        'Crear un actor de amenazas individual',
+      'Update a threat actor individual':
+        'Actualizar a un actor de amenazas individual',
       'Create an intrusion set': 'Crear un set de intrusión',
       'Update an intrusion set': 'Actualizar un set de intrusión',
       'Create a campaign': 'Crear una campaña',
@@ -2163,7 +2166,8 @@ const i18n = {
       Vocabularies: 'Vocabulaires',
       'Create a vocabulary': 'Créer un vocabulaire',
       'This item is built-in': 'Cet attribut est par défaut',
-      'Some fields in usage are mandatory': 'Certains champs utilisés sont obligatoires',
+      'Some fields in usage are mandatory':
+        'Certains champs utilisés sont obligatoires',
       'Used in': 'Utilisé dans',
       Usages: 'Les usages',
       Aliases: 'Pseudonymes',
@@ -4146,6 +4150,7 @@ const i18n = {
       NOTIFICATION_MANAGER: 'Manager de génération de notifiers',
       HISTORY_MANAGER: "Manager d'historique",
       INGESTION_MANAGER: "Manager d'ingestion",
+      PLAYBOOK_MANAGER: 'Manager de playbook',
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
       'Update a status': 'Mettre à jour un statut',
@@ -4261,7 +4266,8 @@ const i18n = {
       Vocabularies: '語彙',
       'Create a vocabulary': '語彙を作成する',
       'This item is built-in': 'このアイテムは内蔵されています',
-      'Some fields in usage are mandatory': '使用法の一部のフィールドは必須です',
+      'Some fields in usage are mandatory':
+        '使用法の一部のフィールドは必須です',
       'Used in': 'で使われる',
       Usages: '用途',
       Aliases: 'エイリアス',
@@ -6297,7 +6303,8 @@ const i18n = {
       'Do you want to delete this group?': '是否要删除此组？',
       'Do you want to delete this threat actor group?':
         '您想删除该威胁组织吗？',
-      'Do you want to delete this threat actor individual?': '您想删除此威胁行为者个人吗？',
+      'Do you want to delete this threat actor individual?':
+        '您想删除此威胁行为者个人吗？',
       'Do you want to delete this intrusion set?': '是否要删除此入侵集合？',
       'Do you want to delete this campaign?': '是否要删除此攻击活动？',
       'Do you want to delete this incident?': '是否要删除此安全事件？',
@@ -8538,6 +8545,7 @@ const i18n = {
       NOTIFICATION_MANAGER: 'Notification generation manager',
       HISTORY_MANAGER: 'History manager',
       INGESTION_MANAGER: 'Ingestion manager',
+      PLAYBOOK_MANAGER: 'Playbook manager',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       'suggestion_threats-arsenal':

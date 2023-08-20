@@ -13,6 +13,7 @@ import Sync from './Sync';
 import IngestionRss from './IngestionRss';
 import IngestionTaxiis from './IngestionTaxiis';
 import Playbooks from './Playbooks';
+import RootPlaybook from './playbooks/Root';
 
 const Root = () => (
   <Switch>
@@ -85,6 +86,11 @@ const Root = () => (
       exact
       path="/dashboard/data/processing/automation"
       component={Playbooks}
+    />
+    <BoundaryRoute
+        exact
+      path="/dashboard/data/processing/automation/:playbookId"
+      component={RootPlaybook}
     />
     <BoundaryRoute
       exact

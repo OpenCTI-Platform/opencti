@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor, lockResource, redisPlaybookUpdate, StreamProcessor } from '../database/redis';
@@ -16,6 +31,8 @@ import type {
   PlaybookComponent,
   PlaybookComponentConfiguration
 } from '../modules/playbook/playbook-types';
+import { isNotEmptyField } from '../database/utils';
+import type { BasicStoreSettings } from '../types/settings';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const STREAM_SCHEDULE_TIME = 10000;
@@ -214,10 +231,10 @@ const initPlaybookManager = () => {
         await playbookHandler();
       }, STREAM_SCHEDULE_TIME);
     },
-    status: () => {
+    status: (settings?: BasicStoreSettings) => {
       return {
         id: 'PLAYBOOK_MANAGER',
-        enable: booleanConf('playbook_manager:enabled', false),
+        enable: isNotEmptyField(settings?.enterprise_edition) && booleanConf('playbook_manager:enabled', false),
         running,
       };
     },
