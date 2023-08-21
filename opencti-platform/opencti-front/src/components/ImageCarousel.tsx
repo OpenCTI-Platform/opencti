@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import Carousel from 'react-material-ui-carousel';
-import Tooltip from '@mui/material/Tooltip';
 import makeStyles from '@mui/styles/makeStyles';
 import { convertImagesToCarousel } from '../utils/edition';
 import noImage from '../static/images/leaflet/no-image-placeholder.png';
+import { Tooltip } from "@mui/material";
 
 const useStyles = makeStyles(() => ({
   carousel: {
@@ -28,14 +28,10 @@ interface ImagesData {
   } | null> | null;
 }
 
-interface Images {
-  images: ImagesData
-}
-
 interface ImageCarouselProps {
   data: {
-    images: Images
-  };
+    images: ImagesData | null
+  }
 }
 
 interface CarouselImage {

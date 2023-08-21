@@ -12,6 +12,7 @@ import {
   PictureManagementViewer_entity$key,
 } from './__generated__/PictureManagementViewer_entity.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
+import {PictureManagementUtils_node$key} from "./__generated__/PictureManagementUtils_node.graphql";
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -24,12 +25,14 @@ const useStyles = makeStyles(() => ({
 }));
 
 const pictureManagementViewerFragment = graphql`
-  fragment PictureManagementViewer_entity on StixCoreObject {
+  fragment PictureManagementViewer_entity on StixDomainObject {
     id
     entity_type
     images: importFiles(prefixMimeType: "image/") {
       edges {
         node {
+          id
+          name
           ...PictureManagementUtils_node
         }
       }
@@ -68,7 +71,7 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
     },
   };
 
-  const images = data.images?.edges ?? [];
+  const images = (data.images && data.images.edges) ?? [];
 
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
@@ -78,7 +81,7 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
         </Typography>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          {images.length > 0 ? (
+          {images && images.length > 0 ? (
             <div>
               <ColumnsLinesTitles
                 dataColumns={dataColumns}

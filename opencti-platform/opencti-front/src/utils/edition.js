@@ -53,8 +53,8 @@ export const convertExternalReferences = (element) => (element?.externalReferenc
 }));
 
 export const convertImagesToCarousel = (element) => {
-  const images = element.images ?? [];
-  const carouselImages = images ? images.filter((file) => file?.metaData.inCarousel === true) : [];
+  const images = element.images.edges ?? [];
+  const carouselImages = images ? images.filter(({ node }) => node?.metaData.inCarousel === true) : [];
 
   return carouselImages.map((file) => ({
     tooltipTitle: file.description,

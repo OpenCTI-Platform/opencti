@@ -3649,6 +3649,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
+  default_hidden_types: [String!]
 }
 
 input OrganizationAddInput {
