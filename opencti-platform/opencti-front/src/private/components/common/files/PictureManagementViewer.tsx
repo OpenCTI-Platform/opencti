@@ -81,7 +81,7 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
         </Typography>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          {images.length > 0 ? (
+          {images && images.length > 0 ? (
             <div>
               <ColumnsLinesTitles
                 dataColumns={dataColumns}
