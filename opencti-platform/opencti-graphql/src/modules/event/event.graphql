@@ -93,7 +93,6 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: AssigneeConnection
-    x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
     # Event
     name: String!
     description: String
@@ -104,7 +103,8 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     # Technical
     creators: [Creator!]
     toStix: String
-    importFiles(first: Int): FileConnection
+    importFiles(first: Int, prefixMimeType: String): FileConnection
+
     pendingFiles(first: Int): FileConnection
     exportFiles(first: Int): FileConnection
     editContext: [EditUserContext!]

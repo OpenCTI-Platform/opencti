@@ -101,7 +101,6 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -142,6 +141,7 @@ export type AdministrativeAreaGroupingsArgs = {
 
 export type AdministrativeAreaImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -238,11 +238,6 @@ export type AdministrativeAreaStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type AdministrativeAreaX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type AdministrativeAreaAddInput = {
@@ -443,6 +438,7 @@ export type ArtifactGroupingsArgs = {
 
 export type ArtifactImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -631,7 +627,6 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   x_mitre_id?: Maybe<Scalars['String']['output']>;
   x_mitre_permissions_required?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_mitre_platforms?: Maybe<Array<Scalars['String']['output']>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -672,6 +667,7 @@ export type AttackPatternGroupingsArgs = {
 
 export type AttackPatternImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -768,11 +764,6 @@ export type AttackPatternStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type AttackPatternX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type AttackPatternAddInput = {
@@ -1005,6 +996,7 @@ export type AutonomousSystemGroupingsArgs = {
 
 export type AutonomousSystemImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1302,6 +1294,7 @@ export type BankAccountGroupingsArgs = {
 
 export type BankAccountImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1480,7 +1473,6 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -1521,6 +1513,7 @@ export type CampaignGroupingsArgs = {
 
 export type CampaignImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1617,11 +1610,6 @@ export type CampaignStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type CampaignX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CampaignAddInput = {
@@ -1832,7 +1820,6 @@ export type Case = {
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -1873,6 +1860,7 @@ export type CaseGroupingsArgs = {
 
 export type CaseImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1997,11 +1985,6 @@ export type CaseStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
-
-export type CaseX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type CaseConnection = {
   __typename?: 'CaseConnection';
   edges?: Maybe<Array<Maybe<CaseEdge>>>;
@@ -2069,7 +2052,6 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -2110,6 +2092,7 @@ export type CaseIncidentGroupingsArgs = {
 
 export type CaseIncidentImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2232,11 +2215,6 @@ export type CaseIncidentStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type CaseIncidentX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CaseIncidentAddInput = {
@@ -2379,7 +2357,6 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -2420,6 +2397,7 @@ export type CaseRfiGroupingsArgs = {
 
 export type CaseRfiImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2542,11 +2520,6 @@ export type CaseRfiStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type CaseRfiX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CaseRfiAddInput = {
@@ -2686,7 +2659,6 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -2727,6 +2699,7 @@ export type CaseRftGroupingsArgs = {
 
 export type CaseRftImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2849,11 +2822,6 @@ export type CaseRftStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type CaseRftX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CaseRftAddInput = {
@@ -3064,7 +3032,6 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -3105,6 +3072,7 @@ export type ChannelGroupingsArgs = {
 
 export type ChannelImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -3201,11 +3169,6 @@ export type ChannelStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type ChannelX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ChannelAddInput = {
@@ -3365,7 +3328,6 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -3406,6 +3368,7 @@ export type CityGroupingsArgs = {
 
 export type CityImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -3502,11 +3465,6 @@ export type CityStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type CityX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CityAddInput = {
@@ -3666,7 +3624,6 @@ export type Container = {
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -3803,11 +3760,6 @@ export type ContainerStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type ContainerX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ContainerConnection = {
@@ -3994,7 +3946,6 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -4035,6 +3986,7 @@ export type CountryGroupingsArgs = {
 
 export type CountryImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -4131,11 +4083,6 @@ export type CountryStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type CountryX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CountryAddInput = {
@@ -4253,7 +4200,6 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_mitre_id?: Maybe<Scalars['String']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_log_sources?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -4296,6 +4242,7 @@ export type CourseOfActionGroupingsArgs = {
 
 export type CourseOfActionImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -4392,11 +4339,6 @@ export type CourseOfActionStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type CourseOfActionX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CourseOfActionAddInput = {
@@ -4598,6 +4540,7 @@ export type CryptocurrencyWalletGroupingsArgs = {
 
 export type CryptocurrencyWalletImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -4784,6 +4727,7 @@ export type CryptographicKeyGroupingsArgs = {
 
 export type CryptographicKeyImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -4939,7 +4883,6 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -4980,6 +4923,7 @@ export type DataComponentGroupingsArgs = {
 
 export type DataComponentImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -5076,11 +5020,6 @@ export type DataComponentStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type DataComponentX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type DataComponentAddInput = {
@@ -5198,7 +5137,6 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_mitre_platforms?: Maybe<Array<Scalars['String']['output']>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -5239,6 +5177,7 @@ export type DataSourceGroupingsArgs = {
 
 export type DataSourceImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -5335,11 +5274,6 @@ export type DataSourceStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type DataSourceX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type DataSourceAddInput = {
@@ -5549,6 +5483,7 @@ export type DirectoryGroupingsArgs = {
 
 export type DirectoryImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -5769,6 +5704,7 @@ export type DomainNameGroupingsArgs = {
 
 export type DomainNameImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -5986,6 +5922,7 @@ export type EmailAddrGroupingsArgs = {
 
 export type EmailAddrImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -6179,6 +6116,7 @@ export type EmailMessageGroupingsArgs = {
 
 export type EmailMessageImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -6373,6 +6311,7 @@ export type EmailMimePartTypeGroupingsArgs = {
 
 export type EmailMimePartTypeImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -6578,7 +6517,6 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -6619,6 +6557,7 @@ export type EventGroupingsArgs = {
 
 export type EventImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -6715,11 +6654,6 @@ export type EventStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type EventX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type EventAddInput = {
@@ -6836,6 +6770,7 @@ export type ExternalReferenceExportFilesArgs = {
 
 export type ExternalReferenceImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -7065,7 +7000,6 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -7106,6 +7040,7 @@ export type FeedbackGroupingsArgs = {
 
 export type FeedbackImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -7230,11 +7165,6 @@ export type FeedbackStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
-
-export type FeedbackX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type FeedbackAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -7340,16 +7270,19 @@ export type FileMetadata = {
   __typename?: 'FileMetadata';
   creator?: Maybe<Creator>;
   creator_id?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   encoding?: Maybe<Scalars['String']['output']>;
   entity?: Maybe<StixCoreObject>;
   entity_id?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<WorkMessage>>>;
   external_reference_id?: Maybe<Scalars['String']['output']>;
+  inCarousel?: Maybe<Scalars['Boolean']['output']>;
   labels?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   labels_text?: Maybe<Scalars['String']['output']>;
   list_filters?: Maybe<Scalars['String']['output']>;
   messages?: Maybe<Array<Maybe<WorkMessage>>>;
   mimetype?: Maybe<Scalars['String']['output']>;
+  order?: Maybe<Scalars['Int']['output']>;
   version?: Maybe<Scalars['String']['output']>;
 };
 
@@ -7508,7 +7441,6 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -7549,6 +7481,7 @@ export type GroupingGroupingsArgs = {
 
 export type GroupingImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -7671,11 +7604,6 @@ export type GroupingStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type GroupingX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GroupingAddInput = {
@@ -7847,6 +7775,7 @@ export type HashedObservableGroupingsArgs = {
 
 export type HashedObservableImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -8028,6 +7957,7 @@ export type HostnameGroupingsArgs = {
 
 export type HostnameImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -8215,6 +8145,7 @@ export type IPv4AddrGroupingsArgs = {
 
 export type IPv4AddrImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -8404,6 +8335,7 @@ export type IPv6AddrGroupingsArgs = {
 
 export type IPv6AddrImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -8594,7 +8526,6 @@ export type Identity = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_reliability?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -8635,6 +8566,7 @@ export type IdentityGroupingsArgs = {
 
 export type IdentityImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -8731,11 +8663,6 @@ export type IdentityStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type IdentityX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IdentityAddInput = {
@@ -8864,7 +8791,6 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -8905,6 +8831,7 @@ export type IncidentGroupingsArgs = {
 
 export type IncidentImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -9001,11 +8928,6 @@ export type IncidentStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type IncidentX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IncidentAddInput = {
@@ -9187,7 +9109,6 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_opencti_detection?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_main_observable_type?: Maybe<Scalars['String']['output']>;
@@ -9230,6 +9151,7 @@ export type IndicatorGroupingsArgs = {
 
 export type IndicatorImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -9331,11 +9253,6 @@ export type IndicatorStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type IndicatorX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IndicatorAddInput = {
@@ -9523,7 +9440,6 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_firstname?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -9567,6 +9483,7 @@ export type IndividualGroupingsArgs = {
 
 export type IndividualImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -9663,11 +9580,6 @@ export type IndividualStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type IndividualX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IndividualAddInput = {
@@ -9839,7 +9751,6 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -9880,6 +9791,7 @@ export type InfrastructureGroupingsArgs = {
 
 export type InfrastructureImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -9976,11 +9888,6 @@ export type InfrastructureStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type InfrastructureX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type InfrastructureAddInput = {
@@ -10301,7 +10208,6 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -10342,6 +10248,7 @@ export type IntrusionSetGroupingsArgs = {
 
 export type IntrusionSetImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -10438,11 +10345,6 @@ export type IntrusionSetStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type IntrusionSetX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IntrusionSetAddInput = {
@@ -10778,7 +10680,6 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -10819,6 +10720,7 @@ export type LanguageGroupingsArgs = {
 
 export type LanguageImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -10915,11 +10817,6 @@ export type LanguageStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type LanguageX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type LanguageAddInput = {
@@ -11056,7 +10953,6 @@ export type Location = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -11096,6 +10992,7 @@ export type LocationGroupingsArgs = {
 
 export type LocationImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -11192,11 +11089,6 @@ export type LocationStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type LocationX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type LocationAddInput = {
@@ -11448,6 +11340,7 @@ export type MacAddrGroupingsArgs = {
 
 export type MacAddrImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -11609,7 +11502,6 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -11650,6 +11542,7 @@ export type MalwareGroupingsArgs = {
 
 export type MalwareImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -11746,11 +11639,6 @@ export type MalwareStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type MalwareX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type MalwareAddInput = {
@@ -11885,7 +11773,6 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   updated_at: Scalars['DateTime']['output'];
   version?: Maybe<Scalars['String']['output']>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -11926,6 +11813,7 @@ export type MalwareAnalysisGroupingsArgs = {
 
 export type MalwareAnalysisImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -12022,11 +11910,6 @@ export type MalwareAnalysisStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type MalwareAnalysisX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type MalwareAnalysisAddInput = {
@@ -12392,6 +12275,7 @@ export type MediaContentGroupingsArgs = {
 
 export type MediaContentImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -14488,6 +14372,7 @@ export type MutexGroupingsArgs = {
 
 export type MutexImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -14645,7 +14530,6 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -14686,6 +14570,7 @@ export type NarrativeGroupingsArgs = {
 
 export type NarrativeImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -14782,11 +14667,6 @@ export type NarrativeStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type NarrativeX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type NarrativeAddInput = {
@@ -14944,6 +14824,7 @@ export type NetworkTrafficGroupingsArgs = {
 
 export type NetworkTrafficImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -15111,7 +14992,6 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -15152,6 +15032,7 @@ export type NoteGroupingsArgs = {
 
 export type NoteImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -15274,11 +15155,6 @@ export type NoteStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type NoteX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type NoteAddInput = {
@@ -15614,7 +15490,6 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -15655,6 +15530,7 @@ export type ObservedDataGroupingsArgs = {
 
 export type ObservedDataImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -15777,11 +15653,6 @@ export type ObservedDataStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type ObservedDataX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ObservedDataAddInput = {
@@ -15949,7 +15820,6 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -15990,6 +15860,7 @@ export type OpinionGroupingsArgs = {
 
 export type OpinionImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -16112,11 +15983,6 @@ export type OpinionStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type OpinionX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type OpinionAddInput = {
@@ -16305,7 +16171,6 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_organization_type?: Maybe<Scalars['String']['output']>;
@@ -16348,6 +16213,7 @@ export type OrganizationGroupingsArgs = {
 
 export type OrganizationImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -16453,11 +16319,6 @@ export type OrganizationStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type OrganizationX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type OrganizationAddInput = {
@@ -16658,6 +16519,7 @@ export type PaymentCardGroupingsArgs = {
 
 export type PaymentCardImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -16847,6 +16709,7 @@ export type PhoneNumberGroupingsArgs = {
 
 export type PhoneNumberImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -17006,7 +16869,6 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -17047,6 +16909,7 @@ export type PositionGroupingsArgs = {
 
 export type PositionImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -17143,11 +17006,6 @@ export type PositionStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type PositionX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type PositionAddInput = {
@@ -17352,6 +17210,7 @@ export type ProcessGroupingsArgs = {
 
 export type ProcessImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -20193,7 +20052,6 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -20234,6 +20092,7 @@ export type RegionGroupingsArgs = {
 
 export type RegionImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -20330,11 +20189,6 @@ export type RegionStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type RegionX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type RegionAddInput = {
@@ -20505,7 +20359,6 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_reliability?: Maybe<Scalars['String']['output']>;
@@ -20547,6 +20400,7 @@ export type ReportGroupingsArgs = {
 
 export type ReportImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -20669,11 +20523,6 @@ export type ReportStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type ReportX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ReportAddInput = {
@@ -21018,7 +20867,6 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_reliability?: Maybe<Scalars['String']['output']>;
@@ -21060,6 +20908,7 @@ export type SectorGroupingsArgs = {
 
 export type SectorImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -21156,11 +21005,6 @@ export type SectorStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type SectorX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SectorAddInput = {
@@ -21466,6 +21310,7 @@ export type SoftwareGroupingsArgs = {
 
 export type SoftwareImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -21747,6 +21592,7 @@ export type StixCoreObjectGroupingsArgs = {
 
 export type StixCoreObjectImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -22403,6 +22249,7 @@ export type StixCyberObservableGroupingsArgs = {
 
 export type StixCyberObservableImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -22664,7 +22511,6 @@ export type StixDomainObject = {
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
@@ -22704,6 +22550,7 @@ export type StixDomainObjectGroupingsArgs = {
 
 export type StixDomainObjectImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -22800,11 +22647,6 @@ export type StixDomainObjectStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type StixDomainObjectX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type StixDomainObjectAddInput = {
@@ -23116,6 +22958,7 @@ export type StixFileGroupingsArgs = {
 
 export type StixFileImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -24220,7 +24063,6 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_firstname?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -24264,6 +24106,7 @@ export type SystemGroupingsArgs = {
 
 export type SystemImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -24360,11 +24203,6 @@ export type SystemStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type SystemX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SystemAddInput = {
@@ -24519,7 +24357,6 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -24560,6 +24397,7 @@ export type TaskGroupingsArgs = {
 
 export type TaskImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -24682,11 +24520,6 @@ export type TaskStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type TaskX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type TaskAddInput = {
@@ -24947,6 +24780,7 @@ export type TextGroupingsArgs = {
 
 export type TextImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -25111,7 +24945,6 @@ export type ThreatActor = {
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -25152,6 +24985,7 @@ export type ThreatActorGroupingsArgs = {
 
 export type ThreatActorImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -25250,11 +25084,6 @@ export type ThreatActorStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
-
-export type ThreatActorX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
-};
-
 export type ThreatActorConnection = {
   __typename?: 'ThreatActorConnection';
   edges?: Maybe<Array<Maybe<ThreatActorEdge>>>;
@@ -25324,7 +25153,6 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -25365,6 +25193,7 @@ export type ThreatActorGroupGroupingsArgs = {
 
 export type ThreatActorGroupImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -25461,11 +25290,6 @@ export type ThreatActorGroupStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type ThreatActorGroupX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ThreatActorGroupAddInput = {
@@ -25602,7 +25426,6 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -25643,6 +25466,7 @@ export type ThreatActorIndividualGroupingsArgs = {
 
 export type ThreatActorIndividualImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -25739,11 +25563,6 @@ export type ThreatActorIndividualStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type ThreatActorIndividualX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ThreatActorIndividualAddInput = {
@@ -25915,7 +25734,6 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   tool_version?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -25956,6 +25774,7 @@ export type ToolGroupingsArgs = {
 
 export type ToolImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -26052,11 +25871,6 @@ export type ToolStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type ToolX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ToolAddInput = {
@@ -26383,6 +26197,7 @@ export type UrlGroupingsArgs = {
 
 export type UrlImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -26634,6 +26449,7 @@ export type UserAccountGroupingsArgs = {
 
 export type UserAccountImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -26847,6 +26663,7 @@ export type UserAgentGroupingsArgs = {
 
 export type UserAgentImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -27282,7 +27099,6 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   x_opencti_base_score?: Maybe<Scalars['Float']['output']>;
   x_opencti_base_severity?: Maybe<Scalars['String']['output']>;
   x_opencti_confidentiality_impact?: Maybe<Scalars['String']['output']>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_integrity_impact?: Maybe<Scalars['String']['output']>;
@@ -27324,6 +27140,7 @@ export type VulnerabilityGroupingsArgs = {
 
 export type VulnerabilityImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -27420,11 +27237,6 @@ export type VulnerabilityStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type VulnerabilityX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type VulnerabilityAddInput = {
@@ -27579,6 +27391,7 @@ export type WindowsRegistryKeyGroupingsArgs = {
 
 export type WindowsRegistryKeyImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -27769,6 +27582,7 @@ export type WindowsRegistryValueTypeGroupingsArgs = {
 
 export type WindowsRegistryValueTypeImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -28164,6 +27978,7 @@ export type X509CertificateGroupingsArgs = {
 
 export type X509CertificateImportFilesArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -29948,7 +29763,6 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<AdministrativeAreaX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30127,7 +29941,6 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_mitre_permissions_required?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<AttackPatternX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30385,7 +30198,6 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<CampaignX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30491,7 +30303,6 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<CaseX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30563,7 +30374,6 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<CaseIncidentX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30635,7 +30445,6 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<CaseRfiX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30707,7 +30516,6 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<CaseRftX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30796,7 +30604,6 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ChannelX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30864,7 +30671,6 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<CityX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -30978,7 +30784,6 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ContainerStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ContainerX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
@@ -31065,7 +30870,6 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<CountryX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -31140,7 +30944,6 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<CourseOfActionX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_log_sources?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -31322,7 +31125,6 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<DataComponentX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -31388,7 +31190,6 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<DataSourceX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -31800,7 +31601,6 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<EventX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -31961,7 +31761,6 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<FeedbackX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -32007,16 +31806,19 @@ export type FileEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 export type FileMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileMetadata'] = ResolversParentTypes['FileMetadata']> = ResolversObject<{
   creator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   creator_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   encoding?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   external_reference_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  inCarousel?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   labels?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   labels_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   list_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkMessage']>>>, ParentType, ContextType>;
   mimetype?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -32120,7 +31922,6 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<GroupingX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -32366,7 +32167,6 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<IdentityX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -32445,7 +32245,6 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<IncidentX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -32533,7 +32332,6 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_detection?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<IndicatorX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_main_observable_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32613,7 +32411,6 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<IndividualX_Opencti_FilesArgs>>;
   x_opencti_firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -32706,7 +32503,6 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<InfrastructureX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -32872,7 +32668,6 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<IntrusionSetX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -33028,7 +32823,6 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<LanguageX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -33113,7 +32907,6 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<LocationX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
@@ -33273,7 +33066,6 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<MalwareX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -33337,7 +33129,6 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<MalwareAnalysisX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -33935,7 +33726,6 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<NarrativeX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -34056,7 +33846,6 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<NoteX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -34237,7 +34026,6 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ObservedDataX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -34323,7 +34111,6 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<OpinionX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -34405,7 +34192,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<OrganizationX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_organization_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34611,7 +34397,6 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<PositionX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -35097,7 +34882,6 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<RegionX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -35186,7 +34970,6 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ReportX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -35393,7 +35176,6 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<SectorX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -35869,7 +35651,6 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<StixDomainObjectX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
@@ -36397,7 +36178,6 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<SystemX_Opencti_FilesArgs>>;
   x_opencti_firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -36477,7 +36257,6 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<TaskX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -36646,7 +36425,6 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ThreatActorX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -36720,7 +36498,6 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ThreatActorGroupX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -36805,7 +36582,6 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ThreatActorIndividualX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -36877,7 +36653,6 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   tool_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<ToolX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -37273,7 +37048,6 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   x_opencti_base_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   x_opencti_base_severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_confidentiality_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<VulnerabilityX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_integrity_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

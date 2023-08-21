@@ -24,11 +24,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 const pictureManagementViewerFragment = graphql`
-  fragment PictureManagementViewer_entity on StixDomainObject {
+  fragment PictureManagementViewer_entity on StixCoreObject {
     id
     entity_type
-    images: x_opencti_files(prefixMimeType: "image/") {
-      ...PictureManagementUtils_node
+    images: importFiles(prefixMimeType: "image/") {
+      edges {
+        node {
+          ...PictureManagementUtils_node
+        }
+      }
     }
   }
 `;
@@ -64,7 +68,7 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
     },
   };
 
-  const images = data.images ?? [];
+  const images = data.images?.edges ?? [];
 
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>

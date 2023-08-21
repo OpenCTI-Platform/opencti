@@ -93,14 +93,13 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: AssigneeConnection
-    x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
     # Language
     name: String!
     aliases: [String]
     # Technical
     creators: [Creator!]
     toStix: String
-    importFiles(first: Int): FileConnection
+    importFiles(first: Int, prefixMimeType: String): FileConnection
     pendingFiles(first: Int): FileConnection
     exportFiles(first: Int): FileConnection
     editContext: [EditUserContext!]

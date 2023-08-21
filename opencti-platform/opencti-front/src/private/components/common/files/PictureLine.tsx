@@ -59,7 +59,7 @@ interface PictureLineComponentProps {
 const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, dataColumns, entityId }) => {
   const classes = useStyles();
   const data = useFragment(pictureManagementUtilsFragment, picture);
-  const [isInCarousel, setIsInCarousel] = useState(!!data.inCarousel);
+  const [isInCarousel, setIsInCarousel] = useState(!!data.metaData?.inCarousel);
   const [commit] = useMutation<PictureManagementUtilsMutation>(pictureManagementUtilsMutation);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleCheckbox = () => {
@@ -67,8 +67,8 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, da
     setIsInCarousel(updatedValue);
     const input = {
       id: data.id,
-      description: data.description,
-      order: data.order,
+      description: data.metaData?.description,
+      order: data.metaData?.order,
       inCarousel: updatedValue,
     };
     commit({
@@ -103,13 +103,13 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, da
                 className={classes.bodyItem}
                 style={{ width: dataColumns.description.width }}
               >
-                {data.description}
+                {data.metaData?.description}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.order.width, paddingLeft: '10px', justifyContent: 'center' }}
               >
-                {data.order}
+                {data.metaData?.order}
               </div>
               <div
                 className={classes.bodyItem}

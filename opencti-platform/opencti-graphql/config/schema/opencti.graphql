@@ -764,6 +764,9 @@ type FileMetadata {
   creator_id: String
   external_reference_id: String
   creator: Creator
+  description: String
+  order: Int
+  inCarousel: Boolean
 }
 type File {
   id: ID!
@@ -1779,7 +1782,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   fileId: String
   # Technical
   creators: [Creator!]
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2044,7 +2047,7 @@ interface StixCoreObject {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2246,11 +2249,10 @@ interface StixDomainObject {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2421,7 +2423,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # AttackPattern
   name: String!
   description: String
@@ -2439,7 +2440,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2613,7 +2614,6 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Campaign
   name: String!
   description: String
@@ -2624,7 +2624,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -2802,7 +2802,6 @@ interface Container {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Container
   representative: String!
   objects(
@@ -2976,7 +2975,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Container
   representative: String!
   objects(
@@ -3010,7 +3008,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3204,7 +3202,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Container
   representative: String!
   objects(
@@ -3237,7 +3234,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3409,7 +3406,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Container
   representative: String!
   objects(
@@ -3441,7 +3437,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3634,7 +3630,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Container
   representative: String!
   objects(
@@ -3671,7 +3666,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -3845,7 +3840,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # CourseOfAction
   name: String!
   description: String
@@ -3857,7 +3851,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4028,7 +4022,6 @@ interface Identity {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Identity
   identity_class: String!
   name: String!
@@ -4040,7 +4033,7 @@ interface Identity {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4209,7 +4202,6 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Identity
   identity_class: String!
   name: String!
@@ -4225,7 +4217,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4249,6 +4241,217 @@ input IndividualAddInput {
   confidence: Int
   revoked: Boolean
   lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+}
+
+################ Organizations
+enum OrganizationsOrdering {
+  name
+  confidence
+  created
+  created_at
+  modified
+  updated_at
+  x_opencti_organization_type
+  x_opencti_workflow_id
+}
+enum OrganizationsFilter {
+  name
+  aliases
+  x_opencti_organization_type
+  x_opencti_reliability
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  assigneeTo
+  labelledBy
+  x_opencti_workflow_id
+  description
+  contact_information
+  revoked
+}
+input OrganizationsFiltering {
+  key: [OrganizationsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type OrganizationConnection {
+  pageInfo: PageInfo!
+  edges: [OrganizationEdge!]!
+}
+type OrganizationEdge {
+  cursor: String!
+  node: Organization!
+}
+
+type MeOrganization {
+  id: ID! # internal_id
+  name: String!
+}
+
+type MeOrganizationEdge {
+  cursor: String!
+  node: MeOrganization!
+}
+
+type MeOrganizationConnection {
+  pageInfo: PageInfo!
+  edges: [MeOrganizationEdge!]!
+}
+
+type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  # Identity
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  # Organization
+  x_opencti_organization_type: String
+  sectors: SectorConnection
+  members(
+    first: Int
+    after: ID
+    orderBy: UsersOrdering
+    orderMode: OrderingMode
+    search: String
+  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  subOrganizations: OrganizationConnection
+  parentOrganizations: OrganizationConnection
+  default_dashboard: Workspace
+  # Technical
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int, prefixMimeType: String): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+}
+input OrganizationAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 2)
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  x_opencti_organization_type: String
+  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -4395,7 +4598,6 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Identity
   identity_class: String!
   name: String!
@@ -4412,7 +4614,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4577,7 +4779,6 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Identity
   identity_class: String!
   name: String!
@@ -4593,7 +4794,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4786,7 +4987,6 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Indicator
   pattern_type: String
   pattern_version: String
@@ -4805,7 +5005,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -4991,7 +5191,6 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Infrastructure
   name: String!
   aliases: [String]
@@ -5003,7 +5202,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5173,7 +5372,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # IntrusionSet
   name: String!
   description: String
@@ -5188,7 +5386,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5360,7 +5558,6 @@ interface Location {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Location
   name: String!
   description: String
@@ -5371,7 +5568,7 @@ interface Location {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5537,7 +5734,6 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Location
   name: String!
   description: String
@@ -5552,7 +5748,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5723,7 +5919,6 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Location
   name: String!
   description: String
@@ -5737,7 +5932,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -5903,7 +6098,6 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Location
   name: String!
   description: String
@@ -5916,7 +6110,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6079,7 +6273,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Location
   name: String!
   description: String
@@ -6095,7 +6288,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6270,7 +6463,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Malware
   name: String!
   description: String
@@ -6286,7 +6478,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6464,7 +6656,6 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # ThreatActorGroup
   name: String!
   description: String
@@ -6484,7 +6675,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6599,7 +6790,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # ThreatActorGroup
   name: String!
   description: String
@@ -6619,7 +6809,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6794,7 +6984,6 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Tool
   name: String!
   description: String
@@ -6805,7 +6994,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -6979,7 +7168,6 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Vulnerability
   name: String!
   description: String
@@ -6994,7 +7182,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7176,7 +7364,6 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   # Incident
   name: String!
   description: String
@@ -7191,7 +7378,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7373,7 +7560,7 @@ interface StixCyberObservable {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7479,7 +7666,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7593,7 +7780,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7705,7 +7892,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7814,7 +8001,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -7929,7 +8116,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8045,7 +8232,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8171,7 +8358,7 @@ interface HashedObservable {
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8282,7 +8469,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8408,7 +8595,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8555,7 +8742,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8692,7 +8879,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8803,7 +8990,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -8911,7 +9098,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9019,7 +9206,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9137,7 +9324,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9277,7 +9464,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9414,7 +9601,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9535,7 +9722,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9657,7 +9844,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9780,7 +9967,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -9892,7 +10079,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10002,7 +10189,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10110,7 +10297,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10218,7 +10405,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10326,7 +10513,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10434,7 +10621,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10545,7 +10732,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10655,7 +10842,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10766,7 +10953,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]
@@ -10882,7 +11069,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   # Technical
   creators: [Creator!]
   toStix: String
-  importFiles(first: Int): FileConnection
+  importFiles(first: Int, prefixMimeType: String): FileConnection
   pendingFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   editContext: [EditUserContext!]

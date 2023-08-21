@@ -7,8 +7,12 @@ export const pictureManagementUtilsMutation = graphql`
   ) {
     stixDomainObjectEdit(id: $id) {
       stixDomainObjectFileEdit(input: $input) {
-        x_opencti_files(prefixMimeType: "image/") {
-          ...PictureManagementUtils_node
+        importFiles {
+          edges {
+            node {
+              ...PictureManagementUtils_node
+            }
+          }
         }
       }
     }
@@ -16,11 +20,13 @@ export const pictureManagementUtilsMutation = graphql`
 `;
 
 export const pictureManagementUtilsFragment = graphql`
-  fragment PictureManagementUtils_node on OpenCtiFile {
+  fragment PictureManagementUtils_node on File {
     id
     name
-    description
-    order
-    inCarousel
+    metaData {
+      description
+      order
+      inCarousel
+    }
   }
 `;

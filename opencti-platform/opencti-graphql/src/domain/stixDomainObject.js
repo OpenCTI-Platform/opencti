@@ -116,10 +116,6 @@ export const stixDomainObjectExportAsk = async (context, user, stixDomainObjectI
   return works.map((w) => workToExportFile(w));
 };
 
-export const stixDomainObjectFiles = (stixDomainObject, prefixMimeType = '') => {
-  const files = stixDomainObject.x_opencti_files ?? [];
-  return files.filter((n) => n.mime_type.includes(prefixMimeType)).sort((a, b) => (a.order || 0) - (b.order || 0));
-};
 // endregion
 
 // region mutation

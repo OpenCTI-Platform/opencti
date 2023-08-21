@@ -11,7 +11,7 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
-  stixDomainObjectExportAsk, stixDomainObjectFileEdit, stixDomainObjectFiles,
+  stixDomainObjectExportAsk, stixDomainObjectFileEdit,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -58,7 +58,7 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    importFiles: (stixDomainObject, { first }, context) => filesListing(context, context.user, first, `import/${stixDomainObject.entity_type}/${stixDomainObject.id}/`),
+    importFiles: (stixDomainObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixDomainObject.entity_type}/${stixDomainObject.id}/`, null, prefixMimeType),
     exportFiles: (stixDomainObject, { first }, context) => filesListing(context, context.user, first, `export/${stixDomainObject.entity_type}/${stixDomainObject.id}/`),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
     objectAssignee: (stixDomainObject, _, context) => assigneesLoader.load(stixDomainObject.id, context, context.user),
@@ -66,7 +66,6 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
-    x_opencti_files: (stixDomainObject, { prefixMimeType }) => stixDomainObjectFiles(stixDomainObject, prefixMimeType),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({
@@ -96,7 +95,7 @@ const stixDomainObjectResolvers = {
           () => pubSubAsyncIterator([bus.EDIT_TOPIC, bus.CONTEXT_TOPIC]),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
         )(_, { id }, context);
         return withCancel(filtering, () => {

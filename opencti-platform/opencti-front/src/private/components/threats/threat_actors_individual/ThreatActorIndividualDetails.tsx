@@ -56,13 +56,19 @@ const ThreatActorIndividualDetailsFragment = graphql`
     secondary_motivations
     goals
     roles
-    images: x_opencti_files(prefixMimeType: "image/") {
-      id
-      name
-      mime_type
-      order
-      inCarousel
-      description
+    images: importFiles(prefixMimeType: "image/") {
+      edges {
+        node {
+          id
+          name
+          metaData {
+            mimetype
+            order
+            inCarousel
+            description
+          }
+        }
+      }
     }
   }
 `;

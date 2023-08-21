@@ -11,17 +11,31 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface Image {
-  id: string;
+interface ImageMetaData {
   description: string | null;
-  name: string;
   inCarousel: boolean | null;
+  mimetype: string | null;
+  order: number | null;
+}
+
+interface ImagesData {
+  edges: ReadonlyArray<{
+    node: {
+      id: string;
+      metaData: ImageMetaData | null;
+      name: string;
+    }
+  } | null> | null;
+}
+
+interface Images {
+  images: ImagesData
 }
 
 interface ImageCarouselProps {
   data: {
-    images: readonly Image[] | null;
-  }
+    images: Images
+  };
 }
 
 interface CarouselImage {
