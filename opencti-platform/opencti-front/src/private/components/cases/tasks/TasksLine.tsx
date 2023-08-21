@@ -19,6 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemStatus from '../../../../components/ItemStatus';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -109,12 +110,16 @@ export const tasksDataColumns: DataColumns = {
     render: (task: TasksLine_node$data, { fld, classes }) => {
       const isoDate = new Date().toISOString();
       return (
-        <Chip
-          label={fld(task.due_date)}
-          variant="outlined"
-          color={task.due_date < isoDate ? 'error' : 'info'}
-          classes={{ root: classes.chipInList }}
-        />
+        <div>
+        <FieldOrEmpty source={task.due_date}>
+          <Chip
+            label={fld(task.due_date)}
+            variant="outlined"
+            color={task.due_date < isoDate ? 'error' : 'info'}
+            classes={{ root: classes.chipInList }}
+          />
+        </FieldOrEmpty>
+        </div>
       );
     },
   },
