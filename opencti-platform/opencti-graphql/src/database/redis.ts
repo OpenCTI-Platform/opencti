@@ -758,7 +758,9 @@ export const redisUpdateWorkFigures = async (workId: string) => {
   });
   const updatedMetrics = await redisGetWork(workId);
   const { import_processed_number: pn, import_expected_number: en }: any = updatedMetrics;
-  return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn, expected: en };
+  const total = parseInt(pn, 10);
+  const expected = parseInt(en, 10);
+  return { isComplete: total === expected, total, expected };
 };
 export const redisGetConnectorStatus = async (connectorId: string) => {
   return getClientBase().get(`work:${connectorId}`);

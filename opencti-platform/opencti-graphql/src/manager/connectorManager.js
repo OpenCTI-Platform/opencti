@@ -43,7 +43,8 @@ const closeOldWorks = async (context, connector) => {
           } else { // If not, update the status to complete + the number of processed elements
             const currentWorkStatus = await redisGetWork(element.internal_id);
             if (currentWorkStatus) {
-              const params = { completed_time: now(), completed_number: currentWorkStatus.import_processed_number };
+              const completed_number = parseInt(currentWorkStatus.import_processed_number, 10);
+              const params = { completed_time: now(), completed_number };
               const sourceScript = `ctx._source['status'] = "complete";
                   ctx._source['completed_time'] = params.completed_time;
                   ctx._source['completed_number'] = params.completed_number;`;
