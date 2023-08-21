@@ -506,7 +506,7 @@ const StixCyberObservableCreation = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_MD5"
-                                label="hash_md5"
+                                label={t('hash_md5')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />
@@ -514,7 +514,7 @@ const StixCyberObservableCreation = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-1"
-                                label="hash_sha-1"
+                                label={t('hash_sha-1')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />
@@ -522,7 +522,7 @@ const StixCyberObservableCreation = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-256"
-                                label="hash_sha-256"
+                                label={t('hash_sha-256')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />
@@ -530,7 +530,7 @@ const StixCyberObservableCreation = ({
                                 component={TextField}
                                 variant="standard"
                                 name="hashes_SHA-512"
-                                label="hash_sha-512"
+                                label={t('hash_sha-512')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                               />

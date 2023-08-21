@@ -2323,7 +2323,7 @@ const WorkbenchFileContentComponent = ({
                   ? observable[attribute]['SHA-256'] ?? ''
                   : '';
                 initialValues['hashes_SHA-512'] = observable[attribute]
-                  ? observable[attribute]['SGA-512'] ?? ''
+                  ? observable[attribute]['SHA-512'] ?? ''
                   : '';
               } else {
                 initialValues[attribute] = observable[attribute] ?? '';
