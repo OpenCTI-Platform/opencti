@@ -47,7 +47,7 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
     let nestedFromRole = false;
     let nestedToRole = false;
     for (let index = 0; index < adaptedFilters.length; index += 1) {
-      const { key, operator, values } = adaptedFilters[index];
+      const { key, operator, values, filterMode } = adaptedFilters[index];
       if (key === TYPE_FILTER) {
         // filter types to keep only the ones that can be handled by background tasks
         const filteredTypes = values.filter((v) => isTaskEnabledEntity(v.id)).map((v) => v.id);
@@ -77,7 +77,7 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
           nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
         }
       } else {
-        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator });
+        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator, filterMode });
       }
     }
     if (nestedFrom.length > 0) {
