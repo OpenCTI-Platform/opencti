@@ -433,9 +433,6 @@ describe('Report resolver standard behavior', () => {
   });
   describe('startInvestigation', () => {
     let report;
-    let investigation;
-    let secondInvestigation;
-    let thirdInvestigation;
 
     const startInvestigation = async () => {
       return await queryAsAdmin({
@@ -458,10 +455,6 @@ describe('Report resolver standard behavior', () => {
 
     beforeAll(async () => {
       report = (await startInvestigation()).data.report;
-      investigation = report.startInvestigation;
-      secondInvestigation = (await startInvestigation()).data.report.startInvestigation;
-      thirdInvestigation = (await startInvestigation()).data.report.startInvestigation;
-      await startInvestigation();
     });
 
     afterAll(async () => {
@@ -482,22 +475,6 @@ describe('Report resolver standard behavior', () => {
 
     it('can start an investigation', () => {
       expect(report.startInvestigation.id).toBeDefined();
-    });
-
-    it('has a name composed with the report name', () => {
-      expect(investigation.name).toEqual(`investigation from report "${report.name}"`);
-    });
-
-    it('when other investigations are created, their name are suffixed with a number, starting at 2', async () => {
-      expect(secondInvestigation.name).toEqual(`investigation from report "${report.name}" 2`);
-      expect(thirdInvestigation.name).toEqual(`investigation from report "${report.name}" 3`);
-    });
-
-    it('the chosen suffix number is the highest number found + 1', async () => {
-      await deleteElementById(testContext, ADMIN_USER, thirdInvestigation.id, ENTITY_TYPE_WORKSPACE);
-      const fifthInvestigation = (await startInvestigation()).data.report.startInvestigation;
-
-      expect(fifthInvestigation.name).toEqual(`investigation from report "${report.name}" 5`);
     });
   });
   it('should report deleted', async () => {

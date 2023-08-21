@@ -8,7 +8,6 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { generateStandardId } from '../../schema/identifier';
 import type { StixId, StixObject } from '../../types/stix-common';
-import { BasicStoreEntityGrouping } from '../grouping/grouping-types';
 import { elList } from '../../database/middleware-loader';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addWorkspace } from './workspace-domain';
@@ -66,8 +65,29 @@ export const toStixReportBundle = async (context: AuthContext, user: AuthUser, w
   return JSON.stringify(bundle);
 };
 
-const nameInvestigationToStartFromContainer = async (context: AuthContext, user: AuthUser, container: BasicStoreEntity) => {
-  const InvestigationToStartCanonicalName = `investigation from ${container.entity_type.toLowerCase()} "${container.name}"`;
+export const nameInvestigationToStartFromContainer = (investigationsNames: string[], container: BasicStoreEntity) => {
+  const investigationToStartCanonicalName = `investigation from ${container.entity_type.toLowerCase()} "${container.name}"`;
+  const investigationNameToMatch: RegExp = new RegExp(`^${investigationToStartCanonicalName}( \\d+)?$`);
+
+  const investigationNumbers: number[] = investigationsNames
+    .filter((investigationName) => investigationNameToMatch.test(investigationName))
+    .map((investigationName: string) => {
+      const matches = investigationName.match(/(\d+)/);
+
+      return matches ? Number(matches[1]) : 0;
+    });
+  const highestInvestigationNumber = investigationNumbers.sort((a: number, b: number) => b - a)[0];
+
+  if (highestInvestigationNumber === undefined) {
+    return investigationToStartCanonicalName;
+  } if (highestInvestigationNumber === 0) {
+    return `${investigationToStartCanonicalName} 2`;
+  }
+
+  return `${investigationToStartCanonicalName} ${highestInvestigationNumber + 1}`;
+};
+
+export const startInvestigationFromContainer = async (context: AuthContext, user: AuthUser, container: BasicStoreEntity) => {
   const investigations: any = await elList(context, user, [READ_INDEX_INTERNAL_OBJECTS], {
     filters: [{
       key: 'entity_type',
@@ -77,29 +97,11 @@ const nameInvestigationToStartFromContainer = async (context: AuthContext, user:
       values: ['investigation']
     }]
   });
+  const investigationsNames = investigations.map((investigation: { name: string }) => investigation.name);
 
-  const investigationNameToMatch: RegExp = new RegExp(`^${InvestigationToStartCanonicalName} (\\d+)$`);
-  const highestInvestigationNumber = investigations
-    .map((investigation: { name: string; }) => {
-      const matches = investigation.name.match(investigationNameToMatch);
-
-      return matches ? Number(matches[1]) : 0;
-    })
-    .sort((a: number, b: number) => b - a)[0];
-
-  if (highestInvestigationNumber === undefined) {
-    return InvestigationToStartCanonicalName;
-  } if (highestInvestigationNumber === 0) {
-    return `${InvestigationToStartCanonicalName} 2`;
-  }
-
-  return `${InvestigationToStartCanonicalName} ${highestInvestigationNumber + 1}`;
-};
-
-export const startInvestigationFromContainer = async (context: AuthContext, user: AuthUser, container: BasicStoreEntity) => {
   const investigationInput = {
     type: 'investigation',
-    name: await nameInvestigationToStartFromContainer(context, user, container),
+    name: nameInvestigationToStartFromContainer(investigationsNames, container),
     investigated_entities_ids: container.object
   };
 
