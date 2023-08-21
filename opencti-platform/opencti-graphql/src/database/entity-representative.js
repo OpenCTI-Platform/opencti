@@ -17,34 +17,15 @@ const extractRepresentativeDescription = (entityData) => {
     // BasicStoreEntity | BasicStoreCyberObservable
   } else if (isNotEmptyField(entityData.content)) {
     secondValue = entityData.content;
-    // BasicStoreBase
-  } else if (isNotEmptyField(entityData.entity_type)) {
-    secondValue = entityData.entity_type;
   }
 
-  return String(secondValue);
+  return secondValue;
 };
 
 // -- RELATIONSHIP --
 
 const extractRelationshipRepresentativeName = (relationshipData) => {
-  let fromRepresentative = relationshipData.fromRepresentative?.main;
-  if (isEmptyField(fromRepresentative)) {
-    fromRepresentative = relationshipData.from?.name;
-  }
-  if (isEmptyField(fromRepresentative)) {
-    fromRepresentative = relationshipData.fromType;
-  }
-  let toRepresentative = relationshipData.toRepresentative?.main;
-  if (isEmptyField(toRepresentative)) {
-    toRepresentative = relationshipData.to?.name;
-  }
-  if (isEmptyField(toRepresentative)) {
-    toRepresentative = relationshipData.toType;
-  }
-  const mainValue = `${fromRepresentative} ➡️ ${toRepresentative}`;
-
-  return String(mainValue);
+  return `${relationshipData.fromName} ➡️ ${relationshipData.toName}`;
 };
 
 const extractRelationshipRepresentative = (relationshipData) => {
@@ -60,9 +41,6 @@ const extractRelationshipRepresentative = (relationshipData) => {
 export const extractEntityRepresentativeName = (entityData) => {
   let mainValue;
   if (isStixCyberObservable(entityData.entity_type)) {
-    // TODO: maybe not exaclty what we want
-    // Old -> Paradise Ransomware
-    // New -> 2020-02-25T09:02:29.040Z - 2020-02-25T09:02:29.040Z
     mainValue = observableValue(entityData);
   } else if (isNotEmptyField(entityData.definition)) {
     mainValue = entityData.definition;

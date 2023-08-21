@@ -15,8 +15,6 @@ import {
   EVENT_TYPE_DEPENDENCIES,
   EVENT_TYPE_INIT,
   EVENT_TYPE_UPDATE,
-  filtersToJson,
-  generateCreateMessage,
   isEmptyField,
   isNotEmptyField,
   READ_INDEX_INFERRED_ENTITIES,

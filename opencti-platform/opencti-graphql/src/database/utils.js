@@ -10,12 +10,6 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import conf from '../config/conf';
 import { now } from '../utils/format';
-import { FROM_START_STR, now, UNTIL_END_STR } from '../utils/format';
-import { isBasicRelationship } from '../schema/stixRelationship';
-import { truncate } from '../utils/mailData';
-import { isDateAttribute, isDictionaryAttribute, isJsonAttribute,isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { creators } from '../schema/attribute-definition';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';

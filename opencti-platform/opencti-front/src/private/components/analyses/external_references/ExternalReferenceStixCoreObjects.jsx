@@ -109,12 +109,6 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                   }
                 }
               }
-              # Thats weird
-#              const from = moment(entityData.first_observed).utc().toISOString();
-#              const to = moment(entityData.last_observed).utc().toISOString();
-#              ... on ObservedData {
-#                name
-#              }
             }
           }
         }

@@ -20730,7 +20730,7 @@ export enum ReportsOrdering {
 export type Representative = {
   __typename?: 'Representative';
   main: Scalars['String']['output'];
-  secondary: Scalars['String']['output'];
+  secondary?: Maybe<Scalars['String']['output']>;
 };
 
 export type ResolvedInstanceFilter = {
@@ -35200,7 +35200,7 @@ export type ReportEditMutationsResolvers<ContextType = any, ParentType extends R
 
 export type RepresentativeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Representative'] = ResolversParentTypes['Representative']> = ResolversObject<{
   main?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  secondary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  secondary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

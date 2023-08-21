@@ -1940,7 +1940,7 @@ input KillChainPhaseAddInput {
 
 type Representative {
   main: String!
-  secondary: String!
+  secondary: String
 }
 
 enum StixCoreObjectsOrdering {
@@ -2600,9 +2600,7 @@ interface Container {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   avatar: OpenCtiFile
-  representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
@@ -2697,9 +2695,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   avatar: OpenCtiFile
-  representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   attribute_abstract: String
@@ -2851,9 +2847,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   avatar: OpenCtiFile
-  representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   first_observed: DateTime!
@@ -2979,9 +2973,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   avatar: OpenCtiFile
-  representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   explanation: String
@@ -3128,9 +3120,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   avatar: OpenCtiFile
-  representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
@@ -9372,9 +9362,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   avatar: OpenCtiFile
-  representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
@@ -10308,9 +10296,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
-  x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
   avatar: OpenCtiFile
-  representative: String!
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
@@ -11643,7 +11629,6 @@ input ThreatActorIndividualAddInput {
   file: Upload
 }
 
-
 type IngestionRss implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
@@ -11794,6 +11779,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   created_at: DateTime!
   updated_at: DateTime!
   x_opencti_inferences: [Inference]
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection
@@ -11929,4 +11915,3 @@ type MeOrganizationConnection {
   pageInfo: PageInfo!
   edges: [MeOrganizationEdge!]!
 }
-

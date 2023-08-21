@@ -1872,7 +1872,7 @@ input KillChainPhaseAddInput {
 
 type Representative {
   main: String!
-  secondary: String!
+  secondary: String
 }
 
 enum StixCoreObjectsOrdering {

@@ -212,11 +212,11 @@ interface BasicStoreRelation extends StoreRawRelation {
   fromId: string;
   fromRole: string;
   fromType: string;
-  fromRepresentative: Representative;
+  fromName: string;
   toId: string;
   toRole: string;
   toType: string;
-  toRepresentative: Representative;
+  toName: string;
 }
 
 interface StoreRelation extends BasicStoreRelation, StoreCommon {

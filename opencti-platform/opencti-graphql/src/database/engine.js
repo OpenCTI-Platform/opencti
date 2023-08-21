@@ -86,7 +86,7 @@ import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject
 import { telemetry } from '../config/tracing';
 import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
-import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
+import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const ELK_ENGINE = 'elk';
@@ -875,7 +875,6 @@ const elBuildRelation = (type, connection) => {
     [type]: null,
     [`${type}Id`]: connection.internal_id,
     [`${type}Role`]: connection.role,
-    [`${type}Representative`]: connection.representative,
     [`${type}Name`]: connection.name,
     [`${type}Type`]: R.head(connection.types),
   };
@@ -2145,15 +2144,13 @@ const prepareRelation = (thing) => {
   const { from, to } = thing;
   connections.push({
     internal_id: from.internal_id,
-    name: from.name,
-    representative: extractRepresentative(from),
+    name: extractEntityRepresentativeName(from),
     types: [from.entity_type, ...getParentTypes(from.entity_type)],
     role: thing.fromRole,
   });
   connections.push({
     internal_id: to.internal_id,
-    name: to.name,
-    representative: extractRepresentative(to),
+    name: extractEntityRepresentativeName(to),
     types: [to.entity_type, ...getParentTypes(to.entity_type)],
     role: thing.toRole,
   });
@@ -2358,7 +2355,7 @@ export const elUpdateElement = async (instance) => {
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {
-    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name, representative: esData.representative });
+    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.representative.main });
   }
   return Promise.all([replacePromise, connectionPromise]);
 };
