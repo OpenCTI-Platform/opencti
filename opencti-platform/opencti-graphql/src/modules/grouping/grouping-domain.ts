@@ -11,6 +11,7 @@ import type {
   QueryGroupingsTimeSeriesArgs,
 } from '../../generated/graphql';
 import {
+  elList,
   EntityOptions,
   internalLoadById,
   listEntitiesPaginated,
@@ -20,8 +21,9 @@ import { BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, GroupingNumbe
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { elCount } from '../../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { DomainFindById } from '../../domain/domainTypes';
+import { addWorkspace } from '../workspace/workspace-domain';
 
 export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, channelId: string) => {
   return storeLoadById<BasicStoreEntityGrouping>(context, user, channelId, ENTITY_TYPE_CONTAINER_GROUPING);
@@ -95,5 +97,45 @@ export const groupingsDistributionByEntity = async (context: AuthContext, user: 
   const { objectId } = args;
   const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
   return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_GROUPING], { ...args, filters });
+};
+
+const nameStartedInvestigationFromGrouping = async (context: AuthContext, user: AuthUser, groupingName: string) => {
+  const startedInvestigationCanonicalName = `investigation from grouping "${groupingName}"`;
+  const investigations: any = await elList(context, user, [READ_INDEX_INTERNAL_OBJECTS], {
+    filters: [{
+      key: 'entity_type',
+      values: ['workspace'],
+    }, {
+      key: 'type',
+      values: ['investigation']
+    }]
+  });
+
+  const investigationNameToMatch: RegExp = new RegExp(`^${startedInvestigationCanonicalName} (\\d+)$`);
+  const highestInvestigationNumber = investigations
+    .map((investigation: { name: string; }) => {
+      const matches = investigation.name.match(investigationNameToMatch);
+
+      return matches ? Number(matches[1]) : 0;
+    })
+    .sort((a: number, b: number) => b - a)[0];
+
+  if (highestInvestigationNumber === undefined) {
+    return startedInvestigationCanonicalName;
+  } if (highestInvestigationNumber === 0) {
+    return `${startedInvestigationCanonicalName} 2`;
+  }
+
+  return `${startedInvestigationCanonicalName} ${highestInvestigationNumber + 1}`;
+};
+
+export const startInvestigation = async (context: AuthContext, user: AuthUser, grouping: BasicStoreEntityGrouping) => {
+  const investigationInput = {
+    type: 'investigation',
+    name: await nameStartedInvestigationFromGrouping(context, user, grouping.name),
+    investigated_entities_ids: grouping.object
+  };
+
+  return addWorkspace(context, user, investigationInput);
 };
 // endregion

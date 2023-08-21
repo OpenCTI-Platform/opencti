@@ -165,6 +165,7 @@ class ExportButtons extends Component {
       csvFileName,
       handleDownloadAsStixReport,
       reportId,
+      groupingId,
       startInvestigation,
     } = this.props;
     return (
@@ -187,6 +188,13 @@ class ExportButtons extends Component {
               </ToggleButton>
             </Tooltip>
           )}
+            {groupingId && (
+                <Tooltip title={t('start investigation from grouping')}>
+                    <ToggleButton onClick={startInvestigation.bind(this, groupingId)}>
+                        <ExploreOutlined fontSize="small" color="primary" />
+                    </ToggleButton>
+                </Tooltip>
+            )}
           {type === 'investigation' && (
             <Tooltip title={t('Download as STIX report')}>
               <ToggleButton onClick={handleDownloadAsStixReport.bind(this)}>

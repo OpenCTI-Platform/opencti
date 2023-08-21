@@ -1,7 +1,10 @@
-import { expect, it, describe } from 'vitest';
+import { expect, afterAll, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { now } from '../../../src/utils/format';
+import { listAllEntities } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
+import { deleteElementById } from '../../../src/database/middleware';
 
 const LIST_QUERY = gql`
   query groupings(
@@ -277,6 +280,45 @@ describe('Grouping resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.groupingRelationAdd.from.objectMarking.edges.length).toEqual(1);
+  });
+  describe('startInvestigation', () => {
+    afterAll(async () => {
+      const investigations = await listAllEntities(
+        testContext,
+        ADMIN_USER,
+        [ENTITY_TYPE_WORKSPACE],
+        {
+          filters: [{
+            key: 'type',
+            value: 'investigation'
+          }]
+        }
+      );
+
+      await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));
+    });
+
+    it('can start an investigation', async () => {
+      const graphQLResponse = await queryAsAdmin({
+        query: gql`
+          query StartInvestigationFromGrouping($id: String!) {
+            grouping(id: $id) {
+              name
+              startInvestigation {
+                id
+                name
+              }
+            }
+          }
+        `,
+        variables: {
+          id: groupingInternalId
+        },
+      });
+      const { grouping } = graphQLResponse.data;
+
+      expect(grouping.startInvestigation.id).toBeDefined();
+    });
   });
   it('should delete relation in grouping', async () => {
     const RELATION_DELETE_QUERY = gql`

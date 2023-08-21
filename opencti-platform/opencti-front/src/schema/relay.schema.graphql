@@ -9300,6 +9300,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  startInvestigation: Workspace
 }
 
 enum GroupingsOrdering {

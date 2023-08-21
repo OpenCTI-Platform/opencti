@@ -443,7 +443,7 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
   }
 `;
 
-const reportKnowledgeGraphComponenentStartInvestigationQuery = graphql`
+const reportKnowledgeGraphComponentStartInvestigationQuery = graphql`
   query ReportKnowledgeGraphComponenentStartInvestigationQuery($id: String!) {
      report(id: $id) {
        startInvestigation {
@@ -1358,7 +1358,7 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleStartInvestigation(reportId) {
     fetchQuery(
-      reportKnowledgeGraphComponenentStartInvestigationQuery,
+      reportKnowledgeGraphComponentStartInvestigationQuery,
       { id: reportId },
     ).toPromise()
       .then(({ report }) => {

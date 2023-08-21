@@ -766,7 +766,8 @@ const ContainerHeader = (props) => {
             pixelRatio={currentMode === 'graph' ? 1 : 2}
             adjust={adjust}
             reportId={type === 'report' ? container.id : null}
-            startInvestigation={type === 'report' ? startInvestigation : null}
+            groupingId={container.entity_type === 'Grouping' ? container.id : null}
+            startInvestigation={type === 'report' || container.entity_type === 'Grouping' ? startInvestigation : null}
           />
         </div>
       )}

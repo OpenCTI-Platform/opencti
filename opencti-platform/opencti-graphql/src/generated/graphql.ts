@@ -7499,6 +7499,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
+  startInvestigation?: Maybe<Workspace>;
   status?: Maybe<Status>;
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
@@ -32093,6 +32094,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  startInvestigation?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<GroupingStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<GroupingStixCoreRelationshipsArgs>>;

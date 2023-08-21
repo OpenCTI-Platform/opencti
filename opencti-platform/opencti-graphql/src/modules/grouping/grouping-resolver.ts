@@ -1,8 +1,8 @@
 import type { Resolvers } from '../../generated/graphql';
 import {
   addGrouping,
-  findById,
   findAll,
+  findById,
   groupingContainsStixObjectOrStixRelationship,
   groupingsDistributionByEntity,
   groupingsNumber,
@@ -10,7 +10,8 @@ import {
   groupingsNumberByEntity,
   groupingsTimeSeries,
   groupingsTimeSeriesByAuthor,
-  groupingsTimeSeriesByEntity
+  groupingsTimeSeriesByEntity,
+  startInvestigation
 } from './grouping-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import {
@@ -31,6 +32,9 @@ import { distributionEntities } from '../../database/middleware';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
 
 const groupingResolvers: Resolvers = {
+  Grouping: {
+    startInvestigation: (grouping, _, context) => startInvestigation(context, context.user, grouping),
+  },
   Query: {
     grouping: (_, { id }, context) => findById(context, context.user, id),
     groupings: (_, args, context) => findAll(context, context.user, args),
