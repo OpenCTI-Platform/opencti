@@ -10,8 +10,7 @@ import {
   groupingsNumberByEntity,
   groupingsTimeSeries,
   groupingsTimeSeriesByAuthor,
-  groupingsTimeSeriesByEntity,
-  startInvestigation
+  groupingsTimeSeriesByEntity
 } from './grouping-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import {
@@ -30,10 +29,11 @@ import {
 } from '../../domain/stixDomainObject';
 import { distributionEntities } from '../../database/middleware';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
+import { startInvestigationFromContainer } from '../workspace/investigation-domain';
 
 const groupingResolvers: Resolvers = {
   Grouping: {
-    startInvestigation: (grouping, _, context) => startInvestigation(context, context.user, grouping),
+    startInvestigation: (grouping, _, context) => startInvestigationFromContainer(context, context.user, grouping),
   },
   Query: {
     grouping: (_, { id }, context) => findById(context, context.user, id),
