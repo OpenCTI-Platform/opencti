@@ -47,7 +47,8 @@ import {
   ID_INFERRED,
   ID_INTERNAL,
   ID_STANDARD,
-  IDS_STIX, INDEX_FIELD,
+  IDS_STIX,
+  INDEX_FIELD,
   INTERNAL_IDS_ALIASES,
   isAbstract,
   REL_INDEX_PREFIX,
@@ -536,98 +537,162 @@ const elCreateCoreSettings = async () => {
   });
 };
 
-const elCreateIndexTemplate = async (index) => {
-    let settings;
-    if (engine instanceof ElkClient) {
-        settings = {
-            index: {
-                lifecycle: {
-                    name: `${ES_INDEX_PREFIX}-ilm-policy`,
-                    rollover_alias: index,
-                }
-            }
-        };
+// Some dynamic mapping are required because key are generated
+const schemaDynamicTemplates = [
+  {
+    accept_rules: {
+      match: 'i_rule_*',
+      mapping: {
+        dynamic: 'strict',
+        properties: {
+          explanation: textMapping,
+          dependencies: textMapping,
+          hash: textMapping,
+          data: { type: 'flattened' },
+        }
+      }
+    }
+  },
+    {
+    accept_denormalize_relations: {
+            match: 'rel_*',
+      mapping: {
+        dynamic: 'strict',
+        properties: {
+          internal_id: textMapping,
+          inferred_id: textMapping,
+        }
+      }
+        }
+  },
+  {
+    reject_others: {
+      match: '*',
+            mapping: { dynamic: 'strict' }
+    }
+  }
+];
+
+// Engine mapping generation on attributes definition
+const attributeMappingGenerator = (entityAttribute) => {
+  if (entityAttribute.type === 'string') {
+    return textMapping;
+  }
+  if (entityAttribute.type === 'date') {
+    return dateMapping;
+  }
+  if (entityAttribute.type === 'numeric') {
+    return { type: entityAttribute.precision, coerce: false };
+  }
+  if (entityAttribute.type === 'boolean') {
+    return { type: 'boolean' };
+  }
+  if (entityAttribute.type === 'object') {
+    const config = { dynamic: 'strict', properties: entityAttribute.mapping };
+    if (entityAttribute.nested) {
+      config.type = 'nested';
+    }
+    return config;
+  }
+  if (entityAttribute.type === 'json') {
+    return textMapping;
+  }
+  if (entityAttribute.type === 'dictionary') {
+    // content of dictionary cannot be predicted
+    return { type: 'flattened' };
+  }
+  throw UnsupportedError(`Cant generated mapping based on type ${entityAttribute.type}`);
+};
+const attributesMappingGenerator = () => {
+  const entityAttributes = schemaAttributesDefinition.getAllAttributes();
+  const schemaProperties = {};
+  for (let attrIndex = 0; attrIndex < entityAttributes.length; attrIndex += 1) {
+    const entityAttribute = entityAttributes[attrIndex];
+    schemaProperties[entityAttribute.name] = attributeMappingGenerator(entityAttribute);
+  }
+  return schemaProperties;
+};
+
+const elGetDatabaseTemplates = async () => {
+  const { index_templates: allTemplates } = await engine.indices.get_index_template().then((r) => oebp(r));
+  return allTemplates.filter((m) => m.name.startsWith(ES_INDEX_PREFIX));
+};
+
+// Util function to add attribute to all existing templates mapping
+export const elAnalyzeDatabaseMappings = async () => {
+  const missingAttributesMap = new Map();
+  // Schema
+  const schemaDefinitionProperties = attributesMappingGenerator();
+  const schemaProperties = Object.entries(schemaDefinitionProperties);
+  // console.log(schemaProperties);
+  // Database
+  const mappingsPerTemplates = await elGetDatabaseTemplates();
+  // Analysis
+  for (let schemaIndex = 0; schemaIndex < schemaProperties.length; schemaIndex += 1) {
+    const [name, schemaConfig] = schemaProperties[schemaIndex];
+    for (let templateIndex = 0; templateIndex < mappingsPerTemplates.length; templateIndex += 1) {
+      const mappingsPerTemplate = mappingsPerTemplates[templateIndex];
+      const { mappings } = mappingsPerTemplate.index_template.template;
+      const databaseConfig = mappings.properties[name];
+      // console.log(name, databaseConfig);
+      if (!databaseConfig) {
+        const indexProperties = missingAttributesMap.get(mappingsPerTemplate.name) ?? [];
+        indexProperties.push({ name, schema: schemaConfig });
+        missingAttributesMap.set(mappingsPerTemplate.name, indexProperties);
+      }
+    }
+  }
+  return { missingAttributesMap, mappingsPerTemplates };
+};
+export const elAddMappingAttribute = async (attribute) => {
+  const { missingAttributesMap, mappingsPerTemplates } = await elAnalyzeDatabaseMappings();
+  if (missingAttributesMap.size === 0) {
+    logApp.error('There is no missing attribute in the engine', { attribute });
+    return;
+  }
+  const existingTemplatesMap = new Map(mappingsPerTemplates.map((m) => [m.name, m]));
+  const executions = [];
+  missingAttributesMap.forEach((values, template) => {
+    const dbTemplate = existingTemplatesMap.get(template);
+    const missingTarget = values.find((v) => v.name === attribute.name);
+    if (missingTarget) {
+      const updatedTemplate = { ...dbTemplate.index_template };
+      updatedTemplate.template.mappings.properties[attribute.name] = attributeMappingGenerator(attribute);
+      executions.push(engine.indices.putIndexTemplate({ name: template, body: updatedTemplate }));
+      logApp.info(`[Engine] Template ${template} patched with ${attribute.name} attribute`, { attribute });
     } else {
-        settings = {
-            plugins: {
-                index_state_management: {
-                    rollover_alias: index,
-                }
-            }
-        };
+      logApp.error(`Target ${attribute.name} is already defined in ${template}`, { attribute });
     }
-    const entityAttributes = schemaAttributesDefinition.getAllAttributes();
-    const schemaProperties = {};
-    for (let attrIndex = 0; attrIndex < entityAttributes.length; attrIndex += 1) {
-        const entityAttribute = entityAttributes[attrIndex];
-        if (entityAttribute.type === 'string') {
-            schemaProperties[entityAttribute.name] = textMapping;
+  });
+  await Promise.all(executions);
+};
+
+const elCreateIndexTemplate = async (index) => {
+  let settings;
+  if (engine instanceof ElkClient) {
+    settings = {
+      index: {
+        lifecycle: {
+          name: `${ES_INDEX_PREFIX}-ilm-policy`,
+          rollover_alias: index,
         }
-        if (entityAttribute.type === 'date') {
-            schemaProperties[entityAttribute.name] = dateMapping;
+      }
+    };
+  } else {
+    settings = {
+      plugins: {
+        index_state_management: {
+          rollover_alias: index,
         }
-        if (entityAttribute.type === 'numeric') {
-            schemaProperties[entityAttribute.name] = { type: 'integer', coerce: false };
-        }
-        if (entityAttribute.type === 'boolean') {
-            schemaProperties[entityAttribute.name] = { type: 'boolean' };
-        }
-        if (entityAttribute.type === 'object') {
-            const type = entityAttribute.nested ? 'nested' : 'object';
-      schemaProperties[entityAttribute.name] = { type, dynamic: 'strict', properties: entityAttribute.mapping };
-    }
-    if (entityAttribute.type === 'json') {
-      schemaProperties[entityAttribute.name] = textMapping;
-    }
-    if (entityAttribute.type === 'dictionary') {
-      // content of dictionary cannot be predicted
-            schemaProperties[entityAttribute.name] = { type: 'flattened' };
-    }
-    if (!schemaProperties[entityAttribute.name]) {
-      throw UnsupportedError(`Cant generated mapping based on type ${entityAttribute.type}`);
-    }
+      }
+    };
   }
   const mappings = {
     // Global option to prevent elastic to try any magic
     date_detection: false,
     numeric_detection: false,
-    // Properties
-    properties: schemaProperties,
-        // Some dynamic mapping are required because key are generated
-        dynamic_templates: [
-            {
-                accept_rules: {
-                    match: 'i_rule_*',
-                    mapping: {
-                        dynamic: 'strict',
-                        properties: {
-                            explanation: textMapping,
-                            dependencies: textMapping,
-                            hash: textMapping,
-                            data: { type: 'flattened' },
-                        }
-                    }
-                }
-            },
-            {
-                accept_denormalize_relations: {
-          match: 'rel_*',
-          mapping: {
-            dynamic: 'strict',
-            properties: {
-              internal_id: textMapping,
-              inferred_id: textMapping,
-            }
-          }
-        }
-      },
-      {
-        reject_others: {
-          match: '*',
-          mapping: { dynamic: 'strict' }
-                }
-            }
-        ],
+    properties: attributesMappingGenerator(),
+    dynamic_templates: schemaDynamicTemplates,
     };
     await engine.indices.putIndexTemplate({
         name: index,

@@ -7,7 +7,7 @@ export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefi
   [RELATION_PARTICIPATE_TO]: [
     { name: 'start_time', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'stop_time', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'confidence', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    { name: 'confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
   ],
   [RELATION_ALLOWED_BY]: [
     { name: 'grant', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false }

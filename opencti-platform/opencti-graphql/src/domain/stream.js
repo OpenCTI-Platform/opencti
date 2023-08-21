@@ -57,7 +57,7 @@ export const createStreamCollection = async (context, user, input) => {
     message: `creates live stream \`${data.name}\``,
     context_data: { id: created.id, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
-  return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].ADDED_TOPIC, data, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].ADDED_TOPIC, created, user);
 };
 export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);

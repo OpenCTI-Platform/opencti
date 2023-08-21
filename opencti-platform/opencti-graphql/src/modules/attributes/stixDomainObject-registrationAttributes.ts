@@ -62,8 +62,8 @@ schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_IDENTITY, stixDomainOb
 const stixDomainObjectLocationAttributes: Array<AttributeDefinition> = [
   { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
   { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-  { name: 'latitude', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-  { name: 'longitude', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+  { name: 'latitude', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+  { name: 'longitude', type: 'numeric', precision: 'float', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
   { name: 'precision', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
   entityLocationType,
 ];
@@ -127,7 +127,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       upsert: true,
       label: 'Note types'
     },
-    { name: 'likelihood', type: 'numeric', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, label: 'Likelihood' },
+    { name: 'likelihood', type: 'numeric', precision: 'integer', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, label: 'Likelihood' },
     { name: 'content_mapping', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
   ],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
@@ -152,6 +152,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     {
       name: 'number_observed',
       type: 'numeric',
+      precision: 'integer',
       mandatoryType: 'external',
       editDefault: true,
       multiple: false,
@@ -254,6 +255,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     {
       name: 'x_opencti_score',
       type: 'numeric',
+      precision: 'integer',
       mandatoryType: 'customizable',
       editDefault: true,
       multiple: false,
@@ -433,7 +435,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     iAliasedIds,
     { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
-    { name: 'x_opencti_base_score', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'x_opencti_base_score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'x_opencti_base_severity', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'x_opencti_attack_vector', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'x_opencti_integrity_impact', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },

@@ -7,7 +7,7 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_MARKING_DEFINITION]: [
     { name: 'definition_type', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Type' },
     { name: 'definition', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, label: 'Definition' },
-    { name: 'x_opencti_order', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Order' },
+    { name: 'x_opencti_order', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Order' },
     { name: 'x_opencti_color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, label: 'Color' },
   ],
   [ENTITY_TYPE_LABEL]: [
@@ -24,7 +24,7 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_KILL_CHAIN_PHASE]: [
     { name: 'kill_chain_name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Kill chain name' },
     { name: 'phase_name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'Phase name' },
-    { name: 'x_opencti_order', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, label: 'Order' },
+    { name: 'x_opencti_order', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, label: 'Order' },
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixMetaObjectsAttributes);

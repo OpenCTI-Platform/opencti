@@ -36,13 +36,13 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 
 const stixCyberObservableAttributes: Array<AttributeDefinition> = [
   { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'Description' },
-  { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+  { name: 'x_opencti_score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CYBER_OBSERVABLE, stixCyberObservableAttributes);
 
 const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_AUTONOMOUS_SYSTEM]: [
-    { name: 'number', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
+    { name: 'number', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
     { name: 'name', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'rir', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
   ],
@@ -86,7 +86,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   [ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [
     { name: 'hashes', type: 'dictionary', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'extensions', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'size', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'size', type: 'numeric', precision: 'long', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'name', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'name_enc', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'magic_number_hex', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },

@@ -118,7 +118,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'hair_color', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'height', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure },
     { name: 'weight', type: 'object', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, schemaDef: schemaMeasure },
-    { name: 'confidence', type: 'numeric', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
+    { name: 'confidence', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
     { name: 'revoked', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false },
     { name: 'lang', type: 'string', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true },
   ],

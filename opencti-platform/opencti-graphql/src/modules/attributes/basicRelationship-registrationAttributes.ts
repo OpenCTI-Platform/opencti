@@ -28,7 +28,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   creators,
   { name: 'fromType', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
   { name: 'toType', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-  { name: 'i_inference_weight', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_inference_weight', type: 'numeric', precision: 'integer', mandatoryType: 'no', multiple: false, upsert: false },
   {
     name: 'connections',
     type: 'object',

@@ -193,6 +193,7 @@ const IngestionRssEditionFragment = createFragmentContainer(
       fragment IngestionRssEdition_ingestionRss on IngestionRss {
         id
         name
+        description
         uri
         report_types
         ingestion_running

@@ -5,7 +5,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 
 export const stixSightingRelationshipsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [STIX_SIGHTING_RELATIONSHIP]: [
-    { name: 'attribute_count', type: 'numeric', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'count' },
+    { name: 'attribute_count', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, label: 'count' },
     { name: 'first_seen', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false, label: 'first seen' },
     { name: 'last_seen', type: 'date', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: false, label: 'last seen' },
     { name: 'description', type: 'string', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true },
