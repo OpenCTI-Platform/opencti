@@ -122,7 +122,7 @@ export const reportsDistributionByEntity = async (context, user, args) => {
 
 // region mutations
 export const addReport = async (context, user, report) => {
-  const finalReport = R.assoc('created', report.published, report);
+  const finalReport = { ...report, created: report.published };
   const created = await createEntity(context, user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

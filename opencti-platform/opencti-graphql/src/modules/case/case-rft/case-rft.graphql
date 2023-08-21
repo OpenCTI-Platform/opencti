@@ -209,10 +209,9 @@ input CaseRftAddInput {
   clientMutationId: String
   update: Boolean
   takedown_types: [String!]
-  caseTemplates: [String!]
 }
 
 type Mutation {
-  caseRftAdd(input: CaseRftAddInput!): CaseRft @auth
+  caseRftAdd(input: CaseRftAddInput!, caseTemplates: [String!]!): CaseRft @auth
   caseRftDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }

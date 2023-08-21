@@ -25,7 +25,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
   return listEntitiesPaginated<BasicStoreEntityCaseRfi>(context, user, [ENTITY_TYPE_CONTAINER_CASE_RFI], opts);
 };
 
-export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAdd: CaseRfiAddInput) => {
+export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAdd: CaseRfiAddInput, caseTemplates: string[]) => {
   let caseToCreate = caseRfiAdd.created ? caseRfiAdd : { ...caseRfiAdd, created: now() };
   if (isEmptyField(caseRfiAdd.createdBy)) {
     let individualId = user.individual_id;
@@ -36,8 +36,8 @@ export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAd
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  if (caseToCreate.caseTemplates) {
-    await Promise.all(caseToCreate.caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
+  if (caseTemplates) {
+    await Promise.all(caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

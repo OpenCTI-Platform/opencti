@@ -2185,7 +2185,6 @@ export type CaseIncidentStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CaseIncidentAddInput = {
-  caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
@@ -2460,7 +2459,6 @@ export type CaseRfiStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CaseRfiAddInput = {
-  caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
@@ -2733,7 +2731,6 @@ export type CaseRftStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CaseRftAddInput = {
-  caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
   content?: InputMaybe<Scalars['String']['input']>;
@@ -12318,6 +12315,7 @@ export type MutationCaseDeleteArgs = {
 
 
 export type MutationCaseIncidentAddArgs = {
+  caseTemplates: Array<Scalars['String']['input']>;
   input: CaseIncidentAddInput;
 };
 
@@ -12328,6 +12326,7 @@ export type MutationCaseIncidentDeleteArgs = {
 
 
 export type MutationCaseRfiAddArgs = {
+  caseTemplates: Array<Scalars['String']['input']>;
   input: CaseRfiAddInput;
 };
 
@@ -12338,6 +12337,7 @@ export type MutationCaseRfiDeleteArgs = {
 
 
 export type MutationCaseRftAddArgs = {
+  caseTemplates: Array<Scalars['String']['input']>;
   input: CaseRftAddInput;
 };
 
@@ -32546,11 +32546,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   campaignAdd?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, RequireFields<MutationCampaignAddArgs, 'input'>>;
   campaignEdit?: Resolver<Maybe<ResolversTypes['CampaignEditMutations']>, ParentType, ContextType, RequireFields<MutationCampaignEditArgs, 'id'>>;
   caseDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseDeleteArgs, 'id'>>;
-  caseIncidentAdd?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentAddArgs, 'input'>>;
+  caseIncidentAdd?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentAddArgs, 'caseTemplates' | 'input'>>;
   caseIncidentDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseIncidentDeleteArgs, 'id'>>;
-  caseRfiAdd?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiAddArgs, 'input'>>;
+  caseRfiAdd?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiAddArgs, 'caseTemplates' | 'input'>>;
   caseRfiDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRfiDeleteArgs, 'id'>>;
-  caseRftAdd?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftAddArgs, 'input'>>;
+  caseRftAdd?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftAddArgs, 'caseTemplates' | 'input'>>;
   caseRftDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRftDeleteArgs, 'id'>>;
   caseSetTemplate?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseSetTemplateArgs, 'caseTemplatesId' | 'id'>>;
   caseTemplateAdd?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateAddArgs, 'input'>>;

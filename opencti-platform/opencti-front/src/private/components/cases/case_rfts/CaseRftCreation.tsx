@@ -43,8 +43,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const caseRftMutation = graphql`
-  mutation CaseRftCreationCaseMutation($input: CaseRftAddInput!) {
-    caseRftAdd(input: $input) {
+  mutation CaseRftCreationCaseMutation($input: CaseRftAddInput!, $caseTemplates: [String!]!) {
+    caseRftAdd(input: $input, caseTemplates: $caseTemplates) {
       id
       standard_id
       entity_type
@@ -123,7 +123,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       takedown_types: values.takedown_types,
       severity: values.severity,
       priority: values.priority,
-      caseTemplates: values.caseTemplates?.map(({ value }) => value),
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectParticipant: values.objectParticipant.map(({ value }) => value),
@@ -136,6 +135,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     commit({
       variables: {
         input,
+        caseTemplates: (values.caseTemplates ?? []).map(({ value }) => value),
       },
       updater: (store, response) => {
         if (updater) {

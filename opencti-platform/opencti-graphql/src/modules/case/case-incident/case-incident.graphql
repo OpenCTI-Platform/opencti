@@ -206,7 +206,6 @@ input CaseIncidentAddInput {
   created: DateTime
   modified: DateTime
   response_types: [String!]
-  caseTemplates: [String!]
   x_opencti_workflow_id: String
   file: Upload
   clientMutationId: String
@@ -214,6 +213,6 @@ input CaseIncidentAddInput {
 }
 
 type Mutation {
-  caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth
+  caseIncidentAdd(input: CaseIncidentAddInput!, caseTemplates: [String!]!): CaseIncident @auth
   caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }

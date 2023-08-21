@@ -43,8 +43,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const caseIncidentMutation = graphql`
-  mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
-    caseIncidentAdd(input: $input) {
+  mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!, $caseTemplates: [String!]!) {
+    caseIncidentAdd(input: $input, caseTemplates: $caseTemplates) {
       id
       standard_id
       entity_type
@@ -123,7 +123,6 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       severity: values.severity,
       priority: values.priority,
       response_types: values.response_types,
-      caseTemplates: values.caseTemplates?.map(({ value }) => value),
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectParticipant: values.objectParticipant.map(({ value }) => value),
@@ -136,6 +135,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     commit({
       variables: {
         input,
+        caseTemplates: (values.caseTemplates ?? []).map(({ value }) => value),
       },
       updater: (store, response) => {
         if (updater) {

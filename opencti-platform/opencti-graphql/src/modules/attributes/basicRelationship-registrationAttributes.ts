@@ -34,7 +34,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
     type: 'object',
     nested: true,
     mandatoryType: 'internal',
-    multiple: false,
+    multiple: true,
     upsert: false,
     mapping: {
       internal_id: textMapping,

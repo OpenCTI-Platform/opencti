@@ -17,8 +17,8 @@ const caseIncidentResolvers: Resolvers = {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
   },
   Mutation: {
-    caseIncidentAdd: (_, { input }, context) => {
-      return addCaseIncident(context, context.user, input);
+    caseIncidentAdd: (_, { input, caseTemplates }, context) => {
+      return addCaseIncident(context, context.user, input, caseTemplates);
     },
     caseIncidentDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);

@@ -208,10 +208,9 @@ input CaseRfiAddInput {
   clientMutationId: String
   update: Boolean
   information_types: [String!]
-  caseTemplates: [String!]
 }
 
 type Mutation {
-  caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth
+  caseRfiAdd(input: CaseRfiAddInput!, caseTemplates: [String!]!): CaseRfi @auth
   caseRfiDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }

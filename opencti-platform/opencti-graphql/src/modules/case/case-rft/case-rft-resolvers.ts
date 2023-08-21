@@ -17,8 +17,8 @@ const caseRftResolvers: Resolvers = {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
   },
   Mutation: {
-    caseRftAdd: (_, { input }, context) => {
-      return addCaseRft(context, context.user, input);
+    caseRftAdd: (_, { input, caseTemplates }, context) => {
+      return addCaseRft(context, context.user, input, caseTemplates);
     },
     caseRftDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);

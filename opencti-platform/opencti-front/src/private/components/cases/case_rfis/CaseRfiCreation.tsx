@@ -43,8 +43,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const caseRfiMutation = graphql`
-  mutation CaseRfiCreationCaseMutation($input: CaseRfiAddInput!) {
-    caseRfiAdd(input: $input) {
+  mutation CaseRfiCreationCaseMutation($input: CaseRfiAddInput!, $caseTemplates: [String!]!) {
+    caseRfiAdd(input: $input, caseTemplates: $caseTemplates) {
       id
       standard_id
       entity_type
@@ -121,7 +121,6 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       information_types: values.information_types,
       severity: values.severity,
       priority: values.priority,
-      caseTemplates: values.caseTemplates?.map(({ value }) => value),
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectParticipant: values.objectParticipant.map(({ value }) => value),
@@ -134,6 +133,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     commit({
       variables: {
         input,
+        caseTemplates: (values.caseTemplates ?? []).map(({ value }) => value),
       },
       updater: (store, response) => {
         if (updater) {
