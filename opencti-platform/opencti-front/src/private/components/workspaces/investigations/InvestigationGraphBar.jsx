@@ -199,15 +199,11 @@ class InvestigationGraphBar extends Component {
       || (this.props.selectedNodes[0] && this.props.selectedNodes[0].relationship_type
         && this.props.selectedNodes[0].parent_types.includes('stix-sighting-relationship'))
     ) {
-      console.log('openSighting');
       this.setState({ openEditSighting: true });
     } else if (
       this.props.numberOfSelectedLinks === 1
       || this.props.selectedNodes[0].relationship_type
     ) {
-      console.log('selectedLinks', this.props.selectedLinks[0]);
-      console.log('selectedNodes', this.props.selectedNodes[0]);
-      console.log('openRelation');
       this.setState({ openEditRelation: true });
     }
   }

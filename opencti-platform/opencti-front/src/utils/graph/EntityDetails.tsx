@@ -27,6 +27,7 @@ import { truncate } from '../String';
 import ItemCreator from '../../components/ItemCreator';
 import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ItemConfidence from '../../components/ItemConfidence';
+import FieldOrEmpty from '../../components/FieldOrEmpty';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   label: {
@@ -357,10 +358,11 @@ EntityDetailsComponentProps
           <Typography variant="h3" gutterBottom={true} className={classes.label}>
             {t('Confidence level')}
           </Typography>
-          {stixCoreObject.confidence
-            ? <ItemConfidence confidence={stixCoreObject.confidence} entityType="stix-core-object"/>
-            : ('-')
-          }
+          <FieldOrEmpty source={stixCoreObject.confidence}>
+            {stixCoreObject.confidence
+              && <ItemConfidence confidence={stixCoreObject.confidence} entityType="stix-core-object"/>
+            }
+          </FieldOrEmpty>
         </div>)
       }
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
