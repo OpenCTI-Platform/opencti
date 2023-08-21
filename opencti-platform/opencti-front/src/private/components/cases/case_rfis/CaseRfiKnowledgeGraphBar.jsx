@@ -388,6 +388,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
         && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
         && selectedLinks.length === 1
+        && selectedLinks[0].entity_type !== 'basic-relationship'
         && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
     const deletionEnabled = !isInferred
       && (numberOfSelectedNodes !== 0 || numberOfSelectedLinks !== 0);
