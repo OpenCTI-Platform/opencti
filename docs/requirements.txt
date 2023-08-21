@@ -1,4 +1,4 @@
 autoapi==2.0.1
-sphinx==7.1.2
+sphinx==7.2.2
 sphinx-autodoc-typehints==1.24.0
 sphinx_rtd_theme==1.2.2
