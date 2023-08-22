@@ -1,4 +1,4 @@
-import { useFragment, useMutation } from 'react-relay';
+import { useFragment } from 'react-relay';
 import { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItem from '@mui/material/ListItem';
@@ -14,9 +14,8 @@ import { Theme } from '../../../../components/Theme';
 import { getFileUri } from '../../../../utils/utils';
 import { DataColumns } from '../../../../components/list_lines';
 import PictureManagementEdition from './PictureManagementEdition';
-import { pictureManagementUtilsFragment, pictureManagementUtilsMutation } from './PictureManagementUtils';
+import { pictureManagementUtilsFragment } from './PictureManagementUtils';
 import { PictureManagementUtils_node$key } from './__generated__/PictureManagementUtils_node.graphql';
-import { PictureManagementUtilsMutation } from './__generated__/PictureManagementUtilsMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -59,25 +58,8 @@ interface PictureLineComponentProps {
 const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, dataColumns, entityId }) => {
   const classes = useStyles();
   const data = useFragment(pictureManagementUtilsFragment, picture);
-  const [isInCarousel, setIsInCarousel] = useState(!!data.metaData?.inCarousel);
-  const [commit] = useMutation<PictureManagementUtilsMutation>(pictureManagementUtilsMutation);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
-  const handleCheckbox = () => {
-    const updatedValue = !isInCarousel;
-    setIsInCarousel(updatedValue);
-    const input = {
-      id: data.id,
-      description: data.metaData?.description,
-      order: data.metaData?.order,
-      inCarousel: updatedValue,
-    };
-    commit({
-      variables: {
-        id: entityId,
-        input,
-      },
-    });
-  };
+  const isInCarousel = !!data.metaData?.inCarousel;
 
   const handleOpenUpdate = () => setDisplayUpdate(true);
   const handleCloseUpdate = () => setDisplayUpdate(false);
@@ -117,7 +99,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, da
               >
                 <Checkbox
                   checked={isInCarousel}
-                  onClick={handleCheckbox}
+                  disabled={true}
                 />
               </div>
             </>

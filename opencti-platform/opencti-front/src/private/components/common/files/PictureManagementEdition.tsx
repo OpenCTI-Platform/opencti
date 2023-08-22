@@ -20,6 +20,7 @@ import {
   PictureManagementUtilsMutation,
   StixDomainObjectFileEditInput,
 } from './__generated__/PictureManagementUtilsMutation.graphql';
+import SwitchField from '../../../../components/SwitchField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -60,9 +61,9 @@ interface PictureManagementEditionProps {
 
 interface PictureManagementEditionFormValues {
   id: string
-  description: string | null;
-  inCarousel: boolean | null;
-  order: number | null;
+  description: string | null | undefined;
+  inCarousel: boolean | null | undefined;
+  order: number | null | undefined;
 }
 
 const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({
@@ -76,6 +77,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
   const pictureValidation = () => Yup.object().shape({
     description: Yup.string().nullable(),
     order: Yup.number().nullable().integer(t('The value must be a number')),
+    inCarousel: Yup.boolean().nullable(),
   });
   const onSubmit: FormikConfig<PictureManagementEditionFormValues>['onSubmit'] = (
     values,
@@ -124,9 +126,9 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
         <Formik
           initialValues={{
             id: picture.id,
-            description: picture.description,
-            inCarousel: picture.inCarousel,
-            order: picture.order,
+            description: picture.metaData?.description,
+            inCarousel: picture.metaData?.inCarousel,
+            order: picture.metaData?.order,
           }}
           validationSchema={pictureValidation}
           onSubmit={onSubmit}
@@ -149,7 +151,14 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
               label={t('Order')}
               fullWidth={true}
               type="number"
-              style={{ marginTop: 20 }}
+              style={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="inCarousel"
+              label={t('In Carousel')}
+              containerstyle={fieldSpacingContainerStyle}
             />
             <div className={classes.buttons}>
               <Button

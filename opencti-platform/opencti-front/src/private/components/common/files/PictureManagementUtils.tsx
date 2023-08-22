@@ -19,6 +19,19 @@ export const pictureManagementUtilsMutation = graphql`
   }
 `;
 
+export const importFilesFragment = graphql`
+    fragment PictureManagementUtilsImportFiles_node on StixCoreObject {
+      id
+      images: importFiles {
+        edges {
+          node {
+            ...PictureManagementUtils_node
+          }
+        }
+      }
+    }
+`;
+
 export const pictureManagementUtilsFragment = graphql`
   fragment PictureManagementUtils_node on File {
     id
