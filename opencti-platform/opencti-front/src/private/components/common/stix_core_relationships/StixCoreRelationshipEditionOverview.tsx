@@ -251,7 +251,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
       .nullable(),
     stop_time: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(Yup.ref('stop_time'), "The end date can't be before start date")
+      .min(Yup.ref('start_time'), "The end date can't be before start date")
       .nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
@@ -274,6 +274,18 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     queries,
     stixCoreRelationshipValidator,
   );
+
+  // necessary for stop_time because the validator includes a reference to another value (start_time)
+  const handleSubmitFieldStopTime = (name: string, value: string) => {
+    if (!enableReferences) {
+      editor.fieldPatch({
+        variables: {
+          id: stixCoreRelationship.id,
+          input: { key: name, value: value ?? '' },
+        },
+      });
+    }
+  };
 
   const onSubmit: FormikConfig<StixCoreRelationshipAddInput>['onSubmit'] = (
     values,
@@ -383,7 +395,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 component={DateTimePickerField}
                 name="stop_time"
                 onFocus={editor.changeFocus}
-                onSubmit={editor.changeField}
+                onSubmit={handleSubmitFieldStopTime}
                 TextFieldProps={{
                   label: t('Stop time'),
                   variant: 'standard',
