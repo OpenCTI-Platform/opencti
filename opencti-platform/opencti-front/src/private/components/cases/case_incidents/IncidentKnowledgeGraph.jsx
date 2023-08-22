@@ -454,13 +454,14 @@ const incidentKnowledgeGraphStixRelationshipQuery = graphql`
 `;
 
 const caseIncidentKnowledgeGraphComponentStartInvestigationQuery = () => graphql`
-    query IncidentKnowledgeGraphComponenentStartInvestigationQuery($id: String!) {
-        caseIncident(id: $id) {
-            startInvestigation {
-                id
-            }
-        }
-    }`;
+  query IncidentKnowledgeGraphComponentStartInvestigationQuery($id: String!) {
+    caseIncident(id: $id) {
+      startInvestigation {
+        id
+      }
+    }
+  }
+`;
 
 class IncidentKnowledgeGraphComponent extends Component {
   constructor(props) {
@@ -1755,7 +1756,6 @@ const IncidentKnowledgeGraph = createFragmentContainer(
         name
         x_opencti_graph_data
         confidence
-        entity_type
         createdBy {
           ... on Identity {
             id

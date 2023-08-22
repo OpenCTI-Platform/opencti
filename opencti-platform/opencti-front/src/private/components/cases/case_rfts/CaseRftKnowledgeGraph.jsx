@@ -11,11 +11,7 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
   applyFilters,
@@ -31,10 +27,7 @@ import {
 } from '../../../../utils/Graph';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import { caseRftMutationFieldPatch } from './CaseRftEditionOverview';
 import CaseRftKnowledgeGraphBar from './CaseRftKnowledgeGraphBar';
@@ -454,6 +447,16 @@ const caseRftKnowledgeGraphStixRelationshipQuery = graphql`
             }
           }
         }
+      }
+    }
+  }
+`;
+
+const caseRftKnowledgeGraphComponentStartInvestigationQuery = () => graphql`
+  query CaseRftKnowledgeGraphComponentStartInvestigationQuery($id: String!) {
+    caseRft(id: $id) {
+      startInvestigation {
+        id
       }
     }
   }
@@ -1363,6 +1366,16 @@ class CaseRftKnowledgeGraphComponent extends Component {
     });
   }
 
+  handleStartInvestigation(caseRftId) {
+    fetchQuery(
+      caseRftKnowledgeGraphComponentStartInvestigationQuery,
+      { id: caseRftId },
+    ).toPromise()
+      .then(({ caseRft }) => {
+        window.location.replace(`/dashboard/workspaces/investigations/${caseRft.startInvestigation.id}`);
+      });
+  }
+
   render() {
     const { caseData, theme, mode } = this.props;
     const {
@@ -1418,6 +1431,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
                 knowledge={true}
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
+                startInvestigation={this.handleStartInvestigation.bind(this)}
               />
               <CaseRftKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}

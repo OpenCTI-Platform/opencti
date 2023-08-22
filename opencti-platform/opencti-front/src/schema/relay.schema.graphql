@@ -10693,6 +10693,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   information_types: [String!]
   severity: String
   priority: String
+  startInvestigation: Workspace
 }
 
 enum CaseRfisOrdering {
@@ -10833,6 +10834,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   takedown_types: [String!]
   severity: String
   priority: String
+  startInvestigation: Workspace
 }
 
 enum CaseRftsOrdering {

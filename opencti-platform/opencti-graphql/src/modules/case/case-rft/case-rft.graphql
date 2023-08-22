@@ -140,6 +140,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   takedown_types: [String!]
   severity: String
   priority: String
+  startInvestigation: Workspace
 }
 
 # Ordering

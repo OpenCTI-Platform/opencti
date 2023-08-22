@@ -164,7 +164,6 @@ class ExportButtons extends Component {
       csvData,
       csvFileName,
       handleDownloadAsStixReport,
-      containerType,
       containerId,
       startInvestigationFromContainer,
     } = this.props;
@@ -182,7 +181,7 @@ class ExportButtons extends Component {
             </ToggleButton>
           </Tooltip>
           {startInvestigationFromContainer && (
-            <Tooltip title={t(`start investigation from ${containerType}`)}>
+            <Tooltip title={t('start investigation')}>
               <ToggleButton onClick={startInvestigationFromContainer.bind(this, containerId)}>
                 <ExploreOutlined fontSize="small" color="primary" />
               </ToggleButton>

@@ -11,11 +11,7 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
   applyFilters,
@@ -31,10 +27,7 @@ import {
 } from '../../../../utils/Graph';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
@@ -1407,7 +1400,6 @@ class ReportKnowledgeGraphComponent extends Component {
             <>
               <ContainerHeader
                 container={report}
-                type={'report'}
                 PopoverComponent={<ReportPopover />}
                 link={`/dashboard/analyses/reports/${report.id}/knowledge`}
                 modes={[

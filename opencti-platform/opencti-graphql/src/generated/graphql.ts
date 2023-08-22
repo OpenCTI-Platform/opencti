@@ -2372,6 +2372,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   severity?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
+  startInvestigation?: Maybe<Workspace>;
   status?: Maybe<Status>;
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
@@ -2678,6 +2679,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   severity?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
+  startInvestigation?: Maybe<Workspace>;
   status?: Maybe<Status>;
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
@@ -30612,6 +30614,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  startInvestigation?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseRfiStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseRfiStixCoreRelationshipsArgs>>;
@@ -30683,6 +30686,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  startInvestigation?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseRftStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseRftStixCoreRelationshipsArgs>>;

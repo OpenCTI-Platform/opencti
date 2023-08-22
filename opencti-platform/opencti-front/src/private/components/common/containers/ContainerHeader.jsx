@@ -467,7 +467,6 @@ export const containerHeaderObjectsQuery = graphql`
 const ContainerHeader = (props) => {
   const {
     container,
-    type,
     PopoverComponent,
     popoverSecurity,
     link,
@@ -756,7 +755,6 @@ const ContainerHeader = (props) => {
             pixelRatio={currentMode === 'graph' ? 1 : 2}
             adjust={adjust}
             containerId={container.id}
-            containerType={type ?? container.entity_type}
             startInvestigationFromContainer={startInvestigation}
           />
         </div>

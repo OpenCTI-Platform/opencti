@@ -4,18 +4,14 @@ import * as R from 'ramda';
 import SpriteText from 'three-spritetext';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
 import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import {
   applyFilters,
   buildGraphData,
@@ -28,16 +24,13 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import GroupingKnowledgeGraphBar from './GroupingKnowledgeGraphBar';
 import { groupingMutationFieldPatch } from './GroupingEditionOverview';
 import {
-  groupingKnowledgeGraphtMutationRelationAddMutation,
   groupingKnowledgeGraphMutationRelationDeleteMutation,
   groupingKnowledgeGraphQueryStixRelationshipDeleteMutation,
+  groupingKnowledgeGraphtMutationRelationAddMutation,
 } from './GroupingKnowledgeGraphQuery';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingPopover from './GroupingPopover';
@@ -1690,7 +1683,6 @@ const GroupingKnowledgeGraph = createFragmentContainer(
       fragment GroupingKnowledgeGraph_grouping on Grouping {
         id
         name
-        entity_type
         x_opencti_graph_data
         context
         confidence
