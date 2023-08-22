@@ -127,7 +127,7 @@ services:
   - name: opencti-raw-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-node-backend
+    - name: cache-node-raw-start-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
     - name: cache-python
       path: /usr/lib/python3.11
@@ -157,7 +157,7 @@ services:
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:    
-    - name: cache-node-backend
+    - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
     - name: cache-python
       path: /usr/lib/python3.11    
@@ -187,7 +187,7 @@ services:
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:    
-    - name: cache-node-backend
+    - name: cache-node-direct-start-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
     - name: cache-python
       path: /usr/lib/python3.11    
@@ -236,7 +236,7 @@ services:
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:    
-    - name: cache-node-backend
+    - name: cache-node-restore-start-backend
       path: /tmp/restore-start-platform/node_modules
     - name: cache-python
       path: /usr/lib/python3.11
@@ -268,6 +268,18 @@ volumes:
   - name: cache-node-backend
     host:
       path: /tmp/cache-node-backend
+  - name: cache-node-raw-start-backend
+    host:
+      path: /tmp/cache-node-raw-start-backend      
+  - name: cache-node-live-start-backend
+    host:
+      path: /tmp/cache-node-live-start-backend          
+  - name: cache-node-direct-start-backend
+    host:
+      path: /tmp/cache-node-direct-start-backend   
+  - name: cache-node-restore-start-backend
+    host:
+      path: /tmp/cache-node-restore-start-backend                    
   - name: cache-node-frontend
     host:
       path: /tmp/cache-node-frontend      
