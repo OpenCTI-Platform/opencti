@@ -30,6 +30,7 @@ steps:
       SMTP__PASSWORD: frhJ2mSPTfaEutpbug
       PYTHONUNBUFFERED: 1
     commands:
+      - sleep 60
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade --force setuptools
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
@@ -42,7 +43,6 @@ steps:
       - yarn check-ts
       - yarn lint
       - pip3 install --upgrade --force git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
-      - sleep 60
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
   - name: api-coverage
@@ -143,8 +143,8 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform/* /tmp/raw-start-platform/
+      - apk add build-base git libffi-dev cargo
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -173,8 +173,8 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform/* /tmp/live-start-platform/
+      - apk add build-base git libffi-dev cargo
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -203,8 +203,8 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform/* /tmp/direct-start-platform/
+      - apk add build-base git libffi-dev cargo
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -222,9 +222,9 @@ services:
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
     commands:
+      - cp -a opencti-worker /tmp/direct-start-worker
       - sleep 240
       - apk add build-base git libffi-dev cargo
-      - cp -a opencti-worker /tmp/direct-start-worker
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
@@ -252,8 +252,8 @@ services:
       EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
-      - apk add build-base git libffi-dev cargo
       - cp -a opencti-platform/* /tmp/restore-start-platform/
+      - apk add build-base git libffi-dev cargo
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
