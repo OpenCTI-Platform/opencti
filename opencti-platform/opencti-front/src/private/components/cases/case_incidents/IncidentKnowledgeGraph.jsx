@@ -11,11 +11,7 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
 import {
   applyFilters,
@@ -31,10 +27,7 @@ import {
 } from '../../../../utils/Graph';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import LassoSelection from '../../../../utils/graph/LassoSelection';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import { caseIncidentMutationFieldPatch } from './CaseIncidentEditionOverview';
 import CaseIncidentPopover from './CaseIncidentPopover';
@@ -459,6 +452,15 @@ const incidentKnowledgeGraphStixRelationshipQuery = graphql`
     }
   }
 `;
+
+const caseIncidentKnowledgeGraphComponentStartInvestigationQuery = () => graphql`
+    query IncidentKnowledgeGraphComponenentStartInvestigationQuery($id: String!) {
+        caseIncident(id: $id) {
+            startInvestigation {
+                id
+            }
+        }
+    }`;
 
 class IncidentKnowledgeGraphComponent extends Component {
   constructor(props) {
@@ -1364,6 +1366,16 @@ class IncidentKnowledgeGraphComponent extends Component {
     });
   }
 
+  handleStartInvestigation(caseIncidentId) {
+    fetchQuery(
+      caseIncidentKnowledgeGraphComponentStartInvestigationQuery,
+      { id: caseIncidentId },
+    ).toPromise()
+      .then(({ caseIncident }) => {
+        window.location.replace(`/dashboard/workspaces/investigations/${caseIncident.startInvestigation.id}`);
+      });
+  }
+
   render() {
     const { caseData, theme, mode } = this.props;
     const {
@@ -1419,6 +1431,7 @@ class IncidentKnowledgeGraphComponent extends Component {
                 knowledge={true}
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
+                startInvestigation={this.handleStartInvestigation.bind(this)}
               />
               <IncidentKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}
@@ -1742,6 +1755,7 @@ const IncidentKnowledgeGraph = createFragmentContainer(
         name
         x_opencti_graph_data
         confidence
+        entity_type
         createdBy {
           ... on Identity {
             id

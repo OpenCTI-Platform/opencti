@@ -1,10 +1,25 @@
 import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_PARTICIPANT
+} from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
-import { addCaseIncident, caseIncidentContainsStixObjectOrStixRelationship, findAll, findById } from './case-incident-domain';
+import {
+  addCaseIncident,
+  caseIncidentContainsStixObjectOrStixRelationship,
+  findAll,
+  findById
+} from './case-incident-domain';
+import { startInvestigationFromContainer } from '../../workspace/investigation-domain';
 
 const caseIncidentResolvers: Resolvers = {
+  CaseIncident: {
+    startInvestigation: (caseIncident, _, context) => startInvestigationFromContainer(context, context.user, caseIncident),
+  },
   Query: {
     caseIncident: (_, { id }, context) => findById(context, context.user, id),
     caseIncidents: (_, args, context) => findAll(context, context.user, args),
