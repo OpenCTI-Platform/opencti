@@ -65,6 +65,7 @@
     "react-router-dom-v5-compat": "6.16.0",
     "react-timeline-range-slider": "1.4.1",
     "react-virtualized": "9.22.5",
+    "reactflow": "11.8.3",
     "recharts": "2.8.0",
     "relay-runtime": "15.0.0",
     "remark-flexible-markers": "1.0.3",

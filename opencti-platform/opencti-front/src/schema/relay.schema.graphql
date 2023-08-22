@@ -8311,9 +8311,6 @@ type Query {
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: [IngestionTaxiiFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: [OrganizationsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): OrganizationConnection
-  playbook(id: String!): Playbook
-  playbooks(first: Int, after: ID, orderBy: PlaybookOrdering, orderMode: OrderingMode, filters: [PlaybookFiltering!], filterMode: FilterMode, search: String): PlaybookConnection
-  playbookComponents: [PlaybookComponent]!
 }
 
 type Subscription {
@@ -12059,74 +12056,4 @@ type MeOrganizationEdge {
 type MeOrganizationConnection {
   pageInfo: PageInfo!
   edges: [MeOrganizationEdge!]!
-}
-
-type Playbook implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  name: String!
-  description: String
-  playbook_running: Boolean
-  playbook_definition: String
-}
-
-type PlaybookComponentPort {
-  id: ID!
-  type: String!
-}
-
-type PlaybookComponent {
-  id: ID!
-  name: String!
-  description: String!
-  is_entry_point: Boolean
-  is_internal: Boolean
-  configuration_schema: String
-  ports: [PlaybookComponentPort!]!
-}
-
-enum PlaybookOrdering {
-  name
-}
-
-enum PlaybookFilter {
-  name
-}
-
-input PlaybookFiltering {
-  key: [PlaybookFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
-type PlaybookConnection {
-  pageInfo: PageInfo!
-  edges: [PlaybookEdge!]!
-}
-
-type PlaybookEdge {
-  cursor: String!
-  node: Playbook!
-}
-
-input PlaybookAddInput {
-  name: name_String_NotNull_minLength_2!
-  description: String
-}
-
-input PlaybookAddNodeInput {
-  playbook_id: ID!
-  name: String!
-  component_id: String!
-  configuration: String
-}
-
-input PlaybookAddLinkInput {
-  playbook_id: ID!
-  from_node: String!
-  from_port: String!
-  to_node: String!
 }

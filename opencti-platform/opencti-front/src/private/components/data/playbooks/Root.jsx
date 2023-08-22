@@ -56,7 +56,7 @@ class RootPlaybook extends Component {
       subscription,
       variables: { id: playbookId },
     });
-  }
+  }e
 
   componentWillUnmount() {
     this.sub.dispose();
