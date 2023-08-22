@@ -41,7 +41,7 @@ export const stixSightingRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
-const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate, inGraph }) => {
+const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate, inGraph }) => {
   const classes = useStyles();
   const queryRef = useQueryLoading(stixSightingRelationshipEditionOverviewQuery, { id: stixSightingRelationshipId });
 
@@ -100,16 +100,6 @@ const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open
     return renderInGraph();
   }
   return renderClassic();
-};
-
-// Workaround to prevent direct loading
-const StixSightingRelationshipEdition = ({ stixSightingRelationshipId, open, handleClose, handleDelete, inferred, noStoreUpdate, inGraph }) => {
-  if (stixSightingRelationshipId && open) {
-    return <StixSightingRelationshipEditionInner open={open} stixSightingRelationshipId={stixSightingRelationshipId}
-                                                 handleClose={handleClose} handleDelete={handleDelete}
-                                                 inferred={inferred} noStoreUpdate={noStoreUpdate} inGraph={inGraph} />;
-  }
-  return <></>;
 };
 
 export default StixSightingRelationshipEdition;
