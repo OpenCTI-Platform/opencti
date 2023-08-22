@@ -274,6 +274,70 @@ const investigationGraphStixCoreRelationshipQuery = graphql`
   }
 `;
 
+const investigationGraphStixSightingRelationshipQuery = graphql`
+    query InvestigationGraphStixSightingRelationshipQuery($id: String!) {
+        stixSightingRelationship(id: $id) {
+            id
+            entity_type
+            parent_types
+            first_seen
+            last_seen
+            confidence
+            relationship_type
+            from {
+                ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on StixCoreRelationship {
+                    relationship_type
+                }
+            }
+            to {
+                ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on StixCoreRelationship {
+                    relationship_type
+                }
+            }
+            created_at
+            updated_at
+            createdBy {
+                ... on Identity {
+                    id
+                    name
+                    entity_type
+                }
+            }
+            objectMarking {
+                edges {
+                    node {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                    }
+                }
+            }
+        }
+    }
+`;
+
 const investigationGraphStixRelationshipsQuery = graphql`
   query InvestigationGraphStixRelationshipsQuery(
     $elementId: String!
@@ -1554,6 +1618,37 @@ class InvestigationGraphComponent extends Component {
     }, 1500);
   }
 
+  handleCloseSightingEdition(relationId) {
+    setTimeout(() => {
+      fetchQuery(investigationGraphStixSightingRelationshipQuery, {
+        id: relationId,
+      })
+        .toPromise()
+        .then((data) => {
+          const { stixSightingRelationship } = data;
+          this.graphObjects = R.map(
+            (n) => (n.id === stixSightingRelationship.id ? stixSightingRelationship : n),
+            this.graphObjects,
+          );
+          this.graphData = buildGraphData(
+            this.graphObjects,
+            decodeGraphData(this.props.workspace.graph_data),
+            this.props.t,
+          );
+          this.setState({
+            graphData: applyFilters(
+              this.graphData,
+              this.state.stixCoreObjectsTypes,
+              this.state.markedBy,
+              this.state.createdBy,
+              [],
+              this.state.selectedTimeRangeInterval,
+            ),
+          });
+        });
+    }, 1500);
+  }
+
   inSelectionRect(n) {
     const graphOrigin = this.graph.current.screen2GraphCoords(
       this.state.rectSelected.origin[0],
@@ -1955,17 +2050,12 @@ class InvestigationGraphComponent extends Component {
                 selectedLinks={Array.from(this.selectedLinks)}
                 numberOfSelectedNodes={numberOfSelectedNodes}
                 numberOfSelectedLinks={numberOfSelectedLinks}
-                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(
-                  this,
-                )}
-                handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
-                  this,
-                )}
+                handleCloseEntityEdition={this.handleCloseEntityEdition.bind(this)}
+                handleCloseRelationEdition={this.handleCloseRelationEdition.bind(this)}
+                handleCloseSightingEdition={this.handleCloseSightingEdition.bind(this)}
                 handleResetLayout={this.handleResetLayout.bind(this)}
                 displayTimeRange={displayTimeRange}
-                handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
-                  this,
-                )}
+                handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(this)}
                 timeRangeInterval={timeRangeInterval}
                 selectedTimeRangeInterval={selectedTimeRangeInterval}
                 handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}

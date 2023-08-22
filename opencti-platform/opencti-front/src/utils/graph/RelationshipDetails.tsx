@@ -21,7 +21,6 @@ import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import ItemAuthor from '../../components/ItemAuthor';
 import ItemConfidence from '../../components/ItemConfidence';
-import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
@@ -29,6 +28,7 @@ import { Theme } from '../../components/Theme';
 import ItemIcon from '../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../Colors';
 import ItemCreator from '../../components/ItemCreator';
+import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   label: {
@@ -254,6 +254,86 @@ const relationshipDetailsQuery = graphql`
           }
         }
       }
+      ... on StixSightingRelationship {
+          description
+          created
+          created_at
+          updated_at
+          confidence
+          relationship_type
+          first_seen
+          last_seen
+          from {
+            ... on StixCoreObject {
+              id
+              parent_types
+              entity_type
+            }
+            ... on StixCoreRelationship {
+              id
+              parent_types
+              entity_type
+              relationship_type
+            }
+          }
+          to {
+            ... on StixCoreObject {
+              id
+              parent_types
+              entity_type
+            }
+            ... on StixCoreRelationship {
+              id
+              parent_types
+              entity_type
+              relationship_type
+            }
+          }
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          creators {
+            id
+            name
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+          }
+          reports(first: 10) {
+          edges {
+            node {
+              id
+              entity_type
+              name
+              description
+              published
+              report_types
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+            }
+          }
+          pageInfo {
+            globalCount
+          }
+        }
+      }
     }
   }
 `;
@@ -284,6 +364,211 @@ RelationshipDetailsComponentProps
   if (!stixRelationship) {
     return <ErrorNotFound />;
   }
+
+  const computeNotGenericDetails = () => {
+    if (stixRelationship.parent_types.includes('stix-ref-relationship')) {
+      return (
+        <div>
+          <Typography variant="h3" gutterBottom={true} className={classes.label}>
+            {t('Creators')}
+          </Typography>
+          <div>
+            {(stixRelationship.creators ?? []).map((c) => {
+              return (
+                <div
+                  key={`creator-${c.id}`}
+                  style={{ float: 'left', marginRight: '10px' }}
+                >
+                  <ItemCreator creator={c}/>
+                </div>
+              );
+            })}
+            <div style={{ clear: 'both' }}/>
+          </div>
+        </div>
+      );
+    }
+    return (<div>
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('First seen')}
+      </Typography>
+      {stixRelationship.entity_type !== 'stix-sighting-relationship'
+        ? fldt(stixRelationship.start_time)
+        : fldt(stixRelationship.first_seen)}
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Last seen')}
+      </Typography>
+      {
+        stixRelationship.entity_type !== 'stix-sighting-relationship'
+          ? fldt(stixRelationship.stop_time)
+          : fldt(stixRelationship.last_seen)
+      }
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Description')}
+      </Typography>
+      {
+        stixRelationship.description
+        && stixRelationship.description.length > 0
+          ? <ExpandableMarkdown
+            source={stixRelationship.description}
+            limit={400}
+          />
+          : ('-')
+      }
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Confidence level')}
+      </Typography>
+      {
+        stixRelationship.confidence
+          ? <ItemConfidence confidence={stixRelationship.confidence} entityType="stix-core-relationship"/>
+          : ('-')
+      }
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Marking')}
+      </Typography>
+      {
+        stixRelationship.objectMarking
+        && stixRelationship.objectMarking.edges.length > 0
+          ? <ItemMarkings
+            markingDefinitionsEdges={stixRelationship.objectMarking.edges}
+            limit={2}
+          />
+          : ('-')
+      }
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Author')}
+      </Typography>
+      {
+        stixRelationship.createdBy
+          ? <ItemAuthor createdBy={stixRelationship.createdBy}/>
+          : ('-')
+      }
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Creators')}
+      </Typography>
+      <div>
+        {(stixRelationship.creators ?? []).map((c) => {
+          return (
+            <div
+              key={`creator-${c.id}`}
+              style={{ float: 'left', marginRight: '10px' }}
+            >
+              <ItemCreator creator={c}/>
+            </div>
+          );
+        })}
+        <div style={{ clear: 'both' }}/>
+      </div>
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {`${t('Last')} ${
+          (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
+            ? 10
+            : stixRelationship.reports?.pageInfo.globalCount
+        } ${t('reports')} ${t('of')} ${
+          stixRelationship.reports?.pageInfo.globalCount
+        }`}
+      </Typography>
+      {reportsEdges && reportsEdges.length > 0
+        ? (
+          <List style={{ marginBottom: 0 }}>
+            {reportsEdges.map((reportEdge) => {
+              const report = reportEdge?.node;
+              if (report) {
+                return (
+                  <ListItem
+                    key={report.id}
+                    dense={true}
+                    button={true}
+                    classes={{ root: classes.item }}
+                    divider={true}
+                    component={Link}
+                    to={`/dashboard/analyses/reports/${report.id}`}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={report.entity_type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Tooltip title={report.name}>
+                          <div className={classes.bodyItem}>{report.name}</div>
+                        </Tooltip>
+                      }
+                      secondary={
+                        <div className={classes.bodyItem}>
+                          {report.createdBy?.name ?? '-'}
+                        </div>
+                      }
+                    />
+                  </ListItem>
+                );
+              }
+              return '';
+            })}
+          </List>
+        )
+        : ('-')
+      }
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('External References')}
+      </Typography>
+      {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
+        <List style={{ marginBottom: 0 }}>
+          {externalReferencesEdges
+            .slice(0, expanded ? 200 : 3)
+            .map((externalReference) => {
+              const externalReferenceId = externalReference.node.external_id
+                ? `(${externalReference.node.external_id})`
+                : '';
+              let externalReferenceSecondary = '';
+              if (
+                externalReference.node.url
+                && externalReference.node.url.length > 0
+              ) {
+                externalReferenceSecondary = externalReference.node.url;
+              } else if (
+                externalReference.node.description
+                && externalReference.node.description.length > 0
+              ) {
+                externalReferenceSecondary = externalReference.node.description;
+              } else {
+                externalReferenceSecondary = t('No description');
+              }
+              return (
+                <div key={externalReference.node.id}>
+                  <ListItem
+                    component={Link}
+                    to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type="External-Reference" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div className={classes.bodyItem}>
+                          {`${externalReference.node.source_name} ${externalReferenceId}`}
+                        </div>
+                      }
+                      secondary={
+                        <div className={classes.bodyItem}>
+                          {externalReferenceSecondary}
+                        </div>
+                      }
+                    />
+                  </ListItem>
+                </div>
+              );
+            })}
+        </List>
+      ) : (
+        '-'
+      )}
+      </div>
+    );
+  };
+
   return (
     <div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
@@ -347,169 +632,7 @@ RelationshipDetailsComponentProps
         {t('Creation date')}
       </Typography>
       {fldt(stixRelationship.created_at)}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('First seen')}
-      </Typography>
-      {fldt(stixRelationship.start_time)}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Last seen')}
-      </Typography>
-      {fldt(stixRelationship.stop_time)}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Description')}
-      </Typography>
-      {stixRelationship.description
-      && stixRelationship.description.length > 0 ? (
-        <ExpandableMarkdown
-          source={stixRelationship.description}
-          limit={400}
-        />
-        ) : (
-          '-'
-        )}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Confidence level')}
-      </Typography>
-      {stixRelationship.confidence ? (
-        <ItemConfidence confidence={stixRelationship.confidence} entityType="stix-core-relationship" />
-      ) : (
-        '-'
-      )}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Marking')}
-      </Typography>
-      {stixRelationship.objectMarking
-      && stixRelationship.objectMarking.edges.length > 0 ? (
-        <ItemMarkings
-          markingDefinitionsEdges={stixRelationship.objectMarking.edges}
-          limit={2}
-        />
-        ) : (
-          '-'
-        )}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Author')}
-      </Typography>
-      <ItemAuthor createdBy={stixRelationship.createdBy} />
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Creators')}
-      </Typography>
-      <div>
-        {(stixRelationship.creators ?? []).map((c) => {
-          return (
-            <div
-              key={`creator-${c.id}`}
-              style={{ float: 'left', marginRight: '10px' }}
-            >
-              <ItemCreator creator={c} />
-            </div>
-          );
-        })}
-        <div style={{ clear: 'both' }} />
-      </div>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {`${t('Last')} ${
-          (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
-            ? 10
-            : stixRelationship.reports?.pageInfo.globalCount
-        } ${t('reports')} ${t('of')} ${
-          stixRelationship.reports?.pageInfo.globalCount
-        }`}
-      </Typography>
-      {reportsEdges && reportsEdges.length > 0 && (
-        <List style={{ marginBottom: 0 }}>
-          {reportsEdges.map((reportEdge) => {
-            const report = reportEdge?.node;
-            if (report) {
-              return (
-                <ListItem
-                  key={report.id}
-                  dense={true}
-                  button={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/analyses/reports/${report.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={report.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Tooltip title={report.name}>
-                        <div className={classes.bodyItem}>{report.name}</div>
-                      </Tooltip>
-                    }
-                    secondary={
-                      <div className={classes.bodyItem}>
-                        {report.createdBy?.name ?? '-'}
-                      </div>
-                    }
-                  />
-                </ListItem>
-              );
-            }
-            return '';
-          })}
-        </List>
-      )}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('External References')}
-      </Typography>
-      {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
-        <List style={{ marginBottom: 0 }}>
-          {externalReferencesEdges
-            .slice(0, expanded ? 200 : 3)
-            .map((externalReference) => {
-              const externalReferenceId = externalReference.node.external_id
-                ? `(${externalReference.node.external_id})`
-                : '';
-              let externalReferenceSecondary = '';
-              if (
-                externalReference.node.url
-                && externalReference.node.url.length > 0
-              ) {
-                externalReferenceSecondary = externalReference.node.url;
-              } else if (
-                externalReference.node.description
-                && externalReference.node.description.length > 0
-              ) {
-                externalReferenceSecondary = externalReference.node.description;
-              } else {
-                externalReferenceSecondary = t('No description');
-              }
-              return (
-                <div key={externalReference.node.id}>
-                  <ListItem
-                    component={Link}
-                    to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                  >
-                    <ListItemIcon>
-                      <ItemIcon type="External-Reference" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div className={classes.bodyItem}>
-                          {`${externalReference.node.source_name} ${externalReferenceId}`}
-                        </div>
-                      }
-                      secondary={
-                        <div className={classes.bodyItem}>
-                          {externalReferenceSecondary}
-                        </div>
-                      }
-                    />
-                  </ListItem>
-                </div>
-              );
-            })}
-        </List>
-      ) : (
-        '-'
-      )}
+      {computeNotGenericDetails()}
       {expandable && (
         <Button
           variant="contained"

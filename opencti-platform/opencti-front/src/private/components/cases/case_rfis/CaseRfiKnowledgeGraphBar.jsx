@@ -906,6 +906,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
                             stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
                             handleClose={this.handleCloseRelationEdition.bind(this)}
                             noStoreUpdate={true}
+                            inGraph={true}
                           />
                           <StixSightingRelationshipEdition
                             open={openEditSighting}
@@ -914,6 +915,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
                             }
                             handleClose={this.handleCloseSightingEdition.bind(this)}
                             noStoreUpdate={true}
+                            inGraph={true}
                           />
                           <StixNestedRefRelationshipEdition
                             open={openEditNested}

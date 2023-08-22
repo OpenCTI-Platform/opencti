@@ -10,6 +10,7 @@ import { useTheme } from '@mui/styles';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../components/i18n';
@@ -134,17 +135,19 @@ EntityDetailsRightsBarProps
           </Select>
         </FormControl>
         {/* Need to be handle */}
-        { hasOverviewPage
-          && <div className={classes.external}>
-            <IconButton
-              component={Link}
-              target="_blank"
-              to={entityUrl}
-              size="medium"
-            >
-              <OpenInNewOutlined fontSize="medium" />
-            </IconButton>
-          </div>
+        {hasOverviewPage
+          && <Tooltip title={t('Open the entity overview in a separated tab')}>
+            <div className={classes.external}>
+              <IconButton
+                component={Link}
+                target="_blank"
+                to={entityUrl}
+                size="medium"
+              >
+                <OpenInNewOutlined fontSize="medium" />
+              </IconButton>
+            </div>
+          </Tooltip>
         }
       </div>
       <div className="clearfix" />
@@ -156,7 +159,7 @@ EntityDetailsRightsBarProps
           paddingRight: 20,
         }}
       >
-        {selectedEntity.relationship_type && (
+        {selectedEntity.parent_types.includes('stix-relationship') && (
           <RelationshipDetails relation={selectedEntity} />
         )}
         {selectedEntity.parent_types.includes('Stix-Core-Object') && (

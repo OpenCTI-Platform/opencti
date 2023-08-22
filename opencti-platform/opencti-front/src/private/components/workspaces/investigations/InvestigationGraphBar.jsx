@@ -64,6 +64,7 @@ import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomain
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 
 const styles = () => ({
   bottomNav: {
@@ -97,6 +98,7 @@ class InvestigationGraphBar extends Component {
       openSelectByType: false,
       anchorElSelectByType: null,
       openEditRelation: false,
+      openEditSighting: false,
       openEditDomainObject: false,
       openEditObservable: false,
       openExpandElements: false,
@@ -192,6 +194,13 @@ class InvestigationGraphBar extends Component {
     ) {
       this.setState({ openEditObservable: true });
     } else if (
+      (this.props.numberOfSelectedLinks === 1
+        && this.props.selectedLinks[0].entity_type === 'stix-sighting-relationship')
+      || (this.props.selectedNodes[0] && this.props.selectedNodes[0].relationship_type
+        && this.props.selectedNodes[0].parent_types.includes('stix-sighting-relationship'))
+    ) {
+      this.setState({ openEditSighting: true });
+    } else if (
       this.props.numberOfSelectedLinks === 1
       || this.props.selectedNodes[0].relationship_type
     ) {
@@ -216,6 +225,13 @@ class InvestigationGraphBar extends Component {
   handleCloseRelationEdition() {
     this.setState({ openEditRelation: false });
     this.props.handleCloseRelationEdition(
+      this.props.selectedLinks[0]?.id ?? null,
+    );
+  }
+
+  handleCloseSightingEdition() {
+    this.setState({ openEditSighting: false });
+    this.props.handleCloseSightingEdition(
       this.props.selectedLinks[0]?.id ?? null,
     );
   }
@@ -285,6 +301,7 @@ class InvestigationGraphBar extends Component {
       openSelectByType,
       anchorElSelectByType,
       openEditRelation,
+      openEditSighting,
       openEditDomainObject,
       openEditObservable,
       relationReversed,
@@ -295,7 +312,8 @@ class InvestigationGraphBar extends Component {
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
-        && selectedNodes.length === 1)
+        && selectedNodes.length === 1
+        && !selectedNodes[0].parent_types.includes('Stix-Meta-Object'))
       || (!isInferred
         && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
@@ -823,6 +841,14 @@ class InvestigationGraphBar extends Component {
                               stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
                               handleClose={this.handleCloseRelationEdition.bind(this)}
                               noStoreUpdate={true}
+                              inGraph={true}
+                            />
+                            <StixSightingRelationshipEdition
+                              open={openEditSighting}
+                              stixSightingRelationshipId={stixCoreObjectOrRelationshipId}
+                              handleClose={this.handleCloseSightingEdition.bind(this)}
+                              noStoreUpdate={true}
+                              inGraph={true}
                             />
                           </>
                         )}
@@ -1023,6 +1049,7 @@ InvestigationGraphBar.propTypes = {
   handleDeleteSelected: PropTypes.func,
   handleCloseEntityEdition: PropTypes.func,
   handleCloseRelationEdition: PropTypes.func,
+  handleCloseSightingEdition: PropTypes.func,
   handleSelectAll: PropTypes.func,
   handleSelectByType: PropTypes.func,
   handleResetLayout: PropTypes.func,
