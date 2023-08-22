@@ -1,41 +1,27 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { GenericAttackCard } from '../../common/cards/GenericAttackCard';
+import {
+  ThreatActorGroupCard_node$key,
+} from './__generated__/ThreatActorGroupCard_node.graphql';
 
-class IntrusionSetCardComponent extends Component {
-  render() {
-    const { node, bookmarksIds, onLabelClick } = this.props;
-    return (
-      <GenericAttackCard
-        cardData={node}
-        cardLink={`/dashboard/threats/intrusion_sets/${node.id}`}
-        entityType="Intrusion-Set"
-        onLabelClick={onLabelClick}
-        bookmarksIds={bookmarksIds}
-      />
-    );
-  }
-}
-
-IntrusionSetCardComponent.propTypes = {
-  node: PropTypes.object,
-  bookmarksIds: PropTypes.array,
-  onLabelClick: PropTypes.func,
-};
-
-const IntrusionSetCardFragment = createFragmentContainer(
-  IntrusionSetCardComponent,
-  {
-    node: graphql`
-      fragment IntrusionSetCard_node on IntrusionSet {
+const ThreatActorGroupCardFragment = graphql`
+      fragment ThreatActorGroupCard_node on ThreatActorGroup {
         id
         name
         aliases
         description
         created
         modified
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
         objectMarking {
           edges {
             node {
@@ -44,15 +30,6 @@ const IntrusionSetCardFragment = createFragmentContainer(
               definition
               x_opencti_order
               x_opencti_color
-            }
-          }
-        }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
             }
           }
         }
@@ -108,9 +85,28 @@ const IntrusionSetCardFragment = createFragmentContainer(
           }
         }
       }
-    `,
-  },
-);
+`;
 
-const IntrusionSetCard = compose()(IntrusionSetCardFragment);
-export default IntrusionSetCard;
+interface ThreatActorGroupCardProps {
+  node: ThreatActorGroupCard_node$key;
+  onLabelClick: () => void;
+  bookmarksIds?: string[];
+}
+const ThreatActorGroupCard: FunctionComponent<ThreatActorGroupCardProps> = ({
+  node,
+  onLabelClick,
+  bookmarksIds,
+}) => {
+  const data = useFragment(ThreatActorGroupCardFragment, node);
+  return (
+    <GenericAttackCard
+      cardData={data}
+      cardLink={`/dashboard/threats/threat_actors_group/${data.id}`}
+      entityType="Threat-Actor-Group"
+      onLabelClick={onLabelClick}
+      bookmarksIds={bookmarksIds}
+    />
+  );
+};
+
+export default ThreatActorGroupCard;

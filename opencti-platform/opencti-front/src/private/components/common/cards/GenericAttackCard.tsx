@@ -105,16 +105,15 @@ interface GenericAttack {
   modified: string;
   aliases: ReadonlyArray<string | null> | null;
   objectLabel: labelEdges | null;
-  images: ReadonlyArray<{ id: string, name: string }> | null;
+  images?: ReadonlyArray<{ id: string, name: string }> | null;
   relatedIntrusionSets?: fromEdges | null;
-  usedMalware: toEdges | null;
+  usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
   targetedSectors: toEdges | null;
 }
 
 interface GenericAttackCardProps {
   cardData: GenericAttack;
-
   cardLink: string;
   entityType: string;
   onLabelClick: () => void;

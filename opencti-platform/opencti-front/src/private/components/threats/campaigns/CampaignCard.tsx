@@ -1,32 +1,9 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { GenericAttackCard } from '../../common/cards/GenericAttackCard';
+import { CampaignCard_node$key } from './__generated__/CampaignCard_node.graphql';
 
-class CampaignCardComponent extends Component {
-  render() {
-    const { node, bookmarksIds, onLabelClick } = this.props;
-    return (
-      <GenericAttackCard
-        cardData={node}
-        cardLink={`/dashboard/threats/campaigns/${node.id}`}
-        entityType="Campaign"
-        onLabelClick={onLabelClick}
-        bookmarksIds={bookmarksIds}
-      />
-    );
-  }
-}
-
-CampaignCardComponent.propTypes = {
-  node: PropTypes.object,
-  bookmarksIds: PropTypes.array,
-  onLabelClick: PropTypes.func,
-};
-
-const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
-  node: graphql`
+const CampaignCardFragment = graphql`
     fragment CampaignCard_node on Campaign {
       id
       name
@@ -106,8 +83,29 @@ const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
         }
       }
     }
-  `,
-});
+`;
 
-const CampaignCard = compose()(CampaignCardFragment);
+interface CampaignCardProps {
+  node: CampaignCard_node$key;
+  onLabelClick: () => void;
+  bookmarksIds?: string[];
+}
+
+const CampaignCard: FunctionComponent<CampaignCardProps> = ({
+  node,
+  bookmarksIds,
+  onLabelClick,
+}) => {
+  const data = useFragment(CampaignCardFragment, node);
+  return (
+    <GenericAttackCard
+      cardData={data}
+      cardLink={`/dashboard/threats/campaigns/${data.id}`}
+      entityType="Campaign"
+      onLabelClick={onLabelClick}
+      bookmarksIds={bookmarksIds}
+    />
+  );
+};
+
 export default CampaignCard;
