@@ -21,8 +21,8 @@ import type { BasicStoreEntityWorkspace } from '../modules/workspace/workspace-t
 import type { BasicStoreEntityMalwareAnalysis } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
 import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };

@@ -53,7 +53,7 @@ const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open
               sx={{ zIndex: 1202 }}
               classes={{ paper: classes.drawerPaperInGraph }}
               onClose={handleClose}>
-        {queryRef && (
+        {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixSightingRelationshipEditionOverview
               queryRef={queryRef}
@@ -63,6 +63,8 @@ const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open
               noStoreUpdate={noStoreUpdate}
             />
           </React.Suspense>
+        ) : (
+          <Loader variant={LoaderVariant.inElement} />
         )}
       </Drawer>
     );
@@ -76,7 +78,7 @@ const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open
               sx={{ zIndex: 1202 }}
               classes={{ paper: classes.drawerPaper }}
               onClose={handleClose}>
-        {queryRef && (
+        {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixSightingRelationshipEditionOverview
               queryRef={queryRef}
@@ -86,6 +88,8 @@ const StixSightingRelationshipEditionInner = ({ stixSightingRelationshipId, open
               noStoreUpdate={noStoreUpdate}
             />
           </React.Suspense>
+        ) : (
+          <Loader variant={LoaderVariant.inElement} />
         )}
       </Drawer>
     );

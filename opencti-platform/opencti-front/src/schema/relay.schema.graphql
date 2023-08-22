@@ -11636,7 +11636,6 @@ input IngestionTaxiiAddInput {
 
 scalar collection_String_NotNull_minLength_5
 
-
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   id: ID!
   standard_id: String!

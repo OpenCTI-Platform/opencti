@@ -296,7 +296,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
   };
 
   return (
-    <div>
+    <>
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
@@ -458,9 +458,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             {t('Delete')}
           </Button>
         )}
-        <div className="clearfix" />
       </div>
-    </div>
+    </>
   );
 };
 
