@@ -2806,19 +2806,22 @@ const WorkbenchFileContentComponent = ({
             />
           </ListItem>
           {sortedObjects.map((object) => {
-            const type = convertFromStixType(object.type);
+            let type = convertFromStixType(object.type);
             let secondaryType = '';
             if (type === 'Identity') {
+              type = resolveIdentityType(object.identity_class);
               secondaryType = ` (${t(
                 `entity_${resolveIdentityType(object.identity_class)}`,
               )})`;
             }
             if (type === 'Location') {
+              type = resolveLocationType(object);
               secondaryType = ` (${t(
                 `entity_${resolveLocationType(object)}`,
               )})`;
             }
             if (type === 'Threat-Actor') {
+              type = resolveThreatActorType(object);
               secondaryType = ` (${t(
                 `entity_${resolveThreatActorType(object)}`,
               )})`;
@@ -2964,19 +2967,22 @@ const WorkbenchFileContentComponent = ({
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedStixDomainObjects.map((object) => {
-            const type = convertFromStixType(object.type);
+            let type = convertFromStixType(object.type);
             let secondaryType = '';
             if (type === 'Identity') {
+              type = resolveIdentityType(object.identity_class);
               secondaryType = ` (${t(
                 `entity_${resolveIdentityType(object.identity_class)}`,
               )})`;
             }
             if (type === 'Location') {
+              type = resolveLocationType(object);
               secondaryType = ` (${t(
                 `entity_${resolveLocationType(object)}`,
               )})`;
             }
             if (type === 'Threat-Actor') {
+              type = resolveThreatActorType(object);
               secondaryType = ` (${t(
                 `entity_${resolveThreatActorType(object)}`,
               )})`;
