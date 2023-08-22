@@ -93,7 +93,7 @@ export const relationshipType: AttributeDefinition = {
 
 export const xOpenctiStixIds: AttributeDefinition = {
   name: 'x_opencti_stix_ids',
-  label: 'Stix ids',
+  label: 'STIX IDs',
   type: 'string',
   mandatoryType: 'no',
   multiple: true,
