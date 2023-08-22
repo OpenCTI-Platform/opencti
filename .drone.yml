@@ -224,7 +224,7 @@ services:
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
     commands:
-      - sleep 180
+      - sleep 240
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-worker /tmp/direct-start-worker
       - cd /tmp/direct-start-worker
@@ -236,7 +236,7 @@ services:
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:    
-    - name: cache-node-restore-start-backend
+    - name: cache-node-raw-start-backend
       path: /tmp/restore-start-platform/node_modules
     - name: cache-python
       path: /usr/lib/python3.11
