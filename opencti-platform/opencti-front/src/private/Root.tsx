@@ -97,7 +97,7 @@ const rootPrivateQuery = graphql`
         }
       }
     }
-    schemaRelationsTypesMapping: schemaRelationsTypesMapping {
+    schemaRelationsTypesMapping {
       key
       values
     }
@@ -137,7 +137,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),
     sros: schemaSROs.edges.map((sco) => sco.node),
-    schemaRelationsTypesMapping,
+    schemaRelationsTypesMapping: new Map(schemaRelationsTypesMapping.map((n) => [n.key, n.values])),
   };
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);

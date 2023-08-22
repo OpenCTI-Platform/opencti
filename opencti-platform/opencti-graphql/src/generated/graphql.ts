@@ -19083,11 +19083,6 @@ export type QuerySchemaAttributesArgs = {
 };
 
 
-export type QuerySchemaRelationsTypesMappingArgs = {
-  entityTypes?: InputMaybe<Array<Scalars['String']['input']>>;
-};
-
-
 export type QuerySectorArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -34899,7 +34894,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   rules?: Resolver<Maybe<Array<Maybe<ResolversTypes['Rule']>>>, ParentType, ContextType>;
   runtimeAttributes?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QueryRuntimeAttributesArgs, 'attributeName'>>;
   schemaAttributes?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QuerySchemaAttributesArgs, 'elementType'>>;
-  schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType, Partial<QuerySchemaRelationsTypesMappingArgs>>;
+  schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
   sectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType, Partial<QuerySectorsArgs>>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserSession']>>>, ParentType, ContextType>;

@@ -37,7 +37,7 @@ const stixRelationshipResolvers = {
     stixRelationshipsMultiTimeSeries: (_, args, context) => stixRelationshipsMultiTimeSeries(context, context.user, args),
     stixRelationshipsDistribution: (_, args, context) => stixRelationshipsDistribution(context, context.user, args),
     stixRelationshipsNumber: (_, args, context) => stixRelationshipsNumber(context, context.user, args),
-    schemaRelationsTypesMapping: (_, { entityTypes }) => schemaRelationsTypesMapping(entityTypes),
+    schemaRelationsTypesMapping: () => schemaRelationsTypesMapping(),
   },
   StixRelationship: {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),

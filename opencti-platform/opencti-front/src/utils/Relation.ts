@@ -3,12 +3,11 @@ import { append, includes } from 'ramda';
 export const resolveRelationsTypes = (
   fromType: string,
   toType: string,
-  schemaRelationsTypesMapping: readonly { readonly key: string, readonly values: readonly string[] }[],
+  schemaRelationsTypesMapping: Map<string, readonly string[]>,
   relatedTo = true,
 ) => {
   const typeKey = `${fromType}_${toType}`;
-  const values = schemaRelationsTypesMapping.filter((def) => typeKey === def.key)
-    .map((def) => def.values).flat();
+  const values = schemaRelationsTypesMapping.get(typeKey) ?? [];
 
   if (relatedTo) {
     return append('related-to', values);

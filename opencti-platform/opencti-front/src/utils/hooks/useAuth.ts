@@ -21,7 +21,7 @@ export interface UserContextType {
     scos: { id: string, label: string }[]
     sdos: { id: string, label: string }[]
     sros: { id: string, label: string }[]
-    schemaRelationsTypesMapping: readonly { readonly key: string, readonly values: readonly string[] }[]
+    schemaRelationsTypesMapping: Map<string, readonly string[]>
   } | undefined;
 }
 
