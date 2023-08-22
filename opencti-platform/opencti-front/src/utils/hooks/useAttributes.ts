@@ -142,6 +142,8 @@ export const typesWithOpenCTIAliases = [
   'Event',
   'Channel',
   'Narrative',
+  'Threat-Actor-Individual',
+  'Threat-Actor-Group',
 ];
 
 export const typesWithoutAliases = [
