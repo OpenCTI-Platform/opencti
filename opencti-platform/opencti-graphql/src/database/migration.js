@@ -74,7 +74,7 @@ const migrationStorage = {
       const statusPatch = { lastRun: set.lastRun };
       await patchAttribute(context, SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
       // Insert the migration reference
-      const migrationRefInput = { title: mig.title, timestamp: mig.timestamp };
+      const migrationRefInput = { title: mig.title, timestamp: new Date(mig.timestamp) };
       const migrationRef = await createEntity(context, SYSTEM_USER, migrationRefInput, ENTITY_TYPE_MIGRATION_REFERENCE);
       // Attach the reference to the migration status.
       const migrationRel = { fromId: migrationStatus.id, toId: migrationRef.id, relationship_type: RELATION_MIGRATES };
