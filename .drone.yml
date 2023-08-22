@@ -8,7 +8,7 @@ steps:
     volumes:
     - name: cache-node-backend
       path: /drone/src/opencti-platform/opencti-graphql/node_modules
-    - name: cache-node-python
+    - name: cache-python
       path: /usr/lib/python3.11
     environment:
       APP__BASE_URL: http://api-tests:4010/
@@ -59,7 +59,7 @@ steps:
     volumes:    
     - name: cache-node-frontend
       path: /drone/src/opencti-platform/opencti-front/node_modules
-    - name: cache-node-python
+    - name: cache-python
       path: /usr/lib/python3.11
     commands:
       - apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
@@ -126,10 +126,10 @@ services:
     image: rabbitmq:3.12-management
   - name: opencti-raw-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:    
+    volumes:
     - name: cache-node-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
-    - name: cache-node-python
+    - name: cache-python
       path: /usr/lib/python3.11
     environment:
       APP__PORT: 4100
@@ -159,7 +159,7 @@ services:
     volumes:    
     - name: cache-node-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
-    - name: cache-node-python
+    - name: cache-python
       path: /usr/lib/python3.11    
     environment:
       APP__PORT: 4200
@@ -176,7 +176,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - apk add build-base git libffi-dev cargo
-      - cp -a opencti-platform /tmp/live-start-platform
+      - cp -a opencti-platform/* /tmp/live-start-platform/
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -189,7 +189,7 @@ services:
     volumes:    
     - name: cache-node-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
-    - name: cache-node-python
+    - name: cache-python
       path: /usr/lib/python3.11    
     environment:
       APP__PORT: 4300
@@ -206,7 +206,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - apk add build-base git libffi-dev cargo
-      - cp -a opencti-platform /tmp/direct-start-platform
+      - cp -a opencti-platform/* /tmp/direct-start-platform/
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
@@ -217,7 +217,7 @@ services:
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:    
-    - name: cache-node-python
+    - name: cache-python
       path: /usr/lib/python3.11        
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
@@ -237,8 +237,8 @@ services:
     volumes:    
     - name: cache-node-backend
       path: /tmp/restore-start-platform/node_modules
-    - name: cache-node-python
-      path: /usr/lib/python3.11       
+    - name: cache-python
+      path: /usr/lib/python3.11
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
@@ -254,7 +254,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - apk add build-base git libffi-dev cargo
-      - cp -a opencti-platform /tmp/restore-start-platform
+      - cp -a opencti-platform/* /tmp/restore-start-platform/
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
