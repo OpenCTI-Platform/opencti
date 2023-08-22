@@ -146,7 +146,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - apk add build-base git libffi-dev cargo
-      - cp -a opencti-platform /tmp/raw-start-platform
+      - cp -a opencti-platform/* /tmp/raw-start-platform/
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
