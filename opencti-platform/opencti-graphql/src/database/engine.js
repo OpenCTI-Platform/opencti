@@ -707,29 +707,24 @@ export const elAddMappingAttribute = async (attribute) => {
 };
 
 const elCreateIndexTemplate = async (index) => {
-  let settings;
-  if (engine instanceof ElkClient) {
-    settings = {
-      index: {
-        lifecycle: {
-          name: `${ES_INDEX_PREFIX}-ilm-policy`,
-          rollover_alias: index,
+  const settings = {
+    index: {
+      mapping: {
+        total_fields: {
+          limit: '2500'
         }
       }
+    }
+  };
+  if (engine instanceof ElkClient) {
+    settings.index.lifecycle = {
+      name: `${ES_INDEX_PREFIX}-ilm-policy`,
+      rollover_alias: index,
     };
   } else {
-    settings = {
-      index: {
-        mapping: {
-          total_fields: {
-            limit: '2500'
-          }
-        }
-      },
-      plugins: {
-        index_state_management: {
-          rollover_alias: index,
-        }
+    settings.plugins = {
+      index_state_management: {
+        rollover_alias: index,
       }
     };
   }
