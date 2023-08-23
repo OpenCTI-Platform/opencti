@@ -13521,7 +13521,7 @@ __metadata:
     typeface-ibm-plex-sans: 1.1.13
     typeface-roboto: 1.1.13
     typescript: 4.9.5
-    unified: 11.0.1
+    unified: 11.0.2
     uuid: 9.0.0
     vite-plugin-relay: 2.0.0
     vitest: 0.34.2
@@ -17903,9 +17903,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unified@npm:11.0.1":
-  version: 11.0.1
-  resolution: "unified@npm:11.0.1"
+"unified@npm:11.0.2":
+  version: 11.0.2
+  resolution: "unified@npm:11.0.2"
   dependencies:
     "@types/unist": ^3.0.0
     "@ungap/structured-clone": ^1.0.0
@@ -17914,7 +17914,7 @@ __metadata:
     is-plain-obj: ^4.0.0
     trough: ^2.0.0
     vfile: ^6.0.0
-  checksum: 8ceadeef2128ae5d1bbad06436feb7bcfb05aad8b149d867b8c8aec20842fa6257cf1f080b472d0f2c440568311920ea55520453ab7292a9a859788abe4ef86f
+  checksum: 51a7a61116d69a1ab74d15ebb2da3c9e7bc112e95242d88dc14bb8c025420a2eaf00416890670f755d1c157cdb54adb9be955f8f2813f8efb3e230e06d071d1b
   languageName: node
   linkType: hard
 
