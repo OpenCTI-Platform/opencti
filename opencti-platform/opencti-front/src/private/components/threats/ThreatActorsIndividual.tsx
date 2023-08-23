@@ -5,7 +5,7 @@ import ListCards from '../../../components/list_cards/ListCards';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
-import { ThreatActorIndividualCardDummy } from './threat_actors_individual/ThreatActorIndividualCard';
+import { GenericAttackCardDummy } from '../common/cards/GenericAttackCard';
 import ThreatActorsIndividualCards, {
   threatActorsIndividualCardsPaginationQuery,
 } from './threat_actors_individual/ThreatActorsIndividualCards';
@@ -96,7 +96,7 @@ const ThreatActorsIndividual = () => {
                   .fill(0)
                   .map((idx) => (
                     <Grid item={true} xs={3} key={idx}>
-                      <ThreatActorIndividualCardDummy />
+                      <GenericAttackCardDummy />
                     </Grid>
                   ))}
               </Grid>

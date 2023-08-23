@@ -6,10 +6,8 @@ import {
 } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
-import {
-  ThreatActorIndividualCard,
-  ThreatActorIndividualCardDummy,
-} from './ThreatActorIndividualCard';
+import ThreatActorIndividualCard from './ThreatActorIndividualCard';
+import { GenericAttackCardDummy } from '../../common/cards/GenericAttackCard';
 import StixDomainObjectBookmarks, {
   stixDomainObjectBookmarksQuery,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
@@ -116,17 +114,17 @@ ThreatActorsIndividualCardsProps
             loadMore={loadMore}
             hasMore={hasMore}
             isLoading={isLoadingMore}
+            DummyCardComponent={GenericAttackCardDummy}
             dataList={data?.threatActorsIndividuals?.edges ?? []}
             globalCount={
               data?.threatActorsIndividuals?.pageInfo?.globalCount
               ?? nbOfCardsToLoad
             }
             CardComponent={ThreatActorIndividualCard}
-            DummyCardComponent={ThreatActorIndividualCardDummy}
             nbOfCardsToLoad={nbOfCardsToLoad}
             onLabelClick={onLabelClick}
             bookmarkList={bookmarks}
-            rowHeight={340}
+            rowHeight={350}
           />
         </>
       )}
