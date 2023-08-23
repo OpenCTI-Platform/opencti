@@ -28,7 +28,12 @@ import {
 import { BYPASS, executionContext, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  buildRefRelationKey,
+  ENTITY_TYPE_CONTAINER,
+  STIX_TYPE_RELATION, STIX_TYPE_SIGHTING
+} from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
 import { convertFiltersFrontendFormat, convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
@@ -350,10 +355,18 @@ const createSseMiddleware = () => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
     const missingElements = await resolveMissingReferences(context, req, refs, cache);
     const missingInstances = await storeLoadByIdsWithRefs(context, req.user, missingElements);
-    const missingAllPerIds = missingInstances.map((m) => {
-      return [m.internal_id, m.standard_id, ...(m.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }));
-    }).flat();
+    const missingAllPerIds = missingInstances.map((m) => [m.internal_id, m.standard_id, ...(m.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }))).flat();
     const missingMap = new Map(missingAllPerIds.map((m) => [m.id, m.value]));
+    if (stixData.type === STIX_TYPE_RELATION || stixData.type === STIX_TYPE_SIGHTING) {
+      // Check for a relation that the from and the to is correctly accessible.
+      const fromId = stixData.source_ref ?? stixData.sighting_of_ref;
+      const toId = stixData.target_ref ?? stixData.where_sighted_refs[0];
+      const missingFrom = missingMap.get(fromId);
+      const missingTo = missingMap.get(toId);
+      if (!missingFrom || !missingTo) {
+        return false;
+      }
+    }
     for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
       const missingElementId = missingElements[missingIndex];
       const missingInstance = missingMap.get(missingElementId);
@@ -367,12 +380,13 @@ const createSseMiddleware = () => {
         await wait(channel.delay);
       }
     }
+    return true;
   };
   const resolveAndPublishDependencies = async (context, noDependencies, cache, channel, req, eventId, stix) => {
     // Resolving REFS
-    await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
+    const isValidResolution = await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
     // Resolving CORE RELATIONS
-    if (noDependencies === false) {
+    if (isValidResolution && noDependencies === false) {
       const allRelCallback = async (relations) => {
         const notCachedRelations = relations.filter((m) => !cache.has(m.standard_id));
         const findRelIds = notCachedRelations.map((r) => r.internal_id);
@@ -404,6 +418,7 @@ const createSseMiddleware = () => {
       const relationTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP];
       await listAllRelations(context, req.user, relationTypes, allRelOptions);
     }
+    return isValidResolution;
   };
   const isFiltersEntityTypeMatch = (filters, type) => {
     let match = false;
@@ -563,11 +578,15 @@ const createSseMiddleware = () => {
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
                   } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
-                    await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
-                    client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                    const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
+                    if (isValidResolution) {
+                      client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                    }
                   } else if (isCurrentlyVisible) { // Just an update
-                    await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
-                    client.sendEvent(eventId, event, eventData);
+                    const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
+                    if (isValidResolution) {
+                      client.sendEvent(eventId, event, eventData);
+                    }
                   } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                     // In case of relationship publication, from or to can be related to something that
                     // is part of the filtering. We can consider this as dependencies
@@ -600,8 +619,10 @@ const createSseMiddleware = () => {
                       client.sendEvent(eventId, event, eventData);
                     }
                   } else { // Create and merge
-                    await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
-                    client.sendEvent(eventId, event, eventData);
+                    const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
+                    if (isValidResolution) {
+                      client.sendEvent(eventId, event, eventData);
+                    }
                   }
                 } else if (isRelation && publishDependencies) { // Not an update and not visible
                   // In case of relationship publication, from or to can be related to something that

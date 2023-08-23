@@ -453,7 +453,8 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
   const depsPromise = loadElementMetaDependencies(context, user, elementsToDeps, opts);
   if (targetsToResolved.length > 0) {
     const args = { toMap: true, connectionFormat: false };
-    fromToPromise = elFindByIds(context, user, targetsToResolved, args);
+    // Load with System user, access rights will be dynamically change after
+    fromToPromise = elFindByIds(context, SYSTEM_USER, targetsToResolved, args);
   }
   const [fromToMap, depsElementsMap] = await Promise.all([fromToPromise, depsPromise]);
   const loadedElements = [];
@@ -471,7 +472,7 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
         const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
         logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
         // Auto deletion of the invalid relation
-        await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
+        // await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
       } else {
         const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
         const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });

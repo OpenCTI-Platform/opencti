@@ -11311,6 +11311,7 @@ interface StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
+  toStix: String
   # Technical
   creators: [Creator!]
 }
@@ -11674,6 +11675,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
+  toStix: String
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]

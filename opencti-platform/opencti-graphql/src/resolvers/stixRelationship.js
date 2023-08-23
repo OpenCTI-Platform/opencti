@@ -14,7 +14,7 @@ import {
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
-import { batchLoader, timeSeriesRelations } from '../database/middleware';
+import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { elBatchIds } from '../database/engine';
 import { batchCreators } from '../domain/user';
 
@@ -38,6 +38,7 @@ const stixRelationshipResolvers = {
     to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     createdBy: (rel, _, context) => createdByLoader.load(rel.id, context, context.user),
+    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel.id, context, context.user),
     // eslint-disable-next-line
     __resolveType(obj) {
