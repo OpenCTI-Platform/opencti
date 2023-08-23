@@ -222,8 +222,8 @@ services:
       WORKER_LOG_LEVEL: info
     commands:
       - cp -a opencti-worker /tmp/direct-start-worker
-      - apk add build-base git libffi-dev cargo curl
-      - until curl -sf http://opencti-direct-start:4300; do echo -n "."; sleep 1; done
+      - apk add build-base git libffi-dev cargo
+      - while ! nc -z opencti-direct-start 4300 ; do sleep 1 ; done
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
