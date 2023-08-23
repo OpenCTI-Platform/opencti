@@ -29,15 +29,15 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
-  query StixCoreRelationshipsMultiAreaChartTimeSeriesQuery(
+const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
+  query StixRelationshipsMultiAreaChartTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $timeSeriesParameters: [StixCoreRelationshipsTimeSeriesParameters]
+    $timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
   ) {
-    stixCoreRelationshipsMultiTimeSeries(
+    stixRelationshipsMultiTimeSeries(
       operation: $operation
       startDate: $startDate
       endDate: $endDate
@@ -52,7 +52,7 @@ const stixCoreRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsMultiAreaChart = ({
+const StixRelationshipsMultiAreaChart = ({
   variant,
   height,
   startDate,
@@ -104,7 +104,7 @@ const StixCoreRelationshipsMultiAreaChart = ({
     }
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsMultiAreaChartTimeSeriesQuery}
+        query={stixRelationshipsMultiAreaChartTimeSeriesQuery}
         variables={{
           operation: 'count',
           startDate: startDate ?? monthsAgo(12),
@@ -113,7 +113,7 @@ const StixCoreRelationshipsMultiAreaChart = ({
           timeSeriesParameters,
         }}
         render={({ props }) => {
-          if (props && props.stixCoreRelationshipsMultiTimeSeries) {
+          if (props && props.stixRelationshipsMultiTimeSeries) {
             return (
               <Chart
                 options={areaChartOptions(
@@ -131,7 +131,7 @@ const StixCoreRelationshipsMultiAreaChart = ({
                 )}
                 series={dataSelection.map((selection, i) => ({
                   name: selection.label ?? t('Number of entities'),
-                  data: props.stixCoreRelationshipsMultiTimeSeries[i].data.map(
+                  data: props.stixRelationshipsMultiTimeSeries[i].data.map(
                     (entry) => ({
                       x: new Date(entry.date),
                       y: entry.value,
@@ -199,4 +199,4 @@ const StixCoreRelationshipsMultiAreaChart = ({
   );
 };
 
-export default StixCoreRelationshipsMultiAreaChart;
+export default StixRelationshipsMultiAreaChart;

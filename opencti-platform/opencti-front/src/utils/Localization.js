@@ -2938,7 +2938,7 @@ const i18n = {
       'Display global knowledge with filters and criteria.':
         'Afficher la connaissance globale avec des filtres et des critères.',
       'Display specific knowledge using relationships and filters.':
-        'Afficher des connaissances spécifiques en utilisant des relations et des filtres.',
+        'Afficher des connaissances en utilisant des relations et des filtres.',
       Objective: 'Objectif',
       Configuration: 'Configuration',
       Victimology: 'Victimologie',

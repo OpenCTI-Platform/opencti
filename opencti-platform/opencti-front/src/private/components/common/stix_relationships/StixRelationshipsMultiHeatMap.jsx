@@ -10,8 +10,7 @@ import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { verticalBarsChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
+import { heatMapOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
 
 const useStyles = makeStyles(() => ({
@@ -29,15 +28,15 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
-  query StixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery(
+const stixRelationshipsMultiHeatMapTimeSeriesQuery = graphql`
+  query StixRelationshipsMultiHeatMapTimeSeriesQuery(
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $timeSeriesParameters: [StixCoreRelationshipsTimeSeriesParameters]
+    $timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
   ) {
-    stixCoreRelationshipsMultiTimeSeries(
+    stixRelationshipsMultiTimeSeries(
       operation: $operation
       startDate: $startDate
       endDate: $endDate
@@ -52,7 +51,35 @@ const stixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsMultiVerticalBars = ({
+const darkColors = [
+  '#001e3c',
+  '#023362',
+  '#02407a',
+  '#045198',
+  '#0561b4',
+  '#0b75d9',
+  '#2986e7',
+  '#3a95f3',
+  '#4da3ff',
+  '#76bbff',
+  '#9eccff',
+];
+
+const lightColors = [
+  '#f3f6f9',
+  '#76bbff',
+  '#4da3ff',
+  '#3a95f3',
+  '#2986e7',
+  '#0b75d9',
+  '#0561b4',
+  '#02407a',
+  '#023362',
+  '#001e3c',
+  '#021428',
+];
+
+const StixRelationshipsMultiHeatMap = ({
   variant,
   height,
   startDate,
@@ -63,7 +90,7 @@ const StixCoreRelationshipsMultiVerticalBars = ({
 }) => {
   const theme = useTheme();
   const classes = useStyles();
-  const { t, fsd, mtdy, yd } = useFormatter();
+  const { t, fsd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const filters = convertFilters(selection.filters);
@@ -93,20 +120,11 @@ const StixCoreRelationshipsMultiVerticalBars = ({
         toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
         filters: finalFilters,
-        dynamicFrom: convertFilters(selection.dynamicFrom),
-        dynamicTo: convertFilters(selection.dynamicTo),
       };
     });
-    let formatter = fsd;
-    if (parameters.interval === 'month' || parameters.interval === 'quarter') {
-      formatter = mtdy;
-    }
-    if (parameters.interval === 'year') {
-      formatter = yd;
-    }
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsMultiVerticalBarsTimeSeriesQuery}
+        query={stixRelationshipsMultiHeatMapTimeSeriesQuery}
         variables={{
           operation: 'count',
           startDate: startDate ?? monthsAgo(12),
@@ -115,33 +133,54 @@ const StixCoreRelationshipsMultiVerticalBars = ({
           timeSeriesParameters,
         }}
         render={({ props }) => {
-          if (props && props.stixCoreRelationshipsMultiTimeSeries) {
+          if (props && props.stixRelationshipsMultiTimeSeries) {
+            const chartdata = dataSelection.map((selection, i) => ({
+              name: selection.label ?? t('Number of relationships'),
+              data: props.stixRelationshipsMultiTimeSeries[i].data.map(
+                (entry) => ({
+                  x: new Date(entry.date),
+                  y: entry.value,
+                }),
+              ),
+            }));
+            const allValues = props.stixRelationshipsMultiTimeSeries
+              .map((n) => n.data.map((o) => o.value))
+              .flat();
+            const maxValue = Math.max(...allValues);
+            const minValue = Math.min(...allValues);
+            const interval = Math.trunc((maxValue - minValue) / 9);
+            const colorRanges = Array(10)
+              .fill(0)
+              .map((_, i) => ({
+                from:
+                  minValue + (i + 1) * interval - interval === 0
+                    ? 1
+                    : minValue + (i + 1) * interval - interval,
+                to: minValue + (i + 1) * interval,
+                color:
+                  theme.palette.mode === 'dark'
+                    ? darkColors[i + 1]
+                    : lightColors[i + 1],
+              }));
+            colorRanges.push({
+              from: 0,
+              to: 0,
+              color:
+                theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
+            });
             return (
               <Chart
-                options={verticalBarsChartOptions(
+                options={heatMapOptions(
                   theme,
-                  formatter,
-                  simpleNumberFormat,
-                  false,
-                  !parameters.interval
-                    || ['day', 'week'].includes(parameters.interval),
+                  true,
+                  fsd,
+                  undefined,
+                  undefined,
                   parameters.stacked,
-                  parameters.legend,
-                  parameters.interval
-                    && !['day', 'week'].includes(parameters.interval)
-                    ? 'dataPoints'
-                    : undefined,
+                  colorRanges,
                 )}
-                series={dataSelection.map((selection, i) => ({
-                  name: selection.label ?? t('Number of entities'),
-                  data: props.stixCoreRelationshipsMultiTimeSeries[i].data.map(
-                    (entry) => ({
-                      x: new Date(entry.date),
-                      y: entry.value,
-                    }),
-                  ),
-                }))}
-                type="bar"
+                series={chartdata}
+                type="heatmap"
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
@@ -202,4 +241,4 @@ const StixCoreRelationshipsMultiVerticalBars = ({
   );
 };
 
-export default StixCoreRelationshipsMultiVerticalBars;
+export default StixRelationshipsMultiHeatMap;

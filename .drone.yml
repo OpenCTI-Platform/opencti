@@ -31,7 +31,7 @@ steps:
       PYTHONUNBUFFERED: 1
     commands:
       - apk add build-base git libffi-dev cargo
-      - pip3 install --upgrade --force setuptools
+      - pip3 install --upgrade setuptools
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
       - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
       - CONNECTOR_BRANCH=$([[ $(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git opencti/$BRANCH) ]] && echo opencti/$BRANCH || echo 'master')

@@ -1,26 +1,30 @@
 import React from 'react';
 import * as R from 'ramda';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
-import { useFormatter } from '../../../../components/i18n';
-import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/styles';
+import makeStyles from '@mui/styles/makeStyles';
+import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
-import { computeLevel } from '../../../../utils/Number';
+import { useFormatter } from '../../../../components/i18n';
+import { radarChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { defaultValue } from '../../../../utils/Graph';
+import { truncate } from '../../../../utils/String';
 
 const useStyles = makeStyles(() => ({
   paper: {
+    height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
 }));
 
-export const stixCoreRelationshipsMapStixCoreRelationshipsDistributionQuery = graphql`
-  query StixCoreRelationshipsMapStixCoreRelationshipsDistributionQuery(
+const stixRelationshipsRadarsDistributionQuery = graphql`
+  query StixRelationshipsRadarDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -39,10 +43,10 @@ export const stixCoreRelationshipsMapStixCoreRelationshipsDistributionQuery = gr
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
   ) {
-    stixCoreRelationshipsDistribution(
+    stixRelationshipsDistribution(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -73,24 +77,120 @@ export const stixCoreRelationshipsMapStixCoreRelationshipsDistributionQuery = gr
         ... on BasicRelationship {
           entity_type
         }
-        ... on Country {
+        ... on AttackPattern {
           name
-          x_opencti_aliases
-          latitude
-          longitude
+          description
+          x_mitre_id
+        }
+        ... on Campaign {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on System {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+          description
+        }
+        ... on Infrastructure {
+          name
+          description
+        }
+        ... on IntrusionSet {
+          name
+          description
+        }
+        ... on Position {
+          name
+          description
         }
         ... on City {
           name
-          x_opencti_aliases
-          latitude
-          longitude
+          description
+        }
+        ... on AdministrativeArea {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+        }
+        ... on ThreatActor {
+          name
+          description
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on Incident {
+          name
+          description
+        }
+        ... on Event {
+          name
+          description
+        }
+        ... on Channel {
+          name
+          description
+        }
+        ... on Narrative {
+          name
+          description
+        }
+        ... on Language {
+          name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
+        ... on Case {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
         }
       }
     }
   }
 `;
 
-const StixCoreRelationshipsMap = ({
+const StixRelationshipsRadar = ({
   title,
   variant,
   height,
@@ -103,8 +203,10 @@ const StixCoreRelationshipsMap = ({
   dateAttribute,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const classes = useStyles();
+  const theme = useTheme();
   const { t } = useFormatter();
   const renderContent = () => {
     let finalFilters = [];
@@ -154,42 +256,48 @@ const StixCoreRelationshipsMap = ({
     };
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsMapStixCoreRelationshipsDistributionQuery}
+        query={stixRelationshipsRadarsDistributionQuery}
         variables={variables}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.stixRelationshipsDistribution
+            && props.stixRelationshipsDistribution.length > 0
           ) {
-            const values = R.pluck(
-              'value',
-              props.stixCoreRelationshipsDistribution,
-            );
-            const countries = R.map(
-              (x) => R.assoc(
-                'level',
-                computeLevel(x.value, R.last(values), R.head(values) + 1),
-                x.entity,
-              ),
-              R.filter(
-                (n) => n.entity?.entity_type === 'Country',
-                props.stixCoreRelationshipsDistribution,
-              ),
-            );
-            const cities = R.map(
-              (x) => x.entity,
-              R.filter(
-                (n) => n.entity?.entity_type === 'City',
-                props.stixCoreRelationshipsDistribution,
-              ),
-            );
+            let data = props.stixRelationshipsDistribution;
+            if (finalField === 'internal_id') {
+              data = R.map(
+                (n) => R.assoc(
+                  'label',
+                  `${
+                    finalToTypes && finalToTypes.length > 1
+                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${truncate(
+                        defaultValue(n.entity),
+                        20,
+                      )}`
+                      : `${truncate(defaultValue(n.entity), 20)}`
+                  }`,
+                  n,
+                ),
+                props.stixRelationshipsDistribution,
+              );
+            }
+            const valueData = data.map((n) => n.value);
+            const chartData = [
+              {
+                name: selection.label || t('Number of relationships'),
+                data: valueData,
+              },
+            ];
+            const labels = data.map((n) => n.label);
             return (
-              <LocationMiniMapTargets
-                center={[48.8566969, 2.3514616]}
-                countries={countries}
-                cities={cities}
-                zoom={2}
+              <Chart
+                options={radarChartOptions(theme, labels, [], true, false)}
+                series={chartData}
+                type="radar"
+                width="100%"
+                height="100%"
+                withExportPopover={withExportPopover}
               />
             );
           }
@@ -247,4 +355,4 @@ const StixCoreRelationshipsMap = ({
   );
 };
 
-export default StixCoreRelationshipsMap;
+export default StixRelationshipsRadar;

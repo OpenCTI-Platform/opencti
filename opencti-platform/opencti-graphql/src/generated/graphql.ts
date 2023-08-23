@@ -17738,6 +17738,10 @@ export type Query = {
   stixRefRelationshipsNumber?: Maybe<Number>;
   stixRelationship?: Maybe<StixRelationship>;
   stixRelationships?: Maybe<StixRelationshipConnection>;
+  stixRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  stixRelationshipsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
+  stixRelationshipsNumber?: Maybe<Number>;
+  stixRelationshipsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixSchemaRefRelationships?: Maybe<DefinitionRefRelationship>;
   stixSightingRelationship?: Maybe<StixSightingRelationship>;
   stixSightingRelationships?: Maybe<StixSightingRelationshipConnection>;
@@ -19596,7 +19600,7 @@ export type QueryStixRelationshipsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
   firstSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
   firstSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
-  fromId?: InputMaybe<Scalars['StixRef']['input']>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   fromRole?: InputMaybe<Scalars['String']['input']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lastSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
@@ -19611,7 +19615,92 @@ export type QueryStixRelationshipsArgs = {
   stix?: InputMaybe<Scalars['Boolean']['input']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']['input']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
-  toId?: InputMaybe<Scalars['StixRef']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryStixRelationshipsDistributionArgs = {
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixRelationshipsFiltering>>>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  isTo?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']['input']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryStixRelationshipsMultiTimeSeriesArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  interval: Scalars['String']['input'];
+  onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  operation: StatsOperation;
+  startDate: Scalars['DateTime']['input'];
+  timeSeriesParameters?: InputMaybe<Array<InputMaybe<StixRelationshipsTimeSeriesParameters>>>;
+};
+
+
+export type QueryStixRelationshipsNumberArgs = {
+  authorId?: InputMaybe<Scalars['String']['input']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixRelationshipsFiltering>>>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  noDirection?: InputMaybe<Scalars['Boolean']['input']>;
+  onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryStixRelationshipsTimeSeriesArgs = {
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixRelationshipsFiltering>>>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  interval: Scalars['String']['input'];
+  onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  operation: StatsOperation;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate: Scalars['DateTime']['input'];
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -23515,13 +23604,24 @@ export enum StixRelationshipsFilter {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
+  ElementWithTargetTypes = 'elementWithTargetTypes',
+  EntityType = 'entity_type',
+  FromId = 'fromId',
+  FromName = 'fromName',
+  FromTypes = 'fromTypes',
+  KillChainPhase = 'killChainPhase',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
+  RelationshipType = 'relationship_type',
+  Revoked = 'revoked',
   ToCreatedAt = 'toCreatedAt',
   ToMainObservableType = 'toMainObservableType',
   ToName = 'toName',
-  ToPatternType = 'toPatternType'
+  ToPatternType = 'toPatternType',
+  ToTypes = 'toTypes',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
 export type StixRelationshipsFiltering = {
@@ -23534,7 +23634,9 @@ export type StixRelationshipsFiltering = {
 export enum StixRelationshipsOrdering {
   Confidence = 'confidence',
   Created = 'created',
+  CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   EntityType = 'entity_type',
   KillChainPhase = 'killChainPhase',
   Modified = 'modified',
@@ -23544,11 +23646,32 @@ export enum StixRelationshipsOrdering {
   StartTime = 'start_time',
   StopTime = 'stop_time',
   ToName = 'toName',
+  ToObservableValue = 'toObservableValue',
   ToPatternType = 'toPatternType',
   ToValidFrom = 'toValidFrom',
   ToValidUntil = 'toValidUntil',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
+
+export type StixRelationshipsTimeSeriesParameters = {
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  field: Scalars['String']['input'];
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixRelationshipsFiltering>>>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
 
 export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   __typename?: 'StixSightingRelationship';
@@ -28929,6 +29052,7 @@ export type ResolversTypes = ResolversObject<{
   StixRelationshipsFilter: StixRelationshipsFilter;
   StixRelationshipsFiltering: StixRelationshipsFiltering;
   StixRelationshipsOrdering: StixRelationshipsOrdering;
+  StixRelationshipsTimeSeriesParameters: StixRelationshipsTimeSeriesParameters;
   StixSightingRelationship: ResolverTypeWrapper<Omit<StixSightingRelationship, 'cases' | 'containers' | 'createdBy' | 'externalReferences' | 'from' | 'groupings' | 'notes' | 'objectOrganization' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, from?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, to?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   StixSightingRelationshipAddInput: StixSightingRelationshipAddInput;
   StixSightingRelationshipConnection: ResolverTypeWrapper<Omit<StixSightingRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixSightingRelationshipsEdge']>>> }>;
@@ -29617,6 +29741,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixRelationshipEdge: Omit<StixRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixRelationship'] };
   StixRelationshipEditMutations: StixRelationshipEditMutations;
   StixRelationshipsFiltering: StixRelationshipsFiltering;
+  StixRelationshipsTimeSeriesParameters: StixRelationshipsTimeSeriesParameters;
   StixSightingRelationship: Omit<StixSightingRelationship, 'cases' | 'containers' | 'createdBy' | 'externalReferences' | 'from' | 'groupings' | 'notes' | 'objectOrganization' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   StixSightingRelationshipAddInput: StixSightingRelationshipAddInput;
   StixSightingRelationshipConnection: Omit<StixSightingRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixSightingRelationshipsEdge']>>> };
@@ -34809,6 +34934,10 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixRefRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixRefRelationshipsNumberArgs>>;
   stixRelationship?: Resolver<Maybe<ResolversTypes['StixRelationship']>, ParentType, ContextType, Partial<QueryStixRelationshipArgs>>;
   stixRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixRelationshipsArgs>>;
+  stixRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  stixRelationshipsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixRelationshipsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
+  stixRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixRelationshipsNumberArgs>>;
+  stixRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixRelationshipsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixSchemaRefRelationships?: Resolver<Maybe<ResolversTypes['DefinitionRefRelationship']>, ParentType, ContextType, Partial<QueryStixSchemaRefRelationshipsArgs>>;
   stixSightingRelationship?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, Partial<QueryStixSightingRelationshipArgs>>;
   stixSightingRelationships?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixSightingRelationshipsArgs>>;

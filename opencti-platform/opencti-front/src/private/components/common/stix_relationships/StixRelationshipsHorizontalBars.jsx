@@ -1,15 +1,18 @@
 import React from 'react';
-import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
+import * as R from 'ramda';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { treeMapOptions } from '../../../../utils/Charts';
+import { itemColor } from '../../../../utils/Colors';
+import { horizontalBarsChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 
@@ -22,8 +25,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreRelationshipsTreeMapsDistributionQuery = graphql`
-  query StixCoreRelationshipsTreeMapDistributionQuery(
+const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
+  query StixRelationshipsHorizontalBarsDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -42,10 +45,12 @@ const stixCoreRelationshipsTreeMapsDistributionQuery = graphql`
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
   ) {
-    stixCoreRelationshipsDistribution(
+    stixRelationshipsDistribution(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -66,6 +71,8 @@ const stixCoreRelationshipsTreeMapsDistributionQuery = graphql`
       search: $search
       filters: $filters
       filterMode: $filterMode
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -124,10 +131,6 @@ const stixCoreRelationshipsTreeMapsDistributionQuery = graphql`
           name
           description
         }
-        ... on AdministrativeArea {
-          name
-          description
-        }
         ... on Country {
           name
           description
@@ -180,15 +183,38 @@ const stixCoreRelationshipsTreeMapsDistributionQuery = graphql`
         ... on Case {
           name
         }
+        ... on Report {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
+        }
+        ... on MarkingDefinition {
+          definition_type
+          definition
+        }
+        ... on Creator {
+          name
+        }
+        ... on Report {
+          name
+        }
+        ... on Grouping {
+          name
+        }
+        ... on Note {
+          attribute_abstract
+          content
+        }
+        ... on Opinion {
+          opinion
         }
       }
     }
   }
 `;
 
-const StixCoreRelationshipsTreeMap = ({
+const StixRelationshipsHorizontalBars = ({
   title,
   variant,
   height,
@@ -206,9 +232,11 @@ const StixCoreRelationshipsTreeMap = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
+  const navigate = useNavigate();
   const renderContent = () => {
     let finalFilters = [];
     let selection = {};
+    let dataSelectionDateAttribute = null;
     let dataSelectionRelationshipType = null;
     let dataSelectionFromId = null;
     let dataSelectionToId = null;
@@ -218,6 +246,9 @@ const StixCoreRelationshipsTreeMap = ({
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       finalFilters = convertFilters(selection.filters);
+      dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+        ? selection.date_attribute
+        : 'created_at';
       dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
         ?.values || null;
       dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
@@ -236,60 +267,61 @@ const StixCoreRelationshipsTreeMap = ({
       );
     }
     const finalField = selection.attribute || field || 'entity_type';
-    const finalToTypes = dataSelectionToTypes || toTypes;
     const variables = {
       fromId: dataSelectionFromId || stixCoreObjectId,
       toId: dataSelectionToId,
       relationship_type: dataSelectionRelationshipType || relationshipType,
       fromTypes: dataSelectionFromTypes,
-      toTypes: finalToTypes,
+      toTypes: dataSelectionToTypes || toTypes,
       field: finalField,
       operation: 'count',
       startDate,
       endDate,
-      dateAttribute,
+      dateAttribute: dateAttribute || dataSelectionDateAttribute,
       limit: selection.number ?? 10,
       filters: finalFilters,
       isTo: selection.isTo,
+      dynamicFrom: convertFilters(selection.dynamicFrom),
+      dynamicTo: convertFilters(selection.dynamicTo),
     };
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsTreeMapsDistributionQuery}
+        query={stixRelationshipsHorizontalBarsDistributionQuery}
         variables={variables}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.stixRelationshipsDistribution
+            && props.stixRelationshipsDistribution.length > 0
           ) {
-            let data = props.stixCoreRelationshipsDistribution;
-            if (finalField === 'internal_id') {
-              data = R.map(
-                (n) => R.assoc(
-                  'label',
-                  `${
-                    finalToTypes && finalToTypes.length > 1
-                      ? `[${t(
-                        `entity_${n.entity.entity_type}`,
-                      )}] ${defaultValue(n.entity)}`
-                      : `${defaultValue(n.entity)}`
-                  }`,
-                  n,
-                ),
-                props.stixCoreRelationshipsDistribution,
-              );
-            }
-            const chartData = data.map((n) => ({ x: n.label, y: n.value }));
-            const series = [{ data: chartData }];
+            const data = props.stixRelationshipsDistribution.map((n) => ({
+              x:
+                finalField === 'internal_id' ? defaultValue(n.entity) : n.label,
+              y: n.value,
+              fillColor: itemColor(
+                finalField === 'internal_id' ? n.entity.entity_type : n.label,
+              ),
+            }));
+            const chartData = [{ name: t('Number of relationships'), data }];
+            const redirectionUtils = finalField === 'internal_id'
+              ? props.stixRelationshipsDistribution.map((n) => ({
+                id: n.label,
+                entity_type: n.entity.entity_type,
+              }))
+              : null;
             return (
               <Chart
-                options={treeMapOptions(
+                options={horizontalBarsChartOptions(
                   theme,
-                  'bottom',
-                  parameters.distributed,
+                  true,
+                  simpleNumberFormat,
+                  null,
+                  false,
+                  navigate,
+                  redirectionUtils,
                 )}
-                series={series}
-                type="treemap"
+                series={chartData}
+                type="bar"
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
@@ -350,4 +382,4 @@ const StixCoreRelationshipsTreeMap = ({
   );
 };
 
-export default StixCoreRelationshipsTreeMap;
+export default StixRelationshipsHorizontalBars;

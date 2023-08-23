@@ -13,7 +13,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { resolveLink } from '../../../../utils/Entity';
+import { computeLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -81,16 +81,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const stixCoreRelationshipsListSearchQuery = graphql`
-  query StixCoreRelationshipsListSearchQuery(
+export const stixRelationshipsListSearchQuery = graphql`
+  query StixRelationshipsListSearchQuery(
     $search: String
     $fromId: [String]
     $toId: [String]
     $relationship_type: [String]
     $count: Int!
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
   ) {
-    stixCoreRelationships(
+    stixRelationships(
       search: $search
       fromId: $fromId
       toId: $toId
@@ -111,20 +111,20 @@ export const stixCoreRelationshipsListSearchQuery = graphql`
   }
 `;
 
-const stixCoreRelationshipsListQuery = graphql`
-  query StixCoreRelationshipsListQuery(
+const stixRelationshipsListQuery = graphql`
+  query StixRelationshipsListQuery(
     $relationship_type: [String]
     $fromId: [String]
     $toId: [String]
     $fromTypes: [String]
     $toTypes: [String]
     $first: Int!
-    $orderBy: StixCoreRelationshipsOrdering
+    $orderBy: StixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $search: String
   ) {
-    stixCoreRelationships(
+    stixRelationships(
       relationship_type: $relationship_type
       fromId: $fromId
       toId: $toId
@@ -143,9 +143,24 @@ const stixCoreRelationshipsListQuery = graphql`
           parent_types
           relationship_type
           confidence
-          start_time
-          stop_time
-          description
+          ... on StixCoreRelationship {
+            start_time
+            stop_time
+            description
+            objectLabel {
+              edges {
+                node {
+                  id
+                  value
+                  color
+                }
+              }
+            }
+          }
+          ... on StixSightingRelationship {
+            first_seen
+            last_seen
+          }
           fromRole
           toRole
           created_at
@@ -163,15 +178,6 @@ const stixCoreRelationshipsListQuery = graphql`
                 definition
                 x_opencti_order
                 x_opencti_color
-              }
-            }
-          }
-          objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
               }
             }
           }
@@ -276,12 +282,19 @@ const stixCoreRelationshipsListQuery = graphql`
               ... on Case {
                 name
               }
-              ... on StixCoreRelationship {
+              ... on StixRelationship {
                 id
                 relationship_type
                 created_at
-                start_time
-                stop_time
+                ... on StixCoreRelationship {
+                  start_time
+                  stop_time
+                  description
+                }
+                ... on StixSightingRelationship {
+                  first_seen
+                  last_seen
+                }
                 created
                 from {
                   ... on BasicObject {
@@ -297,11 +310,18 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on StixCoreObject {
                     created_at
                   }
-                  ... on StixCoreRelationship {
+                  ... on StixRelationship {
                     relationship_type
                     created_at
-                    start_time
-                    stop_time
+                    ... on StixCoreRelationship {
+                      start_time
+                      stop_time
+                      description
+                    }
+                    ... on StixSightingRelationship {
+                      first_seen
+                      last_seen
+                    }
                     created
                   }
                   ... on AttackPattern {
@@ -557,12 +577,19 @@ const stixCoreRelationshipsListQuery = graphql`
                       }
                     }
                   }
-                  ... on StixCoreRelationship {
+                  ... on StixRelationship {
                     id
                     entity_type
                     relationship_type
-                    start_time
-                    stop_time
+                    ... on StixCoreRelationship {
+                      start_time
+                      stop_time
+                      description
+                    }
+                    ... on StixSightingRelationship {
+                      first_seen
+                      last_seen
+                    }
                     created
                     from {
                       ... on BasicObject {
@@ -576,10 +603,17 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on StixCoreObject {
                         created_at
                       }
-                      ... on StixCoreRelationship {
+                      ... on StixRelationship {
                         created_at
-                        start_time
-                        stop_time
+                        ... on StixCoreRelationship {
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on StixSightingRelationship {
+                          first_seen
+                          last_seen
+                        }
                         created
                       }
                       ... on AttackPattern {
@@ -676,10 +710,17 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on StixCoreObject {
                         created_at
                       }
-                      ... on StixCoreRelationship {
+                      ... on StixRelationship {
                         created_at
-                        start_time
-                        stop_time
+                        ... on StixCoreRelationship {
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on StixSightingRelationship {
+                          first_seen
+                          last_seen
+                        }
                         created
                       }
                       ... on AttackPattern {
@@ -942,11 +983,18 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on StixCoreObject {
                     created_at
                   }
-                  ... on StixCoreRelationship {
+                  ... on StixRelationship {
                     created_at
                     relationship_type
-                    start_time
-                    stop_time
+                    ... on StixCoreRelationship {
+                      start_time
+                      stop_time
+                      description
+                    }
+                    ... on StixSightingRelationship {
+                      first_seen
+                      last_seen
+                    }
                     created
                   }
                   ... on AttackPattern {
@@ -1195,12 +1243,19 @@ const stixCoreRelationshipsListQuery = graphql`
                       }
                     }
                   }
-                  ... on StixCoreRelationship {
+                  ... on StixRelationship {
                     id
                     entity_type
                     relationship_type
-                    start_time
-                    stop_time
+                    ... on StixCoreRelationship {
+                      start_time
+                      stop_time
+                      description
+                    }
+                    ... on StixSightingRelationship {
+                      first_seen
+                      last_seen
+                    }
                     created
                     from {
                       ... on BasicObject {
@@ -1216,10 +1271,17 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on StixCoreObject {
                         created_at
                       }
-                      ... on StixCoreRelationship {
+                      ... on StixRelationship {
                         created_at
-                        start_time
-                        stop_time
+                        ... on StixCoreRelationship {
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on StixSightingRelationship {
+                          first_seen
+                          last_seen
+                        }
                         created
                       }
                       ... on AttackPattern {
@@ -1483,10 +1545,17 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on StixCoreObject {
                         created_at
                       }
-                      ... on StixCoreRelationship {
+                      ... on StixRelationship {
                         created_at
-                        start_time
-                        stop_time
+                        ... on StixCoreRelationship {
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on StixSightingRelationship {
+                          first_seen
+                          last_seen
+                        }
                         created
                       }
                       ... on AttackPattern {
@@ -1756,11 +1825,18 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on StixCoreObject {
                     created_at
                   }
-                  ... on StixCoreRelationship {
+                  ... on StixRelationship {
                     relationship_type
                     created_at
-                    start_time
-                    stop_time
+                    ... on StixCoreRelationship {
+                      start_time
+                      stop_time
+                      description
+                    }
+                    ... on StixSightingRelationship {
+                      first_seen
+                      last_seen
+                    }
                     created
                   }
                   ... on AttackPattern {
@@ -2009,12 +2085,19 @@ const stixCoreRelationshipsListQuery = graphql`
                       }
                     }
                   }
-                  ... on StixCoreRelationship {
+                  ... on StixRelationship {
                     id
                     entity_type
                     relationship_type
-                    start_time
-                    stop_time
+                    ... on StixCoreRelationship {
+                      start_time
+                      stop_time
+                      description
+                    }
+                    ... on StixSightingRelationship {
+                      first_seen
+                      last_seen
+                    }
                     created
                     from {
                       ... on BasicObject {
@@ -2028,10 +2111,17 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on StixCoreObject {
                         created_at
                       }
-                      ... on StixCoreRelationship {
+                      ... on StixRelationship {
                         created_at
-                        start_time
-                        stop_time
+                        ... on StixCoreRelationship {
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on StixSightingRelationship {
+                          first_seen
+                          last_seen
+                        }
                         created
                       }
                       ... on AttackPattern {
@@ -2125,10 +2215,17 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on StixCoreObject {
                         created_at
                       }
-                      ... on StixCoreRelationship {
+                      ... on StixRelationship {
                         created_at
-                        start_time
-                        stop_time
+                        ... on StixCoreRelationship {
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on StixSightingRelationship {
+                          first_seen
+                          last_seen
+                        }
                         created
                       }
                       ... on AttackPattern {
@@ -2391,11 +2488,18 @@ const stixCoreRelationshipsListQuery = graphql`
                   ... on StixCoreObject {
                     created_at
                   }
-                  ... on StixCoreRelationship {
+                  ... on StixRelationship {
                     created_at
                     relationship_type
-                    start_time
-                    stop_time
+                    ... on StixCoreRelationship {
+                      start_time
+                      stop_time
+                      description
+                    }
+                    ... on StixSightingRelationship {
+                      first_seen
+                      last_seen
+                    }
                     created
                   }
                   ... on AttackPattern {
@@ -2644,12 +2748,19 @@ const stixCoreRelationshipsListQuery = graphql`
                       }
                     }
                   }
-                  ... on StixCoreRelationship {
+                  ... on StixRelationship {
                     id
                     entity_type
                     relationship_type
-                    start_time
-                    stop_time
+                    ... on StixCoreRelationship {
+                      start_time
+                      stop_time
+                      description
+                    }
+                    ... on StixSightingRelationship {
+                      first_seen
+                      last_seen
+                    }
                     created
                     from {
                       ... on BasicObject {
@@ -2665,10 +2776,17 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on StixCoreObject {
                         created_at
                       }
-                      ... on StixCoreRelationship {
+                      ... on StixRelationship {
                         created_at
-                        start_time
-                        stop_time
+                        ... on StixCoreRelationship {
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on StixSightingRelationship {
+                          first_seen
+                          last_seen
+                        }
                         created
                       }
                       ... on AttackPattern {
@@ -2932,10 +3050,17 @@ const stixCoreRelationshipsListQuery = graphql`
                       ... on StixCoreObject {
                         created_at
                       }
-                      ... on StixCoreRelationship {
+                      ... on StixRelationship {
                         created_at
-                        start_time
-                        stop_time
+                        ... on StixCoreRelationship {
+                          start_time
+                          stop_time
+                          description
+                        }
+                        ... on StixSightingRelationship {
+                          first_seen
+                          last_seen
+                        }
                         created
                       }
                       ... on AttackPattern {
@@ -3221,10 +3346,17 @@ const stixCoreRelationshipsListQuery = graphql`
             ... on StixCoreObject {
               created_at
             }
-            ... on StixCoreRelationship {
+            ... on StixRelationship {
               created_at
-              start_time
-              stop_time
+              ... on StixCoreRelationship {
+                start_time
+                stop_time
+                description
+              }
+              ... on StixSightingRelationship {
+                first_seen
+                last_seen
+              }
               created
             }
             ... on AttackPattern {
@@ -3473,12 +3605,19 @@ const stixCoreRelationshipsListQuery = graphql`
                 }
               }
             }
-            ... on StixCoreRelationship {
+            ... on StixRelationship {
               id
               entity_type
               relationship_type
-              start_time
-              stop_time
+              ... on StixCoreRelationship {
+                start_time
+                stop_time
+                description
+              }
+              ... on StixSightingRelationship {
+                first_seen
+                last_seen
+              }
               created
               from {
                 ... on BasicObject {
@@ -3492,10 +3631,17 @@ const stixCoreRelationshipsListQuery = graphql`
                 ... on StixCoreObject {
                   created_at
                 }
-                ... on StixCoreRelationship {
+                ... on StixRelationship {
                   created_at
-                  start_time
-                  stop_time
+                  ... on StixCoreRelationship {
+                    start_time
+                    stop_time
+                    description
+                  }
+                  ... on StixSightingRelationship {
+                    first_seen
+                    last_seen
+                  }
                   created
                 }
                 ... on AttackPattern {
@@ -3589,10 +3735,17 @@ const stixCoreRelationshipsListQuery = graphql`
                 ... on StixCoreObject {
                   created_at
                 }
-                ... on StixCoreRelationship {
+                ... on StixRelationship {
                   created_at
-                  start_time
-                  stop_time
+                  ... on StixCoreRelationship {
+                    start_time
+                    stop_time
+                    description
+                  }
+                  ... on StixSightingRelationship {
+                    first_seen
+                    last_seen
+                  }
                   created
                 }
                 ... on AttackPattern {
@@ -3690,10 +3843,17 @@ const stixCoreRelationshipsListQuery = graphql`
             ... on StixCoreObject {
               created_at
             }
-            ... on StixCoreRelationship {
+            ... on StixRelationship {
               created_at
-              start_time
-              stop_time
+              ... on StixCoreRelationship {
+                start_time
+                stop_time
+                description
+              }
+              ... on StixSightingRelationship {
+                first_seen
+                last_seen
+              }
               created
             }
             ... on AttackPattern {
@@ -3942,12 +4102,19 @@ const stixCoreRelationshipsListQuery = graphql`
                 }
               }
             }
-            ... on StixCoreRelationship {
+            ... on StixRelationship {
               id
               entity_type
               relationship_type
-              start_time
-              stop_time
+              ... on StixCoreRelationship {
+                start_time
+                stop_time
+                description
+              }
+              ... on StixSightingRelationship {
+                first_seen
+                last_seen
+              }
               created
               from {
                 ... on BasicObject {
@@ -4143,7 +4310,7 @@ const stixCoreRelationshipsListQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsList = ({
+const StixRelationshipsList = ({
   variant,
   height,
   startDate,
@@ -4193,7 +4360,7 @@ const StixCoreRelationshipsList = ({
     }
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsListQuery}
+        query={stixRelationshipsListQuery}
         variables={{
           relationship_type: relationshipType,
           fromId,
@@ -4208,27 +4375,25 @@ const StixCoreRelationshipsList = ({
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationships
-            && props.stixCoreRelationships.edges.length > 0
+            && props.stixRelationships
+            && props.stixRelationships.edges.length > 0
           ) {
-            const data = props.stixCoreRelationships.edges;
+            const data = props.stixRelationships.edges;
             return (
               <div id="container" className={classes.container}>
-                <List style={{ minWidth: 1350, marginTop: -10 }}>
-                  {data.map((stixCoreRelationshipEdge) => {
-                    const stixCoreRelationship = stixCoreRelationshipEdge.node;
-                    const remoteNode = stixCoreRelationship.from
-                      ? stixCoreRelationship.from
-                      : stixCoreRelationship.to;
+                <List style={{ minWidth: 800, marginTop: -10 }}>
+                  {data.map((stixRelationshipEdge) => {
+                    const stixRelationship = stixRelationshipEdge.node;
+                    const remoteNode = stixRelationship.from
+                      ? stixRelationship.from
+                      : stixRelationship.to;
                     let link = null;
                     if (remoteNode) {
-                      link = `${resolveLink(remoteNode.entity_type)}/${
-                        remoteNode.id
-                      }/knowledge/relations/${stixCoreRelationship.id}`;
+                      link = computeLink(remoteNode);
                     }
                     return (
                       <ListItem
-                        key={stixCoreRelationship.id}
+                        key={stixRelationship.id}
                         dense={true}
                         button={true}
                         classes={{ root: classes.item }}
@@ -4238,7 +4403,7 @@ const StixCoreRelationshipsList = ({
                       >
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <ItemIcon
-                            type={stixCoreRelationship.entity_type}
+                            type={stixRelationship.entity_type}
                             color="primary"
                           />
                         </ListItemIcon>
@@ -4254,14 +4419,14 @@ const StixCoreRelationshipsList = ({
                               >
                                 <ItemIcon
                                   type={
-                                    stixCoreRelationship.from
-                                    && stixCoreRelationship.from.entity_type
+                                    stixRelationship.from
+                                    && stixRelationship.from.entity_type
                                   }
                                   variant="inline"
                                 />
-                                {stixCoreRelationship.from
+                                {stixRelationship.from
                                   ? t(
-                                    `entity_${stixCoreRelationship.from.entity_type}`,
+                                    `entity_${stixRelationship.from.entity_type}`,
                                   )
                                   : t('Restricted')}
                               </div>
@@ -4270,11 +4435,8 @@ const StixCoreRelationshipsList = ({
                                 style={{ width: '18%' }}
                               >
                                 <code>
-                                  {stixCoreRelationship.from
-                                    ? defaultValue(
-                                      stixCoreRelationship.from,
-                                      true,
-                                    )
+                                  {stixRelationship.from
+                                    ? defaultValue(stixRelationship.from, true)
                                     : t('Restricted')}
                                 </code>
                               </div>
@@ -4286,7 +4448,7 @@ const StixCoreRelationshipsList = ({
                               >
                                 <i>
                                   {t(
-                                    `relationship_${stixCoreRelationship.relationship_type}`,
+                                    `relationship_${stixRelationship.relationship_type}`,
                                   )}
                                 </i>
                               </div>
@@ -4299,14 +4461,14 @@ const StixCoreRelationshipsList = ({
                               >
                                 <ItemIcon
                                   type={
-                                    stixCoreRelationship.to
-                                    && stixCoreRelationship.to.entity_type
+                                    stixRelationship.to
+                                    && stixRelationship.to.entity_type
                                   }
                                   variant="inline"
                                 />
-                                {stixCoreRelationship.to
+                                {stixRelationship.to
                                   ? t(
-                                    `entity_${stixCoreRelationship.to.entity_type}`,
+                                    `entity_${stixRelationship.to.entity_type}`,
                                   )
                                   : t('Restricted')}
                               </div>
@@ -4315,11 +4477,8 @@ const StixCoreRelationshipsList = ({
                                 style={{ width: '18%' }}
                               >
                                 <code>
-                                  {stixCoreRelationship.to
-                                    ? defaultValue(
-                                      stixCoreRelationship.to,
-                                      true,
-                                    )
+                                  {stixRelationship.to
+                                    ? defaultValue(stixRelationship.to, true)
                                     : t('Restricted')}
                                 </code>
                               </div>
@@ -4327,7 +4486,7 @@ const StixCoreRelationshipsList = ({
                                 className={classes.bodyItem}
                                 style={{ width: '10%' }}
                               >
-                                {fsd(stixCoreRelationship[dateAttribute])}
+                                {fsd(stixRelationship[dateAttribute])}
                               </div>
                               <div
                                 className={classes.bodyItem}
@@ -4336,15 +4495,14 @@ const StixCoreRelationshipsList = ({
                                 {R.pathOr(
                                   '',
                                   ['createdBy', 'name'],
-                                  stixCoreRelationship,
+                                  stixRelationship,
                                 )}
                               </div>
                               <div className={classes.bodyItem}>
                                 <ItemMarkings
                                   variant="inList"
                                   markingDefinitionsEdges={
-                                    stixCoreRelationship.objectMarking.edges
-                                    ?? []
+                                    stixRelationship.objectMarking.edges ?? []
                                   }
                                   limit={1}
                                 />
@@ -4413,4 +4571,4 @@ const StixCoreRelationshipsList = ({
   );
 };
 
-export default StixCoreRelationshipsList;
+export default StixRelationshipsList;

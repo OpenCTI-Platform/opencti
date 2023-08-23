@@ -43,8 +43,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const stixCoreRelationshipsNumberNumberQuery = graphql`
-  query StixCoreRelationshipsNumberNumberSeriesQuery(
+const stixRelationshipsNumberNumberQuery = graphql`
+  query StixRelationshipsNumberNumberSeriesQuery(
     $noDirection: Boolean
     $endDate: DateTime
     $onlyInferred: Boolean
@@ -59,12 +59,12 @@ const stixCoreRelationshipsNumberNumberQuery = graphql`
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
     $dynamicFrom: [StixCoreObjectsFiltering]
     $dynamicTo: [StixCoreObjectsFiltering]
   ) {
-    stixCoreRelationshipsNumber(
+    stixRelationshipsNumber(
       noDirection: $noDirection
       endDate: $endDate
       onlyInferred: $onlyInferred
@@ -90,7 +90,7 @@ const stixCoreRelationshipsNumberNumberQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsNumber = ({
+const StixRelationshipsNumber = ({
   variant,
   height,
   startDate,
@@ -122,7 +122,7 @@ const StixCoreRelationshipsNumber = ({
     );
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsNumberNumberQuery}
+        query={stixRelationshipsNumberNumberQuery}
         variables={{
           elementId,
           elementWithTargetTypes,
@@ -138,9 +138,9 @@ const StixCoreRelationshipsNumber = ({
           dynamicTo: convertFilters(selection.dynamicTo),
         }}
         render={({ props }) => {
-          if (props && props.stixCoreRelationshipsNumber) {
-            const { total } = props.stixCoreRelationshipsNumber;
-            const difference = total - props.stixCoreRelationshipsNumber.count;
+          if (props && props.stixRelationshipsNumber) {
+            const { total } = props.stixRelationshipsNumber;
+            const difference = total - props.stixRelationshipsNumber.count;
             return (
               <div>
                 <div className={classes.number}>{n(total)}</div>
@@ -205,4 +205,4 @@ const StixCoreRelationshipsNumber = ({
   );
 };
 
-export default StixCoreRelationshipsNumber;
+export default StixRelationshipsNumber;
