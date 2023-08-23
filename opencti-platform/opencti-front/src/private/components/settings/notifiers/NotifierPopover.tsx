@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { deleteNode } from '../../../../utils/store';
 import { NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
-import { NotifierLinesPaginationQuery$variables } from './__generated__/NotifierLinesPaginationQuery.graphql';
+import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import NotifierEdition, { notifierEditionQuery } from './NotifierEdition';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graphql';
@@ -37,7 +37,7 @@ export const notifierPopoverDeletionMutation = graphql`
   }
 `;
 
-const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$data, paginationOptions?: NotifierLinesPaginationQuery$variables }) => {
+const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$data, paginationOptions?: NotifiersLinesPaginationQuery$variables }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [queryRef, loadQuery] = useQueryLoader<NotifierEditionQuery>(notifierEditionQuery);

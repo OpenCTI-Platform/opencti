@@ -10,7 +10,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
 import { NotifierLine_node$key, NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
-import { NotifierLinesPaginationQuery$variables } from './__generated__/NotifierLinesPaginationQuery.graphql';
+import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import NotifierPopover from './NotifierPopover';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -48,7 +48,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface NotifierLineProps {
   node: NotifierLine_node$key | NotifierLine_node$data;
   dataColumns: DataColumns;
-  paginationOptions: NotifierLinesPaginationQuery$variables
+  paginationOptions: NotifiersLinesPaginationQuery$variables
 }
 
 const NotifierLineFragment = graphql`
