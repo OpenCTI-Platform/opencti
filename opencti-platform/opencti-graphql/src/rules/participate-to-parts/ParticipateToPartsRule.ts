@@ -3,6 +3,7 @@ import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import def from './ParticipateToPartsDefinition';
 import buildRelationToRelationRule from '../relationToRelationBuilder';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
+import { RULES } from '../rules';
 
 const ParticipateToPartsRule = buildRelationToRelationRule(def, {
   leftType: RELATION_PARTICIPATE_TO,
@@ -10,4 +11,4 @@ const ParticipateToPartsRule = buildRelationToRelationRule(def, {
   creationType: RELATION_PARTICIPATE_TO,
 });
 
-export default ParticipateToPartsRule;
+RULES.push(ParticipateToPartsRule);

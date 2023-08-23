@@ -14,6 +14,7 @@ import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../src/schema/stixCore
 import { internalLoadById, listRelations } from '../../src/database/middleware-loader';
 import { RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
 import { wait } from '../../src/database/utils';
+import '../../src/rules/index';
 
 const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const ONE_CLAP = 'indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752'; // indicator A

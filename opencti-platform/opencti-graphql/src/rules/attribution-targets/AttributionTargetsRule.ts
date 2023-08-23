@@ -2,6 +2,7 @@
 import { RELATION_ATTRIBUTED_TO, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './AttributionTargetsDefinition';
 import buildRelationWithRelationRule from '../relationWithRelationBuilder';
+import { RULES } from '../rules';
 
 const AttributionTargetsRule = buildRelationWithRelationRule(def, {
   leftType: RELATION_TARGETS,
@@ -9,4 +10,4 @@ const AttributionTargetsRule = buildRelationWithRelationRule(def, {
   creationType: RELATION_TARGETS,
 });
 
-export default AttributionTargetsRule;
+RULES.push(AttributionTargetsRule);

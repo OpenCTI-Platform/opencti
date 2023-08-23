@@ -72,7 +72,7 @@ export const internalProcessNotification = async (
         name: notification_name,
         notification_type: trigger_type,
         user_id: user.user_id,
-        content,
+        notification_content: content,
         created: now(),
         created_at: now(),
         updated_at: now(),

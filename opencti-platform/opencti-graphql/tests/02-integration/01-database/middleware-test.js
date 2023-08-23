@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
+import '../../../src/modules/index';
+import '../../../src/rules/index';
 import {
   createEntity,
   createRelation,
@@ -14,7 +16,12 @@ import {
   timeSeriesRelations,
   updateAttribute,
 } from '../../../src/database/middleware';
-import { elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
+import {
+  elFindByIds,
+  elLoadById,
+  elRawSearch,
+  ES_IGNORE_THROTTLED
+} from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -715,10 +722,10 @@ const createFile = async (input) => {
   const file = await createEntity(testContext, ADMIN_USER, input, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   return storeLoadById(testContext, ADMIN_USER, file.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
 };
-const internalIdCounting = async (ids) => {
-  const idsShould = ids.map((id) => ({ match_phrase: { 'internal_id.keyword': id } }));
-  const connectionsShould = ids.map((id) => ({ match_phrase: { 'connections.internal_id.keyword': id } }));
-  const relsShould = ids.map((id) => ({ multi_match: { query: id, type: 'phrase', fields: ['rel_*'] } }));
+export const internalIdCounting = async (ids) => {
+  const idsShould = { terms: { 'internal_id.keyword': ids } };
+  const connectionsShould = { terms: { 'connections.internal_id.keyword': ids } }; // ids.map((id) => ({ match_phrase: { 'connections.internal_id.keyword': id } }));
+  const relsShould = { query_string: { query: ids.map((id) => `"${id}"`).join(' '), fields: ['rel_*.internal_id.keyword'] } };
   const nestedConnections = {
     nested: {
       path: 'connections',
@@ -737,13 +744,13 @@ const internalIdCounting = async (ids) => {
     body: {
       query: {
         bool: {
-          should: [...idsShould, ...relsShould, nestedConnections],
+          should: [idsShould, relsShould, nestedConnections],
           minimum_should_match: 1,
         },
       },
     },
   };
-  const looking = await elRawSearch(executionContext('test'), SYSTEM_USER, 'Relastionships', query);
+  const looking = await elRawSearch(executionContext('test'), SYSTEM_USER, 'Relationships', query);
   return looking.hits.total.value;
 };
 const isOneOfThisIdsExists = async (ids) => {
@@ -930,6 +937,8 @@ describe('Upsert and merge entities', () => {
       relationship_type: RELATION_USES,
     });
     source06 = await storeLoadById(testContext, ADMIN_USER, source06.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
+    const currentCount = await internalIdCounting([source06.internal_id]);
+    expect(currentCount).toEqual(6);
     // Merge with fully resolved entities
     const merged = await mergeEntities(testContext, ADMIN_USER, target.internal_id, [
       source01.internal_id,

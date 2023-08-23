@@ -17,6 +17,7 @@ import { wait } from '../../src/database/utils';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../src/schema/general';
 import { listEntities } from '../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../src/schema/stixDomainObject';
+import '../../src/rules/index';
 
 describe('Report refs identity rule', () => {
   it(

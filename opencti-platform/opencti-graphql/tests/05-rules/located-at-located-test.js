@@ -12,6 +12,7 @@ import { RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
 import { wait } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
 import { logApp } from '../../src/config/conf';
+import '../../src/rules/index';
 
 const RULE = RULE_PREFIX + LocatedAtLocatedRule.id;
 const FRANCE = 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d';

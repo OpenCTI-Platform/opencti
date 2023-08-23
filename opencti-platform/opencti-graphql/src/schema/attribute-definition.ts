@@ -20,6 +20,7 @@ type BasicDefinition = {
   mandatoryType: MandatoryType
   editDefault: boolean
   multiple: boolean
+  baseSearch?: boolean
   upsert: boolean
   update?: boolean
 };

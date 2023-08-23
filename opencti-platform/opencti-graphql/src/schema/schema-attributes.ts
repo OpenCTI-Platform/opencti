@@ -1,8 +1,27 @@
 import * as R from 'ramda';
-import { RULE_PREFIX } from './general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from './general';
 import { UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
+import { schemaTypesDefinition } from './schema-types';
+import { ATTRIBUTE_NAME } from './stixDomainObject';
+
+const EXCLUDED_SEARCH_ATTRIBUTES = [
+  'id',
+  'internal_id',
+  'creator_id',
+  'user_id',
+  'x_opencti_workflow_id',
+  'i_aliases_ids',
+  'parent_types',
+  'base_type',
+  'entity_type',
+  'x_opencti_graph_data',
+  'default_dashboard',
+  'default_hidden_types',
+  'payload_bin',
+  'extensions',
+];
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
@@ -117,6 +136,18 @@ export const schemaAttributesDefinition = {
 
   getAllAttributes() {
     return R.uniqBy((a) => a.name, Object.values(this.attributes).map((a) => Array.from(a.values())).flat());
+  },
+
+  getSearchAttributes() {
+    const entityTypes = [...schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT), ...schemaTypesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE)];
+    const attributes = entityTypes.map((e) => Array.from(this.getAttributes(e).values())).flat();
+    const grouped = R.groupBy((a) => a.name, attributes.filter((a) => a.type === 'string' && !EXCLUDED_SEARCH_ATTRIBUTES.includes(a.name)));
+    return Object.entries(grouped).map(([name, definitions]) => {
+      if (name === ATTRIBUTE_NAME) {
+        return `${name}^100`; // Ensure mame will be first.
+      }
+      return `${name}^${definitions?.length ?? 0}`;
+    });
   },
 
   getAttributes(entityType: string): Map<string, AttributeDefinition> {

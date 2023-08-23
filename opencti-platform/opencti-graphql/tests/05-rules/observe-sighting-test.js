@@ -12,6 +12,7 @@ import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../.
 import { STIX_SIGHTING_RELATIONSHIP } from '../../src/schema/stixSightingRelationship';
 import { RELATION_BASED_ON } from '../../src/schema/stixCoreRelationship';
 import { wait } from '../../src/database/utils';
+import '../../src/rules/index';
 
 const RULE = RULE_PREFIX + RuleObserveSighting.id;
 const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';

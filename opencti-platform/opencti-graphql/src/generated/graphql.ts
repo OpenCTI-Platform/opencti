@@ -14870,13 +14870,13 @@ export enum NotesOrdering {
 
 export type Notification = BasicObject & InternalObject & {
   __typename?: 'Notification';
-  content: Array<NotificationContent>;
   created?: Maybe<Scalars['DateTime']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_read: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
+  notification_content: Array<NotificationContent>;
   notification_type: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
@@ -33076,13 +33076,13 @@ export type NoteEditMutationsResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type NotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notification'] = ResolversParentTypes['Notification']> = ResolversObject<{
-  content?: Resolver<Array<ResolversTypes['NotificationContent']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_read?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  notification_content?: Resolver<Array<ResolversTypes['NotificationContent']>, ParentType, ContextType>;
   notification_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

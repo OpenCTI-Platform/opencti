@@ -127,11 +127,11 @@ type Notification implements InternalObject & BasicObject {
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
-    created: DateTime
-    name: String!
-    notification_type: String!
     parent_types: [String]!
-    content: [NotificationContent!]!
+    name: String!
+    created: DateTime
+    notification_type: String!
+    notification_content: [NotificationContent!]!
     is_read: Boolean!
     user_id: String
     created_at: DateTime

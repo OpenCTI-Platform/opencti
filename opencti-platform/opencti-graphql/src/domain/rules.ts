@@ -31,6 +31,7 @@ import { notify } from '../database/redis';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isModuleActivated } from './settings';
 import { publishUserAction } from '../listener/UserActionListener';
+import { RULES } from '../rules/rules';
 
 export const RULES_DECLARATION: Array<RuleRuntime> = [
   AttributedToAttributedRule,
@@ -59,7 +60,7 @@ if (DEV_MODE) {
 
 export const getRules = async (context: AuthContext, user: AuthUser): Promise<Array<RuleRuntime>> => {
   const rules = await getEntitiesListFromCache<BasicRuleEntity>(context, user, ENTITY_TYPE_RULE);
-  return RULES_DECLARATION.map((def: RuleRuntime) => {
+  return RULES.map((def: RuleRuntime) => {
     const esRule = rules.find((e) => e.internal_id === def.id);
     const isActivated = esRule?.active === true;
     return { ...def, activated: isActivated };

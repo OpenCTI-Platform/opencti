@@ -433,7 +433,7 @@ export const objects: RelationRefDefinition = {
   mandatoryType: 'internal',
   editDefault: false,
   multiple: true,
-  checker: (fromType,) => isStixDomainObjectContainer(fromType),
+  checker: (fromType) => isStixDomainObjectContainer(fromType),
   datable: false,
 };
 

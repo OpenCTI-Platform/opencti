@@ -11,6 +11,7 @@ import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 // region static graphql modules, need to be imported before everything
 import './modules/index';
+import './rules/index';
 // endregion
 import { platformStart } from './boot';
 import { ENABLED_EVENT_LOOP_MONITORING, ENABLED_METRICS, ENABLED_TRACING, logApp } from './config/conf';

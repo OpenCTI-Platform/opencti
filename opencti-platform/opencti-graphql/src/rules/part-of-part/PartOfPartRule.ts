@@ -2,6 +2,7 @@
 import buildRelationToRelationRule from '../relationToRelationBuilder';
 import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import def from './PartOfPartDefinition';
+import { RULES } from '../rules';
 
 const PartOfPartRule = buildRelationToRelationRule(def, {
   leftType: RELATION_PART_OF,
@@ -9,4 +10,4 @@ const PartOfPartRule = buildRelationToRelationRule(def, {
   creationType: RELATION_PART_OF,
 });
 
-export default PartOfPartRule;
+RULES.push(PartOfPartRule);
