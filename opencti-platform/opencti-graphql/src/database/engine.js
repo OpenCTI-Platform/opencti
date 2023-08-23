@@ -111,6 +111,7 @@ export const MAX_BULK_OPERATIONS = conf.get('elasticsearch:max_bulk_operations')
 
 const ES_RETRY_ON_CONFLICT = 5;
 const MAX_EVENT_LOOP_PROCESSING_TIME = 50;
+const ES_TOTAL_INDEX_FIELD = 4000;
 export const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 export const BULK_TIMEOUT = '5m';
 const MAX_AGGREGATION_SIZE = 100;
@@ -711,7 +712,7 @@ const elCreateIndexTemplate = async (index) => {
     index: {
       mapping: {
         total_fields: {
-          limit: '2500'
+          limit: ES_TOTAL_INDEX_FIELD
         }
       }
     }
