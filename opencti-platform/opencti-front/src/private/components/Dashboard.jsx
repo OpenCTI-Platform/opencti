@@ -39,7 +39,7 @@ import { truncate } from '../../utils/String';
 import { dayAgo, monthsAgo, yearsAgo } from '../../utils/Time';
 import Chart from './common/charts/Chart';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
-import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
+import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRelationshipsHorizontalBars';
 import DashboardView from './workspaces/dashboards/Dashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 
@@ -937,7 +937,7 @@ const DefaultDashboard = ({ timeField }) => {
       </Grid>
       <Grid container={true} spacing={3} style={{ marginTop: 5 }}>
         <Grid item={true} xs={6}>
-          <StixCoreRelationshipsHorizontalBars
+          <StixRelationshipsHorizontalBars
             height={400}
             relationshipType="stix-core-relationship"
             toTypes={[

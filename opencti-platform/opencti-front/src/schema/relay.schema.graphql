@@ -263,6 +263,25 @@ input StixCoreObjectsTimeSeriesParameters {
   search: String
 }
 
+input StixRelationshipsTimeSeriesParameters {
+  field: String!
+  elementId: [String]
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromRole: String
+  fromTypes: [String]
+  toId: [String]
+  toRole: String
+  toTypes: [String]
+  relationship_type: [String]
+  confidences: [Int]
+  search: String
+  filters: [StixRelationshipsFiltering]
+  filterMode: FilterMode
+  dynamicFrom: [StixCoreObjectsFiltering]
+  dynamicTo: [StixCoreObjectsFiltering]
+}
+
 input StixCoreRelationshipsTimeSeriesParameters {
   field: String!
   elementId: [String]
@@ -7437,7 +7456,11 @@ enum StixRelationshipsOrdering {
   toName
   toValidFrom
   toValidUntil
+  toObservableValue
   toPatternType
+  x_opencti_workflow_id
+  createdBy
+  creator
 }
 
 enum StixRelationshipsFilter {
@@ -7446,12 +7469,23 @@ enum StixRelationshipsFilter {
   created_at
   confidence
   createdBy
+  creator
   markedBy
   labelledBy
+  killChainPhase
+  fromName
   toName
   toCreatedAt
   toPatternType
   toMainObservableType
+  x_opencti_workflow_id
+  revoked
+  relationship_type
+  elementWithTargetTypes
+  fromTypes
+  toTypes
+  entity_type
+  fromId
 }
 
 input StixRelationshipsFiltering {
@@ -8034,7 +8068,11 @@ type Query {
   stixCyberObservablesTimeSeries(types: [String], filters: [StixCyberObservablesFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   stixCyberObservablesDistribution(objectId: String, field: String!, dateAttribute: String, operation: String!, filters: [StixCyberObservablesFiltering], filterMode: FilterMode, search: String): [Distribution]
   stixRelationship(id: String): StixRelationship
-  stixRelationships(first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: StixRef, fromRole: String, fromTypes: [String], toId: StixRef, toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixRelationshipConnection
+  stixRelationships(first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixRelationshipConnection
+  stixRelationshipsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, dynamicFrom: [StixCoreObjectsFiltering], dynamicTo: [StixCoreObjectsFiltering]): [TimeSeries]
+  stixRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]): [MultiTimeSeries]
+  stixRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, dynamicFrom: [StixCoreObjectsFiltering], dynamicTo: [StixCoreObjectsFiltering]): [Distribution]
+  stixRelationshipsNumber(authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, dynamicFrom: [StixCoreObjectsFiltering], dynamicTo: [StixCoreObjectsFiltering]): Number
   stixCoreRelationship(id: String): StixCoreRelationship
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixCoreRelationshipConnection
   stixCoreRelationshipsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode, dynamicFrom: [StixCoreObjectsFiltering], dynamicTo: [StixCoreObjectsFiltering]): [TimeSeries]

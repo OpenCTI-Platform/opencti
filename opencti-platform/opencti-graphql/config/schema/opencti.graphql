@@ -260,6 +260,24 @@ input StixCoreObjectsTimeSeriesParameters {
   filterMode: FilterMode
   search: String
 }
+input StixRelationshipsTimeSeriesParameters {
+  field: String!
+  elementId: [String]
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromRole: String
+  fromTypes: [String]
+  toId: [String]
+  toRole: String
+  toTypes: [String]
+  relationship_type: [String]
+  confidences: [Int]
+  search: String
+  filters: [StixRelationshipsFiltering]
+  filterMode: FilterMode
+  dynamicFrom: [StixCoreObjectsFiltering]
+  dynamicTo: [StixCoreObjectsFiltering]
+}
 input StixCoreRelationshipsTimeSeriesParameters {
   field: String!
   elementId: [String]
@@ -11226,7 +11244,11 @@ enum StixRelationshipsOrdering {
   toName
   toValidFrom
   toValidUntil
+  toObservableValue
   toPatternType
+  x_opencti_workflow_id
+  createdBy
+  creator
 }
 enum StixRelationshipsFilter {
   created
@@ -11234,12 +11256,23 @@ enum StixRelationshipsFilter {
   created_at
   confidence
   createdBy
+  creator
   markedBy
   labelledBy
+  killChainPhase
+  fromName
   toName
   toCreatedAt
   toPatternType
   toMainObservableType
+  x_opencti_workflow_id
+  revoked
+  relationship_type
+  elementWithTargetTypes
+  fromTypes
+  toTypes
+  entity_type
+  fromId
 }
 input StixRelationshipsFiltering {
   key: [StixRelationshipsFilter!]!
@@ -12562,10 +12595,10 @@ type Query {
     orderMode: OrderingMode
     elementId: String
     elementWithTargetTypes: [String]
-    fromId: StixRef
+    fromId: [String]
     fromRole: String
     fromTypes: [String]
-    toId: StixRef
+    toId: [String]
     toRole: String
     toTypes: [String]
     relationship_type: [String]
@@ -12585,6 +12618,83 @@ type Query {
     filterMode: FilterMode
     stix: Boolean
   ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
+  stixRelationshipsTimeSeries(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    elementId: [String]
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixRelationshipsFiltering]
+    filterMode: FilterMode
+    dynamicFrom: [StixCoreObjectsFiltering]
+    dynamicTo: [StixCoreObjectsFiltering]
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixRelationshipsMultiTimeSeries(
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime
+    interval: String!
+    onlyInferred: Boolean
+    timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
+  ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementId: [String]
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixRelationshipsFiltering]
+    filterMode: FilterMode
+    dynamicFrom: [StixCoreObjectsFiltering]
+    dynamicTo: [StixCoreObjectsFiltering]
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixRelationshipsNumber(
+    authorId: String
+    noDirection: Boolean
+    endDate: DateTime
+    onlyInferred: Boolean
+    elementId: [String]
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixRelationshipsFiltering]
+    filterMode: FilterMode
+    dynamicFrom: [StixCoreObjectsFiltering]
+    dynamicTo: [StixCoreObjectsFiltering]
+  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX CORE RELATIONSHIPS
 

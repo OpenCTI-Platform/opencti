@@ -1,29 +1,26 @@
 import React from 'react';
 import * as R from 'ramda';
-import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import Chart from '../charts/Chart';
-import { QueryRenderer } from '../../../../relay/environment';
+import Paper from '@mui/material/Paper';
 import { useFormatter } from '../../../../components/i18n';
-import { donutChartOptions } from '../../../../utils/Charts';
+import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
+import { QueryRenderer } from '../../../../relay/environment';
+import { computeLevel } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
-import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
 }));
 
-const stixCoreRelationshipsDonutsDistributionQuery = graphql`
-  query StixCoreRelationshipsDonutDistributionQuery(
+export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
+  query StixRelationshipsMapStixRelationshipsDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -42,10 +39,10 @@ const stixCoreRelationshipsDonutsDistributionQuery = graphql`
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
   ) {
-    stixCoreRelationshipsDistribution(
+    stixRelationshipsDistribution(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -76,125 +73,24 @@ const stixCoreRelationshipsDonutsDistributionQuery = graphql`
         ... on BasicRelationship {
           entity_type
         }
-        ... on AttackPattern {
+        ... on Country {
           name
-          description
-        }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
+          x_opencti_aliases
+          latitude
+          longitude
         }
         ... on City {
           name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-          description
-        }
-        ... on DataSource {
-          name
-          description
-        }
-        ... on Case {
-          name
-          description
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on MarkingDefinition {
-          definition_type
-          definition
-        }
-        ... on Creator {
-          name
+          x_opencti_aliases
+          latitude
+          longitude
         }
       }
     }
   }
 `;
 
-const StixCoreRelationshipsDonut = ({
+const StixRelationshipsMap = ({
   title,
   variant,
   height,
@@ -207,10 +103,8 @@ const StixCoreRelationshipsDonut = ({
   dateAttribute,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
 }) => {
   const classes = useStyles();
-  const theme = useTheme();
   const { t } = useFormatter();
   const renderContent = () => {
     let finalFilters = [];
@@ -260,41 +154,42 @@ const StixCoreRelationshipsDonut = ({
     };
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsDonutsDistributionQuery}
+        query={stixRelationshipsMapStixRelationshipsDistributionQuery}
         variables={variables}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.stixRelationshipsDistribution
+            && props.stixRelationshipsDistribution.length > 0
           ) {
-            let data = props.stixCoreRelationshipsDistribution;
-            if (finalField === 'internal_id') {
-              data = R.map(
-                (n) => R.assoc(
-                  'label',
-                  `${
-                    finalToTypes && finalToTypes.length > 1
-                      ? `[${t(
-                        `entity_${n.entity.entity_type}`,
-                      )}] ${defaultValue(n.entity)}`
-                      : `${defaultValue(n.entity)}`
-                  }`,
-                  n,
-                ),
-                props.stixCoreRelationshipsDistribution,
-              );
-            }
-            const chartData = data.map((n) => n.value);
-            const labels = data.map((n) => n.label);
+            const values = R.pluck(
+              'value',
+              props.stixRelationshipsDistribution,
+            );
+            const countries = R.map(
+              (x) => R.assoc(
+                'level',
+                computeLevel(x.value, R.last(values), R.head(values) + 1),
+                x.entity,
+              ),
+              R.filter(
+                (n) => n.entity?.entity_type === 'Country',
+                props.stixRelationshipsDistribution,
+              ),
+            );
+            const cities = R.map(
+              (x) => x.entity,
+              R.filter(
+                (n) => n.entity?.entity_type === 'City',
+                props.stixRelationshipsDistribution,
+              ),
+            );
             return (
-              <Chart
-                options={donutChartOptions(theme, labels)}
-                series={chartData}
-                type="donut"
-                width="100%"
-                height="100%"
-                withExportPopover={withExportPopover}
+              <LocationMiniMapTargets
+                center={[48.8566969, 2.3514616]}
+                countries={countries}
+                cities={cities}
+                zoom={2}
               />
             );
           }
@@ -352,4 +247,4 @@ const StixCoreRelationshipsDonut = ({
   );
 };
 
-export default StixCoreRelationshipsDonut;
+export default StixRelationshipsMap;

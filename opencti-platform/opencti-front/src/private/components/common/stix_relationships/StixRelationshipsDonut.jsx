@@ -9,10 +9,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { radarChartOptions } from '../../../../utils/Charts';
+import { donutChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
-import { truncate } from '../../../../utils/String';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -23,8 +22,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreRelationshipsRadarsDistributionQuery = graphql`
-  query StixCoreRelationshipsRadarDistributionQuery(
+const stixRelationshipsDonutsDistributionQuery = graphql`
+  query StixRelationshipsDonutDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -43,10 +42,10 @@ const stixCoreRelationshipsRadarsDistributionQuery = graphql`
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
   ) {
-    stixCoreRelationshipsDistribution(
+    stixRelationshipsDistribution(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -80,7 +79,6 @@ const stixCoreRelationshipsRadarsDistributionQuery = graphql`
         ... on AttackPattern {
           name
           description
-          x_mitre_id
         }
         ... on Campaign {
           name
@@ -123,10 +121,6 @@ const stixCoreRelationshipsRadarsDistributionQuery = graphql`
           description
         }
         ... on City {
-          name
-          description
-        }
-        ... on AdministrativeArea {
           name
           description
         }
@@ -175,22 +169,32 @@ const stixCoreRelationshipsRadarsDistributionQuery = graphql`
         }
         ... on DataComponent {
           name
+          description
         }
         ... on DataSource {
           name
+          description
         }
         ... on Case {
           name
+          description
         }
         ... on StixCyberObservable {
           observable_value
+        }
+        ... on MarkingDefinition {
+          definition_type
+          definition
+        }
+        ... on Creator {
+          name
         }
       }
     }
   }
 `;
 
-const StixCoreRelationshipsRadar = ({
+const StixRelationshipsDonut = ({
   title,
   variant,
   height,
@@ -256,45 +260,38 @@ const StixCoreRelationshipsRadar = ({
     };
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsRadarsDistributionQuery}
+        query={stixRelationshipsDonutsDistributionQuery}
         variables={variables}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.stixRelationshipsDistribution
+            && props.stixRelationshipsDistribution.length > 0
           ) {
-            let data = props.stixCoreRelationshipsDistribution;
+            let data = props.stixRelationshipsDistribution;
             if (finalField === 'internal_id') {
               data = R.map(
                 (n) => R.assoc(
                   'label',
                   `${
                     finalToTypes && finalToTypes.length > 1
-                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${truncate(
-                        defaultValue(n.entity),
-                        20,
-                      )}`
-                      : `${truncate(defaultValue(n.entity), 20)}`
+                      ? `[${t(
+                        `entity_${n.entity.entity_type}`,
+                      )}] ${defaultValue(n.entity)}`
+                      : `${defaultValue(n.entity)}`
                   }`,
                   n,
                 ),
-                props.stixCoreRelationshipsDistribution,
+                props.stixRelationshipsDistribution,
               );
             }
-            const valueData = data.map((n) => n.value);
-            const chartData = [
-              {
-                name: selection.label || t('Number of relationships'),
-                data: valueData,
-              },
-            ];
+            const chartData = data.map((n) => n.value);
             const labels = data.map((n) => n.label);
             return (
               <Chart
-                options={radarChartOptions(theme, labels, [], true, false)}
+                options={donutChartOptions(theme, labels)}
                 series={chartData}
-                type="radar"
+                type="donut"
                 width="100%"
                 height="100%"
                 withExportPopover={withExportPopover}
@@ -355,4 +352,4 @@ const StixCoreRelationshipsRadar = ({
   );
 };
 
-export default StixCoreRelationshipsRadar;
+export default StixRelationshipsDonut;

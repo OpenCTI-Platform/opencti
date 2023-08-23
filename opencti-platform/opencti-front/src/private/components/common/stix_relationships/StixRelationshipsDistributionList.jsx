@@ -4,29 +4,67 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
 import * as R from 'ramda';
-import { useNavigate } from 'react-router-dom-v5-compat';
-import Chart from '../charts/Chart';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import { Link } from 'react-router-dom';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
-import { horizontalBarsChartOptions } from '../../../../utils/Charts';
-import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
+import { resolveLink } from '../../../../utils/Entity';
+import ItemIcon from '../../../../components/ItemIcon';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+} from '../../../../utils/hooks/useGranted';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
+  container: {
+    width: '100%',
+    height: '100%',
+    overflow: 'auto',
+    paddingBottom: 10,
+    marginBottom: 10,
+  },
   paper: {
     height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
+  item: {
+    height: 50,
+    minHeight: 50,
+    maxHeight: 50,
+    paddingRight: 0,
+  },
+  itemText: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  itemIcon: {
+    marginRight: 0,
+    color: theme.palette.primary.main,
+  },
 }));
 
-const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
-  query StixCoreRelationshipsHorizontalBarsDistributionQuery(
+const inlineStyles = {
+  itemNumber: {
+    float: 'right',
+    marginRight: 20,
+    fontSize: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+};
+
+const stixRelationshipsDistributionListDistributionQuery = graphql`
+  query StixRelationshipsDistributionListDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -45,12 +83,12 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
     $dynamicFrom: [StixCoreObjectsFiltering]
     $dynamicTo: [StixCoreObjectsFiltering]
   ) {
-    stixCoreRelationshipsDistribution(
+    stixRelationshipsDistribution(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -78,9 +116,11 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
       value
       entity {
         ... on BasicObject {
+          id
           entity_type
         }
         ... on BasicRelationship {
+          id
           entity_type
         }
         ... on AttackPattern {
@@ -214,7 +254,7 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsHorizontalBars = ({
+const StixRelationshipsDistributionList = ({
   title,
   variant,
   height,
@@ -227,16 +267,13 @@ const StixCoreRelationshipsHorizontalBars = ({
   dateAttribute,
   dataSelection,
   parameters = {},
-  withExportPopover = false,
 }) => {
   const classes = useStyles();
-  const theme = useTheme();
-  const { t } = useFormatter();
-  const navigate = useNavigate();
+  const { t, n } = useFormatter();
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const renderContent = () => {
     let finalFilters = [];
     let selection = {};
-    let dataSelectionDateAttribute = null;
     let dataSelectionRelationshipType = null;
     let dataSelectionFromId = null;
     let dataSelectionToId = null;
@@ -246,24 +283,21 @@ const StixCoreRelationshipsHorizontalBars = ({
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       finalFilters = convertFilters(selection.filters);
-      dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-        ? selection.date_attribute
-        : 'created_at';
-      dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+      dataSelectionRelationshipType = R.head(finalFilters.filter((o) => o.key === 'relationship_type'))
         ?.values || null;
-      dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
-      dataSelectionToId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
-      dataSelectionFromTypes = R.head(finalFilters.filter((n) => n.key === 'fromTypes'))?.values
+      dataSelectionFromId = R.head(finalFilters.filter((o) => o.key === 'fromId'))?.values || null;
+      dataSelectionToId = R.head(finalFilters.filter((o) => o.key === 'toId'))?.values || null;
+      dataSelectionFromTypes = R.head(finalFilters.filter((o) => o.key === 'fromTypes'))?.values
         || null;
-      dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
+      dataSelectionToTypes = R.head(finalFilters.filter((o) => o.key === 'toTypes'))?.values || null;
       finalFilters = finalFilters.filter(
-        (n) => ![
+        (o) => ![
           'relationship_type',
           'fromId',
           'toId',
           'fromTypes',
           'toTypes',
-        ].includes(n.key),
+        ].includes(o.key),
       );
     }
     const finalField = selection.attribute || field || 'entity_type';
@@ -277,7 +311,7 @@ const StixCoreRelationshipsHorizontalBars = ({
       operation: 'count',
       startDate,
       endDate,
-      dateAttribute: dateAttribute || dataSelectionDateAttribute,
+      dateAttribute,
       limit: selection.number ?? 10,
       filters: finalFilters,
       isTo: selection.isTo,
@@ -286,46 +320,60 @@ const StixCoreRelationshipsHorizontalBars = ({
     };
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsHorizontalBarsDistributionQuery}
+        query={stixRelationshipsDistributionListDistributionQuery}
         variables={variables}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.stixRelationshipsDistribution
+            && props.stixRelationshipsDistribution.length > 0
           ) {
-            const data = props.stixCoreRelationshipsDistribution.map((n) => ({
-              x:
-                finalField === 'internal_id' ? defaultValue(n.entity) : n.label,
-              y: n.value,
-              fillColor: itemColor(
-                finalField === 'internal_id' ? n.entity.entity_type : n.label,
-              ),
+            const data = props.stixRelationshipsDistribution.map((o) => ({
+              label:
+                finalField === 'internal_id' ? defaultValue(o.entity) : o.label,
+              value: o.value,
+              id: finalField === 'internal_id' ? o.entity.id : null,
+              type:
+                finalField === 'internal_id' ? o.entity.entity_type : o.label,
             }));
-            const chartData = [{ name: t('Number of relationships'), data }];
-            const redirectionUtils = finalField === 'internal_id'
-              ? props.stixCoreRelationshipsDistribution.map((n) => ({
-                id: n.label,
-                entity_type: n.entity.entity_type,
-              }))
-              : null;
             return (
-              <Chart
-                options={horizontalBarsChartOptions(
-                  theme,
-                  true,
-                  simpleNumberFormat,
-                  null,
-                  false,
-                  navigate,
-                  redirectionUtils,
-                )}
-                series={chartData}
-                type="bar"
-                width="100%"
-                height="100%"
-                withExportPopover={withExportPopover}
-              />
+              <div id="container" className={classes.container}>
+                <List style={{ marginTop: -10 }}>
+                  {data.map((entry) => {
+                    // eslint-disable-next-line no-nested-ternary
+                    const link = entry.type === 'User' && !hasSetAccess
+                      ? null
+                      : entry.id
+                        ? `${resolveLink(entry.type)}/${entry.id}`
+                        : null;
+                    return (
+                      <ListItem
+                        key={entry.label}
+                        dense={true}
+                        button={!!link}
+                        classes={{ root: classes.item }}
+                        divider={true}
+                        component={link ? Link : null}
+                        to={link || null}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type={entry.type} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <div className={classes.itemText}>
+                              {entry.label}
+                            </div>
+                          }
+                        />
+                        <div style={inlineStyles.itemNumber}>
+                          {n(entry.value)}
+                        </div>
+                      </ListItem>
+                    );
+                  })}
+                </List>
+              </div>
             );
           }
           if (props) {
@@ -382,4 +430,4 @@ const StixCoreRelationshipsHorizontalBars = ({
   );
 };
 
-export default StixCoreRelationshipsHorizontalBars;
+export default StixRelationshipsDistributionList;

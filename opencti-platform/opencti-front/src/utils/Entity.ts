@@ -117,14 +117,22 @@ export const resolveLink = (type: string): string | null => {
   }
 };
 
-export const computeLink = (node: { id: string, entity_type: string, relationship_type: string, from: { entity_type: string, id: string } }): string | null => {
+export const computeLink = (node: {
+  id: string;
+  entity_type: string;
+  relationship_type: string;
+  from: { entity_type: string; id: string };
+}): string | null => {
   if (!node) return null;
-
   let redirectLink;
   if (node.relationship_type === 'stix-sighting-relationship') {
-    redirectLink = `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/sightings/${node.id}`;
+    redirectLink = `${resolveLink(node.from.entity_type)}/${
+      node.from.id
+    }/knowledge/sightings/${node.id}`;
   } else if (node.relationship_type) {
-    redirectLink = `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`;
+    redirectLink = `${resolveLink(node.from.entity_type)}/${
+      node.from.id
+    }/knowledge/relations/${node.id}`;
   } else {
     redirectLink = `${resolveLink(node.entity_type)}/${node.id}`;
   }
@@ -178,7 +186,9 @@ export const resolveLocationType = (entity: Record<string, string>): string => {
   return 'Position';
 };
 
-export const resolveThreatActorType = (entity: Record<string, string>): string => {
+export const resolveThreatActorType = (
+  entity: Record<string, string>,
+): string => {
   if (entity.x_opencti_type) {
     return entity.x_opencti_type;
   }
@@ -204,37 +214,68 @@ export const hashValue = (stixCyberObservable: Record<string, never>) => {
 export const observableValue = (stixCyberObservable: Record<string, never>) => {
   switch ((stixCyberObservable.entity_type as string).toLowerCase()) {
     case 'Autonomous-System'.toLowerCase():
-      return stixCyberObservable.name || stixCyberObservable.number || 'Unknown';
+      return (
+        stixCyberObservable.name || stixCyberObservable.number || 'Unknown'
+      );
     case 'Directory'.toLowerCase():
       return stixCyberObservable.path || 'Unknown';
     case 'Email-Message'.toLowerCase():
       return stixCyberObservable.body || stixCyberObservable.subject;
     case 'Artifact'.toLowerCase():
-      return hashValue(stixCyberObservable) || stixCyberObservable.payload_bin || stixCyberObservable.url || 'Unknown';
+      return (
+        hashValue(stixCyberObservable)
+        || stixCyberObservable.payload_bin
+        || stixCyberObservable.url
+        || 'Unknown'
+      );
     case 'StixFile'.toLowerCase():
-      return hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown';
+      return (
+        hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown'
+      );
     case 'X509-Certificate'.toLowerCase():
-      return hashValue(stixCyberObservable) || stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
+      return (
+        hashValue(stixCyberObservable)
+        || stixCyberObservable.subject
+        || stixCyberObservable.issuer
+        || 'Unknown'
+      );
     case 'Mutex'.toLowerCase():
       return stixCyberObservable.name || 'Unknown';
     case 'Network-Traffic'.toLowerCase():
       return stixCyberObservable.dst_port || 'Unknown';
     case 'Process'.toLowerCase():
-      return stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown';
+      return (
+        stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown'
+      );
     case 'Software'.toLowerCase():
       return stixCyberObservable.name || 'Unknown';
     case 'User-Account'.toLowerCase():
-      return stixCyberObservable.account_login || stixCyberObservable.user_id || 'Unknown';
+      return (
+        stixCyberObservable.account_login
+        || stixCyberObservable.user_id
+        || 'Unknown'
+      );
     case 'Bank-Account'.toLowerCase():
-      return stixCyberObservable.iban || stixCyberObservable.number || 'Unknown';
+      return (
+        stixCyberObservable.iban || stixCyberObservable.number || 'Unknown'
+      );
     case 'Payment-Card'.toLowerCase():
-      return stixCyberObservable.card_number || stixCyberObservable.holder_name || 'Unknown';
+      return (
+        stixCyberObservable.card_number
+        || stixCyberObservable.holder_name
+        || 'Unknown'
+      );
     case 'Windows-Registry-Key'.toLowerCase():
       return stixCyberObservable.attribute_key || 'Unknown';
     case 'Windows-Registry-Value-Type'.toLowerCase():
       return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
     case 'Media-Content'.toLowerCase():
-      return stixCyberObservable.content || stixCyberObservable.title || stixCyberObservable.url || 'Unknown';
+      return (
+        stixCyberObservable.content
+        || stixCyberObservable.title
+        || stixCyberObservable.url
+        || 'Unknown'
+      );
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }

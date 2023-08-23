@@ -39,20 +39,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
-  query StixCoreRelationshipsTimelineStixCoreRelationshipQuery(
+const stixRelationshipsTimelineStixRelationshipQuery = graphql`
+  query StixRelationshipsTimelineStixRelationshipQuery(
     $relationship_type: [String]
     $fromId: [String]
     $toId: [String]
     $fromTypes: [String]
     $toTypes: [String]
     $first: Int!
-    $orderBy: StixCoreRelationshipsOrdering
+    $orderBy: StixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $search: String
   ) {
-    stixCoreRelationships(
+    stixRelationships(
       relationship_type: $relationship_type
       fromId: $fromId
       toId: $toId
@@ -71,9 +71,6 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
           parent_types
           relationship_type
           confidence
-          start_time
-          stop_time
-          description
           is_inferred
           created
           x_opencti_inferences {
@@ -81,6 +78,24 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
               id
               name
             }
+          }
+          ... on StixCoreRelationship {
+            start_time
+            stop_time
+            description
+            killChainPhases {
+              edges {
+                node {
+                  id
+                  phase_name
+                  x_opencti_order
+                }
+              }
+            }
+          }
+          ... on StixSightingRelationship {
+            first_seen
+            last_seen
           }
           from {
             ... on StixDomainObject {
@@ -295,7 +310,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                 }
               }
             }
-            ... on StixCoreRelationship {
+            ... on StixRelationship {
               id
               entity_type
               parent_types
@@ -479,7 +494,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                     }
                   }
                 }
-                ... on StixCoreRelationship {
+                ... on StixRelationship {
                   id
                   entity_type
                   parent_types
@@ -665,7 +680,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                     }
                   }
                 }
-                ... on StixCoreRelationship {
+                ... on StixRelationship {
                   id
                   entity_type
                   created
@@ -853,7 +868,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                 }
               }
             }
-            ... on StixCoreRelationship {
+            ... on StixRelationship {
               id
               entity_type
               created
@@ -1037,7 +1052,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                     }
                   }
                 }
-                ... on StixCoreRelationship {
+                ... on StixRelationship {
                   id
                   entity_type
                   parent_types
@@ -1224,7 +1239,7 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
                     }
                   }
                 }
-                ... on StixCoreRelationship {
+                ... on StixRelationship {
                   id
                   entity_type
                   created
@@ -1234,22 +1249,13 @@ const stixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
               }
             }
           }
-          killChainPhases {
-            edges {
-              node {
-                id
-                phase_name
-                x_opencti_order
-              }
-            }
-          }
         }
       }
     }
   }
 `;
 
-const StixCoreRelationshipsTimeline = ({
+const StixRelationshipsTimeline = ({
   variant,
   height,
   startDate,
@@ -1296,7 +1302,7 @@ const StixCoreRelationshipsTimeline = ({
     }
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsTimelineStixCoreRelationshipQuery}
+        query={stixRelationshipsTimelineStixRelationshipQuery}
         variables={{
           relationship_type: relationshipType,
           fromId,
@@ -1311,68 +1317,64 @@ const StixCoreRelationshipsTimeline = ({
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationships
-            && props.stixCoreRelationships.edges.length > 0
+            && props.stixRelationships
+            && props.stixRelationships.edges.length > 0
           ) {
-            const stixCoreRelationshipsEdges = props.stixCoreRelationships.edges;
+            const stixRelationshipsEdges = props.stixRelationships.edges;
             return (
               <div id="container" className={classes.container}>
                 <Timeline position="alternate">
-                  {stixCoreRelationshipsEdges.map(
-                    (stixCoreRelationshipEdge) => {
-                      const stixCoreRelationship = stixCoreRelationshipEdge.node;
-                      const remoteNode = stixCoreRelationship.from
-                        && stixCoreRelationship.from.id === fromId
-                        && selection.isTo !== false
-                        ? stixCoreRelationship.to
-                        : stixCoreRelationship.from;
-                      const restricted = stixCoreRelationship.from === null
-                        || stixCoreRelationship.to === null;
-                      const link = restricted
-                        ? null
-                        : `${resolveLink(remoteNode.entity_type)}/${
-                          remoteNode.id
-                        }/knowledge/relations/${stixCoreRelationship.id}`;
-                      return (
-                        <TimelineItem key={stixCoreRelationship.id}>
-                          <TimelineOppositeContent
-                            sx={{ paddingTop: '18px' }}
-                            color="text.secondary"
-                          >
-                            {fldt(stixCoreRelationship.created)}
-                          </TimelineOppositeContent>
-                          <TimelineSeparator>
-                            <Link to={link}>
-                              <TimelineDot
-                                sx={{
-                                  borderColor: itemColor(
-                                    remoteNode.entity_type,
-                                  ),
-                                }}
-                                variant="outlined"
-                              >
-                                <ItemIcon type={remoteNode.entity_type} />
-                              </TimelineDot>
-                            </Link>
-                            <TimelineConnector />
-                          </TimelineSeparator>
-                          <TimelineContent>
-                            <Paper variant="outlined" className={classes.paper}>
-                              <Typography variant="h2">
-                                {defaultValue(remoteNode)}
-                              </Typography>
-                              <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                                <MarkdownDisplay
-                                  content={remoteNode.description}
-                                  limit={150}
-                                />
-                              </div>
-                            </Paper>
-                          </TimelineContent>
-                        </TimelineItem>
-                      );
-                    },
-                  )}
+                  {stixRelationshipsEdges.map((stixRelationshipEdge) => {
+                    const stixRelationship = stixRelationshipEdge.node;
+                    const remoteNode = stixRelationship.from
+                      && stixRelationship.from.id === fromId
+                      && selection.isTo !== false
+                      ? stixRelationship.to
+                      : stixRelationship.from;
+                    const restricted = stixRelationship.from === null
+                      || stixRelationship.to === null;
+                    const link = restricted
+                      ? null
+                      : `${resolveLink(remoteNode.entity_type)}/${
+                        remoteNode.id
+                      }/knowledge/relations/${stixRelationship.id}`;
+                    return (
+                      <TimelineItem key={stixRelationship.id}>
+                        <TimelineOppositeContent
+                          sx={{ paddingTop: '18px' }}
+                          color="text.secondary"
+                        >
+                          {fldt(stixRelationship.created)}
+                        </TimelineOppositeContent>
+                        <TimelineSeparator>
+                          <Link to={link}>
+                            <TimelineDot
+                              sx={{
+                                borderColor: itemColor(remoteNode.entity_type),
+                              }}
+                              variant="outlined"
+                            >
+                              <ItemIcon type={remoteNode.entity_type} />
+                            </TimelineDot>
+                          </Link>
+                          <TimelineConnector />
+                        </TimelineSeparator>
+                        <TimelineContent>
+                          <Paper variant="outlined" className={classes.paper}>
+                            <Typography variant="h2">
+                              {defaultValue(remoteNode)}
+                            </Typography>
+                            <div style={{ marginTop: -5, color: '#a8a8a8' }}>
+                              <MarkdownDisplay
+                                content={remoteNode.description}
+                                limit={150}
+                              />
+                            </div>
+                          </Paper>
+                        </TimelineContent>
+                      </TimelineItem>
+                    );
+                  })}
                 </Timeline>
               </div>
             );
@@ -1431,4 +1433,4 @@ const StixCoreRelationshipsTimeline = ({
   );
 };
 
-export default StixCoreRelationshipsTimeline;
+export default StixRelationshipsTimeline;

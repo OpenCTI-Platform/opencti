@@ -1243,6 +1243,16 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                               stop_time ({t('Functional date')})
                             </MenuItem>
                           )}
+                          {getCurrentIsRelationships() && (
+                            <MenuItem value="first_seen">
+                              start_time ({t('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships() && (
+                            <MenuItem value="last_seen">
+                              stop_time ({t('Functional date')})
+                            </MenuItem>
+                          )}
                         </Select>
                       </FormControl>
                     </div>

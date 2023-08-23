@@ -24,8 +24,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
-  query StixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
+const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
+  query StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -44,7 +44,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
     $dynamicFrom: [StixCoreObjectsFiltering]
     $dynamicTo: [StixCoreObjectsFiltering]
@@ -68,7 +68,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
     $subDistributionFilters: [StixCoreRelationshipsFiltering]
     $subDistributionFilterMode: FilterMode
   ) {
-    stixCoreRelationshipsDistribution(
+    stixRelationshipsDistribution(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -394,8 +394,8 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
   }
 `;
 
-const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphql`
-  query StixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery(
+const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphql`
+  query StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime
@@ -414,7 +414,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
     $relationship_type: [String]
     $confidences: [Int]
     $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
     $dynamicFrom: [StixCoreObjectsFiltering]
     $dynamicTo: [StixCoreObjectsFiltering]
@@ -432,7 +432,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
     $subDistributionFilterMode: FilterMode
     $subDistributionSearch: String
   ) {
-    stixCoreRelationshipsDistribution(
+    stixRelationshipsDistribution(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -749,7 +749,7 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
   }
 `;
 
-const StixCoreRelationshipsMultiHorizontalBars = ({
+const StixRelationshipsMultiHorizontalBars = ({
   title,
   variant,
   height,
@@ -909,8 +909,8 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
       <QueryRenderer
         query={
           subSelection.perspective === 'entities'
-            ? stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
-            : stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
+            ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
+            : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
         }
         variables={variables}
         render={({ props }) => {
@@ -919,14 +919,14 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             : 'stixCoreRelationshipsDistribution';
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.stixRelationshipsDistribution
+            && props.stixRelationshipsDistribution.length > 0
           ) {
-            const categories = props.stixCoreRelationshipsDistribution.map(
+            const categories = props.stixRelationshipsDistribution.map(
               (n) => defaultValue(n.entity),
             );
             const entitiesMapping = {};
-            for (const distrib of props.stixCoreRelationshipsDistribution) {
+            for (const distrib of props.stixRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[key]) {
                 entitiesMapping[
                   finalSubDistributionField === 'internal_id'
@@ -944,7 +944,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
               Object.entries(entitiesMapping).sort(([, a], [, b]) => b - a),
             );
             const categoriesValues = {};
-            for (const distrib of props.stixCoreRelationshipsDistribution) {
+            for (const distrib of props.stixRelationshipsDistribution) {
               for (const sortedEntity of sortedEntityMapping) {
                 const entityData = R.head(
                   distrib.entity[key].filter(
@@ -989,7 +989,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
               && finalSubDistributionField === 'internal_id'
             ) {
               // find subbars orders for entity subbars redirection
-              for (const distrib of props.stixCoreRelationshipsDistribution) {
+              for (const distrib of props.stixRelationshipsDistribution) {
                 for (const subDistrib of distrib.entity[key]) {
                   subSectionIdsOrder[subDistrib.label] = (subSectionIdsOrder[subDistrib.label] || 0)
                     + subDistrib.value;
@@ -1003,7 +1003,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
               );
             }
             const redirectionUtils = finalField === 'internal_id'
-              ? props.stixCoreRelationshipsDistribution.map((n) => ({
+              ? props.stixRelationshipsDistribution.map((n) => ({
                 id: n.label,
                 entity_type: n.entity.entity_type,
                 series: subSectionIdsOrder.map((subSectionId) => {
@@ -1081,7 +1081,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
           margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
         }}
       >
-        {parameters.title || title || t('Relationships DISTRIBUTION')}
+        {parameters.title || title || t('Relationships distribution')}
       </Typography>
       {variant !== 'inLine' ? (
         <Paper classes={{ root: classes.paper }} variant="outlined">
@@ -1094,4 +1094,4 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
   );
 };
 
-export default StixCoreRelationshipsMultiHorizontalBars;
+export default StixRelationshipsMultiHorizontalBars;

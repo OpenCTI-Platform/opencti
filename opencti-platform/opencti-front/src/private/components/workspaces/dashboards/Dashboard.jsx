@@ -30,26 +30,26 @@ import StixCoreObjectsMultiLineChart from '../../common/stix_core_objects/StixCo
 import StixCoreObjectsMultiAreaChart from '../../common/stix_core_objects/StixCoreObjectsMultiAreaChart';
 import StixCoreObjectsTimeline from '../../common/stix_core_objects/StixCoreObjectsTimeline';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
-import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
-import StixCoreRelationshipsMultiVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiVerticalBars';
 import StixCoreObjectsHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsHorizontalBars';
-import StixCoreRelationshipsMultiHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHorizontalBars';
 import StixCoreObjectsRadar from '../../common/stix_core_objects/StixCoreObjectsRadar';
-import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
-import StixCoreRelationshipsDistributionList from '../../common/stix_core_relationships/StixCoreRelationshipsDistributionList';
-import StixCoreRelationshipsNumber from '../../common/stix_core_relationships/StixCoreRelationshipsNumber';
-import StixCoreRelationshipsMultiLineChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiLineChart';
-import StixCoreRelationshipsMultiAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiAreaChart';
-import StixCoreRelationshipsTimeline from '../../common/stix_core_relationships/StixCoreRelationshipsTimeline';
-import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
-import StixCoreRelationshipsRadar from '../../common/stix_core_relationships/StixCoreRelationshipsRadar';
 import StixCoreObjectsMultiHeatMap from '../../common/stix_core_objects/StixCoreObjectsMultiHeatMap';
-import StixCoreRelationshipsMultiHeatMap from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHeatMap';
 import StixCoreObjectsTreeMap from '../../common/stix_core_objects/StixCoreObjectsTreeMap';
-import StixCoreRelationshipsTreeMap from '../../common/stix_core_relationships/StixCoreRelationshipsTreeMap';
-import StixCoreRelationshipsMap from '../../common/stix_core_relationships/StixCoreRelationshipsMap';
-import StixDomainObjectBookmarksList from '../../common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixCoreObjectsMultiHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
+import StixDomainObjectBookmarksList from '../../common/stix_domain_objects/StixDomainObjectBookmarksList';
+import StixRelationshipsHorizontalBars from '../../common/stix_relationships/StixRelationshipsHorizontalBars';
+import StixRelationshipsMultiVerticalBars from '../../common/stix_relationships/StixRelationshipsMultiVerticalBars';
+import StixRelationshipsMultiHorizontalBars from '../../common/stix_relationships/StixRelationshipsMultiHorizontalBars';
+import StixRelationshipsList from '../../common/stix_relationships/StixRelationshipsList';
+import StixRelationshipsDistributionList from '../../common/stix_relationships/StixRelationshipsDistributionList';
+import StixRelationshipsNumber from '../../common/stix_relationships/StixRelationshipsNumber';
+import StixRelationshipsMultiLineChart from '../../common/stix_relationships/StixRelationshipsMultiLineChart';
+import StixRelationshipsMultiAreaChart from '../../common/stix_relationships/StixRelationshipsMultiAreaChart';
+import StixRelationshipsTimeline from '../../common/stix_relationships/StixRelationshipsTimeline';
+import StixRelationshipsDonut from '../../common/stix_relationships/StixRelationshipsDonut';
+import StixRelationshipsRadar from '../../common/stix_relationships/StixRelationshipsRadar';
+import StixRelationshipsMultiHeatMap from '../../common/stix_relationships/StixRelationshipsMultiHeatMap';
+import StixRelationshipsTreeMap from '../../common/stix_relationships/StixRelationshipsTreeMap';
+import StixRelationshipsMap from '../../common/stix_relationships/StixRelationshipsMap';
 import AuditsList from '../../common/audits/AuditsList';
 import AuditsMultiLineChart from '../../common/audits/AuditsMultiLineChart';
 import AuditsMultiAreaChart from '../../common/audits/AuditsMultiAreaChart';
@@ -398,7 +398,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     switch (widget.type) {
       case 'number':
         return (
-          <StixCoreRelationshipsNumber
+          <StixRelationshipsNumber
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -408,7 +408,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'list':
         return (
-          <StixCoreRelationshipsList
+          <StixRelationshipsList
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -418,7 +418,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'distribution-list':
         return (
-          <StixCoreRelationshipsDistributionList
+          <StixRelationshipsDistributionList
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -428,7 +428,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'vertical-bar':
         return (
-          <StixCoreRelationshipsMultiVerticalBars
+          <StixRelationshipsMultiVerticalBars
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -439,7 +439,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'line':
         return (
-          <StixCoreRelationshipsMultiLineChart
+          <StixRelationshipsMultiLineChart
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -450,7 +450,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'area':
         return (
-          <StixCoreRelationshipsMultiAreaChart
+          <StixRelationshipsMultiAreaChart
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -461,7 +461,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'timeline':
         return (
-          <StixCoreRelationshipsTimeline
+          <StixRelationshipsTimeline
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -471,7 +471,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'donut':
         return (
-          <StixCoreRelationshipsDonut
+          <StixRelationshipsDonut
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -486,7 +486,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           && widget.dataSelection[0].attribute === 'internal_id'
         ) {
           return (
-            <StixCoreRelationshipsMultiHorizontalBars
+            <StixRelationshipsMultiHorizontalBars
               startDate={startDate}
               endDate={endDate}
               dataSelection={widget.dataSelection}
@@ -497,7 +497,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           );
         }
         return (
-          <StixCoreRelationshipsHorizontalBars
+          <StixRelationshipsHorizontalBars
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -508,7 +508,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'radar':
         return (
-          <StixCoreRelationshipsRadar
+          <StixRelationshipsRadar
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -519,7 +519,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'heatmap':
         return (
-          <StixCoreRelationshipsMultiHeatMap
+          <StixRelationshipsMultiHeatMap
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -530,7 +530,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'tree':
         return (
-          <StixCoreRelationshipsTreeMap
+          <StixRelationshipsTreeMap
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
@@ -541,7 +541,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         );
       case 'map':
         return (
-          <StixCoreRelationshipsMap
+          <StixRelationshipsMap
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}
