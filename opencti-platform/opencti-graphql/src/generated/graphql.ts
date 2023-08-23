@@ -16717,7 +16717,6 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   start_type?: Maybe<Scalars['String']['output']>;
-  startup_info?: Maybe<Array<Maybe<Dictionary>>>;
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -33763,7 +33762,6 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  startup_info?: Resolver<Maybe<Array<Maybe<ResolversTypes['Dictionary']>>>, ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ProcessStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ProcessStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ProcessStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;

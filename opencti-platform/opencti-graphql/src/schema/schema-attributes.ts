@@ -48,6 +48,7 @@ export const schemaAttributesDefinition = {
     boolean: new Map<string, void>(),
     dictionary: new Map<string, void>(),
     object: new Map<string, void>(),
+    object_flat: new Map<string, void>(),
     json: new Map<string, void>(),
     object: new Map<string, void>(),
     runtime: new Map<string, void>(),
@@ -84,15 +85,17 @@ export const schemaAttributesDefinition = {
         const attrMap = new Map(attrList.map((e) => [e.name, e]));
         const parentAttribute = attrMap.get(attribute.name);
         // We throw if we found the exact same definition (to allow attribute override)
-        const uniqAttribute = R.omit(['mandatoryType'], attribute);
-        const uniqParentAttribute = R.omit(['mandatoryType'], parentAttribute);
-        if (parentAttribute && R.equals(uniqAttribute, uniqParentAttribute)) {
-          throw UnsupportedError('Attribute already defined by one of its parent', {
-            entityType,
-            parentType,
-            attribute,
-            parentAttribute,
-          });
+        if (parentAttribute) {
+          const uniqAttribute = { upsert: attribute.upsert, update: attribute.update, mandatoryType: attribute.mandatoryType };
+          const uniqParentAttribute = { upsert: parentAttribute.upsert, update: parentAttribute.update, mandatoryType: parentAttribute.mandatoryType };
+          if (R.equals(uniqAttribute, uniqParentAttribute)) {
+            throw UnsupportedError('Attribute already defined by one of its parent', {
+              entityType,
+              parentType,
+              attribute,
+              parentAttribute,
+            });
+          }
         }
       }
       // Set the attribute in list

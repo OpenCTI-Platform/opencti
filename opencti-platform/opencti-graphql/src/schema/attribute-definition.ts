@@ -10,7 +10,7 @@ export const textMapping = {
 };
 export const dateMapping = { type: 'date' };
 
-export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object';
+export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object' | 'object_flat';
 export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 
 type BasicDefinition = {
@@ -27,13 +27,14 @@ type BasicDefinition = {
 
 export type StringAttribute = { type: 'string' } & BasicDefinition;
 export type DateAttribute = { type: 'date' } & BasicDefinition;
-export type DictionaryAttribute = { type: 'dictionary' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
 export type NumericAttribute = { type: 'numeric', precision: 'integer' | 'long' | 'float', scalable?: boolean } & BasicDefinition;
 export type JsonAttribute = { type: 'json', multiple: false, schemaDef?: Record<string, any> } & BasicDefinition;
-export type ObjectAttribute = { type: 'object', nested?: boolean, mapping: Record<string, any> } & BasicDefinition;
+export type DictionaryAttribute = { type: 'dictionary', nested?: boolean, mappings: AttributeDefinition[] } & BasicDefinition;
+export type ObjectAttribute = { type: 'object', nested?: boolean, mappings: AttributeDefinition[] } & BasicDefinition;
+export type ObjectFlatAttribute = { type: 'object_flat' } & BasicDefinition;
 
-export type AttributeDefinition = StringAttribute | JsonAttribute | ObjectAttribute | DictionaryAttribute |
+export type AttributeDefinition = StringAttribute | JsonAttribute | ObjectAttribute | DictionaryAttribute | ObjectFlatAttribute |
 NumericAttribute | DateAttribute | BooleanAttribute;
 
 // -- GLOBAL --
@@ -94,12 +95,12 @@ export const files: AttributeDefinition = {
   multiple: true,
   upsert: false,
   update: false,
-  mapping: {
-    id: textMapping,
-    name: textMapping,
-    version: textMapping,
-    mime_type: textMapping,
-  }
+  mappings: [
+    id,
+    { name: 'name', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'version', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'mime_type', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+  ]
 };
 
 export const authorizedMembers: AttributeDefinition = {
@@ -108,12 +109,12 @@ export const authorizedMembers: AttributeDefinition = {
   mandatoryType: 'no',
   multiple: true,
   upsert: false,
-  mapping: {
-    id: textMapping,
-    name: textMapping,
-    entity_type: textMapping,
-    access_right: textMapping,
-  }
+  mappings: [
+    id,
+    { name: 'name', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'entity_type', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'access_right', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+  ]
 };
 
 export const authorizedAuthorities: AttributeDefinition = {
@@ -185,13 +186,13 @@ export const errors: AttributeDefinition = {
   mandatoryType: 'no',
   multiple: true,
   upsert: false,
-  mapping: {
-    id: textMapping,
-    message: textMapping,
-    error: textMapping,
-    source: textMapping,
-    timestamp: dateMapping,
-  }
+  mappings: [
+    id,
+    { name: 'message', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'error', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'source', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'timestamp', type: 'date', mandatoryType: 'no', multiple: true, upsert: true },
+  ]
 };
 
 // -- STIX DOMAIN OBJECT --

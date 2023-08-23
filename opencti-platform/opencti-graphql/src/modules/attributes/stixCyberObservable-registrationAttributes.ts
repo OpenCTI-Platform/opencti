@@ -40,6 +40,26 @@ const stixCyberObservableAttributes: Array<AttributeDefinition> = [
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CYBER_OBSERVABLE, stixCyberObservableAttributes);
 
+const hashDefinition: AttributeDefinition = {
+  name: 'hashes',
+  type: 'dictionary',
+  mappings: [
+    { name: 'MD5', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'SHA-1', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'SHA-256', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'SHA-512', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'SHA3-256', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'SHA3-512', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'SSDEEP', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'SDHASH', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'TLSH', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'LZJD', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+  ],
+  mandatoryType: 'no',
+  multiple: false,
+  upsert: true
+};
+
 const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_AUTONOMOUS_SYSTEM]: [
     { name: 'number', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true },
@@ -75,8 +95,8 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'content_disposition', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
   ],
   [ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [
+    hashDefinition,
     { name: 'mime_type', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'Mime type' },
-    { name: 'hashes', type: 'dictionary', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'payload_bin', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'Payload' },
     { name: 'url', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'encryption_algorithm', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, label: 'Algorithm' },
@@ -84,7 +104,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'x_opencti_additional_names', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true },
   ],
   [ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [
-    { name: 'hashes', type: 'dictionary', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    hashDefinition,
     { name: 'extensions', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'size', type: 'numeric', precision: 'long', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'name', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
@@ -98,7 +118,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'obsContent', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [
-    { name: 'hashes', type: 'dictionary', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    hashDefinition,
     { name: 'is_self_signed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'version', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'serial_number', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
@@ -144,13 +164,13 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'start', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'end', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'is_active', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'src_port', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'dst_port', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'src_port', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'dst_port', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'protocols', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true },
-    { name: 'src_byte_count', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'dst_byte_count', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'src_packets', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'dst_packets', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'src_byte_count', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'dst_byte_count', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'src_packets', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'dst_packets', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_PROCESS]: [
     { name: 'extensions', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
@@ -166,7 +186,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'priority', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'owner_sid', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'window_title', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
-    { name: 'startup_info', type: 'dictionary', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
+    // { name: 'startup_info', type: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false }, // TODO To introduce later
     { name: 'integrity_level', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     // windows-service-ext
     { name: 'service_name', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
@@ -209,7 +229,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
   [ENTITY_WINDOWS_REGISTRY_KEY]: [
     { name: 'attribute_key', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'modified_time', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
-    { name: 'number_of_subkeys', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
+    { name: 'number_of_subkeys', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [
     { name: 'name', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },

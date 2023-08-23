@@ -590,8 +590,13 @@ const attributeMappingGenerator = (entityAttribute) => {
   if (entityAttribute.type === 'boolean') {
     return { type: 'boolean' };
   }
-  if (entityAttribute.type === 'object') {
-    const config = { dynamic: 'strict', properties: entityAttribute.mapping };
+  if (entityAttribute.type === 'object' || entityAttribute.type === 'dictionary') {
+    const properties = {};
+    for (let i = 0; i < entityAttribute.mappings.length; i += 1) {
+      const mapping = entityAttribute.mappings[i];
+      properties[mapping.name] = attributeMappingGenerator(mapping);
+    }
+    const config = { dynamic: 'strict', properties };
     if (entityAttribute.nested) {
       config.type = 'nested';
     }
@@ -600,7 +605,7 @@ const attributeMappingGenerator = (entityAttribute) => {
   if (entityAttribute.type === 'json') {
     return textMapping;
   }
-  if (entityAttribute.type === 'dictionary') {
+  if (entityAttribute.type === 'object_flat') {
     // content of dictionary cannot be predicted
     return { type: engine instanceof ElkClient ? 'flattened' : 'flat_object' };
   }
@@ -2998,18 +3003,6 @@ export const prepareElementFromDefinition = (entityType, attribute, value) => {
     }
     return typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
   }
-  // Come from only in native type, should be prepared earlier
-  if (attribute.type === 'dictionary') { // For dictionary object, prepare inner elements
-    if (!isObject(value)) {
-      throw UnsupportedError('Invalid data type for dictionary preparation', { type: entityType, attribute, value });
-    }
-    const dictionary = {};
-    Object.keys(value).forEach((k) => {
-      const dictValue = value[k];
-      dictionary[k] = R.is(String, dictValue) ? dictValue.trim() : dictValue;
-    });
-    return dictionary;
-  }
   // Come from string or native type
   if (attribute.type === 'json') {
     if (!R.is(String, value) && !isObject(value)) {
@@ -3027,11 +3020,17 @@ export const prepareElementFromDefinition = (entityType, attribute, value) => {
     }
     return value.trim();
   }
+  // Come from object that not needs to be searchable
+  if (attribute.type === 'object_flat') {
+    // We cant do any control on this kind of field
+    return value;
+  }
   // Come from internal complex object only
-  if (attribute.type === 'object') { // For complex object, prepare inner elements
+  if (attribute.type === 'object' || attribute.type === 'dictionary') { // For complex object, prepare inner elements
     if (!isObject(value)) {
       throw UnsupportedError('Invalid data type for object preparation', { type: entityType, attribute, value });
     }
+    // TODO Process data cleanup based on mapping definition
     return value;
   }
   // Type is unknown

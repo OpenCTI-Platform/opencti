@@ -19,7 +19,11 @@ export interface UserSearchActionContextData {
 export interface UserSearchAction extends BasicUserAction {
   event_type: 'command'
   event_scope: 'search'
-  context_data: UserSearchActionContextData
+  context_data: {
+    types: string
+    search: string
+    filters: string
+  }
 }
 export interface UserEnrichActionContextData {
   id: string

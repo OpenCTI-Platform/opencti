@@ -13,7 +13,7 @@ import {
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import { authorizedAuthorities, authorizedMembers, textMapping } from '../../schema/attribute-definition';
+import { authorizedAuthorities, authorizedMembers } from '../../schema/attribute-definition';
 
 // Outcomes
 // TODO
@@ -88,16 +88,19 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
       mandatoryType: 'internal',
       multiple: true,
       upsert: false,
-      mapping: {
-        title: textMapping,
-        events: {
-          properties: {
-            message: textMapping,
-            instance_id: textMapping,
-            operation: textMapping
-          }
-        }
-      }
+      mappings: [
+        { name: 'title', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+        { name: 'events',
+          type: 'object',
+          mandatoryType: 'no',
+          multiple: true,
+          upsert: true,
+          mappings: [
+            { name: 'message', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+            { name: 'instance_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+            { name: 'operation', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+          ] },
+      ]
     },
     { name: 'created', type: 'date', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'is_read', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true },

@@ -5860,7 +5860,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   priority: String
   owner_sid: String
   window_title: String
-  startup_info: [Dictionary]
   integrity_level: String
   service_name: String
   descriptions: [String]
@@ -10138,9 +10137,6 @@ input MalwareAnalysisAddInput {
   x_opencti_stix_ids: [StixId]
   product: String!
   version: String
-  hostVm: String
-  operatingSystem: String
-  installedSoftware: [String]
   configuration_version: String
   modules: [String]
   analysis_engine_version: String
@@ -10150,13 +10146,16 @@ input MalwareAnalysisAddInput {
   analysis_ended: DateTime
   result_name: String!
   result: String
-  analysisSco: [String]
-  sample: String
   created: DateTime
   modified: DateTime
   confidence: Int
   revoked: Boolean
   lang: String
+  sample: String
+  operatingSystem: String
+  hostVm: String
+  analysisSco: [String]
+  installedSoftware: [String]
   createdBy: String
   objectMarking: [String]
   objectAssignee: [String]

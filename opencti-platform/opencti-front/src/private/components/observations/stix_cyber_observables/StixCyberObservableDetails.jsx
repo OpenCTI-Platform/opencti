@@ -139,18 +139,6 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                 </Grid>
               ));
             }
-            if (observableAttribute.key === 'startup_info') {
-              return observableAttribute.value.map((hash) => (
-                <Grid key={hash.key} item={true} xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {hash.key} - startup_info
-                  </Typography>
-                  <pre>
-                    <ItemCopy content={hash.value} />
-                  </pre>
-                </Grid>
-              ));
-            }
             if (
               isVocabularyField(
                 stixCyberObservable.entity_type,
@@ -364,10 +352,6 @@ const StixCyberObservableDetails = createFragmentContainer(
           priority
           owner_sid
           window_title
-          startup_info {
-            key
-            value
-          }
           integrity_level
           ## windows-service-ext
           service_name

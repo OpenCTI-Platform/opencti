@@ -103,7 +103,11 @@ export const findAll = async (context, user, args) => {
       event_type: 'command',
       event_scope: 'search',
       event_access: 'extended',
-      context_data: contextData,
+      context_data: {
+        types: args.types,
+        search: args.search,
+        filters: args.filters
+      }
     });
   }
   return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });

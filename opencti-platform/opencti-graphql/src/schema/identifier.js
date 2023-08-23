@@ -31,13 +31,17 @@ import { convertTypeToStixType } from '../database/stix-converter';
 import { isStixRefRelationship } from './stixRefRelationship';
 
 // region hashes
-const MD5 = 'MD5';
-const SHA_1 = 'SHA-1';
-const SHA_256 = 'SHA-256';
-const SHA_512 = 'SHA-512';
-const SHA3_256 = 'SHA3-256';
-const SHA3_512 = 'SHA3-512';
-const SSDEEP = 'SSDEEP';
+export const MD5 = 'MD5';
+export const SHA_1 = 'SHA-1';
+export const SHA_256 = 'SHA-256';
+export const SHA_512 = 'SHA-512';
+export const SHA3_256 = 'SHA3-256';
+export const SHA3_512 = 'SHA3-512';
+export const SSDEEP = 'SSDEEP';
+export const SDHASH = 'SDHASH';
+export const TLSH = 'TLSH';
+export const LZJD = 'LZJD';
+
 const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
@@ -157,7 +161,6 @@ const stixBaseCyberObservableContribution = {
       if (hashes[SHA_512]) return { [SHA_512]: hashes[SHA_512] };
       if (hashes[SHA3_256]) return { [SHA3_256]: hashes[SHA3_256] };
       if (hashes[SHA3_512]) return { [SHA3_512]: hashes[SHA3_512] };
-      if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP] };
       return undefined;
     },
   },

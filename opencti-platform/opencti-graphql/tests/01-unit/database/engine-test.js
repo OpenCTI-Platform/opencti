@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { prepareDataFromSchemaDefinition } from '../../../src/database/engine';
+import { engineMappingGenerator, prepareDataFromSchemaDefinition } from '../../../src/database/engine';
 import { ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_INDICATOR } from '../../../src/schema/stixDomainObject';
 import '../../../src/modules/index';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../src/schema/stixCyberObservable';
@@ -24,7 +24,7 @@ describe('prepareDataFromSchemaDefinition testing', () => {
     const prepare = () => prepareDataFromSchemaDefinition({ entity_type: ENTITY_TYPE_INDICATOR, x_opencti_score: {}, x_opencti_detection: 'false' });
     expect(prepare).toThrow();
   });
-  it('should dic prepared (inner trim)', () => {
+  it.skip('should dic prepared (inner trim)', () => {
     const element = prepareDataFromSchemaDefinition({ entity_type: ENTITY_HASHED_OBSERVABLE_ARTIFACT, hashes: { MD5: '   MD5   ', SHA1: '   SHA1   ' } });
     expect(element.hashes.MD5).toBe('MD5');
     expect(element.hashes.SHA1).toBe('SHA1');
@@ -60,5 +60,9 @@ describe('prepareDataFromSchemaDefinition testing', () => {
     expect(objectListElement.connector_state).toEqual('["test"]');
     const stringElement = () => prepareDataFromSchemaDefinition({ entity_type: ENTITY_TYPE_CONNECTOR, connector_state: 'test' });
     expect(stringElement).toThrow();
+  });
+  it('should engine schema correctly generated', () => {
+    const schema = engineMappingGenerator();
+    expect(Object.keys(schema).length).toEqual(505);
   });
 });

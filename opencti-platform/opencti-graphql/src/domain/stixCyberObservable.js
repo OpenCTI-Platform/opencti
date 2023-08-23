@@ -240,48 +240,19 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (isNotEmptyField(originalStixCyberObservable.payload_bin) && input[0].key === 'url') {
     if (isNotEmptyField(originalStixCyberObservable.url)) {
-      await updateAttribute(
-        context,
-        user,
-        stixCyberObservableId,
-        ABSTRACT_STIX_CYBER_OBSERVABLE,
-        [{ key: 'url', values: null }],
-        opts
-      );
+      await updateAttribute(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, [{ key: 'url', values: null }], opts);
     }
     throw FunctionalError('Cannot update url when payload_bin is present.');
   } else if (isNotEmptyField(originalStixCyberObservable.url) && input[0].key === 'payload_bin') {
     if (isNotEmptyField(originalStixCyberObservable.payload_bin)) {
-      await updateAttribute(
-        context,
-        user,
-        stixCyberObservableId,
-        ABSTRACT_STIX_CYBER_OBSERVABLE,
-        [{ key: 'payload_bin', values: null }],
-        opts
-      );
+      await updateAttribute(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, [{ key: 'payload_bin', values: null }], opts);
     }
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
-  const { element: stixCyberObservable } = await updateAttribute(
-    context,
-    user,
-    stixCyberObservableId,
-    ABSTRACT_STIX_CYBER_OBSERVABLE,
-    input,
-    opts
-  );
+  const { element: stixCyberObservable } = await updateAttribute(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, input, opts);
   if (input[0].key === 'x_opencti_score') {
-    const indicators = await listThroughGetFrom(
-      context,
-      user,
-      [stixCyberObservableId],
-      RELATION_BASED_ON,
-      ENTITY_TYPE_INDICATOR
-    );
-    await Promise.all(
-      indicators.map((indicator) => updateAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, input, opts))
-    );
+    const indicators = await listThroughGetFrom(context, user, [stixCyberObservableId], RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+    await Promise.all(indicators.map((indicator) => updateAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, input, opts)));
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };

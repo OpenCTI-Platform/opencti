@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
-import { dateMapping, errors, textMapping } from '../../schema/attribute-definition';
+import { errors, id } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_CAPABILITY,
@@ -37,7 +37,42 @@ const HistoryDefinition: AttributeDefinition[] = [
   { name: 'group_ids', type: 'string', mandatoryType: 'internal', multiple: true, upsert: false },
   { name: 'organization_ids', type: 'string', mandatoryType: 'internal', multiple: true, upsert: false },
   { name: 'timestamp', type: 'date', mandatoryType: 'internal', multiple: false, upsert: false },
-  { name: 'context_data', type: 'dictionary', mandatoryType: 'internal', multiple: false, upsert: false },
+  {
+    name: 'context_data',
+    type: 'object',
+    mandatoryType: 'internal',
+    multiple: false,
+    upsert: false,
+    mappings: [
+      id,
+      { name: 'provider', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'username', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'message', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'element_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'entity_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'path', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'format', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'operation', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'entity_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'export_scope', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'export_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'file_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'file_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'file_mime', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'max_marking', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'connectors', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+      { name: 'selected_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+      { name: 'connector_name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'created_by_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'marking_definition_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+      { name: 'labels_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+      { name: 'types', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+      { name: 'search', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'list_params', type: 'object_flat', mandatoryType: 'no', multiple: false, upsert: true },
+      { name: 'input', type: 'object_flat', mandatoryType: 'no', multiple: false, upsert: true },
+    ]
+  },
 ];
 
 const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
@@ -103,10 +138,10 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
       mandatoryType: 'no',
      editDefault: false, multiple: true,
       upsert: false,
-      mapping: {
-        entity_type: textMapping,
-        values: textMapping
-      }
+      mappings: [
+        { name: 'entity_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+        { name: 'values', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+      ]
     },
     { name: 'default_dashboard', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true },
     { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false },
@@ -126,10 +161,10 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
       mandatoryType: 'no',
      editDefault: false, multiple: true,
       upsert: false,
-      mapping: {
-        id: textMapping,
-        type: textMapping
-      }
+      mappings: [
+        { name: 'id:', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+        { name: 'type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      ]
     },
     { name: 'api_token', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
     { name: 'otp_secret', type: 'string', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false },
@@ -205,7 +240,25 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
     { name: 'feed_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'include_header', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'filters', type: 'json', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'feed_attributes', type: 'dictionary', mandatoryType: 'no', multiple: true, upsert: false },
+    {
+      name: 'feed_attributes',
+      type: 'object',
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: false,
+      mappings: [
+        { name: 'attribute', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+        { name: 'mappings',
+          type: 'object',
+          mandatoryType: 'no',
+          multiple: true,
+          upsert: true,
+          mappings: [
+            { name: 'type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+            { name: 'attribute', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+          ] },
+      ]
+    },
   ],
   [ENTITY_TYPE_STATUS_TEMPLATE]: [
     { name: 'name', type: 'string', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false },
@@ -236,10 +289,10 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
       mandatoryType: 'no',
       multiple: true,
       upsert: false,
-      mapping: {
-        timestamp: dateMapping,
-        message: textMapping,
-      }
+      mappings: [
+        { name: 'timestamp', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
+        { name: 'message', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+      ]
     },
     errors
   ],
@@ -250,16 +303,19 @@ const internalObjectsAttributes: { [k: string]: AttributeDefinition[] } = {
       mandatoryType: 'internal',
       multiple: true,
       upsert: false,
-      mapping: {
-        type: textMapping,
-        context: {
-          properties: {
-            field: textMapping,
-            type: textMapping,
-            values: textMapping
-          }
-        }
-      }
+      mappings: [
+        { name: 'type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+        { name: 'context',
+          type: 'object',
+          mandatoryType: 'no',
+          multiple: false,
+          upsert: true,
+          mappings: [
+            { name: 'field', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+            { name: 'type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+            { name: 'values', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+          ] },
+      ]
     },
     { name: 'type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'scope', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
