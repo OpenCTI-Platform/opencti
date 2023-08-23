@@ -24,6 +24,7 @@ import inject18n from '../../../../../components/i18n';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
 import { UserContext } from '../../../../../utils/hooks/useAuth';
 import withHooksSettingsMessagesBannerHeight from '../../../settings/settings_messages/withHooksSettingsMessagesBannerHeight';
+import { MESSAGING$ } from '../../../../../relay/environment';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -33,7 +34,6 @@ Transition.displayName = 'TransitionSlide';
 const styles = (theme) => ({
   bottomNav: {
     zIndex: 1040,
-    padding: '0 0 0 180px',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -108,7 +108,18 @@ class WorkbenchFileToolbar extends Component {
     this.state = {
       displayDelete: false,
       displayApplyMarking: false,
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
+  }
+
+  componentDidMount() {
+    this.subscription = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleOpenApplyMarking() {
@@ -150,136 +161,143 @@ class WorkbenchFileToolbar extends Component {
       theme,
       settingsMessagesBannerHeight,
     } = this.props;
-    const { displayDelete, displayApplyMarking } = this.state;
+    const { displayDelete, displayApplyMarking, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
     const initialValues = { objectMarking: [] };
     return (
-        <UserContext.Consumer>
-          {({ bannerSettings }) => (
-            <Drawer
-              anchor="bottom"
-              variant="persistent"
-              classes={{
-                // eslint-disable-next-line no-nested-ternary
-                paper: classes.bottomNav,
-              }}
-              open={isOpen}
-              PaperProps={{ variant: 'elevation', elevation: 1, style: { marginTop: settingsMessagesBannerHeight, bottom: bannerSettings.bannerHeightNumber } }}
+      <UserContext.Consumer>
+        {({ bannerSettings }) => (
+          <Drawer
+            anchor="bottom"
+            variant="persistent"
+            classes={{
+              // eslint-disable-next-line no-nested-ternary
+              paper: classes.bottomNav,
+            }}
+            open={isOpen}
+            PaperProps={{
+              variant: 'elevation',
+              elevation: 1,
+              style: {
+                paddingLeft: navOpen ? 185 : 60,
+                bottom: bannerSettings.bannerHeightNumber,
+              },
+            }}
+          >
+            <Toolbar style={{ minHeight: 54 }}>
+              <Typography
+                className={classes.title}
+                color="inherit"
+                variant="subtitle1"
+              >
+                <span
+                  style={{
+                    padding: '2px 5px 2px 5px',
+                    marginRight: 5,
+                    backgroundColor: theme.palette.secondary.main,
+                    color: '#ffffff',
+                  }}
+                >
+                  {numberOfSelectedElements}
+                </span>{' '}
+                {t('selected')}{' '}
+                <IconButton
+                  aria-label="clear"
+                  disabled={numberOfSelectedElements === 0}
+                  onClick={handleClearSelectedElements.bind(this)}
+                  size="large"
+                >
+                  <ClearOutlined fontSize="small" />
+                </IconButton>
+              </Typography>
+              <IconButton
+                disabled={numberOfSelectedElements === 0}
+                onClick={this.handleOpenApplyMarking.bind(this)}
+                color="primary"
+                size="large"
+              >
+                <CenterFocusStrongOutlined />
+              </IconButton>
+              <IconButton
+                disabled={numberOfSelectedElements === 0}
+                onClick={this.handleOpenDelete.bind(this)}
+                color="primary"
+                size="large"
+              >
+                <DeleteOutlined />
+              </IconButton>
+            </Toolbar>
+            <Dialog
+              open={displayApplyMarking}
+              PaperProps={{ elevation: 1 }}
+              keepMounted={true}
+              TransitionComponent={Transition}
+              onClose={this.handleCloseApplyMarking.bind(this)}
+              maxWidth="xs"
+              fullWidth={true}
             >
-              <Toolbar style={{ minHeight: 54 }}>
-                <Typography
-                  className={classes.title}
-                  color="inherit"
-                  variant="subtitle1"
+              <DialogTitle>{t('Apply marking definitions')}</DialogTitle>
+              <DialogContent>
+                <Formik
+                  initialValues={initialValues}
+                  onSubmit={this.onSubmitApplyMarking.bind(this)}
+                  onReset={this.onResetApplyMarking.bind(this)}
                 >
-                  <span
-                    style={{
-                      padding: '2px 5px 2px 5px',
-                      marginRight: 5,
-                      backgroundColor: theme.palette.secondary.main,
-                      color: '#ffffff',
-                    }}
-                  >
-                    {numberOfSelectedElements}
-                  </span>{' '}
-                  {t('selected')}{' '}
-                  <IconButton
-                    aria-label="clear"
-                    disabled={numberOfSelectedElements === 0}
-                    onClick={handleClearSelectedElements.bind(this)}
-                    size="large"
-                  >
-                    <ClearOutlined fontSize="small" />
-                  </IconButton>
-                </Typography>
-                <IconButton
-                  disabled={numberOfSelectedElements === 0}
-                  onClick={this.handleOpenApplyMarking.bind(this)}
-                  color="primary"
-                  size="large"
+                  {({ submitForm, handleReset, isSubmitting }) => (
+                    <Form>
+                      <ObjectMarkingField name="objectMarking" />
+                      <div className={classes.buttons}>
+                        <Button
+                          onClick={handleReset}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Cancel')}
+                        </Button>
+                        <Button
+                          color="secondary"
+                          onClick={submitForm}
+                          disabled={isSubmitting}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Update')}
+                        </Button>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              </DialogContent>
+            </Dialog>
+            <Dialog
+              open={displayDelete}
+              PaperProps={{ elevation: 1 }}
+              keepMounted={true}
+              TransitionComponent={Transition}
+              onClose={this.handleCloseDelete.bind(this)}
+            >
+              <DialogContent>
+                <DialogContentText>
+                  {t('Do you want to remove these objects?')}
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={this.handleCloseDelete.bind(this)}>
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={() => {
+                    this.handleCloseDelete();
+                    submitDelete();
+                  }}
                 >
-                  <CenterFocusStrongOutlined />
-                </IconButton>
-                <IconButton
-                  disabled={numberOfSelectedElements === 0}
-                  onClick={this.handleOpenDelete.bind(this)}
-                  color="primary"
-                  size="large"
-                >
-                  <DeleteOutlined />
-                </IconButton>
-              </Toolbar>
-              <Dialog
-                open={displayApplyMarking}
-                PaperProps={{ elevation: 1 }}
-                keepMounted={true}
-                TransitionComponent={Transition}
-                onClose={this.handleCloseApplyMarking.bind(this)}
-                maxWidth="xs"
-                fullWidth={true}
-              >
-                <DialogTitle>{t('Apply marking definitions')}</DialogTitle>
-                <DialogContent>
-                  <Formik
-                    initialValues={initialValues}
-                    onSubmit={this.onSubmitApplyMarking.bind(this)}
-                    onReset={this.onResetApplyMarking.bind(this)}
-                  >
-                    {({ submitForm, handleReset, isSubmitting }) => (
-                      <Form>
-                        <ObjectMarkingField name="objectMarking" />
-                        <div className={classes.buttons}>
-                          <Button
-                            onClick={handleReset}
-                            disabled={isSubmitting}
-                            classes={{ root: classes.button }}
-                          >
-                            {t('Cancel')}
-                          </Button>
-                          <Button
-                            color="secondary"
-                            onClick={submitForm}
-                            disabled={isSubmitting}
-                            classes={{ root: classes.button }}
-                          >
-                            {t('Update')}
-                          </Button>
-                        </div>
-                      </Form>
-                    )}
-                  </Formik>
-                </DialogContent>
-              </Dialog>
-              <Dialog
-                open={displayDelete}
-                PaperProps={{ elevation: 1 }}
-                keepMounted={true}
-                TransitionComponent={Transition}
-                onClose={this.handleCloseDelete.bind(this)}
-              >
-                <DialogContent>
-                  <DialogContentText>
-                    {t('Do you want to remove these objects?')}
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={this.handleCloseDelete.bind(this)}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={() => {
-                      this.handleCloseDelete();
-                      submitDelete();
-                    }}
-                  >
-                    {t('Remove')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Drawer>
-          )}
-        </UserContext.Consumer>
+                  {t('Remove')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Drawer>
+        )}
+      </UserContext.Consumer>
     );
   }
 }

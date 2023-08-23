@@ -389,49 +389,55 @@ const WorkbenchFileContentComponent = ({
   };
 
   const saveFile = () => {
-    let currentEntityId = null;
-    if (file.metaData.entity_id && file.metaData.entity) {
-      currentEntityId = file.metaData.entity_id;
-    }
-    // update entity container objects_refs
-    if (currentEntityId) {
-      const currentEntityContainer = containers.find(
-        (container) => container.x_opencti_id === currentEntityId,
-      );
-      if (currentEntityContainer) {
-        const currentEntityObjectRefs = Array.isArray(
-          currentEntityContainer.object_refs,
-        )
-          ? currentEntityContainer.object_refs
-          : [];
-        const objectIds = [...stixDomainObjects, ...stixCyberObservables].map(
-          (s) => s.id,
-        );
-        currentEntityContainer.object_refs = R.uniq([
-          ...currentEntityObjectRefs,
-          ...objectIds,
-        ]);
+    const numberOfObjects = stixDomainObjects.length
+      + stixCyberObservables.length
+      + stixCoreRelationships.length
+      + containers.length;
+    if (numberOfObjects > 0) {
+      let currentEntityId = null;
+      if (file.metaData.entity_id && file.metaData.entity) {
+        currentEntityId = file.metaData.entity_id;
       }
+      // update entity container objects_refs
+      if (currentEntityId) {
+        const currentEntityContainer = containers.find(
+          (container) => container.x_opencti_id === currentEntityId,
+        );
+        if (currentEntityContainer) {
+          const currentEntityObjectRefs = Array.isArray(
+            currentEntityContainer.object_refs,
+          )
+            ? currentEntityContainer.object_refs
+            : [];
+          const objectIds = [...stixDomainObjects, ...stixCyberObservables].map(
+            (s) => s.id,
+          );
+          currentEntityContainer.object_refs = R.uniq([
+            ...currentEntityObjectRefs,
+            ...objectIds,
+          ]);
+        }
+      }
+      const data = {
+        id: `bundle--${uuid()}`,
+        type: 'bundle',
+        objects: [
+          ...stixDomainObjects,
+          ...stixCyberObservables,
+          ...stixCoreRelationships,
+          ...containers,
+        ],
+      };
+      const json = JSON.stringify(data);
+      const blob = new Blob([json], { type: 'text/json' });
+      const fileToUpload = new File([blob], file.name, {
+        type: 'application/json',
+      });
+      commitMutation({
+        mutation: workbenchFileContentMutation,
+        variables: { file: fileToUpload, entityId: currentEntityId },
+      });
     }
-    const data = {
-      id: `bundle--${uuid()}`,
-      type: 'bundle',
-      objects: [
-        ...stixDomainObjects,
-        ...stixCyberObservables,
-        ...stixCoreRelationships,
-        ...containers,
-      ],
-    };
-    const json = JSON.stringify(data);
-    const blob = new Blob([json], { type: 'text/json' });
-    const fileToUpload = new File([blob], file.name, {
-      type: 'application/json',
-    });
-    commitMutation({
-      mutation: workbenchFileContentMutation,
-      variables: { file: fileToUpload, entityId: currentEntityId },
-    });
   };
 
   useEffect(() => loadFileContent(), []);
@@ -891,7 +897,10 @@ const WorkbenchFileContentComponent = ({
       ));
     }
     setStixDomainObjects(
-      R.uniqBy(R.prop('id'), [...finalStixDomainObjects, ...markingDefinitions]),
+      R.uniqBy(R.prop('id'), [
+        ...finalStixDomainObjects,
+        ...markingDefinitions,
+      ]),
     );
     setStixCyberObservables(finalStixCyberObservables);
     setStixCoreRelationships(finalStixCoreRelationships);
@@ -1000,10 +1009,13 @@ const WorkbenchFileContentComponent = ({
         values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
-    const stixType = convertToStixType(entityType);
-    const updatedEntity = {
+    const stixValues = R.reject(R.anyPass([R.isEmpty, R.isNil]))({
       ...entity,
       ...finalValues,
+    });
+    const stixType = convertToStixType(entityType);
+    const updatedEntity = {
+      ...stixValues,
       id: entity.id ? entity.id : `${stixType}--${uuid()}`,
       type: stixType,
     };
@@ -1178,9 +1190,12 @@ const WorkbenchFileContentComponent = ({
         values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
-    const updatedRelationship = {
+    const stixValues = R.reject(R.anyPass([R.isEmpty, R.isNil]))({
       ...relationship,
       ...finalValues,
+    });
+    const updatedRelationship = {
+      ...stixValues,
       id: relationship.id ? relationship.id : `relationship--${uuid()}`,
     };
     setStixCoreRelationships(
@@ -1273,10 +1288,13 @@ const WorkbenchFileContentComponent = ({
     if (!R.isEmpty(hashes)) {
       finalValues = { ...finalValues, hashes };
     }
-    const stixType = convertToStixType(observableType);
-    const updatedObservable = {
+    const stixValues = R.reject(R.anyPass([R.isEmpty, R.isNil]))({
       ...observable,
       ...finalValues,
+    });
+    const stixType = convertToStixType(observableType);
+    const updatedObservable = {
+      ...stixValues,
       id: observable.id ? observable.id : `${stixType}--${uuid()}`,
       type: stixType,
       observable_value: observableValue({
@@ -1363,10 +1381,13 @@ const WorkbenchFileContentComponent = ({
         values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
-    const stixType = convertToStixType(containerType);
-    const updatedContainer = {
+    const stixValues = R.reject(R.anyPass([R.isEmpty, R.isNil]))({
       ...container,
       ...finalValues,
+    });
+    const stixType = convertToStixType(containerType);
+    const updatedContainer = {
+      ...stixValues,
       id: container.id ? container.id : `${stixType}--${uuid()}`,
       type: stixType,
     };
@@ -1722,7 +1743,10 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
-                        if (R.includes(attribute, vocabularyAttributes) && fieldToCategory(type, attribute)) {
+                        if (
+                          R.includes(attribute, vocabularyAttributes)
+                          && fieldToCategory(type, attribute)
+                        ) {
                           return (
                             <OpenVocabField
                               label={attribute}
@@ -2454,7 +2478,10 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
-                        if (R.includes(attribute, vocabularyAttributes) && fieldToCategory(observableType, attribute)) {
+                        if (
+                          R.includes(attribute, vocabularyAttributes)
+                          && fieldToCategory(observableType, attribute)
+                        ) {
                           return (
                             <OpenVocabField
                               label={attribute}
@@ -2653,7 +2680,10 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
-                        if (R.includes(attribute, vocabularyAttributes) && fieldToCategory(containerType, attribute)) {
+                        if (
+                          R.includes(attribute, vocabularyAttributes)
+                          && fieldToCategory(containerType, attribute)
+                        ) {
                           return (
                             <OpenVocabField
                               label={attribute}

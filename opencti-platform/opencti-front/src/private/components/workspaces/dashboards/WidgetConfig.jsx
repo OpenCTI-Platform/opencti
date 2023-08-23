@@ -1257,6 +1257,57 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       </FormControl>
                     </div>
                   )}
+                  {dataSelection[i].perspective === 'relationships'
+                    && type === 'map' && (
+                      <TextField
+                        variant="standard"
+                        label={t('Zoom')}
+                        fullWidth={true}
+                        value={dataSelection[i].zoom ?? 2}
+                        placeholder={t('Zoom')}
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'zoom',
+                          event.target.value,
+                        )
+                        }
+                        style={{ marginTop: 20 }}
+                      />
+                  )}
+                  {dataSelection[i].perspective === 'relationships'
+                    && type === 'map' && (
+                      <TextField
+                        variant="standard"
+                        label={t('Center latitude')}
+                        fullWidth={true}
+                        value={dataSelection[i].centerLat ?? 48.8566969}
+                        placeholder={t('Center latitude')}
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'centerLat',
+                          event.target.value,
+                        )
+                        }
+                        style={{ marginTop: 20 }}
+                      />
+                  )}
+                  {dataSelection[i].perspective === 'relationships'
+                    && type === 'map' && (
+                      <TextField
+                        variant="standard"
+                        label={t('Center longitude')}
+                        fullWidth={true}
+                        value={dataSelection[i].centerLng ?? 2.3514616}
+                        placeholder={t('Center longitude')}
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'centerLng',
+                          event.target.value,
+                        )
+                        }
+                        style={{ marginTop: 20 }}
+                      />
+                  )}
                   {getCurrentAvailableParameters().includes('attribute') && (
                     <div
                       style={{ display: 'flex', width: '100%', marginTop: 20 }}

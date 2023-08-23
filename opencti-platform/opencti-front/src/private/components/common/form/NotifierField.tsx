@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
-import { Label } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
@@ -9,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { NotifierFieldSearchQuery$data } from './__generated__/NotifierFieldSearchQuery.graphql';
 import { Option } from './ReferenceField';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -26,10 +26,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface NotifierFieldProps {
-  name: string
+  name: string;
   style?: { marginTop: number };
-  helpertext?: string
-  onChange: (name: string, value: Option[]) => void
+  helpertext?: string;
+  onChange: (name: string, value: Option[]) => void;
 }
 
 const NotifierFieldQuery = graphql`
@@ -37,7 +37,7 @@ const NotifierFieldQuery = graphql`
     notificationNotifiers {
       id
       name
-      description 
+      description
       notifier_connector {
         name
       }
@@ -53,19 +53,24 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const [notifiersTemplates, setNotifiersTemplates] = useState<Option[]>([]);
-
   const searchNotifiers = (event: React.ChangeEvent<HTMLInputElement>) => {
-    fetchQuery(NotifierFieldQuery, { search: event && event.target.value ? event.target.value : '' }).toPromise().then((data) => {
-      const notifierOptions = ((data as NotifierFieldSearchQuery$data)?.notificationNotifiers ?? [])
-        .map((n) => ({
-          label: n.name,
-          value: n.id,
-          type: n.notifier_connector.name,
-        })).sort(({ type: aType }, { type: bType }) => aType.localeCompare(bType));
-      setNotifiersTemplates(notifierOptions);
-    });
+    fetchQuery(NotifierFieldQuery, {
+      search: event && event.target.value ? event.target.value : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const notifierOptions = (
+          (data as NotifierFieldSearchQuery$data)?.notificationNotifiers ?? []
+        )
+          .map((n) => ({
+            label: n.name,
+            value: n.id,
+            type: n.notifier_connector.name,
+          }))
+          .sort(({ type: aType }, { type: bType }) => aType.localeCompare(bType));
+        setNotifiersTemplates(notifierOptions);
+      });
   };
 
   return (
@@ -75,17 +80,26 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         name={name}
         multiple={true}
         style={fieldSpacingContainerStyle ?? style}
-        textfieldprops={{ variant: 'standard', label: t('Notifiers'), helperText: helpertext, onFocus: searchNotifiers }}
+        textfieldprops={{
+          variant: 'standard',
+          label: t('Notifiers'),
+          helperText: helpertext,
+          onFocus: searchNotifiers,
+        }}
         noOptionsText={t('No available options')}
         options={notifiersTemplates}
         onInputChange={searchNotifiers}
-        isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
+        isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value
+        }
         onChange={onChange}
         groupBy={(option: Option) => option.type}
-        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: Option) => (
+        renderOption={(
+          props: React.HTMLAttributes<HTMLLIElement>,
+          option: Option,
+        ) => (
           <li {...props}>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <Label />
+            <div className={classes.icon}>
+              <ItemIcon type="Notifier" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>

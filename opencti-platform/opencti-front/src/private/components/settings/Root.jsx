@@ -1,6 +1,11 @@
 import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
-import { SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS, } from '../../../utils/hooks/useGranted';
+import {
+  SETTINGS,
+  SETTINGS_SETACCESSES,
+  SETTINGS_SETLABELS,
+  SETTINGS_SETMARKINGS,
+} from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import { BoundaryRoute } from '../Error';
 import RootActivity from './activity/Root';
@@ -11,7 +16,7 @@ import RootGroup from './groups/Root';
 import KillChainPhases from './KillChainPhases';
 import Labels from './Labels';
 import MarkingDefinitions from './MarkingDefinitions';
-import RootNotification from "./notifications/Root";
+import Notifiers from './Notifiers';
 import RootSettingsOrganization from './organizations/Root';
 import Policies from './Policies';
 import Retention from './Retention';
@@ -206,6 +211,10 @@ const Root = () => (
         component={Rules}
       />
       <BoundaryRoute
+        path="/dashboard/settings/customization/notifiers"
+        component={Notifiers}
+      />
+      <BoundaryRoute
         exact
         path="/dashboard/settings/vocabularies"
         render={() => (
@@ -245,7 +254,10 @@ const Root = () => (
         exact
         path="/dashboard/settings/vocabularies/case_templates/:caseTemplateId"
         render={() => (
-          <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+          <Security
+            needs={[SETTINGS_SETLABELS]}
+            placeholder={<Redirect to={'/dashboard/settings'} />}
+          >
             <CaseTemplateTasks />
           </Security>
         )}
@@ -285,17 +297,6 @@ const Root = () => (
             <Vocabularies />
           </Security>
         )}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/notification"
-        render={() => (
-          <Redirect to="/dashboard/settings/notification/notifier" />
-        )}
-      />
-      <BoundaryRoute
-        path="/dashboard/settings/notification"
-        component={RootNotification}
       />
     </Security>
   </Switch>

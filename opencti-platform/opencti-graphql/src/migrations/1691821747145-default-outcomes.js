@@ -6,13 +6,11 @@ import { addNotifier } from '../modules/notifier/notifier-domain';
 import { DEFAULT_TEAM_DIGEST_MESSAGE, DEFAULT_TEAM_MESSAGE } from '../modules/notifier/notifier-statics';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
-const message = '[MIGRATION] Renaming outcomes to notifiers';
+const message = '[MIGRATION] Renaming outcomes to notifiers and create defaults';
 
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');
-  await Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE]
-    .map((notifier) => addNotifier(context, SYSTEM_USER, notifier)));
   const updateQuery = {
     script: {
       params: { outcomes: 'outcomes' },
@@ -34,6 +32,8 @@ export const up = async (next) => {
   }).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
+  await Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE]
+    .map((notifier) => addNotifier(context, SYSTEM_USER, notifier)));
   logApp.info(`${message} > done`);
   next();
 };

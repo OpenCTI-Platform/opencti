@@ -14,7 +14,7 @@ import { NotificationLine_node$data } from './notifications/__generated__/Notifi
 import useAuth from '../../../utils/hooks/useAuth';
 import NotificationsToolBar from './notifications/NotificationsToolBar';
 
-export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-notifications';
+export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-notifiers';
 
 const Notifications: FunctionComponent = () => {
   const { me } = useAuth();

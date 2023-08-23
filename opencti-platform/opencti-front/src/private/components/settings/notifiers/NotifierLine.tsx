@@ -6,9 +6,9 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import ItemIcon from '../../../../../components/ItemIcon';
-import { DataColumns } from '../../../../../components/list_lines';
-import { Theme } from '../../../../../components/Theme';
+import ItemIcon from '../../../../components/ItemIcon';
+import { DataColumns } from '../../../../components/list_lines';
+import { Theme } from '../../../../components/Theme';
 import { NotifierLine_node$key, NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
 import { NotifierLinesPaginationQuery$variables } from './__generated__/NotifierLinesPaginationQuery.graphql';
 import NotifierPopover from './NotifierPopover';
@@ -76,7 +76,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
     <>
       <ListItem classes={{ root: classes.item }} divider>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={'Notifier'} />
+          <ItemIcon type='Notifier' />
         </ListItemIcon>
         <ListItemText
           primary={

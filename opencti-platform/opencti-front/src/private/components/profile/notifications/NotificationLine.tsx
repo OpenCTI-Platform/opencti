@@ -278,7 +278,7 @@ NotificationLineProps
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
                 {events.length > 1 ? (
-                  <i>{t('Digest with multiple notifications')}</i>
+                  <i>{t('Digest with multiple notifiers')}</i>
                 ) : (
                     <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin={true} commonmark={true}/>
                 )}

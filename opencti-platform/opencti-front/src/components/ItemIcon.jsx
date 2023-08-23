@@ -47,7 +47,7 @@ import {
   DashboardCustomizeOutlined,
   TravelExploreOutlined,
   ReceiptOutlined,
-  NotificationsActive,
+  UpcomingOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -425,7 +425,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'subtechnique-of':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     case 'Notifier':
-      return <NotificationsActive style={style} fontSize={fontSize} role="img" />;
+      return <UpcomingOutlined style={style} fontSize={fontSize} role="img" />;
     default:
       return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
   }

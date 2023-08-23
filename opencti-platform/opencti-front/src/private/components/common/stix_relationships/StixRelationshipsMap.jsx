@@ -41,6 +41,8 @@ export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
     $search: String
     $filters: [StixRelationshipsFiltering]
     $filterMode: FilterMode
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
   ) {
     stixRelationshipsDistribution(
       field: $field
@@ -63,6 +65,8 @@ export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
       search: $search
       filters: $filters
       filterMode: $filterMode
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       label
       value
@@ -151,6 +155,8 @@ const StixRelationshipsMap = ({
       limit: selection.number ?? 10,
       filters: finalFilters,
       isTo: selection.isTo,
+      dynamicFrom: convertFilters(selection.dynamicFrom),
+      dynamicTo: convertFilters(selection.dynamicTo),
     };
     return (
       <QueryRenderer
@@ -186,10 +192,10 @@ const StixRelationshipsMap = ({
             );
             return (
               <LocationMiniMapTargets
-                center={[48.8566969, 2.3514616]}
+                center={[selection.centerLat ?? 48.8566969, selection.centerLng ?? 2.3514616]}
                 countries={countries}
                 cities={cities}
-                zoom={2}
+                zoom={selection.zoom ?? 2}
               />
             );
           }

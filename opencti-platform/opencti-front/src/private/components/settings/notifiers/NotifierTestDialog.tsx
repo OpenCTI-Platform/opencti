@@ -9,9 +9,9 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useFormatter } from '../../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import { Theme } from '../../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { Theme } from '../../../../components/Theme';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -37,56 +37,79 @@ export const notifierTestQuery = graphql`
   }
 `;
 
-const NotifierTestResult = ({ queryRef }: { queryRef: PreloadedQuery<NotifierTestDialogQuery> }) => {
-  const { notifierTest } = usePreloadedQuery<NotifierTestDialogQuery>(notifierTestQuery, queryRef);
+const NotifierTestResult = ({
+  queryRef,
+}: {
+  queryRef: PreloadedQuery<NotifierTestDialogQuery>;
+}) => {
+  const { notifierTest } = usePreloadedQuery<NotifierTestDialogQuery>(
+    notifierTestQuery,
+    queryRef,
+  );
   const { t } = useFormatter();
   const classes = useStyles();
   return (
     <>
-      <Typography>Result <Chip className={notifierTest ? classes.error : classes.success} label={t(notifierTest ? 'Error' : 'OK')} /></Typography>
-      {notifierTest && (
-        <code>
-          {notifierTest}
-        </code>
-      )}
+      <Typography>
+        Result{' '}
+        <Chip
+          className={notifierTest ? classes.error : classes.success}
+          label={t(notifierTest ? 'Error' : 'OK')}
+        />
+      </Typography>
+      {notifierTest && <code>{notifierTest}</code>}
     </>
   );
 };
 
 interface NotifierTestDialogProps {
-  open: boolean
-  onClose: () => void
-  queryRef?: PreloadedQuery<NotifierTestDialogQuery> | null
-  onTest: (target: string) => void
+  open: boolean;
+  onClose: () => void;
+  queryRef?: PreloadedQuery<NotifierTestDialogQuery> | null;
+  onTest: (target: string) => void;
 }
 
-const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({ open, onClose, queryRef, onTest }) => {
+const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
+  open,
+  onClose,
+  queryRef,
+  onTest,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
   const [target, setTarget] = useState('default_notification');
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} PaperProps={{ elevation: 1 }}>
       <DialogTitle>{t('Testing notifier')}</DialogTitle>
       <DialogContent>
         <div className={classes.container}>
           <Typography>Choose target</Typography>
-          <Select value={target} onChange={(e) => setTarget(e.target.value)}>
-            <MenuItem value={'default_notification'}>{t('Sample Notification')}</MenuItem>
+          <Select
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+            fullWidth={true}
+          >
+            <MenuItem value={'default_notification'}>
+              {t('Sample Notification')}
+            </MenuItem>
             <MenuItem value={'default_digest'}>{t('Sample Digest')}</MenuItem>
-            <MenuItem value={'default_activity'}>{t('Sample Activity Alert')}</MenuItem>
+            <MenuItem value={'default_activity'}>
+              {t('Sample Activity Alert')}
+            </MenuItem>
           </Select>
         </div>
         <div className={classes.container}>
-          {!queryRef && (<Typography>Result</Typography>)}
+          {!queryRef && <Typography>Result</Typography>}
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 <Typography>Result</Typography>
                 <Loader variant={LoaderVariant.inElement} />
               </>
-            )}>
-            {queryRef && (<NotifierTestResult queryRef={queryRef} />)}
+            }
+          >
+            {queryRef && <NotifierTestResult queryRef={queryRef} />}
           </React.Suspense>
         </div>
         <Button

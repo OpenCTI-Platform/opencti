@@ -1,22 +1,24 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import NotificationMenu from '../../NotificationMenu';
-import { Theme } from '../../../../../components/Theme';
-import ListLines from '../../../../../components/list_lines/ListLines';
-import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
+import { Theme } from '../../../components/Theme';
+import ListLines from '../../../components/list_lines/ListLines';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import {
-  NotifierLinesPaginationQuery,
-  NotifierLinesPaginationQuery$variables,
-} from './__generated__/NotifierLinesPaginationQuery.graphql';
-import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
-import NotifierLines, { NotifierLinesQuery } from './NotifierLines';
-import { NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
-import { NotifierLineDummy } from './NotifierLine';
-import NotifierCreation from './NotifierCreation';
-import { useFormatter } from '../../../../../components/i18n';
+  NotifiersLinesPaginationQuery,
+  NotifiersLinesPaginationQuery$variables,
+} from './notifiers/__generated__/NotifiersLinesPaginationQuery.graphql';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import NotifiersLines, {
+  NotifiersLinesQuery,
+} from './notifiers/NotifiersLines';
+import { NotifierLine_node$data } from './notifiers/__generated__/NotifierLine_node.graphql';
+import { NotifierLineDummy } from './notifiers/NotifierLine';
+import NotifierCreation from './notifiers/NotifierCreation';
+import { useFormatter } from '../../../components/i18n';
+import CustomizationMenu from './CustomizationMenu';
 
-const LOCAL_STORAGE_KEY = 'view-notifier';
+const LOCAL_STORAGE_KEY = 'view-notifiers';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -25,11 +27,14 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-const Notifier = () => {
+const Notifiers = () => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<NotifierLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<NotifiersLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
@@ -41,7 +46,6 @@ const Notifier = () => {
       count: 25,
     },
   );
-
   const { numberOfElements, filters, searchTerm, sortBy, orderAsc } = viewStorage;
   const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<NotifierLine_node$data>(LOCAL_STORAGE_KEY);
   const dataColumns = {
@@ -61,11 +65,13 @@ const Notifier = () => {
       isSortable: false,
     },
   };
-  const queryRef = useQueryLoading<NotifierLinesPaginationQuery>(NotifierLinesQuery, paginationOptions);
-
+  const queryRef = useQueryLoading<NotifiersLinesPaginationQuery>(
+    NotifiersLinesQuery,
+    paginationOptions,
+  );
   return (
     <div className={classes.container}>
-      <NotificationMenu />
+      <CustomizationMenu />
       <NotifierCreation paginationOptions={paginationOptions} />
       <ListLines
         sortBy={sortBy}
@@ -80,15 +86,24 @@ const Notifier = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'created_start_date',
-          'created_end_date',
-        ]}
-        message={t('There are two builtins notifier in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.')}
+        availableFilterKeys={['created_start_date', 'created_end_date']}
+        message={t(
+          'There are two builtins notifier in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.',
+        )}
       >
         {queryRef && (
-          <React.Suspense fallback={<>{Array(20).fill(0).map((idx) => (<NotifierLineDummy key={idx} dataColumns={dataColumns} />))}</>}>
-            <NotifierLines
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <NotifierLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
+            <NotifiersLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -106,4 +121,4 @@ const Notifier = () => {
   );
 };
 
-export default Notifier;
+export default Notifiers;

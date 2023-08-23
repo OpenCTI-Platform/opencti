@@ -103,6 +103,16 @@ const ThemeDark = (
         },
       },
     },
+    MuiTextField: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
+    MuiSelect: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
         body: {

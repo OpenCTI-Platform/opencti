@@ -6,16 +6,16 @@ import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
-import { useFormatter } from '../../../../../components/i18n';
-import { Theme } from '../../../../../components/Theme';
-import { deleteNode } from '../../../../../utils/store';
+import { useFormatter } from '../../../../components/i18n';
+import { Theme } from '../../../../components/Theme';
+import { deleteNode } from '../../../../utils/store';
 import { NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
 import { NotifierLinesPaginationQuery$variables } from './__generated__/NotifierLinesPaginationQuery.graphql';
 import NotifierEdition, { notifierEditionQuery } from './NotifierEdition';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graphql';
-import DeleteDialog from '../../../../../components/DeleteDialog';
-import useDeletion from '../../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

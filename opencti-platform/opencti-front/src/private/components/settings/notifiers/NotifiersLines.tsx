@@ -3,19 +3,19 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import { NotifierLine, NotifierLineDummy } from './NotifierLine';
 import { NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
 import {
-  NotifierLinesPaginationQuery,
-  NotifierLinesPaginationQuery$variables,
-} from './__generated__/NotifierLinesPaginationQuery.graphql';
-import { NotifierLines_data$key } from './__generated__/NotifierLines_data.graphql';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../../utils/hooks/useLocalStorage';
-import { DataColumns } from '../../../../../components/list_lines';
-import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
-import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
+  NotifiersLinesPaginationQuery,
+  NotifiersLinesPaginationQuery$variables,
+} from './__generated__/NotifiersLinesPaginationQuery.graphql';
+import { NotifiersLines_data$key } from './__generated__/NotifiersLines_data.graphql';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { DataColumns } from '../../../../components/list_lines';
+import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 
 const nbOfRowsToLoad = 50;
 
 const NotifierLineFragment = graphql`
-  fragment NotifierLines_data on Query
+  fragment NotifiersLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
@@ -24,7 +24,7 @@ const NotifierLineFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "[NotifierFiltering!]" }
   )
-  @refetchable(queryName: "NotifierLinesRefetchQuery") {
+  @refetchable(queryName: "NotifiersLinesRefetchQuery") {
     notifiers(
       search: $search
       first: $count
@@ -47,8 +47,8 @@ const NotifierLineFragment = graphql`
   }
 `;
 
-export const NotifierLinesQuery = graphql`
-  query NotifierLinesPaginationQuery(
+export const NotifiersLinesQuery = graphql`
+  query NotifiersLinesPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
@@ -56,7 +56,7 @@ export const NotifierLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: [NotifierFiltering!]
   ) {
-    ...NotifierLines_data
+    ...NotifiersLines_data
     @arguments(
       search: $search
       count: $count
@@ -68,11 +68,11 @@ export const NotifierLinesQuery = graphql`
   }
 `;
 
-interface NotifierLinesProps {
+interface NotifiersLinesProps {
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   dataColumns: DataColumns;
-  paginationOptions: NotifierLinesPaginationQuery$variables;
-  queryRef: PreloadedQuery<NotifierLinesPaginationQuery>;
+  paginationOptions: NotifiersLinesPaginationQuery$variables;
+  queryRef: PreloadedQuery<NotifiersLinesPaginationQuery>;
   selectedElements: Record<string, NotifierLine_node$data>;
   deSelectedElements: Record<string, NotifierLine_node$data>;
   onToggleEntity: (entity: NotifierLine_node$data, event: React.SyntheticEvent) => void;
@@ -80,7 +80,7 @@ interface NotifierLinesProps {
   onLabelClick?: HandleAddFilter;
 }
 
-const NotifierLines: FunctionComponent<NotifierLinesProps> = ({
+const NotifiersLines: FunctionComponent<NotifiersLinesProps> = ({
   paginationOptions,
   queryRef,
   dataColumns,
@@ -96,8 +96,8 @@ const NotifierLines: FunctionComponent<NotifierLinesProps> = ({
     hasMore,
     loadMore,
     isLoadingMore,
-  } = usePreloadedPaginationFragment<NotifierLinesPaginationQuery, NotifierLines_data$key>({
-    linesQuery: NotifierLinesQuery,
+  } = usePreloadedPaginationFragment<NotifiersLinesPaginationQuery, NotifiersLines_data$key>({
+    linesQuery: NotifiersLinesQuery,
     linesFragment: NotifierLineFragment,
     queryRef,
     nodePath: ['notifiers', 'pageInfo', 'globalCount'],
@@ -126,4 +126,4 @@ const NotifierLines: FunctionComponent<NotifierLinesProps> = ({
   );
 };
 
-export default NotifierLines;
+export default NotifiersLines;

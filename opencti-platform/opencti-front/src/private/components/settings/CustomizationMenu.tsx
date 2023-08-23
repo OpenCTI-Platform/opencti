@@ -12,6 +12,10 @@ const CustomizationMenu: FunctionComponent = () => {
       label: 'Rules engine',
     },
     {
+      path: '/dashboard/settings/customization/notifiers',
+      label: 'Notifiers',
+    },
+    {
       path: '/dashboard/settings/customization/retention',
       label: 'Retention policies',
     },

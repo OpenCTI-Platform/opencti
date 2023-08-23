@@ -3705,7 +3705,7 @@ const i18n = {
       'Triggering on': 'Se déclenche sur',
       'Minimum one trigger': 'Minimum un trigger',
       'Attribute "outcomes" of a trigger should have at least one outcome.':
-        'L\' attribut "notifications" d’un déclencheur doit contenir au moins un type de notification.',
+        'L\' attribut "notifiers" d’un déclencheur doit contenir au moins un type de notification.',
       'Attribute "trigger_events" of a live trigger should have at least one event.':
         "L' attribut \"type d'évènement\" d’un déclencheur doit contenir au moins un type d'évènement.",
       'Instance trigger quick subscription':
@@ -4112,8 +4112,8 @@ const i18n = {
       SYNC_MANAGER: 'Manager de synchronisation',
       SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
       RETENTION_MANAGER: 'Manager de rétention',
-      PUBLISHER_MANAGER: 'Manager de publication de notifications',
-      NOTIFICATION_MANAGER: 'Manager de génération de notifications',
+      PUBLISHER_MANAGER: 'Manager de publication de notifiers',
+      NOTIFICATION_MANAGER: 'Manager de génération de notifiers',
       HISTORY_MANAGER: "Manager d'historique",
       INGESTION_MANAGER: "Manager d'ingestion",
       'Workflow of': 'Flux de travail de',

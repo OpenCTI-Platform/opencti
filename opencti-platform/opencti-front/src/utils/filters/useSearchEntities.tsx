@@ -1239,6 +1239,11 @@ const useSearchEntities = ({
                 type: n.label,
               })),
               ...result,
+              {
+                label: t('entity_Stix-Cyber-Observable'),
+                value: 'Stix-Cyber-Observable',
+                type: 'Stix-Cyber-Observable',
+              },
             ];
           }
           if (
@@ -1252,6 +1257,11 @@ const useSearchEntities = ({
                 value: n.label,
                 type: n.label,
               })),
+              {
+                label: t('entity_Stix-Domain-Object'),
+                value: 'Stix-Domain-Object',
+                type: 'Stix-Domain-Object',
+              },
               ...result,
             ];
           }
