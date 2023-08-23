@@ -87,7 +87,7 @@
     "@types/ramda": "0.29.3",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
-    "@types/react-relay": "14.1.4",
+    "@types/react-relay": "14.1.5",
     "@types/react-router-dom": "5.3.3",
     "@types/react-test-renderer": "18.0.0",
     "@types/relay-test-utils": "14.1.0",
