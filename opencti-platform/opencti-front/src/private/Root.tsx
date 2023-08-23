@@ -97,6 +97,10 @@ const rootPrivateQuery = graphql`
         }
       }
     }
+    schemaRelationsTypesMapping {
+      key
+      values
+    }
   }
 `;
 
@@ -128,11 +132,12 @@ interface RootComponentProps {
 
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
-  const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSROs } = queryData;
+  const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSROs, schemaRelationsTypesMapping } = queryData;
   const schema = {
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),
     sros: schemaSROs.edges.map((sco) => sco.node),
+    schemaRelationsTypesMapping: new Map(schemaRelationsTypesMapping.map((n) => [n.key, n.values])),
   };
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);

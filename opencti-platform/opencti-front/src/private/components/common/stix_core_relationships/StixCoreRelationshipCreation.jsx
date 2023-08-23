@@ -14,10 +14,11 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { formatDate } from '../../../../utils/Time';
-import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
+import { resolveRelationsTypes } from '../../../../utils/Relation';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -351,37 +352,44 @@ class StixCoreRelationshipCreation extends Component {
       defaultCreatedBy,
       defaultMarkingDefinitions,
     } = this.props;
-    const relationshipTypes = resolveRelationsTypes(
-      fromObjects[0].entity_type,
-      toObjects[0].entity_type,
-    );
     return (
-      <>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={this.handleClose.bind(this)}
-            size="large"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a relationship')}</Typography>
-        </div>
-      <StixCoreRelationshipCreationForm
-        fromEntities={fromObjects}
-        toEntities={toObjects}
-        relationshipTypes={relationshipTypes}
-        handleReverseRelation={this.handleReverseRelation.bind(this)}
-        onSubmit={this.onSubmit.bind(this)}
-        handleClose={this.handleClose.bind(this)}
-        defaultConfidence={confidence}
-        defaultStartTime={startTime}
-        defaultStopTime={stopTime}
-        defaultCreatedBy={defaultCreatedBy}
-        defaultMarkingDefinitions={defaultMarkingDefinitions}
-      />
-      </>
+        <UserContext.Consumer>
+          {({ schema }) => {
+            const relationshipTypes = resolveRelationsTypes(
+              fromObjects[0].entity_type,
+              toObjects[0].entity_type,
+              schema.schemaRelationsTypesMapping,
+            );
+            return (
+                <>
+                  <div className={classes.header}>
+                    <IconButton
+                      aria-label="Close"
+                      className={classes.closeButton}
+                      onClick={this.handleClose.bind(this)}
+                      size="large"
+                    >
+                      <Close fontSize="small" color="primary" />
+                    </IconButton>
+                    <Typography variant="h6">{t('Create a relationship')}</Typography>
+                  </div>
+                  <StixCoreRelationshipCreationForm
+                      fromEntities={fromObjects}
+                      toEntities={toObjects}
+                      relationshipTypes={relationshipTypes}
+                      handleReverseRelation={this.handleReverseRelation.bind(this)}
+                      onSubmit={this.onSubmit.bind(this)}
+                      handleClose={this.handleClose.bind(this)}
+                      defaultConfidence={confidence}
+                      defaultStartTime={startTime}
+                      defaultStopTime={stopTime}
+                      defaultCreatedBy={defaultCreatedBy}
+                      defaultMarkingDefinitions={defaultMarkingDefinitions}
+                  />
+                </>
+            );
+          }}
+        </UserContext.Consumer>
     );
   }
 
