@@ -158,8 +158,7 @@ class WorkbenchFileToolbar extends Component {
       numberOfSelectedElements,
       handleClearSelectedElements,
       submitDelete,
-      theme,
-      settingsMessagesBannerHeight,
+      theme
     } = this.props;
     const { displayDelete, displayApplyMarking, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;

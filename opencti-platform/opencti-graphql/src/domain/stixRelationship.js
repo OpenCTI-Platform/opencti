@@ -7,7 +7,6 @@ import {
 } from '../database/middleware';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import { buildEntityFilters, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
-import { STIX_SPEC_VERSION } from '../database/stix';
 import {
   isNotEmptyField,
   READ_INDEX_INFERRED_RELATIONSHIPS,
@@ -16,10 +15,6 @@ import {
 import { elCount } from '../database/engine';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { propOr } from 'ramda';
-import { deleteElementById } from '../database/middleware';
-import { ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
-import { listRelations, storeLoadById } from '../database/middleware-loader';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
 
 export const findAll = async (context, user, args) => {

@@ -8,13 +8,7 @@ import {
   stixRelationshipDelete,
   stixRelationshipsDistribution,
   stixRelationshipsMultiTimeSeries,
-  stixRelationshipsNumber
-} from '../domain/stixRelationship';
-import {
-  findAll,
-  findById,
-  getSpecVersionOrDefault,
-  stixRelationshipDelete,
+  stixRelationshipsNumber,
   schemaRelationsTypesMapping
 } from '../domain/stixRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
