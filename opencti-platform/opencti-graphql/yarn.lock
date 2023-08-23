@@ -488,9 +488,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-s3@npm:3.395.0":
-  version: 3.395.0
-  resolution: "@aws-sdk/client-s3@npm:3.395.0"
+"@aws-sdk/client-s3@npm:3.397.0":
+  version: 3.397.0
+  resolution: "@aws-sdk/client-s3@npm:3.397.0"
   dependencies:
     "@aws-crypto/sha1-browser": 3.0.0
     "@aws-crypto/sha256-browser": 3.0.0
@@ -546,7 +546,7 @@ __metadata:
     "@smithy/util-waiter": ^2.0.3
     fast-xml-parser: 4.2.5
     tslib: ^2.5.0
-  checksum: 8969b8fec166774810dc55d5344340f85ee299c7ba3c8c6c6693d3d15ec1ebe8bd52d995a46891d99aa2b58a7899883ce6fa59b6a0ef7720942756270fa28b91
+  checksum: a0bad15e84c1e3fda73390f68bf7a55d050c73d8d51de543520fa8e84769ad93239c5b19ac04dbd65001be4be5252a812f4f5b3bad3396515c4b9dd57d5061cb
   languageName: node
   linkType: hard
 
@@ -725,9 +725,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/lib-storage@npm:3.395.0":
-  version: 3.395.0
-  resolution: "@aws-sdk/lib-storage@npm:3.395.0"
+"@aws-sdk/lib-storage@npm:3.397.0":
+  version: 3.397.0
+  resolution: "@aws-sdk/lib-storage@npm:3.397.0"
   dependencies:
     "@smithy/abort-controller": ^2.0.1
     "@smithy/middleware-endpoint": ^2.0.3
@@ -738,7 +738,7 @@ __metadata:
     tslib: ^2.5.0
   peerDependencies:
     "@aws-sdk/client-s3": ^3.0.0
-  checksum: 1b7d7fef9caee509242ab1589f2d1b9049c32f07ab1aedfeb6bb9905f1e5ea4f8db988d8118844ac685e1414a500acc9fc8056fb872550e824d24a93734d9c2a
+  checksum: 19920b0d233ba3fb15cb8363accefe33c79ed83ee0c9e6d44d397640fb4b069e68035fa49636cb50b16b0edaaba9d00aee834ace7dde508f2681aea202b0aa21
   languageName: node
   linkType: hard
 
@@ -10622,9 +10622,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-graphql@workspace:."
   dependencies:
-    "@aws-sdk/client-s3": 3.395.0
+    "@aws-sdk/client-s3": 3.397.0
     "@aws-sdk/credential-provider-node": 3.395.0
-    "@aws-sdk/lib-storage": 3.395.0
+    "@aws-sdk/lib-storage": 3.397.0
     "@aws-sdk/property-provider": 3.374.0
     "@elastic/elasticsearch": 8.9.0
     "@escape.tech/graphql-armor": 2.2.0
