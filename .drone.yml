@@ -223,7 +223,7 @@ services:
       WORKER_LOG_LEVEL: info
     commands:
       - cp -a opencti-worker /tmp/direct-start-worker
-      - sleep 240
+      - sleep 300
       - apk add build-base git libffi-dev cargo
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
