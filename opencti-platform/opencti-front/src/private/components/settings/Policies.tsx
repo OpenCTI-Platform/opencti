@@ -101,7 +101,7 @@ export const policiesFieldPatch = graphql`
 `;
 
 const policiesValidation = () => Yup.object().shape({
-  platform_organization: Yup.object().nullable(),
+  platform_organization: Yup.string().nullable(),
   otp_mandatory: Yup.boolean(),
   password_policy_min_length: Yup.number(),
   password_policy_max_length: Yup.number(),

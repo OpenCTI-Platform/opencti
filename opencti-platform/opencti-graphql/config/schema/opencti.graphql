@@ -6351,19 +6351,10 @@ type ThreatActorGroupConnection {
   pageInfo: PageInfo!
   edges: [ThreatActorGroupEdge]
 }
-type ThreatActorGroupEdge {
-  cursor: String!
-  node: ThreatActorGroup!
-}
 
 type ThreatActorGroupEdge {
   cursor: String!
   node: ThreatActorGroup!
-}
-
-type  ThreatActorConnection {
-  pageInfo: PageInfo!
-  edges: [ThreatActorEdge]
 }
 
 interface ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -11311,6 +11302,7 @@ interface StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
+  toStix: String
   # Technical
   creators: [Creator!]
 }
@@ -11674,6 +11666,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
+  toStix: String
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]
