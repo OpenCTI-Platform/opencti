@@ -57,6 +57,8 @@ export const objects = async (context, user, containerId, args) => {
   const elementsPromise = args.all ? listAllThings(context, user, types, queryFilters) : listThings(context, user, types, queryFilters);
   const [relations, elements] = await Promise.all([objectRelationsPromise, elementsPromise]);
   const relationsMap = new Map();
+  // Container objects can be manual and/or inferred
+  // This type must be specified to inform the UI what's need to be done.
   for (let relIndex = 0; relIndex < relations.length; relIndex += 1) {
     const relation = relations[relIndex];
     const relData = relationsMap.get(relation.toId);
@@ -66,8 +68,7 @@ export const objects = async (context, user, containerId, args) => {
       relationsMap.set(relation.toId, [relation.is_inferred ? INFERRED_OBJECT : MANUAL_OBJECT]);
     }
   }
-  // Container objects can be manual and/or inferred
-  // This type must be specified to inform the UI what's need to be done.
+  // Rebuild the final result
   const resultNodes = [];
   for (let index = 0; index < elements.length; index += 1) {
     const element = elements[index];

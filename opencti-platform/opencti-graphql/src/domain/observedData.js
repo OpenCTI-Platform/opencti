@@ -4,7 +4,12 @@ import {
   distributionEntities,
   timeSeriesEntities,
 } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  internalLoadById,
+  listEntities,
+  listRelations,
+  storeLoadById
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
@@ -14,7 +19,6 @@ import { elCount } from '../database/engine';
 import { extractEntityRepresentative, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
-import { objects } from './container';
 
 export const findById = (context, user, observedDataId) => {
   return storeLoadById(context, user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
@@ -25,11 +29,11 @@ export const findAll = async (context, user, args) => {
 };
 
 export const resolveName = async (context, user, observedData) => {
-  const args = { first: 1, types: [ABSTRACT_STIX_CORE_OBJECT] };
-  const observedDataObjects = await objects(context, user, observedData.id, args);
-  if (observedDataObjects.edges.length === 1) {
-    const { node } = observedDataObjects.edges[0];
-    return extractEntityRepresentative(node);
+  const relationArgs = { first: 1, fromId: observedData.id, toTypes: [ABSTRACT_STIX_CORE_OBJECT], connectionFormat: false, baseData: true };
+  const observedDataRelations = await listRelations(context, user, RELATION_OBJECT, relationArgs);
+  if (observedDataRelations.length === 1) {
+    const firstElement = await internalLoadById(context, user, observedDataRelations[0].toId);
+    return extractEntityRepresentative(firstElement);
   }
   return 'empty';
 };
