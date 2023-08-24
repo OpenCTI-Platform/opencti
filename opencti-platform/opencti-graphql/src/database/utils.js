@@ -198,9 +198,9 @@ export const fromBase64 = (base64String) => {
 export const buildPagination = (limit, searchAfter, instances, globalCount) => {
   const edges = R.pipe(
     R.mapObjIndexed((record) => {
-      const { node, sort } = record;
+      const { node, sort, types } = record;
       const cursor = sort ? offsetToCursor(sort) : '';
-      return { node, cursor };
+      return { node, cursor, types };
     }),
     R.values
   )(instances);

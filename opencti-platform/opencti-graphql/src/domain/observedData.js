@@ -7,15 +7,14 @@ import {
 import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, isStixDomainObject } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { extractEntityRepresentative, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
 import { objects } from './container';
-import { observableValue } from '../utils/format';
 
 export const findById = (context, user, observedDataId) => {
   return storeLoadById(context, user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
@@ -29,11 +28,8 @@ export const resolveName = async (context, user, observedData) => {
   const args = { first: 1, types: [ABSTRACT_STIX_CORE_OBJECT] };
   const observedDataObjects = await objects(context, user, observedData.id, args);
   if (observedDataObjects.edges.length === 1) {
-    const firstObject = observedDataObjects.edges[0];
-    if (isStixDomainObject(firstObject.node.entity_type)) {
-      return firstObject.node.name;
-    }
-    return observableValue(firstObject.node);
+    const { node } = observedDataObjects.edges[0];
+    return extractEntityRepresentative(node);
   }
   return 'empty';
 };
