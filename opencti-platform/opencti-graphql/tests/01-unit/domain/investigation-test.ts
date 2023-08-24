@@ -29,7 +29,7 @@ describe('nameInvestigationToStartFromContainer', () => {
       expect(thirdInvestigationName).toEqual('investigation from report "a report" 3');
     });
 
-    it('names the successive investigations to start from a container with its name, type and a number suffix even when the name has a number on its own', () => {
+    it('investigations to start from a container are numbered accordingly even when the container name has a number on its own', () => {
       const aContainer = {
         entity_type: 'Report',
         name: 'report number 1'

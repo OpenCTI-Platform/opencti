@@ -26,6 +26,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
+import { buildPagination } from '../../database/utils';
 
 const INVESTIGABLE_TYPES: string[] = ['Stix-Meta-Object', 'Stix-Core-Object', 'stix-relationship'];
 
@@ -66,7 +67,7 @@ export const objects = async (context: AuthContext, user: AuthUser, { investigat
   const types = args.types ?? INVESTIGABLE_TYPES;
 
   if (!investigated_entities_ids) {
-    return { edges: [] };
+    return buildPagination(0, null, [], 0);
   }
 
   const filters = [
