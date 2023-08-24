@@ -12,7 +12,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { getFileUri } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { emptyFilled } from '../../../../utils/String';
+import { emptyFilled, renderThreatActorIndividual } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
 import { Theme } from '../../../../components/Theme';
@@ -91,6 +91,10 @@ interface toEdges {
   edges: ReadonlyArray<{ node: { to: { name?: string } | null } }>;
 }
 
+interface toEdgesLocated {
+  edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null } | null } }>;
+}
+
 interface fromEdges {
   edges: ReadonlyArray<{ node: { from: { name?: string } | null } }>;
 }
@@ -104,9 +108,6 @@ interface imageEdges {
     node: {
       id: string,
       name: string,
-      metaData: {
-        inCarousel: boolean | null
-      } | null
     }
   } | null> | null
 }
@@ -123,6 +124,7 @@ interface GenericAttack {
   usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
   targetedSectors: toEdges | null;
+  locatedAtCountries: toEdgesLocated | null;
 }
 
 interface GenericAttackCardProps {
@@ -170,17 +172,17 @@ GenericAttackCardProps
         >
           <CardHeader
             classes={{ root: classes.header, title: classes.title }}
-            avatar={image && image.length > 0 ? (
+            avatar={ image && image[0] ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(image[0]?.node.id)}
-                alt={image[0]?.node.name}
+                src={getFileUri(image[0].node.id)}
+                alt={image[0].node.name}
               />
             ) : (
               <ItemIcon type={entityType} size="large" />
             )
             }
-            title={cardData.name}
+            title={renderThreatActorIndividual(cardData)}
             subheader={fld(cardData.modified)}
             action={
               <IconButton

@@ -11,6 +11,7 @@ const ThreatActorIndividualCardFragment = graphql`
     description
     created
     modified
+    entity_type
     images: importFiles(prefixMimeType: "image/") {
       edges {
         node {
@@ -54,6 +55,24 @@ const ThreatActorIndividualCardFragment = graphql`
           to {
             ... on Country {
               name
+            }
+          }
+        }
+      }
+    }
+    locatedAtCountries: stixCoreRelationships(
+      relationship_type: "located-at"
+      toTypes: ["Country"]
+      first: 5
+      orderBy: created_at
+      orderMode: desc
+    ) {
+      edges {
+        node {
+          to {
+            ... on Country {
+              name
+              x_opencti_aliases
             }
           }
         }
@@ -104,7 +123,6 @@ const ThreatActorIndividualCard: FunctionComponent<
 ThreatActorIndividualCardProps
 > = ({ node, onLabelClick, bookmarksIds }) => {
   const data = useFragment(ThreatActorIndividualCardFragment, node);
-  console.log('data', data);
   return (
     <GenericAttackCard
       cardData={data}

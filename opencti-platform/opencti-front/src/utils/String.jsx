@@ -90,36 +90,30 @@ export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R
 export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 export const renderThreatActorIndividual = (threatActorIndividual) => {
-  if (threatActorIndividual.entity_type === 'Threat-Actor-Individual') {
-    const locatedAtRelationship = threatActorIndividual.edges.node.relationship_type === 'located-at';
-
-    if (locatedAtRelationship) {
-      const country = R.head(threatActorIndividual.countries.edges).node;
-      const flag = R.head(
-        (country.x_opencti_aliases ?? []).filter((n) => n.length === 2),
+  if ((threatActorIndividual.locatedAtCountries?.edges ?? []).length > 0) {
+    const country = R.head(threatActorIndividual.locatedAtCountries.edges).node?.to;
+    const flag = R.head(
+      (country.x_opencti_aliases ?? []).filter((n) => n.length === 2),
+    );
+    if (flag) {
+      return (
+        <div>
+          <div style={{ float: 'left', paddingTop: 2 }}>
+            <Tooltip title={country.name}>
+              <img
+                  style={{ width: 20 }}
+                  src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                  alt={country.name}
+              />
+            </Tooltip>
+          </div>
+          <div style={{ float: 'left', marginLeft: 10 }}>
+            {threatActorIndividual.name}
+          </div>
+        </div>
       );
-
-      if (flag) {
-        return (
-            <div>
-              <div style={{ float: 'left', paddingTop: 2 }}>
-                <Tooltip title={country.name}>
-                  <img
-                      style={{ width: 20 }}
-                      src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                      alt={country.name}
-                  />
-                </Tooltip>
-              </div>
-              <div style={{ float: 'left', marginLeft: 10 }}>
-                {threatActorIndividual.name}
-              </div>
-            </div>
-        );
-      }
     }
   }
-
   return threatActorIndividual.name;
 };
 

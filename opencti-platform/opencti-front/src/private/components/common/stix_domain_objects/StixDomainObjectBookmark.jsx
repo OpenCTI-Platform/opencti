@@ -150,7 +150,7 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={ images && images.length > 0 ? (
+            avatar={images && images.length > 0 ? (
               <img
                 style={{ height: '30px' }}
                 src={getFileUri(images[0].node.id)}
