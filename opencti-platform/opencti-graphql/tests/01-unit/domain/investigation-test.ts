@@ -28,6 +28,20 @@ describe('nameInvestigationToStartFromContainer', () => {
       expect(secondInvestigationName).toEqual('investigation from report "a report" 2');
       expect(thirdInvestigationName).toEqual('investigation from report "a report" 3');
     });
+
+    it('names the successive investigations to start from a container with its name, type and a number suffix even when the name has a number on its own', () => {
+      const aContainer = {
+        entity_type: 'Report',
+        name: 'report number 1'
+      };
+      const investigationsNames: string[] = ['investigation from report "report number 1"'];
+
+      const secondInvestigationName = nameInvestigationToStartFromContainer(investigationsNames, <BasicStoreEntity>aContainer);
+      const thirdInvestigationName = nameInvestigationToStartFromContainer([...investigationsNames, secondInvestigationName], <BasicStoreEntity>aContainer);
+
+      expect(secondInvestigationName).toEqual('investigation from report "report number 1" 2');
+      expect(thirdInvestigationName).toEqual('investigation from report "report number 1" 3');
+    });
   });
 
   describe('with other started investigations', () => {

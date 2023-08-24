@@ -72,7 +72,7 @@ export const nameInvestigationToStartFromContainer = (investigationsNames: strin
   const investigationNumbers: number[] = investigationsNames
     .filter((investigationName) => investigationNameToMatch.test(investigationName))
     .map((investigationName: string) => {
-      const matches = investigationName.match(/(\d+)/);
+      const matches = investigationName.match(/(\d+)$/);
 
       return matches ? Number(matches[1]) : 0;
     });
