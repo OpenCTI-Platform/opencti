@@ -19574,6 +19574,7 @@ export type QueryStixRefRelationshipsDistributionArgs = {
   order?: InputMaybe<Scalars['String']['input']>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
