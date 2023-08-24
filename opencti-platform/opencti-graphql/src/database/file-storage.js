@@ -333,7 +333,11 @@ export const filesListing = async (context, user, first, path, entityId = null, 
             }
           }
         };
-      }).sort((a, b) => (a.node.metaData?.order ?? 0) - (b.node.metaData?.order ?? 0));
+      }).sort((a, b) => {
+        const orderA = a.node.metaData?.order !== undefined && a.node.metaData?.order !== null ? a.node.metaData?.order : Infinity;
+        const orderB = b.node.metaData?.order !== undefined && b.node.metaData?.order !== null ? b.node.metaData?.order : Infinity;
+        return orderA - orderB;
+      });
     }
     return buildPagination(first, null, fileNodes, allFiles.length);
   };

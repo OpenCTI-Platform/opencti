@@ -104,6 +104,7 @@ const ThreatActorIndividualCard: FunctionComponent<
 ThreatActorIndividualCardProps
 > = ({ node, onLabelClick, bookmarksIds }) => {
   const data = useFragment(ThreatActorIndividualCardFragment, node);
+  console.log('data', data);
   return (
     <GenericAttackCard
       cardData={data}

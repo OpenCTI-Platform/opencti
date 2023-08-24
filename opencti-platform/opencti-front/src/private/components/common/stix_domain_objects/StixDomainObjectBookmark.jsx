@@ -139,6 +139,8 @@ class StixDomainObjectBookmarkComponent extends Component {
     const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
 
+    const images = node.images.edges ?? [];
+
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -148,11 +150,11 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={ node.images && node.images.length > 0 && node.images[0].inCarousel ? (
+            avatar={ images && images.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(node.images[0].id)}
-                alt={node.images[0].name}
+                src={getFileUri(images[0].node.id)}
+                alt={images[0].node.name}
               />
             ) : (
               <Avatar className={classes.avatar}>

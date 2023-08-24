@@ -98,6 +98,19 @@ interface fromEdges {
 interface labelEdges {
   edges: ReadonlyArray<{ node: { id: string, value: string | null, color: string | null } }>;
 }
+
+interface imageEdges {
+  edges: ReadonlyArray<{
+    node: {
+      id: string,
+      name: string,
+      metaData: {
+        inCarousel: boolean | null
+      } | null
+    }
+  } | null> | null
+}
+
 interface GenericAttack {
   id: string;
   name: string;
@@ -105,7 +118,7 @@ interface GenericAttack {
   modified: string;
   aliases: ReadonlyArray<string | null> | null;
   objectLabel: labelEdges | null;
-  images?: ReadonlyArray<{ edges: { node: { id: string, name: string } } }> | null;
+  images?: imageEdges | null,
   relatedIntrusionSets?: fromEdges | null;
   usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
@@ -160,8 +173,8 @@ GenericAttackCardProps
             avatar={image && image.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(image[0].node.id)}
-                alt={image[0].node.name}
+                src={getFileUri(image[0]?.node.id)}
+                alt={image[0]?.node.name}
               />
             ) : (
               <ItemIcon type={entityType} size="large" />
