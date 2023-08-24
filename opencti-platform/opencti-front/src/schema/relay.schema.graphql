@@ -4994,11 +4994,6 @@ type ThreatActorGroupEdge {
   node: ThreatActorGroup!
 }
 
-type ThreatActorConnection {
-  pageInfo: PageInfo!
-  edges: [ThreatActorEdge]
-}
-
 interface ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -5064,6 +5059,11 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
 type ThreatActorEdge {
   cursor: String!
   node: ThreatActor!
+}
+
+type ThreatActorConnection {
+  pageInfo: PageInfo!
+  edges: [ThreatActorEdge]
 }
 
 type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {

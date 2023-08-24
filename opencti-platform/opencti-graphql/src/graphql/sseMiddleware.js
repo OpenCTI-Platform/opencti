@@ -361,9 +361,9 @@ const createSseMiddleware = () => {
       // Check for a relation that the from and the to is correctly accessible.
       const fromId = stixData.source_ref ?? stixData.sighting_of_ref;
       const toId = stixData.target_ref ?? stixData.where_sighted_refs[0];
-      const missingFrom = missingMap.get(fromId);
-      const missingTo = missingMap.get(toId);
-      if (!missingFrom || !missingTo) {
+      const hasFrom = missingMap.has(fromId) || cache.has(fromId);
+      const hasTo = missingMap.has(toId) || cache.has(toId);
+      if (!hasFrom || !hasTo) {
         return false;
       }
     }
@@ -577,15 +577,18 @@ const createSseMiddleware = () => {
                   const isPreviouslyVisible = await isStixMatchFilters(context, user, previous, adaptedFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
+                    cache.set(stix.id);
                   } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
                     const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                     if (isValidResolution) {
                       client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                      cache.set(stix.id);
                     }
                   } else if (isCurrentlyVisible) { // Just an update
                     const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                     if (isValidResolution) {
                       client.sendEvent(eventId, event, eventData);
+                      cache.set(stix.id);
                     }
                   } else if (isRelation && publishDependencies) { // Update but not visible - relation type
                     // In case of relationship publication, from or to can be related to something that
@@ -611,17 +614,20 @@ const createSseMiddleware = () => {
                     if (isContainerMatching) {
                       await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
                       client.sendEvent(eventId, event, eventData);
+                      cache.set(stix.id);
                     }
                   }
                 } else if (isCurrentlyVisible) {
                   if (type === EVENT_TYPE_DELETE) {
                     if (publishDeletion) {
                       client.sendEvent(eventId, event, eventData);
+                      cache.set(stix.id);
                     }
                   } else { // Create and merge
                     const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                     if (isValidResolution) {
                       client.sendEvent(eventId, event, eventData);
+                      cache.set(stix.id);
                     }
                   }
                 } else if (isRelation && publishDependencies) { // Not an update and not visible
@@ -660,9 +666,9 @@ const createSseMiddleware = () => {
             const eventId = `${utcDate(stixUpdatedAt).toDate().getTime()}-0`;
             if (channel.connected()) {
               // publish missing dependencies if needed
-              await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stixData);
+              const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stixData);
               // publish element
-              if (!cache.has(stixData.id)) {
+              if (isValidResolution && !cache.has(stixData.id)) {
                 const message = generateCreateMessage(instance);
                 const origin = { referer: EVENT_TYPE_INIT };
                 const eventData = { data: stixData, message, origin, version: EVENT_CURRENT_VERSION };

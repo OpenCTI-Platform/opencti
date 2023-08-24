@@ -6351,19 +6351,10 @@ type ThreatActorGroupConnection {
   pageInfo: PageInfo!
   edges: [ThreatActorGroupEdge]
 }
-type ThreatActorGroupEdge {
-  cursor: String!
-  node: ThreatActorGroup!
-}
 
 type ThreatActorGroupEdge {
   cursor: String!
   node: ThreatActorGroup!
-}
-
-type  ThreatActorConnection {
-  pageInfo: PageInfo!
-  edges: [ThreatActorEdge]
 }
 
 interface ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
