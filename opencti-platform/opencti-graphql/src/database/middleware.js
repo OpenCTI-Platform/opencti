@@ -472,7 +472,7 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
         const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
         logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
         // Auto deletion of the invalid relation
-        // await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
+        await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
       } else {
         const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
         const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });
