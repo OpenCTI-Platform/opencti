@@ -14,6 +14,7 @@ import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
+import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -316,6 +317,23 @@ export const filesListing = async (context, user, first, path, entityId = null, 
     }
     if (entityId) {
       fileNodes = fileNodes.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
+      const resolveEntity = await internalLoadById(context, user, entityId);
+      const elasticFiles = resolveEntity.x_opencti_files;
+      fileNodes = fileNodes.map((file) => {
+        const elasticFile = elasticFiles.find((e) => e.id === file.node.id);
+        return { ...file,
+          // TODO: Maybe transform it in Ramda : R.AssocPath ?
+          node: {
+            ...file.node,
+            metaData: {
+              ...file.node.metaData,
+              order: elasticFile.order,
+              inCarousel: elasticFile.inCarousel,
+              description: elasticFile.description
+            }
+          }
+        };
+      }).sort((a, b) => (a.node.metaData?.order ?? 0) - (b.node.metaData?.order ?? 0));
     }
     return buildPagination(first, null, fileNodes, allFiles.length);
   };

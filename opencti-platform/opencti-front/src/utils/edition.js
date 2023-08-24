@@ -57,10 +57,10 @@ export const convertImagesToCarousel = (element) => {
   const carouselImages = images ? images.filter(({ node }) => node?.metaData.inCarousel === true) : [];
 
   return carouselImages.map((file) => ({
-    tooltipTitle: file.description,
-    imageSrc: getFileUri(file.id),
-    altText: file.name,
-    id: file.id,
+    tooltipTitle: file.node.description,
+    imageSrc: getFileUri(file.node.id),
+    altText: file.node.name,
+    id: file.node.id,
   }));
 };
 

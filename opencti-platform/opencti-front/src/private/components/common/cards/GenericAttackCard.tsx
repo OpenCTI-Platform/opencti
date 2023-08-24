@@ -105,7 +105,7 @@ interface GenericAttack {
   modified: string;
   aliases: ReadonlyArray<string | null> | null;
   objectLabel: labelEdges | null;
-  images?: ReadonlyArray<{ id: string, name: string }> | null;
+  images?: ReadonlyArray<{ edges: { node: { id: string, name: string } } }> | null;
   relatedIntrusionSets?: fromEdges | null;
   usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
@@ -146,6 +146,8 @@ GenericAttackCardProps
     }
   };
 
+  const image = cardData?.images?.edges ?? [];
+
   return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -155,11 +157,11 @@ GenericAttackCardProps
         >
           <CardHeader
             classes={{ root: classes.header, title: classes.title }}
-            avatar={cardData.images && cardData.images.length > 0 ? (
+            avatar={image && image.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(cardData.images[0].id)}
-                alt={cardData.images[0].name}
+                src={getFileUri(image[0].node.id)}
+                alt={image[0].node.name}
               />
             ) : (
               <ItemIcon type={entityType} size="large" />

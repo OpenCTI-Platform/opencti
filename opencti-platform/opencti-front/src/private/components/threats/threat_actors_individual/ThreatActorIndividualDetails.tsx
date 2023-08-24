@@ -9,6 +9,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import Typography from '@mui/material/Typography';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -19,7 +20,6 @@ import {
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
-import Typography from '@mui/material/Typography';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {

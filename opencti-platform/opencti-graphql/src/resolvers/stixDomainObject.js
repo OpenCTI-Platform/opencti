@@ -58,7 +58,7 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    importFiles: (stixDomainObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixDomainObject.entity_type}/${stixDomainObject.id}/`, null, prefixMimeType),
+    importFiles: (stixDomainObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixDomainObject.entity_type}/${stixDomainObject.id}/`, stixDomainObject.id, prefixMimeType),
     exportFiles: (stixDomainObject, { first }, context) => filesListing(context, context.user, first, `export/${stixDomainObject.entity_type}/${stixDomainObject.id}/`),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
     objectAssignee: (stixDomainObject, _, context) => assigneesLoader.load(stixDomainObject.id, context, context.user),
