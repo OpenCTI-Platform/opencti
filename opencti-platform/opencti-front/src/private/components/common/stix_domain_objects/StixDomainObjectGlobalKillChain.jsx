@@ -50,7 +50,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
   }
 
   render() {
-    const { t, classes, data, entityLink, paginationOptions } = this.props;
+    const { t, classes, data, entityLink, paginationOptions, stixDomainObjectId } = this.props;
     // Extract all kill chain phases
     const killChainPhases = R.pipe(
       // eslint-disable-next-line no-nested-ternary
@@ -151,7 +151,8 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                   <List>
                     {stixRelationship.stixDomainObjects.map(
                       (stixDomainObject) => {
-                        const restricted = stixDomainObject.to === null;
+                        const entityToDisplay = (stixDomainObject.to?.id === stixDomainObjectId) ? stixDomainObject.from : stixDomainObject.to;
+                        const restricted = entityToDisplay === null;
                         const link = `${entityLink}/relations/${stixDomainObject.id}`;
                         return (
                           <ListItem
@@ -167,7 +168,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               <ItemIcon
                                 type={
                                   !restricted
-                                    ? stixDomainObject.to.entity_type
+                                    ? entityToDisplay.entity_type
                                     : 'restricted'
                                 }
                               />
@@ -176,16 +177,16 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               primary={
                                 // eslint-disable-next-line no-nested-ternary
                                 !restricted ? (
-                                  stixDomainObject.to.entity_type
+                                  entityToDisplay.entity_type
                                   === 'Attack-Pattern' ? (
                                     <span>
                                       <strong>
-                                        {stixDomainObject.to.x_mitre_id}
+                                        {entityToDisplay.x_mitre_id}
                                       </strong>{' '}
-                                      - {stixDomainObject.to.name}
+                                      - {entityToDisplay.name}
                                     </span>
                                     ) : (
-                                    <span>{stixDomainObject.to.name}</span>
+                                    <span>{entityToDisplay.name}</span>
                                     )
                                 ) : (
                                   t('Restricted')
@@ -383,6 +384,100 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                 ... on Incident {
                   name
                 }
+              }
+              from {
+                  ... on BasicObject {
+                      id
+                      entity_type
+                  }
+                  ... on AttackPattern {
+                      name
+                      x_mitre_id
+                      killChainPhases {
+                          edges {
+                              node {
+                                  id
+                                  phase_name
+                                  x_opencti_order
+                              }
+                          }
+                      }
+                  }
+                  ... on Campaign {
+                      name
+                  }
+                  ... on CourseOfAction {
+                      name
+                  }
+                  ... on Individual {
+                      name
+                  }
+                  ... on Organization {
+                      name
+                  }
+                  ... on Sector {
+                      name
+                  }
+                  ... on System {
+                      name
+                  }
+                  ... on Indicator {
+                      name
+                  }
+                  ... on Infrastructure {
+                      name
+                  }
+                  ... on IntrusionSet {
+                      name
+                  }
+                  ... on Position {
+                      name
+                  }
+                  ... on City {
+                      name
+                  }
+                  ... on AdministrativeArea {
+                      name
+                  }
+                  ... on Country {
+                      name
+                  }
+                  ... on Region {
+                      name
+                  }
+                  ... on Malware {
+                      name
+                      killChainPhases {
+                          edges {
+                              node {
+                                  id
+                                  phase_name
+                                  x_opencti_order
+                              }
+                          }
+                      }
+                  }
+                  ... on ThreatActor {
+                      name
+                  }
+                  ... on Tool {
+                      name
+                      killChainPhases {
+                          edges {
+                              node {
+                                  id
+                                  phase_name
+                                  x_opencti_order
+                              }
+                          }
+                      }
+                  }
+                  ... on Vulnerability {
+                      name
+                  }
+                  ... on Incident {
+                      name
+                  }
               }
             }
           }
