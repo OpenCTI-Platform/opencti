@@ -57,6 +57,9 @@ const saveParamsToLocalStorage = (localStorageKey, params) => {
     dissoc('currentPdfPageNumber'),
     dissoc('mentions'),
     dissoc('mentionKeyword'),
+    dissoc('allCreatedBy'),
+    dissoc('allMarkedBy'),
+    dissoc('allStixCoreObjectsTypes'),
   )(params);
   localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
 };

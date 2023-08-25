@@ -79,6 +79,7 @@ const configurationMapping = {
   disable_requested_authn_context: 'disableRequestedAuthnContext',
   force_authn: 'forceAuthn',
   disable_request_acs_url: 'disableRequestAcsUrl',
+  skip_request_compression: 'skipRequestCompression',
   // OpenID Client - everything is already in snake case
 };
 const configRemapping = (config) => {

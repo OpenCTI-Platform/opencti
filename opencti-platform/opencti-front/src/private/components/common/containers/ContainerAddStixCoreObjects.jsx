@@ -400,6 +400,7 @@ const ContainerAddStixCoreObjects = (props) => {
               numberOfElements={numberOfElements}
               iconExtension={true}
               parametersWithPadding={true}
+              disableExport={true}
               availableEntityTypes={[resolveAvailableTypes()]}
               availableFilterKeys={[
                 'entity_type',
