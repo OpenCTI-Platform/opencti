@@ -198,6 +198,7 @@ class RootIndividual extends Component {
                             entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
+                            isOpenctiAlias={true}
                             PopoverComponent={<IndividualPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
                           />
@@ -220,6 +221,7 @@ class RootIndividual extends Component {
                             entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
+                            isOpenctiAlias={true}
                             PopoverComponent={<IndividualPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
                           />
@@ -242,6 +244,7 @@ class RootIndividual extends Component {
                             entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
+                            isOpenctiAlias={true}
                             PopoverComponent={<IndividualPopover />}
                           />
                           <StixCoreObjectHistory

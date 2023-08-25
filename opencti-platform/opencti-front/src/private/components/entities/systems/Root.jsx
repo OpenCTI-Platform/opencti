@@ -198,6 +198,7 @@ class RootSystem extends Component {
                             entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SystemPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
                           />
@@ -220,6 +221,7 @@ class RootSystem extends Component {
                             entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SystemPopover />}
                             onViewAs={this.handleChangeViewAs.bind(this)}
                           />
@@ -242,6 +244,7 @@ class RootSystem extends Component {
                             entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SystemPopover />}
                           />
                           <StixCoreObjectHistory
