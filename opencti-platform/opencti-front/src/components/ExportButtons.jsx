@@ -11,6 +11,7 @@ import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
+import { withRouter } from 'react-router-dom';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
@@ -166,6 +167,7 @@ class ExportButtons extends Component {
       handleDownloadAsStixReport,
       containerId,
       investigationAddFromContainer,
+      history,
     } = this.props;
     return (
       <div className={classes.exportButtons} id="export-buttons">
@@ -182,7 +184,7 @@ class ExportButtons extends Component {
           </Tooltip>
           {investigationAddFromContainer && (
             <Tooltip title={t('start investigation')}>
-              <ToggleButton onClick={investigationAddFromContainer.bind(this, containerId)}>
+              <ToggleButton onClick={investigationAddFromContainer.bind(this, containerId, history)}>
                 <ExploreOutlined fontSize="small" color="primary" />
               </ToggleButton>
             </Tooltip>
@@ -304,5 +306,6 @@ class ExportButtons extends Component {
 export default R.compose(
   inject18n,
   withTheme,
+  withRouter,
   withStyles(styles),
 )(ExportButtons);

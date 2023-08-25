@@ -13,12 +13,8 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 async function fetchPersistedInvestigations() {
-  return await listAllEntities(
-    executionContext('migration'),
-    SYSTEM_USER,
-    [ENTITY_TYPE_WORKSPACE],
-    { type: 'investigation' }
-  );
+  const context = executionContext('migration');
+  return await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_WORKSPACE], { type: 'investigation' });
 }
 
 async function removeInvestigationsReferencesFromInvestigatedEntities(investigationIds) {
@@ -51,10 +47,11 @@ async function deleteInvestigationsInternalRelations() {
     [READ_INDEX_INTERNAL_RELATIONSHIPS],
     {
       query: {
-        term: {
-          'fromType.keyword': {
-            value: 'Workspace'
-          }
+        bool: {
+          must: [
+            { term: { 'fromType.keyword': { value: 'Workspace' } } },
+            { term: { 'relationship_type.keyword': { value: 'has-reference' } } }
+          ]
         }
       }
     }
@@ -73,19 +70,23 @@ async function updateInvestigationsField(oldField, newField) {
         params: { oldField, newField }
       },
       query: {
-        match: { type: 'investigation' }
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': { value: 'Workspace' } } },
+            { term: { 'type.keyword': { value: 'investigation' } } }
+          ]
+        }
       }
     }
   );
 }
 
 export const up = async (next) => {
-  const investigationIds = (await fetchPersistedInvestigations()).map((investigation) => investigation.id);
-
+  const investigations = await fetchPersistedInvestigations();
+  const investigationIds = investigations.map((investigation) => investigation.id);
   await removeInvestigationsReferencesFromInvestigatedEntities(investigationIds);
   await deleteInvestigationsInternalRelations();
   await updateInvestigationsField('rel_has-reference.internal_id', 'investigated_entities_ids');
-
   next();
 };
 

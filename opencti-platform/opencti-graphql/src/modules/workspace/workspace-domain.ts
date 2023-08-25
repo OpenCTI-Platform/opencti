@@ -26,9 +26,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
-import { buildPagination, isEmptyField } from '../../database/utils';
-
-const INVESTIGABLE_TYPES: string[] = ['Stix-Meta-Object', 'Stix-Core-Object', 'stix-relationship'];
+import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
   return storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -64,49 +62,27 @@ export const getOwnerId = (workspace: BasicStoreEntityWorkspace) => {
 };
 
 export const objects = async (context: AuthContext, user: AuthUser, { investigated_entities_ids }: BasicStoreEntityWorkspace, args: WorkspaceObjectsArgs) => {
-  const types = args.types ?? INVESTIGABLE_TYPES;
-
   if (isEmptyField(investigated_entities_ids)) {
     return buildPagination(0, null, [], 0);
   }
-
-  const filters = [
-    { key: 'internal_id', values: investigated_entities_ids },
-    ...(args.filters ?? [])
-  ];
+  const filters = [{ key: 'internal_id', values: investigated_entities_ids }, ...(args.filters ?? [])];
   const finalArgs = { ...args, filters };
   if (args.all) {
-    return paginateAllThings(context, user, types, finalArgs);
+    return paginateAllThings(context, user, args.types, finalArgs);
   }
-  return listThings(context, user, types, finalArgs);
+  return listThings(context, user, args.types, finalArgs);
 };
 
-const isEntityInvestigable = (entity: BasicStoreEntity): boolean => {
-  const matching_types = INVESTIGABLE_TYPES
-    .filter((investigable_type) => entity.parent_types.includes(investigable_type));
-
-  return matching_types.length !== 0;
-};
-
-const checkEntitiesAreInvestigable = (entities: Array<BasicStoreEntity>): void => {
-  entities
-    .filter((entity) => !isEntityInvestigable(entity))
-    .forEach((entity) => { throw FunctionalError(`Entity with id '${entity.id}' of type '${entity.entity_type}' is not investigable.`); });
-};
-
-const checkMissingEntities = (AddedOrReplacedinvestigatedEntitiesIds: (string | null)[], entities: Array<BasicStoreEntity>): void => {
-  const missingEntitiesIds = R.difference(AddedOrReplacedinvestigatedEntitiesIds, entities.map((entity) => entity.id));
-
+const checkInvestigatedEntitiesInputs = async (context: AuthContext, user: AuthUser, inputs: EditInput[]): Promise<void> => {
+  const addedOrReplacedInvestigatedEntitiesIds = inputs
+    .filter(({ key, operation }) => key === 'investigated_entities_ids' && (operation === 'add' || operation === 'replace'))
+    .flatMap(({ value }) => value) as string[];
+  const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL };
+  const entities = await elFindByIds(context, user, addedOrReplacedInvestigatedEntitiesIds, opts) as Array<BasicStoreEntity>;
+  const missingEntitiesIds = R.difference(addedOrReplacedInvestigatedEntitiesIds, entities.map((entity) => entity.id));
   if (missingEntitiesIds.length > 0) {
-    throw FunctionalError(`Entities with ids '${missingEntitiesIds.join(', ')}' were not found. Cannot conduct investigation.`);
+    throw FunctionalError('Invalid ids specified', { ids: missingEntitiesIds });
   }
-};
-
-const checkInvestigatedEntitiesInputs = async (context: AuthContext, user: AuthUser, AddedOrReplacedInvestigatedEntitiesIds: string[]): Promise<void> => {
-  const entities = await elFindByIds(context, user, AddedOrReplacedInvestigatedEntitiesIds) as Array<BasicStoreEntity>;
-
-  checkMissingEntities(AddedOrReplacedInvestigatedEntitiesIds, entities);
-  checkEntitiesAreInvestigable(entities);
 };
 
 export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
@@ -115,9 +91,6 @@ export const addWorkspace = async (context: AuthContext, user: AuthUser, input: 
     // add creator to authorized_members on creation
     authorizedMembers.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
   }
-
-  await checkInvestigatedEntitiesInputs(context, user, (input.investigated_entities_ids ?? []) as string[]);
-
   const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   await publishUserAction({
@@ -145,18 +118,11 @@ export const workspaceDelete = async (context: AuthContext, user: AuthUser, work
 };
 
 export const workspaceEditField = async (context: AuthContext, user: AuthUser, workspaceId: string, inputs: EditInput[]) => {
-  const addedOrReplacedInvestigatedEntitiesIds = inputs
-    .filter(({ key, operation }) => key === 'investigated_entities_ids' && (operation === 'add' || operation === 'replace'))
-    .flatMap(({ value }) => value) as string[];
-
-  await checkInvestigatedEntitiesInputs(context, user, addedOrReplacedInvestigatedEntitiesIds);
-
+  await checkInvestigatedEntitiesInputs(context, user, inputs);
   const { element } = await updateAttribute(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
-
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
 };
 
-// region context
 export const workspaceCleanContext = async (context: AuthContext, user: AuthUser, workspaceId: string) => {
   await delEditContext(user, workspaceId);
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) => {
@@ -169,5 +135,3 @@ export const workspaceEditContext = async (context: AuthContext, user: AuthUser,
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE)
     .then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
 };
-
-// endregion
