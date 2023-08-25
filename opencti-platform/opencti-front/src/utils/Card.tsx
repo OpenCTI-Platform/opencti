@@ -16,7 +16,7 @@ export interface ImageEdges {
 }
 
 export interface toEdgesLocated {
-  edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null; name: string } | null } }>;
+  edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null; name?: string } | null } }>;
 }
 
 export const getAvatarImage = (images: ImageEdges | null | undefined) => {
