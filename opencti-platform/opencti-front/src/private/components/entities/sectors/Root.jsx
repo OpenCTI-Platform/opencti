@@ -145,6 +145,7 @@ class RootSector extends Component {
                             entityType={'Sector'}
                             disableSharing={true}
                             stixDomainObject={props.sector}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SectorPopover />}
                           />
                           <StixCoreObjectOrStixCoreRelationshipContainers
@@ -165,6 +166,7 @@ class RootSector extends Component {
                             entityType={'Sector'}
                             disableSharing={true}
                             stixDomainObject={props.sector}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SectorPopover />}
                           />
                           <EntityStixSightingRelationships
@@ -186,6 +188,7 @@ class RootSector extends Component {
                             entityType={'Sector'}
                             disableSharing={true}
                             stixDomainObject={props.sector}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SectorPopover />}
                           />
                           <FileManager
@@ -207,6 +210,7 @@ class RootSector extends Component {
                             entityType={'Sector'}
                             disableSharing={true}
                             stixDomainObject={props.sector}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SectorPopover />}
                           />
                           <StixCoreObjectHistory

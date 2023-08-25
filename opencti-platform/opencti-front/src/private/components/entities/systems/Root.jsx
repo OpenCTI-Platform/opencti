@@ -198,8 +198,8 @@ class RootSystem extends Component {
                             entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SystemPopover />}
-                            onViewAs={this.handleChangeViewAs.bind(this)}
                           />
                           <EntityStixSightingRelationships
                             entityId={props.system.id}
@@ -220,8 +220,8 @@ class RootSystem extends Component {
                             entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SystemPopover />}
-                            onViewAs={this.handleChangeViewAs.bind(this)}
                           />
                           <FileManager
                             {...routeProps}
@@ -242,6 +242,7 @@ class RootSystem extends Component {
                             entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
+                            isOpenctiAlias={true}
                             PopoverComponent={<SystemPopover />}
                           />
                           <StixCoreObjectHistory

@@ -29,6 +29,7 @@ class SectorKnowledgeComponent extends Component {
           entityType={'Sector'}
           disableSharing={true}
           stixDomainObject={sector}
+          isOpenctiAlias={true}
           PopoverComponent={<SectorPopover />}
         />
         <Switch>

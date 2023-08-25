@@ -25,6 +25,7 @@ class IndividualAnalysisComponent extends Component {
           entityType={'Individual'}
           disableSharing={true}
           stixDomainObject={individual}
+          isOpenctiAlias={true}
           PopoverComponent={<IndividualPopover />}
           onViewAs={onViewAs.bind(this)}
           viewAs={viewAs}

@@ -198,8 +198,8 @@ class RootIndividual extends Component {
                             entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
+                            isOpenctiAlias={true}
                             PopoverComponent={<IndividualPopover />}
-                            onViewAs={this.handleChangeViewAs.bind(this)}
                           />
                           <EntityStixSightingRelationships
                             entityId={props.individual.id}
@@ -220,8 +220,8 @@ class RootIndividual extends Component {
                             entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
+                            isOpenctiAlias={true}
                             PopoverComponent={<IndividualPopover />}
-                            onViewAs={this.handleChangeViewAs.bind(this)}
                           />
                           <FileManager
                             {...routeProps}
@@ -242,6 +242,7 @@ class RootIndividual extends Component {
                             entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
+                            isOpenctiAlias={true}
                             PopoverComponent={<IndividualPopover />}
                           />
                           <StixCoreObjectHistory

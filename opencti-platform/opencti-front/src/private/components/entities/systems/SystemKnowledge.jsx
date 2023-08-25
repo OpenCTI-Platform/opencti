@@ -34,6 +34,7 @@ class SystemKnowledgeComponent extends Component {
           entityType={'System'}
           disableSharing={true}
           stixDomainObject={system}
+          isOpenctiAlias={true}
           PopoverComponent={<SystemPopover />}
           onViewAs={onViewAs.bind(this)}
           viewAs={viewAs}
