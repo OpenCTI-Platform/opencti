@@ -89,9 +89,9 @@ export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R
 
 export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const renderThreatActorIndividual = (threatActorIndividual) => {
-  if ((threatActorIndividual.locatedAtCountries?.edges ?? []).length > 0) {
-    const country = R.head(threatActorIndividual.locatedAtCountries.edges).node?.to;
+export const renderCountryFlag = (entity) => {
+  if ((entity.countryFlag?.edges ?? []).length > 0) {
+    const country = R.head(entity.countryFlag.edges).node?.to;
     const flag = R.head(
       ((country && country.x_opencti_aliases) ?? []).filter((n) => n.length === 2),
     );
@@ -108,13 +108,13 @@ export const renderThreatActorIndividual = (threatActorIndividual) => {
             </Tooltip>
           </div>
           <div style={{ marginLeft: 10 }}>
-            {threatActorIndividual.name}
+            {entity.name}
           </div>
         </div>
       );
     }
   }
-  return threatActorIndividual.name;
+  return entity.name;
 };
 
 export const renderObservableValue = (observable) => {

@@ -63,7 +63,7 @@ class IntrusionSetLocationsComponent extends Component {
     const { t, intrusionSet } = this.props;
     return (
       <div style={{ marginTop: -20 }}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left', marginTop: 20 }}>
           {t('Originates from')}
         </Typography>
         <Security

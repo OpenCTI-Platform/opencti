@@ -19,7 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getFileUri } from '../../../../utils/utils';
-import { renderThreatActorIndividual } from '../../../../utils/String';
+import { renderCountryFlag } from '../../../../utils/String';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -139,9 +139,8 @@ class StixDomainObjectBookmarkComponent extends Component {
   render() {
     const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
-
     const images = node.images.edges ?? [];
-
+    const image = images ? images.filter((n) => n?.node?.metaData?.inCarousel === true) : [];
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -151,11 +150,11 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={images && images.length > 0 ? (
+            avatar={image && image.length > 0 ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(images[0].node.id)}
-                alt={images[0].node.name}
+                src={getFileUri(image[0].node.id)}
+                alt={image[0].node.name}
               />
             ) : (
               <Avatar className={classes.avatar}>
@@ -165,7 +164,7 @@ class StixDomainObjectBookmarkComponent extends Component {
                 />
               </Avatar>
             )}
-            title={renderThreatActorIndividual(node)}
+            title={renderCountryFlag(node)}
             subheader={`${t('Updated on')} ${fsd(node.modified)}`}
             action={
               <IconButton
@@ -232,6 +231,36 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         }
         ... on IntrusionSet {
           name
+          countryFlag: stixCoreRelationships(
+            relationship_type: "originates-from"
+            toTypes: ["Country"]
+            first: 1
+            orderBy: created_at
+            orderMode: desc
+          ) {
+            edges {
+              node {
+                to {
+                  ... on Country {
+                    name
+                    x_opencti_aliases
+                  }
+                }
+              }
+            }
+          }
+          images: importFiles(prefixMimeType: "image/") {
+            edges {
+              node {
+                id
+                name
+                metaData {
+                  inCarousel
+                  description
+                }
+              }
+            }
+          }
         }
         ... on Position {
           name
@@ -254,10 +283,10 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         ... on ThreatActor {
           name
           ... on ThreatActorIndividual {
-            locatedAtCountries: stixCoreRelationships(
+            countryFlag: stixCoreRelationships(
               relationship_type: "located-at"
               toTypes: ["Country"]
-              first: 5
+              first: 1
               orderBy: created_at
               orderMode: desc
             ) {
@@ -279,11 +308,45 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
                   name
                   metaData {
                     inCarousel
+                    description
                   }
                 }
               }
             }
           }
+          ... on ThreatActorGroup {
+            countryFlag: stixCoreRelationships(
+              relationship_type: "located-at"
+              toTypes: ["Country"]
+              first: 1
+              orderBy: created_at
+              orderMode: desc
+            ) {
+              edges {
+                node {
+                  to {
+                    ... on Country {
+                      name
+                      x_opencti_aliases
+                    }
+                  }
+                }
+              }
+            }
+            images: importFiles(prefixMimeType: "image/") {
+              edges {
+                node {
+                  id
+                  name
+                  metaData {
+                    inCarousel
+                    description
+                  }
+                }
+              }
+            }
+          }
+
         }
         ... on Tool {
           name

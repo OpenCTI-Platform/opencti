@@ -16,6 +16,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import ImageCarousel from '../../../../components/ImageCarousel';
 
 const styles = (theme) => ({
   paper: {
@@ -127,6 +128,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               </FieldOrEmpty>
             </Grid>
             <Grid item={true} xs={6}>
+              <ImageCarousel data={threatActorGroup} />
               <Typography variant="h3" gutterBottom={true}>
                 {t('Threat actor group types')}
               </Typography>
@@ -232,6 +234,20 @@ const ThreatActorGroupDetails = createFragmentContainer(
         secondary_motivations
         goals
         roles
+        images: importFiles(prefixMimeType: "image/") {
+          edges {
+            node {
+              id
+              name
+              metaData {
+                mimetype
+                order
+                inCarousel
+                description
+              }
+            }
+          }
+        }
       }
     `,
   },

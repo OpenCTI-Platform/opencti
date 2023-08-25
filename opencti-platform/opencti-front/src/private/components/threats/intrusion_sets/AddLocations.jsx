@@ -88,6 +88,7 @@ class AddLocations extends Component {
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
           size="large"
+          style={{ marginTop: 6 }}
         >
           <Add fontSize="small" />
         </IconButton>

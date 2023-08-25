@@ -60,10 +60,10 @@ const ThreatActorIndividualCardFragment = graphql`
         }
       }
     }
-    locatedAtCountries: stixCoreRelationships(
+    countryFlag: stixCoreRelationships(
       relationship_type: "located-at"
       toTypes: ["Country"]
-      first: 5
+      first: 1
       orderBy: created_at
       orderMode: desc
     ) {

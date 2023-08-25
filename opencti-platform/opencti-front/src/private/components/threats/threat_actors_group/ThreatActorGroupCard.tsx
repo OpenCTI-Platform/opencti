@@ -33,6 +33,17 @@ const ThreatActorGroupCardFragment = graphql`
             }
           }
         }
+        images: importFiles(prefixMimeType: "image/") {
+          edges {
+            node {
+              id
+              name
+              metaData {
+                inCarousel
+              }
+            }
+          }
+        }
         targetedCountries: stixCoreRelationships(
           relationship_type: "targets"
           toTypes: ["Country"]
@@ -79,6 +90,24 @@ const ThreatActorGroupCardFragment = graphql`
               to {
                 ... on Malware {
                   name
+                }
+              }
+            }
+          }
+        }
+        countryFlag: stixCoreRelationships(
+          relationship_type: "located-at"
+          toTypes: ["Country"]
+          first: 1
+          orderBy: created_at
+          orderMode: desc
+        ) {
+          edges {
+            node {
+              to {
+                ... on Country {
+                  name
+                  x_opencti_aliases
                 }
               }
             }

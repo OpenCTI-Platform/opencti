@@ -15,6 +15,8 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetLocations from './IntrusionSetLocations';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ImageCarousel from '../../../../components/ImageCarousel';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   paper: {
@@ -71,6 +73,7 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('Goals')}
               </Typography>
+              <FieldOrEmpty source={intrusionSet.goals}>
               {intrusionSet.goals && (
                 <List>
                   {intrusionSet.goals.map((goal) => (
@@ -83,9 +86,11 @@ class IntrusionSetDetailsComponent extends Component {
                   ))}
                 </List>
               )}
+              </FieldOrEmpty>
+              <IntrusionSetLocations intrusionSet={intrusionSet} />
             </Grid>
             <Grid item={true} xs={6}>
-              <IntrusionSetLocations intrusionSet={intrusionSet} />
+              <ImageCarousel data={intrusionSet} />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -173,6 +178,20 @@ const IntrusionSetDetails = createFragmentContainer(
         primary_motivation
         secondary_motivations
         goals
+        images: importFiles(prefixMimeType: "image/") {
+          edges {
+            node {
+              id
+              name
+              metaData {
+                mimetype
+                order
+                inCarousel
+                description
+              }
+            }
+          }
+        }
         ...IntrusionSetLocations_intrusionSet
       }
     `,

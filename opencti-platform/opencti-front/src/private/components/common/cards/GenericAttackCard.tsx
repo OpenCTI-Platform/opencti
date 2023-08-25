@@ -12,7 +12,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { getFileUri } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { emptyFilled, renderThreatActorIndividual } from '../../../../utils/String';
+import { emptyFilled, renderCountryFlag } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
 import { Theme } from '../../../../components/Theme';
@@ -108,6 +108,10 @@ interface imageEdges {
     node: {
       id: string,
       name: string,
+      metaData: {
+        inCarousel: boolean | null;
+        description: string | null;
+      } | null
     }
   } | null> | null
 }
@@ -124,7 +128,7 @@ interface GenericAttack {
   usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
   targetedSectors: toEdges | null;
-  locatedAtCountries?: toEdgesLocated | null;
+  countryFlag?: toEdgesLocated | null;
 }
 
 interface GenericAttackCardProps {
@@ -160,7 +164,8 @@ GenericAttackCardProps
       addBookmark(cardData.id, entityType);
     }
   };
-  const image = cardData.images?.edges ?? [];
+  const images = cardData.images?.edges ?? [];
+  const image = images ? images.filter((n) => n?.node?.metaData?.inCarousel === true) : [];
 
   return (
       <Card classes={{ root: classes.card }} variant="outlined">
@@ -181,7 +186,7 @@ GenericAttackCardProps
               <ItemIcon type={entityType} size="large" />
             )
             }
-            title={renderThreatActorIndividual(cardData)}
+            title={renderCountryFlag(cardData)}
             subheader={fld(cardData.modified)}
             action={
               <IconButton

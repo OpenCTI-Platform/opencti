@@ -46,7 +46,7 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
   const images = convertImagesToCarousel(data);
 
   return (
-    <Carousel height='150px' className={classes.carousel} animation='fade'>
+    <Carousel height='150px' className={classes.carousel} animation='fade' autoPlay={false}>
       {images.length > 0 ? (
         images.map((file: CarouselImage) => (
           <Tooltip title={file.tooltipTitle} key={file.id} placement='right'>
