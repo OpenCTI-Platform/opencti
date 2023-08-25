@@ -12,12 +12,12 @@ import Skeleton from '@mui/material/Skeleton';
 import { getFileUri } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { emptyFilled, renderCountryFlag } from '../../../../utils/String';
+import { getAvatarImage, ImageEdges, renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
+import { emptyFilled } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { getAvatarImage, ImageEdges } from '../../../../utils/Card';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -90,10 +90,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface toEdges {
   edges: ReadonlyArray<{ node: { to: { name?: string } | null } }>;
-}
-
-interface toEdgesLocated {
-  edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null } | null } }>;
 }
 
 interface fromEdges {
@@ -171,9 +167,8 @@ GenericAttackCardProps
               />
             ) : (
               <ItemIcon type={entityType} size="large" />
-            )
-            }
-            title={renderCountryFlag(cardData)}
+            )}
+            title={renderCardTitle(cardData)}
             subheader={fld(cardData.modified)}
             action={
               <IconButton

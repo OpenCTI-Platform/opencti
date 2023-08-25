@@ -89,34 +89,6 @@ export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R
 
 export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const renderCountryFlag = (entity) => {
-  if ((entity.countryFlag?.edges ?? []).length > 0) {
-    const country = R.head(entity.countryFlag.edges).node?.to;
-    const flag = R.head(
-      ((country && country.x_opencti_aliases) ?? []).filter((n) => n.length === 2),
-    );
-    if (flag) {
-      return (
-        <div style={{ display: 'inline-flex' }}>
-          <div style={{ paddingTop: 2 }}>
-            <Tooltip title={country.name}>
-              <img
-                  style={{ width: 20 }}
-                  src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                  alt={country.name}
-              />
-            </Tooltip>
-          </div>
-          <div style={{ marginLeft: 10 }}>
-            {entity.name}
-          </div>
-        </div>
-      );
-    }
-  }
-  return entity.name;
-};
-
 export const renderObservableValue = (observable) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':

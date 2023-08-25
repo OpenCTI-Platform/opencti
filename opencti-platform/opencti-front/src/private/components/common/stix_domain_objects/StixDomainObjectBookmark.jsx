@@ -19,8 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getFileUri } from '../../../../utils/utils';
-import { renderCountryFlag } from '../../../../utils/String';
-import { getAvatarImage } from '../../../../utils/Card';
+import { getAvatarImage, renderCardTitle } from '../../../../utils/Card';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -164,7 +163,7 @@ class StixDomainObjectBookmarkComponent extends Component {
                 />
               </Avatar>
             )}
-            title={renderCountryFlag(node)}
+            title={renderCardTitle(node)}
             subheader={`${t('Updated on')} ${fsd(node.modified)}`}
             action={
               <IconButton
