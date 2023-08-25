@@ -139,7 +139,7 @@ describe('Note resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.note).not.toBeNull();
-    expect(queryResult.data.note.objects.edges.length).toEqual(5);
+    expect(queryResult.data.note.objects.edges.length).toEqual(4);
   });
   it('should list notes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

@@ -1,18 +1,14 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { paginateAllThings, listThings, listAllThings } from '../database/middleware';
+import { listAllThings, listThings } from '../database/middleware';
+import { internalFindByIds, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import {
-  internalFindByIds,
-  listEntities,
-  storeLoadById
-} from '../database/middleware-loader';
-import {
-  ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP,
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
   buildRefRelationKey,
-  ENTITY_TYPE_CONTAINER,
-  ID_INFERRED,
-  ID_INTERNAL
+  ENTITY_TYPE_CONTAINER
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
@@ -52,27 +48,37 @@ export const numberOfContainersForObject = (context, user, args) => {
 };
 
 export const objects = async (context, user, containerId, args) => {
-  const key = buildRefRelationKey(RELATION_OBJECT, '*');
   const types = args.types ? args.types : ['Stix-Core-Object', 'stix-relationship'];
+  const relationArgs = { fromId: containerId, toTypes: types, baseData: true };
+  const objectRelationsPromise = listAllRelations(context, user, RELATION_OBJECT, relationArgs);
+  const key = buildRefRelationKey(RELATION_OBJECT, '*');
   const filters = [{ key, values: [containerId], operator: 'wildcard' }, ...(args.filters || [])];
-  const data = args.all ? await paginateAllThings(context, user, types, R.assoc('filters', filters, args))
-    : await listThings(context, user, types, R.assoc('filters', filters, args));
+  const queryFilters = { ...args, filters, connectionFormat: false };
+  const elementsPromise = args.all ? listAllThings(context, user, types, queryFilters) : listThings(context, user, types, queryFilters);
+  const [relations, elements] = await Promise.all([objectRelationsPromise, elementsPromise]);
+  const relationsMap = new Map();
   // Container objects can be manual and/or inferred
   // This type must be specified to inform the UI what's need to be done.
-  for (let index = 0; index < data.edges.length; index += 1) {
-    const edge = data.edges[index];
-    const relIdObjects = edge.node[buildRefRelationKey(RELATION_OBJECT, ID_INTERNAL)] ?? [];
-    const relInferredObjects = edge.node[buildRefRelationKey(RELATION_OBJECT, ID_INFERRED)] ?? [];
-    const refTypes = [];
-    if (relIdObjects.includes(containerId)) {
-      refTypes.push(MANUAL_OBJECT);
+  for (let relIndex = 0; relIndex < relations.length; relIndex += 1) {
+    const relation = relations[relIndex];
+    const relData = relationsMap.get(relation.toId);
+    if (relData) {
+      relationsMap.set(relation.toId, relData.push(relation.is_inferred ? INFERRED_OBJECT : MANUAL_OBJECT));
+    } else {
+      relationsMap.set(relation.toId, [relation.is_inferred ? INFERRED_OBJECT : MANUAL_OBJECT]);
     }
-    if (relInferredObjects.includes(containerId)) {
-      refTypes.push(INFERRED_OBJECT);
-    }
-    edge.types = refTypes;
   }
-  return data;
+  // Rebuild the final result
+  const resultNodes = [];
+  for (let index = 0; index < elements.length; index += 1) {
+    const element = elements[index];
+    const relationTypes = relationsMap.get(element.id);
+    if (relationTypes) {
+      const edge = { types: relationTypes, node: element, sort: element.sort };
+      resultNodes.push(edge);
+    }
+  }
+  return buildPagination(args.first, args.after, resultNodes, resultNodes.length);
 };
 
 export const relatedContainers = async (context, user, containerId, args) => {
