@@ -12,17 +12,9 @@ const ThreatActorIndividualCardFragment = graphql`
     created
     modified
     entity_type
-    images: importFiles(prefixMimeType: "image/") {
-      edges {
-        node {
-          id
-          name
-          metaData {
-            inCarousel
-              description
-          }
-        }
-      }
+    avatar {
+      id
+      name
     }
     objectLabel {
       edges {

@@ -12,7 +12,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { getFileUri } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { getAvatarImage, ImageEdges, renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
+import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
@@ -107,7 +107,7 @@ interface GenericAttack {
   modified: string;
   aliases: ReadonlyArray<string | null> | null;
   objectLabel: labelEdges | null;
-  images?: ImageEdges | null,
+  avatar?: { id: string, name: string } | null;
   relatedIntrusionSets?: fromEdges | null;
   usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
@@ -148,7 +148,6 @@ GenericAttackCardProps
       addBookmark(cardData.id, entityType);
     }
   };
-  const avatarImage = getAvatarImage(cardData.images);
 
   return (
       <Card classes={{ root: classes.card }} variant="outlined">
@@ -159,11 +158,11 @@ GenericAttackCardProps
         >
           <CardHeader
             classes={{ root: classes.header, title: classes.title }}
-            avatar={ avatarImage ? (
+            avatar={ cardData.avatar ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(avatarImage.id)}
-                alt={avatarImage.name}
+                src={getFileUri(cardData.avatar.id)}
+                alt={cardData.avatar.name}
               />
             ) : (
               <ItemIcon type={entityType} size="large" />

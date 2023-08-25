@@ -33,17 +33,9 @@ const ThreatActorGroupCardFragment = graphql`
             }
           }
         }
-        images: importFiles(prefixMimeType: "image/") {
-          edges {
-            node {
-              id
-              name
-              metaData {
-                inCarousel
-                  description
-              }
-            }
-          }
+        avatar {
+          id
+          name
         }
         targetedCountries: stixCoreRelationships(
           relationship_type: "targets"

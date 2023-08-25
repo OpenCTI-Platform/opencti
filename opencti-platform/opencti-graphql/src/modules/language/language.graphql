@@ -93,6 +93,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: AssigneeConnection
+    avatar: OpenCtiFile
     # Language
     name: String!
     aliases: [String]

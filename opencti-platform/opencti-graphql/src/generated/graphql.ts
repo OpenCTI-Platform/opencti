@@ -54,6 +54,7 @@ export type AckDetails = {
 
 export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'AdministrativeArea';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -575,6 +576,7 @@ export type AssigneeEdge = {
 export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'AttackPattern';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -1428,6 +1430,7 @@ export type BasicRelationship = {
 export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Campaign';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -1771,6 +1774,7 @@ export type CapabilityEdge = {
 };
 
 export type Case = {
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -1999,6 +2003,7 @@ export type CaseEdge = {
 
 export type CaseIncident = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseIncident';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -2305,6 +2310,7 @@ export enum CaseIncidentsOrdering {
 
 export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseRfi';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -2607,6 +2613,7 @@ export enum CaseRfisOrdering {
 
 export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseRft';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -2989,6 +2996,7 @@ export enum CasesOrdering {
 export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Channel';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   channel_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -3281,6 +3289,7 @@ export enum CitiesOrdering {
 export type City = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'City';
   administrativeArea?: Maybe<AdministrativeArea>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -3588,6 +3597,7 @@ export enum ConnectorType {
 }
 
 export type Container = {
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   containers?: Maybe<ContainerConnection>;
@@ -3899,6 +3909,7 @@ export enum CountriesOrdering {
 
 export type Country = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Country';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -4156,6 +4167,7 @@ export type CountryEditMutationsRelationDeleteArgs = {
 export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CourseOfAction';
   attackPatterns?: Maybe<AttackPatternConnection>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -4840,6 +4852,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   __typename?: 'DataComponent';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   attackPatterns?: Maybe<AttackPatternConnection>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -5092,6 +5105,7 @@ export enum DataComponentsOrdering {
 export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'DataSource';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   collection_layers?: Maybe<Array<Scalars['String']['output']>>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -6472,6 +6486,7 @@ export enum EntitySettingsOrdering {
 export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Event';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -6950,6 +6965,7 @@ export enum FeedOrdering {
 
 export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Feedback';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -7392,6 +7408,7 @@ export type GroupEditMutationsRelationDeleteArgs = {
 
 export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Grouping';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -8480,6 +8497,7 @@ export enum IdentitiesOrdering {
 }
 
 export type Identity = {
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -8742,6 +8760,7 @@ export enum IdentityType {
 export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Incident';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -9057,6 +9076,7 @@ export type IndexingMetrics = {
 
 export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Indicator';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -9392,6 +9412,7 @@ export enum IndicatorsOrdering {
 
 export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Individual';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -9705,6 +9726,7 @@ export type InferenceAttribute = {
 export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Infrastructure';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -10159,6 +10181,7 @@ export type InternalRelationshipAddInput = {
 export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'IntrusionSet';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -10639,6 +10662,7 @@ export enum LabelsOrdering {
 export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Language';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -10907,6 +10931,7 @@ export type ListTaskAddInput = {
 };
 
 export type Location = {
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -11453,6 +11478,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   __typename?: 'Malware';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   architecture_execution_envs?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   capabilities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -11722,6 +11748,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   analysis_ended?: Maybe<Scalars['DateTime']['output']>;
   analysis_engine_version?: Maybe<Scalars['String']['output']>;
   analysis_started?: Maybe<Scalars['DateTime']['output']>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   configuration_version?: Maybe<Scalars['String']['output']>;
@@ -14484,6 +14511,7 @@ export type MutexAddInput = {
 export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Narrative';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -14946,6 +14974,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   __typename?: 'Note';
   attribute_abstract?: Maybe<Scalars['String']['output']>;
   authors?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -15443,6 +15472,7 @@ export type ObjectTotals = {
 
 export type ObservedData = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'ObservedData';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -15775,6 +15805,7 @@ export type OpenCtiFile = {
 export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Opinion';
   authors?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -16119,6 +16150,7 @@ export enum OrderingMode {
 
 export type Organization = BasicObject & Identity & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Organization';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -16171,7 +16203,6 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
-  x_opencti_files?: Maybe<Array<OpenCtiFile>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_organization_type?: Maybe<Scalars['String']['output']>;
@@ -16320,11 +16351,6 @@ export type OrganizationStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-
-export type OrganizationX_Opencti_FilesArgs = {
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type OrganizationAddInput = {
@@ -16826,6 +16852,7 @@ export type PhoneNumberAddInput = {
 
 export type Position = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Position';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   city?: Maybe<City>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -20008,6 +20035,7 @@ export type RabbitMqMetrics = {
 
 export type Region = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Region';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -20314,6 +20342,7 @@ export type RemoteStreamCollection = {
 
 export type Report = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Report';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -20823,6 +20852,7 @@ export type SearchMetrics = {
 
 export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Sector';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -22477,6 +22507,7 @@ export enum StixCyberObservablesOrdering {
 }
 
 export type StixDomainObject = {
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -24022,6 +24053,7 @@ export enum SynchronizersOrdering {
 
 export type System = BasicObject & Identity & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'System';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -24316,6 +24348,7 @@ export enum SystemsOrdering {
 
 export type Task = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Task';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -24897,6 +24930,7 @@ export type TextAddInput = {
 
 export type ThreatActor = {
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -25105,6 +25139,7 @@ export type ThreatActorEdge = {
 export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject & StixObject & ThreatActor & {
   __typename?: 'ThreatActorGroup';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -25378,6 +25413,7 @@ export type ThreatActorGroupEditMutationsRelationDeleteArgs = {
 export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObject & StixObject & ThreatActor & {
   __typename?: 'ThreatActorIndividual';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -25695,6 +25731,7 @@ export type TimeSeries = {
 export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Tool';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -27056,6 +27093,7 @@ export enum VulnerabilitiesOrdering {
 
 export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Vulnerability';
+  avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -29722,6 +29760,7 @@ export type AckDetailsResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type AdministrativeAreaResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeArea'] = ResolversParentTypes['AdministrativeArea']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<AdministrativeAreaCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AdministrativeAreaConnectorsArgs>>;
@@ -29895,6 +29934,7 @@ export type AssigneeEdgeResolvers<ContextType = any, ParentType extends Resolver
 
 export type AttackPatternResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPattern'] = ResolversParentTypes['AttackPattern']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<AttackPatternCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<AttackPatternConnectorsArgs>>;
@@ -30159,6 +30199,7 @@ export type BasicRelationshipResolvers<ContextType = any, ParentType extends Res
 
 export type CampaignResolvers<ContextType = any, ParentType extends ResolversParentTypes['Campaign'] = ResolversParentTypes['Campaign']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CampaignCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CampaignConnectorsArgs>>;
@@ -30260,6 +30301,7 @@ export type CapabilityEdgeResolvers<ContextType = any, ParentType extends Resolv
 
 export type CaseResolvers<ContextType = any, ParentType extends ResolversParentTypes['Case'] = ResolversParentTypes['Case']> = ResolversObject<{
   __resolveType: TypeResolveFn<'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Feedback', ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CaseConnectorsArgs>>;
@@ -30327,6 +30369,7 @@ export type CaseEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type CaseIncidentResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseIncident'] = ResolversParentTypes['CaseIncident']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseIncidentCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CaseIncidentConnectorsArgs>>;
@@ -30399,6 +30442,7 @@ export type CaseIncidentEdgeResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRfi'] = ResolversParentTypes['CaseRfi']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseRfiCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CaseRfiConnectorsArgs>>;
@@ -30470,6 +30514,7 @@ export type CaseRfiEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type CaseRftResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRft'] = ResolversParentTypes['CaseRft']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseRftCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CaseRftConnectorsArgs>>;
@@ -30567,6 +30612,7 @@ export type CaseTemplateEdgeResolvers<ContextType = any, ParentType extends Reso
 
 export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ChannelCasesArgs>>;
   channel_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -30630,6 +30676,7 @@ export type ChannelEdgeResolvers<ContextType = any, ParentType extends Resolvers
 
 export type CityResolvers<ContextType = any, ParentType extends ResolversParentTypes['City'] = ResolversParentTypes['City']> = ResolversObject<{
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CityCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CityConnectorsArgs>>;
@@ -30754,6 +30801,7 @@ export interface ConstraintStringScalarConfig extends GraphQLScalarTypeConfig<Re
 
 export type ContainerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Container'] = ResolversParentTypes['Container']> = ResolversObject<{
   __resolveType: TypeResolveFn<'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Feedback' | 'Grouping' | 'Note' | 'ObservedData' | 'Opinion' | 'Report' | 'Task', ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ContainerCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ContainerContainersArgs>>;
@@ -30829,6 +30877,7 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type CountryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Country'] = ResolversParentTypes['Country']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CountryCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CountryConnectorsArgs>>;
@@ -30906,6 +30955,7 @@ export type CountryEditMutationsResolvers<ContextType = any, ParentType extends 
 
 export type CourseOfActionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CourseOfAction'] = ResolversParentTypes['CourseOfAction']> = ResolversObject<{
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CourseOfActionCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CourseOfActionConnectorsArgs>>;
@@ -31088,6 +31138,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
 export type DataComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponent'] = ResolversParentTypes['DataComponent']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<DataComponentCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<DataComponentConnectorsArgs>>;
@@ -31151,6 +31202,7 @@ export type DataComponentEdgeResolvers<ContextType = any, ParentType extends Res
 
 export type DataSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSource'] = ResolversParentTypes['DataSource']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<DataSourceCasesArgs>>;
   collection_layers?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -31562,6 +31614,7 @@ export type EntitySettingEdgeResolvers<ContextType = any, ParentType extends Res
 
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<EventCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<EventConnectorsArgs>>;
@@ -31717,6 +31770,7 @@ export type FeedMappingResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type FeedbackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feedback'] = ResolversParentTypes['Feedback']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<FeedbackCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<FeedbackConnectorsArgs>>;
@@ -31879,6 +31933,7 @@ export type GroupEditMutationsResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type GroupingResolvers<ContextType = any, ParentType extends ResolversParentTypes['Grouping'] = ResolversParentTypes['Grouping']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<GroupingCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<GroupingConnectorsArgs>>;
@@ -32127,6 +32182,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type IdentityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Identity'] = ResolversParentTypes['Identity']> = ResolversObject<{
   __resolveType: TypeResolveFn<'Individual' | 'Organization' | 'Sector' | 'System', ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<IdentityCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IdentityConnectorsArgs>>;
@@ -32202,6 +32258,7 @@ export type IdentityEditMutationsResolvers<ContextType = any, ParentType extends
 
 export type IncidentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Incident'] = ResolversParentTypes['Incident']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<IncidentCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IncidentConnectorsArgs>>;
@@ -32286,6 +32343,7 @@ export type IndexingMetricsResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type IndicatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Indicator'] = ResolversParentTypes['Indicator']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<IndicatorCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IndicatorConnectorsArgs>>;
@@ -32369,6 +32427,7 @@ export type IndicatorEditMutationsResolvers<ContextType = any, ParentType extend
 }>;
 
 export type IndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['Individual'] = ResolversParentTypes['Individual']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<IndividualCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IndividualConnectorsArgs>>;
@@ -32463,6 +32522,7 @@ export type InferenceAttributeResolvers<ContextType = any, ParentType extends Re
 
 export type InfrastructureResolvers<ContextType = any, ParentType extends ResolversParentTypes['Infrastructure'] = ResolversParentTypes['Infrastructure']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<InfrastructureCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<InfrastructureConnectorsArgs>>;
@@ -32625,6 +32685,7 @@ export type InternalRelationshipResolvers<ContextType = any, ParentType extends 
 
 export type IntrusionSetResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntrusionSet'] = ResolversParentTypes['IntrusionSet']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<IntrusionSetCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IntrusionSetConnectorsArgs>>;
@@ -32788,6 +32849,7 @@ export type LabelEditMutationsResolvers<ContextType = any, ParentType extends Re
 
 export type LanguageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Language'] = ResolversParentTypes['Language']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<LanguageCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<LanguageConnectorsArgs>>;
@@ -32867,6 +32929,7 @@ export type ListTaskResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type LocationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Location'] = ResolversParentTypes['Location']> = ResolversObject<{
   __resolveType: TypeResolveFn<'AdministrativeArea' | 'City' | 'Country' | 'Position' | 'Region', ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<LocationCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<LocationConnectorsArgs>>;
@@ -33023,6 +33086,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
 export type MalwareResolvers<ContextType = any, ParentType extends ResolversParentTypes['Malware'] = ResolversParentTypes['Malware']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   architecture_execution_envs?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<MalwareCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -33084,6 +33148,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   analysis_ended?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   analysis_engine_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   analysis_started?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<MalwareAnalysisCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   configuration_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33686,6 +33751,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type NarrativeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Narrative'] = ResolversParentTypes['Narrative']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<NarrativeCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<NarrativeConnectorsArgs>>;
@@ -33806,6 +33872,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
 export type NoteResolvers<ContextType = any, ParentType extends ResolversParentTypes['Note'] = ResolversParentTypes['Note']> = ResolversObject<{
   attribute_abstract?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   authors?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<NoteCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<NoteConnectorsArgs>>;
@@ -33985,6 +34052,7 @@ export type ObjectTotalsResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type ObservedDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservedData'] = ResolversParentTypes['ObservedData']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ObservedDataCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ObservedDataConnectorsArgs>>;
@@ -34072,6 +34140,7 @@ export type OpenCtiFileResolvers<ContextType = any, ParentType extends Resolvers
 
 export type OpinionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Opinion'] = ResolversParentTypes['Opinion']> = ResolversObject<{
   authors?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<OpinionCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<OpinionConnectorsArgs>>;
@@ -34146,6 +34215,7 @@ export type OpinionEditMutationsResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<OrganizationCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<OrganizationConnectorsArgs>>;
@@ -34198,7 +34268,6 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  x_opencti_files?: Resolver<Maybe<Array<ResolversTypes['OpenCtiFile']>>, ParentType, ContextType, Partial<OrganizationX_Opencti_FilesArgs>>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_organization_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34355,6 +34424,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type PositionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Position'] = ResolversParentTypes['Position']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<PositionCasesArgs>>;
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -34839,6 +34909,7 @@ export type RabbitMqMetricsResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type RegionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Region'] = ResolversParentTypes['Region']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<RegionCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<RegionConnectorsArgs>>;
@@ -34926,6 +34997,7 @@ export type RemoteStreamCollectionResolvers<ContextType = any, ParentType extend
 }>;
 
 export type ReportResolvers<ContextType = any, ParentType extends ResolversParentTypes['Report'] = ResolversParentTypes['Report']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ReportCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ReportConnectorsArgs>>;
@@ -35133,6 +35205,7 @@ export type SearchMetricsResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type SectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Sector'] = ResolversParentTypes['Sector']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<SectorCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<SectorConnectorsArgs>>;
@@ -35618,6 +35691,7 @@ export type StixCyberObservableEditMutationsResolvers<ContextType = any, ParentT
 
 export type StixDomainObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixDomainObject'] = ResolversParentTypes['StixDomainObject']> = ResolversObject<{
   __resolveType: TypeResolveFn<'AdministrativeArea' | 'AttackPattern' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'DataComponent' | 'DataSource' | 'Event' | 'Feedback' | 'Grouping' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'Language' | 'Malware' | 'MalwareAnalysis' | 'Narrative' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Region' | 'Report' | 'Sector' | 'System' | 'Task' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'Vulnerability', ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<StixDomainObjectCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixDomainObjectConnectorsArgs>>;
@@ -36138,6 +36212,7 @@ export type SynchronizerEditMutationsResolvers<ContextType = any, ParentType ext
 }>;
 
 export type SystemResolvers<ContextType = any, ParentType extends ResolversParentTypes['System'] = ResolversParentTypes['System']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<SystemCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<SystemConnectorsArgs>>;
@@ -36217,6 +36292,7 @@ export type SystemEditMutationsResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type TaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<TaskCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TaskConnectorsArgs>>;
@@ -36378,6 +36454,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
 export type ThreatActorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActor'] = ResolversParentTypes['ThreatActor']> = ResolversObject<{
   __resolveType: TypeResolveFn<'ThreatActorGroup' | 'ThreatActorIndividual', ParentType, ContextType>;
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ThreatActorCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorConnectorsArgs>>;
@@ -36451,6 +36528,7 @@ export type ThreatActorEdgeResolvers<ContextType = any, ParentType extends Resol
 
 export type ThreatActorGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorGroup'] = ResolversParentTypes['ThreatActorGroup']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ThreatActorGroupCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorGroupConnectorsArgs>>;
@@ -36535,6 +36613,7 @@ export type ThreatActorGroupEditMutationsResolvers<ContextType = any, ParentType
 
 export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorIndividual'] = ResolversParentTypes['ThreatActorIndividual']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ThreatActorIndividualConnectorsArgs>>;
@@ -36615,6 +36694,7 @@ export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversP
 
 export type ToolResolvers<ContextType = any, ParentType extends ResolversParentTypes['Tool'] = ResolversParentTypes['Tool']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ToolCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ToolConnectorsArgs>>;
@@ -37006,6 +37086,7 @@ export type VocabularyFieldDefinitionResolvers<ContextType = any, ParentType ext
 }>;
 
 export type VulnerabilityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Vulnerability'] = ResolversParentTypes['Vulnerability']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<VulnerabilityCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<VulnerabilityConnectorsArgs>>;

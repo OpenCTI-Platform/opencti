@@ -6,12 +6,14 @@ import {
   findAll,
   findById,
   stixDomainObjectAddRelation,
+  stixDomainObjectAvatar,
   stixDomainObjectCleanContext,
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
-  stixDomainObjectExportAsk, stixDomainObjectFileEdit,
+  stixDomainObjectExportAsk,
+  stixDomainObjectFileEdit,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -58,6 +60,7 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
+    avatar: (stixDomainObject) => stixDomainObjectAvatar(stixDomainObject),
     importFiles: (stixDomainObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixDomainObject.entity_type}/${stixDomainObject.id}/`, stixDomainObject.id, prefixMimeType),
     exportFiles: (stixDomainObject, { first }, context) => filesListing(context, context.user, first, `export/${stixDomainObject.entity_type}/${stixDomainObject.id}/`),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),

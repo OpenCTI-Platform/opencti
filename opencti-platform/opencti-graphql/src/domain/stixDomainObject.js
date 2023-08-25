@@ -80,6 +80,11 @@ export const stixDomainObjectsDistributionByEntity = async (context, user, args)
   const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
   return distributionEntities(context, user, types, { ...args, filters });
 };
+
+export const stixDomainObjectAvatar = (stixDomainObject) => {
+  const files = stixDomainObject.x_opencti_files ?? [];
+  return files.sort((a, b) => (a.order || 0) - (b.order || 0)).find((n) => n.mime_type.includes('image/') && n.inCarousel);
+};
 // endregion
 
 // region export

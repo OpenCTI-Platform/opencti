@@ -19,7 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getFileUri } from '../../../../utils/utils';
-import { getAvatarImage, renderCardTitle } from '../../../../utils/Card';
+import { renderCardTitle } from '../../../../utils/Card';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -139,7 +139,6 @@ class StixDomainObjectBookmarkComponent extends Component {
   render() {
     const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
-    const avatarImage = getAvatarImage(node.images);
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -149,11 +148,11 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={avatarImage ? (
+            avatar={node.avatar ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(avatarImage.id)}
-                alt={avatarImage.name}
+                src={getFileUri(node.avatar.id)}
+                alt={node.avatar.name}
               />
             ) : (
               <Avatar className={classes.avatar}>
@@ -248,17 +247,9 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
               }
             }
           }
-          images: importFiles(prefixMimeType: "image/") {
-            edges {
-              node {
-                id
-                name
-                metaData {
-                  inCarousel
-                  description
-                }
-              }
-            }
+          avatar {
+            id
+            name
           }
         }
         ... on Position {
@@ -300,17 +291,9 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
                 }
               }
             }
-            images: importFiles(prefixMimeType: "image/") {
-              edges {
-                node {
-                  id 
-                  name
-                  metaData {
-                    inCarousel
-                    description
-                  }
-                }
-              }
+            avatar {
+              id
+              name
             }
           }
           ... on ThreatActorGroup {
@@ -332,17 +315,9 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
                 }
               }
             }
-            images: importFiles(prefixMimeType: "image/") {
-              edges {
-                node {
-                  id
-                  name
-                  metaData {
-                    inCarousel
-                    description
-                  }
-                }
-              }
+            avatar {
+              id
+              name
             }
           }
 

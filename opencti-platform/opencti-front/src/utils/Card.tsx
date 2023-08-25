@@ -2,28 +2,9 @@ import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
 import { APP_BASE_PATH } from '../relay/environment';
 
-export interface ImageEdges {
-  edges: ReadonlyArray<{
-    node: {
-      id: string,
-      name: string,
-      metaData: {
-        inCarousel: boolean | null;
-        description: string | null;
-      } | null
-    }
-  } | null> | null
-}
-
 export interface toEdgesLocated {
   edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null; name?: string } | null } }>;
 }
-
-export const getAvatarImage = (images: ImageEdges | null | undefined) => {
-  const imagesList = images?.edges ?? [];
-  const inCarouselImages = imagesList ? imagesList.filter((n) => n?.node?.metaData?.inCarousel === true) : [];
-  return (inCarouselImages.length > 0 ? inCarouselImages[0]?.node : null);
-};
 
 export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | undefined; name: string; }) => {
   if ((entity.countryFlag?.edges ?? []).length > 0) {

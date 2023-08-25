@@ -2249,6 +2249,7 @@ interface StixDomainObject {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Technical
   creators: [Creator!]
   toStix: String
@@ -2423,6 +2424,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # AttackPattern
   name: String!
   description: String
@@ -2614,6 +2616,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Campaign
   name: String!
   description: String
@@ -2802,6 +2805,7 @@ interface Container {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Container
   representative: String!
   objects(
@@ -2975,6 +2979,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Container
   representative: String!
   objects(
@@ -3202,6 +3207,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Container
   representative: String!
   objects(
@@ -3406,6 +3412,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Container
   representative: String!
   objects(
@@ -3630,6 +3637,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Container
   representative: String!
   objects(
@@ -3840,6 +3848,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # CourseOfAction
   name: String!
   description: String
@@ -4022,6 +4031,7 @@ interface Identity {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Identity
   identity_class: String!
   name: String!
@@ -4202,6 +4212,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Identity
   identity_class: String!
   name: String!
@@ -4241,217 +4252,6 @@ input IndividualAddInput {
   confidence: Int
   revoked: Boolean
   lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
-  file: Upload
-}
-
-################ Organizations
-enum OrganizationsOrdering {
-  name
-  confidence
-  created
-  created_at
-  modified
-  updated_at
-  x_opencti_organization_type
-  x_opencti_workflow_id
-}
-enum OrganizationsFilter {
-  name
-  aliases
-  x_opencti_organization_type
-  x_opencti_reliability
-  created
-  modified
-  created_at
-  updated_at
-  createdBy
-  markedBy
-  assigneeTo
-  labelledBy
-  x_opencti_workflow_id
-  description
-  contact_information
-  revoked
-}
-input OrganizationsFiltering {
-  key: [OrganizationsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-type OrganizationConnection {
-  pageInfo: PageInfo!
-  edges: [OrganizationEdge!]!
-}
-type OrganizationEdge {
-  cursor: String!
-  node: Organization!
-}
-
-type MeOrganization {
-  id: ID! # internal_id
-  name: String!
-}
-
-type MeOrganizationEdge {
-  cursor: String!
-  node: MeOrganization!
-}
-
-type MeOrganizationConnection {
-  pageInfo: PageInfo!
-  edges: [MeOrganizationEdge!]!
-}
-
-type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  # StixObject
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  # inferences
-  x_opencti_inferences: [Inference]
-  # StixCoreObject
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  containersNumber: Number
-  containers(first: Int, entityTypes: [String!], elementId: [String]): ContainerConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    fromId: StixRef
-    toId: StixRef
-    fromTypes: [String]
-    toTypes: [String]
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    confidences: [Int]
-    search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
-  ): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(
-    relationship_type: [String]
-    toTypes: [String]
-    field: String!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    operation: StatsOperation!
-    limit: Int
-    order: String
-    types: [String]
-    filters: [StixCoreObjectsFiltering]
-    filterMode: FilterMode
-    search: String
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCoreRelationshipsDistribution(
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime
-    endDate: DateTime
-    dateAttribute: String
-    isTo: Boolean
-    limit: Int
-    order: String
-    elementWithTargetTypes: [String]
-    fromId: [String]
-    fromRole: String
-    fromTypes: [String]
-    toId: [String]
-    toRole: String
-    toTypes: [String]
-    relationship_type: [String]
-    confidences: [Int]
-    search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
-  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  # StixDomainObject
-  revoked: Boolean!
-  confidence: Int
-  lang: String
-  created: DateTime
-  modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
-  # Identity
-  identity_class: String!
-  name: String!
-  description: String
-  contact_information: String
-  roles: [String]
-  x_opencti_aliases: [String]
-  x_opencti_reliability: String
-  # Organization
-  x_opencti_organization_type: String
-  sectors: SectorConnection
-  members(
-    first: Int
-    after: ID
-    orderBy: UsersOrdering
-    orderMode: OrderingMode
-    search: String
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
-  subOrganizations: OrganizationConnection
-  parentOrganizations: OrganizationConnection
-  default_dashboard: Workspace
-  # Technical
-  creators: [Creator!]
-  toStix: String
-  importFiles(first: Int, prefixMimeType: String): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
-}
-input OrganizationAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
-  name: String! @constraint(minLength: 2)
-  description: String
-  contact_information: String
-  roles: [String]
-  x_opencti_aliases: [String]
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  x_opencti_organization_type: String
-  x_opencti_reliability: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -4598,6 +4398,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Identity
   identity_class: String!
   name: String!
@@ -4779,6 +4580,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Identity
   identity_class: String!
   name: String!
@@ -4987,6 +4789,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Indicator
   pattern_type: String
   pattern_version: String
@@ -5191,6 +4994,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Infrastructure
   name: String!
   aliases: [String]
@@ -5372,6 +5176,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # IntrusionSet
   name: String!
   description: String
@@ -5558,6 +5363,7 @@ interface Location {
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Location
   name: String!
   description: String
@@ -5734,6 +5540,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Location
   name: String!
   description: String
@@ -5919,6 +5726,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Location
   name: String!
   description: String
@@ -6098,6 +5906,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Location
   name: String!
   description: String
@@ -6273,6 +6082,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Location
   name: String!
   description: String
@@ -6463,6 +6273,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Malware
   name: String!
   description: String
@@ -6656,6 +6467,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # ThreatActorGroup
   name: String!
   description: String
@@ -6790,6 +6602,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # ThreatActorGroup
   name: String!
   description: String
@@ -6984,6 +6797,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Tool
   name: String!
   description: String
@@ -7168,6 +6982,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Vulnerability
   name: String!
   description: String
@@ -7364,6 +7179,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   modified: DateTime
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
+  avatar: OpenCtiFile
   # Incident
   name: String!
   description: String
