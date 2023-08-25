@@ -9,6 +9,8 @@ import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { InformationOutline } from 'mdi-material-ui';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -87,7 +89,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
       id: values.id,
       description: values.description,
       inCarousel: values.inCarousel,
-      order: values.order,
+      order: parseInt(String(values.order), 10),
     };
     commit({
       variables: {
@@ -148,7 +150,22 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
               component={TextField}
               variant="standard"
               name="order"
-              label={t('Order')}
+              label={
+                <div>
+                  {t('Order')}
+                  <Tooltip
+                    title={t(
+                      'Order for the caroussel display',
+                    )}
+                  >
+                  <InformationOutline
+                    fontSize="small"
+                    color="secondary"
+                    style={{ margin: '0 0 -5px 10px' }}
+                  />
+                </Tooltip>
+                </div>
+              }
               fullWidth={true}
               type="number"
               style={fieldSpacingContainerStyle}
