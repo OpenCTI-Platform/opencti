@@ -61,10 +61,7 @@ export const workspaceEditionOverviewFocus = graphql`
 
 const workspaceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
+  description: Yup.string().nullable(),
 });
 
 class WorkspaceEditionOverviewComponent extends Component {
