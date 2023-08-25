@@ -93,12 +93,12 @@ export const renderThreatActorIndividual = (threatActorIndividual) => {
   if ((threatActorIndividual.locatedAtCountries?.edges ?? []).length > 0) {
     const country = R.head(threatActorIndividual.locatedAtCountries.edges).node?.to;
     const flag = R.head(
-      (country.x_opencti_aliases ?? []).filter((n) => n.length === 2),
+      ((country && country.x_opencti_aliases) ?? []).filter((n) => n.length === 2),
     );
     if (flag) {
       return (
-        <div>
-          <div style={{ float: 'left', paddingTop: 2 }}>
+        <div style={{ display: 'inline-flex' }}>
+          <div style={{ paddingTop: 2 }}>
             <Tooltip title={country.name}>
               <img
                   style={{ width: 20 }}
@@ -107,7 +107,7 @@ export const renderThreatActorIndividual = (threatActorIndividual) => {
               />
             </Tooltip>
           </div>
-          <div style={{ float: 'left', marginLeft: 10 }}>
+          <div style={{ marginLeft: 10 }}>
             {threatActorIndividual.name}
           </div>
         </div>

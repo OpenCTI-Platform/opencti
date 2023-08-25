@@ -19,6 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getFileUri } from '../../../../utils/utils';
+import { renderThreatActorIndividual } from '../../../../utils/String';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -164,7 +165,7 @@ class StixDomainObjectBookmarkComponent extends Component {
                 />
               </Avatar>
             )}
-            title={node.name}
+            title={renderThreatActorIndividual(node)}
             subheader={`${t('Updated on')} ${fsd(node.modified)}`}
             action={
               <IconButton
@@ -253,6 +254,24 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         ... on ThreatActor {
           name
           ... on ThreatActorIndividual {
+            locatedAtCountries: stixCoreRelationships(
+              relationship_type: "located-at"
+              toTypes: ["Country"]
+              first: 5
+              orderBy: created_at
+              orderMode: desc
+            ) {
+              edges {
+                node {
+                  to {
+                    ... on Country {
+                      name
+                      x_opencti_aliases
+                    }
+                  }
+                }
+              }
+            }
             images: importFiles(prefixMimeType: "image/") {
               edges {
                 node {

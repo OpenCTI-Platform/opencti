@@ -161,7 +161,7 @@ GenericAttackCardProps
     }
   };
 
-  const image = cardData?.images?.edges ?? [];
+  const image = cardData.images?.edges ?? [];
 
   return (
       <Card classes={{ root: classes.card }} variant="outlined">

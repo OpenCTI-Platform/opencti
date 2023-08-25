@@ -87,14 +87,9 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
                 handleSort={() => {}}
               />
               <List>
-                {images.map((file, idx) => {
-                  if (file) {
-                    return (
-                        <PictureLine picture={file} key={idx} dataColumns={dataColumns} entityId={data.id}/>
-                    );
-                  }
-                  return <></>;
-                })}
+                {images.map((file, idx) => file && (
+                    <PictureLine picture={file} key={idx} dataColumns={dataColumns} entityId={data.id}/>
+                ))}
               </List>
             </div>
           ) : (
