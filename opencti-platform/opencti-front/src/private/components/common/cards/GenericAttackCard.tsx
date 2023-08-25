@@ -17,6 +17,7 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import { getAvatarImage, ImageEdges } from '../../../../utils/Card';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -103,19 +104,6 @@ interface labelEdges {
   edges: ReadonlyArray<{ node: { id: string, value: string | null, color: string | null } }>;
 }
 
-interface imageEdges {
-  edges: ReadonlyArray<{
-    node: {
-      id: string,
-      name: string,
-      metaData: {
-        inCarousel: boolean | null;
-        description: string | null;
-      } | null
-    }
-  } | null> | null
-}
-
 interface GenericAttack {
   id: string;
   name: string;
@@ -123,7 +111,7 @@ interface GenericAttack {
   modified: string;
   aliases: ReadonlyArray<string | null> | null;
   objectLabel: labelEdges | null;
-  images?: imageEdges | null,
+  images?: ImageEdges | null,
   relatedIntrusionSets?: fromEdges | null;
   usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
@@ -164,8 +152,7 @@ GenericAttackCardProps
       addBookmark(cardData.id, entityType);
     }
   };
-  const images = cardData.images?.edges ?? [];
-  const image = images ? images.filter((n) => n?.node?.metaData?.inCarousel === true) : [];
+  const avatarImage = getAvatarImage(cardData.images);
 
   return (
       <Card classes={{ root: classes.card }} variant="outlined">
@@ -176,11 +163,11 @@ GenericAttackCardProps
         >
           <CardHeader
             classes={{ root: classes.header, title: classes.title }}
-            avatar={ image && image[0] ? (
+            avatar={ avatarImage ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(image[0].node.id)}
-                alt={image[0].node.name}
+                src={getFileUri(avatarImage.id)}
+                alt={avatarImage.name}
               />
             ) : (
               <ItemIcon type={entityType} size="large" />

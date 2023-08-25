@@ -20,6 +20,7 @@ import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getFileUri } from '../../../../utils/utils';
 import { renderCountryFlag } from '../../../../utils/String';
+import { getAvatarImage } from '../../../../utils/Card';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -139,8 +140,7 @@ class StixDomainObjectBookmarkComponent extends Component {
   render() {
     const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
-    const images = node.images.edges ?? [];
-    const image = images ? images.filter((n) => n?.node?.metaData?.inCarousel === true) : [];
+    const avatarImage = getAvatarImage(node.images);
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -150,11 +150,11 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={image && image.length > 0 ? (
+            avatar={avatarImage ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(image[0].node.id)}
-                alt={image[0].node.name}
+                src={getFileUri(avatarImage.id)}
+                alt={avatarImage.name}
               />
             ) : (
               <Avatar className={classes.avatar}>
