@@ -50,6 +50,7 @@ import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivation
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
 import HiddenTypesChipList from '../hidden_types/HiddenTypesChipList';
+import ItemAccountStatus from '../../../../components/ItemAccountStatus';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -174,6 +175,8 @@ const userFragment = graphql`
     user_email
     firstname
     lastname
+    account_status
+    account_lock_after_date
     language
     api_token
     otp_activated
@@ -228,7 +231,7 @@ interface UserProps {
 
 const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   const classes = useStyles();
-  const { t, nsdt, fsd } = useFormatter();
+  const { t, nsdt, fsd, fldt } = useFormatter();
   const theme = useTheme();
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
@@ -326,6 +329,9 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
     .sort(
       (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
     );
+
+  const accountExpireDate = fldt(user.account_lock_after_date);
+
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -404,6 +410,22 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   {t('Lastname')}
                 </Typography>
                 {user.lastname || '-'}
+              </Grid>
+              <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Account Status')}
+                  </Typography>
+                  <ItemAccountStatus
+                    account_status={user.account_status}
+                    label={t(user.account_status || 'Unknown')}
+                    variant={'outlined'}
+                  />
+              </Grid>
+              <Grid item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Account Expire Date')}
+                  </Typography>
+                  {accountExpireDate || '-'}
               </Grid>
             </Grid>
           </Paper>

@@ -2,7 +2,13 @@ import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, { BUS_TOPICS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
+import conf, {
+  ACCOUNT_STATUSES,
+  BUS_TOPICS,
+  ENABLED_DEMO_MODE,
+  getBaseUrl,
+  PLATFORM_VERSION
+} from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -57,6 +63,7 @@ export const getSettings = async (context) => {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),
     platform_providers: PROVIDERS,
+    platform_user_statuses: Object.entries(ACCOUNT_STATUSES).map(([k, v]) => ({ status: k, message: v })),
     platform_cluster: clusterInfo.info,
     platform_demo: ENABLED_DEMO_MODE,
     platform_modules: clusterInfo.modules,

@@ -13,7 +13,9 @@ import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { convertOrganizations } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { UserEditionOverview_user$data } from './__generated__/UserEditionOverview_user.graphql';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -70,6 +72,8 @@ const userValidation = (t: (value: string) => string) => Yup.object().shape({
   lastname: Yup.string().nullable(),
   language: Yup.string().nullable(),
   description: Yup.string().nullable(),
+  account_status: Yup.string(),
+  account_lock_after_date: Yup.date().nullable(),
 });
 
 interface UserEditionOverviewComponentProps {
@@ -86,6 +90,7 @@ const UserEditionOverviewComponent: FunctionComponent<
 UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t } = useFormatter();
+  const { settings } = useAuth();
   const [commitFocus] = useMutation(userEditionOverviewFocus);
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
   const [commitGroupAdd] = useMutation(userMutationGroupAdd);
@@ -104,6 +109,8 @@ UserEditionOverviewComponentProps
       'api_token',
       'objectOrganization',
       'description',
+      'account_status',
+      'account_lock_after_date',
     ],
     {
       ...user,
@@ -122,7 +129,7 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string) => {
+  const handleSubmitField = (name: string, value: string | Date) => {
     userValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -193,7 +200,7 @@ UserEditionOverviewComponentProps
             disabled={external}
             label={t('Email address')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -206,7 +213,7 @@ UserEditionOverviewComponentProps
             name="firstname"
             label={t('Firstname')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -219,12 +226,26 @@ UserEditionOverviewComponentProps
             name="lastname"
             label={t('Lastname')}
             fullWidth={true}
-            style={{ marginTop: 20 }}
+            style={fieldSpacingContainerStyle}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="lastname" />
             }
+          />
+          <Field
+              component={MarkdownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={fieldSpacingContainerStyle}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="description" />
+              }
           />
           <Field
             component={SelectField}
@@ -266,20 +287,35 @@ UserEditionOverviewComponentProps
               <SubscriptionFocus context={context} fieldName="api_token" />
             }
           />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows={4}
-            style={{ marginTop: 20 }}
-            onFocus={handleChangeFocus}
-            onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
-          />
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="account_status"
+              label={t('Account Status')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="account_status" />
+              }
+            >
+              {settings.platform_user_statuses.map((s) => {
+                return <MenuItem key={s.status} value={s.status}>{t(s.status)}</MenuItem>;
+              })}
+            </Field>
+            <Field
+              component={DateTimePickerField}
+              name="account_lock_after_date"
+              TextFieldProps={{
+                label: t('Account Expire Date'),
+                variant: 'standard',
+                style: fieldSpacingContainerStyle,
+                fullWidth: true,
+              }}
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
+            />
         </Form>
       )}
     </Formik>
@@ -312,14 +348,13 @@ const UserEditionOverview = createFragmentContainer(
         api_token
         otp_activated
         otp_qr
+        account_status
+        account_lock_after_date
         roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
           id
           name
         }
-        objectOrganization(
-          orderBy: $organizationsOrderBy
-          orderMode: $organizationsOrderMode
-        ) {
+        objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
           edges {
             node {
               id

@@ -2,13 +2,15 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { Promise } from 'bluebird';
 import { lockResource } from '../database/redis';
 import { elList, ES_MAX_CONCURRENCY } from '../database/engine';
-import { READ_DATA_INDICES } from '../database/utils';
+import { READ_DATA_INDICES, READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { ACCOUNT_STATUS_EXPIRED, booleanConf, logApp } from '../config/conf';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { userEditField } from '../domain/user';
 
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true
@@ -18,6 +20,46 @@ const SCHEDULE_TIME = conf.get('expiration_scheduler:interval');
 const EXPIRED_MANAGER_KEY = conf.get('expiration_scheduler:lock_key');
 let running = false;
 
+const revokedInstances = async (context) => {
+  const callback = async (elements) => {
+    logApp.info(`[OPENCTI] Expiration manager will revoke ${elements.length} elements`);
+    const concurrentUpdate = async (element) => {
+      const patch = { revoked: true };
+      // For indicator, we also need to force x_opencti_detection to false
+      if (element.entity_type === ENTITY_TYPE_INDICATOR) {
+        patch.x_opencti_detection = false;
+      }
+      await patchAttribute(context, SYSTEM_USER, element.id, element.entity_type, patch);
+    };
+    await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  };
+  const filters = [
+    { key: 'valid_until', values: [prepareDate()], operator: 'lt' },
+    { key: 'revoked', values: [false] },
+  ];
+  const opts = { filters, connectionFormat: false, callback };
+  await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
+};
+
+const expiredAccounts = async (context) => {
+  // Execute the cleaning
+  const callback = async (elements) => {
+    logApp.info(`[OPENCTI] Expiration manager will expire ${elements.length} users`);
+    const concurrentUpdate = async (element) => {
+      const inputs = [{ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] }];
+      await userEditField(context, SYSTEM_USER, element.internal_id, inputs);
+    };
+    await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  };
+  const filters = [
+    { key: 'entity_type', values: [ENTITY_TYPE_USER] },
+    { key: 'account_status', values: [ACCOUNT_STATUS_EXPIRED], operator: 'not_eq' },
+    { key: 'account_lock_after_date', values: [prepareDate()], operator: 'lt' },
+  ];
+  const opts = { filters, connectionFormat: false, callback };
+  await elList(context, SYSTEM_USER, [READ_INDEX_INTERNAL_OBJECTS], opts);
+};
+
 const expireHandler = async () => {
   let lock;
   try {
@@ -25,25 +67,10 @@ const expireHandler = async () => {
     lock = await lockResource([EXPIRED_MANAGER_KEY], { retryCount: 0 });
     running = true;
     const context = executionContext('expiration_manager');
-    // Execute the cleaning
-    const callback = async (elements) => {
-      logApp.info(`[OPENCTI] Expiration manager will revoke ${elements.length} elements`);
-      const concurrentUpdate = async (element) => {
-        const patch = { revoked: true };
-        // For indicator, we also need to force x_opencti_detection to false
-        if (element.entity_type === ENTITY_TYPE_INDICATOR) {
-          patch.x_opencti_detection = false;
-        }
-        await patchAttribute(context, SYSTEM_USER, element.id, element.entity_type, patch);
-      };
-      await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
-    };
-    const filters = [
-      { key: 'valid_until', values: [prepareDate()], operator: 'lt' },
-      { key: 'revoked', values: [false] },
-    ];
-    const opts = { filters, connectionFormat: false, callback };
-    await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
+    logApp.info('[OPENCTI-MODULE] Starting expiration manager');
+    const revokedInstancesPromise = revokedInstances(context);
+    const expiredAccountsPromise = expiredAccounts(context);
+    await Promise.all([revokedInstancesPromise, expiredAccountsPromise]);
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       logApp.debug('[OPENCTI-MODULE] Expiration manager already started by another API');

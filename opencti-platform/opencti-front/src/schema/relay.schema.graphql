@@ -1070,6 +1070,11 @@ type Provider {
   provider: String
 }
 
+type UserStatus {
+  status: String!
+  message: String!
+}
+
 input SettingsMessageInput {
   id: ID
   message: String!
@@ -1100,6 +1105,7 @@ type Settings implements InternalObject & BasicObject {
   platform_modules: [Module!]
   platform_url: String
   platform_providers: [Provider!]!
+  platform_user_statuses: [UserStatus!]!
   platform_language: String
   platform_theme: String
   platform_theme_dark_background: String
@@ -1348,6 +1354,8 @@ type User implements BasicObject & InternalObject {
   updated_at: DateTime!
   sessions: [SessionDetail]
   default_time_field: String
+  account_status: String!
+  account_lock_after_date: DateTime
   editContext: [EditUserContext!]
 }
 
@@ -1378,6 +1386,8 @@ type MeUser implements BasicObject & InternalObject {
   default_dashboards: [Workspace!]!
   default_dashboard: Workspace
   default_time_field: String
+  account_status: String!
+  account_lock_after_date: DateTime
 }
 
 type SessionDetail {
@@ -1393,18 +1403,20 @@ type UserSession {
 }
 
 input UserAddInput {
-  user_email: user_email_String_minLength_5_format_email
+  user_email: user_email_String_NotNull_minLength_5_format_email!
   name: name_String_NotNull_minLength_2!
-  password: String
+  password: String!
   firstname: String
   lastname: String
   description: String
   language: String
   theme: String
   objectOrganization: [ID!]
+  account_status: String
+  account_lock_after_date: DateTime
 }
 
-scalar user_email_String_minLength_5_format_email
+scalar user_email_String_NotNull_minLength_5_format_email
 
 input UserLoginInput {
   email: String!

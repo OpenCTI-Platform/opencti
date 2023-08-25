@@ -99,6 +99,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'otp_activated', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_time_field', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'account_status', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'account_lock_after_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },

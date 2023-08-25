@@ -1010,6 +1010,10 @@ type Provider {
   strategy: String
   provider: String
 }
+type UserStatus {
+  status: String!
+  message: String!
+}
 input SettingsMessageInput {
   id: ID
   message: String!
@@ -1039,6 +1043,7 @@ type Settings implements InternalObject & BasicObject {
   platform_modules: [Module!] @auth
   platform_url: String
   platform_providers: [Provider!]!
+  platform_user_statuses: [UserStatus!]!
   platform_language: String
   platform_theme: String
   platform_theme_dark_background: String
@@ -1285,9 +1290,12 @@ type User implements BasicObject & InternalObject {
   updated_at: DateTime!
   sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES])
   default_time_field: String
+  account_status: String! @auth(for: [SETTINGS_SETACCESSES])
+  account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES])
   # Technical
   editContext: [EditUserContext!]
 }
+
 type MeUser implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -1318,6 +1326,8 @@ type MeUser implements BasicObject & InternalObject {
   default_dashboards: [Workspace!]!
   default_dashboard: Workspace
   default_time_field: String
+  account_status: String!
+  account_lock_after_date: DateTime
 }
 type SessionDetail {
   id: ID!
@@ -1330,15 +1340,17 @@ type UserSession {
   sessions: [SessionDetail]
 }
 input UserAddInput {
-  user_email: String @constraint(minLength: 5, format: "email")
+  user_email: String! @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 2)
-  password: String
+  password: String!
   firstname: String
   lastname: String
   description: String
   language: String
   theme: String
   objectOrganization: [ID!]
+  account_status: String
+  account_lock_after_date: DateTime
 }
 input UserLoginInput {
   email: String!

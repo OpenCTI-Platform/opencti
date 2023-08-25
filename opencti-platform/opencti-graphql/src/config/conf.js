@@ -30,6 +30,7 @@ import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
+import { UnsupportedError } from './errors';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -464,6 +465,7 @@ export const ENABLED_RETENTION_MANAGER = booleanConf('retention_manager:enabled'
 export const ENABLED_NOTIFICATION_MANAGER = booleanConf('notification_manager:enabled', true);
 export const ENABLED_PUBLISHER_MANAGER = booleanConf('publisher_manager:enabled', true);
 export const ENABLED_CONNECTOR_MANAGER = booleanConf('connector_manager:enabled', true);
+
 // Default deactivated managers
 export const ENABLED_EXPIRED_MANAGER = booleanConf('expiration_scheduler:enabled', false);
 export const ENABLED_TASK_SCHEDULER = booleanConf('task_scheduler:enabled', false);
@@ -472,6 +474,32 @@ export const ENABLED_INGESTION_MANAGER = booleanConf('ingestion_manager:enabled'
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
 
+// Default Accounts management
+export const ACCOUNT_STATUS_ACTIVE = 'Active';
+export const ACCOUNT_STATUS_EXPIRED = 'Expired';
+const computeAccountStatusChoices = () => {
+  const statusesDefinition = nconf.get('app:locked_account_statuses');
+  return {
+    [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
+    [ACCOUNT_STATUS_EXPIRED]: 'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
+    ...statusesDefinition
+  };
+};
+export const ACCOUNT_STATUSES = computeAccountStatusChoices();
+export const computeDefaultAccountStatus = () => {
+  const defaultConf = nconf.get('app:account_statuses_default');
+  if (defaultConf) {
+    const accountStatus = ACCOUNT_STATUSES[defaultConf];
+    if (accountStatus) {
+      return defaultConf;
+    }
+    throw UnsupportedError(`Invalid default_initialize_account_status configuration ${defaultConf} (${Object.keys(ACCOUNT_STATUSES).join(', ')})`);
+  }
+  return ACCOUNT_STATUS_ACTIVE;
+};
+export const DEFAULT_ACCOUNT_STATUS = computeDefaultAccountStatus();
+
+// Default settings
 const platformState = { stopping: false };
 export const getStoppingState = () => platformState.stopping;
 export const setStoppingState = (state) => {
