@@ -9,6 +9,10 @@ import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import {
   commitMutation,
   handleErrorInForm,
@@ -72,6 +76,13 @@ const useStyles = makeStyles((theme) => ({
     padding: '15px 0 0 0',
     height: '100%',
     width: '100%',
+  },
+  speedDialButton: {
+    backgroundColor: theme.palette.secondary.main,
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+    },
   },
 }));
 
@@ -192,27 +203,29 @@ const stixCoreRelationshipCreationFromEntityToMutation = graphql`
   }
 `;
 
-const StixCoreRelationshipCreationFromEntity = (props) => {
-  const {
-    targetEntities: targetEntitiesProps,
-    entityId,
-    variant,
-    onCreate,
-    paddingRight,
-    openExports,
-    paginationOptions,
-    isRelationReversed,
-    connectionKey,
-    targetStixDomainObjectTypes,
-    targetStixCyberObservableTypes,
-    allowedRelationshipTypes,
-    defaultStartTime,
-    defaultStopTime,
-    handleReverseRelation,
-  } = props;
+const StixCoreRelationshipCreationFromEntity = ({
+  targetEntities: targetEntitiesProps,
+  entityId,
+  variant,
+  onCreate,
+  paddingRight,
+  openExports,
+  paginationOptions,
+  isRelationReversed,
+  connectionKey,
+  targetStixDomainObjectTypes,
+  targetStixCyberObservableTypes,
+  allowedRelationshipTypes,
+  defaultStartTime,
+  defaultStopTime,
+  handleReverseRelation,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+  const [openSpeedDial, setOpenSpeedDial] = useState(false);
+  const [openCreateEntity, setOpenCreateEntity] = useState(false);
+  const [openCreateObservable, setOpenCreateObservable] = useState(false);
   const [step, setStep] = useState(0);
   const [targetEntities, setTargetEntities] = useState(
     targetEntitiesProps ?? [],
@@ -244,6 +257,34 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef(null);
+
+  const handleOpenSpeedDial = () => {
+    setOpenSpeedDial(true);
+  };
+
+  const handleCloseSpeedDial = () => {
+    openSpeedDial(false);
+  };
+
+  const handleOpenCreateEntity = () => {
+    setOpenCreateEntity(true);
+    setOpenSpeedDial(false);
+  };
+
+  const handleCloseCreateEntity = () => {
+    setOpenCreateEntity(false);
+    setOpenSpeedDial(false);
+  };
+
+  const handleOpenCreateObservable = () => {
+    setOpenCreateObservable(true);
+    setOpenSpeedDial(false);
+  };
+
+  const handleCloseCreateObservable = () => {
+    setOpenCreateObservable(false);
+    setOpenSpeedDial(false);
+  };
 
   const handleClose = () => {
     setOpen(false);
@@ -517,7 +558,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
               </>
             )}
           </UserContext.Consumer>
-          {targetEntities.length === 0
+          {targetEntities.length === 0 // case only stix domain objects
             && !targetStixCyberObservableTypes
             && targetStixDomainObjectTypes
             && targetStixDomainObjectTypes.length > 0 && (
@@ -529,7 +570,7 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                 stixDomainObjectTypes={targetStixDomainObjectTypes}
               />
           )}
-          {targetEntities.length === 0
+          {targetEntities.length === 0 // case only observables
             && (!targetStixDomainObjectTypes
               || targetStixDomainObjectTypes.length === 0)
             && targetStixCyberObservableTypes
@@ -543,6 +584,65 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                 targetStixDomainObjectTypes={targetStixCyberObservableTypes}
               />
           )}
+          {targetEntities.length === 0 // case observables and stix domain objects
+            && targetStixDomainObjectTypes
+            && targetStixDomainObjectTypes.length > 0
+            && targetStixCyberObservableTypes
+            && targetStixCyberObservableTypes.length > 0
+            && (
+              <div>
+              <SpeedDial
+                className={classes.createButton}
+                ariaLabel="Create"
+                icon={<SpeedDialIcon />}
+                onClose={handleCloseSpeedDial}
+                onOpen={handleOpenSpeedDial}
+                open={openSpeedDial}
+                FabProps={{
+                  color: 'secondary',
+                }}
+              >
+                <SpeedDialAction
+                  title={t('Create an observable')}
+                  icon={<HexagonOutline />}
+                  tooltipTitle={t('Create an observable')}
+                  onClick={handleOpenCreateObservable}
+                  FabProps={{
+                    classes: { root: classes.speedDialButton },
+                  }}
+                />
+                <SpeedDialAction
+                  title={t('Create an entity')}
+                  icon={<GlobeModel />}
+                  tooltipTitle={t('Create an entity')}
+                  onClick={handleOpenCreateEntity}
+                  FabProps={{
+                    classes: { root: classes.speedDialButton },
+                  }}
+                />
+              </SpeedDial>
+              <StixDomainObjectCreation
+                display={open}
+                inputBalue={searchTerm}
+                paginationKey="Pagination_stixCoreObjects"
+                paginationOptions={searchPaginationOptions}
+                speeddial={true}
+                open={openCreateEntity}
+                handleClose={handleCloseCreateEntity}
+              />
+              <StixCyberObservableCreation
+                display={open}
+                contextual={true}
+                inputValue={searchTerm}
+                paginationKey="Pagination_stixCoreObjects"
+                paginationOptions={searchPaginationOptions}
+                speeddial={true}
+                open={openCreateObservable}
+                handleClose={handleCloseCreateObservable}
+              />
+              </div>
+            )
+          }
           {targetEntities.length > 0 && (
             <Fab
               variant="extended"
@@ -569,26 +669,26 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
       toEntities = [sourceEntity];
     }
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
-          const relationshipTypes = R.filter(
-            (n) => R.isNil(allowedRelationshipTypes)
-              || allowedRelationshipTypes.length === 0
-              || allowedRelationshipTypes.includes('stix-core-relationship')
-              || allowedRelationshipTypes.includes(n),
-            resolveRelationsTypes(
-              fromEntities[0].entity_type,
-              toEntities[0].entity_type,
-              schema.schemaRelationsTypesMapping,
-            ),
-          );
-          return (
-            <>
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={() => handleClose()}
+        <UserContext.Consumer>
+          {({ schema }) => {
+            const relationshipTypes = R.filter(
+              (n) => R.isNil(allowedRelationshipTypes)
+                    || allowedRelationshipTypes.length === 0
+                    || allowedRelationshipTypes.includes('stix-core-relationship')
+                    || allowedRelationshipTypes.includes(n),
+              resolveRelationsTypes(
+                fromEntities[0].entity_type,
+                toEntities[0].entity_type,
+                schema.schemaRelationsTypesMapping,
+              ),
+            );
+            return (
+                <>
+                  <div className={classes.header}>
+                    <IconButton
+                        aria-label="Close"
+                        className={classes.closeButton}
+                        onClick={() => handleClose()}
                   size="large"
                 >
                   <Close fontSize="small" color="primary" />
@@ -609,8 +709,8 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
                 defaultStopTime={defaultStopTime}
               />
             </>
-          );
-        }}
+            );
+          }}
       </UserContext.Consumer>
     );
   };
