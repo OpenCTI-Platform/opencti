@@ -479,11 +479,10 @@ export const ACCOUNT_STATUS_ACTIVE = 'Active';
 export const ACCOUNT_STATUS_EXPIRED = 'Expired';
 const computeAccountStatusChoices = () => {
   const statusesDefinition = nconf.get('app:locked_account_statuses');
-  const validStatuses = R.omit([ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED], statusesDefinition);
   return {
     [ACCOUNT_STATUS_ACTIVE]: 'All good folks',
-    [ACCOUNT_STATUS_EXPIRED]: 'Your account has expired. Please contact your administrator.',
-    ...validStatuses
+    [ACCOUNT_STATUS_EXPIRED]: 'Your account has expired. If you would like to reactivate your account, please contact your administrator.',
+    ...statusesDefinition
   };
 };
 export const ACCOUNT_STATUSES = computeAccountStatusChoices();

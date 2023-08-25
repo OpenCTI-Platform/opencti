@@ -3,14 +3,16 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import conf, {
+import {
   BUS_TOPICS,
   ENABLED_DEMO_MODE,
   DEFAULT_ACCOUNT_STATUS,
   logApp,
   OPENCTI_SESSION,
   PLATFORM_VERSION,
-  ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED
+  ACCOUNT_STATUS_ACTIVE,
+  ACCOUNT_STATUS_EXPIRED,
+  ACCOUNT_STATUSES
 } from '../config/conf';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
@@ -1013,13 +1015,11 @@ const validateUser = (user, settings) => {
   }
   // Check account expiration date
   if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
-    const statusesDefinition = conf.get('app:locked_account_statuses');
-    throw AuthenticationFailure(statusesDefinition.Expired);
+    throw AuthenticationFailure(ACCOUNT_STATUSES.Expired);
   }
   // Validate user's account status
   if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {
-    const statusesDefinition = conf.get('app:locked_account_statuses');
-    throw AuthenticationFailure(statusesDefinition[user.account_status]);
+    throw AuthenticationFailure(ACCOUNT_STATUSES[user.account_status]);
   }
 };
 
