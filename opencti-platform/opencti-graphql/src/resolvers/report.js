@@ -33,7 +33,6 @@ import {
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader, distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { startInvestigationFromContainer } from '../modules/workspace/investigation-domain';
 
 const participantLoader = batchLoader(batchParticipants);
 
@@ -72,7 +71,6 @@ const reportResolvers = {
   Report: {
     deleteWithElementsCount: (report, args, context) => reportDeleteElementsCount(context, context.user, report.id),
     objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
-    startInvestigation: (report, _, context) => startInvestigationFromContainer(context, context.user, report)
   },
   ReportsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),

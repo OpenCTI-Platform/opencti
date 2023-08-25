@@ -39,6 +39,7 @@ import {
 } from './CaseRfiKnowledgeGraphQuery';
 import CaseRfiPopover from './CaseRfiPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -447,16 +448,6 @@ const caseRfiKnowledgeGraphStixRelationshipQuery = graphql`
             }
           }
         }
-      }
-    }
-  }
-`;
-
-const caseRfiKnowledgeGraphComponentStartInvestigationQuery = () => graphql`
-  query CaseRfiKnowledgeGraphComponentStartInvestigationQuery($id: String!) {
-    caseRfi(id: $id) {
-      startInvestigation {
-        id
       }
     }
   }
@@ -1366,16 +1357,6 @@ class CaseRfiKnowledgeGraphComponent extends Component {
     });
   }
 
-  handleStartInvestigation(caseRfiId) {
-    fetchQuery(
-      caseRfiKnowledgeGraphComponentStartInvestigationQuery,
-      { id: caseRfiId },
-    ).toPromise()
-      .then(({ caseRfi }) => {
-        window.location.replace(`/dashboard/workspaces/investigations/${caseRfi.startInvestigation.id}`);
-      });
-  }
-
   render() {
     const { caseData, theme, mode } = this.props;
     const {
@@ -1431,7 +1412,7 @@ class CaseRfiKnowledgeGraphComponent extends Component {
                 knowledge={true}
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
-                startInvestigation={this.handleStartInvestigation.bind(this)}
+                investigationAddFromContainer={investigationAddFromContainer}
               />
               <CaseRfiKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}

@@ -431,18 +431,16 @@ describe('Report resolver standard behavior', () => {
     });
     expect(queryResult.data.reportEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
-  describe('startInvestigation', () => {
-    let report;
+  describe('investigationAdd', () => {
+    let investigationId;
 
-    const startInvestigation = async () => {
+    const investigationAdd = async () => {
       return await queryAsAdmin({
         query: gql`
-          query StartInvestigationFromReport($id: String!) {
-            report(id: $id) {
-              name
-              startInvestigation {
+          mutation InvestigationAddFromReport($id: ID!) {
+            containerEdit(id: $id) {
+              investigationAdd {
                 id
-                name
               }
             }
           }
@@ -454,7 +452,8 @@ describe('Report resolver standard behavior', () => {
     };
 
     beforeAll(async () => {
-      report = (await startInvestigation()).data.report;
+      const test = (await investigationAdd());
+      investigationId = test.data.containerEdit.investigationAdd.id;
     });
 
     afterAll(async () => {
@@ -474,7 +473,7 @@ describe('Report resolver standard behavior', () => {
     });
 
     it('can start an investigation', () => {
-      expect(report.startInvestigation.id).toBeDefined();
+      expect(investigationId).toBeDefined();
     });
   });
   it('should report deleted', async () => {

@@ -39,6 +39,7 @@ import {
   incidentKnowledgeGraphtMutationRelationAddMutation,
 } from './IncidentKnowledgeGraphQuery';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -448,16 +449,6 @@ const incidentKnowledgeGraphStixRelationshipQuery = graphql`
             }
           }
         }
-      }
-    }
-  }
-`;
-
-const caseIncidentKnowledgeGraphComponentStartInvestigationQuery = () => graphql`
-  query IncidentKnowledgeGraphComponentStartInvestigationQuery($id: String!) {
-    caseIncident(id: $id) {
-      startInvestigation {
-        id
       }
     }
   }
@@ -1367,16 +1358,6 @@ class IncidentKnowledgeGraphComponent extends Component {
     });
   }
 
-  handleStartInvestigation(caseIncidentId) {
-    fetchQuery(
-      caseIncidentKnowledgeGraphComponentStartInvestigationQuery,
-      { id: caseIncidentId },
-    ).toPromise()
-      .then(({ caseIncident }) => {
-        window.location.replace(`/dashboard/workspaces/investigations/${caseIncident.startInvestigation.id}`);
-      });
-  }
-
   render() {
     const { caseData, theme, mode } = this.props;
     const {
@@ -1432,7 +1413,7 @@ class IncidentKnowledgeGraphComponent extends Component {
                 knowledge={true}
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
-                startInvestigation={this.handleStartInvestigation.bind(this)}
+                investigationAddFromContainer={investigationAddFromContainer}
               />
               <IncidentKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}

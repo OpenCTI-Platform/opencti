@@ -478,7 +478,7 @@ const ContainerHeader = (props) => {
     enableSuggestions,
     onApplied,
     enableQuickSubscription,
-    startInvestigation,
+    investigationAddFromContainer,
   } = props;
   const classes = useStyles();
   const { t, fd } = useFormatter();
@@ -755,7 +755,7 @@ const ContainerHeader = (props) => {
             pixelRatio={currentMode === 'graph' ? 1 : 2}
             adjust={adjust}
             containerId={container.id}
-            startInvestigationFromContainer={startInvestigation}
+            investigationAddFromContainer={investigationAddFromContainer}
           />
         </div>
       )}

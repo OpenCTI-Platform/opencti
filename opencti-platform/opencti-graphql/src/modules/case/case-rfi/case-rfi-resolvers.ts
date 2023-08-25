@@ -9,12 +9,8 @@ import {
 } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, findAll, findById } from './case-rfi-domain';
-import { startInvestigationFromContainer } from '../../workspace/investigation-domain';
 
 const caseRfiResolvers: Resolvers = {
-  CaseRfi: {
-    startInvestigation: (caseRfi, _, context) => startInvestigationFromContainer(context, context.user, caseRfi),
-  },
   Query: {
     caseRfi: (_, { id }, context) => findById(context, context.user, id),
     caseRfis: (_, args, context) => findAll(context, context.user, args),

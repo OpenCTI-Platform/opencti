@@ -26,7 +26,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
 import { elFindByIds } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
-import { buildPagination } from '../../database/utils';
+import { buildPagination, isEmptyField } from '../../database/utils';
 
 const INVESTIGABLE_TYPES: string[] = ['Stix-Meta-Object', 'Stix-Core-Object', 'stix-relationship'];
 
@@ -66,7 +66,7 @@ export const getOwnerId = (workspace: BasicStoreEntityWorkspace) => {
 export const objects = async (context: AuthContext, user: AuthUser, { investigated_entities_ids }: BasicStoreEntityWorkspace, args: WorkspaceObjectsArgs) => {
   const types = args.types ?? INVESTIGABLE_TYPES;
 
-  if (!investigated_entities_ids) {
+  if (isEmptyField(investigated_entities_ids)) {
     return buildPagination(0, null, [], 0);
   }
 

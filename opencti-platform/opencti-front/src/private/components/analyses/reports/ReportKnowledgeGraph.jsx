@@ -39,6 +39,7 @@ import {
 } from './ReportKnowledgeGraphQuery';
 import ReportPopover from './ReportPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -433,16 +434,6 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
         }
       }
     }
-  }
-`;
-
-const reportKnowledgeGraphComponentStartInvestigationQuery = graphql`
-  query ReportKnowledgeGraphComponenentStartInvestigationQuery($id: String!) {
-     report(id: $id) {
-       startInvestigation {
-         id
-       }
-     }
   }
 `;
 
@@ -1349,16 +1340,6 @@ class ReportKnowledgeGraphComponent extends Component {
     });
   }
 
-  handleStartInvestigation(reportId) {
-    fetchQuery(
-      reportKnowledgeGraphComponentStartInvestigationQuery,
-      { id: reportId },
-    ).toPromise()
-      .then(({ report }) => {
-        window.location.replace(`/dashboard/workspaces/investigations/${report.startInvestigation.id}`);
-      });
-  }
-
   render() {
     const { report, theme, mode } = this.props;
     const {
@@ -1414,7 +1395,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 knowledge={true}
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
-                startInvestigation={this.handleStartInvestigation.bind(this)}
+                investigationAddFromContainer={investigationAddFromContainer}
               />
               <ReportKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}

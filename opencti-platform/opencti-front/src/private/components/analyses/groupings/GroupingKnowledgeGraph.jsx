@@ -38,6 +38,7 @@ import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRig
 import LassoSelection from '../../../../utils/graph/LassoSelection';
 import { hexToRGB } from '../../../../utils/Colors';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -411,16 +412,6 @@ const groupingKnowledgeGraphStixRelationshipQuery = graphql`
             }
           }
         }
-      }
-    }
-  }
-`;
-
-const groupingKnowledgeGraphComponentStartInvestigationQuery = graphql`
-  query GroupingKnowledgeGraphComponenentStartInvestigationQuery($id: String!) {
-    grouping(id: $id) {
-      startInvestigation {
-        id
       }
     }
   }
@@ -1306,16 +1297,6 @@ class GroupingKnowledgeGraphComponent extends Component {
     });
   }
 
-  handleStartInvestigation(groupingId) {
-    fetchQuery(
-      groupingKnowledgeGraphComponentStartInvestigationQuery,
-      { id: groupingId },
-    ).toPromise()
-      .then(({ grouping }) => {
-        window.location.replace(`/dashboard/workspaces/investigations/${grouping.startInvestigation.id}`);
-      });
-  }
-
   render() {
     const { grouping, theme, mode } = this.props;
     const {
@@ -1365,7 +1346,7 @@ class GroupingKnowledgeGraphComponent extends Component {
                 knowledge={true}
                 enableSuggestions={true}
                 onApplied={this.handleApplySuggestion.bind(this)}
-                startInvestigation={this.handleStartInvestigation.bind(this)}
+                investigationAddFromContainer={investigationAddFromContainer}
               />
               <GroupingKnowledgeGraphBar
                 handleToggle3DMode={this.handleToggle3DMode.bind(this)}

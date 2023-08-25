@@ -3118,7 +3118,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   deleteWithElementsCount: Int
-  startInvestigation: Workspace
 }
 
 input ReportAddInput {
@@ -8371,6 +8370,7 @@ type ContainerEditMutations {
   contextClean: Container
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Container
+  investigationAdd: Workspace
 }
 
 type NoteEditMutations {
@@ -9300,7 +9300,6 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  startInvestigation: Workspace
 }
 
 enum GroupingsOrdering {
@@ -10549,7 +10548,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
-  startInvestigation: Workspace
 }
 
 enum CaseIncidentsOrdering {
@@ -10693,7 +10691,6 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   information_types: [String!]
   severity: String
   priority: String
-  startInvestigation: Workspace
 }
 
 enum CaseRfisOrdering {
@@ -10834,7 +10831,6 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   takedown_types: [String!]
   severity: String
   priority: String
-  startInvestigation: Workspace
 }
 
 enum CaseRftsOrdering {
@@ -11137,7 +11133,6 @@ type Workspace implements InternalObject & BasicObject {
   created_at: DateTime
   updated_at: DateTime
   editContext: [EditUserContext!]
-  investigated_entities_ids: [String]
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   graph_data: String
   authorizedMembers: [MemberAccess!]!

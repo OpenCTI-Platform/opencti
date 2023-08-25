@@ -9,12 +9,8 @@ import {
 } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addCaseRft, caseRftContainsStixObjectOrStixRelationship, findAll, findById } from './case-rft-domain';
-import { startInvestigationFromContainer } from '../../workspace/investigation-domain';
 
 const caseRftResolvers: Resolvers = {
-  CaseRft: {
-    startInvestigation: (caseRft, _, context) => startInvestigationFromContainer(context, context.user, caseRft),
-  },
   Query: {
     caseRft: (_, { id }, context) => findById(context, context.user, id),
     caseRfts: (_, args, context) => findAll(context, context.user, args),

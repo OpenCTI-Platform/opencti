@@ -281,7 +281,7 @@ describe('Grouping resolver standard behavior', () => {
     });
     expect(queryResult.data.groupingRelationAdd.from.objectMarking.edges.length).toEqual(1);
   });
-  describe('startInvestigation', () => {
+  describe('investigationAdd', () => {
     afterAll(async () => {
       const investigations = await listAllEntities(
         testContext,
@@ -301,12 +301,10 @@ describe('Grouping resolver standard behavior', () => {
     it('can start an investigation', async () => {
       const graphQLResponse = await queryAsAdmin({
         query: gql`
-          query StartInvestigationFromGrouping($id: String!) {
-            grouping(id: $id) {
-              name
-              startInvestigation {
+          mutation InvestigationAddFromGrouping($id: ID!) {
+            containerEdit(id: $id) {
+              investigationAdd {
                 id
-                name
               }
             }
           }
@@ -315,9 +313,9 @@ describe('Grouping resolver standard behavior', () => {
           id: groupingInternalId
         },
       });
-      const { grouping } = graphQLResponse.data;
+      const { containerEdit } = graphQLResponse.data;
 
-      expect(grouping.startInvestigation.id).toBeDefined();
+      expect(containerEdit.investigationAdd.id).toBeDefined();
     });
   });
   it('should delete relation in grouping', async () => {

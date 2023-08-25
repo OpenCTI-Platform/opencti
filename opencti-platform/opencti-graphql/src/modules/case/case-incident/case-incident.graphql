@@ -141,7 +141,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   response_types: [String!]
   severity: String
   priority: String
-  startInvestigation: Workspace
 }
 
 # Ordering

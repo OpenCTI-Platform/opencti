@@ -14,12 +14,8 @@ import {
   findAll,
   findById
 } from './case-incident-domain';
-import { startInvestigationFromContainer } from '../../workspace/investigation-domain';
 
 const caseIncidentResolvers: Resolvers = {
-  CaseIncident: {
-    startInvestigation: (caseIncident, _, context) => startInvestigationFromContainer(context, context.user, caseIncident),
-  },
   Query: {
     caseIncident: (_, { id }, context) => findById(context, context.user, id),
     caseIncidents: (_, args, context) => findAll(context, context.user, args),

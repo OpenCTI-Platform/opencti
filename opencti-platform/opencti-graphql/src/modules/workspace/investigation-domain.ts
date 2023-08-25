@@ -8,7 +8,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { generateStandardId } from '../../schema/identifier';
 import type { StixId, StixObject } from '../../types/stix-common';
-import { elList } from '../../database/middleware-loader';
+import { elList, internalLoadById } from '../../database/middleware-loader';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addWorkspace } from './workspace-domain';
 import type { BasicStoreEntity } from '../../types/store';
@@ -87,7 +87,8 @@ export const nameInvestigationToStartFromContainer = (investigationsNames: strin
   return `${investigationToStartCanonicalName} ${highestInvestigationNumber + 1}`;
 };
 
-export const startInvestigationFromContainer = async (context: AuthContext, user: AuthUser, container: BasicStoreEntity) => {
+export const investigationAddFromContainer = async (context: AuthContext, user: AuthUser, containerId: string) => {
+  const container = await internalLoadById<BasicStoreEntity>(context, user, containerId);
   const investigations: any = await elList(context, user, [READ_INDEX_INTERNAL_OBJECTS], {
     filters: [{
       key: 'entity_type',
