@@ -140,34 +140,6 @@ class NarrativeKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/attack_patterns"
-            render={(routeProps) => (
-              <EntityStixCoreRelationships
-                entityId={narrative.id}
-                relationshipTypes={['uses']}
-                stixCoreObjectTypes={['Attack-Pattern']}
-                entityLink={link}
-                isRelationReversed={false}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/malwares"
-            render={(routeProps) => (
-              <EntityStixCoreRelationships
-                entityId={narrative.id}
-                relationshipTypes={['uses']}
-                stixCoreObjectTypes={['Malware']}
-                entityLink={link}
-                isRelationReversed={true}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
             path="/dashboard/techniques/narratives/:narrativeId/knowledge/channels"
             render={(routeProps) => (
               <EntityStixCoreRelationships
@@ -176,20 +148,6 @@ class NarrativeKnowledgeComponent extends Component {
                 stixCoreObjectTypes={['Channel']}
                 entityLink={link}
                 isRelationReversed={true}
-                {...routeProps}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/dashboard/techniques/narratives/:narrativeId/knowledge/vulnerabilities"
-            render={(routeProps) => (
-              <EntityStixCoreRelationships
-                entityId={narrative.id}
-                relationshipTypes={['uses']}
-                stixCoreObjectTypes={['Vulnerability']}
-                entityLink={link}
-                isRelationReversed={false}
                 {...routeProps}
               />
             )}
