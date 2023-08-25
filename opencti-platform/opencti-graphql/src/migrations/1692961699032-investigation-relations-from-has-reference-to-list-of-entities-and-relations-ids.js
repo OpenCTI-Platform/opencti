@@ -33,15 +33,9 @@ async function removeInvestigationsReferencesFromInvestigatedEntities(investigat
     ],
     {
       script: {
-        source: ''
-          + 'for (def investigationId : params.investigationIds) {'
-          + '  if (ctx._source[params.field].contains(investigationId)) {'
-          + '    ctx._source[params.field].remove(ctx._source[params.field].indexOf(investigationId)) '
-          + '  }'
-          + '}',
+        source: 'ctx._source.remove(params.field)',
         params: {
-          field: 'rel_has-reference.internal_id',
-          investigationIds
+          field: 'rel_has-reference.internal_id'
         }
       },
       query: {
