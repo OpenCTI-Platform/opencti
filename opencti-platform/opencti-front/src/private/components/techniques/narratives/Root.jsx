@@ -93,10 +93,7 @@ class RootNarrative extends Component {
               'intrusion_sets',
               'campaigns',
               'incidents',
-              'malwares',
               'channels',
-              'attack_patterns',
-              'vulnerabilities',
               'observables',
               'sightings',
             ]}
