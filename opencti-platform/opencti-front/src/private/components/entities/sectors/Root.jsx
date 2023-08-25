@@ -30,6 +30,8 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+        ...PictureManagementViewer_entity
+
     }
   }
 `;
@@ -48,6 +50,8 @@ const sectorQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+        ...PictureManagementViewer_entity
+
     }
     connectorsForImport {
       ...FileManager_connectorsImport

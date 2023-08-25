@@ -8,7 +8,6 @@ import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { NorthEastOutlined } from '@mui/icons-material';
-import Checkbox from '@mui/material/Checkbox';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '../../../../components/Theme';
 import { getFileUri } from '../../../../utils/utils';
@@ -16,6 +15,8 @@ import { DataColumns } from '../../../../components/list_lines';
 import PictureManagementEdition from './PictureManagementEdition';
 import { pictureManagementUtilsFragment } from './PictureManagementUtils';
 import { PictureManagementUtils_node$key } from './__generated__/PictureManagementUtils_node.graphql';
+import ItemBoolean from '../../../../components/ItemBoolean';
+import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -57,9 +58,9 @@ interface PictureLineComponentProps {
 
 const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, dataColumns, entityId }) => {
   const classes = useStyles();
+  const { t } = useFormatter();
   const data = useFragment(pictureManagementUtilsFragment, picture);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
-  const isInCarousel = !!data.metaData?.inCarousel;
 
   const handleOpenUpdate = () => setDisplayUpdate(true);
   const handleCloseUpdate = () => setDisplayUpdate(false);
@@ -97,9 +98,9 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, da
                 className={classes.bodyItem}
                 style={{ width: dataColumns.inCarousel.width, paddingLeft: '10px', justifyContent: 'center' }}
               >
-                <Checkbox
-                  checked={isInCarousel}
-                  disabled={true}
+                <ItemBoolean
+                  status={data.metaData?.inCarousel}
+                  label={data.metaData?.inCarousel ? t('Yes') : t('No')}
                 />
               </div>
             </>

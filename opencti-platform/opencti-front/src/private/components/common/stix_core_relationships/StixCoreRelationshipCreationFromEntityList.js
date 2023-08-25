@@ -53,7 +53,20 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             }
           }
         }
-        ... on ThreatActor {
+        ... on ThreatActorIndividual {
+          id
+          locations {
+            edges {
+              node {
+                id
+                entity_type
+                name
+                description
+              }
+            }
+          }
+        }
+        ... on ThreatActorGroup {
           id
           locations {
             edges {

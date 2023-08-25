@@ -17,6 +17,7 @@ import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
+import ThreatActorGroupLocation from './ThreatActorGroupLocation';
 
 const styles = (theme) => ({
   paper: {
@@ -126,6 +127,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                   </List>
                 )}
               </FieldOrEmpty>
+              <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
             </Grid>
             <Grid item={true} xs={6}>
               <ImageCarousel data={threatActorGroup} />
@@ -248,6 +250,7 @@ const ThreatActorGroupDetails = createFragmentContainer(
             }
           }
         }
+          ...ThreatActorGroupLocations_locations
       }
     `,
   },

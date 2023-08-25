@@ -1,0 +1,132 @@
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import { compose } from 'ramda';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { Link } from 'react-router-dom';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import { LinkOff } from '@mui/icons-material';
+import { graphql, createFragmentContainer } from 'react-relay';
+import { commitMutation } from '../../../../relay/environment';
+import inject18n from '../../../../components/i18n';
+import { resolveLink } from '../../../../utils/Entity';
+import ItemIcon from '../../../../components/ItemIcon';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import AddLocationsThreatActorGroup from './AddLocationsThreatActorGroup';
+import { addLocationsThreatActorGroupMutationRelationDelete } from './AddLocationsThreatActorGroupLines';
+
+class ThreatActorGroupLocationsComponent extends Component {
+  removeLocation(locationEdge) {
+    commitMutation({
+      mutation: addLocationsThreatActorGroupMutationRelationDelete,
+      variables: {
+        fromId: this.props.threatActorGroup.id,
+        toId: locationEdge.node.id,
+        relationship_type: 'located-at',
+      },
+      updater: (store) => {
+        const node = store.get(this.props.threatActorGroup.id);
+        const locations = node.getLinkedRecord('locations');
+        const edges = locations.getLinkedRecords('edges');
+        const newEdges = edges.filter(
+          (n) => n.getLinkedRecord('node').getValue('id') !== locationEdge.node.id,
+        );
+        locations.setLinkedRecords(newEdges, 'edges');
+      },
+    });
+  }
+
+  render() {
+    const { t, threatActorGroup } = this.props;
+    return (
+      <div style={{ marginTop: -20 }}>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left', marginTop: 20 }}>
+          {t('Located At')}
+        </Typography>
+        <Security
+          needs={[KNOWLEDGE_KNUPDATE]}
+          placeholder={<div style={{ marginTop: 20, height: 29 }} />}
+        >
+          <AddLocationsThreatActorGroup
+            threatActorGroup={threatActorGroup}
+            threatActorGrouplLocations={threatActorGroup.locations.edges}
+          />
+        </Security>
+        <div className="clearfix" />
+        <List style={{ marginTop: -10 }}>
+          {threatActorGroup.locations.edges.map((locationEdge) => {
+            const location = locationEdge.node;
+            const link = resolveLink(location.entity_type);
+            return (
+              <ListItem
+                key={location.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`${link}/${location.id}`}
+              >
+                <ListItemIcon>
+                  <ListItemIcon>
+                    <ItemIcon type={location.entity_type} />
+                  </ListItemIcon>
+                </ListItemIcon>
+                <ListItemText primary={location.name} />
+                <ListItemSecondaryAction>
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={this.removeLocation.bind(this, locationEdge)}
+                      size="large"
+                    >
+                      <LinkOff />
+                    </IconButton>
+                  </Security>
+                </ListItemSecondaryAction>
+              </ListItem>
+            );
+          })}
+        </List>
+      </div>
+    );
+  }
+}
+
+ThreatActorGroupLocationsComponent.propTypes = {
+  classes: PropTypes.object,
+  t: PropTypes.func,
+  fld: PropTypes.func,
+  threatActorGroup: PropTypes.object,
+};
+
+const ThreatActorGroupLocations = createFragmentContainer(
+  ThreatActorGroupLocationsComponent,
+  {
+    threatActorGroup: graphql`
+      fragment ThreatActorGroupLocations_locations on ThreatActorGroup {
+        id
+        name
+        parent_types
+        entity_type
+        locations {
+          edges {
+            node {
+              id
+              parent_types
+              entity_type
+              name
+              description
+            }
+          }
+        }
+      }
+    `,
+  },
+);
+
+export default compose(inject18n)(ThreatActorGroupLocations);

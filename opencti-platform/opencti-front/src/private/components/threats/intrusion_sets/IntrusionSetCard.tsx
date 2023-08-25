@@ -38,6 +38,7 @@ const IntrusionSetCardFragment = graphql`
               name
               metaData {
                 inCarousel
+                  description
               }
             }
           }

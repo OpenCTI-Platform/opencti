@@ -20,6 +20,7 @@ import {
 } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
+import ThreatActorIndividualLocation from './ThreatActorIndividualLocation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -70,6 +71,7 @@ const ThreatActorIndividualDetailsFragment = graphql`
         }
       }
     }
+      ...ThreatActorIndividualLocations_locations
   }
 `;
 
@@ -191,6 +193,7 @@ const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetai
                   </List>
                 )}
               </FieldOrEmpty>
+              <ThreatActorIndividualLocation threatActorIndividual={data} />
             </Grid>
             <Grid item={true} xs={6}>
               <ImageCarousel data={data} />

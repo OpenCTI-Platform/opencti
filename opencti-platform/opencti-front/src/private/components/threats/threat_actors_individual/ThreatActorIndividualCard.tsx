@@ -19,6 +19,7 @@ const ThreatActorIndividualCardFragment = graphql`
           name
           metaData {
             inCarousel
+              description
           }
         }
       }

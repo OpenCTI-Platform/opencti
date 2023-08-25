@@ -32,6 +32,8 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+        ...PictureManagementViewer_entity
+
     }
   }
 `;
@@ -49,7 +51,9 @@ const caseRfiQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...StixDomainObjectContent_stixDomainObject
+        ...PictureManagementViewer_entity
+
+        ...StixDomainObjectContent_stixDomainObject
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixCyberObservables_container

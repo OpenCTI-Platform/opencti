@@ -678,26 +678,26 @@ const StixCoreRelationshipCreationFromEntity = (props) => {
       toEntities = [sourceEntity];
     }
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
-          const relationshipTypes = R.filter(
-            (n) => R.isNil(allowedRelationshipTypes)
-              || allowedRelationshipTypes.length === 0
-              || allowedRelationshipTypes.includes('stix-core-relationship')
-              || allowedRelationshipTypes.includes(n),
-            resolveRelationsTypes(
-              fromEntities[0].entity_type,
-              toEntities[0].entity_type,
-              schema.schemaRelationsTypesMapping,
-            ),
-          );
-          return (
-            <>
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={() => handleClose()}
+        <UserContext.Consumer>
+          {({ schema }) => {
+            const relationshipTypes = R.filter(
+              (n) => R.isNil(allowedRelationshipTypes)
+                    || allowedRelationshipTypes.length === 0
+                    || allowedRelationshipTypes.includes('stix-core-relationship')
+                    || allowedRelationshipTypes.includes(n),
+              resolveRelationsTypes(
+                fromEntities[0].entity_type,
+                toEntities[0].entity_type,
+                schema.schemaRelationsTypesMapping,
+              ),
+            );
+            return (
+                <>
+                  <div className={classes.header}>
+                    <IconButton
+                        aria-label="Close"
+                        className={classes.closeButton}
+                        onClick={() => handleClose()}
                   size="large"
                 >
                   <Close fontSize="small" color="primary" />
