@@ -862,9 +862,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
 const investigationGraphRelationsAddMutation = graphql`
   mutation InvestigationGraphRelationsAddMutation(
     $id: ID!
-    $input: StixRefRelationshipsAddInput!
+    $input: [EditInput!]!
   ) {
-    workspaceRelationsAdd(id: $id, input: $input) {
+    workspaceFieldPatch(id: $id, input: $input) {
       id
     }
   }
@@ -1425,8 +1425,9 @@ class InvestigationGraphComponent extends Component {
           variables: {
             id: this.props.workspace.id,
             input: {
-              toIds: [stixCoreRelationship.id],
-              relationship_type: 'has-reference',
+              key: 'investigated_entities_ids',
+              operation: 'add',
+              value: [stixCoreRelationship.id],
             },
           },
         });
@@ -1456,8 +1457,11 @@ class InvestigationGraphComponent extends Component {
       mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
       variables: {
         id: this.props.workspace.id,
-        toIds,
-        relationship_type: 'has-reference',
+        input: {
+          key: 'investigated_entities_ids',
+          value: toIds,
+          operation: 'remove',
+        },
       },
     });
     this.setState({
@@ -1484,8 +1488,11 @@ class InvestigationGraphComponent extends Component {
       mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
       variables: {
         id: this.props.workspace.id,
-        toIds,
-        relationship_type: 'has-reference',
+        input: {
+          key: 'investigated_entities_ids',
+          value: toIds,
+          operation: 'remove',
+        },
       },
     });
     this.graphObjects = R.filter(
@@ -1519,8 +1526,11 @@ class InvestigationGraphComponent extends Component {
       mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
       variables: {
         id: this.props.workspace.id,
-        toIds: relationshipsToIds,
-        relationship_type: 'has-reference',
+        input: {
+          key: 'investigated_entities_ids',
+          value: relationshipsToIds,
+          operation: 'remove',
+        },
       },
     });
     const nodesToIds = R.filter(
@@ -1531,8 +1541,11 @@ class InvestigationGraphComponent extends Component {
       mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
       variables: {
         id: this.props.workspace.id,
-        toIds: nodesToIds,
-        relationship_type: 'has-reference',
+        input: {
+          key: 'investigated_entities_ids',
+          value: nodesToIds,
+          operation: 'remove',
+        },
       },
     });
     this.selectedNodes.clear();
@@ -1801,8 +1814,9 @@ class InvestigationGraphComponent extends Component {
             variables: {
               id: this.props.workspace.id,
               input: {
-                toIds: newElementsIds,
-                relationship_type: 'has-reference',
+                key: 'investigated_entities_ids',
+                operation: 'add',
+                value: newElementsIds,
               },
             },
           });

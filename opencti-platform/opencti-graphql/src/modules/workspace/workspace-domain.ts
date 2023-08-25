@@ -1,45 +1,32 @@
-import { v4 as uuidv4 } from 'uuid';
+import * as R from 'ramda';
 import {
   createEntity,
-  createRelation,
-  createRelations,
   deleteElementById,
-  deleteRelationsByFromAndTo,
   listThings,
   paginateAllThings,
   patchAttribute,
-  stixLoadByFilters,
   updateAttribute,
 } from '../../database/middleware';
-import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import { FunctionalError } from '../../config/errors';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, buildRefRelationKey } from '../../schema/general';
-import { isInternalRelationship, RELATION_HAS_REFERENCE } from '../../schema/internalRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
   EditContext,
   EditInput,
   MemberAccessInput,
   QueryWorkspacesArgs,
-  StixRefRelationshipAddInput,
-  StixRefRelationshipsAddInput,
   WorkspaceAddInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import {
-  MEMBER_ACCESS_RIGHT_ADMIN,
-  isValidMemberAccessRight,
-  getUserAccessRight
-} from '../../utils/access';
+import { getUserAccessRight, isValidMemberAccessRight, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { STIX_SPEC_VERSION } from '../../database/stix';
-import { convertTypeToStixType } from '../../database/stix-converter';
-import { generateStandardId } from '../../schema/identifier';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { containsValidAdmin } from '../../utils/authorizedMembers';
+import { elFindByIds } from '../../database/engine';
+import type { BasicStoreEntity } from '../../types/store';
+import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
   return storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -74,39 +61,28 @@ export const getOwnerId = (workspace: BasicStoreEntityWorkspace) => {
   return (Array.isArray(workspace.creator_id) && workspace.creator_id.length > 0) ? workspace.creator_id.at(0) : workspace.creator_id;
 };
 
-export const objects = async (context: AuthContext, user: AuthUser, workspaceId: string, args: WorkspaceObjectsArgs) => {
-  const key = buildRefRelationKey(RELATION_HAS_REFERENCE);
-  const types = args.types ?? ['Stix-Meta-Object', 'Stix-Core-Object', 'stix-relationship'];
-  const filters = [{ key, values: [workspaceId] }, ...(args.filters || [])];
+export const objects = async (context: AuthContext, user: AuthUser, { investigated_entities_ids }: BasicStoreEntityWorkspace, args: WorkspaceObjectsArgs) => {
+  if (isEmptyField(investigated_entities_ids)) {
+    return buildPagination(0, null, [], 0);
+  }
+  const filters = [{ key: 'internal_id', values: investigated_entities_ids }, ...(args.filters ?? [])];
   const finalArgs = { ...args, filters };
   if (args.all) {
-    return paginateAllThings(context, user, types, finalArgs);
+    return paginateAllThings(context, user, args.types, finalArgs);
   }
-  return listThings(context, user, types, finalArgs);
+  return listThings(context, user, args.types, finalArgs);
 };
 
-export const toStixReportBundle = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace): Promise<string> => {
-  if (workspace.type !== 'investigation') {
-    throw FunctionalError('You can only export investigation objects as a stix report bundle');
+const checkInvestigatedEntitiesInputs = async (context: AuthContext, user: AuthUser, inputs: EditInput[]): Promise<void> => {
+  const addedOrReplacedInvestigatedEntitiesIds = inputs
+    .filter(({ key, operation }) => key === 'investigated_entities_ids' && (operation === 'add' || operation === 'replace'))
+    .flatMap(({ value }) => value) as string[];
+  const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL };
+  const entities = await elFindByIds(context, user, addedOrReplacedInvestigatedEntitiesIds, opts) as Array<BasicStoreEntity>;
+  const missingEntitiesIds = R.difference(addedOrReplacedInvestigatedEntitiesIds, entities.map((entity) => entity.id));
+  if (missingEntitiesIds.length > 0) {
+    throw FunctionalError('Invalid ids specified', { ids: missingEntitiesIds });
   }
-  const stixTypes = ['Stix-Core-Object', 'Stix-Core-Relationship', 'Stix-Sighting-Relationship'];
-  const filters = [{ key: buildRefRelationKey(RELATION_HAS_REFERENCE), values: [workspace.id] }];
-  const stixObjects = await stixLoadByFilters(context, user, stixTypes, { filters });
-  const reportData = {
-    name: workspace.name,
-    published: workspace.created_at,
-    type: convertTypeToStixType(ENTITY_TYPE_CONTAINER_REPORT),
-    object_refs: stixObjects.map((s) => s.id),
-    spec_version: STIX_SPEC_VERSION,
-  };
-  const report = { ...reportData, id: generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, reportData) };
-  const allObjects = [...stixObjects, report];
-  const bundle = {
-    id: `bundle--${uuidv4()}`,
-    type: 'bundle',
-    objects: allObjects,
-  };
-  return JSON.stringify(bundle);
 };
 
 export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
@@ -141,67 +117,12 @@ export const workspaceDelete = async (context: AuthContext, user: AuthUser, work
   return workspaceId;
 };
 
-export const workspaceAddRelation = async (context: AuthContext, user: AuthUser, workspaceId: string, input: StixRefRelationshipAddInput) => {
-  const data = await internalLoadById(context, user, workspaceId);
-  if (data.entity_type !== ENTITY_TYPE_WORKSPACE || !isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError('Only stix-internal-relationship can be added through this method.', { workspaceId, input });
-  }
-  const finalInput = { ...input, fromId: workspaceId };
-  return createRelation(context, user, finalInput);
-};
-
-export const workspaceAddRelations = async (context: AuthContext, user: AuthUser, workspaceId: string, input: StixRefRelationshipsAddInput) => {
-  const workspace = await storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
-  if (!workspace) {
-    throw FunctionalError('Cannot add the relation, workspace cannot be found.');
-  }
-  if (!isInternalRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
-  }
-  if (!input.toIds) {
-    throw FunctionalError('Cannot add relations, toIds argument is not defined.');
-  }
-  const finalInput = input.toIds.map(
-    (n) => ({ fromId: workspaceId, toId: n, relationship_type: input.relationship_type })
-  );
-  await createRelations(context, user, finalInput);
-  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) => {
-    return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user);
-  });
-};
-
-export const workspaceDeleteRelation = async (context: AuthContext, user: AuthUser, workspaceId: string, toId: string, relationshipType: string) => {
-  const workspace = await storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
-  if (!workspace) {
-    throw FunctionalError('Cannot delete the relation, workspace cannot be found.');
-  }
-  if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
-  }
-  await deleteRelationsByFromAndTo(context, user, workspaceId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
-};
-
-export const workspaceDeleteRelations = async (context: AuthContext, user: AuthUser, workspaceId: string, toIds: string[], relationshipType: string) => {
-  const workspace = await storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
-  if (!workspace) {
-    throw FunctionalError('Cannot delete the relation, workspace cannot be found.');
-  }
-  if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
-  }
-  for (let i = 0; i < toIds.length; i += 1) {
-    await deleteRelationsByFromAndTo(context, user, workspaceId, toIds[i], relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  }
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
-};
-
-export const workspaceEditField = async (context: AuthContext, user: AuthUser, workspaceId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, input);
+export const workspaceEditField = async (context: AuthContext, user: AuthUser, workspaceId: string, inputs: EditInput[]) => {
+  await checkInvestigatedEntitiesInputs(context, user, inputs);
+  const { element } = await updateAttribute(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
 };
 
-// region context
 export const workspaceCleanContext = async (context: AuthContext, user: AuthUser, workspaceId: string) => {
   await delEditContext(user, workspaceId);
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) => {
@@ -214,5 +135,3 @@ export const workspaceEditContext = async (context: AuthContext, user: AuthUser,
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE)
     .then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
 };
-
-// endregion

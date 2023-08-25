@@ -54,22 +54,10 @@ const styles = (theme) => ({
 export const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
   mutation InvestigationAddStixCoreObjectsLinesRelationAddMutation(
     $id: ID!
-    $input: StixRefRelationshipAddInput!
+    $input: [EditInput!]!
   ) {
-    workspaceRelationAdd(id: $id, input: $input) {
+    workspaceFieldPatch(id: $id, input: $input) {
       id
-      to {
-        ... on BasicObject {
-          id
-          entity_type
-          parent_types
-        }
-        ... on BasicRelationship {
-          id
-          entity_type
-          parent_types
-        }
-      }
     }
   }
 `;
@@ -77,14 +65,9 @@ export const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
 export const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
   mutation InvestigationAddStixCoreObjectsLinesRelationDeleteMutation(
     $id: ID!
-    $toId: StixRef!
-    $relationship_type: String!
+    $input: [EditInput!]!
   ) {
-    workspaceRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
+    workspaceFieldPatch(id: $id, input: $input) {
       id
     }
   }
@@ -93,14 +76,9 @@ export const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphq
 export const investigationAddStixCoreObjectsLinesRelationsDeleteMutation = graphql`
   mutation InvestigationAddStixCoreObjectsLinesRelationsDeleteMutation(
     $id: ID!
-    $toIds: [String!]!
-    $relationship_type: String!
+    $input: [EditInput!]!
   ) {
-    workspaceRelationsDelete(
-      id: $id
-      toIds: $toIds
-      relationship_type: $relationship_type
-    ) {
+    workspaceFieldPatch(id: $id, input: $input) {
       id
     }
   }
@@ -129,8 +107,11 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
         variables: {
           id: workspaceId,
-          toId: stixCoreObject.id,
-          relationship_type: 'has-reference',
+          input: {
+            key: 'investigated_entities_ids',
+            operation: 'remove',
+            value: stixCoreObject.id,
+          },
         },
         onCompleted: () => {
           this.setState({
@@ -145,15 +126,15 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         },
       });
     } else {
-      const input = {
-        toId: stixCoreObject.id,
-        relationship_type: 'has-reference',
-      };
       commitMutation({
         mutation: investigationAddStixCoreObjectsLinesRelationAddMutation,
         variables: {
           id: workspaceId,
-          input,
+          input: {
+            key: 'investigated_entities_ids',
+            operation: 'add',
+            value: stixCoreObject.id,
+          },
         },
         onCompleted: () => {
           this.setState({

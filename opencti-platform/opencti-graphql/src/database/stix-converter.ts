@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { version as uuidVersion } from 'uuid';
+import { v4 as uuidv4, version as uuidVersion } from 'uuid';
 import { extractEntityRepresentative, isEmptyField, isInferredIndex } from './utils';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isBasicObject } from '../schema/stixCoreObject';
@@ -49,7 +49,14 @@ import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
-import type { StoreCyberObservable, StoreEntity, StoreObject, StoreRelation, StoreEntityIdentity } from '../types/store';
+import type {
+  StoreCyberObservable,
+  StoreEntity,
+  StoreObject,
+  StoreRelation,
+  StoreEntityIdentity,
+  StoreCommon
+} from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -1320,7 +1327,7 @@ export const registerStixMetaConverter = <T extends StoreEntity, Z extends S.Sti
   stixMetaConverters.set(type, convertFn);
 };
 
-const convertToStix = (instance: StoreObject): S.StixObject => {
+const convertToStix = (instance: StoreCommon): S.StixObject => {
   const type = instance.entity_type;
   if (!isBasicObject(type) && !isBasicRelationship(type)) {
     throw UnsupportedError(`Type ${type} cannot be converted to Stix`, { instance });
@@ -1533,8 +1540,8 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
   throw UnsupportedError(`No entity converter available for ${type}`);
 };
 
-export const convertStoreToStix = (instance: StoreObject): S.StixObject => {
-  if (isEmptyField(instance._index) || isEmptyField(instance.entity_type)) {
+export const convertStoreToStix = (instance: StoreCommon): S.StixObject => {
+  if (isEmptyField(instance.standard_id) || isEmptyField(instance.entity_type)) {
     throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
   }
   const converted = convertToStix(instance);
@@ -1553,4 +1560,12 @@ export const registerStixRepresentativeConverter = (type: string, convertFn: Rep
 
 export const getStixRepresentativeConverters = (type: string) => {
   return stixRepresentativeConverters.get(type);
+};
+
+export const buildStixBundle = (stixObjects: S.StixObject[]): S.StixBundle => {
+  return ({
+    id: `bundle--${uuidv4()}`,
+    type: 'bundle',
+    objects: stixObjects
+  });
 };

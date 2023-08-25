@@ -15,6 +15,7 @@ import {
 } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { extractEntityRepresentative } from '../database/utils';
+import { investigationAddFromContainer } from '../modules/workspace/investigation-domain';
 
 const containerResolvers = {
   Query: {
@@ -48,6 +49,7 @@ const containerResolvers = {
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      investigationAdd: () => investigationAddFromContainer(context, context.user, id),
     }),
   },
 };

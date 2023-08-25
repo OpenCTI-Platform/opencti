@@ -7,13 +7,8 @@ import {
   getCurrentUserAccessRight,
   getOwnerId,
   objects,
-  toStixReportBundle,
-  workspaceAddRelation,
-  workspaceAddRelations,
   workspaceCleanContext,
   workspaceDelete,
-  workspaceDeleteRelation,
-  workspaceDeleteRelations,
   workspaceEditContext,
   workspaceEditField,
 } from './workspace-domain';
@@ -24,6 +19,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { batchLoader } from '../../database/middleware';
 import { batchCreator } from '../../domain/user';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { toStixReportBundle } from './investigation-domain';
 
 const creatorLoader = batchLoader(batchCreator);
 
@@ -36,7 +32,7 @@ const workspaceResolvers: Resolvers = {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
     owner: (workspace, _, context) => creatorLoader.load(getOwnerId(workspace), context, context.user),
-    objects: (workspace, args, context) => objects(context, context.user, workspace.id, args),
+    objects: (workspace, args, context) => objects(context, context.user, workspace, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
     toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),
   },
@@ -58,18 +54,6 @@ const workspaceResolvers: Resolvers = {
     },
     workspaceContextClean: (_, { id }, context) => {
       return workspaceCleanContext(context, context.user, id);
-    },
-    workspaceRelationAdd: (_, { id, input }, context) => {
-      return workspaceAddRelation(context, context.user, id, input);
-    },
-    workspaceRelationsAdd: (_, { id, input }, context) => {
-      return workspaceAddRelations(context, context.user, id, input);
-    },
-    workspaceRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
-      return workspaceDeleteRelation(context, context.user, id, toId, relationshipType);
-    },
-    workspaceRelationsDelete: (_, { id, toIds, relationship_type: relationshipType }, context) => {
-      return workspaceDeleteRelations(context, context.user, id, toIds, relationshipType);
     },
   },
   Subscription: {

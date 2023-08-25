@@ -159,6 +159,11 @@ interface BasicStoreCommon extends BasicStoreBase {
 }
 
 interface StoreCommon {
+  internal_id: string
+  standard_id: StixId;
+  entity_type: string
+  spec_version: string
+  parent_types: string[];
   // inputs
   [INPUT_LINKED]?: Array<BasicStoreObject>;
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
@@ -347,6 +352,12 @@ interface StoreEntity extends BasicStoreEntity, StoreCommon {
   [INPUT_OBJECTS]: Array<BasicStoreEntity>;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
+}
+
+interface StoreEntityReport extends StoreCommon {
+  name: string
+  published: Date
+  [INPUT_OBJECTS]: Array<StoreEntity>
 }
 
 interface StoreEntityFeed extends StoreEntity {

@@ -5,7 +5,7 @@ import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_LOCATION_POSITION, ENTITY_
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../../src/schema/stixMetaObject';
 import { ENTITY_TYPE_MIGRATION_STATUS } from '../../../src/schema/internalObject';
 import { ENTITY_EMAIL_ADDR } from '../../../src/schema/stixCyberObservable';
-import { RELATION_HAS_REFERENCE, RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
+import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
 import { RELATION_OBJECT_LABEL, RELATION_OPERATING_SYSTEM } from '../../../src/schema/stixRefRelationship';
 import { RELATION_HOSTS } from '../../../src/schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
@@ -124,15 +124,6 @@ describe('Attribute resolver standard behavior', () => {
     expect(attributes.length).toEqual(10);
     expect(attributes.map((node) => node.value).includes('standard_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('i_inference_weight')).toBeTruthy(); // Direct attribute
-    queryResult = await queryAsAdmin({
-      query: SCHEMA_ATTRIBUTES_QUERY,
-      variables: { elementType: RELATION_HAS_REFERENCE }
-    });
-    attributes = queryResult.data.schemaAttributes.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(7);
-    expect(attributes.map((node) => node.value).includes('standard_id')).toBeTruthy(); // Inherit attribute
-    expect(attributes.map((node) => node.value).includes('i_inference_weight')).toBeTruthy(); // Direct attribute
-
     // Stix Ref Relationship
     queryResult = await queryAsAdmin({
       query: SCHEMA_ATTRIBUTES_QUERY,

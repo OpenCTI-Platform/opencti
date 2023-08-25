@@ -1,5 +1,6 @@
 import {
-  addReport, batchParticipants,
+  addReport,
+  batchParticipants,
   findAll,
   findById,
   reportContainsStixObjectOrStixRelationship,
@@ -23,9 +24,11 @@ import {
 } from '../domain/stixDomainObject';
 import {
   RELATION_CREATED_BY,
-  RELATION_OBJECT, RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT,
+  RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT,
+  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_PARTICIPANT,
 } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader, distributionEntities } from '../database/middleware';

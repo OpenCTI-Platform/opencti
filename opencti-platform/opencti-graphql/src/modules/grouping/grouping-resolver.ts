@@ -1,8 +1,8 @@
 import type { Resolvers } from '../../generated/graphql';
 import {
   addGrouping,
-  findById,
   findAll,
+  findById,
   groupingContainsStixObjectOrStixRelationship,
   groupingsDistributionByEntity,
   groupingsNumber,

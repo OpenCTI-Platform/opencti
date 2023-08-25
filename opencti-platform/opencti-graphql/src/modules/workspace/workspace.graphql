@@ -13,6 +13,7 @@ type Workspace implements InternalObject & BasicObject {
     created_at: DateTime
     updated_at: DateTime
     editContext: [EditUserContext!]
+    investigated_entities_ids: [String]
     objects(
         first: Int
         after: ID
@@ -84,6 +85,7 @@ input WorkspaceAddInput {
     description: String
     tags: [String]
     authorized_members: [MemberAccessInput!]
+    investigated_entities_ids: [String]
 }
 
 type Mutation {
@@ -93,10 +95,6 @@ type Mutation {
     workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
     workspaceContextPatch(id: ID!, input: EditContext!): Workspace
     workspaceContextClean(id: ID!): Workspace
-    workspaceRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [EXPLORE_EXUPDATE])
-    workspaceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceRelationsAdd(id: ID!, input: StixRefRelationshipsAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-    workspaceRelationsDelete(id: ID!, toIds: [String!]!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
 }
 
 # Subscriptions

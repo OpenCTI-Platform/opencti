@@ -15,6 +15,7 @@ export interface BasicStoreEntityWorkspace extends BasicStoreEntity {
   type: string;
   authorized_members: Array<AuthorizedMember>;
   object_refs: Array<string>;
+  investigated_entities_ids: Array<string>;
 }
 
 export interface StoreEntityWorkspace extends StoreEntity {

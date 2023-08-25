@@ -1,6 +1,12 @@
 import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_PARTICIPANT
+} from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addCaseRft, caseRftContainsStixObjectOrStixRelationship, findAll, findById } from './case-rft-domain';
 

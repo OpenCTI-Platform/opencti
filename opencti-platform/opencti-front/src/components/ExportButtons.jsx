@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
-import { GetAppOutlined, ImageOutlined } from '@mui/icons-material';
-import { FilePdfBox, FileDelimitedOutline } from 'mdi-material-ui';
+import { ExploreOutlined, GetAppOutlined, ImageOutlined } from '@mui/icons-material';
+import { FileDelimitedOutline, FilePdfBox } from 'mdi-material-ui';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
@@ -11,6 +11,7 @@ import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
+import { withRouter } from 'react-router-dom';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
@@ -164,6 +165,9 @@ class ExportButtons extends Component {
       csvData,
       csvFileName,
       handleDownloadAsStixReport,
+      containerId,
+      investigationAddFromContainer,
+      history,
     } = this.props;
     return (
       <div className={classes.exportButtons} id="export-buttons">
@@ -178,6 +182,13 @@ class ExportButtons extends Component {
               <FilePdfBox fontSize="small" color="primary" />
             </ToggleButton>
           </Tooltip>
+          {investigationAddFromContainer && (
+            <Tooltip title={t('start investigation')}>
+              <ToggleButton onClick={investigationAddFromContainer.bind(this, containerId, history)}>
+                <ExploreOutlined fontSize="small" color="primary" />
+              </ToggleButton>
+            </Tooltip>
+          )}
           {type === 'investigation' && (
             <Tooltip title={t('Download as STIX report')}>
               <ToggleButton onClick={handleDownloadAsStixReport.bind(this)}>
@@ -295,5 +306,6 @@ class ExportButtons extends Component {
 export default R.compose(
   inject18n,
   withTheme,
+  withRouter,
   withStyles(styles),
 )(ExportButtons);

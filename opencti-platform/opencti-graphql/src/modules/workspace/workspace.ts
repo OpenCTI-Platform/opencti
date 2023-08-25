@@ -36,6 +36,7 @@ const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWorkspace
     { name: 'type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'tags', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'investigated_entities_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [],

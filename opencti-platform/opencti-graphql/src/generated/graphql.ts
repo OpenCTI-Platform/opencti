@@ -3828,6 +3828,7 @@ export type ContainerEditMutations = {
   contextPatch?: Maybe<Container>;
   delete?: Maybe<Scalars['ID']['output']>;
   fieldPatch?: Maybe<Container>;
+  investigationAdd?: Maybe<Workspace>;
   relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Container>;
 };
@@ -12836,10 +12837,6 @@ export type Mutation = {
   workspaceDelete?: Maybe<Scalars['ID']['output']>;
   workspaceEditAuthorizedMembers?: Maybe<Workspace>;
   workspaceFieldPatch?: Maybe<Workspace>;
-  workspaceRelationAdd?: Maybe<StixRefRelationship>;
-  workspaceRelationDelete?: Maybe<Workspace>;
-  workspaceRelationsAdd?: Maybe<Workspace>;
-  workspaceRelationsDelete?: Maybe<Workspace>;
 };
 
 
@@ -14409,32 +14406,6 @@ export type MutationWorkspaceEditAuthorizedMembersArgs = {
 export type MutationWorkspaceFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
-};
-
-
-export type MutationWorkspaceRelationAddArgs = {
-  id: Scalars['ID']['input'];
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type MutationWorkspaceRelationDeleteArgs = {
-  id: Scalars['ID']['input'];
-  relationship_type: Scalars['String']['input'];
-  toId: Scalars['StixRef']['input'];
-};
-
-
-export type MutationWorkspaceRelationsAddArgs = {
-  id: Scalars['ID']['input'];
-  input: StixRefRelationshipsAddInput;
-};
-
-
-export type MutationWorkspaceRelationsDeleteArgs = {
-  id: Scalars['ID']['input'];
-  relationship_type: Scalars['String']['input'];
-  toIds: Array<Scalars['String']['input']>;
 };
 
 export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -28007,6 +27978,7 @@ export type Workspace = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   graph_data?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  investigated_entities_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   manifest?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
@@ -28035,6 +28007,7 @@ export type WorkspaceObjectsArgs = {
 export type WorkspaceAddInput = {
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
+  investigated_entities_ids?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name: Scalars['String']['input'];
   tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   type: Scalars['String']['input'];
@@ -28532,7 +28505,7 @@ export type ResolversTypes = ResolversObject<{
   Container: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Container']>;
   ContainerConnection: ResolverTypeWrapper<Omit<ContainerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ContainerEdge']>>> }>;
   ContainerEdge: ResolverTypeWrapper<Omit<ContainerEdge, 'node'> & { node: ResolversTypes['Container'] }>;
-  ContainerEditMutations: ResolverTypeWrapper<Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Container']>, contextPatch?: Maybe<ResolversTypes['Container']>, fieldPatch?: Maybe<ResolversTypes['Container']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Container']> }>;
+  ContainerEditMutations: ResolverTypeWrapper<Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'investigationAdd' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Container']>, contextPatch?: Maybe<ResolversTypes['Container']>, fieldPatch?: Maybe<ResolversTypes['Container']>, investigationAdd?: Maybe<ResolversTypes['Workspace']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Container']> }>;
   ContainersFilter: ContainersFilter;
   ContainersFiltering: ContainersFiltering;
   ContainersOrdering: ContainersOrdering;
@@ -29326,7 +29299,7 @@ export type ResolversParentTypes = ResolversObject<{
   Container: ResolversInterfaceTypes<ResolversParentTypes>['Container'];
   ContainerConnection: Omit<ContainerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ContainerEdge']>>> };
   ContainerEdge: Omit<ContainerEdge, 'node'> & { node: ResolversParentTypes['Container'] };
-  ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
+  ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'investigationAdd' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, investigationAdd?: Maybe<ResolversParentTypes['Workspace']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
   ContainersFiltering: ContainersFiltering;
   ContextData: Omit<ContextData, 'external_references'> & { external_references?: Maybe<Array<ResolversParentTypes['ExternalReference']>> };
   CountriesFiltering: CountriesFiltering;
@@ -31012,6 +30985,7 @@ export type ContainerEditMutationsResolvers<ContextType = any, ParentType extend
   contextPatch?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<ContainerEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, RequireFields<ContainerEditMutationsFieldPatchArgs, 'input'>>;
+  investigationAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ContainerEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, RequireFields<ContainerEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -33851,10 +33825,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationWorkspaceDeleteArgs, 'id'>>;
   workspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceEditAuthorizedMembersArgs, 'id' | 'input'>>;
   workspaceFieldPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceFieldPatchArgs, 'id' | 'input'>>;
-  workspaceRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationWorkspaceRelationAddArgs, 'id' | 'input'>>;
-  workspaceRelationDelete?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  workspaceRelationsAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceRelationsAddArgs, 'id' | 'input'>>;
-  workspaceRelationsDelete?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceRelationsDeleteArgs, 'id' | 'relationship_type' | 'toIds'>>;
 }>;
 
 export type MutexResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutex'] = ResolversParentTypes['Mutex']> = ResolversObject<{
@@ -37461,6 +37431,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  investigated_entities_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<WorkspaceObjectsArgs>>;

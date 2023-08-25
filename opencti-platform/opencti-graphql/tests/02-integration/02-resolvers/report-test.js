@@ -1,8 +1,11 @@
-import { expect, it, describe } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
+import { listAllEntities } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
+import { deleteElementById } from '../../../src/database/middleware';
 
 const LIST_QUERY = gql`
   query reports(
@@ -427,6 +430,51 @@ describe('Report resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.reportEdit.relationDelete.objectMarking.edges.length).toEqual(0);
+  });
+  describe('investigationAdd', () => {
+    let investigationId;
+
+    const investigationAdd = async () => {
+      return await queryAsAdmin({
+        query: gql`
+          mutation InvestigationAddFromReport($id: ID!) {
+            containerEdit(id: $id) {
+              investigationAdd {
+                id
+              }
+            }
+          }
+        `,
+        variables: {
+          id: reportInternalId
+        },
+      });
+    };
+
+    beforeAll(async () => {
+      const test = (await investigationAdd());
+      investigationId = test.data.containerEdit.investigationAdd.id;
+    });
+
+    afterAll(async () => {
+      const investigations = await listAllEntities(
+        testContext,
+        ADMIN_USER,
+        [ENTITY_TYPE_WORKSPACE],
+        {
+          filters: [{
+            key: 'type',
+            value: 'investigation'
+          }]
+        }
+      );
+
+      await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));
+    });
+
+    it('can start an investigation', () => {
+      expect(investigationId).toBeDefined();
+    });
   });
   it('should report deleted', async () => {
     const DELETE_QUERY = gql`

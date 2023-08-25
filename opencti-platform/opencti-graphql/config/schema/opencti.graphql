@@ -13145,6 +13145,7 @@ type ContainerEditMutations {
   contextClean: Container @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!): Container @auth(for: [KNOWLEDGE_KNUPDATE])
+  investigationAdd: Workspace @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type NoteEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNPARTICIPATE])

@@ -6,6 +6,12 @@ import type { StixInternalExternalReference } from './stix-smo';
 export type StixDate = string | undefined;
 type StixId = `${string}--${v4 | v5}`;
 
+export type StixBundle = {
+  id: string;
+  type: 'bundle'
+  objects: StixObject[];
+};
+
 interface StixMitreExtension {
   'extension_type': 'property-extension' | 'new-sdo',
   id: string;

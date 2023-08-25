@@ -9,22 +9,12 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, convertFilters, saveViewParameters } from '../../../../utils/ListParameters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import CaseRftPopover from './CaseRftPopover';
-import CaseRftKnowledgeGraph, {
-  caseRftKnowledgeGraphQuery,
-} from './CaseRftKnowledgeGraph';
-import CaseRftKnowledgeTimeLine, {
-  caseRftKnowledgeTimeLineQuery,
-} from './CaseRftKnowledgeTimeLine';
-import CaseRftKnowledgeCorrelation, {
-  caseRftKnowledgeCorrelationQuery,
-} from './CaseRftKnowledgeCorrelation';
+import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnowledgeGraph';
+import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
+import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 
 const styles = () => ({
