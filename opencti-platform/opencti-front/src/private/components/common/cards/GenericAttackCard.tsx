@@ -124,7 +124,7 @@ interface GenericAttack {
   usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
   targetedSectors: toEdges | null;
-  locatedAtCountries: toEdgesLocated | null;
+  locatedAtCountries?: toEdgesLocated | null;
 }
 
 interface GenericAttackCardProps {
@@ -160,7 +160,6 @@ GenericAttackCardProps
       addBookmark(cardData.id, entityType);
     }
   };
-
   const image = cardData.images?.edges ?? [];
 
   return (
