@@ -83,14 +83,14 @@ class AddLocationsThreatActorIndividual extends Component {
       search: this.state.search,
     };
     return (
-      <div>
+      <>
         <IconButton
           color="secondary"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
           size="large"
-          style={{ marginTop: 6 }}
+          style={{ marginTop: -15 }}
         >
           <Add fontSize="small" />
         </IconButton>
@@ -148,7 +148,7 @@ class AddLocationsThreatActorIndividual extends Component {
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
         />
-      </div>
+      </>
     );
   }
 }

@@ -49,13 +49,39 @@ class ThreatActorGroupDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
-              </Typography>
-              <ExpandableMarkdown
-                source={threatActorGroup.description}
-                limit={400}
-              />
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={4}>
+                  <ImageCarousel data={threatActorGroup} />
+                </Grid>
+                <Grid item={true} xs={8}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Threat actor types')}
+                  </Typography>
+                  <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
+                    {threatActorGroup.threat_actor_types
+                      && threatActorGroup.threat_actor_types.map(
+                        (threatActorGroupType) => (
+                          <Chip
+                            key={threatActorGroupType}
+                            classes={{ root: classes.chip }}
+                            label={threatActorGroupType}
+                          />
+                        ),
+                      )}
+                  </FieldOrEmpty>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Description')}
+                  </Typography>
+                  <ExpandableMarkdown
+                    source={threatActorGroup.description}
+                    limit={400}
+                  />
+                </Grid>
+              </Grid>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -106,44 +132,9 @@ class ThreatActorGroupDetailsComponent extends Component {
                   </List>
                 )}
               </FieldOrEmpty>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Goals')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.goals}>
-                {threatActorGroup.goals && (
-                  <List>
-                    {threatActorGroup.goals.map((goal) => (
-                      <ListItem key={goal} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <BullseyeArrow />
-                        </ListItemIcon>
-                        <ListItemText primary={goal} />
-                      </ListItem>
-                    ))}
-                  </List>
-                )}
-              </FieldOrEmpty>
-              <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
             </Grid>
             <Grid item={true} xs={6}>
-              <ImageCarousel data={threatActorGroup} />
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Threat actor group types')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
-                {threatActorGroup.threat_actor_types
-                  && threatActorGroup.threat_actor_types.map((threatActorGroupType) => (
-                    <Chip
-                      key={threatActorGroupType}
-                      classes={{ root: classes.chip }}
-                      label={threatActorGroupType}
-                    />
-                  ))}
-              </FieldOrEmpty>
+              <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -205,6 +196,27 @@ class ThreatActorGroupDetailsComponent extends Component {
                   </List>
                 )}
               </FieldOrEmpty>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Goals')}
+              </Typography>
+              <FieldOrEmpty source={threatActorGroup.goals}>
+                {threatActorGroup.goals && (
+                  <List>
+                    {threatActorGroup.goals.map((goal) => (
+                      <ListItem key={goal} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <BullseyeArrow />
+                        </ListItemIcon>
+                        <ListItemText primary={goal} />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </FieldOrEmpty>
             </Grid>
           </Grid>
         </Paper>
@@ -250,7 +262,7 @@ const ThreatActorGroupDetails = createFragmentContainer(
             }
           }
         }
-          ...ThreatActorGroupLocations_locations
+        ...ThreatActorGroupLocations_locations
       }
     `,
   },

@@ -11,7 +11,8 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
-import { commitMutation } from '../../../../relay/environment';
+import * as R from 'ramda';
+import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -44,37 +45,51 @@ class ThreatActorIndividualLocationsComponent extends Component {
   render() {
     const { t, threatActorIndividual } = this.props;
     return (
-      <div style={{ marginTop: -20 }}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left', marginTop: 20 }}>
-          {t('Located At')}
+      <>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Located at')}
         </Typography>
         <Security
           needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ marginTop: 20, height: 29 }} />}
+          placeholder={<div style={{ height: 29 }} />}
         >
           <AddLocationsThreatActorIndividual
             threatActorIndividual={threatActorIndividual}
-            threatActorIndividualLocations={threatActorIndividual.locations.edges}
+            threatActorIndividualLocations={
+              threatActorIndividual.locations.edges
+            }
           />
         </Security>
-          <div className="clearfix" />
+        <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
           {threatActorIndividual.locations.edges.map((locationEdge) => {
             const location = locationEdge.node;
             const link = resolveLink(location.entity_type);
+            const flag = location.entity_type === 'Country'
+              && R.head(
+                (location.x_opencti_aliases ?? []).filter(
+                  (n) => n?.length === 2,
+                ),
+              );
             return (
               <ListItem
-                  key={location.id}
-                  dense={true}
-                  divider={true}
-                  button={true}
-                  component={Link}
-                  to={`${link}/${location.id}`}
+                key={location.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`${link}/${location.id}`}
               >
                 <ListItemIcon>
-                  <ListItemIcon>
+                  {flag ? (
+                    <img
+                      style={{ width: 20 }}
+                      src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                      alt={location.name}
+                    />
+                  ) : (
                     <ItemIcon type={location.entity_type} />
-                  </ListItemIcon>
+                  )}
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
                 <ListItemSecondaryAction>
@@ -92,7 +107,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
             );
           })}
         </List>
-      </div>
+      </>
     );
   }
 }
@@ -120,12 +135,13 @@ const ThreatActorIndividualLocations = createFragmentContainer(
               parent_types
               entity_type
               name
+              x_opencti_aliases
               description
             }
           }
         }
       }
-  `,
+    `,
   },
 );
 

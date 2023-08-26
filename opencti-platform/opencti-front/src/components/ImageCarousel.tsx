@@ -1,13 +1,49 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import Carousel from 'react-material-ui-carousel';
 import makeStyles from '@mui/styles/makeStyles';
-import { Tooltip } from '@mui/material';
+import { ImageListItem, ImageListItemBar, Modal } from '@mui/material';
+import Skeleton from '@mui/material/Skeleton';
+import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
+import { ZoomOutMapOutlined } from '@mui/icons-material';
+import Box from '@mui/material/Box';
 import { convertImagesToCarousel } from '../utils/edition';
-import noImage from '../static/images/leaflet/no-image-placeholder.png';
+import { Theme } from './Theme';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme: Theme) => ({
   carousel: {
     textAlign: 'center',
+    width: '100%',
+  },
+  indicators: {
+    color: theme.palette.background.accent,
+    '&:hover': {
+      color: theme.palette.primary.main,
+    },
+    '&:active': {
+      color: theme.palette.primary.main,
+    },
+  },
+  activeIndicators: {
+    color: theme.palette.secondary.main,
+  },
+  indicatorsContainer: {
+    marginTop: 0,
+  },
+  navButtons: {
+    fontSize: '20px',
+    top: 'calc(50% - 15px) !important',
+  },
+  buttonWrapper: {
+    height: 50,
+    top: 'calc(50% - 40px)',
+    '&:hover': {
+      '& $button': {
+        backgroundColor: theme.palette.background.accent,
+        filter: 'brightness(120%)',
+        opacity: '0.4',
+      },
+    },
   },
 }));
 
@@ -24,46 +60,97 @@ interface ImagesData {
       id: string;
       metaData: ImageMetaData | null;
       name: string;
-    }
+    };
   } | null> | null;
 }
 
 interface ImageCarouselProps {
   data: {
-    images: ImagesData | null
-  }
+    images: ImagesData | null;
+  };
 }
 
 interface CarouselImage {
-  tooltipTitle: string
-  imageSrc: string
-  altText: string
-  id: string
+  tooltipTitle: string;
+  imageSrc: string;
+  altText: string;
+  id: string;
 }
 
+const modalStyle = {
+  position: 'fixed',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+};
+
 const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
+  const [currentImage, setCurrentImage] = useState<CarouselImage | null>(null);
   const classes = useStyles();
   const images = convertImagesToCarousel(data);
-
   return (
-    <Carousel height='150px' className={classes.carousel} animation='fade' autoPlay={false}>
-      {images.length > 0 ? (
-        images.map((file: CarouselImage) => (
-          <Tooltip title={file.tooltipTitle} key={file.id} placement='right'>
-            <img
-              style={{ height: '100%' }}
-              src={file.imageSrc}
-              alt={file.altText}
+    <>
+      <Carousel
+        className={classes.carousel}
+        animation="slide"
+        autoPlay={false}
+        height={180}
+        indicatorIconButtonProps={{ className: classes.indicators }}
+        activeIndicatorIconButtonProps={{ className: classes.activeIndicators }}
+        indicatorContainerProps={{ className: classes.indicatorsContainer }}
+        navButtonsProps={{ className: classes.navButtons }}
+        navButtonsWrapperProps={{ className: classes.buttonWrapper }}
+        fullHeightHover={false}
+      >
+        {images.length > 0 ? (
+          images.map((file: CarouselImage) => (
+            <ImageListItem key={file.imageSrc} style={{ height: 180 }}>
+              <img
+                style={{
+                  height: '100%',
+                  maxHeight: '100%',
+                  borderRadius: 5,
+                }}
+                src={file.imageSrc}
+                alt={file.altText}
+              />
+              <ImageListItemBar
+                position="bottom"
+                subtitle={file.tooltipTitle}
+              />
+              <ImageListItemBar
+                sx={{ background: 'none' }}
+                position="top"
+                actionIcon={
+                  <IconButton
+                    sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                    aria-label={`info about ${file.altText}`}
+                    size="small"
+                    onClick={() => setCurrentImage(file)}
+                  >
+                    <ZoomOutMapOutlined fontSize="small" />
+                  </IconButton>
+                }
+              />
+            </ImageListItem>
+          ))
+        ) : (
+          <Paper elevation={1} sx={{ width: '100%', height: '100%' }}>
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height="100%"
+              animation={false}
             />
-          </Tooltip>
-        ))) : (
-        <img
-          style={{ height: '100%' }}
-          src={noImage}
-          alt="No Image"
-        />
-      )}
-    </Carousel>
+          </Paper>
+        )}
+      </Carousel>
+      <Modal open={currentImage !== null} onClose={() => setCurrentImage(null)}>
+        <Box sx={modalStyle}>
+          <img src={currentImage?.imageSrc} alt={currentImage?.altText} style={{ maxWidth: '80vw', maxHeight: '80vh' }} />
+        </Box>
+      </Modal>
+    </>
   );
 };
 

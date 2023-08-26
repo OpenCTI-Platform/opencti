@@ -12,9 +12,15 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
-import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from './StixCoreRelationshipCreationForm';
+import {
+  useIsEnforceReference,
+  useSchemaCreationValidation,
+} from '../../../../utils/hooks/useEntitySettings';
+import StixCoreRelationshipCreationForm, {
+  stixCoreRelationshipBasicShape,
+} from './StixCoreRelationshipCreationForm';
 import { formatDate } from '../../../../utils/Time';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const useStyles = makeStyles((theme) => ({
   icon: {
@@ -34,6 +40,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             edges {
               node {
                 id
+                entity_type
                 name
                 description
               }
@@ -48,6 +55,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
                 id
                 entity_type
                 name
+                x_opencti_aliases
                 description
               }
             }
@@ -61,6 +69,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
                 id
                 entity_type
                 name
+                x_opencti_aliases
                 description
               }
             }
@@ -74,6 +83,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
                 id
                 entity_type
                 name
+                x_opencti_aliases
                 description
               }
             }
@@ -85,6 +95,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             edges {
               node {
                 id
+                entity_type
                 parent_types
                 name
                 description
@@ -100,6 +111,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             edges {
               node {
                 id
+                entity_type
                 name
                 description
                 x_mitre_id
@@ -110,6 +122,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             edges {
               node {
                 id
+                entity_type
                 name
                 description
               }
@@ -119,6 +132,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             edges {
               node {
                 id
+                entity_type
                 name
                 description
               }
@@ -131,6 +145,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             edges {
               node {
                 id
+                entity_type
                 name
                 description
               }
@@ -143,6 +158,7 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             edges {
               node {
                 id
+                entity_type
                 name
                 description
               }
@@ -155,11 +171,11 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             edges {
               node {
                 id
+                entity_type
                 ... on Software {
                   name
                   version
                   vendor
-                  entity_type
                 }
               }
             }
@@ -201,39 +217,39 @@ const stixCoreRelationshipCreationFromEntityListRelationDelete = graphql`
 
 const StixCoreRelationshipCreationFromEntityDummyList = () => {
   return (
-      <List>
-        {Array.from(Array(20), (e, i) => (
-          <ListItem key={i} divider={true} button={false}>
-            <ListItemIcon>
+    <List>
+      {Array.from(Array(20), (e, i) => (
+        <ListItem key={i} divider={true} button={false}>
+          <ListItemIcon>
+            <Skeleton
+              animation="wave"
+              variant="circular"
+              width={30}
+              height={30}
+            />
+          </ListItemIcon>
+          <ListItemText
+            primary={
               <Skeleton
                 animation="wave"
-                variant="circular"
-                width={30}
-                height={30}
+                variant="rectangular"
+                width="90%"
+                height={15}
+                style={{ marginBottom: 10 }}
               />
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={15}
-                  style={{ marginBottom: 10 }}
-                />
-              }
-              secondary={
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={15}
-                />
-              }
-            />
-          </ListItem>
-        ))}
-      </List>
+            }
+            secondary={
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height={15}
+              />
+            }
+          />
+        </ListItem>
+      ))}
+    </List>
   );
 };
 
@@ -246,19 +262,24 @@ const StixCoreRelationshipCreationFromEntityList = ({
   isRelationReversed,
 }) => {
   if (!availableDatas) {
-    return (
-      <StixCoreRelationshipCreationFromEntityDummyList />
-    );
+    return <StixCoreRelationshipCreationFromEntityDummyList />;
   }
 
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const [commitRelationAdd] = useMutation(stixCoreRelationshipCreationFromEntityListRelationAdd);
-  const [commitRelationDelete] = useMutation(stixCoreRelationshipCreationFromEntityListRelationDelete);
+  const [commitRelationAdd] = useMutation(
+    stixCoreRelationshipCreationFromEntityListRelationAdd,
+  );
+  const [commitRelationDelete] = useMutation(
+    stixCoreRelationshipCreationFromEntityListRelationDelete,
+  );
 
   const enableReferences = useIsEnforceReference('stix-core-relationship');
-  const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', stixCoreRelationshipBasicShape(t));
+  const stixCoreRelationshipValidator = useSchemaCreationValidation(
+    'stix-core-relationship',
+    stixCoreRelationshipBasicShape(t),
+  );
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState(null);
 
@@ -285,13 +306,22 @@ const StixCoreRelationshipCreationFromEntityList = ({
     if (alreadyAdded) {
       commitRelationDelete({
         variables: { ...input },
-        updater: (store) => deleteNodeFromEdge(store, updaterOptions.path, entity.id, data.id, updaterOptions.params),
+        updater: (store) => deleteNodeFromEdge(
+          store,
+          updaterOptions.path,
+          entity.id,
+          data.id,
+          updaterOptions.params,
+        ),
       });
-    // Add with references
-    } else if (enableReferences || !stixCoreRelationshipValidator.isValidSync(input)) {
+      // Add with references
+    } else if (
+      enableReferences
+      || !stixCoreRelationshipValidator.isValidSync(input)
+    ) {
       handleOpenForm();
       setSelected(data);
-    // Add
+      // Add
     } else {
       commitRelationAdd({
         variables: { input },
@@ -311,10 +341,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
       R.assoc('killChainPhases', R.pluck('value', input.killChainPhases)),
       R.assoc('createdBy', input.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', input.objectMarking)),
-      R.assoc(
-        'externalReferences',
-        R.pluck('value', input.externalReferences),
-      ),
+      R.assoc('externalReferences', R.pluck('value', input.externalReferences)),
     )(input);
     commitRelationAdd({
       variables: { input: finalValues },
@@ -323,61 +350,82 @@ const StixCoreRelationshipCreationFromEntityList = ({
   };
 
   const existingIds = existingDatas?.map((n) => n.node.id) ?? [];
-  const nodes = availableDatas.edges.filter((edge) => edge.node.id !== entity.id).map((edge) => edge.node);
+  const nodes = availableDatas.edges
+    .filter((edge) => edge.node.id !== entity.id)
+    .map((edge) => edge.node);
 
   const defaultDescription = (data) => truncate(
     // eslint-disable-next-line no-nested-ternary
-    (data.parent_types.includes('Stix-Cyber-Observable')
+    data.parent_types.includes('Stix-Cyber-Observable')
       ? data.x_opencti_description
-      : data.description),
+      : data.description,
     120,
   );
 
   return (
     <>
-      {showForm
-        ? <StixCoreRelationshipCreationForm
+      {showForm ? (
+        <StixCoreRelationshipCreationForm
           fromEntities={[entity]}
           toEntities={[selected]}
           relationshipTypes={[relationshipType]}
           onSubmit={createRelation}
           handleClose={handleCloseForm}
         />
-        : <div>
-      {nodes.length > 0 ? (
-        <List>
-          {availableDatas.edges.filter((edge) => edge.node.id !== entity.id).map((edge) => {
-            const { node } = edge;
-            const alreadyAdded = existingIds.includes(node.id);
-            return (
-              <ListItem
-                key={node.id}
-                divider={true}
-                button={true}
-                onClick={() => toggle(node, alreadyAdded)}
-              >
-                <ListItemIcon>
-                  {alreadyAdded ? (
-                    <CheckCircle classes={{ root: classes.icon }} />
-                  ) : (
-                    <ItemIcon type={node.entity_type} />
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  primary={node.name}
-                  secondary={defaultDescription(node)}
-                />
-              </ListItem>
-            );
-          })}
-        </List>
       ) : (
-        <div style={{ padding: 20 }}>
-          {t('No entities were found for this search.')}
+        <div>
+          {nodes.length > 0 ? (
+            <List>
+              {availableDatas.edges
+                .filter((edge) => edge.node.id !== entity.id)
+                .map((edge) => {
+                  const { node } = edge;
+                  const alreadyAdded = existingIds.includes(node.id);
+                  const flag = node.entity_type === 'Country'
+                    && R.head(
+                      (node.x_opencti_aliases ?? []).filter(
+                        (n) => n?.length === 2,
+                      ),
+                    );
+                  return (
+                    <ListItem
+                      key={node.id}
+                      divider={true}
+                      button={true}
+                      onClick={() => toggle(node, alreadyAdded)}
+                    >
+                      <ListItemIcon>
+                        {alreadyAdded ? (
+                          <CheckCircle classes={{ root: classes.icon }} />
+                        ) : (
+                          <>
+                            {flag ? (
+                              <img
+                                style={{ width: 20 }}
+                                src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                                alt={node.name}
+                              />
+                            ) : (
+                              <ItemIcon type={node.entity_type} />
+                            )}
+                          </>
+                        )}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={node.name}
+                        secondary={defaultDescription(node)}
+                      />
+                    </ListItem>
+                  );
+                })}
+            </List>
+          ) : (
+            <div style={{ padding: 20 }}>
+              {t('No entities were found for this search.')}
+            </div>
+          )}
         </div>
       )}
-    </div>
-      }
     </>
   );
 };

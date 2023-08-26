@@ -13,6 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { CountryLine_node$key } from './__generated__/CountryLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import { APP_BASE_PATH } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -101,7 +102,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
             alt={data.name}
           />
         ) : (
-          <FlagOutlined />
+          <ItemIcon type="Country" />
         )}
       </ListItemIcon>
       <ListItemText
