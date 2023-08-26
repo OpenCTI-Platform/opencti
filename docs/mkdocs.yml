@@ -158,6 +158,7 @@ nav:
       - Merge objects: usage/merging.md
     - Act on knowledge:    
       - Case management: usage/case-management.md
+      - Background tasks: usage/background-tasks.md
       - Notifications and alerting: usage/notifications.md
       - Custom dashboards: usage/dashboards.md
       - Workflows and assignation: usage/workflows.md
