@@ -3736,6 +3736,7 @@ const i18n = {
       entity_All: 'Toutes les entités',
       'entity_Stix-Domain-Object': 'Entité',
       'entity_Stix-Domain-Objects': 'Entités',
+      'entity_Stix-Core-Object': 'Entité et observable',
       'entity_Stix-Core-Objects': 'Entités et observables',
       'entity_Stix-Core-Relationship': 'Relations',
       'entity_stix-core-relationship': 'Relations',

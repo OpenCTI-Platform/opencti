@@ -1,5 +1,6 @@
 import { last, toPairs } from 'ramda';
 import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { truncate } from '../utils/String';
@@ -82,6 +83,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   chipLabel: {
     lineHeight: '32px',
+    maxWidth: 400,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 }));
 
@@ -152,7 +157,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
         const negative = filterKey.endsWith('not_eq');
         const localFilterMode = negative ? t('AND') : t('OR');
         const values = (
-          <span>
+          <>
             {filterContent.map((n) => (
               <span key={n.value}>
                 {redirection && entityFilters.includes(filterKey) ? (
@@ -174,26 +179,36 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
                 )}{' '}
               </span>
             ))}
-          </span>
+          </>
         );
         return (
           <span key={filterKey}>
-            <Chip
-              classes={{ root: classFilter, label: classes.chipLabel }}
-              label={
-                <div>
+            <Tooltip
+              title={
+                <>
                   <strong>{label}</strong>: {values}
-                </div>
+                </>
               }
-              disabled={
-                disabledPossible ? Object.keys(filters).length === 1 : undefined
-              }
-              onDelete={
-                handleRemoveFilter
-                  ? () => handleRemoveFilter(filterKey)
-                  : undefined
-              }
-            />
+            >
+              <Chip
+                classes={{ root: classFilter, label: classes.chipLabel }}
+                label={
+                  <>
+                    <strong>{label}</strong>: {values}
+                  </>
+                }
+                disabled={
+                  disabledPossible
+                    ? Object.keys(filters).length === 1
+                    : undefined
+                }
+                onDelete={
+                  handleRemoveFilter
+                    ? () => handleRemoveFilter(filterKey)
+                    : undefined
+                }
+              />
+            </Tooltip>
             {lastKey !== filterKey && (
               <Chip classes={{ root: classOperator }} label={t('AND')} />
             )}

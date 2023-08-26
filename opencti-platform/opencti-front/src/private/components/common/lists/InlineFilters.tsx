@@ -123,14 +123,14 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
     }
   };
   return (
-    <div>
+    <>
       <InputLabel
         classes={{ root: classes.inputLabel }}
       >
         {t(`filter_${filterKey}`)}
       </InputLabel>
       {booleanFilterContent()}
-    </div>
+    </>
   );
 };
 

@@ -228,25 +228,7 @@ class StixCyberObservableEntities extends Component {
             entityId={entityId}
             variant="inLine"
             isRelationReversed={relationReversed}
-            targetStixDomainObjectTypes={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Incident',
-              'Malware',
-              'Tool',
-              'Vulnerability',
-              'Individual',
-              'Organization',
-              'Sector',
-              'Region',
-              'Country',
-              'City',
-              'Position',
-              'Attack-Pattern',
-              'Narrative',
-              'Channel',
-            ]}
+            targetStixDomainObjectTypes={['Stix-Domain-Object']}
             targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
