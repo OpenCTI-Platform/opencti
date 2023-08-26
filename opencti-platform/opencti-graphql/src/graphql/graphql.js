@@ -10,7 +10,9 @@ import {
   DEV_MODE,
   PLAYGROUND_INTROSPECTION_DISABLED,
   ENABLED_TRACING,
-  PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED
+  PLAYGROUND_ENABLED,
+  GRAPHQL_ARMOR_ENABLED,
+  logApp
 } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ForbiddenAccess, ValidationError } from '../config/errors';
@@ -84,9 +86,13 @@ const createApolloServer = () => {
       executeContext.req = req;
       executeContext.res = res;
       executeContext.workId = req.headers['opencti-work-id'];
-      const user = await authenticateUserFromRequest(executeContext, req, res);
-      if (user) {
-        executeContext.user = userWithOrigin(req, user);
+      try {
+        const user = await authenticateUserFromRequest(executeContext, req, res);
+        if (user) {
+          executeContext.user = userWithOrigin(req, user);
+        }
+      } catch (error) {
+        logApp.error('Error in user context building', { error });
       }
       return executeContext;
     },

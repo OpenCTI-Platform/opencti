@@ -1106,7 +1106,8 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
       const { session_provider } = req.session;
       const { provider: userProvider, token: userToken } = session_provider;
-      return await internalAuthenticateUser(context, req, auth, userProvider, userToken, true);
+      const reloadedUser = await storeLoadById(context, SYSTEM_USER, auth.id, ENTITY_TYPE_USER);
+      return await internalAuthenticateUser(context, req, reloadedUser, userProvider, userToken, true);
     }
     // If everything ok, return the authenticated user.
     return userWithOrigin(req, auth);
