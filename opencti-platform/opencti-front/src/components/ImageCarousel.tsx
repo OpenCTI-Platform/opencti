@@ -94,7 +94,7 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
         className={classes.carousel}
         animation="slide"
         autoPlay={false}
-        height={180}
+        height={200}
         indicatorIconButtonProps={{ className: classes.indicators }}
         activeIndicatorIconButtonProps={{ className: classes.activeIndicators }}
         indicatorContainerProps={{ className: classes.indicatorsContainer }}
@@ -104,7 +104,7 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
       >
         {images.length > 0 ? (
           images.map((file: CarouselImage) => (
-            <ImageListItem key={file.imageSrc} style={{ height: 180 }}>
+            <ImageListItem key={file.imageSrc} style={{ height: 200 }}>
               <img
                 style={{
                   height: '100%',

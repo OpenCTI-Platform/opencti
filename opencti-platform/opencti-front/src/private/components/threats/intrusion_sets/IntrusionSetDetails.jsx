@@ -35,6 +35,12 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
+  smallPre: {
+    display: 'inline-block',
+    margin: 0,
+    paddingTop: '7px',
+    paddingBottom: '4px',
+  },
 });
 
 class IntrusionSetDetailsComponent extends Component {
@@ -52,7 +58,7 @@ class IntrusionSetDetailsComponent extends Component {
                 <Grid item={true} xs={4}>
                   <ImageCarousel data={intrusionSet} />
                 </Grid>
-                <Grid item={true} xs={4}>
+                <Grid item={true} xs={8}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Description')}
                   </Typography>
@@ -84,7 +90,7 @@ class IntrusionSetDetailsComponent extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={4}>
+            <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -97,7 +103,20 @@ class IntrusionSetDetailsComponent extends Component {
                 value={intrusionSet.resource_level}
               />
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Primary motivation')}
+              </Typography>
+              <ItemOpenVocab
+                type="attack-motivation-ov"
+                value={intrusionSet.primary_motivation}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -113,27 +132,18 @@ class IntrusionSetDetailsComponent extends Component {
                         <ListItemIcon>
                           <BullseyeArrow />
                         </ListItemIcon>
-                        <ListItemText primary={goal} />
+                        <ListItemText
+                          primary={
+                            <pre className={classes.smallPre}>{goal}</pre>
+                          }
+                        />
                       </ListItem>
                     ))}
                   </List>
                 )}
               </FieldOrEmpty>
             </Grid>
-            <Grid item={true} xs={4}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Primary motivation')}
-              </Typography>
-              <ItemOpenVocab
-                type="attack-motivation-ov"
-                value={intrusionSet.primary_motivation}
-              />
-            </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
                 gutterBottom={true}

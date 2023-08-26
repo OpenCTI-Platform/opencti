@@ -60,58 +60,59 @@ class ThreatActorGroupLocationsComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <div style={{ marginTop: -10 }}>
-          <FieldOrEmpty source={threatActorGroup.locations.edges}>
-            <List style={{ marginTop: 0 }}>
-              {threatActorGroup.locations.edges.map((locationEdge) => {
-                const location = locationEdge.node;
-                const link = resolveLink(location.entity_type);
-                const flag = location.entity_type === 'Country'
-                  && R.head(
-                    (location.x_opencti_aliases ?? []).filter(
-                      (n) => n?.length === 2,
-                    ),
-                  );
-                return (
-                  <ListItem
-                    key={location.id}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                    component={Link}
-                    to={`${link}/${location.id}`}
-                  >
-                    <ListItemIcon>
-                      <ListItemIcon>
-                        {flag ? (
-                          <img
-                            style={{ width: 20 }}
-                            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                            alt={location.name}
-                          />
-                        ) : (
-                          <ItemIcon type={location.entity_type} />
-                        )}
-                      </ListItemIcon>
-                    </ListItemIcon>
-                    <ListItemText primary={location.name} />
-                    <ListItemSecondaryAction>
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={this.removeLocation.bind(this, locationEdge)}
-                          size="large"
-                        >
-                          <LinkOff />
-                        </IconButton>
-                      </Security>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                );
-              })}
-            </List>
-          </FieldOrEmpty>
-        </div>
+        <List style={{ marginTop: -10 }}>
+          {threatActorGroup.locations.edges.length === 0 && (
+            <ListItem dense={true} divider={true} button={false}>
+              <ListItemText primary="-" />
+            </ListItem>
+          )}
+          {threatActorGroup.locations.edges.map((locationEdge) => {
+            const location = locationEdge.node;
+            const link = resolveLink(location.entity_type);
+            const flag = location.entity_type === 'Country'
+              && R.head(
+                (location.x_opencti_aliases ?? []).filter(
+                  (n) => n?.length === 2,
+                ),
+              );
+            return (
+              <ListItem
+                key={location.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`${link}/${location.id}`}
+              >
+                <ListItemIcon>
+                  <ListItemIcon>
+                    {flag ? (
+                      <img
+                        style={{ width: 20 }}
+                        src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                        alt={location.name}
+                      />
+                    ) : (
+                      <ItemIcon type={location.entity_type} />
+                    )}
+                  </ListItemIcon>
+                </ListItemIcon>
+                <ListItemText primary={location.name} />
+                <ListItemSecondaryAction>
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={this.removeLocation.bind(this, locationEdge)}
+                      size="large"
+                    >
+                      <LinkOff />
+                    </IconButton>
+                  </Security>
+                </ListItemSecondaryAction>
+              </ListItem>
+            );
+          })}
+        </List>
       </>
     );
   }

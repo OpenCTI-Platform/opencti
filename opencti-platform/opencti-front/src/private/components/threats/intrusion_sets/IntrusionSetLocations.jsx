@@ -12,9 +12,10 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
+import * as R from 'ramda';
 import AddLocations from './AddLocations';
 import { addLocationsMutationRelationDelete } from './AddLocationsLines';
-import { commitMutation } from '../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -64,11 +65,7 @@ class IntrusionSetLocationsComponent extends Component {
     const { t, intrusionSet } = this.props;
     return (
       <>
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ float: 'left' }}
-        >
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Originates from')}
         </Typography>
         <Security
@@ -81,44 +78,59 @@ class IntrusionSetLocationsComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <div style={{ marginTop: -10 }}>
-          <FieldOrEmpty source={intrusionSet.locations.edges}>
-            <List style={{ marginTop: 0 }}>
-              {intrusionSet.locations.edges.map((locationEdge) => {
-                const location = locationEdge.node;
-                const link = resolveLink(location.entity_type);
-                return (
-                  <ListItem
-                    key={location.id}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                    component={Link}
-                    to={`${link}/${location.id}`}
-                  >
-                    <ListItemIcon>
-                      <ListItemIcon>
-                        <ItemIcon type={location.entity_type} />
-                      </ListItemIcon>
-                    </ListItemIcon>
-                    <ListItemText primary={location.name} />
-                    <ListItemSecondaryAction>
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <IconButton
-                          aria-label="Remove"
-                          onClick={this.removeLocation.bind(this, locationEdge)}
-                          size="large"
-                        >
-                          <LinkOff />
-                        </IconButton>
-                      </Security>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                );
-              })}
-            </List>
-          </FieldOrEmpty>
-        </div>
+        <List style={{ marginTop: -10 }}>
+          {intrusionSet.locations.edges.length === 0 && (
+            <ListItem dense={true} divider={true} button={false}>
+              <ListItemText primary="-" />
+            </ListItem>
+          )}
+          {intrusionSet.locations.edges.map((locationEdge) => {
+            const location = locationEdge.node;
+            const link = resolveLink(location.entity_type);
+            const flag = location.entity_type === 'Country'
+              && R.head(
+                (location.x_opencti_aliases ?? []).filter(
+                  (n) => n?.length === 2,
+                ),
+              );
+            return (
+              <ListItem
+                key={location.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`${link}/${location.id}`}
+              >
+                <ListItemIcon>
+                  <ListItemIcon>
+                    {flag ? (
+                      <img
+                        style={{ width: 20 }}
+                        src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                        alt={location.name}
+                      />
+                    ) : (
+                      <ItemIcon type={location.entity_type} />
+                    )}
+                  </ListItemIcon>
+                </ListItemIcon>
+                <ListItemText primary={location.name} />
+                <ListItemSecondaryAction>
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={this.removeLocation.bind(this, locationEdge)}
+                      size="large"
+                    >
+                      <LinkOff />
+                    </IconButton>
+                  </Security>
+                </ListItemSecondaryAction>
+              </ListItem>
+            );
+          })}
+        </List>
       </>
     );
   }
@@ -147,6 +159,7 @@ const IntrusionSetLocations = createFragmentContainer(
               parent_types
               entity_type
               name
+              x_opencti_aliases
               description
             }
           }

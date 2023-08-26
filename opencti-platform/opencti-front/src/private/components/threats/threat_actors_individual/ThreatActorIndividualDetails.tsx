@@ -39,8 +39,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
-  carousel: {
-    textAlign: 'center',
+  smallPre: {
+    display: 'inline-block',
+    margin: 0,
+    paddingTop: '7px',
+    paddingBottom: '4px',
   },
 }));
 
@@ -235,7 +238,9 @@ ThreatActorIndividualDetailsProps
                       <ListItemIcon>
                         <BullseyeArrow />
                       </ListItemIcon>
-                      <ListItemText primary={goal} />
+                      <ListItemText
+                        primary={<pre className={classes.smallPre}>{goal}</pre>}
+                      />
                     </ListItem>
                   ))}
                 </List>

@@ -36,6 +36,12 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
+  smallPre: {
+    display: 'inline-block',
+    margin: 0,
+    paddingTop: '7px',
+    paddingBottom: '4px',
+  },
 });
 
 class ThreatActorGroupDetailsComponent extends Component {
@@ -189,7 +195,11 @@ class ThreatActorGroupDetailsComponent extends Component {
                         <ListItemIcon>
                           <BullseyeArrow />
                         </ListItemIcon>
-                        <ListItemText primary={goal} />
+                        <ListItemText
+                          primary={
+                            <pre className={classes.smallPre}>{goal}</pre>
+                          }
+                        />
                       </ListItem>
                     ))}
                   </List>
