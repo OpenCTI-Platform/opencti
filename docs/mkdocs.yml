@@ -132,6 +132,7 @@ nav:
       - Nested objects: usage/nested.md
       - Containers: usage/containers.md
       - Deduplication: usage/deduplication.md
+      - Reliability and confidence: usage/reliability-confidence.md
     - Explore knowledge:
       - Overview: usage/overview.md
       - Search for knowledge: usage/search.md
