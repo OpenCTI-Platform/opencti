@@ -40,10 +40,12 @@ export const pictureManagementViewerFragment = graphql`
 `;
 
 interface PictureManagementViewerProps {
-  entity: PictureManagementViewer_entity$key
+  entity: PictureManagementViewer_entity$key;
 }
 
-const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> = ({ entity }) => {
+const PictureManagementViewer: FunctionComponent<
+PictureManagementViewerProps
+> = ({ entity }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -70,7 +72,7 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
     },
   };
 
-  const images = (data?.images?.edges)?.map((edge) => edge?.node) ?? [];
+  const images = data?.images?.edges?.map((edge) => edge?.node) ?? [];
 
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
@@ -81,17 +83,24 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {images && images.length > 0 ? (
-            <div>
+            <>
               <ColumnsLinesTitles
                 dataColumns={dataColumns}
                 handleSort={() => {}}
               />
               <List>
-                {images.map((file, idx) => file && (
-                    <PictureLine picture={file} key={idx} dataColumns={dataColumns} entityId={data.id}/>
-                ))}
+                {images.map(
+                  (file, idx) => file && (
+                      <PictureLine
+                        picture={file}
+                        key={idx}
+                        dataColumns={dataColumns}
+                        entityId={data.id}
+                      />
+                  ),
+                )}
               </List>
-            </div>
+            </>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span

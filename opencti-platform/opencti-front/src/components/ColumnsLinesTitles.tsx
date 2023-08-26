@@ -49,7 +49,12 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
   const reverseBy = (field: string) => {
     handleSort(field, !orderAsc);
   };
-  const renderHeaderElement = (field: string, label: string, width: number | string | undefined, isSortable = true) => {
+  const renderHeaderElement = (
+    field: string,
+    label: string,
+    width: number | string | undefined,
+    isSortable = true,
+  ) => {
     if (isSortable) {
       const orderComponent = orderAsc ? (
         <ArrowDropDown
@@ -57,10 +62,7 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
           style={{ top: 0 }}
         />
       ) : (
-        <ArrowDropUp
-          classes={{ root: classes.sortIcon }}
-          style={{ top: 0 }}
-        />
+        <ArrowDropUp classes={{ root: classes.sortIcon }} style={{ top: 0 }} />
       );
       return (
         <div
@@ -82,7 +84,7 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
   };
   return (
     <ListItem classes={{ root: classes.item }} divider={false} button={false}>
-      <ListItemIcon></ListItemIcon>
+      <ListItemIcon> &nbsp; </ListItemIcon>
       <ListItemText
         primary={
           <div>

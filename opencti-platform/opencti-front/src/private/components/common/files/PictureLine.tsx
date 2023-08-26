@@ -5,8 +5,6 @@ import ListItem from '@mui/material/ListItem';
 import { React } from 'mdi-material-ui';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import IconButton from '@mui/material/IconButton';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { NorthEastOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '../../../../components/Theme';
@@ -48,6 +46,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     }),
     padding: 0,
   },
+  goIcon: {
+    position: 'absolute',
+    right: -10,
+  },
 }));
 
 interface PictureLineComponentProps {
@@ -56,25 +58,28 @@ interface PictureLineComponentProps {
   entityId: string;
 }
 
-const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, dataColumns, entityId }) => {
+const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
+  picture,
+  dataColumns,
+  entityId,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const data = useFragment(pictureManagementUtilsFragment, picture);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
-
   const handleOpenUpdate = () => setDisplayUpdate(true);
   const handleCloseUpdate = () => setDisplayUpdate(false);
-
   return (
     <div>
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        button={false}
+        button={true}
+        onClick={handleOpenUpdate}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <img
-            style={{ height: '33px', width: '33px' }}
+            style={{ height: 33, width: 33 }}
             src={getFileUri(data.id)}
             alt={data.name}
           />
@@ -90,13 +95,13 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, da
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.order.width, paddingLeft: '10px', justifyContent: 'center' }}
+                style={{ width: dataColumns.order.width }}
               >
                 {data.metaData?.order}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.inCarousel.width, paddingLeft: '10px', justifyContent: 'center' }}
+                style={{ width: dataColumns.inCarousel.width }}
               >
                 <ItemBoolean
                   status={data.metaData?.inCarousel}
@@ -106,17 +111,9 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({ picture, da
             </>
           }
         />
-        <ListItemSecondaryAction>
-          <IconButton
-            disabled={false}
-            aria-haspopup="true"
-            style={{ marginTop: 3 }}
-            size="large"
-            onClick={handleOpenUpdate}
-          >
-            <NorthEastOutlined />
-          </IconButton>
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <NorthEastOutlined />
+        </ListItemIcon>
       </ListItem>
       <Drawer
         open={displayUpdate}

@@ -54,35 +54,32 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface PictureManagementEditionProps {
-  picture: PictureManagementUtils_node$data
-  entityId: string
+  picture: PictureManagementUtils_node$data;
+  entityId: string;
   handleClose: () => void;
 }
 
 interface PictureManagementEditionFormValues {
-  id: string
+  id: string;
   description: string | null | undefined;
   inCarousel: boolean | null | undefined;
   order: number | null | undefined;
 }
 
-const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({
-  picture,
-  entityId,
-  handleClose,
-}) => {
+const PictureManagementEdition: FunctionComponent<
+PictureManagementEditionProps
+> = ({ picture, entityId, handleClose }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [commit] = useMutation<PictureManagementUtilsMutation>(pictureManagementUtilsMutation);
+  const [commit] = useMutation<PictureManagementUtilsMutation>(
+    pictureManagementUtilsMutation,
+  );
   const pictureValidation = () => Yup.object().shape({
     description: Yup.string().nullable(),
     order: Yup.number().nullable().integer(t('The value must be a number')),
     inCarousel: Yup.boolean().nullable(),
   });
-  const onSubmit: FormikConfig<PictureManagementEditionFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting, setErrors },
-  ) => {
+  const onSubmit: FormikConfig<PictureManagementEditionFormValues>['onSubmit'] = (values, { setSubmitting, setErrors }) => {
     const input: StixDomainObjectFileEditInput = {
       id: values.id,
       description: values.description,
@@ -106,7 +103,7 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
   };
 
   return (
-    <div>
+    <>
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
@@ -134,48 +131,48 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
           onSubmit={onSubmit}
         >
           {({ submitForm, isSubmitting, isValid }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="order"
-              label={t('Order of Carousel')}
-              fullWidth={true}
-              type="number"
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              name="inCarousel"
-              label={t('In Carousel')}
-              containerstyle={fieldSpacingContainerStyle}
-            />
-            <div className={classes.buttons}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={submitForm}
-                disabled={isSubmitting || !isValid}
-                classes={{ root: classes.button }}
-              >
-                {t('Update')}
-              </Button>
-            </div>
-          </Form>
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="order"
+                label={t('Order of Carousel')}
+                fullWidth={true}
+                type="number"
+                style={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="inCarousel"
+                label={t('In Carousel')}
+                containerstyle={fieldSpacingContainerStyle}
+              />
+              <div className={classes.buttons}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={submitForm}
+                  disabled={isSubmitting || !isValid}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Update')}
+                </Button>
+              </div>
+            </Form>
           )}
         </Formik>
       </div>
-    </div>
+    </>
   );
 };
 
