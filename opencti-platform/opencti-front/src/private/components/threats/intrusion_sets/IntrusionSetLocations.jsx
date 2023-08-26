@@ -20,6 +20,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   avatar: {
@@ -62,13 +63,17 @@ class IntrusionSetLocationsComponent extends Component {
   render() {
     const { t, intrusionSet } = this.props;
     return (
-      <div style={{ marginTop: -20 }}>
-        <Typography variant="h3" gutterBottom={true} style={{ float: 'left', marginTop: 20 }}>
+      <>
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          style={{ float: 'left' }}
+        >
           {t('Originates from')}
         </Typography>
         <Security
           needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ marginTop: 20, height: 29 }} />}
+          placeholder={<div style={{ height: 29 }} />}
         >
           <AddLocations
             intrusionSet={intrusionSet}
@@ -76,41 +81,45 @@ class IntrusionSetLocationsComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
-          {intrusionSet.locations.edges.map((locationEdge) => {
-            const location = locationEdge.node;
-            const link = resolveLink(location.entity_type);
-            return (
-              <ListItem
-                key={location.id}
-                dense={true}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`${link}/${location.id}`}
-              >
-                <ListItemIcon>
-                  <ListItemIcon>
-                    <ItemIcon type={location.entity_type} />
-                  </ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={location.name} />
-                <ListItemSecondaryAction>
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeLocation.bind(this, locationEdge)}
-                      size="large"
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </Security>
-                </ListItemSecondaryAction>
-              </ListItem>
-            );
-          })}
-        </List>
-      </div>
+        <div style={{ marginTop: -10 }}>
+          <FieldOrEmpty source={intrusionSet.locations.edges}>
+            <List style={{ marginTop: 0 }}>
+              {intrusionSet.locations.edges.map((locationEdge) => {
+                const location = locationEdge.node;
+                const link = resolveLink(location.entity_type);
+                return (
+                  <ListItem
+                    key={location.id}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                    component={Link}
+                    to={`${link}/${location.id}`}
+                  >
+                    <ListItemIcon>
+                      <ListItemIcon>
+                        <ItemIcon type={location.entity_type} />
+                      </ListItemIcon>
+                    </ListItemIcon>
+                    <ListItemText primary={location.name} />
+                    <ListItemSecondaryAction>
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <IconButton
+                          aria-label="Remove"
+                          onClick={this.removeLocation.bind(this, locationEdge)}
+                          size="large"
+                        >
+                          <LinkOff />
+                        </IconButton>
+                      </Security>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </FieldOrEmpty>
+        </div>
+      </>
     );
   }
 }
