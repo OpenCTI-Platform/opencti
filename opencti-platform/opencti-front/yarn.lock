@@ -13479,7 +13479,7 @@ __metadata:
     react-test-renderer: 18.2.0
     react-timeline-range-slider: 1.4.1
     react-virtualized: 9.22.5
-    recharts: 2.7.3
+    recharts: 2.8.0
     relay-compiler: 15.0.0
     relay-runtime: 15.0.0
     relay-test-utils: 15.0.0
@@ -15360,9 +15360,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:2.7.3":
-  version: 2.7.3
-  resolution: "recharts@npm:2.7.3"
+"recharts@npm:2.8.0":
+  version: 2.8.0
+  resolution: "recharts@npm:2.8.0"
   dependencies:
     classnames: ^2.2.5
     eventemitter3: ^4.0.1
@@ -15377,7 +15377,7 @@ __metadata:
     prop-types: ^15.6.0
     react: ^16.0.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 0d106906a80907eb16f9a4c0a9b9d941627d933b8ab3ad3981451023cdd6c88672c39b59bf54493461605d2532e55d806202fa4713106fab5e3595009db00d93
+  checksum: 4638bd5c6c2af8f5c79de5e13cce0e38f06e0bbb0a3c4df27a9b12632fd72c0a0604c8246f55e830f323dfa84a3da7cb2634c2243bb9c775d899fd71f9d4c87a
   languageName: node
   linkType: hard
 
