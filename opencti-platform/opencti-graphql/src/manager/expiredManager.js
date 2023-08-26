@@ -67,7 +67,6 @@ const expireHandler = async () => {
     lock = await lockResource([EXPIRED_MANAGER_KEY], { retryCount: 0 });
     running = true;
     const context = executionContext('expiration_manager');
-    logApp.info('[OPENCTI-MODULE] Starting expiration manager');
     const revokedInstancesPromise = revokedInstances(context);
     const expiredAccountsPromise = expiredAccounts(context);
     await Promise.all([revokedInstancesPromise, expiredAccountsPromise]);
@@ -88,6 +87,7 @@ const initExpiredManager = () => {
   let scheduler;
   return {
     start: () => {
+      logApp.info('[OPENCTI-MODULE] Starting expiration manager');
       scheduler = setIntervalAsync(async () => {
         await expireHandler();
       }, SCHEDULE_TIME);

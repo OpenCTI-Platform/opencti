@@ -23,41 +23,13 @@ import type { Filter } from '../database/middleware-loader';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
 
-// Retention manager responsible to cleanup old data
-// Each API will start is retention manager.
+// Ingestion manager responsible to cleanup old data
+// Each API will start is ingestion manager.
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 60000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
 
 let running = false;
-
-// const rssFeed: Partial<BasicStoreEntityIngestion> = {
-//   name: 'malwarebytes',
-//   description: '',
-//   uri: 'https://www.malwarebytes.com/blog/feed/index.xml',
-//   user_id: SYSTEM_USER.id,
-//   created_by_ref: 'identity--18fe5225-fee1-5627-ad3e-20c14435b024',
-//   object_marking_refs: [MARKING_TLP_CLEAR],
-//   report_types: ['threat-report'],
-//   current_state_date: undefined,
-//   ingestion_running: true,
-// };
-
-// const taxiiFeed: Partial<BasicStoreEntityIngestionTaxii> = {
-//   name: 'filigran',
-//   description: '',
-//   uri: 'https://filigran.opencti.io/taxii2',
-//   collection: '85b6a0cf-98cf-4676-ba89-eb14b2da0fc3',
-//   authentication_type: 'bearer',
-//   authentication_value: '0fea3ad5-da38-4c0a-b0c4-f2bc38434ba7',
-//   user_id: SYSTEM_USER.id,
-//   created_by_ref: 'identity--18fe5225-fee1-5627-ad3e-20c14435b024',
-//   object_marking_refs: [MARKING_TLP_CLEAR],
-//   report_types: ['threat-report'],
-//   added_after_start: undefined,
-//   current_state_cursor: undefined,
-//   ingestion_running: true,
-// };
 
 // region utils
 const asArray = (data: unknown) => {
@@ -229,7 +201,7 @@ const taxiiExecutor = async (context: AuthContext) => {
 // endregion
 
 const ingestionHandler = async () => {
-  logApp.debug('[OPENCTI-MODULE] Running retention manager');
+  logApp.debug('[OPENCTI-MODULE] Running ingestion manager');
   let lock;
   try {
     // Lock the manager
@@ -245,9 +217,9 @@ const ingestionHandler = async () => {
   } catch (e: any) {
     // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.debug('[OPENCTI-MODULE] Retention manager already in progress by another API');
+      logApp.debug('[OPENCTI-MODULE] Ingestion manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI-MODULE] Retention manager fail to execute', { error: e });
+      logApp.error('[OPENCTI-MODULE] Ingestion manager fail to execute', { error: e });
     }
   } finally {
     running = false;

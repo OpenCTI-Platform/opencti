@@ -104,7 +104,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
                 style={{ width: dataColumns.inCarousel.width }}
               >
                 <ItemBoolean
-                  status={data.metaData?.inCarousel}
+                  status={data.metaData?.inCarousel === true}
                   label={data.metaData?.inCarousel ? t('Yes') : t('No')}
                 />
               </div>
