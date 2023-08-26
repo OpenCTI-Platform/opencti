@@ -12,7 +12,7 @@ This configuration hides a specific entity type across the entire platform. It i
 
 You can define which Entities to hide platform-wide from « Settings » --> « Customization », and also from « Settings » --> « Parameters » giving you a list of hidden entities.
 
-You can also define hidden entities for specific users Roles, from « Settings » --> « Security » --> « Roles » and editing a Role.
+You can also define hidden entities for specific users Groups and users Organizations, from « Settings » --> « Security » --> « Groups/Organizations » and editing a Group/Organization.
 
 An overview is available in Parameters > Hidden entity types.
 
