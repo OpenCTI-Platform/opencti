@@ -4674,6 +4674,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@yr/monotone-cubic-spline@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "@yr/monotone-cubic-spline@npm:1.0.3"
+  checksum: ebc75e4d84d5b97d1d715452088ffe3cf6b3d71943433118116a2e90f17aed654b6f726868e913a49aef28645bb8afcc28580349de1ac77ad0c7dab3d991843e
+  languageName: node
+  linkType: hard
+
 "abab@npm:^2.0.6":
   version: 2.0.6
   resolution: "abab@npm:2.0.6"
@@ -4941,17 +4948,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apexcharts@npm:3.41.1":
-  version: 3.41.1
-  resolution: "apexcharts@npm:3.41.1"
+"apexcharts@npm:3.42.0":
+  version: 3.42.0
+  resolution: "apexcharts@npm:3.42.0"
   dependencies:
+    "@yr/monotone-cubic-spline": ^1.0.3
     svg.draggable.js: ^2.2.2
     svg.easing.js: ^2.0.0
     svg.filter.js: ^2.0.2
     svg.pathmorphing.js: ^0.1.3
     svg.resize.js: ^1.4.3
     svg.select.js: ^3.0.1
-  checksum: 096830c583f16093a16b940fc9268c5da620f084217df5695810a85b50aeb077f67b58aa3839c72e1c78a2ee4af6b4053286cf9f6599478789030ebbdff482fa
+  checksum: e29ce35d9b8ad8c06fbda6b0350337ee7ccbd540bc08d5edb73dcaa97295340ca00509159a5be70273a25cd0a910e44bf08b71e5d37909ff5d26f0d7c825cbd5
   languageName: node
   linkType: hard
 
@@ -13411,7 +13419,7 @@ __metadata:
     "@types/relay-test-utils": 14.1.0
     "@types/uuid": 9.0.2
     "@vitejs/plugin-react": 4.0.4
-    apexcharts: 3.41.1
+    apexcharts: 3.42.0
     axios: 1.4.0
     babel-plugin-relay: 15.0.0
     chokidar: 3.5.3
