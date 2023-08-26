@@ -20,7 +20,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { addLocationsThreatActorMutationRelationDelete } from './AddLocationsThreatActorIndividualLines';
 import AddLocationsThreatActorIndividual from './AddLocationsThreatActorIndividual';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 class ThreatActorIndividualLocationsComponent extends Component {
   removeLocation(locationEdge) {

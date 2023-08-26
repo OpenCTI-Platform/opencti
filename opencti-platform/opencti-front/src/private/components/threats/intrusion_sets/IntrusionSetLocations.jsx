@@ -21,7 +21,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   avatar: {
