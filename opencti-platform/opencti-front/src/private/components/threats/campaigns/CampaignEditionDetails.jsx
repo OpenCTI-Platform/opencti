@@ -173,7 +173,6 @@ const CampaignEditionDetailsComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
             name="objective"
             label={t('Objective')}
             fullWidth={true}

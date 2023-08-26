@@ -51,7 +51,13 @@ export interface SelectedEntity {
   toType?: string;
   source_id?: string;
   target_id?: string;
-  markedBy?: { id: string, definition_type: string, definition: string, x_opencti_order: number, x_opencti_color: string }[];
+  markedBy?: {
+    id: string;
+    definition_type: string;
+    definition: string;
+    x_opencti_order: number;
+    x_opencti_color: string;
+  }[];
 }
 
 interface EntityDetailsRightsBarProps {
@@ -99,8 +105,7 @@ EntityDetailsRightsBarProps
   };
   const hasOverviewPage = !selectedEntity.parent_types.some((el) => isStixNestedRefRelationship(el))
     && (!selectedEntity.parent_types.includes('Stix-Meta-Object')
-      || selectedEntity.entity_type === 'External-Reference'
-    )
+      || selectedEntity.entity_type === 'External-Reference')
     && selectedEntity.entity_type !== 'basic-relationship';
   const entityUrl = selectedEntity.entity_type === 'External-Reference'
     ? `/dashboard/analyses/external_references/${selectedEntity.id}`
@@ -124,13 +129,16 @@ EntityDetailsRightsBarProps
         }}
       >
         <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
-          <InputLabel id="label">{t('Object')}</InputLabel>
+          <InputLabel id="label" variant="outlined">
+            {t('Object')}
+          </InputLabel>
           <Select
             labelId="label"
             label={t('Object')}
             fullWidth={true}
             onChange={handleSelectEntity}
             value={selectedEntity.id}
+            variant="outlined"
           >
             {uniqSelectedEntities.map((entity) => (
               <MenuItem key={entity.id} value={entity.id}>
@@ -140,8 +148,8 @@ EntityDetailsRightsBarProps
           </Select>
         </FormControl>
         {/* Need to be handle */}
-        {hasOverviewPage
-          && <Tooltip title={t('Open the entity overview in a separated tab')}>
+        {hasOverviewPage && (
+          <Tooltip title={t('Open the entity overview in a separated tab')}>
             <div className={classes.external}>
               <IconButton
                 component={Link}
@@ -153,7 +161,7 @@ EntityDetailsRightsBarProps
               </IconButton>
             </div>
           </Tooltip>
-        }
+        )}
       </div>
       <div className="clearfix" />
       <div
@@ -167,8 +175,9 @@ EntityDetailsRightsBarProps
         {selectedEntity.entity_type === 'basic-relationship' && (
           <BasicRelationshipDetails relation={selectedEntity} />
         )}
-        {selectedEntity.parent_types.includes('stix-relationship') && selectedEntity.entity_type !== 'basic-relationship' && (
-          <RelationshipDetails relation={selectedEntity} />
+        {selectedEntity.parent_types.includes('stix-relationship')
+          && selectedEntity.entity_type !== 'basic-relationship' && (
+            <RelationshipDetails relation={selectedEntity} />
         )}
         {selectedEntity.parent_types.includes('Stix-Core-Object') && (
           <EntityDetails entity={selectedEntity} />

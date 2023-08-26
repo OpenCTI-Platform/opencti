@@ -95,26 +95,19 @@ const DashboardSettings = () => {
           <Security
             needs={[EXPLORE]}
             placeholder={
-              <div>
-                <FormControl style={{ width: '100%' }}>
-                  <InputLabel id="timeField" variant="standard">
-                    {t('Date reference')}
-                  </InputLabel>
-                  <Select
-                    labelId="timeField"
-                    variant="standard"
-                    value={timeField === null ? '' : timeField}
-                    onChange={(event) => handleUpdate('default_time_field', event.target.value)
-                    }
-                    fullWidth={true}
-                  >
-                    <MenuItem value="technical">{t('Technical date')}</MenuItem>
-                    <MenuItem value="functional">
-                      {t('Functional date')}
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
+              <FormControl style={{ width: '100%' }}>
+                <InputLabel id="timeField">{t('Date reference')}</InputLabel>
+                <Select
+                  labelId="timeField"
+                  value={timeField === null ? '' : timeField}
+                  onChange={(event) => handleUpdate('default_time_field', event.target.value)
+                  }
+                  fullWidth={true}
+                >
+                  <MenuItem value="technical">{t('Technical date')}</MenuItem>
+                  <MenuItem value="functional">{t('Functional date')}</MenuItem>
+                </Select>
+              </FormControl>
             }
           >
             <QueryRenderer
@@ -133,12 +126,11 @@ const DashboardSettings = () => {
                   return (
                     <div>
                       <FormControl style={{ width: '100%' }}>
-                        <InputLabel id="timeField" variant="standard">
+                        <InputLabel id="timeField">
                           {t('Date reference')}
                         </InputLabel>
                         <Select
                           labelId="timeField"
-                          variant="standard"
                           value={timeField ?? 'technical'}
                           onChange={(event) => handleUpdate(
                             'default_time_field',
@@ -156,12 +148,11 @@ const DashboardSettings = () => {
                         </Select>
                       </FormControl>
                       <FormControl style={{ width: '100%', marginTop: 20 }}>
-                        <InputLabel id="timeField" variant="standard">
+                        <InputLabel id="timeField">
                           {t('Custom dashboard')}
                         </InputLabel>
                         <Select
                           labelId="dashboard"
-                          variant="standard"
                           value={dashboard?.id ?? 'default'}
                           onChange={(event) => handleUpdate(
                             'default_dashboard',

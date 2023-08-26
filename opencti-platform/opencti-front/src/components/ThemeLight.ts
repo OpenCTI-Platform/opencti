@@ -101,6 +101,11 @@ const ThemeLight = (
         },
       },
     },
+    MuiFormControl: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
     MuiTextField: {
       defaultProps: {
         variant: 'standard',

@@ -195,7 +195,6 @@ const UserCreation = ({ paginationOptions }) => {
                 <Form>
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="name"
                     label={t('Name')}
                     fullWidth={true}

@@ -122,6 +122,7 @@ class ListCards extends Component {
               name="sort-by"
               value={sortBy}
               size="small"
+              variant="outlined"
               onChange={this.sortBy.bind(this)}
               inputProps={{
                 name: 'sort-by',

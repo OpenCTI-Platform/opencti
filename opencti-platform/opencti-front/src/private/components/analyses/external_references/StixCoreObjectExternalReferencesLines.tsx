@@ -536,7 +536,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
               <DialogContent>
                 <Field
                   component={SelectField}
-                  variant="standard"
                   name="connector_id"
                   label={t('Connector')}
                   fullWidth={true}

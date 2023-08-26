@@ -103,6 +103,11 @@ const ThemeDark = (
         },
       },
     },
+    MuiFormControl: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
     MuiTextField: {
       defaultProps: {
         variant: 'standard',

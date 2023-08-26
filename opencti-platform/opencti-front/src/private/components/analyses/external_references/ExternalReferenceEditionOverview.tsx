@@ -106,7 +106,6 @@ ExternalReferenceEditionOverviewComponentProps
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
-              variant="standard"
               name="source_name"
               label={t('Source name')}
               fullWidth={true}
@@ -118,7 +117,6 @@ ExternalReferenceEditionOverviewComponentProps
             />
             <Field
               component={TextField}
-              variant="standard"
               name="external_id"
               label={t('External ID')}
               fullWidth={true}
@@ -132,7 +130,6 @@ ExternalReferenceEditionOverviewComponentProps
             <Field
               component={TextField}
               disabled={externalReference.fileId}
-              variant="standard"
               name="url"
               label={t('URL')}
               fullWidth={true}

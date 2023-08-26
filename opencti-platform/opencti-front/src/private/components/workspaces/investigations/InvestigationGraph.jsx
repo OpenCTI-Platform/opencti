@@ -1987,7 +1987,6 @@ class InvestigationGraphComponent extends Component {
                         />
                         <Field
                           component={TextField}
-                          variant="standard"
                           name="limit"
                           label={t('Limit')}
                           type="number"

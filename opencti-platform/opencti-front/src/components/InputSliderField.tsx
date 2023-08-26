@@ -62,7 +62,6 @@ InputSliderFieldProps & FieldProps
             <Field
               component={TextField}
               fullWidth
-              variant="standard"
               type="number"
               name={name}
               label={label}
@@ -77,7 +76,6 @@ InputSliderFieldProps & FieldProps
           <Grid item={true} xs={6}>
             <Select
               fullWidth
-              variant="standard"
               labelId={name}
               value={currentLevel.level.value !== null ? currentLevel.level.value.toString() : ''}
               onChange={updateFromSelect}
@@ -118,7 +116,6 @@ InputSliderFieldProps & FieldProps
           <Field
             component={TextField}
             fullWidth
-            variant="standard"
             type="number"
             name={name}
             label={label}
@@ -128,7 +125,6 @@ InputSliderFieldProps & FieldProps
         <Grid item={true} xs={6}>
           <Select
             fullWidth
-            variant="standard"
             labelId={name}
             value={currentLevel.level.value !== null ? currentLevel.level.value.toString() : ''}
             onChange={(event) => setFieldValue(name, event.target.value)}

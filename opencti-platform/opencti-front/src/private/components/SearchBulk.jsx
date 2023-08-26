@@ -517,6 +517,7 @@ const SearchBulk = () => {
             fullWidth={true}
             minRows={20}
             placeholder={t('One keyword by line or separated by commas')}
+            variant="outlined"
           />
         </Grid>
         <Grid item={true} xs={10} style={{ marginTop: -20 }}>

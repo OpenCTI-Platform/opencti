@@ -196,7 +196,6 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
-            variant="standard"
             name="name"
             label={t('Name')}
             fullWidth={true}
@@ -204,7 +203,6 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
           <Field
             component={TextField}
             name="description"
-            variant="standard"
             label={t('Description')}
             fullWidth={true}
             style={{ marginTop: 20 }}

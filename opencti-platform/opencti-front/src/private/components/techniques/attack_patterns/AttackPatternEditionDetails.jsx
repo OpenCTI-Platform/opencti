@@ -171,7 +171,6 @@ const AttackPatternEditionDetailsComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
             name="x_mitre_detection"
             label={t('Detection')}
             fullWidth={true}

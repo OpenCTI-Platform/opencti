@@ -252,7 +252,11 @@ const WorkspaceHeader = ({
           <div
             style={{ display: 'flex', margin: '-3px 0 0 5px', float: 'left' }}
           >
-            <FormControl size="small" style={{ width: 194, marginRight: 20 }}>
+            <FormControl
+              size="small"
+              style={{ width: 194, marginRight: 20 }}
+              variant="outlined"
+            >
               <InputLabel id="relative">{t('Relative time')}</InputLabel>
               <Select
                 labelId="relative"
@@ -387,7 +391,6 @@ const WorkspaceHeader = ({
                 <Form style={{ float: 'right' }}>
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="new_tag"
                     autoFocus={true}
                     placeholder={t('New tag')}

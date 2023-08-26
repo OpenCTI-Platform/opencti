@@ -63,9 +63,8 @@ const ColorPickerField = (props) => {
     }
   };
   return (
-    <div>
+    <>
       <MuiTextField
-        variant="standard"
         {...fieldToTextField(props)}
         error={!isNil(meta.error)}
         helperText={!isNil(meta.error) ? meta.error : props.helperText}
@@ -98,7 +97,7 @@ const ColorPickerField = (props) => {
           onChangeComplete={(color) => handleChange(color)}
         />
       </Popover>
-    </div>
+    </>
   );
 };
 

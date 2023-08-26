@@ -282,14 +282,12 @@ ExternalReferenceCreationProps
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="external_id"
                     id={'external_id'}
                     label={t('External ID')}
@@ -298,7 +296,6 @@ ExternalReferenceCreationProps
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="url"
                     label={t('URL')}
                     fullWidth={true}
@@ -399,14 +396,12 @@ ExternalReferenceCreationProps
                 <DialogContent>
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="external_id"
                     id={'external_id'}
                     label={t('External ID')}
@@ -415,7 +410,6 @@ ExternalReferenceCreationProps
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="url"
                     label={t('URL')}
                     fullWidth={true}

@@ -403,7 +403,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                       : classes.switchKillChain
                   }
                 >
-                  <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+                  <FormControl sx={{ m: 1, minWidth: 120 }}>
                     <InputLabel>{t('Kill chain')}</InputLabel>
                     <Select
                       size="small"

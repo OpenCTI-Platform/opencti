@@ -202,7 +202,6 @@ const CourseOfActionEditionOverviewComponent = (props) => {
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
-            variant="standard"
             name="name"
             label={t('Name')}
             fullWidth={true}
@@ -214,7 +213,6 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
             name="x_mitre_id"
             label={t('External ID')}
             fullWidth={true}
@@ -258,7 +256,6 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
             name="x_opencti_log_sources"
             label={t('Log sources (1 / line)')}
             fullWidth={true}

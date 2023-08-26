@@ -170,7 +170,6 @@ class GroupCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
-                    variant="standard"
                     name="name"
                     label={t('Name')}
                     fullWidth={true}

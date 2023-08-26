@@ -84,14 +84,12 @@ const LoginForm = () => {
           <Form>
             <Field
               component={TextField}
-              variant="standard"
               name="email"
               label={t('Login')}
               fullWidth={true}
             />
             <Field
               component={TextField}
-              variant="standard"
               name="password"
               label={t('Password')}
               type="password"

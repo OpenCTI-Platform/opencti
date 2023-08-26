@@ -282,7 +282,6 @@ WorkspaceManageAccessDialogProps
                             component={SelectField}
                             name="objectMemberAccessRight"
                             label={t('Access right')}
-                            variant="standard"
                             style={{ m: 1, minWidth: 120 }}
                             size="small"
                           >
@@ -366,7 +365,6 @@ WorkspaceManageAccessDialogProps
                             <Field
                               component={SelectField}
                               name={`authorizedMembers[${index}].access_right`}
-                              variant="standard"
                               sx={{ m: 1, minWidth: 120 }}
                               inputProps={{ 'aria-label': 'Without label' }}
                               disabled={authorizedMember.id === me.id}

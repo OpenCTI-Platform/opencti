@@ -181,7 +181,6 @@ NoteEditionOverviewProps
           />
           <Field
             component={TextField}
-            variant="standard"
             name="attribute_abstract"
             label={t('Abstract')}
             fullWidth={true}
@@ -230,7 +229,6 @@ NoteEditionOverviewProps
           />
           <Field
             component={SliderField}
-            variant="standard"
             name="likelihood"
             type="number"
             label={t('Likelihood')}

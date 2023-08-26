@@ -187,7 +187,6 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
-            variant="standard"
             name="name"
             label={t('Name')}
             fullWidth={true}
@@ -204,7 +203,6 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
             name="latitude"
             label={t('Latitude')}
             fullWidth={true}
@@ -212,7 +210,6 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           />
           <Field
             component={TextField}
-            variant="standard"
             name="longitude"
             label={t('Longitude')}
             fullWidth={true}

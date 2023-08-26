@@ -118,7 +118,6 @@ Omit<OpenVocabProps, 'type'>
         renderOption={renderOption}
         isOptionEqualToValue={(option: Option, value: string) => option.value === value}
         textfieldprops={{
-          variant: 'standard',
           label,
           helperText: editContext ? (
             <SubscriptionFocus context={editContext} fieldName={name} />
@@ -139,7 +138,6 @@ Omit<OpenVocabProps, 'type'>
       renderOption={renderOption}
       isOptionEqualToValue={(option: Option, value: string) => option.value === value}
       textfieldprops={{
-        variant: 'standard',
         label,
         helperText: editContext ? (
           <SubscriptionFocus context={editContext} fieldName={name} />

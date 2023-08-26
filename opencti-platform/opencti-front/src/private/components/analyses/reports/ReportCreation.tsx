@@ -243,7 +243,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
-            variant="standard"
             name="name"
             label={t('Name')}
             fullWidth={true}
@@ -253,7 +252,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             name="published"
             TextFieldProps={{
               label: t('Publication date'),
-              variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
             }}

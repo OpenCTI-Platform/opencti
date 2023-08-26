@@ -842,7 +842,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                 <div style={{ display: 'flex', width: '100%' }}>
                   <TextField
                     style={{ flex: 1 }}
-                    variant="standard"
                     label={`${t('Label')} (${dataSelection[i].perspective})`}
                     fullWidth={true}
                     value={dataSelection[i].label}
@@ -1136,7 +1135,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     return (
       <div style={{ marginTop: 20 }}>
         <TextField
-          variant="standard"
           label={t('Title')}
           fullWidth={true}
           value={parameters.title}
@@ -1146,7 +1144,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         {getCurrentCategory() === 'timeseries' && (
           <FormControl
             fullWidth={true}
-            variant="standard"
             style={{ marginTop: 20 }}
           >
             <InputLabel id="relative">{t('Interval')}</InputLabel>
@@ -1173,7 +1170,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                 <div key={i}>
                   {getCurrentCategory() === 'distribution' && (
                     <TextField
-                      variant="standard"
                       label={t('Number of results')}
                       fullWidth={true}
                       type="number"
@@ -1199,7 +1195,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       <FormControl fullWidth={true} style={{ flex: 1 }}>
                         <InputLabel
                           id="relative"
-                          variant="standard"
                           size="small"
                         >
                           {isNotEmptyField(dataSelection[i].label)
@@ -1207,7 +1202,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             : t('Date attribute')}
                         </InputLabel>
                         <Select
-                          variant="standard"
                           labelId="relative"
                           size="small"
                           fullWidth={true}
@@ -1260,7 +1254,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   {dataSelection[i].perspective === 'relationships'
                     && type === 'map' && (
                       <TextField
-                        variant="standard"
                         label={t('Zoom')}
                         fullWidth={true}
                         value={dataSelection[i].zoom ?? 2}
@@ -1277,7 +1270,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   {dataSelection[i].perspective === 'relationships'
                     && type === 'map' && (
                       <TextField
-                        variant="standard"
                         label={t('Center latitude')}
                         fullWidth={true}
                         value={dataSelection[i].centerLat ?? 48.8566969}
@@ -1294,7 +1286,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   {dataSelection[i].perspective === 'relationships'
                     && type === 'map' && (
                       <TextField
-                        variant="standard"
                         label={t('Center longitude')}
                         fullWidth={true}
                         value={dataSelection[i].centerLng ?? 2.3514616}
@@ -1321,12 +1312,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             marginRight: 20,
                           }}
                         >
-                          <InputLabel variant="standard">
+                          <InputLabel>
                             {t('Attribute')}
                           </InputLabel>
                           <Select
                             fullWidth={true}
-                            variant="standard"
                             value={dataSelection[i].attribute}
                             onChange={(event) => handleChangeDataValidationParameter(
                               i,
@@ -1353,7 +1343,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                               flex: 1,
                             }}
                           >
-                            <InputLabel variant="standard">
+                            <InputLabel>
                               {t('Attribute')}
                             </InputLabel>
                             <QueryRenderer
@@ -1394,7 +1384,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                   return (
                                     <Select
                                       fullWidth={true}
-                                      variant="standard"
                                       value={dataSelection[i].attribute}
                                       onChange={(event) => handleChangeDataValidationParameter(
                                         i,
@@ -1443,7 +1432,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                   ? 20
                                   : 0,
                             }}
-                            variant="standard"
                             label={t('Field')}
                             fullWidth={true}
                             value={dataSelection[i].attribute}
@@ -1464,12 +1452,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             flex: 1,
                           }}
                         >
-                          <InputLabel variant="standard">
+                          <InputLabel>
                             {t('Attribute')}
                           </InputLabel>
                           <Select
                             fullWidth={true}
-                            variant="standard"
                             value={dataSelection[i].attribute ?? 'entity_type'}
                             onChange={(event) => handleChangeDataValidationParameter(
                               i,

@@ -240,7 +240,6 @@ const IntrusionSetEditionDetailsComponent = (props) => {
           />
           <Field
             component={TextField}
-            variant="standard"
             name="goals"
             label={t('Goals (1 / line)')}
             fullWidth={true}

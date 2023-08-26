@@ -86,7 +86,7 @@ const RatingField: FunctionComponent<RatingProps> = ({
   return (
     <div style={style}>
       {!readOnly && (
-        <InputLabel id="input-slider" shrink={true} variant="standard">
+        <InputLabel id="input-slider" shrink={true}>
           {label}
         </InputLabel>
       )}

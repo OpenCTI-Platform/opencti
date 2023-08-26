@@ -59,7 +59,7 @@ const MarkdownField = (props) => {
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
-      <InputLabel shrink={true} variant="standard">
+      <InputLabel shrink={true}>
         {label}
       </InputLabel>
       <ReactMde

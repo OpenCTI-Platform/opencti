@@ -319,7 +319,6 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                     <>
                       <Field
                         component={TextField}
-                        variant="standard"
                         name="attribute_abstract"
                         label={t('Abstract')}
                         fullWidth={true}
@@ -339,7 +338,6 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       />
                       <Field
                         component={SliderField}
-                        variant="standard"
                         name="likelihood"
                         label={t('Likelihood')}
                         fullWidth={true}

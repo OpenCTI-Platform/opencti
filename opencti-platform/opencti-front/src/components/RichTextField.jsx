@@ -82,7 +82,7 @@ const RichTextField = (props) => {
   };
   return (
     <div style={style} className={!R.isNil(meta.error) ? 'error' : 'main'}>
-      <InputLabel shrink={true} variant="standard" style={{ float: 'left' }}>
+      <InputLabel shrink={true} style={{ float: 'left' }}>
         {label}
       </InputLabel>
       <IconButton
