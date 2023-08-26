@@ -9,6 +9,7 @@ import { ZoomOutMapOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import { convertImagesToCarousel } from '../utils/edition';
 import { Theme } from './Theme';
+import { isNotEmptyField } from '../utils/utils';
 
 const useStyles = makeStyles((theme: Theme) => ({
   carousel: {
@@ -114,10 +115,12 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
                 src={file.imageSrc}
                 alt={file.altText}
               />
-              <ImageListItemBar
-                position="bottom"
-                subtitle={file.tooltipTitle}
-              />
+              {isNotEmptyField(file.tooltipTitle) && (
+                <ImageListItemBar
+                  position="bottom"
+                  subtitle={file.tooltipTitle}
+                />
+              )}
               <ImageListItemBar
                 sx={{ background: 'none' }}
                 position="top"
@@ -147,7 +150,11 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
       </Carousel>
       <Modal open={currentImage !== null} onClose={() => setCurrentImage(null)}>
         <Box sx={modalStyle}>
-          <img src={currentImage?.imageSrc} alt={currentImage?.altText} style={{ maxWidth: '80vw', maxHeight: '80vh' }} />
+          <img
+            src={currentImage?.imageSrc}
+            alt={currentImage?.altText}
+            style={{ maxWidth: '80vw', maxHeight: '80vh' }}
+          />
         </Box>
       </Modal>
     </>

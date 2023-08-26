@@ -14,7 +14,6 @@ import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
-import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -305,7 +304,7 @@ export const upload = async (context, user, path, fileUpload, opts) => {
   return file;
 };
 
-export const filesListing = async (context, user, first, path, entityId = null, prefixMimeType = '') => {
+export const filesListing = async (context, user, first, path, entity = null, prefixMimeType = '') => {
   const filesListingFn = async () => {
     const files = await rawFilesListing(context, user, path);
     const inExport = await loadExportWorksAsProgressFiles(context, user, path);
@@ -315,14 +314,11 @@ export const filesListing = async (context, user, first, path, entityId = null, 
     if (prefixMimeType) {
       fileNodes = fileNodes.filter((n) => n.node.metaData.mimetype.includes(prefixMimeType));
     }
-    if (entityId) {
-      fileNodes = fileNodes.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
-      if (prefixMimeType === 'image/') {
-        // we need to fetch more data for images : order, inCarousel, description
-        fileNodes = await resolveImageFiles(context, user, fileNodes, entityId);
-      }
+    if (entity) {
+      fileNodes = fileNodes.filter((n) => n.node.metaData.entity_id === entity.internal_id, fileNodes);
+      fileNodes = await resolveImageFiles(context, user, fileNodes, entity);
     }
-    return buildPagination(first, null, fileNodes, fileNodes.length);
+    return buildPagination(first, null, fileNodes, allFiles.length);
   };
   return telemetry(context, user, `STORAGE ${path}`, {
     [SemanticAttributes.DB_NAME]: 'storage_engine',
@@ -338,23 +334,25 @@ export const deleteAllFiles = async (context, user, path) => {
   return deleteFiles(context, user, ids);
 };
 
-const resolveImageFiles = async (context, user, fileNodes, entityId) => {
-  const resolveEntity = await internalLoadById(context, user, entityId);
+const resolveImageFiles = async (context, user, fileNodes, resolveEntity) => {
   const elasticFiles = resolveEntity.x_opencti_files;
   return fileNodes.map((file) => {
     const elasticFile = elasticFiles.find((e) => e.id === file.node.id);
-    return {
-      ...file,
-      node: {
-        ...file.node,
-        metaData: {
-          ...file.node.metaData,
-          order: elasticFile.order,
-          inCarousel: elasticFile.inCarousel,
-          description: elasticFile.description
+    if (elasticFile) {
+      return {
+        ...file,
+        node: {
+          ...file.node,
+          metaData: {
+            ...file.node.metaData,
+            order: elasticFile.order,
+            inCarousel: elasticFile.inCarousel,
+            description: elasticFile.description
+          }
         }
-      }
-    };
+      };
+    }
+    return file;
   }).sort((a, b) => {
     const orderA = a.node.metaData?.order ?? Infinity;
     const orderB = b.node.metaData?.order ?? Infinity;

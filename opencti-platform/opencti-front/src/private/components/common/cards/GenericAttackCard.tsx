@@ -170,7 +170,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
           avatar={
             cardData.avatar ? (
               <img
-                style={{ height: 37 }}
+                style={{ height: 37, maxWidth: 100, borderRadius: 5 }}
                 src={getFileUri(cardData.avatar.id)}
                 alt={cardData.avatar.name}
               />

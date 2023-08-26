@@ -72,19 +72,23 @@ FileImportViewerComponentProps
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {importFiles?.edges?.length ? (
             <List>
-              {importFiles?.edges?.map((file) => (
-                <FileLine
-                  key={file?.node.id}
-                  dense={true}
-                  disableImport={disableImport}
-                  file={file?.node}
-                  connectors={
-                    connectors
-                    && connectors[file?.node?.metaData?.mimetype ?? 0]
-                  }
-                  handleOpenImport={handleOpenImport}
-                />
-              ))}
+              {importFiles?.edges?.map((file) => {
+                return (
+                  file?.node && (
+                    <FileLine
+                      key={file?.node.id}
+                      dense={true}
+                      disableImport={disableImport}
+                      file={file?.node}
+                      connectors={
+                        connectors
+                        && connectors[file?.node?.metaData?.mimetype ?? 0]
+                      }
+                      handleOpenImport={handleOpenImport}
+                    />
+                  )
+                );
+              })}
             </List>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -127,9 +131,6 @@ const FileImportViewer = createRefetchContainer(
               ...FileLine_file
               metaData {
                 mimetype
-                description
-                order
-                inCarousel
               }
             }
           }

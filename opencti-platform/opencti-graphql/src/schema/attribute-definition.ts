@@ -1,4 +1,4 @@
-export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json';
+export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'object';
 export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 
 export interface AttributeDefinition {
@@ -53,7 +53,7 @@ export const iAliasedIds: AttributeDefinition = {
 
 export const files: AttributeDefinition = {
   name: 'x_opencti_files',
-  type: 'string',
+  type: 'object',
   mandatoryType: 'no',
   multiple: true,
   upsert: false,

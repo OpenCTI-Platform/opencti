@@ -103,7 +103,7 @@ const inlineStylesHeaders = {
   },
   name: {
     float: 'left',
-    width: '40%',
+    width: '35%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -121,6 +121,7 @@ const inlineStylesHeaders = {
   },
   lastModified: {
     float: 'left',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -441,7 +442,7 @@ class ImportContentComponent extends Component {
                           fontSize: 12,
                         }}
                       >
-                        #
+                        &nbsp;
                       </span>
                     </ListItemIcon>
                     <ListItemText
@@ -458,7 +459,7 @@ class ImportContentComponent extends Component {
                         </div>
                       }
                     />
-                    <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+                    <ListItemSecondaryAction style={{ width: 96 }}> &nbsp; </ListItemSecondaryAction>
                   </ListItem>
                   {pendingFilesEdges.map((file) => (
                     <WorkbenchFileLine

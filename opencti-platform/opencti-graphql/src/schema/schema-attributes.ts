@@ -25,6 +25,7 @@ export const schemaAttributesDefinition = {
     boolean: new Map<string, void>(),
     dictionary: new Map<string, void>(),
     json: new Map<string, void>(),
+    object: new Map<string, void>(),
     runtime: new Map<string, void>(),
   } as Record<AttrType, Map<string, void>>,
   upsertByEntity: new Map<string, string[]>(),
@@ -128,6 +129,9 @@ export const isDateAttribute = (k: string): boolean => (
 );
 export const isDictionaryAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'dictionary')
+);
+export const isObjectAttribute = (k: string): boolean => (
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'object')
 );
 export const isJsonAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'json')

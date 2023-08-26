@@ -16,7 +16,7 @@ import { truncate } from '../utils/mailData';
 import {
   isDateAttribute,
   isDictionaryAttribute,
-  isJsonAttribute,
+  isJsonAttribute, isObjectAttribute,
   schemaAttributesDefinition
 } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -358,6 +358,8 @@ export const generateUpdateMessage = (entityType, inputs) => {
           message = 'itself'; // Creator special case
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
+        } else if (isObjectAttribute(key)) {
+          message = 'elements';
         } else if (isJsonAttribute(key)) {
           message = values.map((v) => truncate(JSON.stringify(v)));
         } else if (isDateAttribute(key)) {

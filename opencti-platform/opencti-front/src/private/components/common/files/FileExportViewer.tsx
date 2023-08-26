@@ -80,14 +80,18 @@ FileExportViewerComponentProps
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {exportFiles?.edges?.length ? (
             <List>
-              {exportFiles.edges.map((file) => (
-                <FileLine
-                  key={file?.node.id}
-                  file={file?.node}
-                  dense={true}
-                  disableImport={true}
-                />
-              ))}
+              {exportFiles.edges.map((file) => {
+                return (
+                  file?.node && (
+                    <FileLine
+                      key={file?.node.id}
+                      file={file?.node}
+                      dense={true}
+                      disableImport={true}
+                    />
+                  )
+                );
+              })}
             </List>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>

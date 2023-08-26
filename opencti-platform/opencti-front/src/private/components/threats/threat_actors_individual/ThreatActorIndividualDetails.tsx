@@ -91,7 +91,8 @@ ThreatActorIndividualDetailsProps
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
-  const hasImages = (data.images?.edges?.length ?? 0) > 0;
+  const hasImages = (data.images?.edges ?? []).filter((n) => n?.node?.metaData?.inCarousel)
+    .length > 0;
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>

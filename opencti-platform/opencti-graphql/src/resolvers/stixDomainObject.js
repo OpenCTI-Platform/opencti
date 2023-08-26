@@ -61,8 +61,6 @@ const stixDomainObjectResolvers = {
       return 'Unknown';
     },
     avatar: (stixDomainObject) => stixDomainObjectAvatar(stixDomainObject),
-    importFiles: (stixDomainObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixDomainObject.entity_type}/${stixDomainObject.id}/`, stixDomainObject.id, prefixMimeType),
-    exportFiles: (stixDomainObject, { first }, context) => filesListing(context, context.user, first, `export/${stixDomainObject.entity_type}/${stixDomainObject.id}/`),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
     objectAssignee: (stixDomainObject, _, context) => assigneesLoader.load(stixDomainObject.id, context, context.user),
     workflowEnabled: async (stixDomainObject, _, context) => {
@@ -98,7 +96,7 @@ const stixDomainObjectResolvers = {
           () => pubSubAsyncIterator([bus.EDIT_TOPIC, bus.CONTEXT_TOPIC]),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
-            return payload.instance.id === id;
+            return payload.user.id !== context.user.id && payload.instance.id === id;
           }
         )(_, { id }, context);
         return withCancel(filtering, () => {

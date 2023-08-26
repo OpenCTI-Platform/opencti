@@ -67,7 +67,7 @@ export const deleteImport = async (context, user, fileName) => {
   // and update the updated_at field of the source entity
   if (fileName.startsWith('import') && !fileName.includes('global') && !fileName.includes('pending')) {
     await stixCoreObjectImportDelete(context, context.user, fileName);
-    return true;
+    return fileName;
   }
   // If not, a simple deletion is enough
   const upDelete = await deleteFile(context, context.user, fileName);
@@ -79,5 +79,5 @@ export const deleteImport = async (context, user, fileName) => {
     event_scope: 'delete',
     context_data: contextData
   });
-  return true;
+  return fileName;
 };

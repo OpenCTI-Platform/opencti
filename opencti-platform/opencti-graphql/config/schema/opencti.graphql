@@ -13416,7 +13416,7 @@ type StixRefRelationshipEditMutations {
 
 type Mutation {
   ###### INTERNAL
-  deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  deleteImport(fileName: String): ID @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String, bypassValidation: Boolean): File

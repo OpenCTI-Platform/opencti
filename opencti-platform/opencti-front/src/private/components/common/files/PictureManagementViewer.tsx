@@ -71,9 +71,9 @@ PictureManagementViewerProps
       isSortable: false,
     },
   };
-
-  const images = data?.images?.edges?.map((edge) => edge?.node) ?? [];
-
+  const images = data?.images?.edges
+    ?.filter((edge) => edge?.node)
+    .map((edge) => edge?.node) ?? [];
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
       <div style={{ height: '100%' }} className="break">

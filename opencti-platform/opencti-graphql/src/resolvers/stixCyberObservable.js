@@ -82,10 +82,10 @@ const stixCyberObservableResolvers = {
     stixCoreRelationships: (rel, args, context) => stixCoreRelationships(context, context.user, rel.id, args),
     toStix: (stixCyberObservable, _, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id),
     importFiles: (stixCyberObservable, { first }, context) => {
-      return filesListing(context, context.user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`);
+      return filesListing(context, context.user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`, stixCyberObservable);
     },
     exportFiles: (stixCyberObservable, { first }, context) => {
-      return filesListing(context, context.user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`);
+      return filesListing(context, context.user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`, stixCyberObservable);
     },
   },
   Process: {

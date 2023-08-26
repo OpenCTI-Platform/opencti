@@ -111,9 +111,9 @@ const stixCoreObjectResolvers = {
     observedData: (stixCoreObject, _, context) => observedDataLoader.load(stixCoreObject.id, context, context.user),
     jobs: (stixCoreObject, args, context) => worksForSource(context, context.user, stixCoreObject.id, args),
     connectors: (stixCoreObject, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, stixCoreObject.entity_type, onlyAlive),
-    importFiles: (stixCoreObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, null, prefixMimeType),
-    pendingFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, 'import/pending/', stixCoreObject.id),
-    exportFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}/`),
+    importFiles: (stixCoreObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject, prefixMimeType),
+    pendingFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, 'import/pending/', stixCoreObject),
+    exportFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, context) => ({

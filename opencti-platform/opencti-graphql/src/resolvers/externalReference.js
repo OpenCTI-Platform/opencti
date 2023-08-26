@@ -43,7 +43,7 @@ const externalReferenceResolvers = {
     jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.id, args),
     connectors: (externalReference, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),
     importFiles: async (entity, { first }, context) => {
-      const listing = await filesListing(context, context.user, first, `import/${entity.entity_type}/${entity.id}/`);
+      const listing = await filesListing(context, context.user, first, `import/${entity.entity_type}/${entity.id}/`, entity);
       if (entity.fileId) {
         try {
           const refFile = await loadFile(context, context.user, entity.fileId);
@@ -55,7 +55,7 @@ const externalReferenceResolvers = {
       return listing;
     },
     exportFiles: (entity, { first }, context) => {
-      return filesListing(context, context.user, first, `export/${entity.entity_type}/${entity.id}/`);
+      return filesListing(context, context.user, first, `export/${entity.entity_type}/${entity.id}/`, entity);
     },
   },
   Mutation: {

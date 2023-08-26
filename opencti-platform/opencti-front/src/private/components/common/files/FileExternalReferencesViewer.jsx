@@ -38,6 +38,7 @@ const FileExternalReferencesViewerBase = ({
   const allFiles = R.pipe(
     R.map((n) => n.node.importFiles.edges),
     R.flatten,
+    R.filter((n) => n.node !== null),
     R.map((n) => n.node),
     sortByLastModified,
   )(externalReferences.edges);

@@ -64,7 +64,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export const FileLineDeleteMutation = graphql`
   mutation FileLineDeleteMutation($fileName: String) {
-    deleteImport(fileName: $fileName)
+    deleteImport(fileName: $fileName) @deleteRecord
   }
 `;
 

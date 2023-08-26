@@ -12538,7 +12538,7 @@ export type Mutation = {
   dataSourceRelationDelete?: Maybe<DataSource>;
   deleteBackgroundTask: Scalars['ID']['output'];
   deleteConnector: Scalars['ID']['output'];
-  deleteImport?: Maybe<Scalars['Boolean']['output']>;
+  deleteImport?: Maybe<Scalars['ID']['output']>;
   entitySettingsFieldPatch?: Maybe<Array<Maybe<EntitySetting>>>;
   eventAdd?: Maybe<Event>;
   eventContextClean?: Maybe<Event>;
@@ -33492,7 +33492,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataSourceRelationDelete?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   deleteBackgroundTask?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteBackgroundTaskArgs, 'id'>>;
   deleteConnector?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteConnectorArgs, 'id'>>;
-  deleteImport?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationDeleteImportArgs>>;
+  deleteImport?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, Partial<MutationDeleteImportArgs>>;
   entitySettingsFieldPatch?: Resolver<Maybe<Array<Maybe<ResolversTypes['EntitySetting']>>>, ParentType, ContextType, RequireFields<MutationEntitySettingsFieldPatchArgs, 'ids' | 'input'>>;
   eventAdd?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventAddArgs, 'input'>>;
   eventContextClean?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventContextCleanArgs, 'id'>>;
