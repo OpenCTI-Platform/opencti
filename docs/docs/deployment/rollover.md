@@ -99,6 +99,35 @@ Then, going back in the index lifecycle policies screen, you can click on the "+
 
 ![Add policy to template](assets/add-policy.png)
 
+#### Bootstrap all new indices
+
+Before we can re-index, we need to create the new indices with aliases.
+
+```
+PUT octi_history-000001
+{
+  "aliases": {
+    "octi_history": {
+      "is_write_index": true
+    }
+  }
+}
+```
+
+Repeat this step for all indices:
+
+* `octi_history`
+* `octi_inferred_entities`
+* `octi_inferred_relationships`
+* `octi_internal_objects`
+* `octi_internal_relationships`
+* `octi_stix_core_relationships`
+* `octi_stix_cyber_observable_relationships`
+* `octi_stix_cyber_observables`
+* `octi_stix_domain_objects`
+* `octi_stix_meta_objects`
+* `octi_stix_meta_relationships`
+
 #### Re-index all indices
 
 Using the `reindex` API, re-index all indices one by one:
