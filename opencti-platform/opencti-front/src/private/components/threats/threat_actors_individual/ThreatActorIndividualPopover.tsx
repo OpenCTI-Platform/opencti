@@ -102,7 +102,7 @@ const ThreatActorIndividualPopover = ({
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/threat_actors/threat_actors_individuals');
+        navigate('/dashboard/threats/threat_actors_individual');
       },
     });
   };
