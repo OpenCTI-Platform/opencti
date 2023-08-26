@@ -219,16 +219,7 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
     return file;
   });
   const { element: updatedElement } = await updateAttribute(context, user, sdoId, ABSTRACT_STIX_DOMAIN_OBJECT, { key: 'x_opencti_files', value: files });
-  const completeFile = {
-    ...updatedElement,
-    metaData: {
-      ...updatedElement,
-      order: updatedElement.order,
-      inCarousel: updatedElement.inCarousel,
-      description: updatedElement.description
-    }
-  };
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, completeFile, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
 };
 
 // region context

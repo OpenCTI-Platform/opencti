@@ -322,7 +322,7 @@ export const filesListing = async (context, user, first, path, entityId = null, 
         fileNodes = await resolveImageFiles(context, user, fileNodes, entityId);
       }
     }
-    return buildPagination(first, null, fileNodes, allFiles.length);
+    return buildPagination(first, null, fileNodes, fileNodes.length);
   };
   return telemetry(context, user, `STORAGE ${path}`, {
     [SemanticAttributes.DB_NAME]: 'storage_engine',

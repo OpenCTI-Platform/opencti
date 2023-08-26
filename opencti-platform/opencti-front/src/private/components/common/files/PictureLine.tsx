@@ -70,7 +70,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
   const handleOpenUpdate = () => setDisplayUpdate(true);
   const handleCloseUpdate = () => setDisplayUpdate(false);
   return (
-    <div>
+    <>
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
@@ -79,7 +79,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <img
-            style={{ height: 33, width: 33 }}
+            style={{ height: 33, width: 33, borderRadius: 5 }}
             src={getFileUri(data.id)}
             alt={data.name}
           />
@@ -129,7 +129,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
           picture={data}
         />
       </Drawer>
-    </div>
+    </>
   );
 };
 

@@ -47,6 +47,7 @@ const styles = (theme) => ({
 class ThreatActorGroupDetailsComponent extends Component {
   render() {
     const { t, classes, threatActorGroup, fldt } = this.props;
+    const hasImages = (threatActorGroup.images?.edges?.length ?? 0) > 0;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -54,12 +55,14 @@ class ThreatActorGroupDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={7}>
+            <Grid item={true} xs={hasImages ? 7 : 6}>
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={4}>
-                  <ImageCarousel data={threatActorGroup} />
-                </Grid>
-                <Grid item={true} xs={8}>
+                {hasImages && (
+                  <Grid item={true} xs={4}>
+                    <ImageCarousel data={threatActorGroup} />
+                  </Grid>
+                )}
+                <Grid item={true} xs={hasImages ? 8 : 12}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Threat actor types')}
                   </Typography>
@@ -84,7 +87,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                   </Typography>
                   <ExpandableMarkdown
                     source={threatActorGroup.description}
-                    limit={400}
+                    limit={hasImages ? 400 : 600}
                   />
                 </Grid>
               </Grid>

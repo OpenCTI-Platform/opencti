@@ -127,6 +127,9 @@ const FileImportViewer = createRefetchContainer(
               ...FileLine_file
               metaData {
                 mimetype
+                description
+                order
+                inCarousel
               }
             }
           }
