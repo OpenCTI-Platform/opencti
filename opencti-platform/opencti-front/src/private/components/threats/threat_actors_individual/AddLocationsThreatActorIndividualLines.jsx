@@ -66,6 +66,7 @@ const AddLocationsThreatActorIndividualLines = createPaginationContainer(
               parent_types
               name
               description
+              x_opencti_aliases
             }
           }
         }

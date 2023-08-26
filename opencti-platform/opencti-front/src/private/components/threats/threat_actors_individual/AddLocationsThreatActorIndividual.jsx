@@ -128,7 +128,7 @@ class AddLocationsThreatActorIndividual extends Component {
               query={addLocationsThreatActorIndividualLinesQuery}
               variables={{
                 search: this.state.search,
-                count: 20,
+                count: 50,
               }}
               render={({ props }) => {
                 return (

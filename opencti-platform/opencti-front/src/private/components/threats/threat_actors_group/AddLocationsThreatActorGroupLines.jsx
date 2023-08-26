@@ -25,7 +25,7 @@ class AddLocationsThreatActorGroupLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={threatActorGroup}
-        relationshipType={'located-at'}
+        relationshipType='located-at'
         availableDatas={data?.locations}
         existingDatas={threatActorGroupLocations}
         updaterOptions={ { path: 'locations' } }
@@ -65,6 +65,7 @@ const AddLocationsThreatActorGroupLines = createPaginationContainer(
               entity_type
               parent_types
               name
+              x_opencti_aliases
               description
             }
           }

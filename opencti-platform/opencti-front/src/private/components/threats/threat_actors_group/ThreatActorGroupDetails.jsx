@@ -48,7 +48,7 @@ class ThreatActorGroupDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={7}>
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={4}>
                   <ImageCarousel data={threatActorGroup} />
@@ -82,6 +82,29 @@ class ThreatActorGroupDetailsComponent extends Component {
                   />
                 </Grid>
               </Grid>
+            </Grid>
+            <Grid item={true} xs={5}>
+              <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('First seen')}
+              </Typography>
+              {fldt(threatActorGroup.first_seen)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Last seen')}
+              </Typography>
+              {fldt(threatActorGroup.last_seen)}
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -93,6 +116,8 @@ class ThreatActorGroupDetailsComponent extends Component {
                 type="threat-actor-group-sophistication-ov"
                 value={threatActorGroup.sophistication}
               />
+            </Grid>
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -104,6 +129,21 @@ class ThreatActorGroupDetailsComponent extends Component {
                 type="attack-resource-level-ov"
                 value={threatActorGroup.resource_level}
               />
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Primary motivation')}
+              </Typography>
+              <ItemOpenVocab
+                type="attack-motivation-ov"
+                value={threatActorGroup.primary_motivation}
+              />
+            </Grid>
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -133,35 +173,30 @@ class ThreatActorGroupDetailsComponent extends Component {
                 )}
               </FieldOrEmpty>
             </Grid>
-            <Grid item={true} xs={6}>
-              <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('First seen')}
+                {t('Goals')}
               </Typography>
-              {fldt(threatActorGroup.first_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Last seen')}
-              </Typography>
-              {fldt(threatActorGroup.last_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Primary motivation')}
-              </Typography>
-              <ItemOpenVocab
-                type="attack-motivation-ov"
-                value={threatActorGroup.primary_motivation}
-              />
+              <FieldOrEmpty source={threatActorGroup.goals}>
+                {threatActorGroup.goals && (
+                  <List>
+                    {threatActorGroup.goals.map((goal) => (
+                      <ListItem key={goal} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <BullseyeArrow />
+                        </ListItemIcon>
+                        <ListItemText primary={goal} />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </FieldOrEmpty>
+            </Grid>
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -193,27 +228,6 @@ class ThreatActorGroupDetailsComponent extends Component {
                         </ListItem>
                       ),
                     )}
-                  </List>
-                )}
-              </FieldOrEmpty>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Goals')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.goals}>
-                {threatActorGroup.goals && (
-                  <List>
-                    {threatActorGroup.goals.map((goal) => (
-                      <ListItem key={goal} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <BullseyeArrow />
-                        </ListItemIcon>
-                        <ListItemText primary={goal} />
-                      </ListItem>
-                    ))}
                   </List>
                 )}
               </FieldOrEmpty>

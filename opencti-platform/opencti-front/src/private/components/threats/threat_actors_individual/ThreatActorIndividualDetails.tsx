@@ -88,7 +88,6 @@ ThreatActorIndividualDetailsProps
     ThreatActorIndividualDetailsFragment,
     threatActorIndividualData,
   );
-
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -96,7 +95,7 @@ ThreatActorIndividualDetailsProps
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={7}>
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={4}>
                 <ImageCarousel data={data} />
@@ -125,6 +124,29 @@ ThreatActorIndividualDetailsProps
                 <ExpandableMarkdown source={data.description} limit={400} />
               </Grid>
             </Grid>
+          </Grid>
+          <Grid item={true} xs={5}>
+            <ThreatActorIndividualLocation threatActorIndividual={data} />
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('First seen')}
+            </Typography>
+            {fldt(data.first_seen)}
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Last seen')}
+            </Typography>
+            {fldt(data.last_seen)}
+          </Grid>
+        </Grid>
+        <Grid container={true} spacing={3}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -137,6 +159,8 @@ ThreatActorIndividualDetailsProps
               value={data.sophistication}
               small
             />
+          </Grid>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -149,6 +173,22 @@ ThreatActorIndividualDetailsProps
               value={data.resource_level}
               small
             />
+          </Grid>
+          <Grid item={true} xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Primary motivation')}
+            </Typography>
+            <ItemOpenVocab
+              type="attack-motivation-ov"
+              value={data.primary_motivation}
+              small
+            />
+          </Grid>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -179,36 +219,30 @@ ThreatActorIndividualDetailsProps
               )}
             </FieldOrEmpty>
           </Grid>
-          <Grid item={true} xs={6}>
-            <ThreatActorIndividualLocation threatActorIndividual={data} />
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
-              {t('First seen')}
+              {t('Goals')}
             </Typography>
-            {fldt(data.first_seen)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Last seen')}
-            </Typography>
-            {fldt(data.last_seen)}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Primary motivation')}
-            </Typography>
-            <ItemOpenVocab
-              type="attack-motivation-ov"
-              value={data.primary_motivation}
-              small
-            />
+            <FieldOrEmpty source={data.goals}>
+              {data.goals && (
+                <List>
+                  {data.goals.map((goal) => (
+                    <ListItem key={goal} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <BullseyeArrow />
+                      </ListItemIcon>
+                      <ListItemText primary={goal} />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -237,27 +271,6 @@ ThreatActorIndividualDetailsProps
                           />
                         }
                       />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </FieldOrEmpty>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Goals')}
-            </Typography>
-            <FieldOrEmpty source={data.goals}>
-              {data.goals && (
-                <List>
-                  {data.goals.map((goal) => (
-                    <ListItem key={goal} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <BullseyeArrow />
-                      </ListItemIcon>
-                      <ListItemText primary={goal} />
                     </ListItem>
                   ))}
                 </List>

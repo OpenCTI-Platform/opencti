@@ -81,7 +81,7 @@ class AddLocationsThreatActorGroup extends Component {
       search: this.state.search,
     };
     return (
-      <div>
+      <>
         <IconButton
           color="secondary"
           aria-label="Add"
@@ -126,7 +126,7 @@ class AddLocationsThreatActorGroup extends Component {
               query={addLocationsThreatActorGroupLinesQuery}
               variables={{
                 search: this.state.search,
-                count: 20,
+                count: 100,
               }}
               render={({ props }) => {
                 return (
@@ -146,7 +146,7 @@ class AddLocationsThreatActorGroup extends Component {
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
         />
-      </div>
+      </>
     );
   }
 }

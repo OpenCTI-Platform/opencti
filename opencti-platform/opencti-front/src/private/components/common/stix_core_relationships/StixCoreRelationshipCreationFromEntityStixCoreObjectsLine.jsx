@@ -15,6 +15,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { defaultValue } from '../../../../utils/Graph';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -75,6 +76,8 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLineComponent = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const flag = node.entity_type === 'Country'
+    && R.head((node.x_opencti_aliases ?? []).filter((n) => n?.length === 2));
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -103,7 +106,15 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLineComponent = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.entity_type} />
+        {flag ? (
+          <img
+            style={{ width: 20 }}
+            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+            alt={node.name}
+          />
+        ) : (
+          <ItemIcon type={node.entity_type} />
+        )}
       </ListItemIcon>
       <ListItemText
         primary={
