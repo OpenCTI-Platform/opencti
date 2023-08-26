@@ -73,7 +73,6 @@ const ObjectOrganizationField = (props) => {
         setOrganizations(searchResults);
       });
   };
-
   if (outlined === false) {
     return (
       <Field
@@ -112,8 +111,7 @@ const ObjectOrganizationField = (props) => {
       disabled={disabled}
       style={{ width: '100%' }}
       textfieldprops={{
-        variant: 'standard',
-        label: label ?? '',
+        placeholder: label ?? '',
         helperText: helpertext,
         fullWidth: true,
         onFocus: searchOrganizations,
@@ -142,7 +140,7 @@ const ObjectOrganizationField = (props) => {
       style={style}
       classes={{ message: classes.message }}
     >
-      <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
+      <AlertTitle>{t('Organizations restriction')}</AlertTitle>
       <div style={{ marginTop: 10 }}>{FieldElement}</div>
     </Alert>
   );
