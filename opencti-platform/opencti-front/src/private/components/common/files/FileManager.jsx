@@ -36,6 +36,7 @@ import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import PictureManagementViewer from './PictureManagementViewer';
 
 const styles = () => ({
   container: {
@@ -231,6 +232,7 @@ const FileManager = ({
           entity={entity}
           handleOpenImport={handleOpenImport}
         />
+        <PictureManagementViewer entity={entity} />
       </Grid>
       <div>
         <Formik
@@ -385,18 +387,13 @@ const FileManager = ({
                   }}
                 />
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

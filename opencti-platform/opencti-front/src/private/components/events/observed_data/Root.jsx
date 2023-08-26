@@ -27,6 +27,7 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -44,6 +45,7 @@ const observedDataQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...PictureManagementViewer_entity
     }
     connectorsForExport {
       ...FileManager_connectorsExport

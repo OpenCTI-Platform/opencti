@@ -93,7 +93,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: AssigneeConnection
-    x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
+    avatar: OpenCtiFile
     # Channel
     name: String!
     description: String
@@ -102,7 +102,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     # Technical
     creators: [Creator!]
     toStix: String
-    importFiles(first: Int): FileConnection
+    importFiles(first: Int, prefixMimeType: String): FileConnection
     pendingFiles(first: Int): FileConnection
     exportFiles(first: Int): FileConnection
     editContext: [EditUserContext!]

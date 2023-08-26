@@ -12,9 +12,13 @@ import Skeleton from '@mui/material/Skeleton';
 import { getFileUri } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { addBookmark, deleteBookMark } from '../stix_domain_objects/StixDomainObjectBookmark';
+import {
+  addBookmark,
+  deleteBookMark,
+} from '../stix_domain_objects/StixDomainObjectBookmark';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -96,8 +100,11 @@ interface fromEdges {
 }
 
 interface labelEdges {
-  edges: ReadonlyArray<{ node: { id: string, value: string | null, color: string | null } }>;
+  edges: ReadonlyArray<{
+    node: { id: string; value: string | null; color: string | null };
+  }>;
 }
+
 interface GenericAttack {
   id: string;
   name: string;
@@ -105,11 +112,12 @@ interface GenericAttack {
   modified: string;
   aliases: ReadonlyArray<string | null> | null;
   objectLabel: labelEdges | null;
-  images?: ReadonlyArray<{ id: string, name: string }> | null;
+  avatar?: { id: string; name: string } | null;
   relatedIntrusionSets?: fromEdges | null;
   usedMalware?: toEdges | null;
   targetedCountries: toEdges | null;
   targetedSectors: toEdges | null;
+  countryFlag?: toEdgesLocated | null;
 }
 
 interface GenericAttackCardProps {
@@ -120,9 +128,13 @@ interface GenericAttackCardProps {
   bookmarksIds?: string[];
 }
 
-export const GenericAttackCard: FunctionComponent<
-GenericAttackCardProps
-> = ({ cardData, cardLink, entityType, onLabelClick, bookmarksIds }) => {
+export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
+  cardData,
+  cardLink,
+  entityType,
+  onLabelClick,
+  bookmarksIds,
+}) => {
   const classes = useStyles();
   const { t, fld } = useFormatter();
   const relatedIntrusionSets = (cardData.relatedIntrusionSets?.edges ?? [])
@@ -147,97 +159,100 @@ GenericAttackCardProps
   };
 
   return (
-      <Card classes={{ root: classes.card }} variant="outlined">
-        <CardActionArea
-          classes={{ root: classes.area }}
-          component={Link}
-          to={cardLink}
-        >
-          <CardHeader
-            classes={{ root: classes.header, title: classes.title }}
-            avatar={cardData.images && cardData.images.length > 0 ? (
+    <Card classes={{ root: classes.card }} variant="outlined">
+      <CardActionArea
+        classes={{ root: classes.area }}
+        component={Link}
+        to={cardLink}
+      >
+        <CardHeader
+          classes={{ root: classes.header, title: classes.title }}
+          avatar={
+            cardData.avatar ? (
               <img
-                style={{ height: '30px' }}
-                src={getFileUri(cardData.images[0].id)}
-                alt={cardData.images[0].name}
+                style={{ height: 37 }}
+                src={getFileUri(cardData.avatar.id)}
+                alt={cardData.avatar.name}
               />
             ) : (
               <ItemIcon type={entityType} size="large" />
             )
-            }
-            title={cardData.name}
-            subheader={fld(cardData.modified)}
-            action={
-              <IconButton
-                size="small"
-                onClick={handleBookmarksIds}
-                color={bookmarksIds?.includes(cardData.id) ? 'secondary' : 'primary'}
-              >
-                <StarBorderOutlined />
-              </IconButton>
-            }
-          />
-          <CardContent className={classes.content}>
-            <div className={classes.description}>
-              <MarkdownDisplay
-                content={cardData.description}
-                remarkGfmPlugin={true}
-                commonmark={true}
-                removeLinks={true}
-                removeLineBreaks={true}
-                limit={260}
-              />
+          }
+          title={renderCardTitle(cardData)}
+          subheader={fld(cardData.modified)}
+          action={
+            <IconButton
+              size="small"
+              onClick={handleBookmarksIds}
+              color={
+                bookmarksIds?.includes(cardData.id) ? 'secondary' : 'primary'
+              }
+            >
+              <StarBorderOutlined />
+            </IconButton>
+          }
+        />
+        <CardContent className={classes.content}>
+          <div className={classes.description}>
+            <MarkdownDisplay
+              content={cardData.description}
+              remarkGfmPlugin={true}
+              commonmark={true}
+              removeLinks={true}
+              removeLineBreaks={true}
+              limit={260}
+            />
+          </div>
+          <div className={classes.extras}>
+            <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
+              <Typography variant="h4">{t('Known as')}</Typography>
+              <Typography variant="body2">
+                {emptyFilled((cardData.aliases || []).join(', '))}
+              </Typography>
             </div>
-            <div className={classes.extras}>
-              <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
-                <Typography variant="h4">{t('Known as')}</Typography>
-                <Typography variant="body2">
-                  {emptyFilled((cardData.aliases || []).join(', '))}
-                </Typography>
-              </div>
-              {entityType === 'Malware' ? (
-                <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-                  <Typography variant="h4">
-                    {t('Related intrusion sets')}
-                  </Typography>
-                  <Typography variant="body2">
-                    {emptyFilled(relatedIntrusionSets)}
-                  </Typography>
-                </div>
-              ) : (
-                <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-                  <Typography variant="h4">{t('Used malware')}</Typography>
-                  <Typography variant="body2">
-                    {emptyFilled(usedMalware)}
-                  </Typography>
-                </div>
-              )}
-              <div className="clearfix" />
-            </div>
-            <div className={classes.extras}>
-              <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
-                <Typography variant="h4">{t('Targeted countries')}</Typography>
-                <Typography variant="body2">
-                  {emptyFilled(targetedCountries)}
-                </Typography>
-              </div>
+            {entityType === 'Malware' ? (
               <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
-                <Typography variant="h4">{t('Targeted sectors')}</Typography>
+                <Typography variant="h4">
+                  {t('Related intrusion sets')}
+                </Typography>
                 <Typography variant="body2">
-                  {emptyFilled(targetedSectors)}
+                  {emptyFilled(relatedIntrusionSets)}
                 </Typography>
               </div>
-              <div className="clearfix" />
+            ) : (
+              <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
+                <Typography variant="h4">{t('Used malware')}</Typography>
+                <Typography variant="body2">
+                  {emptyFilled(usedMalware)}
+                </Typography>
+              </div>
+            )}
+            <div className="clearfix" />
+          </div>
+          <div className={classes.extras}>
+            <div className={classes.extraColumn} style={{ paddingRight: 10 }}>
+              <Typography variant="h4">{t('Targeted countries')}</Typography>
+              <Typography variant="body2">
+                {emptyFilled(targetedCountries)}
+              </Typography>
             </div>
-            <div className={classes.objectLabel}>
-              <StixCoreObjectLabels
-                labels={cardData.objectLabel}
-                onClick={onLabelClick}
-              />
+            <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
+              <Typography variant="h4">{t('Targeted sectors')}</Typography>
+              <Typography variant="body2">
+                {emptyFilled(targetedSectors)}
+              </Typography>
             </div>
-          </CardContent>
-        </CardActionArea>
-      </Card>
+            <div className="clearfix" />
+          </div>
+          <div className={classes.objectLabel}>
+            <StixCoreObjectLabels
+              labels={cardData.objectLabel}
+              onClick={onLabelClick}
+            />
+          </div>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 };
 

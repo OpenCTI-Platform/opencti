@@ -93,7 +93,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     modified: DateTime
     x_opencti_graph_data: String
     objectAssignee: AssigneeConnection
-    x_opencti_files(prefixMimeType: String): [OpenCtiFile!]
+    avatar: OpenCtiFile
     # Narrative
     name: String!
     description: String
@@ -105,7 +105,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     # Technical
     creators: [Creator!]
     toStix: String
-    importFiles(first: Int): FileConnection
+    importFiles(first: Int, prefixMimeType: String): FileConnection
     pendingFiles(first: Int): FileConnection
     exportFiles(first: Int): FileConnection
     editContext: [EditUserContext!]

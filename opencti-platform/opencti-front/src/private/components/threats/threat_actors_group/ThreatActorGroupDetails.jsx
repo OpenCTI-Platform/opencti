@@ -16,6 +16,8 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import ImageCarousel from '../../../../components/ImageCarousel';
+import ThreatActorGroupLocation from './ThreatActorGroupLocation';
 
 const styles = (theme) => ({
   paper: {
@@ -34,6 +36,12 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
+  smallPre: {
+    display: 'inline-block',
+    margin: 0,
+    paddingTop: '7px',
+    paddingBottom: '4px',
+  },
 });
 
 class ThreatActorGroupDetailsComponent extends Component {
@@ -46,14 +54,63 @@ class ThreatActorGroupDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
+            <Grid item={true} xs={7}>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={4}>
+                  <ImageCarousel data={threatActorGroup} />
+                </Grid>
+                <Grid item={true} xs={8}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Threat actor types')}
+                  </Typography>
+                  <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
+                    {threatActorGroup.threat_actor_types
+                      && threatActorGroup.threat_actor_types.map(
+                        (threatActorGroupType) => (
+                          <Chip
+                            key={threatActorGroupType}
+                            classes={{ root: classes.chip }}
+                            label={threatActorGroupType}
+                          />
+                        ),
+                      )}
+                  </FieldOrEmpty>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Description')}
+                  </Typography>
+                  <ExpandableMarkdown
+                    source={threatActorGroup.description}
+                    limit={400}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item={true} xs={5}>
+              <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('First seen')}
               </Typography>
-              <ExpandableMarkdown
-                source={threatActorGroup.description}
-                limit={400}
-              />
+              {fldt(threatActorGroup.first_seen)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Last seen')}
+              </Typography>
+              {fldt(threatActorGroup.last_seen)}
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -65,6 +122,8 @@ class ThreatActorGroupDetailsComponent extends Component {
                 type="threat-actor-group-sophistication-ov"
                 value={threatActorGroup.sophistication}
               />
+            </Grid>
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -76,6 +135,21 @@ class ThreatActorGroupDetailsComponent extends Component {
                 type="attack-resource-level-ov"
                 value={threatActorGroup.resource_level}
               />
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Primary motivation')}
+              </Typography>
+              <ItemOpenVocab
+                type="attack-motivation-ov"
+                value={threatActorGroup.primary_motivation}
+              />
+            </Grid>
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -104,6 +178,8 @@ class ThreatActorGroupDetailsComponent extends Component {
                   </List>
                 )}
               </FieldOrEmpty>
+            </Grid>
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -119,54 +195,18 @@ class ThreatActorGroupDetailsComponent extends Component {
                         <ListItemIcon>
                           <BullseyeArrow />
                         </ListItemIcon>
-                        <ListItemText primary={goal} />
+                        <ListItemText
+                          primary={
+                            <pre className={classes.smallPre}>{goal}</pre>
+                          }
+                        />
                       </ListItem>
                     ))}
                   </List>
                 )}
               </FieldOrEmpty>
             </Grid>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Threat actor group types')}
-              </Typography>
-              <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
-                {threatActorGroup.threat_actor_types
-                  && threatActorGroup.threat_actor_types.map((threatActorGroupType) => (
-                    <Chip
-                      key={threatActorGroupType}
-                      classes={{ root: classes.chip }}
-                      label={threatActorGroupType}
-                    />
-                  ))}
-              </FieldOrEmpty>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('First seen')}
-              </Typography>
-              {fldt(threatActorGroup.first_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Last seen')}
-              </Typography>
-              {fldt(threatActorGroup.last_seen)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Primary motivation')}
-              </Typography>
-              <ItemOpenVocab
-                type="attack-motivation-ov"
-                value={threatActorGroup.primary_motivation}
-              />
+            <Grid item={true} xs={4}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -232,6 +272,21 @@ const ThreatActorGroupDetails = createFragmentContainer(
         secondary_motivations
         goals
         roles
+        images: importFiles(prefixMimeType: "image/") {
+          edges {
+            node {
+              id
+              name
+              metaData {
+                mimetype
+                order
+                inCarousel
+                description
+              }
+            }
+          }
+        }
+        ...ThreatActorGroupLocations_locations
       }
     `,
   },

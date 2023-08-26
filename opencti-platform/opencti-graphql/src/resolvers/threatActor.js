@@ -28,8 +28,8 @@ const threatActorGroupResolvers = {
     threatActorsGroup: (_, args, context) => groupFindAll(context, context.user, args),
   },
   ThreatActor: {
-    locations: (threatActorGroup, _, context) => locationsLoader.load(threatActorGroup.id, context, context.user),
-    countries: (threatActorGroup, _, context) => countriesLoader.load(threatActorGroup.id, context, context.user),
+    locations: (threatActor, _, context) => locationsLoader.load(threatActor.id, context, context.user),
+    countries: (threatActor, _, context) => countriesLoader.load(threatActor.id, context, context.user),
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());

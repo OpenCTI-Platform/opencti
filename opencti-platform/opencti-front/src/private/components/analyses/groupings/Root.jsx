@@ -29,6 +29,7 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -47,6 +48,7 @@ const groupingQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...PictureManagementViewer_entity
     }
     connectorsForExport {
       ...StixCoreObjectFilesAndHistory_connectorsExport

@@ -65,6 +65,7 @@ const AddLocationsLines = createPaginationContainer(
               entity_type
               parent_types
               name
+              x_opencti_aliases
               description
             }
           }

@@ -19,6 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getFileUri } from '../../../../utils/utils';
+import { renderCardTitle } from '../../../../utils/Card';
 
 const stixDomainObjectBookmarkCreateMutation = graphql`
   mutation StixDomainObjectBookmarkreateMutation($id: ID!, $type: String!) {
@@ -138,7 +139,6 @@ class StixDomainObjectBookmarkComponent extends Component {
   render() {
     const { t, fsd, classes, node, theme } = this.props;
     const link = resolveLink(node.entity_type);
-
     return (
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
@@ -148,11 +148,11 @@ class StixDomainObjectBookmarkComponent extends Component {
         >
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={ node.images && node.images.length > 0 ? (
+            avatar={node.avatar ? (
               <img
                 style={{ height: '30px' }}
-                src={getFileUri(node.images[0].id)}
-                alt={node.images[0].name}
+                src={getFileUri(node.avatar.id)}
+                alt={node.avatar.name}
               />
             ) : (
               <Avatar className={classes.avatar}>
@@ -162,7 +162,7 @@ class StixDomainObjectBookmarkComponent extends Component {
                 />
               </Avatar>
             )}
-            title={node.name}
+            title={renderCardTitle(node)}
             subheader={`${t('Updated on')} ${fsd(node.modified)}`}
             action={
               <IconButton
@@ -229,6 +229,28 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         }
         ... on IntrusionSet {
           name
+          countryFlag: stixCoreRelationships(
+            relationship_type: "originates-from"
+            toTypes: ["Country"]
+            first: 1
+            orderBy: created_at
+            orderMode: desc
+          ) {
+            edges {
+              node {
+                to {
+                  ... on Country {
+                    name
+                    x_opencti_aliases
+                  }
+                }
+              }
+            }
+          }
+          avatar {
+            id
+            name
+          }
         }
         ... on Position {
           name
@@ -251,11 +273,54 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
         ... on ThreatActor {
           name
           ... on ThreatActorIndividual {
-            images: x_opencti_files(prefixMimeType: "image/") {
+            countryFlag: stixCoreRelationships(
+              relationship_type: "located-at"
+              toTypes: ["Country"]
+              first: 1
+              orderBy: created_at
+              orderMode: desc
+            ) {
+              edges {
+                node {
+                  to {
+                    ... on Country {
+                      name
+                      x_opencti_aliases
+                    }
+                  }
+                }
+              }
+            }
+            avatar {
               id
               name
             }
           }
+          ... on ThreatActorGroup {
+            countryFlag: stixCoreRelationships(
+              relationship_type: "located-at"
+              toTypes: ["Country"]
+              first: 1
+              orderBy: created_at
+              orderMode: desc
+            ) {
+              edges {
+                node {
+                  to {
+                    ... on Country {
+                      name
+                      x_opencti_aliases
+                    }
+                  }
+                }
+              }
+            }
+            avatar {
+              id
+              name
+            }
+          }
+
         }
         ... on Tool {
           name

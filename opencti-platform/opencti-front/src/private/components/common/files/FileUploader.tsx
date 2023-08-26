@@ -25,6 +25,11 @@ const fileUploaderEntityMutation = graphql`
       importPush(file: $file) {
         id
         ...FileLine_file
+        metaData {
+          entity {
+            ...PictureManagementViewer_entity
+          }
+        }
       }
     }
   }

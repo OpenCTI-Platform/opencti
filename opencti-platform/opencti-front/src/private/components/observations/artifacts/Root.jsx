@@ -46,6 +46,7 @@ const rootArtifactQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+
     }
     connectorsForImport {
       ...FileManager_connectorsImport

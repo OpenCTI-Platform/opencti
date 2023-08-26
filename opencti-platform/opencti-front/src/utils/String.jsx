@@ -61,6 +61,9 @@ export const convertToStixType = (type) => {
   if (['Sector', 'Organization', 'Individual', 'System'].includes(type)) {
     return 'identity';
   }
+  if (['Threat-Actor-Group', 'Threat-Actor-Individual'].includes(type)) {
+    return 'threat-actor';
+  }
   if (['Region', 'Country', 'City', 'Position'].includes(type)) {
     return 'location';
   }

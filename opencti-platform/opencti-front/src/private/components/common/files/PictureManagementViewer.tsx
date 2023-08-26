@@ -6,10 +6,12 @@ import Paper from '@mui/material/Paper';
 import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
+import PictureLine from './PictureLine';
 import {
-  PictureManagementViewer_pictureManagement$data,
-  PictureManagementViewer_pictureManagement$key,
-} from './__generated__/PictureManagementViewer_pictureManagement.graphql';
+  PictureManagementViewer_entity$data,
+  PictureManagementViewer_entity$key,
+} from './__generated__/PictureManagementViewer_entity.graphql';
+import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -21,28 +23,56 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const pictureManagementViewerFragment = graphql`
-  fragment PictureManagementViewer_pictureManagement on StixDomainObject {
+export const pictureManagementViewerFragment = graphql`
+  fragment PictureManagementViewer_entity on StixDomainObject {
     id
     entity_type
-    images: x_opencti_files(prefixMimeType: "image/") {
-      id
-      name
+    images: importFiles(prefixMimeType: "image/") {
+      edges {
+        node {
+          id
+          name
+          ...PictureManagementUtils_node
+        }
+      }
     }
   }
 `;
 
 interface PictureManagementViewerProps {
-  pictureManagementData: PictureManagementViewer_pictureManagement$key;
+  entity: PictureManagementViewer_entity$key;
 }
 
-const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> = ({ pictureManagementData }) => {
+const PictureManagementViewer: FunctionComponent<
+PictureManagementViewerProps
+> = ({ entity }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const data: PictureManagementViewer_pictureManagement$data = useFragment(
+
+  const data: PictureManagementViewer_entity$data = useFragment(
     pictureManagementViewerFragment,
-    pictureManagementData,
+    entity,
   );
+
+  const dataColumns = {
+    description: {
+      label: 'Description',
+      width: '60%',
+      isSortable: false,
+    },
+    order: {
+      label: 'Order',
+      width: '15%',
+      isSortable: false,
+    },
+    inCarousel: {
+      label: 'In Carousel',
+      width: '20%',
+      isSortable: false,
+    },
+  };
+
+  const images = data?.images?.edges?.map((edge) => edge?.node) ?? [];
 
   return (
     <Grid item={true} xs={6} style={{ marginTop: 40 }}>
@@ -52,8 +82,25 @@ const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> =
         </Typography>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          {data.images && data.images.length > 0 ? (
-            <List></List>
+          {images && images.length > 0 ? (
+            <>
+              <ColumnsLinesTitles
+                dataColumns={dataColumns}
+                handleSort={() => {}}
+              />
+              <List>
+                {images.map(
+                  (file, idx) => file && (
+                      <PictureLine
+                        picture={file}
+                        key={idx}
+                        dataColumns={dataColumns}
+                        entityId={data.id}
+                      />
+                  ),
+                )}
+              </List>
+            </>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span

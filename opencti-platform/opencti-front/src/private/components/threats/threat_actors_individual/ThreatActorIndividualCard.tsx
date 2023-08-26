@@ -11,7 +11,8 @@ const ThreatActorIndividualCardFragment = graphql`
     description
     created
     modified
-    images: x_opencti_files(prefixMimeType: "image/") {
+    entity_type
+    avatar {
       id
       name
     }
@@ -47,6 +48,24 @@ const ThreatActorIndividualCardFragment = graphql`
           to {
             ... on Country {
               name
+            }
+          }
+        }
+      }
+    }
+    countryFlag: stixCoreRelationships(
+      relationship_type: "located-at"
+      toTypes: ["Country"]
+      first: 1
+      orderBy: created_at
+      orderMode: desc
+    ) {
+      edges {
+        node {
+          to {
+            ... on Country {
+              name
+              x_opencti_aliases
             }
           }
         }

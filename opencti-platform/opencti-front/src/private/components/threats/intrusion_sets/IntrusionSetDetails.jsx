@@ -15,6 +15,8 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetLocations from './IntrusionSetLocations';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import ImageCarousel from '../../../../components/ImageCarousel';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   paper: {
@@ -33,6 +35,12 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
+  smallPre: {
+    display: 'inline-block',
+    margin: 0,
+    paddingTop: '7px',
+    paddingBottom: '4px',
+  },
 });
 
 class IntrusionSetDetailsComponent extends Component {
@@ -45,46 +53,23 @@ class IntrusionSetDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
-              </Typography>
-              <ExpandableMarkdown
-                source={intrusionSet.description}
-                limit={400}
-              />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Resource level')}
-              </Typography>
-              <ItemOpenVocab
-                type="attack-resource-level-ov"
-                value={intrusionSet.resource_level}
-              />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Goals')}
-              </Typography>
-              {intrusionSet.goals && (
-                <List>
-                  {intrusionSet.goals.map((goal) => (
-                    <ListItem key={goal} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <BullseyeArrow />
-                      </ListItemIcon>
-                      <ListItemText primary={goal} />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
+            <Grid item={true} xs={7}>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={4}>
+                  <ImageCarousel data={intrusionSet} />
+                </Grid>
+                <Grid item={true} xs={8}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Description')}
+                  </Typography>
+                  <ExpandableMarkdown
+                    source={intrusionSet.description}
+                    limit={400}
+                  />
+                </Grid>
+              </Grid>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={5}>
               <IntrusionSetLocations intrusionSet={intrusionSet} />
               <Typography
                 variant="h3"
@@ -102,6 +87,23 @@ class IntrusionSetDetailsComponent extends Component {
                 {t('Last seen')}
               </Typography>
               {fldt(intrusionSet.last_seen)}
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Resource level')}
+              </Typography>
+              <ItemOpenVocab
+                type="attack-resource-level-ov"
+                value={intrusionSet.resource_level}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -113,6 +115,35 @@ class IntrusionSetDetailsComponent extends Component {
                 type="attack-motivation-ov"
                 value={intrusionSet.primary_motivation}
               />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Goals')}
+              </Typography>
+              <FieldOrEmpty source={intrusionSet.goals}>
+                {intrusionSet.goals && (
+                  <List>
+                    {intrusionSet.goals.map((goal) => (
+                      <ListItem key={goal} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <BullseyeArrow />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <pre className={classes.smallPre}>{goal}</pre>
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
+              </FieldOrEmpty>
+            </Grid>
+            <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -173,6 +204,20 @@ const IntrusionSetDetails = createFragmentContainer(
         primary_motivation
         secondary_motivations
         goals
+        images: importFiles(prefixMimeType: "image/") {
+          edges {
+            node {
+              id
+              name
+              metaData {
+                mimetype
+                order
+                inCarousel
+                description
+              }
+            }
+          }
+        }
         ...IntrusionSetLocations_intrusionSet
       }
     `,

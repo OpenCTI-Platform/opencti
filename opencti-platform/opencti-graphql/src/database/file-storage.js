@@ -14,6 +14,7 @@ import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
+import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -304,15 +305,22 @@ export const upload = async (context, user, path, fileUpload, opts) => {
   return file;
 };
 
-export const filesListing = async (context, user, first, path, entityId = null) => {
+export const filesListing = async (context, user, first, path, entityId = null, prefixMimeType = '') => {
   const filesListingFn = async () => {
     const files = await rawFilesListing(context, user, path);
     const inExport = await loadExportWorksAsProgressFiles(context, user, path);
     const allFiles = R.concat(inExport, files);
     const sortedFiles = allFiles.sort((a, b) => b.lastModified - a.lastModified);
     let fileNodes = sortedFiles.map((f) => ({ node: f }));
+    if (prefixMimeType) {
+      fileNodes = fileNodes.filter((n) => n.node.metaData.mimetype.includes(prefixMimeType));
+    }
     if (entityId) {
       fileNodes = fileNodes.filter((n) => n.node.metaData.entity_id === entityId, fileNodes);
+      if (prefixMimeType === 'image/') {
+        // we need to fetch more data for images : order, inCarousel, description
+        fileNodes = await resolveImageFiles(context, user, fileNodes, entityId);
+      }
     }
     return buildPagination(first, null, fileNodes, allFiles.length);
   };
@@ -328,4 +336,28 @@ export const deleteAllFiles = async (context, user, path) => {
   const allFiles = R.concat(inExport, files);
   const ids = allFiles.map((file) => file.id);
   return deleteFiles(context, user, ids);
+};
+
+const resolveImageFiles = async (context, user, fileNodes, entityId) => {
+  const resolveEntity = await internalLoadById(context, user, entityId);
+  const elasticFiles = resolveEntity.x_opencti_files;
+  return fileNodes.map((file) => {
+    const elasticFile = elasticFiles.find((e) => e.id === file.node.id);
+    return {
+      ...file,
+      node: {
+        ...file.node,
+        metaData: {
+          ...file.node.metaData,
+          order: elasticFile.order,
+          inCarousel: elasticFile.inCarousel,
+          description: elasticFile.description
+        }
+      }
+    };
+  }).sort((a, b) => {
+    const orderA = a.node.metaData?.order ?? Infinity;
+    const orderB = b.node.metaData?.order ?? Infinity;
+    return orderA - orderB;
+  });
 };

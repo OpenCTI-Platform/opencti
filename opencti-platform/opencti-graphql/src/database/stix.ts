@@ -389,6 +389,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_THREAT_ACTOR_GROUP}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED }
   ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
+    { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED }
+  ],
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_TOOL}`]: [
     { name: RELATION_USES, type: REL_EXTENDED }
   ],
