@@ -318,7 +318,7 @@ export const filesListing = async (context, user, first, path, entity = null, pr
       fileNodes = fileNodes.filter((n) => n.node.metaData.entity_id === entity.internal_id, fileNodes);
       fileNodes = await resolveImageFiles(context, user, fileNodes, entity);
     }
-    return buildPagination(first, null, fileNodes, allFiles.length);
+    return buildPagination(first, null, fileNodes, fileNodes.length);
   };
   return telemetry(context, user, `STORAGE ${path}`, {
     [SemanticAttributes.DB_NAME]: 'storage_engine',
@@ -337,7 +337,7 @@ export const deleteAllFiles = async (context, user, path) => {
 const resolveImageFiles = async (context, user, fileNodes, resolveEntity) => {
   const elasticFiles = resolveEntity.x_opencti_files;
   return fileNodes.map((file) => {
-    const elasticFile = elasticFiles.find((e) => e.id === file.node.id);
+    const elasticFile = (elasticFiles ?? []).find((e) => e.id === file.node.id);
     if (elasticFile) {
       return {
         ...file,
