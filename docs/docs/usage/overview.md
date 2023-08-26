@@ -94,7 +94,16 @@ In the `Knowledge` tab, which is the central part of the entity, you will find a
 - The `Knowledge` tab of those entities (who represents Analyses or Cases that can contains a collection of Objects) is the place to integrate and link together entities. For more information on how to integrate information in OpenCTI using the knowledge tab of a report, please refer to the part [Manual creation](manual-creation.md).
 - `Knowledge` tabs of any other entity (that does not aim to contain a collection of Objects) gather all the entities which have been at some point linked to the entity the user is looking at (for instance, as shown in the following capture, the `Knowledge` tab of Intrusion set APT29) gives access to the list of all entities APT29 is attributed to, all victims the intrusion set has targeted, all its campaigns, TTPs, malwares etc. For entities to appear in theses tabs under `Knowledge`, they need to have been linked to the entity directly or have been computed with the inference engine (to come).
 
-![The Intrusion Set's Knowledge tab](assets/intrusionset_knowledge_view.png)
+![The Intrusion Set's Knowledge tab](assets/apt41_knowledge_view.png)
+
+#### Focus on Indicators and Observables
+
+The `Indicators` and `Observables` section offers 3 display modes:
+- The `entities view`, which displays the indicators/observables linked to the entity.
+- The `relationship view`, which displays the various relationships between the indicators/observables linked to the entity and the entity itself.
+- The `contextual view`, which displays the indicators/observables contained in the cases and analyses that contain the entity.
+
+![The Knowledge Focus on Indicators and Observables views](assets/knowledge_focus_indicators_observable_views.png)
 
 ### Analysis
 
