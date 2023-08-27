@@ -92,7 +92,7 @@ class ThreatActorGroupDetailsComponent extends Component {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item={true} xs={5}>
+            <Grid item={true} xs={hasImages ? 5 : 6}>
               <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
               <Typography
                 variant="h3"
