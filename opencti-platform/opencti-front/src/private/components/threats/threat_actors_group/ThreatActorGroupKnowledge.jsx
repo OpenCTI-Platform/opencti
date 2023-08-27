@@ -31,7 +31,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
-          entityType={'Threat-Actor-Group'}
+          entityType="Threat-Actor-Group"
           stixDomainObject={threatActorGroup}
           PopoverComponent={<ThreatActorGroupPopover />}
         />
@@ -63,7 +63,7 @@ class ThreatActorGroupKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={threatActorGroup.id}
-              stixDomainObjectType="Threat-Actor"
+              stixDomainObjectType="Threat-Actor-Group"
               {...routeProps}
             />
           )}
