@@ -1614,7 +1614,7 @@ const i18n = {
       'Create a regular digest': 'Crear un resumen regular',
       'Triggering on': 'Activación de',
       'Minimum one trigger': 'Mínimo un disparador',
-      'Attribute "outcomes" of a trigger should have at least one outcome.':
+      'Attribute "notifiers" of a trigger should have at least one notifier.':
         'Los "resultados" de un desencadenante deben tener al menos un resultado.',
       'Attribute "trigger_events" of a live trigger should have at least one event.':
         'El atributo "eventos desencadenantes" de un desencadenador en vivo debe tener al menos un evento.',
@@ -3716,7 +3716,7 @@ const i18n = {
       'Create a regular digest': 'Créer un résumé régulier',
       'Triggering on': 'Se déclenche sur',
       'Minimum one trigger': 'Minimum un trigger',
-      'Attribute "outcomes" of a trigger should have at least one outcome.':
+      'Attribute "notifiers" of a trigger should have at least one notifier.':
         'L\' attribut "notifiers" d’un déclencheur doit contenir au moins un type de notification.',
       'Attribute "trigger_events" of a live trigger should have at least one event.':
         "L' attribut \"type d'évènement\" d’un déclencheur doit contenir au moins un type d'évènement.",
@@ -5744,7 +5744,7 @@ const i18n = {
       'Create a regular digest': '通常のダイジェストを作成する',
       'Triggering on': 'トリガーオン',
       'Minimum one trigger': '最小 1 つのトリガー',
-      'Attribute "outcomes" of a trigger should have at least one outcome.':
+      'Attribute "notifiers" of a trigger should have at least one notifier.':
         'トリガーの属性「結果」には、少なくとも 1 つの結果が必要です。',
       'Attribute "trigger_events" of a live trigger should have at least one event.':
         '',
@@ -7656,7 +7656,7 @@ const i18n = {
       'Create a regular digest': '創建定期摘要',
       'Triggering on': '觸發時間',
       'Minimum one trigger': '最少一個觸發器',
-      'Attribute "outcomes" of a trigger should have at least one outcome.':
+      'Attribute "notifiers" of a trigger should have at least one notifier.':
         '觸發器的屬性“結果”應至少有一個結果。',
       'Attribute "trigger events" of a live trigger should have at least one event.':
         '即時觸發器的屬性「觸發器事件」應至少包含一個事件。',

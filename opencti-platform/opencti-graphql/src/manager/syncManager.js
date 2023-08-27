@@ -142,7 +142,7 @@ const syncManagerInstance = (syncId) => {
               const enrichedEvent = JSON.stringify({ id: eventId, type: eventType, data: syncData, context: eventContext });
               const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
               // Applicant_id should be a userId coming from synchronizer
-              await pushToSync({ type: 'event', applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID, content });
+              await pushToSync({ type: 'event', update: true, applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID, content });
               await saveCurrentState(context, 'event', sync, eventId);
             }
           } catch (e) {
