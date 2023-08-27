@@ -194,12 +194,13 @@ const WorkspaceHeader = ({
                 size="small"
                 style={{ width: 194, marginRight: 20 }}
               >
-                <InputLabel id="relative">{t('Relative time')}</InputLabel>
+                <InputLabel id="relative" variant="outlined">{t('Relative time')}</InputLabel>
                 <Select
                   labelId="relative"
                   value={relativeDate ?? ''}
                   onChange={(value) => handleDateChange('relativeDate', value)}
                   disabled={true}
+                  variant="outlined"
                 >
                   <MenuItem value="none">{t('None')}</MenuItem>
                   <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
@@ -257,12 +258,15 @@ const WorkspaceHeader = ({
               style={{ width: 194, marginRight: 20 }}
               variant="outlined"
             >
-              <InputLabel id="relative">{t('Relative time')}</InputLabel>
+              <InputLabel id="relative" variant="outlined">
+                {t('Relative time')}
+              </InputLabel>
               <Select
                 labelId="relative"
                 value={relativeDate ?? relativeDate}
                 onChange={(value) => handleDateChange('relativeDate', value)}
                 label={t('Relative time')}
+                variant="outlined"
               >
                 <MenuItem value="none">{t('None')}</MenuItem>
                 <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>

@@ -579,11 +579,10 @@ class StixDomainObjectThreatKnowledge extends Component {
               elevation={1}
             >
               <FormControl style={{ width: '100%' }}>
-                <InputLabel id="timeField" variant="standard">
+                <InputLabel id="timeField">
                   {t('Date reference')}
                 </InputLabel>
                 <Select
-                  variant="standard"
                   labelId="timeField"
                   value={timeField === null ? '' : timeField}
                   onChange={this.handleChangeTimeField.bind(this)}

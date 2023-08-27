@@ -4,10 +4,22 @@ import * as Yup from 'yup';
 import { FormikErrors, FormikValues } from 'formik';
 import { clone } from 'ramda';
 import { Add } from '@mui/icons-material';
-import { FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Typography } from '@mui/material';
+import {
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Typography,
+} from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
 import { Theme } from '../../../../../components/Theme';
-import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
+import {
+  allScales,
+  customScaleName,
+  findSelectedScaleName,
+} from '../../../../../utils/hooks/useScale';
 import { ScaleConfig, Tick, UndefinedTick } from './scale';
 import ScaleConfigurationLine from './ScaleConfigurationLine';
 import ScaleBar from './ScaleBar';
@@ -114,7 +126,7 @@ interface EntitySettingScaleProps {
   setFieldValue: (
     field: string,
     value: ScaleConfig,
-    shouldValidate?: boolean
+    shouldValidate?: boolean,
   ) => void;
   setErrors: (errors: FormikErrors<FormikValues>) => void;
   customScale?: ScaleConfig | null;
@@ -168,7 +180,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
 
   const handleUpdateValueOfTick = (
     validateForm: (
-      values?: Tick | UndefinedTick
+      values?: Tick | UndefinedTick,
     ) => Promise<FormikErrors<Tick | UndefinedTick>>,
     tickIndex: number | 'min' | 'max',
     property: keyof Tick,
@@ -190,7 +202,9 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   };
 
   const currentScaleName = findSelectedScaleName(tickDefinition);
-  const selectorScales = customScale ? [{ name: customScaleName, scale: customScale }, ...allScales] : [...allScales];
+  const selectorScales = customScale
+    ? [{ name: customScaleName, scale: customScale }, ...allScales]
+    : [...allScales];
   const selectScale = (name: string) => {
     const scaleSelected = selectorScales.find((scale) => scale.name === name);
     if (scaleSelected) {
@@ -206,20 +220,18 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <div className={classes.container}>
-          <FormControl variant="standard" sx={{ m: 1, minWidth: 140, margin: 0 }}>
-            <InputLabel id="scale-selector">{t('Selected scale template')}</InputLabel>
+          <FormControl sx={{ m: 1, minWidth: 140, margin: 0 }}>
+            <InputLabel id="scale-selector">
+              {t('Selected scale template')}
+            </InputLabel>
             <Select
-              variant="standard"
               labelId="scale-selector"
               value={currentScaleName}
               onChange={(event) => selectScale(event.target.value)}
             >
               {selectorScales.map((scale, i: number) => {
                 return (
-                  <MenuItem
-                    key={i}
-                    value={scale.name}
-                  >
+                  <MenuItem key={i} value={scale.name}>
                     {scale.name}
                   </MenuItem>
                 );
@@ -227,9 +239,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
             </Select>
           </FormControl>
           <ScaleBar scale={tickDefinition} />
-          <Typography variant="h4">
-            {t('Customize scale')}
-          </Typography>
+          <Typography variant="h4">{t('Customize scale')}</Typography>
           <Typography variant="h3" gutterBottom={true}>
             {t('Limits')}
           </Typography>

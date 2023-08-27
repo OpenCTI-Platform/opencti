@@ -449,7 +449,7 @@ const FeedEditionContainer = (props) => {
                                     <FormControl
                                       className={classes.formControl}
                                     >
-                                      <InputLabel variant="standard">
+                                      <InputLabel>
                                         {t(`entity_${selectedType}`)}
                                       </InputLabel>
                                       <QueryRenderer
@@ -496,7 +496,6 @@ const FeedEditionContainer = (props) => {
                                             return (
                                               <Select
                                                 style={{ width: 150 }}
-                                                variant="standard"
                                                 value={
                                                   feedAttributes[i]?.mappings
                                                   && feedAttributes[i].mappings[

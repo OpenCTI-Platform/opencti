@@ -325,11 +325,11 @@ const StixDomainObjectHeader = (props) => {
         </div>
       </Security>
       {typeof onViewAs === 'function' && (
-        <div>
+        <>
           <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
             {t('Display as')}
           </InputLabel>
-          <FormControl classes={{ root: classes.viewAsField }}>
+          <FormControl classes={{ root: classes.viewAsField }} variant="outlined">
             <Select
               size="small"
               name="view-as"
@@ -339,12 +339,13 @@ const StixDomainObjectHeader = (props) => {
                 name: 'view-as',
                 id: 'view-as',
               }}
+              variant="outlined"
             >
               <MenuItem value="knowledge">{t('Knowledge entity')}</MenuItem>
               <MenuItem value="author">{t('Author')}</MenuItem>
             </Select>
           </FormControl>
-        </div>
+        </>
       )}
       {!noAliases && (
         <div

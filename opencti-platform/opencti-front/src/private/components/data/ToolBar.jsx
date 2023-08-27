@@ -1780,7 +1780,7 @@ class ToolBar extends Component {
                       <Grid container={true} spacing={3}>
                         <Grid item={true} xs={3}>
                           <FormControl className={classes.formControl}>
-                            <InputLabel variant="standard">
+                            <InputLabel>
                               {t('Action type')}
                             </InputLabel>
                             <Select
@@ -1802,7 +1802,7 @@ class ToolBar extends Component {
                         </Grid>
                         <Grid item={true} xs={3}>
                           <FormControl className={classes.formControl}>
-                            <InputLabel variant="standard">
+                            <InputLabel>
                               {t('Field')}
                             </InputLabel>
                             {this.renderFieldOptions(i)}

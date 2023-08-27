@@ -197,7 +197,9 @@ const FeedCreation = (props) => {
     const updatedFeedAttributes = [];
     for (let index = 0; index < attrValues.length; index += 1) {
       const feedAttr = attrValues[index];
-      const mappingEntries = isNotEmptyField(feedAttr) ? Object.entries(feedAttr.mappings) : [];
+      const mappingEntries = isNotEmptyField(feedAttr)
+        ? Object.entries(feedAttr.mappings)
+        : [];
       const keepMappings = mappingEntries.filter(([k]) => types.includes(k));
       updatedFeedAttributes.push({
         attribute: feedAttr.attribute,
@@ -247,7 +249,10 @@ const FeedCreation = (props) => {
   };
 
   const areAttributesValid = () => {
-    if (selectedTypes.length === 0 || Object.keys(feedAttributes).length === 0) {
+    if (
+      selectedTypes.length === 0
+      || Object.keys(feedAttributes).length === 0
+    ) {
       return false;
     }
     for (const n of Object.keys(feedAttributes)) {
@@ -536,7 +541,7 @@ const FeedCreation = (props) => {
                                       <FormControl
                                         className={classes.formControl}
                                       >
-                                        <InputLabel variant="standard">
+                                        <InputLabel>
                                           {t(`entity_${selectedType}`)}
                                         </InputLabel>
                                         <QueryRenderer
@@ -585,7 +590,6 @@ const FeedCreation = (props) => {
                                               return (
                                                 <Select
                                                   style={{ width: 150 }}
-                                                  variant="standard"
                                                   value={
                                                     feedAttributes[i]
                                                       ?.mappings
