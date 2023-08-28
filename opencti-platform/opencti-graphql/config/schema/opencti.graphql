@@ -758,7 +758,7 @@ type FileMetadata {
   errors: [WorkMessage]
   list_filters: String
   entity_id: String
-  entity: StixCoreObject
+  entity: StixObject
   labels_text: String
   labels: [String]
   creator_id: String
