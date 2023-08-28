@@ -125,7 +125,8 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     });
   }
 
-  handleAddFilter(key, id, value, event = null) {
+  handleAddFilter(inputKey, id, value, event = null) {
+    const key = inputKey === 'container_type' ? 'entity_type' : inputKey;
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -134,7 +135,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       this.setState(
         {
           filters: R.assoc(
-            key === 'container_type' ? 'entity_type' : key,
+            key,
             isUniqFilter(key)
               ? [{ id, value }]
               : R.uniqBy(R.prop('id'), [
@@ -150,7 +151,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       this.setState(
         {
           filters: R.assoc(
-            key === 'container_type' ? 'entity_type' : key,
+            key,
             [{ id, value }],
             this.state.filters,
           ),
@@ -273,6 +274,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               'markedBy',
               'created_start_date',
               'created_end_date',
+              'entity_type',
             ]}
           >
             <QueryRenderer
