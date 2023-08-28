@@ -159,7 +159,7 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -208,7 +208,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache } from './cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import {
@@ -1985,20 +1985,16 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
 
         const currentMarkings = initial.objectMarking;
         if (relType === RELATION_OBJECT_MARKING && currentMarkings) {
-          const [markingAdded] = await internalFindByIds(context, user, refs);
-          const targetTypeExist = currentMarkings.some((marking) => marking.definition_type === markingAdded.definition_type);
+          const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+          const markingAdded = markingsMap.get(R.head(refs));
 
-          if (targetTypeExist) {
-            const newValues = [...new Set(currentMarkings.flatMap((currentMarking) => {
-              const isSameType = currentMarking.definition_type === markingAdded.definition_type;
-              const isSameOrder = currentMarking.x_opencti_order === markingAdded.x_opencti_order;
-
-              if (isSameType && !isSameOrder) return markingAdded.id;
-              if (isSameType && isSameOrder) return [markingAdded.id, currentMarking.id];
-              return currentMarking.id;
-            }).filter((marking) => marking))];
-            // update current values of markings
-            ({ operation, refs } = { operation: UPDATE_OPERATION_REPLACE, refs: newValues });
+          const markingsHasSameType = currentMarkings.filter((currentMarking) => currentMarking.definition_type === markingAdded.definition_type);
+          const markingsToReplace = markingsHasSameType.filter((currentMarking) => currentMarking.x_opencti_order !== markingAdded.x_opencti_order);
+          if (markingsToReplace.length !== 0) {
+            // filter every value that has not the same type
+            const existingMarkings = currentMarkings.filter((marking) => !marking.definition_type.includes(markingAdded.definition_type)).map((m) => m.id);
+            const newMarkings = existingMarkings.concat(markingAdded.id);
+            ({ operation, refs } = { operation: UPDATE_OPERATION_REPLACE, refs: newMarkings });
           }
         }
 
