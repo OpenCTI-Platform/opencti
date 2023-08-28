@@ -291,7 +291,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                         </ListItem>
                         {externalReference.importFiles.edges.length > 0 && (
                           <List>
-                            {externalReference.importFiles.edges.map((file) => (
+                            {externalReference.importFiles.edges.map((file) => file?.node && (
                               <FileLine
                                 key={file.node.id}
                                 dense={true}
@@ -346,7 +346,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                       </ListItem>
                       {externalReference.importFiles.edges.length > 0 && (
                         <List>
-                          {externalReference.importFiles.edges.map((file) => (
+                          {externalReference.importFiles.edges.map((file) => file?.node && (
                             <FileLine
                               key={file.node.id}
                               dense={true}

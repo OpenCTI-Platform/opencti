@@ -328,7 +328,7 @@ class ImportContentComponent extends Component {
               <Paper classes={{ root: classes.paper }} variant="outlined">
                 {importFilesEdges.length ? (
                   <List>
-                    {importFilesEdges.map((file) => (
+                    {importFilesEdges.map((file) => file?.node && (
                       <FileLine
                         key={file.node.id}
                         file={file.node}

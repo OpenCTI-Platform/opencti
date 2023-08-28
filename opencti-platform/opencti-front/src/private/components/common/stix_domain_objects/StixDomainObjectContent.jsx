@@ -141,22 +141,16 @@ const stixDomainObjectContentUploadExternalReferenceMutation = graphql`
 const sortByLastModified = R.sortBy(R.prop('name'));
 
 const getFiles = (stixDomainObject) => {
-  const importFiles = R.map(
-    (n) => n.node,
-    R.pathOr([], ['importFiles', 'edges'], stixDomainObject),
-  );
-  const externalReferencesFiles = R.pipe(
-    R.map((n) => n.node.importFiles.edges),
-    R.flatten,
-    R.map((n) => n.node),
-    R.filter((i) => isEmptyField(i.metaData.external_reference_id)),
-  )(R.pathOr([], ['externalReferences', 'edges'], stixDomainObject));
-  return R.pipe(
-    R.filter((n) => ['application/pdf', 'text/plain', 'text/html', 'text/markdown'].includes(
-      n.metaData.mimetype,
-    )),
-    sortByLastModified,
-  )([...importFiles, ...externalReferencesFiles]);
+  const importFiles = stixDomainObject.importFiles?.edges?.filter((n) => !!n?.node)
+    .map((n) => n.node) ?? [];
+  const externalReferencesFiles = stixDomainObject.externalReferences?.edges
+    ?.map((n) => n?.node?.importFiles?.edges).flat().filter((n) => !!n?.node)
+    .map((n) => n.node)
+    .filter((n) => n.metaData && isEmptyField(n.metaData.external_reference_id)) ?? [];
+  const result = sortByLastModified([...importFiles, ...externalReferencesFiles].filter((n) => {
+    return ['application/pdf', 'text/plain', 'text/html', 'text/markdown'].includes(n.metaData.mimetype);
+  }));
+  return result;
 };
 
 class StixDomainObjectContentComponent extends Component {

@@ -89,7 +89,7 @@ const StixCoreObjectsExportsContentComponent = ({
       </div>
       <List>
         {stixCoreObjectsExportFiles.length > 0 ? (
-          stixCoreObjectsExportFiles.map((file) => (
+          stixCoreObjectsExportFiles.map((file) => file?.node && (
             <FileLine
               key={file.node.id}
               file={file.node}

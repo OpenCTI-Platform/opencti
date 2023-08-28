@@ -362,17 +362,17 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       {externalReference.importFiles?.edges
                         && externalReference.importFiles?.edges.length > 0 && (
                           <List>
-                            {externalReference.importFiles.edges.map((file) => (
+                            {externalReference.importFiles.edges.map((file) => file?.node && (
                               <FileLine
-                                key={file?.node.id}
+                                key={file.node.id}
                                 dense={true}
-                                file={file?.node}
+                                file={file.node}
                                 nested={true}
                                 workNested={true}
                                 onDelete={() => relay.refetchConnection(200)}
                                 connectors={
                                   importConnsPerFormat[
-                                    file?.node.metaData?.mimetype ?? 0
+                                    file.node.metaData?.mimetype ?? 0
                                   ]
                                 }
                                 handleOpenImport={handleOpenImport}
@@ -424,12 +424,12 @@ StixCoreObjectExternalReferencesLinesContainerProps
                     {externalReference.importFiles?.edges
                       && externalReference.importFiles?.edges.length > 0 && (
                         <List>
-                          {externalReference.importFiles?.edges?.map((file) => (
+                          {externalReference.importFiles?.edges?.map((file) => file?.node && (
                             <FileLine
-                              key={file?.node.id}
+                              key={file.node.id}
                               dense={true}
                               disableImport={true}
-                              file={file?.node}
+                              file={file.node}
                               nested={true}
                               isExternalReferenceAttachment={isFileAttached}
                             />

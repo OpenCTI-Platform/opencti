@@ -84,7 +84,7 @@ class StixCyberObservablesExportsContentComponent extends Component {
         </div>
         <List>
           {stixCyberObservablesExportFiles.length > 0 ? (
-            stixCyberObservablesExportFiles.map((file) => (
+            stixCyberObservablesExportFiles.map((file) => file?.node && (
               <FileLine
                 key={file.node.id}
                 file={file.node}

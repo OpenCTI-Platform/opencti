@@ -100,7 +100,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
         </div>
         <List>
           {stixDomainObjectsExportFiles.length > 0 ? (
-            stixDomainObjectsExportFiles.map((file) => (
+            stixDomainObjectsExportFiles.map((file) => file?.node && (
               <FileLine
                 key={file.node.id}
                 file={file.node}

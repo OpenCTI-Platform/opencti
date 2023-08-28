@@ -148,14 +148,14 @@ ExternalReferenceFileImportViewerBaseProps
                       ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
                     };
                   } | null,
-                ) => (
+                ) => file?.node && (
                   <FileLine
-                    key={file?.node.id}
+                    key={file.node.id}
                     dense={true}
                     disableImport={disableImport}
-                    file={file?.node}
+                    file={file.node}
                     connectors={
-                      importConnsPerFormat[file?.node.metaData?.mimetype ?? 0]
+                      importConnsPerFormat[file.node.metaData?.mimetype ?? 0]
                     }
                     handleOpenImport={handleOpenImport}
                   />
