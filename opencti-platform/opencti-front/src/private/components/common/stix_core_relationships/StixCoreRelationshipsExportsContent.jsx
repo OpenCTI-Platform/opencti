@@ -92,7 +92,7 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
         </div>
         <List>
           {stixCoreRelationshipsExportFiles.length > 0 ? (
-            stixCoreRelationshipsExportFiles.map((file) => (
+            stixCoreRelationshipsExportFiles.map((file) => file?.node && (
               <FileLine
                 key={file.node.id}
                 file={file.node}

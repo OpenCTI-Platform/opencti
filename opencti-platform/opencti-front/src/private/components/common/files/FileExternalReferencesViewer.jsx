@@ -62,7 +62,7 @@ const FileExternalReferencesViewerBase = ({
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {allFiles.length ? (
             <List>
-              {allFiles.map((file) => (
+              {allFiles.map((file) => file && (
                 <FileLine
                   key={file.id}
                   dense={true}
