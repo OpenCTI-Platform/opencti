@@ -10,10 +10,10 @@ import RootStixCyberObservable from './stix_cyber_observables/Root';
 import Artifacts from './Artifacts';
 import Indicators from './Indicators';
 import RootIndicator from './indicators/Root';
-import RootInfrastructure from './infrastructures/Root';
 import RootArtifact from './artifacts/Root';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Infrastructures from './Infrastructures';
+import RootInfrastructure from './infrastructures/Root';
 
 const Root = () => {
   let redirect: string | null = null;

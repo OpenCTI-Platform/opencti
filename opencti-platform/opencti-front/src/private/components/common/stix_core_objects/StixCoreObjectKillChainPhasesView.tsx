@@ -19,15 +19,14 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StixCoreObjectKillChainPhasesViewProps {
-  killChainPhasesEdges: {
-    node: {
-      entity_type: string;
-      id: string;
-      kill_chain_name: string;
-      phase_name: string;
-      x_opencti_order: number | null;
-    }
-  }[];
+  killChainPhasesEdges: ReadonlyArray<{ node: {
+    entity_type: string;
+    id: string;
+    kill_chain_name: string;
+    phase_name: string;
+    x_opencti_order: number | null;
+  };
+  }>;
   firstLine?: boolean,
 }
 

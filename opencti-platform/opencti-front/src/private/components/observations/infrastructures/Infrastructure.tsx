@@ -25,7 +25,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const InfrastructureFragment = graphql`
+const infrastructureFragment = graphql`
   fragment Infrastructure_infrastructure on Infrastructure {
     id
     standard_id
@@ -87,13 +87,14 @@ const InfrastructureFragment = graphql`
 
 const Infrastructure = ({ data }: { data: Infrastructure_infrastructure$key }) => {
   const classes = useStyles();
-  const infrastructure = useFragment(InfrastructureFragment, data);
+  const infrastructureData = useFragment<Infrastructure_infrastructure$key>(infrastructureFragment, data);
+
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
         entityType={'Infrastructure'}
-        stixDomainObject={infrastructure}
-        PopoverComponent={<InfrastructurePopover />}
+        stixDomainObject={infrastructureData}
+        PopoverComponent={<InfrastructurePopover id={infrastructureData.id}/>}
       />
       <Grid
         container={true}
@@ -101,39 +102,39 @@ const Infrastructure = ({ data }: { data: Infrastructure_infrastructure$key }) =
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <InfrastructureDetails infrastructure={infrastructure} />
+          <InfrastructureDetails infrastructure={infrastructureData} />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={infrastructure} />
+          <StixDomainObjectOverview stixDomainObject={infrastructureData} />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-            stixObjectOrStixRelationshipId={infrastructure.id}
-            stixObjectOrStixRelationshipLink={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
+            stixObjectOrStixRelationshipId={infrastructureData.id}
+            stixObjectOrStixRelationshipLink={`/dashboard/observations/infrastructures/${infrastructureData.id}/knowledge`}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectOrStixRelationshipLastContainers
-            stixCoreObjectOrStixRelationshipId={infrastructure.id}
+            stixCoreObjectOrStixRelationshipId={infrastructureData.id}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectExternalReferences
-            stixCoreObjectId={infrastructure.id}
+            stixCoreObjectId={infrastructureData.id}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={infrastructure.id} />
+          <StixCoreObjectLatestHistory stixCoreObjectId={infrastructureData.id} />
         </Grid>
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={infrastructure.id}
-        defaultMarkings={(infrastructure.objectMarking?.edges ?? []).map(
+        stixCoreObjectOrStixCoreRelationshipId={infrastructureData.id}
+        defaultMarkings={(infrastructureData.objectMarking?.edges ?? []).map(
           (edge) => edge.node,
         )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <InfrastructureEdition infrastructureId={infrastructure.id} />
+        <InfrastructureEdition infrastructureId={infrastructureData.id} />
       </Security>
     </div>
   );
