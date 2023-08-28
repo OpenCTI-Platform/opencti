@@ -27,7 +27,12 @@ const fileUploaderEntityMutation = graphql`
         ...FileLine_file
         metaData {
           entity {
-            ...PictureManagementViewer_entity
+            ... on StixObject {
+              id
+            }
+            ... on StixDomainObject {
+              ...PictureManagementViewer_entity
+            }
           }
         }
       }
