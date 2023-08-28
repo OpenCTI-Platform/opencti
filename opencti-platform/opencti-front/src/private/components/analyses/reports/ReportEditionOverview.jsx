@@ -321,6 +321,7 @@ const ReportEditionOverviewComponent = (props) => {
               <SubscriptionFocus context={context} fieldName="createdBy" />
             }
             onChange={editor.changeCreated}
+            setFieldValue={setFieldValue}
           />
           <ObjectMarkingField
             name="objectMarking"
