@@ -87,7 +87,7 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
     InfrastructureDetailsFragment,
     infrastructure,
   );
-  const killChainPhases = data?.killChainPhases?.edges ?? [];
+  const killChainPhases = data.killChainPhases?.edges ?? [];
 
   return (
     <div style={{ height: '100%' }}>
