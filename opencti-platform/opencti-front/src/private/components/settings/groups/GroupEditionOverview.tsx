@@ -2,7 +2,7 @@ import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
-import { FormikConfig } from 'formik/dist/types';
+import { ObjectShape } from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -12,9 +12,6 @@ import DashboardField from '../../common/form/DashboardField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
 import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import { adaptFieldValue } from '../../../../utils/String';
-import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -79,27 +76,20 @@ interface GroupEditionOverviewComponentProps {
     readonly focusOn: string | null;
     readonly name: string;
   } | null)[]
-  | null,
-  handleClose: () => void,
+  | null;
 
 }
-interface GroupEditionOverviewFormValues {
-  message?: string
-  references: ExternalReferencesValues | undefined
-}
-
-const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context, handleClose }) => {
+const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
   const { t } = useFormatter();
 
-  const basicShape = {
+  const basicShape: ObjectShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     default_assignation: Yup.bool(),
     auto_new_marking: Yup.bool(),
-    // default_dashboard: Yup.object().nullable(),
   };
 
-  const groupValidator = useSchemaEditionValidation('Group', basicShape);
+  const groupValidator = Yup.object().shape(basicShape);
   const queries = {
     fieldPatch: groupMutationFieldPatch,
     editionFocus: groupEditionOverviewFocus,
@@ -107,27 +97,6 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     relationDelete: groupMutationRelationDelete,
   };
   const editor = useFormEditor(group as unknown as GenericData, false, queries, groupValidator);
-
-  const onSubmit: FormikConfig<GroupEditionOverviewFormValues>['onSubmit'] = (values, { setSubmitting }) => {
-    const { message, references, ...otherValues } = values;
-    const commitMessage = message ?? '';
-    const commitReferences = (references ?? []).map(({ value }) => value);
-    const inputValues = Object.entries({
-      ...otherValues,
-    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
-    editor.fieldPatch({
-      variables: {
-        id: group.id,
-        input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references: commitReferences,
-      },
-      onCompleted: () => {
-        setSubmitting(false);
-        handleClose();
-      },
-    });
-  };
 
   const initialValues = {
     name: group.name,
@@ -140,35 +109,14 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     } : null,
   };
 
-  // const handleChangeFocus = (name: string) => {
-  //   commitFocus({
-  //     variables: {
-  //       id: group.id,
-  //       input: {
-  //         focusOn: name,
-  //       },
-  //     },
-  //   });
-  // };
-
-  // const handleSubmitField = (name: string, value: string) => {
-  //   groupValidation(t)
-  //     .validateAt(name, { [name]: value })
-  //     .then(() => {
-  //       commitFieldPatch({
-  //         variables: { id: group.id, input: { key: name, value: value ?? '' } },
-  //       });
-  //     })
-  //     .catch(() => false);
-  // };
-
   return (
     <div>
       <Formik
         enableReinitialize={true}
         initialValues={initialValues as never}
         validationSchema={groupValidator}
-        onSubmit={onSubmit}
+        onSubmit={() => {
+        }}
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
