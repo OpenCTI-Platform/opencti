@@ -31,6 +31,7 @@ PATTERN_MAPPING = {
     "Cryptographic-Key": ["value"],
     "Cryptocurrency-Wallet": ["value"],
     "User-Account": ["acount_login"],
+    "User-Agent": ["value"],
     "Windows-Registry-Key": ["key"],
     "Windows-Registry-Value-Type": ["name"],
     "Bank-Account": ["iban"],

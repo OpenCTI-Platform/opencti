@@ -20,9 +20,10 @@ export const up = async (next) => {
     if (ctx._source.toType == params.type) {
       ctx._source.toType = params.target;
     }
-    for(connection in ctx._source.connections) {
-      if (connection.types.contains(params.type)) {
-        connection.types.remove(params.type);
+    for (connection in ctx._source.connections) {
+      def typeIndex = connection.types.indexOf(params.type);
+      if (typeIndex >= 0) {
+        connection.types.remove(typeIndex);
         connection.types.add(params.target)
       }
     }
