@@ -58,7 +58,7 @@ const ingestionRssValidation = (t) => Yup.object().shape({
   uri: Yup.string().required(t('This field is required')),
   object_marking_refs: Yup.array().nullable(),
   report_types: Yup.array().nullable(),
-  created_by_ref: Yup.object().nullable(),
+  created_by_ref: Yup.mixed().nullable(),
   user_id: Yup.object().nullable(),
 });
 
