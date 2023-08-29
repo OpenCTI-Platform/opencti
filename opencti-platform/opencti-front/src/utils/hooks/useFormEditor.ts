@@ -54,6 +54,7 @@ const useFormEditor = (
   queries: Queries,
   validator: ObjectSchema<{ [p: string]: unknown }>,
 ) => {
+  // TODO maybe create the commit only for existing queries. This way, we don't need to always define all of them
   const [commitRelationAdd] = useMutation(queries.relationAdd);
   const [commitRelationDelete] = useMutation(queries.relationDelete);
   const [commitFieldPatch] = useMutation(queries.fieldPatch);
