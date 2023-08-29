@@ -100,9 +100,11 @@ Here are the configuration keys, for both containers (environment variables) and
 
 | Parameter                              | Environment variable                    | Default value                 | Description                                                                             |
 |:---------------------------------------| :-------------------------------------- | :---------------------------- |:----------------------------------------------------------------------------------------|
+| elasticsearch:engine_selector          | ELASTICSEARCH__ENGINE_SELECTOR          | auto                          | `elk` or `opensearch`, default is `auto`, please put `elk` if you use token auth.       |
 | elasticsearch:url                      | ELASTICSEARCH__URL                      | http://localhost:9200         | URL(s) of the ElasticSearch (supports http://user:pass@localhost:9200 and list of URLs) |
 | elasticsearch:username                 | ELASTICSEARCH__USERNAME                 |                               | Username can be put in the URL or with this parameter                                   |
 | elasticsearch:password                 | ELASTICSEARCH__PASSWORD                 |                               | Password can be put in the URL or with this parameter                                   |
+| elasticsearch:api_key                  | ELASTICSEARCH__API_KEY                  |                               | API key for ElasticSearch token auth. Please set also `engine_selector` to `elk`        |
 | elasticsearch:index_prefix             | ELASTICSEARCH__INDEX_PREFIX             | opencti                       | Prefix for the indices                                                                  |
 | elasticsearch:ssl:reject_unauthorized  | ELASTICSEARCH__SSL__REJECT_UNAUTHORIZED | `true`                        | Enable TLS certificate check                                                            |
 | elasticsearch:ssl:ca                   | ELASTICSEARCH__SSL__CA                  |                               | Custom certificate path or content                                                      |
