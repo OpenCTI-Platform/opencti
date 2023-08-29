@@ -55,6 +55,12 @@ export const notifierGet = (context: AuthContext, user: AuthUser, notifierId: st
 };
 
 export const notifierEdit = async (context: AuthContext, user: AuthUser, notifierId: string, input: EditInput[]) => {
+  const fieldsToValidate = {
+    name: '',
+    notifier_configuration: input.filter((n) => n.key === 'notifier_configuration')[0].value[0] ?? '',
+    notifier_connector_id: input.filter((n) => n.key === 'notifier_connector_id')[0].value[0] ?? '',
+  };
+  validateNotifier(fieldsToValidate);
   const finalInput = input.map(({ key, value }) => {
     const item: { key: string, value: unknown } = { key, value };
     if (key === 'authorized_members') {

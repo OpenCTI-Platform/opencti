@@ -24,6 +24,7 @@ import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { uiSchema } from './NotifierUtils';
 import notifierValidator from './NotifierValidator';
+import { handleErrorInForm } from '../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -126,19 +127,37 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
     authorized_members: data?.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [],
     notifier_connector_id: data?.notifier_connector ? { value: data.notifier_connector.id, label: data.notifier_connector.name } : undefined,
   };
-  const submitForm = (setSubmitting: FormikHelpers<NotifierEditionValues>['setSubmitting'], values: NotifierEditionValues, current: FormRef) => {
-    if (current?.validateForm()) {
-      setSubmitting(true);
-      const inputs = [
-        { key: 'name', value: [values.name] },
-        { key: 'description', value: [values.description] },
-        { key: 'authorized_members', value: values.authorized_members?.map(({ value }) => value) },
-        { key: 'notifier_connector_id', value: [values.notifier_connector_id?.value] },
-        { key: 'notifier_configuration', value: [JSON.stringify(current.state.formData)] },
-      ];
-      commitFieldPatch({ variables: { id: data?.id, input: inputs } });
-      setSubmitting(false);
-    }
+  const submitForm = (
+    setSubmitting: FormikHelpers<NotifierEditionValues>['setSubmitting'],
+    setErrors: FormikHelpers<NotifierEditionValues>['setErrors'],
+    values: NotifierEditionValues,
+    current: FormRef,
+  ) => {
+    notifierValidation(t)
+      .validate(values)
+      .then(() => {
+        if (current?.validateForm()) {
+          setSubmitting(true);
+          const inputs = [
+            { key: 'name', value: [values.name] },
+            { key: 'description', value: [values.description] },
+            { key: 'authorized_members', value: values.authorized_members?.map(({ value }) => value) },
+            { key: 'notifier_connector_id', value: [values.notifier_connector_id?.value] },
+            { key: 'notifier_configuration', value: [JSON.stringify(current.state.formData)] },
+          ];
+          commitFieldPatch({
+            variables: { id: data?.id, input: inputs },
+            onError: (error: Error) => {
+              handleErrorInForm(error, setErrors);
+              setSubmitting(false);
+            },
+            onCompleted: () => {
+              setSubmitting(false);
+              onClose();
+            },
+          });
+        }
+      });
   };
 
   const notifierConfiguration = useRef<string>(data?.notifier_configuration ?? ' {}');
@@ -167,7 +186,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
             onSubmit={() => {}}
             onClose={onClose}
           >
-            {({ values, setFieldValue, setSubmitting, isSubmitting }) => (
+            {({ values, setFieldValue, setSubmitting, setErrors, isSubmitting }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -227,8 +246,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                     variant="contained"
                     color="secondary"
                     onClick={() => {
-                      submitForm(setSubmitting, values, formRef.current);
-                      onClose();
+                      submitForm(setSubmitting, setErrors, values, formRef.current);
                     }}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}>
