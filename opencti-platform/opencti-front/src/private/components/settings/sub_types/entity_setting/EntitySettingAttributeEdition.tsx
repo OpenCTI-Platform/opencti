@@ -201,7 +201,7 @@ const EntitySettingAttributeEdition = ({
     });
   };
 
-  const field = () => {
+  const field = (setFieldValue: (field: string, value: string) => void) => {
     const label = t('Default value');
     // Handle object marking specific case : activate or deactivate default values (handle in access)
     if (attribute.name === 'objectMarking') {
@@ -242,6 +242,7 @@ const EntitySettingAttributeEdition = ({
           label={label}
           name="default_values"
           style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
         />
       );
     }
@@ -425,7 +426,7 @@ const EntitySettingAttributeEdition = ({
                 label={t('Mandatory')}
                 disabled={attribute.mandatoryType !== 'customizable'}
               />
-              {field()}
+              {field(setFieldValue)}
               {attribute.scale && (
                 <ScaleConfiguration
                   initialValues={initialValues.scale}

@@ -171,7 +171,7 @@ const IngestionRssCreation = (props) => {
               uri: '',
               report_types: [],
               user_id: '',
-              createdBy: '',
+              created_by_ref: '',
               objectMarking: [],
               current_state_date: null,
             }}
