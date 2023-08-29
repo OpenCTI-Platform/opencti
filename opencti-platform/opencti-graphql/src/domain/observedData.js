@@ -19,7 +19,7 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
-import { extractEntityRepresentativeName } from "../database/entity-representative";
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 
 export const findById = (context, user, observedDataId) => {
   return storeLoadById(context, user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
