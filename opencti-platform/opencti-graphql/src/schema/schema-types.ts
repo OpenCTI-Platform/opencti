@@ -20,5 +20,8 @@ export const schemaTypesDefinition = {
   get(type: string): string[] {
     return Array.from(this.types[type].keys());
   },
+  hasChildren(type: string): boolean {
+    return this.types[type]?.size > 0;
+  }
 
 };

@@ -76,7 +76,7 @@ import {
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import {
-  isStixCoreRelationship,
+  isStixCoreRelationship, RELATION_COMMUNICATES_WITH, RELATION_CONSISTS_OF,
   RELATION_DERIVED_FROM,
   RELATION_DETECTS,
   RELATION_HOSTS,
@@ -116,7 +116,8 @@ import { getParentTypes } from '../../../src/schema/schemaUtils';
 import { ENTITY_TYPE_RULE } from '../../../src/schema/internalObject';
 import { RELATION_MIGRATES } from '../../../src/schema/internalRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from "../../../src/modules/organization/organization-types";
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { schemaRelationsTypesMapping } from '../../../src/domain/stixRelationship';
 
 describe('Testing relation consistency', () => {
   it.concurrent.each([
@@ -464,5 +465,17 @@ describe('Testing stix ref extractor', () => {
     const refs = stixRefsExtractor(json, generateStandardId);
     expect(refs.includes('identity--1f02efe5-c752-589e-85d4-a8da3898f690')).toBe(true);
     expect(refs.includes('marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da')).toBe(true);
+  });
+});
+
+describe('Test if needed', () => {
+  it('Mapping', () => {
+    const mapping = schemaRelationsTypesMapping();
+    let relations = mapping.find((m) => m.key === 'Infrastructure_IPv4-Addr').values;
+    expect(relations.includes(RELATION_COMMUNICATES_WITH)).toBe(true); // Inheritance
+    expect(relations.includes(RELATION_CONSISTS_OF)).toBe(true); // Merge
+
+    relations = mapping.find((m) => m.key === 'Infrastructure_Software').values;
+    expect(relations.filter((r) => r === RELATION_CONSISTS_OF).length).toBe(1); // Deduplication
   });
 });

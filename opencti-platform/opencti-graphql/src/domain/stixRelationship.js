@@ -5,7 +5,11 @@ import {
   distributionRelations,
   timeSeriesRelations
 } from '../database/middleware';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_RELATIONSHIP,
+  ENTITY_TYPE_IDENTITY
+} from '../schema/general';
 import { buildEntityFilters, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import {
   isNotEmptyField,
@@ -16,6 +20,8 @@ import { elCount } from '../database/engine';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
+import { UnsupportedError } from '../config/errors';
+import { schemaTypesDefinition } from '../schema/schema-types';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_RELATIONSHIP, 'relationship_type', args), args);
@@ -123,10 +129,81 @@ export const getSpecVersionOrDefault = ({ spec_version }) => spec_version ?? STI
 
 export const schemaRelationsTypesMapping = () => {
   const entries = Object.entries(stixCoreRelationshipsMapping);
-  return entries.map(([key, values]) => {
+  const flatEntries = [];
+  entries.forEach(([key, values]) => {
+    const [fromType, toType] = key.split('_');
+    const generatedEntries = generateEntries(fromType, toType, values);
+    flatEntries.push(...generatedEntries);
+  });
+
+  return mergedEntries(flatEntries.map(([key, values]) => {
     return {
       key,
       values: values.map((def) => def.name)
     };
-  });
+  }));
 };
+
+const isParentType = (key) => {
+  return schemaTypesDefinition.hasChildren(key);
+};
+
+const getChildren = (type) => {
+  if (!isParentType(type)) {
+    throw UnsupportedError(`${type} is not supported`);
+  }
+
+  return schemaTypesDefinition.get(type);
+};
+
+const generateEntries = (fromType, toType, values) => {
+  if (!isParentType(fromType) && !isParentType(toType)) {
+    return [[`${fromType}_${toType}`, values]];
+  }
+
+  const entries = [];
+
+  if (isParentType(fromType) && !isParentType(toType)) {
+    const children = getChildren(fromType);
+    children.forEach((child) => {
+      const newEntry = generateEntries(child, toType, values).flat();
+      entries.push(newEntry);
+    });
+  }
+
+  if (!isParentType(fromType) && isParentType(toType)) {
+    const children = getChildren(toType);
+    children.forEach((child) => {
+      const newEntry = generateEntries(fromType, child, values).flat();
+      entries.push(newEntry);
+    });
+  }
+
+  if (isParentType(fromType) && isParentType(toType)) {
+    const toTypeChildren = getChildren(toType);
+    const fromTypeChildren = getChildren(fromType);
+
+    fromTypeChildren.forEach((fromChild) => {
+      toTypeChildren.forEach((toChild) => {
+        const newEntry = generateEntries(fromChild, toChild, values).flat();
+        entries.push(newEntry);
+      });
+    });
+  }
+
+  return entries;
+};
+
+const mergedEntries = (entries) => entries.reduce((result, currentItem) => {
+  const existingItem = result.find((item) => item.key === currentItem.key);
+  if (existingItem) {
+    currentItem.values.forEach((value) => {
+      if (!existingItem.values.includes(value)) {
+        existingItem.values.push(value);
+      }
+    });
+  } else {
+    result.push({ ...currentItem });
+  }
+  return result;
+}, []);
