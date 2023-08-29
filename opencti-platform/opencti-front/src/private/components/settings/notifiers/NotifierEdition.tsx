@@ -6,7 +6,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import CoreForm from '@rjsf/core';
 import JsonForm from '@rjsf/mui';
 import type { RJSFSchema } from '@rjsf/utils';
-import validator from '@rjsf/validator-ajv8';
 import { Field, Form, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import React, { createRef, FunctionComponent, useRef, useState } from 'react';
@@ -24,6 +23,7 @@ import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graph
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { uiSchema } from './NotifierUtils';
+import notifierValidator from './NotifierValidator';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -206,7 +206,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                   liveValidate
                   schema={JSON.parse(data?.notifier_connector?.connector_schema ?? ' {}')}
                   formData={JSON.parse(notifierConfiguration.current)}
-                  validator={validator}
+                  validator={notifierValidator}
                   onChange={(newValue) => {
                     notifierConfiguration.current = JSON.stringify(newValue.formData);
                   }}

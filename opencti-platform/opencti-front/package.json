@@ -17,7 +17,6 @@
     "@rjsf/core": "5.12.1",
     "@rjsf/mui": "5.12.1",
     "@rjsf/utils": "5.12.1",
-    "@rjsf/validator-ajv8": "5.12.1",
     "apexcharts": "3.42.0",
     "axios": "1.4.0",
     "ckeditor5-custom-build": "0.0.1",
