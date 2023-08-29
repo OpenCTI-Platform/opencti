@@ -85,7 +85,7 @@ const InfrastructureEditionContainer: FunctionComponent<InfrastructureEditionCon
         </div>
         <div className={classes.container}>
           <InfrastructureEditionOverview
-            infrastructure={queryData.infrastructure}
+            infrastructureData={queryData.infrastructure}
             enableReferences={useIsEnforceReference('Infrastructure')}
             context={queryData.infrastructure.editContext}
             handleClose={handleClose}

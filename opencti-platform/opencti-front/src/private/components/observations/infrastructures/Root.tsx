@@ -3,22 +3,22 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import {Route, Redirect, useParams, Switch} from 'react-router-dom';
-import {graphql, usePreloadedQuery, useSubscription} from 'react-relay';
+import { Route, Redirect, useParams, Switch } from 'react-router-dom';
+import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import TopBar from '../../nav/TopBar';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import InfrastructurePopover from './InfrastructurePopover';
-import Loader, {LoaderVariant} from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { RootInfrastructureSubscription } from './__generated__/RootInfrastructureSubscription.graphql';
-import {RootInfrastructureQuery} from './__generated__/RootInfrastructureQuery.graphql';
+import { RootInfrastructureQuery } from './__generated__/RootInfrastructureQuery.graphql';
 import Infrastructure from './Infrastructure';
-import useQueryLoading from "../../../../utils/hooks/useQueryLoading";
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -170,9 +170,9 @@ const RootInfrastructure = () => {
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootInfrastructureComponent queryRef={queryRef} infrastructureId={infrastructureId} />
         </React.Suspense>
-        )}
+      )}
     </>
-  )
-}
+  );
+};
 
 export default RootInfrastructure;
