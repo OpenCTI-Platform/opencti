@@ -36,10 +36,14 @@ class StixCoreObjectLatestHistory extends Component {
         <QueryRenderer
           query={stixCoreObjectHistoryLinesQuery}
           variables={{
-            filters: [
-              { key: 'entity_id', values: [stixCoreObjectId] },
-              { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
-            ],
+            filters: {
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: 'entity_id', values: [stixCoreObjectId] },
+                { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
+              ],
+            },
             first: 7,
             orderBy: 'timestamp',
             orderMode: 'desc',

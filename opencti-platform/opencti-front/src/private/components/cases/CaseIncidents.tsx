@@ -2,10 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { Filters } from '../../../components/list_lines';
-import CaseIncidentsLines, {
-  caseIncidentsLinesQuery,
-} from './case_incidents/CaseIncidentsLines';
+import CaseIncidentsLines, { caseIncidentsLinesQuery } from './case_incidents/CaseIncidentsLines';
 import { CaseIncidentLineDummy } from './case_incidents/CaseIncidentLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
@@ -19,12 +16,13 @@ import {
   CaseIncidentsLinesCasesPaginationQuery$variables,
 } from './case_incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentLineCase_node$data } from './case_incidents/__generated__/CaseIncidentLineCase_node.graphql';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface CaseIncidentsProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'view-caseIncidents';
+export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const {
@@ -41,7 +39,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const {
@@ -116,11 +114,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       caseIncidentsLinesQuery,
       paginationOptions,
     );
-    let toolBarFilters = filters;
-    toolBarFilters = {
-      ...toolBarFilters,
-      entity_type: [{ id: 'Case-Incident', value: 'Case-Incident' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Case-Incident');
     return (
       <ListLines
         sortBy={sortBy}
@@ -130,6 +124,8 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
@@ -142,18 +138,17 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
         iconExtension={true}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'createdBy',
           'source_reliability',
           'confidence',
-          'assigneeTo',
-          'participant',
+          'objectAssignee',
+          'objectParticipant',
           'priority',
           'severity',
-          'creator',
-          'created_start_date',
-          'created_end_date',
+          'creator_id',
+          'created',
         ]}
       >
         {queryRef && (

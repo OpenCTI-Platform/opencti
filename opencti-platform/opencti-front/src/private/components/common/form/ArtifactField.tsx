@@ -1,16 +1,8 @@
-import React, {
-  Dispatch,
-  FunctionComponent,
-  SetStateAction,
-  useState,
-} from 'react';
+import React, { Dispatch, FunctionComponent, SetStateAction, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { Option } from './ReferenceField';
 import ReferenceField from './ReferenceField';
-import {
-  ArtifactFieldGetQuery,
-  StixCyberObservablesFiltering,
-} from './__generated__/ArtifactFieldGetQuery.graphql';
+import { ArtifactFieldGetQuery } from './__generated__/ArtifactFieldGetQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 interface ArtifactFieldProps {
@@ -20,7 +12,7 @@ interface ArtifactFieldProps {
 }
 
 export const artifactQuery = graphql`
-  query ArtifactFieldGetQuery($filters: [StixCyberObservablesFiltering]) {
+  query ArtifactFieldGetQuery($filters: FilterGroup) {
     stixCyberObservables(filters: $filters) {
       edges {
         node {
@@ -74,10 +66,17 @@ const ArtifactField: FunctionComponent<ArtifactFieldProps> = ({
   onChange,
 }) => {
   const [search, setSearch] = useState<string | null>(null);
-  const filters = [
-    { key: ['entity_type'], values: ['Artifact'] },
-    search ? { key: ['name'], values: [search] } : undefined,
-  ].filter((f) => Boolean(f)) as StixCyberObservablesFiltering[];
+  const filtersContent = [
+    { key: 'entity_type', values: ['Artifact'], operator: 'eq', mode: 'or' },
+  ];
+  if (search) {
+    filtersContent.push({ key: 'name', values: [search], operator: 'eq', mode: 'or' });
+  }
+  const filters = {
+    mode: 'and',
+    filters: filtersContent,
+    filterGroups: [],
+  };
   const queryRef = useQueryLoading<ArtifactFieldGetQuery>(artifactQuery, {
     filters,
   });

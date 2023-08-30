@@ -25,7 +25,7 @@ export const reportKnowledgeTimeLineQuery = graphql`
     $types: [String]
     $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixObjectOrStixRelationshipsFiltering]
+    $filters: FilterGroup
   ) {
     report(id: $id) {
       ...ReportKnowledgeTimeLine_report
@@ -127,7 +127,7 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
         defaultValue: name
       }
       orderMode: { type: "OrderingMode", defaultValue: asc }
-      filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
+      filters: { type: "FilterGroup" }
     ) {
       id
       name

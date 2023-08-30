@@ -7,7 +7,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { convertFilters } from '../../../../utils/ListParameters';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { dayAgo } from '../../../../utils/Time';
 
@@ -31,8 +30,7 @@ const stixCoreObjectsNumberNumberQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $onlyInferred: Boolean
-    $filters: [StixCoreObjectsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
     $relationship_type: [String]
     $elementId: [String]
@@ -43,7 +41,6 @@ const stixCoreObjectsNumberNumberQuery = graphql`
       endDate: $endDate
       onlyInferred: $onlyInferred
       filters: $filters
-      filterMode: $filterMode
       search: $search
       relationship_type: $relationship_type
       elementId: $elementId
@@ -66,28 +63,28 @@ const StixCoreObjectsNumber = ({
   const { t, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
+    let filtersContent = selection.filters.filters;
     const dataSelectionTypes = R.head(
-      finalFilters.filter((o) => o.key === 'entity_type'),
+      filtersContent.filter((o) => o.key === 'entity_type'),
     )?.values || ['Stix-Core-Object'];
-    const dataSelectionElementId = R.head(finalFilters.filter((o) => o.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFilters.filter((o) => o.key === 'relationship_type'))
+    const dataSelectionElementId = R.head(filtersContent.filter((o) => o.key === 'elementId'))?.values || null;
+    const dataSelectionRelationshipType = R.head(filtersContent.filter((o) => o.key === 'relationship_type'))
       ?.values || null;
-    finalFilters = finalFilters.filter(
+    filtersContent = filtersContent.filter(
       (o) => !['entity_type', 'elementId', 'relationship_type'].includes(o.key),
     );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
     if (startDate) {
-      finalFilters.push({
+      filtersContent.push({
         key: dateAttribute,
         values: [startDate],
         operator: 'gt',
       });
     }
     if (endDate) {
-      finalFilters.push({
+      filtersContent.push({
         key: dateAttribute,
         values: [endDate],
         operator: 'lt',
@@ -101,7 +98,7 @@ const StixCoreObjectsNumber = ({
           first: selection.number ?? 10,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters: finalFilters,
+          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
           elementId: dataSelectionElementId,
           relationship_type: dataSelectionRelationshipType,
           startDate,

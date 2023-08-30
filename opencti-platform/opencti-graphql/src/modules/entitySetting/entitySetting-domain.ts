@@ -22,7 +22,11 @@ export const findById = async (context: AuthContext, user: AuthUser, entitySetti
 export const findByType = async (context: AuthContext, user: AuthUser, targetType: string): Promise<BasicStoreEntityEntitySetting> => {
   const findByTypeFn = async () => {
     return loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
-      filters: [{ key: 'target_type', values: [targetType] }]
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'target_type', values: [targetType] }],
+        filterGroups: [],
+      }
     });
   };
   return telemetry(context, user, 'QUERY entitySetting', {
@@ -34,7 +38,11 @@ export const findByType = async (context: AuthContext, user: AuthUser, targetTyp
 export const batchEntitySettingsByType = async (context: AuthContext, user: AuthUser, targetTypes: string[]) => {
   const findByTypeFn = async () => {
     const entitySettings = await listAllEntities<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
-      filters: [{ key: 'target_type', values: targetTypes }],
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'target_type', values: targetTypes }],
+        filterGroups: [],
+      },
       connectionFormat: false
     });
     return targetTypes.map((targetType) => entitySettings.find((entitySetting) => entitySetting.target_type === targetType));

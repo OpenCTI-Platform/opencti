@@ -791,7 +791,11 @@ export default createRefetchContainer(
         backgroundTasks(
           orderBy: created_at
           orderMode: desc
-          filters: { key: type, values: ["RULE"] }
+          filters: {
+            mode: and,
+            filters: [{ key: "type", values: ["RULE"] }]
+            filterGroups: []
+          }
         ) {
           edges {
             node {

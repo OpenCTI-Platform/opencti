@@ -26,7 +26,7 @@ export const eventsLinesQuery = graphql`
         $cursor: ID
         $orderBy: EventsOrdering
         $orderMode: OrderingMode
-        $filters: [EventsFiltering!]
+        $filters: FilterGroup
     ) {
         ...EventsLines_data
         @arguments(
@@ -48,7 +48,7 @@ const eventsLinesFragment = graphql`
         cursor: { type: "ID" }
         orderBy: { type: "EventsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[EventsFiltering!]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "EventsLinesRefetchQuery") {
         events(

@@ -1,11 +1,17 @@
 import type { Resolvers } from '../../generated/graphql';
-import { buildRefRelationKey } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { batchDataComponents, dataSourceAdd, dataSourceDataComponentAdd, dataSourceDataComponentDelete, findAll, findById } from './dataSource-domain';
+import {
+  batchDataComponents,
+  dataSourceAdd,
+  dataSourceDataComponentAdd,
+  dataSourceDataComponentDelete,
+  findAll,
+  findById
+} from './dataSource-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete, stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -20,11 +26,6 @@ const dataSourceResolvers: Resolvers = {
   },
   DataSource: {
     dataComponents: (dataSource, _, context) => dataComponentsLoader.load(dataSource.id, context, context.user),
-  },
-  DataSourcesFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
     dataSourceAdd: (_, { input }, context) => {

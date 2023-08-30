@@ -9,8 +9,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: CampaignsOrdering
     $orderMode: OrderingMode
-    $filters: [CampaignsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     campaigns(
@@ -19,7 +18,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

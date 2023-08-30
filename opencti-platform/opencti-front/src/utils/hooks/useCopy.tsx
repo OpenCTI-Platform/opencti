@@ -1,12 +1,11 @@
 import { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { fetchQuery, MESSAGING$ } from '../../relay/environment';
-import { convertFilters } from '../ListParameters';
-import { Filters } from '../../components/list_lines';
 import { useFormatter } from '../../components/i18n';
 import { maxNumberOfObservablesToCopy } from '../../private/components/data/ToolBar';
+import { FilterGroup } from '../filters/filtersUtils';
 
 interface UseCopyProps<T> {
-  filters?: Filters;
+  filters?: FilterGroup;
   searchTerm: string;
   deselectedIds: string[];
   selectedValues: string[];
@@ -35,12 +34,12 @@ const useCopy = <T extends OperationType['response']>(
         ? fetchQuery(query, {
           id: elementId,
           search: searchTerm,
-          filters: convertFilters(filters ?? {}),
+          filters,
           count: maxNumberOfObservablesToCopy,
         })
         : fetchQuery(query, {
           search: searchTerm,
-          filters: convertFilters(filters ?? {}),
+          filters,
           count: maxNumberOfObservablesToCopy,
         })
       )

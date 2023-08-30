@@ -182,7 +182,11 @@ const handleRuleError = async (event: BaseEvent, error: unknown) => {
 
 const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   const context = executionContext('rule_cleaner', RULE_MANAGER_USER);
-  const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
+  const filters = {
+    mode: 'and',
+    filters: [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }],
+    filterGroups: [],
+  };
   const callback = async (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await rulesCleanHandler(context, RULE_MANAGER_USER, elements, RULES_DECLARATION, deletionIds);

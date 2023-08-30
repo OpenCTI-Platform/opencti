@@ -30,11 +30,7 @@ import PropTypes from 'prop-types';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$, } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { nowUTC } from '../../../utils/Time';
 import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
@@ -137,7 +133,7 @@ const WorkspaceHeader = ({
   };
   const deleteTag = (tag) => {
     const currentTags = getCurrentTags();
-    const tags = R.filter((a) => a !== tag, currentTags);
+    const tags = currentTags.filter((a) => a !== tag);
     commitMutation({
       mutation: workspaceMutation,
       variables: {

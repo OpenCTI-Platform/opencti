@@ -22,13 +22,15 @@ const styles = () => ({
   },
 });
 
+const LOCAL_STORAGE_KEY = 'sectors';
+
 class Sectors extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-sectors',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       searchTerm: propOr('', 'searchTerm', params),
@@ -40,7 +42,7 @@ class Sectors extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-sectors',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

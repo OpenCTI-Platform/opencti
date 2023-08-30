@@ -2,10 +2,7 @@ import React, { FunctionComponent, Suspense } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { Filters } from '../../../components/list_lines';
-import FeedbacksLines, {
-  feedbacksLinesQuery,
-} from './feedbacks/FeedbacksLines';
+import FeedbacksLines, { feedbacksLinesQuery, } from './feedbacks/FeedbacksLines';
 import { FeedbackLineDummy } from './feedbacks/FeedbackLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
@@ -16,12 +13,13 @@ import {
   FeedbacksLinesPaginationQuery$variables,
 } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 interface FeedbacksProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_FEEDBACK = 'view-feedbacks';
+export const LOCAL_STORAGE_KEY_FEEDBACK = 'feedbacks';
 
 const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const {
@@ -38,7 +36,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const {
@@ -106,11 +104,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
       feedbacksLinesQuery,
       paginationOptions,
     );
-    let toolBarFilters = filters;
-    toolBarFilters = {
-      ...toolBarFilters,
-      entity_type: [{ id: 'Feedback', value: 'Feedback' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Feedback');
     return (
       <ListLines
         sortBy={sortBy}
@@ -120,6 +114,8 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
@@ -132,15 +128,14 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
         iconExtension={true}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'createdBy',
           'source_reliability',
           'confidence',
-          'assigneeTo',
-          'creator',
-          'created_start_date',
-          'created_end_date',
+          'objectAssignee',
+          'creator_id',
+          'created',
         ]}
       >
         {queryRef && (

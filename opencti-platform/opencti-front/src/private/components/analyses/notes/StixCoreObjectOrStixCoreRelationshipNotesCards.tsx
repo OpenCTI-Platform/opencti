@@ -68,7 +68,7 @@ export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
     $count: Int!
     $orderBy: NotesOrdering
     $orderMode: OrderingMode
-    $filters: [NotesFiltering!]
+    $filters: FilterGroup
   ) {
     ...StixCoreObjectOrStixCoreRelationshipNotesCards_data
       @arguments(
@@ -86,7 +86,7 @@ const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
     count: { type: "Int", defaultValue: 25 }
     orderBy: { type: "NotesOrdering" }
     orderMode: { type: "OrderingMode" }
-    filters: { type: "[NotesFiltering!]" }
+    filters: { type: "FilterGroup" }
   ) {
     notes(
       first: $count

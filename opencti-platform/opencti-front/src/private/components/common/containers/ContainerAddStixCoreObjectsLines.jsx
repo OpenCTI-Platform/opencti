@@ -291,8 +291,7 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreObjectsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
   ) {
     ...ContainerAddStixCoreObjectsLines_data
       @arguments(
@@ -303,7 +302,6 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
         orderBy: $orderBy
         orderMode: $orderMode
         filters: $filters
-        filterMode: $filterMode
       )
   }
 `;
@@ -320,8 +318,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[StixCoreObjectsFiltering]" }
-        filterMode: { type: "FilterMode" }
+        filters: { type: "FilterGroup" }
       ) {
         stixCoreObjects(
           types: $types
@@ -331,7 +328,6 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-          filterMode: $filterMode
         ) @connection(key: "Pagination_stixCoreObjects") {
           edges {
             node {
@@ -391,7 +387,6 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
-        filterMode: fragmentVariables.filterMode,
       };
     },
     query: containerAddStixCoreObjectsLinesQuery,

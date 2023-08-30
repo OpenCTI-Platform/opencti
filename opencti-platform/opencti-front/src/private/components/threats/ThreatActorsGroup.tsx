@@ -14,8 +14,9 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-threatActorsGroups';
+const LOCAL_STORAGE_KEY = 'threatActorsGroups';
 
 const ThreatActorsGroup = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ThreatActorsGroupCardsPaginationQuery$variables>(
@@ -25,7 +26,7 @@ const ThreatActorsGroup = () => {
         number: 0,
         symbol: '',
       },
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -66,6 +67,8 @@ const ThreatActorsGroup = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Threat-Actor-Group"
@@ -75,14 +78,13 @@ const ThreatActorsGroup = () => {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'createdBy',
           'source_reliability',
           'confidence',
-          'creator',
-          'created_start_date',
-          'created_end_date',
+          'creator_id',
+          'created',
           'revoked',
           'targets',
         ]}

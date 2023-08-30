@@ -11,7 +11,7 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import ToolBar from './ToolBar';
 import CustomizationMenu from '../CustomizationMenu';
 
-const LOCAL_STORAGE_KEY_SUB_TYPES = 'view-sub-types';
+const LOCAL_STORAGE_KEY_SUB_TYPES = 'sub-types';
 
 const useStyles = makeStyles(() => ({
   container: {

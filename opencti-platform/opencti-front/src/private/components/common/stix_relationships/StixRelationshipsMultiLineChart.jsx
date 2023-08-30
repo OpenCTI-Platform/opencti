@@ -12,7 +12,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { lineChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { convertFilters } from '../../../../utils/ListParameters';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -62,17 +61,17 @@ const StixRelationshipsMultiLineChart = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      const filters = convertFilters(selection.filters);
+      const filtersContent = selection.filters.filters;
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      const dataSelectionRelationshipType = R.head(filters.filter((n) => n.key === 'relationship_type'))?.values
+      const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))?.values
         || null;
-      const dataSelectionFromId = R.head(filters.filter((n) => n.key === 'fromId'))?.values || null;
-      const dataSelectionToId = R.head(filters.filter((n) => n.key === 'toId'))?.values || null;
-      const dataSelectionFromTypes = R.head(filters.filter((n) => n.key === 'fromTypes'))?.values || null;
-      const dataSelectionToTypes = R.head(filters.filter((n) => n.key === 'toTypes'))?.values || null;
-      const finalFilters = filters.filter(
+      const dataSelectionFromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
+      const dataSelectionToId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
+      const dataSelectionFromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values || null;
+      const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
+      const finalFilters = filtersContent.filter(
         (n) => ![
           'relationship_type',
           'fromId',
@@ -89,8 +88,8 @@ const StixRelationshipsMultiLineChart = ({
         toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
         filters: finalFilters,
-        dynamicFrom: convertFilters(selection.dynamicFrom),
-        dynamicTo: convertFilters(selection.dynamicTo),
+        dynamicFrom: selection.dynamicFrom,
+        dynamicTo: selection.dynamicTo,
       };
     });
     let formatter = fsd;

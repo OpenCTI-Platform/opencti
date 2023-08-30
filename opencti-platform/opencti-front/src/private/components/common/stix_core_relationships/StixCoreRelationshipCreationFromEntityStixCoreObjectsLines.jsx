@@ -120,8 +120,7 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = g
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreObjectsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
   ) {
     ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data
       @arguments(
@@ -132,7 +131,6 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = g
         orderBy: $orderBy
         orderMode: $orderMode
         filters: $filters
-        filterMode: $filterMode
       )
   }
 `;
@@ -149,8 +147,7 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLines = createPaginat
           cursor: { type: "ID" }
           orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
           orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[StixCoreObjectsFiltering]" }
-          filterMode: { type: "FilterMode" }
+          filters: { type: "FilterGroup" }
         ) {
           stixCoreObjects(
             types: $types
@@ -160,7 +157,6 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLines = createPaginat
             orderBy: $orderBy
             orderMode: $orderMode
             filters: $filters
-            filterMode: $filterMode
           ) @connection(key: "Pagination_stixCoreObjects") {
             edges {
               node {
@@ -220,7 +216,6 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLines = createPaginat
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
-        filterMode: fragmentVariables.filterMode,
       };
     },
     query: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,

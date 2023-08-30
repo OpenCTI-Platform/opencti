@@ -1,15 +1,4 @@
-import * as R from 'ramda';
-import {
-  assoc,
-  dissoc,
-  head,
-  last,
-  map,
-  mergeLeft,
-  pipe,
-  split,
-  toPairs,
-} from 'ramda';
+import { dissoc, mergeLeft, pipe, split } from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
 
 const buildParamsFromHistory = (params) => {
@@ -43,17 +32,22 @@ const buildParamsFromHistory = (params) => {
     dissoc('navOpen'),
   )(params);
   if (params.filters) {
-    urlParams = assoc('filters', JSON.stringify(params.filters), urlParams);
+    urlParams = {
+      ...urlParams,
+      filters: JSON.stringify(params.filters),
+    };
   }
   if (params.timeLineFilters) {
-    urlParams = assoc(
-      'timeLineFilters',
-      JSON.stringify(params.timeLineFilters),
-      urlParams,
-    );
+    urlParams = {
+      ...urlParams,
+      timeLineFilters: JSON.stringify(params.timeLineFilters),
+    };
   }
   if (params.zoom) {
-    urlParams = assoc('zoom', JSON.stringify(params.zoom), urlParams);
+    urlParams = {
+      ...urlParams,
+      zoom: JSON.stringify(params.zoom),
+    };
   }
   return new URLSearchParams(urlParams).toString();
 };
@@ -203,42 +197,4 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;
-};
-
-export const convertFilters = (filters) => pipe(
-  toPairs,
-  map((pair) => {
-    let key = head(pair);
-    let operator = 'eq';
-    let filterMode = 'or';
-    if (key.endsWith('start_date') || key.endsWith('_gt')) {
-      key = key.replace('_start_date', '').replace('_gt', '');
-      operator = 'gt';
-    } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
-      key = key.replace('_end_date', '').replace('_lt', '');
-      operator = 'lt';
-    } else if (key.endsWith('_lte')) {
-      key = key.replace('_lte', '');
-      operator = 'lte';
-    } else if (key.endsWith('_not_eq')) {
-      key = key.replace('_not_eq', '');
-      operator = 'not_eq';
-      filterMode = 'and';
-    }
-    const values = last(pair);
-    const valIds = map((v) => v.id, values);
-    return { key, values: valIds, operator, filterMode };
-  }),
-)(filters);
-
-export const cleanFilters = (filters, availableFilterKeys) => {
-  if (!filters) {
-    return {};
-  }
-
-  const filterKeys = Object.keys(filters);
-  const omitKeys = filterKeys.filter(
-    (k) => !availableFilterKeys.some((a) => k.startsWith(a)),
-  );
-  return R.omit(omitKeys, filters);
 };

@@ -4,7 +4,7 @@ import { graphql } from 'react-relay';
 export const externalReferencesQueriesSearchQuery = graphql`
   query ExternalReferencesQueriesSearchQuery(
     $search: String
-    $filters: [ExternalReferencesFiltering]
+    $filters: FilterGroup
   ) {
     externalReferences(search: $search, filters: $filters) {
       edges {

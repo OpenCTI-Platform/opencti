@@ -21,6 +21,7 @@ import {
 } from './indicators/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { IndicatorLineDummyComponent } from './indicators/IndicatorLine';
+import { filtersWithEntityType, findFilterFromKey, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -28,7 +29,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const LOCAL_STORAGE_KEY = 'view-indicators';
+const LOCAL_STORAGE_KEY = 'indicators';
 
 const Indicators = () => {
   const classes = useStyles();
@@ -41,7 +42,7 @@ const Indicators = () => {
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
@@ -70,17 +71,17 @@ const Indicators = () => {
     indicatorsLinesQuery,
     paginationOptions,
   );
-  const patternType = filters?.pattern_type ?? [];
-  const observableType = filters?.x_opencti_main_observable_type ?? [];
+  const patternTypes = findFilterFromKey(filters?.filters ?? [], 'pattern_type')?.values ?? [];
+  const observableTypes = findFilterFromKey(filters?.filters ?? [], 'x_opencti_main_observable_type')?.values ?? [];
   const handleToggleIndicatorType = (type: string) => {
-    if (patternType.map((t) => t.id)?.includes(type)) {
+    if (patternTypes.includes(type)) {
       storageHelpers.handleRemoveFilter('pattern_type', type);
     } else {
       storageHelpers.handleAddFilter('pattern_type', type, type);
     }
   };
   const handleToggleObservableType = (type: string) => {
-    if (observableType.map((t) => t.id)?.includes(type)) {
+    if (observableTypes.includes(type)) {
       storageHelpers.handleRemoveFilter('x_opencti_main_observable_type', type);
     } else {
       storageHelpers.handleAddFilter(
@@ -99,11 +100,7 @@ const Indicators = () => {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
         - Object.keys(deSelectedElements || {}).length;
     }
-    let toolBarFilters = filters;
-    toolBarFilters = {
-      ...toolBarFilters,
-      entity_type: [{ id: 'Indicator', value: 'Indicator' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Indicator');
     const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
     const dataColumns = {
       pattern_type: {
@@ -157,6 +154,8 @@ const Indicators = () => {
           handleSearch={storageHelpers.handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
           handleToggleExports={storageHelpers.handleToggleExports}
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
@@ -169,14 +168,11 @@ const Indicators = () => {
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           availableFilterKeys={[
-            'labelledBy',
-            'markedBy',
-            'created_start_date',
-            'created_end_date',
-            'created_at_start_date',
-            'created_at_end_date',
-            'valid_from_start_date',
-            'valid_until_end_date',
+            'objectLabel',
+            'objectMarking',
+            'created',
+            'created_at',
+            'valid_from',
             'x_opencti_score',
             'createdBy',
             'indicates',
@@ -184,7 +180,7 @@ const Indicators = () => {
             'x_opencti_detection',
             'basedOn',
             'revoked',
-            'creator',
+            'creator_id',
             'confidence',
             'indicator_types',
           ]}
@@ -242,8 +238,8 @@ const Indicators = () => {
               <IndicatorCreation paginationOptions={paginationOptions} />
             </Security>
             <IndicatorsRightBar
-              indicatorTypes={patternType.map((t) => t.id as string) ?? []}
-              observableTypes={observableType.map((t) => t.id as string) ?? []}
+              indicatorTypes={patternTypes}
+              observableTypes={observableTypes}
               handleToggleIndicatorType={handleToggleIndicatorType}
               handleToggleObservableType={handleToggleObservableType}
               handleClearObservableTypes={handleClearObservableTypes}

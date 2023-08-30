@@ -16,7 +16,7 @@ export const csvMapperLinesQuery = graphql`
     $count: Int
     $orderBy: CsvMapperOrdering
     $orderMode: OrderingMode
-    $filters: [CsvMapperFiltering!]
+    $filters: FilterGroup
     $search: String
   ) {
     ...CsvMapperLines_csvMapper
@@ -37,7 +37,7 @@ export const csvMapperLinesFragment = graphql`
     after: { type: "ID" }
     orderBy: { type: "CsvMapperOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[CsvMapperFiltering!]" }
+    filters: { type: "FilterGroup" }
     search: { type: "String" }
   )
   @refetchable(queryName: "CsvMapperLines_DataQuery") {

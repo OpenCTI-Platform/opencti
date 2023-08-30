@@ -21,6 +21,7 @@ import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/st
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
+import { addFilter } from "../utils/filtering";
 
 export const findById = (context, user, externalReferenceId) => {
   return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -36,7 +37,7 @@ export const references = async (context, user, externalReferenceId, args) => {
   if (args.types) {
     types = args.types;
   }
-  const filters = [{ key, values: [externalReferenceId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, key, externalReferenceId);
   if (args.all) {
     return paginateAllThings(context, user, types, R.assoc('filters', filters, args));
   }

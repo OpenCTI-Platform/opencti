@@ -9,26 +9,18 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import CaseRfiPopover from './CaseRfiPopover';
-import CaseRfiKnowledgeGraph, {
-  caseRfiKnowledgeGraphQuery,
-} from './CaseRfiKnowledgeGraph';
-import CaseRfiKnowledgeTimeLine, {
-  caseRfiKnowledgeTimeLineQuery,
-} from './CaseRfiKnowledgeTimeLine';
-import CaseRfiKnowledgeCorrelation, {
-  caseRfiKnowledgeCorrelationQuery,
-} from './CaseRfiKnowledgeCorrelation';
+import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnowledgeGraph';
+import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
+import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, {
-  containerContentQuery,
-} from '../../common/containers/ContainerContent';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -118,11 +110,12 @@ export const caseRfiKnowledgeAttackPatternsGraphQuery = graphql`
 
 class CaseRfiKnowledgeComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `case-rfis-knowledge-${props.caseData.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-case-rfis-knowledge-${props.caseData.id}`,
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
@@ -134,16 +127,17 @@ class CaseRfiKnowledgeComponent extends Component {
         params,
       ),
       timeLineFunctionalDate: propOr(false, 'timeLineFunctionalDate', params),
-      timeLineFilters: propOr({}, 'timeLineFilters', params),
+      timeLineFilters: propOr(initialFilterGroup, 'timeLineFilters', params),
       timeLineSearchTerm: R.propOr('', 'timeLineSearchTerm', params),
     };
   }
 
   saveView() {
+    const LOCAL_STORAGE_KEY = `case-rfis-knowledge-${this.props.caseData.id}`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-case-rfis-knowledge-${this.props.caseData.id}`,
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }
@@ -185,45 +179,24 @@ class CaseRfiKnowledgeComponent extends Component {
     );
   }
 
-  handleAddTimeLineFilter(key, id, value, event = null) {
+  handleAddTimeLineFilter(key, id, op = 'eq', event = null) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (
-      this.state.timeLineFilters[key]
-      && this.state.timeLineFilters[key].length > 0
-    ) {
-      this.setState(
-        {
-          timeLineFilters: {
-            ...this.state.timeLineFilters,
-            [key]: isUniqFilter(key)
-              ? [{ id, value }]
-              : R.uniqBy(R.prop('id'), [
-                { id, value },
-                ...this.state.timeLineFilters[key],
-              ]),
-          },
-        },
-        () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        {
-          timeLineFilters: {
-            ...this.state.timeLineFilters,
-            [key]: [{ id, value }],
-          },
-        },
-        () => this.saveView(),
-      );
-    }
+    const newFilters = constructHandleAddFilter(this.state.timeLineFilters, key, id, op);
+    this.setState(
+      {
+        timeLineFilters: newFilters,
+      },
+      () => this.saveView(),
+    );
   }
 
-  handleRemoveTimeLineFilter(key) {
+  handleRemoveTimeLineFilter(key, op = 'eq') {
+    const newFilters = constructHandleRemoveFilter(this.state.timeLineFilters, key, op);
     this.setState(
-      { timeLineFilters: R.dissoc(key, this.state.timeLineFilters) },
+      { timeLineFilters: newFilters },
       () => this.saveView(),
     );
   }
@@ -250,11 +223,10 @@ class CaseRfiKnowledgeComponent extends Component {
       timeLineFunctionalDate,
       timeLineSearchTerm,
     } = this.state;
-    const finalFilters = convertFilters(timeLineFilters);
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))?.values
       .length > 0
       ? []
       : defaultTypes;
@@ -267,7 +239,7 @@ class CaseRfiKnowledgeComponent extends Component {
     const timeLinePaginationOptions = {
       types,
       search: timeLineSearchTerm,
-      filters: finalFilters,
+      filters: timeLineFilters,
       orderBy,
       orderMode: 'desc',
     };

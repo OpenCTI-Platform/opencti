@@ -23,13 +23,14 @@ const styles = () => ({
   },
 });
 
+const LOCAL_STORAGE_KEY = 'MarkingDefinitions';
 class MarkingDefinitions extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'MarkingDefinitions-view',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       sortBy: propOr('definition', 'sortBy', params),
@@ -43,7 +44,7 @@ class MarkingDefinitions extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'MarkingDefinitions-view',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

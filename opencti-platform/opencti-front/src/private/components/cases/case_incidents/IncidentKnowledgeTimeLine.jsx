@@ -25,7 +25,7 @@ export const incidentKnowledgeTimeLineQuery = graphql`
     $types: [String]
     $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixObjectOrStixRelationshipsFiltering]
+    $filters: FilterGroup
   ) {
     caseIncident(id: $id) {
       ...IncidentKnowledgeTimeLine_case
@@ -127,7 +127,7 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
         defaultValue: name
       }
       orderMode: { type: "OrderingMode", defaultValue: asc }
-      filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
+      filters: { type: "FilterGroup" }
     ) {
       id
       name

@@ -8,8 +8,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: IntrusionSetsOrdering
     $orderMode: OrderingMode
-    $filters: [IntrusionSetsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     intrusionSets(
@@ -18,7 +17,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

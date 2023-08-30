@@ -5,7 +5,6 @@ import { BiotechOutlined } from '@mui/icons-material';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import * as R from 'ramda';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,6 +19,8 @@ const DialogFilters = ({
   filters,
   handleCloseFilters,
   defaultHandleRemoveFilter,
+  handleSwitchGlobalMode,
+  handleSwitchLocalMode,
   handleSearch,
   filterElement,
 }) => {
@@ -44,10 +45,13 @@ const DialogFilters = ({
       >
         <DialogTitle>{t('Advanced search')}</DialogTitle>
         <DialogContent style={{ paddingTop: 10 }}>
-          {!R.isEmpty(filters) && (
+          {filters && (
             <FilterIconButton
               filters={filters}
               handleRemoveFilter={defaultHandleRemoveFilter}
+              handleSwitchGlobalMode={handleSwitchGlobalMode}
+              handleSwitchLocalMode={handleSwitchLocalMode}
+              handleSwitchG
               classNameNumber={4}
               styleNumber={2}
             />

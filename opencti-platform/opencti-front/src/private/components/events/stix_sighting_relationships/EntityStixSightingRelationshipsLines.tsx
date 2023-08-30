@@ -28,7 +28,7 @@ export const entityStixSightingRelationshipsLinesQuery = graphql`
         $cursor: ID
         $orderBy: StixSightingRelationshipsOrdering
         $orderMode: OrderingMode
-        $filters: [StixSightingRelationshipsFiltering]
+        $filters: FilterGroup
     ) {
         ...EntityStixSightingRelationshipsLines_data
         @arguments(
@@ -59,7 +59,7 @@ export const EntityStixSightingRelationshipsLinesFragment = graphql`
             defaultValue: first_seen
         }
         orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "[StixSightingRelationshipsFiltering]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "EntityStixSightingRelationshipsLinesRefetchQuery") {
         stixSightingRelationships(

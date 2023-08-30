@@ -16,6 +16,9 @@ export const depsKeysRegister = {
 
 export const schemaAttributesDefinition = {
   attributes: {} as Record<string, Map<string, AttributeDefinition>>,
+  // allAttributes is a map of the name and type of all the attributes registered in a schema definition
+  // !!! don't use this map !!! It is created for the special context of filter keys checking in case no entity types are given
+  allAttributes: new Map<string, string>(),
   attributesCache: new Map<string, Map<string, AttributeDefinition>>(),
 
   attributesByTypes: {
@@ -54,9 +57,12 @@ export const schemaAttributesDefinition = {
       }
 
       directAttributes.set(attribute.name, attribute);
+      // add the attribute name and type in the map of all the attributes
+      // to do so, we overwrite an eventual attribute having the same name for an other entity type
+      // it's not a problem because if 2 attributes have the same name, they also have the same type
+      this.allAttributes.set(attribute.name, attribute.type);
     });
     this.attributes[entityType] = directAttributes;
-
     this.computeCache(entityType);
   },
 
@@ -91,6 +97,10 @@ export const schemaAttributesDefinition = {
   getAttributes(entityType: string): Map<string, AttributeDefinition> {
     this.computeCache(entityType);
     return this.attributesCache.get(entityType) ?? new Map();
+  },
+
+  getAllAttributesNames(): Array<string> {
+    return Array.from(this.allAttributes.keys());
   },
 
   getAttributeNames(entityType: string): string[] {

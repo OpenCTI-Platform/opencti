@@ -1,4 +1,11 @@
-import { addIncident, batchParticipants, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
+import {
+  addIncident,
+  batchParticipants,
+  findAll,
+  findById,
+  incidentsTimeSeries,
+  incidentsTimeSeriesByEntity
+} from '../domain/incident';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,15 +14,9 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_ASSIGNEE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT
-} from '../schema/stixRefRelationship';
+import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
-import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const participantLoader = batchLoader(batchParticipants);
 
@@ -32,15 +33,6 @@ const incidentResolvers = {
   },
   Incident: {
     objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
-  },
-  IncidentsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    participant: buildRefRelationKey(RELATION_OBJECT_PARTICIPANT),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    targets: buildRefRelationKey(RELATION_TARGETS),
-    creator: 'creator_id',
   },
   IncidentsOrdering: {
     objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),

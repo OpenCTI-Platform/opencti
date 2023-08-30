@@ -22,10 +22,12 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const LOCAL_STORAGE_KEY = 'users';
+
 const Users = () => {
   const classes = useStyles();
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
-    'view-users',
+    LOCAL_STORAGE_KEY,
     {
       sortBy: 'name',
       orderAsc: true,

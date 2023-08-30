@@ -10,18 +10,13 @@ import {
 import DataComponentLineDummy from './DataComponentLineDummy';
 import DataComponentLine from './DataComponentLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
 interface DataComponentsLinesProps {
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
   paginationOptions: DataComponentsLinesPaginationQuery$variables;
   queryRef: PreloadedQuery<DataComponentsLinesPaginationQuery>;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
@@ -34,7 +29,7 @@ export const dataComponentsLinesQuery = graphql`
     $cursor: ID
     $orderBy: DataComponentsOrdering
     $orderMode: OrderingMode
-    $filters: [DataComponentsFiltering!]
+    $filters: FilterGroup
   ) {
     ...DataComponentsLines_data
       @arguments(
@@ -56,7 +51,7 @@ const dataComponentsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "DataComponentsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[DataComponentsFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "DataComponentsLinesRefetchQuery") {
     dataComponents(

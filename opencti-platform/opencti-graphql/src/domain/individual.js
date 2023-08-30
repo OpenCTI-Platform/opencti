@@ -33,7 +33,14 @@ export const isUser = async (context, user, individualContactInformation) => {
   if (isEmptyField(individualContactInformation)) {
     return false;
   }
-  const args = { filters: [{ key: 'user_email', values: [individualContactInformation] }], connectionFormat: false };
+  const args = {
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'user_email', values: [individualContactInformation] }],
+      filterGroups: [],
+    },
+    connectionFormat: false
+  };
   const users = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], args);
   return users.length > 0;
 };

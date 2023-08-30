@@ -1,4 +1,4 @@
-import { addCourseOfAction, findAll, findById, batchAttackPatterns } from '../domain/courseOfAction';
+import { addCourseOfAction, batchAttackPatterns, findAll, findById } from '../domain/courseOfAction';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,10 +7,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
-import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';
 
 const attackPatternsLoader = batchLoader(batchAttackPatterns);
 
@@ -21,13 +18,6 @@ const courseOfActionResolvers = {
   },
   CourseOfAction: {
     attackPatterns: (courseOfAction, _, context) => attackPatternsLoader.load(courseOfAction.id, context, context.user),
-  },
-  CoursesOfActionFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    mitigatedBy: buildRefRelationKey(RELATION_MITIGATES),
-    creator: 'creator_id',
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, context) => ({

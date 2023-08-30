@@ -33,10 +33,14 @@ const revokedInstances = async (context) => {
     };
     await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   };
-  const filters = [
-    { key: 'valid_until', values: [prepareDate()], operator: 'lt' },
-    { key: 'revoked', values: [false] },
-  ];
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: 'valid_until', values: [prepareDate()], operator: 'lt' },
+      { key: 'revoked', values: [false] },
+    ],
+    filterGroups: [],
+  };
   const opts = { filters, connectionFormat: false, callback };
   await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
 };
@@ -51,11 +55,15 @@ const expiredAccounts = async (context) => {
     };
     await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   };
-  const filters = [
-    { key: 'entity_type', values: [ENTITY_TYPE_USER] },
-    { key: 'account_status', values: [ACCOUNT_STATUS_EXPIRED], operator: 'not_eq' },
-    { key: 'account_lock_after_date', values: [prepareDate()], operator: 'lt' },
-  ];
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', values: [ENTITY_TYPE_USER] },
+      { key: 'account_status', values: [ACCOUNT_STATUS_EXPIRED], operator: 'not_eq' },
+      { key: 'account_lock_after_date', values: [prepareDate()], operator: 'lt' },
+    ],
+    filterGroups: [],
+  };
   const opts = { filters, connectionFormat: false, callback };
   await elList(context, SYSTEM_USER, [READ_INDEX_INTERNAL_OBJECTS], opts);
 };

@@ -42,13 +42,14 @@ const styles = () => ({
   },
 });
 
+const LOCAL_STORAGE_KEY = 'groups';
 class Groups extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-groups',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -62,7 +63,7 @@ class Groups extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-groups',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

@@ -29,23 +29,6 @@ enum TriggerEventType {
     update
     delete
 }
-enum TriggerFilter {
-    trigger_type
-    created
-    event_types
-    user_ids
-    group_ids
-    organization_ids
-    filters
-    instance_trigger
-}
-
-input TriggersFiltering {
-    key: [TriggerFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
 input TriggerLiveAddInput {
     name: String! @constraint(minLength: 1)
     description: String
@@ -86,7 +69,6 @@ type Trigger implements InternalObject & BasicObject {
     isDirectAdministrator: Boolean
     currentUserAccessRight: String
     instance_trigger: Boolean
-    resolved_instance_filters: [ResolvedInstanceFilter!]
 }
 type TriggerConnection {
     pageInfo: PageInfo!
@@ -98,11 +80,6 @@ type TriggerEdge {
 }
 
 # Activity Triggers
-enum TriggerActivityFilter {
-    trigger_type
-    created
-    filters
-}
 enum TriggerActivityEventType {
     authentication
     read
@@ -128,27 +105,10 @@ input TriggerActivityDigestAddInput {
     recipients: [String!]!
 }
 
-input TriggerActivityFiltering {
-    key: [TriggerActivityFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Notifications
 enum NotificationsOrdering {
     name
     created
-}
-enum NotificationFilter {
-    created
-    is_read
-}
-input NotificationsFiltering {
-    key: [NotificationFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
 }
 type NotificationCount {
     user_id: String
@@ -196,8 +156,7 @@ type Query {
         after: ID
         orderBy: TriggersOrdering
         orderMode: OrderingMode
-        filters: [TriggersFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         includeAuthorities: Boolean
         search: String
     ): TriggerConnection @auth
@@ -208,8 +167,7 @@ type Query {
         after: ID
         orderBy: TriggersOrdering
         orderMode: OrderingMode
-        filters: [TriggerActivityFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): TriggerConnection @auth(for: [SETTINGS])
     # Notifications
@@ -219,8 +177,7 @@ type Query {
         after: ID
         orderBy: NotificationsOrdering
         orderMode: OrderingMode
-        filters: [NotificationsFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): NotificationConnection @auth(for: [SETTINGS_SETACCESSES])
     myNotifications(
@@ -228,8 +185,7 @@ type Query {
         after: ID
         orderBy: NotificationsOrdering
         orderMode: OrderingMode
-        filters: [NotificationsFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): NotificationConnection @auth
     myUnreadNotificationsCount: Int @auth

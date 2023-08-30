@@ -4,7 +4,6 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import * as R from 'ramda';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
 import FilterIconButton from '../../../../../components/FilterIconButton';
@@ -14,7 +13,12 @@ import TextField from '../../../../../components/TextField';
 import { Theme } from '../../../../../components/Theme';
 import { convertNotifiers } from '../../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import { isUniqFilter } from '../../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  Filter,
+  filtersAfterSwitchLocalMode,
+} from '../../../../../utils/filters/filtersUtils';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
 import { Option } from '../../../common/form/ReferenceField';
@@ -93,7 +97,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
   const classes = useStyles();
   const data = usePreloadedQuery<AlertEditionQuery>(alertEditionQuery, queryRef);
   const trigger = useFragment<AlertLiveEdition_trigger$key>(alertLiveEditionFragment, data.triggerKnowledge);
-  const filters = JSON.parse(trigger?.filters ?? '{}');
+  const filters = JSON.parse(trigger?.filters ?? '');
   const [commitFieldPatch] = useMutation(alertLiveEditionFieldPatch);
   const onSubmit: FormikConfig<AlertLiveFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     commitFieldPatch({
@@ -128,23 +132,41 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
       });
     })
     .catch(() => false);
-  const handleAddFilter = (key: string, id: string, value: Record<string, unknown> | string) => {
-    if (filters[key] && filters[key].length > 0) {
-      const updatedFilters = R.assoc(
-        key,
-        isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-        filters,
-      );
-      commitFieldPatch({
-        variables: {
-          id: trigger?.id,
-          input: { key: 'filters', value: JSON.stringify(updatedFilters) },
-        },
-      });
-    } else {
-      const updatedFilters = R.assoc(key, [{ id, value }], filters);
+  const handleAddFilter = (key: string, id: string, op = 'eq') => {
+    const updatedFilters = constructHandleAddFilter(filters, key, id, op);
+    commitFieldPatch({
+      variables: {
+        id: trigger?.id,
+        input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+      },
+    });
+  };
+  const handleRemoveFilter = (key: string, op = 'eq') => {
+    const updatedFilters = constructHandleRemoveFilter(filters, key, op);
+    commitFieldPatch({
+      variables: {
+        id: trigger?.id,
+        input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+      },
+    });
+  };
+
+  const handleSwitchLocalMode = (localFilter: Filter) => {
+    const updatedFilters = filtersAfterSwitchLocalMode(filters, localFilter);
+    commitFieldPatch({
+      variables: {
+        id: trigger?.id,
+        input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+      },
+    });
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      const updatedFilters = {
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      };
       commitFieldPatch({
         variables: {
           id: trigger?.id,
@@ -152,15 +174,6 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
         },
       });
     }
-  };
-  const handleRemoveFilter = (key: string) => {
-    const updatedFilters = R.dissoc(key, filters);
-    commitFieldPatch({
-      variables: {
-        id: trigger?.id,
-        input: { key: 'filters', value: JSON.stringify(updatedFilters) },
-      },
-    });
   };
 
   const initialValues = {
@@ -244,11 +257,15 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({ queryRef, 
                 />
               </div>
               <div className="clearfix" />
-              <FilterIconButton
-                filters={filters}
-                handleRemoveFilter={handleRemoveFilter}
-                classNameNumber={2}
+              {filters
+                && <FilterIconButton
+                  filters={filters}
+                  handleRemoveFilter={handleRemoveFilter}
+                  handleSwitchLocalMode={handleSwitchLocalMode}
+                  handleSwitchGlobalMode={handleSwitchGlobalMode}
+                  classNameNumber={2}
               />
+              }
             </Form>
           )}
         </Formik>

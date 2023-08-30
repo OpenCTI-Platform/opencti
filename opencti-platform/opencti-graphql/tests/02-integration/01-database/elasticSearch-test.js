@@ -111,7 +111,11 @@ describe('Elasticsearch computation', () => {
         field: 'entity_type',
         startDate: '2019-01-01T00:00:00Z',
         endDate: new Date(mostRecentMalware.created_at).toISOString(),
-        filters: [{ key: ['name'], values: ['Paradise Ransomware'] }]
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['name'], values: ['Paradise Ransomware'] }],
+          filterGroups: [],
+        },
       }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
@@ -128,7 +132,11 @@ describe('Elasticsearch computation', () => {
       {
         types: ['Stix-Domain-Object'],
         field: 'entity_type',
-        filters: [{ key: [buildRefRelationKey(RELATION_OBJECT_MARKING)], values: [marking.internal_id] }]
+        filters: {
+          mode: 'and',
+          filters: [{ key: [buildRefRelationKey(RELATION_OBJECT_MARKING)], values: [marking.internal_id] }],
+          filterGroups: [],
+        },
       }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
@@ -236,7 +244,11 @@ describe('Elasticsearch computation', () => {
         interval: 'year',
         startDate: '2019-09-23T00:00:00.000Z',
         endDate: '2020-03-02T00:00:00.000Z',
-        filters: [{ key: [buildRefRelationKey(RELATION_USES)], values: [attackPattern.internal_id] }]
+        filters: {
+          mode: 'and',
+          filters: [{ key: [buildRefRelationKey(RELATION_USES)], values: [attackPattern.internal_id] }],
+          filterGroups: [],
+        },
       }
     );
     expect(data.length).toEqual(1);
@@ -255,7 +267,11 @@ describe('Elasticsearch computation', () => {
         interval: 'year',
         startDate: '2019-09-23T00:00:00.000Z',
         endDate: '2020-03-02T00:00:00.000Z',
-        filters: [{ key: [buildRefRelationKey('*')], values: [attackPattern.internal_id] }]
+        filters: {
+          mode: 'and',
+          filters: [{ key: [buildRefRelationKey('*')], values: [attackPattern.internal_id] }],
+          filterGroups: [],
+        }
       }
     );
     expect(data.length).toEqual(2);
@@ -272,7 +288,11 @@ describe('Elasticsearch computation', () => {
         types: [ENTITY_TYPE_IDENTITY],
         field: 'created',
         interval: 'year',
-        filters: [{ key: ['name'], values: ['ANSSI'] }]
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['name'], values: ['ANSSI'] }],
+          filterGroups: [],
+        },
       }
     );
     expect(data.length).toEqual(1);
@@ -367,7 +387,7 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with single type', async () => {
-    // first = 200, after, types = null, filters = [], search = null,
+    // first = 200, after, types = null, filters = null, search = null,
     // orderBy = null, orderMode = 'asc',
     // connectionFormat = true
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
@@ -416,48 +436,84 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with field not exist filter', async () => {
-    const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'x_opencti_color', operator: 'nil', values: [] }],
+      filterGroups: [],
+    };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
     expect(data.edges.length).toEqual(485);
   });
   it('should entity paginate with field exist filter', async () => {
-    const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }],
+      filterGroups: [],
+    };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(7);
   });
   it('should entity paginate with equality filter', async () => {
     // eq operation will use the field.keyword to do an exact field equality
-    let filters = [{ key: 'x_opencti_color', operator: 'eq', values: ['#c62828'] }];
+    let filters = {
+      mode: 'and',
+      filters: [{ key: 'x_opencti_color', operator: 'eq', values: ['#c62828'] }],
+      filterGroups: [],
+    };
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(1);
     // Special case when operator = eq + the field key is a dateFields => use a match
-    filters = [{ key: 'published', operator: 'eq', values: ['2020-03-01'] }];
+    filters = {
+      mode: 'and',
+      filters: [{ key: 'published', operator: 'eq', values: ['2020-03-01'] }],
+      filterGroups: [],
+    };
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with match filter', async () => {
-    let filters = [{ key: 'entity_type', operator: 'match', values: ['marking'] }];
+    let filters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'match', values: ['marking'] }],
+      filterGroups: [],
+    };
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(7); // The 4 Default TLP + MITRE Corporation
     // Verify that nothing is found in this case if using the eq operator
-    filters = [{ key: 'entity_type', operator: 'eq', values: ['marking'] }];
+    filters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'eq', values: ['marking'] }],
+      filterGroups: [],
+    };
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with dates filter', async () => {
-    let filters = [{ key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] }];
+    let filters = {
+      mode: 'and',
+      filters: [{ key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] }],
+      filterGroups: [],
+    };
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(2); // The 4 Default TLP + MITRE Corporation
-    filters = [
-      { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
-      { key: 'color', operator: undefined, values: [null] },
-    ];
+    filters = {
+      mode: 'and',
+      filters: [
+        { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
+        { key: 'color', operator: 'nil', values: [] },
+      ],
+      filterGroups: [],
+    };
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
     expect(data.edges.length).toEqual(351);
-    filters = [
-      { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
-      { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
-    ];
+    filters = {
+      mode: 'and',
+      filters: [
+        { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
+        { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
+      ],
+      filterGroups: [],
+    };
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(0);
   });
@@ -484,7 +540,11 @@ describe('Elasticsearch pagination', () => {
     }
   });
   it('should entity paginate with keyword ordering', async () => {
-    const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }],
+      filterGroups: [],
+    };
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       filters,
       orderBy: 'definition',
@@ -529,24 +589,32 @@ describe('Elasticsearch pagination', () => {
   });
   it('should not break on null', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_INDEX_INTERNAL_OBJECTS, {
-      filters: [{
-        key: [buildRefRelationKey(RELATION_OBJECT_LABEL)],
-        operator: 'eq',
-        values: [null],
-      }]
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: [buildRefRelationKey(RELATION_OBJECT_LABEL)],
+          operator: 'nil',
+          values: [],
+        }],
+        filterGroups: [],
+      }
     });
     expect(data).not.toBeNull();
   });
   it('should break on multi values with nested', async () => {
     const data = elPaginate(testContext, ADMIN_USER, READ_INDEX_INTERNAL_OBJECTS, {
-      filters: [{
-        key: ['name', 'created_at'],
-        value: null,
-        nested: [{
-          key: 'name',
-          values: ['test'],
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: ['name', 'created_at'],
+          value: null,
+          nested: [{
+            key: 'name',
+            values: ['test'],
+          }],
         }],
-      }],
+        filterGroups: [],
+      },
     });
     await expect(data).rejects.toThrow('Unsupported operation');
   });

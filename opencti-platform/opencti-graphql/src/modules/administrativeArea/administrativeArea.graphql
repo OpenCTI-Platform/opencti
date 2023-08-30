@@ -46,8 +46,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         lastSeenStop: DateTime
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -60,8 +59,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         limit: Int
         order: String
         types: [String]
-        filters: [StixCoreObjectsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -83,8 +81,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         relationship_type: [String]
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -130,26 +127,6 @@ enum AdministrativeAreasOrdering {
     x_opencti_workflow_id
 }
 
-# Filtering
-enum AdministrativeAreasFilter {
-    name
-    aliases
-    created
-    modified
-    created_at
-    updated_at
-    createdBy
-    markedBy
-    labelledBy
-    x_opencti_workflow_id
-}
-input AdministrativeAreasFiltering {
-    key: [AdministrativeAreasFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type AdministrativeAreaConnection {
     pageInfo: PageInfo!
@@ -168,8 +145,7 @@ type Query {
         after: ID
         orderBy: AdministrativeAreasOrdering
         orderMode: OrderingMode
-        filters: [AdministrativeAreasFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): AdministrativeAreaConnection @auth(for: [KNOWLEDGE])
 }

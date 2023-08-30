@@ -3,10 +3,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import OpinionsLines, { opinionsLinesQuery } from './opinions/OpinionsLines';
 import OpinionCreation from './opinions/OpinionCreation';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
@@ -18,10 +15,10 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { Filters } from '../../../components/list_lines';
 import { OpinionLineDummy } from './opinions/OpinionLine';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-opinions';
+const LOCAL_STORAGE_KEY = 'opinions';
 
 interface OpinionsProps {
   objectId?: string;
@@ -42,7 +39,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
   } = usePaginationLocalStorage<OpinionsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
@@ -66,18 +63,14 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
     handleToggleSelectAll,
     onToggleEntity,
     numberOfSelectedElements,
-  } = useEntityToggle<OpinionLine_node$data>('view-opinions');
+  } = useEntityToggle<OpinionLine_node$data>(LOCAL_STORAGE_KEY);
 
   const queryRef = useQueryLoading<OpinionsLinesPaginationQuery>(
     opinionsLinesQuery,
     paginationOptions,
   );
   const renderLines = () => {
-    let finalFilters = filters;
-    finalFilters = {
-      ...finalFilters,
-      entity_type: [{ id: 'Opinion', value: 'Opinion' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Opinion');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       opinion: {
@@ -126,6 +119,8 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           handleSearch={storageHelpers.handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
           handleToggleExports={storageHelpers.handleToggleExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
@@ -139,14 +134,13 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           iconExtension={true}
           availableFilterKeys={[
             'x_opencti_workflow_id',
-            'labelledBy',
-            'markedBy',
+            'objectLabel',
+            'objectMarking',
             'createdBy',
             'source_reliability',
             'confidence',
-            'creator',
-            'created_start_date',
-            'created_end_date',
+            'creator_id',
+            'created',
           ]}
         >
           {queryRef && (
@@ -181,7 +175,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={finalFilters}
+          filters={toolBarFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="Opinion"
         />

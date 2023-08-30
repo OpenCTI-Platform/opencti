@@ -27,7 +27,7 @@ export const regionsLinesQuery = graphql`
     $cursor: ID
     $orderBy: RegionsOrdering
     $orderMode: OrderingMode
-    $filters: [RegionsFiltering]
+    $filters: FilterGroup
   ) {
     ...RegionsLines_data
       @arguments(
@@ -49,7 +49,7 @@ const regionsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "RegionsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[RegionsFiltering]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "RegionsLinesRefetchQuery") {
     regions(

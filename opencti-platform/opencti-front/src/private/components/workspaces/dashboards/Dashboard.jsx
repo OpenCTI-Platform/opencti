@@ -346,7 +346,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               isReadOnly={!isWrite}
             />
           );
-        }
+        } // TODO from this point
         return (
           <StixCoreObjectsHorizontalBars
             startDate={startDate}
@@ -420,14 +420,14 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           <StixRelationshipsList
             startDate={startDate}
             endDate={endDate}
-            dataSelection={widget.dataSelection}
+            dataSelection={widget.dataSelection} // dynamicFrom and dynamicTo TODO
             parameters={widget.parameters}
             variant="inLine"
           />
         );
       case 'distribution-list':
         return (
-          <StixRelationshipsDistributionList
+          <StixRelationshipsDistributionList // TODO idem
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}

@@ -194,15 +194,11 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
   return worksForExport;
 };
 
-export const exportTransformFilters = (listFilters, filterOptions, orderOptions) => {
-  const filtersInversed = invertObj(filterOptions);
-  const orderingInversed = invertObj(orderOptions);
-  return {
-    ...listFilters,
-    orderBy: listFilters.orderBy in orderingInversed
-      ? orderingInversed[listFilters.orderBy]
-      : listFilters.orderBy,
-    filters: (listFilters.filters ?? []).map(
+const transformFilterGroup = (filterGroup, filtersInversed) => {
+  const newFilterGroup = {
+    mode: filterGroup.mode ?? 'and',
+    filterGroups: (filterGroup.filterGroups && filterGroup.filterGroups.length > 0) ? transformFilterGroup(filterGroup.filterGroups, filtersInversed) : [],
+    filters: (filterGroup.filters ?? []).map(
       (n) => {
         const keys = Array.isArray(n.key) ? n.key : [n.key];
         const key = keys.map((k) => (k in filtersInversed ? filtersInversed[k] : k));
@@ -210,9 +206,23 @@ export const exportTransformFilters = (listFilters, filterOptions, orderOptions)
           key,
           values: n.values,
           operator: n.operator ?? 'eq',
+          mode: n.mode ?? 'or',
         };
       }
     ),
+  };
+  return newFilterGroup;
+};
+
+export const exportTransformFilters = (filteringArgs, filterOptions, orderOptions) => {
+  const filtersInversed = invertObj(filterOptions);
+  const orderingInversed = invertObj(orderOptions);
+  return {
+    ...filteringArgs,
+    orderBy: filteringArgs.orderBy in orderingInversed
+      ? orderingInversed[filteringArgs.orderBy]
+      : filteringArgs.orderBy,
+    filters: transformFilterGroup(filteringArgs.filters, filtersInversed),
   };
 };
 
@@ -228,7 +238,7 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
     });
   const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
   const filters = {
-    objectContains: [{ id: containerId, value: containerId }],
+    objects: [{ id: containerId, value: containerId }],
     entity_type: SCAN_ENTITIES.map((e) => ({ id: e, value: e })),
   };
   const input = {

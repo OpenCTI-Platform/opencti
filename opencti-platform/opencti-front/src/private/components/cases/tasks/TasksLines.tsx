@@ -20,7 +20,7 @@ export const tasksLinesQuery = graphql`
     $cursor: ID
     $orderBy: TasksOrdering
     $orderMode: OrderingMode
-    $filters: [TasksFiltering!]
+    $filters: FilterGroup
   ) {
     ...TasksLines_data
     @arguments(
@@ -42,7 +42,7 @@ const tasksLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "TasksOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[TasksFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "TasksLinesRefetchQuery") {
     tasks(

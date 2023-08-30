@@ -22,15 +22,6 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-  RELATION_OBJECT_ASSIGNEE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-  RELATION_OBJECT_PARTICIPANT,
-} from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader, distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 
@@ -71,15 +62,6 @@ const reportResolvers = {
   Report: {
     deleteWithElementsCount: (report, args, context) => reportDeleteElementsCount(context, context.user, report.id),
     objectParticipant: (current, _, context) => participantLoader.load(current.id, context, context.user),
-  },
-  ReportsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    participant: buildRefRelationKey(RELATION_OBJECT_PARTICIPANT),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objectContains: buildRefRelationKey(RELATION_OBJECT, '*'),
-    creator: 'creator_id',
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({

@@ -18,8 +18,7 @@ export const statusFieldStatusesSearchQuery = graphql`
     $first: Int
     $orderBy: StatusOrdering
     $orderMode: OrderingMode
-    $filters: [StatusesFiltering!]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     statuses(
@@ -27,7 +26,6 @@ export const statusFieldStatusesSearchQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {
@@ -102,7 +100,11 @@ class StatusField extends Component {
     fetchQuery(statusFieldStatusesSearchQuery, {
       first: 10,
       filters: this.props.type
-        ? [{ key: 'type', values: [this.props.type] }]
+        ? {
+          mode: 'and',
+          filterGroups: [],
+          filters: [{ key: 'type', values: [this.props.type] }],
+        }
         : null,
       orderBy: 'order',
       orderMode: 'asc',

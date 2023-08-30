@@ -5,14 +5,13 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import * as R from 'ramda';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { convertFilters } from '../../../../utils/ListParameters';
+import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -62,13 +61,10 @@ const StixCoreObjectsMultiAreaChart = ({
   const { t, fsd, mtdy, yd } = useFormatter();
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
-      let finalFilters = convertFilters(selection.filters);
-      const dataSelectionTypes = R.head(
-        finalFilters.filter((n) => n.key === 'entity_type'),
-      )?.values || ['Stix-Core-Object'];
-      const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
-      const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
-        ?.values || null;
+      let finalFilters = selection.filters;
+      const dataSelectionTypes = findFilterFromKey(finalFilters, 'entity_type', 'eq')?.values ?? ['Stix-Core-Object'];
+      const dataSelectionObjectId = findFilterFromKey(finalFilters, 'elementId', 'eq')?.values ?? null;
+      const dataSelectionRelationshipType = findFilterFromKey(finalFilters, 'relationship_type', 'eq')?.values ?? null;
       finalFilters = finalFilters.filter(
         (n) => ![
           'entity_type',

@@ -8,8 +8,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: CasesOrdering
     $orderMode: OrderingMode
-    $filters: [CasesFiltering!]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     cases(
@@ -18,7 +17,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

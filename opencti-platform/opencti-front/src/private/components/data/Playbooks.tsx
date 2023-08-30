@@ -35,7 +35,7 @@ import { Theme } from '../../../components/Theme';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 
-export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'view-playbooks';
+export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'playbooks';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {

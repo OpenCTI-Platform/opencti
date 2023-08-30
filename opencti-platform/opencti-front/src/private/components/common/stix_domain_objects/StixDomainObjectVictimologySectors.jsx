@@ -67,13 +67,14 @@ const styles = (theme) => ({
 
 class StixDomainObjectVictimologySectorsComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `victimology-sectors-${props.entityId}`;
     super(props);
     let params = {};
     if (!props.noState) {
       params = buildViewParamsFromUrlAndStorage(
         props.history,
         props.location,
-        `view-victimology-sectors-${props.entityId}`,
+        LOCAL_STORAGE_KEY,
       );
     }
     this.state = {
@@ -90,10 +91,11 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
 
   saveView() {
     if (!this.props.noState) {
+      const LOCAL_STORAGE_KEY = `victimology-sectors-${this.props.entityId}`;
       saveViewParameters(
         this.props.history,
         this.props.location,
-        `view-victimology-sectors-${this.props.entityId}`,
+        LOCAL_STORAGE_KEY,
         this.state,
       );
     }

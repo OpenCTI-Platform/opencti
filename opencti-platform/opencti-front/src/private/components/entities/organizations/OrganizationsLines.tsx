@@ -9,7 +9,7 @@ import {
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { OrganizationLine, OrganizationLineDummy } from './OrganizationLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfRowsToLoad = 50;
@@ -19,12 +19,7 @@ interface OrganizationsLinesProps {
   dataColumns: DataColumns;
   paginationOptions ? : OrganizationsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 export const organizationsLinesQuery = graphql`
@@ -34,7 +29,7 @@ export const organizationsLinesQuery = graphql`
         $cursor: ID
         $orderBy: OrganizationsOrdering
         $orderMode: OrderingMode
-        $filters: [OrganizationsFiltering!]
+        $filters: FilterGroup
     ) {
         ...OrganizationsLines_data
         @arguments(
@@ -56,7 +51,7 @@ export const organizationsLinesFragment = graphql`
         cursor: { type: "ID" }
         orderBy: { type: "OrganizationsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[OrganizationsFiltering!]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "OrganizationsLinesRefetchQuery") {
         organizations(

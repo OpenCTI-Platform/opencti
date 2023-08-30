@@ -47,6 +47,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'authorized_authorities', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'instance_trigger', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'trigger_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
   ],
   relations: [],
   representative: (stix: StixTrigger) => {
@@ -77,6 +78,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     // TODO: modify content to content_notification
     // { name: 'content', type: 'dictionary', mandatoryType: 'internal', multiple: true, upsert: false },
     { name: 'is_read', type: 'boolean', mandatoryType: 'internal', multiple: false, upsert: true },
+    { name: 'user_id', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
   ],
   relations: [],
   representative: (stix: StixNotification) => {

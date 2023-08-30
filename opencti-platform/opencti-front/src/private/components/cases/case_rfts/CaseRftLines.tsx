@@ -35,7 +35,7 @@ export const caseRftsLinesQuery = graphql`
     $cursor: ID
     $orderBy: CaseRftsOrdering
     $orderMode: OrderingMode
-    $filters: [CaseRftsFiltering!]
+    $filters: FilterGroup
   ) {
     ...CaseRftLinesCases_data
     @arguments(
@@ -57,7 +57,7 @@ const caseRftsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "CaseRftsOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[CaseRftsFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "CaseRftCasesLinesRefetchQuery") {
     caseRfts(

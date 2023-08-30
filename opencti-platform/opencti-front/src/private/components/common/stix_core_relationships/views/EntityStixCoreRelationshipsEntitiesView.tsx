@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import React, { FunctionComponent } from 'react';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
@@ -6,10 +5,6 @@ import ToolBar from '../../../data/ToolBar';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
 import EntityStixCoreRelationshipsEntitiesViewLines from './EntityStixCoreRelationshipsEntitiesViewLines';
 import { useFormatter } from '../../../../../components/i18n';
-import {
-  cleanFilters,
-  convertFilters,
-} from '../../../../../utils/ListParameters';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../../utils/Security';
@@ -20,11 +15,16 @@ import {
   isStixCyberObservables,
 } from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import {
-  DataColumns,
-  PaginationOptions,
-} from '../../../../../components/list_lines';
-import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
+  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables,
+} from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
+import {
+  addFilter, cleanFilters,
+  filtersWithEntityType,
+  findFilterFromKey,
+  removeFilter,
+} from '../../../../../utils/filters/filtersUtils';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -75,13 +75,12 @@ EntityStixCoreRelationshipsEntitiesViewProps
   let availableFilterKeys = [
     'relationship_type',
     'entity_type',
-    'markedBy',
+    'objectMarking',
     'confidence',
-    'labelledBy',
+    'objectLabel',
     'createdBy',
-    'creator',
-    'created_start_date',
-    'created_end_date',
+    'creator_id',
+    'created',
   ];
   if ((relationshipTypes ?? []).includes('targets')) {
     availableFilterKeys = [...availableFilterKeys, 'targets'];
@@ -132,9 +131,8 @@ EntityStixCoreRelationshipsEntitiesViewProps
       width: '10%',
     },
   };
-
-  const selectedTypes: string[] = (filters?.entity_type?.map((o) => o.id) as string[]) ?? stixCoreObjectTypes;
-  const selectedRelationshipTypes = filters?.relationship_type?.map((o) => o.id) ?? relationshipTypes;
+  const selectedTypes = findFilterFromKey(filters?.filters ?? [], 'entity_type')?.values ?? stixCoreObjectTypes;
+  const selectedRelationshipTypes = findFilterFromKey(filters?.filters ?? [], 'relationship_type')?.values ?? relationshipTypes;
 
   const paginationOptions = {
     types: selectedTypes,
@@ -146,24 +144,19 @@ EntityStixCoreRelationshipsEntitiesViewProps
         ? sortBy
         : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
-    filters: convertFilters(
-      R.omit(
-        ['relationship_type', 'entity_type'],
-        cleanFilters(filters, availableFilterKeys),
-      ),
-    ),
+    filters: removeFilter(cleanFilters(filters, availableFilterKeys), ['relationship_type', 'entity_type']),
   } as unknown as EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables; // Because of FilterMode
 
-  const backgroundTaskFilters = {
-    ...filters,
-    entity_type:
+  const backgroundTaskFilters = addFilter(
+    filtersWithEntityType(
+      filters,
       selectedTypes?.length > 0
-        ? selectedTypes.map((n) => ({ id: n, value: n }))
-        : [{ id: 'Stix-Core-Object', value: 'Stix-Core-Object' }],
-    [`rel_${selectedRelationshipTypes.at(0)}.*`]: [
-      { id: entityId, value: entityId },
-    ],
-  };
+        ? selectedTypes
+        : ['Stix-Core-Object'],
+    ),
+    `rel_${selectedRelationshipTypes.at(0)}.*`,
+    entityId,
+  );
 
   const {
     selectedElements,
@@ -186,6 +179,8 @@ EntityStixCoreRelationshipsEntitiesViewProps
         handleSearch={storageHelpers.handleSearch}
         handleAddFilter={storageHelpers.handleAddFilter}
         handleRemoveFilter={storageHelpers.handleRemoveFilter}
+        handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
         handleChangeView={handleChangeView || storageHelpers.handleChangeView}
         onToggleEntity={onToggleEntity}
         handleToggleSelectAll={handleToggleSelectAll}

@@ -69,7 +69,7 @@ export const stixCoreObjectOrStixCoreRelationshipContainersLinesQuery = graphql`
     $cursor: ID
     $orderBy: ContainersOrdering
     $orderMode: OrderingMode
-    $filters: [ContainersFiltering]
+    $filters: FilterGroup
   ) {
     ...StixCoreObjectOrStixCoreRelationshipContainersLines_data
       @arguments(
@@ -94,7 +94,7 @@ export default createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "ContainersOrdering", defaultValue: created }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[ContainersFiltering]" }
+        filters: { type: "FilterGroup" }
       ) {
         containers(
           search: $search

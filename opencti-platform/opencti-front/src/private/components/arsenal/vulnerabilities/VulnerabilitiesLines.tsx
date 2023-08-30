@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { VulnerabilityLine, VulnerabilityLineDummy } from './VulnerabilityLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import {
   VulnerabilitiesLinesPaginationQuery,
   VulnerabilitiesLinesPaginationQuery$variables,
@@ -18,12 +18,7 @@ interface VulnerabilityLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: VulnerabilitiesLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 export const vulnerabilitiesLinesQuery = graphql`
@@ -33,7 +28,7 @@ export const vulnerabilitiesLinesQuery = graphql`
     $cursor: ID
     $orderBy: VulnerabilitiesOrdering
     $orderMode: OrderingMode
-    $filters: [VulnerabilitiesFiltering!]
+    $filters: FilterGroup
   ) {
     ...VulnerabilitiesLines_data
       @arguments(
@@ -55,7 +50,7 @@ const vulnerabilitiesLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "VulnerabilitiesOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[VulnerabilitiesFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "VulnerabilitiesLinesRefetchQuery") {
     vulnerabilities(

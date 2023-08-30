@@ -1,12 +1,15 @@
 import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
+import { OrderMode, PaginationOptions } from '../../components/list_lines';
 import {
-  Filters,
-  OrderMode,
-  PaginationOptions,
-} from '../../components/list_lines';
-import { BackendFilters, isUniqFilter } from '../filters/filtersUtils';
-import { convertFilters } from '../ListParameters';
+  convertOldFilters,
+  Filter,
+  FilterGroup,
+  findFilterFromKey,
+  findFilterIndexFromKey,
+  isFilterGroupNotEmpty,
+  isUniqFilter,
+} from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
 
 export interface MessageFromLocalStorage {
@@ -25,7 +28,7 @@ export interface LocalStorage {
     symbol: string;
     original?: number;
   };
-  filters?: Filters;
+  filters?: FilterGroup;
   id?: string;
   searchTerm?: string;
   category?: string;
@@ -48,10 +51,12 @@ export interface LocalStorage {
 
 export interface UseLocalStorageHelpers {
   handleSearch: (value: string) => void;
-  handleRemoveFilter: (key: string, id?: string) => void;
+  handleRemoveFilter: (key: string, id?: string, op?: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
   handleSwitchFilter: HandleAddFilter;
+  handleSwitchGlobalMode: () => void;
+  handleSwitchLocalMode: (filter: Filter) => void;
   handleToggleExports: () => void;
   handleSetNumberOfElements: (value: {
     number?: number | string;
@@ -66,7 +71,7 @@ export interface UseLocalStorageHelpers {
 
 const localStorageToPaginationOptions = (
   { searchTerm, filters, sortBy, orderAsc, ...props }: LocalStorage,
-  additionalFilters?: BackendFilters,
+  additionalFilters?: Filter[],
 ): PaginationOptions => {
   // Remove only display options, not query linked
   const localOptions = { ...props };
@@ -88,31 +93,37 @@ const localStorageToPaginationOptions = (
     basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
     basePagination.orderBy = sortBy;
   }
-  let convertedFilters = (convertFilters(filters ?? {}) as unknown as BackendFilters);
-  const fromId = R.head(convertedFilters.filter((n) => n.key === 'fromId'))?.values || undefined;
-  const toId = R.head(convertedFilters.filter((n) => n.key === 'toId'))?.values || undefined;
-  const fromTypes = R.head(convertedFilters.filter((n) => n.key === 'fromTypes'))?.values || undefined;
-  const toTypes = R.head(convertedFilters.filter((n) => n.key === 'toTypes'))?.values || undefined;
-  convertedFilters = convertedFilters.filter(
+  let convertedFilters = filters?.filters as Filter[];
+  const fromId = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'fromId'))?.values : undefined;
+  const toId = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'toId'))?.values : undefined;
+  const fromTypes = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'fromTypes'))?.values : undefined;
+  const toTypes = convertedFilters ? R.head(convertedFilters.filter((n) => n.key === 'toTypes'))?.values : undefined;
+  convertedFilters = convertedFilters?.filter(
     (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(Array.isArray(n.key) ? n.key[0] : n.key),
   );
 
-  const paginationFilters: BackendFilters = [
-    ...convertedFilters,
-    ...(additionalFilters ?? []),
-  ];
-  basePagination.filters = paginationFilters.length > 0 ? paginationFilters : undefined;
+  const paginationFilters = {
+    mode: filters?.mode ?? 'and',
+    filters: convertedFilters ?? [] as Filter[],
+    filterGroups: [] as FilterGroup[],
+  };
   basePagination.fromId = fromId;
   basePagination.toId = toId;
   basePagination.fromTypes = fromTypes;
   basePagination.toTypes = toTypes;
+  if (additionalFilters && additionalFilters.length > 0) {
+    paginationFilters.filters = paginationFilters.filters.concat(additionalFilters);
+  }
+  basePagination.filters = isFilterGroupNotEmpty(paginationFilters)
+    ? paginationFilters
+    : undefined;
   return basePagination;
 };
 
 export type HandleAddFilter = (
   k: string,
   id: string,
-  value: Record<string, unknown> | string,
+  op?: string,
   event?: SyntheticEvent
 ) => void;
 
@@ -124,7 +135,7 @@ export type UseLocalStorage = [
 const buildParamsFromHistory = (params: LocalStorage) => {
   return removeEmptyFields({
     filters:
-      params.filters && Object.keys(params.filters).length > 0
+      params.filters && isFilterGroupNotEmpty(params.filters)
         ? JSON.stringify(params.filters)
         : undefined,
     zoom: JSON.stringify(params.zoom),
@@ -142,9 +153,13 @@ const buildParamsFromHistory = (params: LocalStorage) => {
 
 const searchParamsToStorage = (searchObject: URLSearchParams) => {
   const zoom = searchObject.get('zoom');
-  const filters = searchObject.get('filters');
+  const stringFilters = searchObject.get('filters');
+  let filters = stringFilters ? JSON.parse(stringFilters) : undefined;
+  if (filters && stringFilters && !filters.mode) { // if filters are in the old format
+    filters = convertOldFilters(stringFilters);
+  }
   return removeEmptyFields({
-    filters: filters ? JSON.parse(filters) : undefined,
+    filters,
     zoom: zoom ? JSON.parse(zoom) : undefined,
     searchTerm: searchObject.get('searchTerm')
       ? searchObject.get('searchTerm')
@@ -264,7 +279,7 @@ export type PaginationLocalStorage<U = Record<string, unknown>> = {
 export const usePaginationLocalStorage = <U>(
   key: string,
   initialValue: LocalStorage,
-  additionalFilters?: BackendFilters,
+  additionalFilters?: Filter[],
   ignoreUri?: boolean,
 ): PaginationLocalStorage<U> => {
   const [viewStorage, setValue] = useLocalStorage(key, initialValue, ignoreUri);
@@ -274,28 +289,46 @@ export const usePaginationLocalStorage = <U>(
   );
   const helpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
-    handleRemoveFilter: (k: string, id?: string) => setValue((c) => {
-      if (id) {
-        const values = c.filters?.[k].filter((f) => f.id !== id);
-        if (values && values.length > 0) {
-          return {
-            ...c,
-            filters: {
-              ...c.filters,
-              [k]: values,
-            },
+    handleRemoveFilter: (k: string, op = 'eq', id?: string) => {
+      if (viewStorage.filters) {
+        if (id) {
+          const filter = findFilterFromKey(viewStorage.filters.filters, k, op);
+          if (filter) {
+            const values = filter.values.filter((val) => val !== id);
+            if (values && values.length > 0) {
+              const newFilterElement = {
+                key: k,
+                values,
+                operator: filter.operator ?? 'eq',
+                mode: filter.mode ?? 'or',
+              };
+              const newBaseFilters = {
+                ...viewStorage.filters,
+                filters: [
+                  ...viewStorage.filters.filters
+                    .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+                  newFilterElement, // keep value=id
+                ],
+              };
+              setValue((c) => ({
+                ...c,
+                filters: newBaseFilters,
+              }));
+            }
+          }
+        } else {
+          const newBaseFilters = {
+            ...viewStorage.filters,
+            filters: viewStorage.filters.filters
+              .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
           };
+          setValue((c) => ({
+            ...c,
+            filters: newBaseFilters,
+          }));
         }
-        return {
-          ...c,
-          filters: R.dissoc<Filters, string>(k, c.filters as Filters),
-        };
       }
-      return {
-        ...c,
-        filters: R.dissoc<Filters, string>(k, c.filters as Filters),
-      };
-    }),
+    },
     handleSort: (field: string, order: boolean) => setValue((c) => ({
       ...c,
       sortBy: field,
@@ -311,50 +344,138 @@ export const usePaginationLocalStorage = <U>(
     handleAddFilter: (
       k: string,
       id: string,
-      value: Record<string, unknown> | string,
+      defaultOp = 'eq',
       event?: SyntheticEvent,
     ) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
-      if ((viewStorage?.filters?.[k]?.length ?? 0) > 0) {
+      let op = defaultOp;
+      if (id === null && op === 'eq') { // handle clicking on 'no label' in entities list
+        op = 'nil';
+      }
+      const filter = viewStorage.filters
+        ? findFilterFromKey(viewStorage.filters.filters, k, op)
+        : undefined;
+      if (viewStorage.filters && filter) {
+        let newValues: string[] = [];
+        if (id !== null) {
+          newValues = isUniqFilter(k) ? [id] : R.uniq([...filter.values, id]);
+        }
+        const newFilterElement = {
+          key: k,
+          values: newValues,
+          operator: op,
+          mode: 'or',
+        };
+        const newBaseFilters = {
+          ...viewStorage.filters,
+          filters: [
+            ...viewStorage.filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
+            newFilterElement, // add new filter
+          ],
+        };
         setValue((c) => ({
           ...c,
-          filters: {
-            ...c.filters,
-            [k]: isUniqFilter(k)
-              ? [{ id, value }]
-              : [
-                ...(c.filters?.[k].filter((f) => f.id !== id) ?? []),
-                {
-                  id,
-                  value,
-                },
-              ],
-          },
+          filters: newBaseFilters,
         }));
       } else {
+        const newFilterElement = {
+          key: k,
+          values: id !== null ? [id] : [],
+          operator: op,
+          mode: 'or',
+        };
+        const newBaseFilters = viewStorage.filters ? {
+          ...viewStorage.filters,
+          filters: [...viewStorage.filters.filters, newFilterElement], // add new filter
+        } : {
+          mode: 'and',
+          filterGroups: [],
+          filters: [newFilterElement],
+        };
         setValue((c) => ({
           ...c,
-          filters: R.assoc(k, [{ id, value }], c.filters),
+          filters: newBaseFilters,
         }));
       }
     },
     handleSwitchFilter: (
       k: string,
       id: string,
-      value: Record<string, unknown> | string,
+      op = 'eq',
       event?: SyntheticEvent,
     ) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
-      setValue((c) => ({
-        ...c,
-        filters: R.assoc(k, [{ id, value }], c.filters),
-      }));
+      const newFilterElement = {
+        key: k,
+        values: [id],
+        operator: op,
+        mode: 'or',
+      };
+      if (viewStorage.filters && findFilterFromKey(viewStorage.filters.filters, k, op)) {
+        const newBaseFilters = {
+          ...viewStorage.filters,
+          filters: [
+            ...viewStorage.filters.filters
+              .filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key and op as operator
+            newFilterElement, // add new filter
+          ],
+        };
+        setValue((c) => ({
+          ...c,
+          filters: newBaseFilters,
+        }));
+      } else {
+        const newBaseFilters = viewStorage.filters ? {
+          ...viewStorage.filters,
+          filters: [...viewStorage.filters.filters, newFilterElement], // set new filter
+        } : {
+          mode: 'and',
+          filterGroups: [],
+          filters: [newFilterElement],
+        };
+        setValue((c) => ({
+          ...c,
+          filters: newBaseFilters,
+        }));
+      }
+    },
+    handleSwitchGlobalMode: () => {
+      if (viewStorage.filters) {
+        const newBaseFilters = {
+          ...viewStorage.filters,
+          mode: viewStorage.filters.mode === 'and' ? 'or' : 'and',
+        };
+        setValue((c) => ({
+          ...c,
+          filters: newBaseFilters,
+        }));
+      }
+    },
+    handleSwitchLocalMode: (localFilter: Filter) => {
+      if (viewStorage.filters) {
+        const filterIndex = findFilterIndexFromKey(viewStorage.filters.filters, localFilter.key, localFilter.operator);
+        if (filterIndex !== null) {
+          const newFiltersContent = [...viewStorage.filters.filters];
+          newFiltersContent[filterIndex] = {
+            ...localFilter,
+            mode: localFilter.mode === 'and' ? 'or' : 'and',
+          }; // we keep the filters order
+          const newBaseFilters = {
+            ...viewStorage.filters,
+            filters: newFiltersContent,
+          };
+          setValue((c) => ({
+            ...c,
+            filters: newBaseFilters,
+          }));
+        }
+      }
     },
     handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),

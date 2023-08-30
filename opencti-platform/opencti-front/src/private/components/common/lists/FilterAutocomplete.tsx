@@ -1,9 +1,4 @@
-import React, {
-  Dispatch,
-  FunctionComponent,
-  SyntheticEvent,
-  useState,
-} from 'react';
+import React, { Dispatch, FunctionComponent, SyntheticEvent, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import makeStyles from '@mui/styles/makeStyles';
@@ -12,10 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
-import {
-  EqFilters,
-  onlyGroupOrganization,
-} from '../../../../utils/filters/filtersUtils';
+import { EqFilters, onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { Option } from '../form/ReferenceField';
 
@@ -42,8 +34,8 @@ interface FilterAutocompleteProps {
   filterKey: string;
   searchContext: { entityTypes: string[], elementId?: string[] };
   defaultHandleAddFilter: HandleAddFilter;
-  inputValues: Record<string, string | Date>;
-  setInputValues: Dispatch<Record<string, string | Date>>;
+  inputValues: { key: string, values: string[], operator?: string }[];
+  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   availableRelationFilterTypes?: Record<string, string[]>;
@@ -105,7 +97,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     'elementId',
     'fromId',
     'toId',
-    'objectContains',
+    'objects',
     'targets',
     'elementId',
     'indicates',
@@ -117,14 +109,13 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
         && (event as unknown as MouseEvent).altKey
         && event.type === 'click'
       ) {
-        const filterAdd = `${filterKey}_not_eq`;
-        defaultHandleAddFilter(filterAdd, value.value, value.label, event);
+        console.log('value.value', value.value);
+        defaultHandleAddFilter(filterKey, value.value, value.value === null ? 'not_nil' : 'not_eq', event);
       } else {
         const group = !onlyGroupOrganization.includes(filterKey)
           ? value.group
           : undefined;
-        const filterAdd = `${filterKey}${group ? `_${group}` : ''}`;
-        defaultHandleAddFilter(filterAdd, value.value, value.label, event);
+        defaultHandleAddFilter(filterKey, value.value, value.value === null ? 'nil' : group, event);
       }
     }
   };
@@ -148,6 +139,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   } else if (entities[filterKey]) {
     options = entities[filterKey];
   }
+  const input = inputValues.filter((f) => f.key === filterKey)?.[0]?.values?.[0] ?? '';
   return (
     <MUIAutocomplete
       key={filterKey}
@@ -164,7 +156,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
         setCacheEntities,
         event,
       )}
-      inputValue={(inputValues[filterKey] as string) || ''}
+      inputValue={input}
       onChange={handleChange}
       groupBy={
         isStixObjectTypes

@@ -17,15 +17,7 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { batchKillChainPhases } from '../domain/stixCoreObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
-import { RELATION_MITIGATES, RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const coursesOfActionLoader = batchLoader(batchCoursesOfAction);
@@ -46,15 +38,6 @@ const attackPatternResolvers = {
     subAttackPatterns: (attackPattern, _, context) => subAttackPatternsLoader.load(attackPattern.id, context, context.user),
     isSubAttackPattern: (attackPattern, _, context) => isSubAttackPatternLoader.load(attackPattern.id, context, context.user),
     dataComponents: (attackPattern, _, context) => dataComponentsLoader.load(attackPattern.id, context, context.user),
-  },
-  AttackPatternsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    mitigatedBy: buildRefRelationKey(RELATION_MITIGATES),
-    killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
-    targets: buildRefRelationKey(RELATION_TARGETS),
-    creator: 'creator_id',
   },
   Mutation: {
     attackPatternEdit: (_, { id }, context) => ({

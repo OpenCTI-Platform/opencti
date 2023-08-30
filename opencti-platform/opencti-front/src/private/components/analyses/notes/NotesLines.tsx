@@ -21,7 +21,7 @@ export const notesLinesQuery = graphql`
         $cursor: ID
         $orderBy: NotesOrdering
         $orderMode: OrderingMode
-        $filters: [NotesFiltering]
+        $filters: FilterGroup
     ) {
         ...NotesLines_data
         @arguments(
@@ -43,7 +43,7 @@ const notesLineFragment = graphql`
         cursor: { type: "ID" }
         orderBy: { type: "NotesOrdering", defaultValue: created }
         orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "[NotesFiltering]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "NotesLinesRefetchQuery") {
         notes(

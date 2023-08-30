@@ -28,42 +28,47 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
-import { TriggerLine_node$data } from '../../profile/triggers/__generated__/TriggerLine_node.graphql';
-import { TriggerLiveAddInput, TriggerLiveCreationKnowledgeMutation } from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import {
+  TriggerLiveAddInput,
+  TriggerLiveCreationKnowledgeMutation,
+} from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEditionOverview';
-import { instanceTriggerDescription, triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
+import {
+  instanceTriggerDescription,
+  triggerLiveKnowledgeCreationMutation,
+} from '../../profile/triggers/TriggerLiveCreation';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import NotifierField from '../form/NotifierField';
 import { Option } from '../form/ReferenceField';
-import { StixCoreObjectQuickSubscriptionContentPaginationQuery, StixCoreObjectQuickSubscriptionContentPaginationQuery$data, StixCoreObjectQuickSubscriptionContentPaginationQuery$variables } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
+import {
+  StixCoreObjectQuickSubscriptionContentPaginationQuery,
+  StixCoreObjectQuickSubscriptionContentPaginationQuery$data,
+  StixCoreObjectQuickSubscriptionContentPaginationQuery$variables,
+} from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
+import { FilterGroup, findFilterFromKey } from '../../../../utils/filters/filtersUtils';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
   query StixCoreObjectQuickSubscriptionContentPaginationQuery(
-    $filters: [TriggersFiltering!]
-    $first: Int
-  ) {
-    triggersKnowledge(
-      filters: $filters
-      first: $first
-    ) @connection(key: "Pagination_triggersKnowledge") {
-      edges {
-        node {
-          id
-          name
-          trigger_type
-          event_types
-          description
-          filters
-          created
-          modified
-          notifiers {
-            id
-            name
-          }
-          resolved_instance_filters {
-            id
-            valid
-            value
+    $filters: FilterGroup
+        $first: Int
+    ) {
+        triggersKnowledge(
+            filters: $filters
+            first: $first
+        ) @connection(key: "Pagination_triggersKnowledge") {
+            edges {
+                node {
+                    id
+                    name
+                    trigger_type
+                    event_types
+                    description
+                    filters
+                    created
+                    modified
+                    notifiers {
+                      id
+                      name
           }
         }
       }
@@ -78,7 +83,6 @@ interface InstanceTriggerEditionFormValues {
   event_types: readonly Option[];
   notifiers: readonly Option[];
   filters: string | null,
-  resolved_instance_filters?: TriggerLine_node$data['resolved_instance_filters'],
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -187,10 +191,14 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       notifiers: ['f4ee7b33-006a-4b0d-b57d-411ad288653d', '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'],
       instance_trigger: true,
       filters: JSON.stringify({
-        elementId: [{
-          id: instanceId,
-          value: instanceName ?? '',
+        mode: 'and',
+        filters: [{
+          key: 'elementId',
+          values: [instanceId],
+          operator: 'eq',
+          mode: 'or',
         }],
+        filterGroups: [],
       }),
     };
     commitAddTrigger({
@@ -257,14 +265,33 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
 
   const submitRemove = (triggerIdToUpdate: string, filters: string | null) => {
     setDeleting(true);
-    const newInstanceFilters = JSON.parse(filters ?? '').elementId.filter((f: { id: string, value: string }) => f.id !== instanceId);
+    const filterGroup = JSON.parse(filters ?? '') as FilterGroup || undefined;
+    const newInstanceValues = findFilterFromKey(filterGroup?.filters ?? [], 'elementId')?.values?.filter((id) => id !== instanceId) ?? [];
+    const newInstanceFilters = newInstanceValues.length > 0
+      ? {
+        ...filterGroup,
+        filters: [
+          ...filterGroup.filters.filter((f) => f.key !== 'elementId' || f.operator !== 'eq'),
+          {
+            key: 'elementId',
+            values: newInstanceValues,
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
+      }
+      : {
+        mode: filterGroup?.mode ?? 'and',
+        filters: filterGroup?.filters.filter((f) => f.key !== 'elementId' || f.operator !== 'eq') ?? [],
+        filterGroups: filterGroup?.filterGroups ?? [],
+      };
     commitFieldPatch({
       variables: {
         id: triggerIdToUpdate,
         input: [
           {
             key: 'filters',
-            value: JSON.stringify({ elementId: newInstanceFilters }),
+            value: JSON.stringify(newInstanceFilters),
           },
         ],
       },
@@ -326,14 +353,13 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                   </MenuItem>
                 )}
               />
-              {multipleInstanceTrigger
+              {multipleInstanceTrigger && instanceTrigger.filters
                 && <div style={{ ...fieldSpacingContainerStyle }}>
                   <FilterIconButton
-                    filters={JSON.parse(instanceTrigger.filters ?? '[]')}
+                    filters={JSON.parse(instanceTrigger.filters)}
                     classNameNumber={3}
                     styleNumber={3}
                     redirection
-                    resolvedInstanceFilters={instanceTrigger.resolved_instance_filters ?? []}
                   />
                 </div>
               }
@@ -364,14 +390,18 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
   };
 
   const isInstanceTriggerOnMultipleInstances = (triggerValue: InstanceTriggerEditionFormValues) => {
-    return triggerValue.filters && JSON.parse(triggerValue.filters).elementId.length > 1;
+    if (triggerValue.filters) {
+      const elementIdFilter = findFilterFromKey(JSON.parse(triggerValue.filters)?.filters ?? [], 'elementId');
+      return elementIdFilter?.values && elementIdFilter.values.length > 1;
+    }
+    return false;
   };
 
   const updateInstanceTrigger = () => {
     const triggerValues = existingInstanceTriggersEdges
       .filter((l) => l)
       .map((n) => ({
-        ...pick(['id', 'name', 'description', 'filters', 'resolved_instance_filters'], n?.node),
+        ...pick(['id', 'name', 'description', 'filters'], n?.node),
         notifiers: convertNotifiers(n?.node),
         event_types: convertEventTypes(n?.node),
       })) as InstanceTriggerEditionFormValues[];

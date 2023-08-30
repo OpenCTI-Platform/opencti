@@ -93,21 +93,6 @@ enum VocabularyOrdering {
   order
 }
 
-# Filtering
-enum VocabularyFilter {
-  name
-  category
-  description
-  entity_types
-  aliases
-}
-input VocabularyFiltering {
-  key: [VocabularyFilter!]!
-  values: [String!]!
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type VocabularyConnection {
   pageInfo: PageInfo!
@@ -128,8 +113,7 @@ type Query {
     after: ID
     orderBy: VocabularyOrdering
     orderMode: OrderingMode
-    filters: [VocabularyFiltering!]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
   ): VocabularyConnection @auth(for: [KNOWLEDGE])
 }
