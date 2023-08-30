@@ -10,44 +10,44 @@ Technically, OpenCTI generates deterministic IDs based on the listed properties 
 
 ### Entities
 
-| Type                    | Attributes                                                                                                     |
-| :---------------------- | :------------------------------------------------------------------------------------------------------------- |
-| Area                    | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type`                                                    |
-| Attack Pattern          | (`name` OR `alias`) AND optional `x_mitre_id`                                                                  |
-| Campaign                | `name` OR `alias`                                                                                              |
-| Channel                 | `name` OR `alias`                                                                                              |
-| City                    | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type`                                                    |
-| Country                 | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type`                                                    |
-| Course Of Action        | (`name` OR `alias`) AND optional `x_mitre_id`                                                                  |
-| Data Component          | `name` OR `alias`                                                                                              |
-| Data Source             | `name` OR `alias`                                                                                              |
-| Event                   | `name` OR `alias`                                                                                              |
-| Feedback Case           | `name` AND `created` (date)                                                                                    |
-| Grouping                | `name` AND `context`                                                                                           |
-| Incident                | `name` OR `alias`                                                                                              |
-| Incident Response Case  | `name` OR `alias`                                                                                              |
-| Indicator               | `name` OR `alias`                                                                                              |
-| Individual              | (`name` OR `x_opencti_alias`) and `identity_class`                                                             |
-| Infrastructure          | `name` OR `alias`                                                                                              |
-| Intrusion Set           | `name` OR `alias`                                                                                              |
-| Language                | `name` OR `alias`                                                                                              |
-| Malware                 | `name` OR `alias`                                                                                              |
-| Malware Analysis        | `name` OR `alias`                                                                                              |
-| Narrative               | `name` OR `alias`                                                                                              |
-| Note                    | *None*                                                                                                         |
-| Observed Data           | `name` OR `alias`                                                                                              |
-| Opinion                 | *None*                                                                                                         |
-| Organization            | (`name` OR `x_opencti_alias`) and `identity_class`                                                             |
-| Position                | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type`                                                    |
-| Region                  | `name` OR `alias`                                                                                              |
-| Report                  | `name` AND `publised` (date)                                                                                   |
-| RFI Case                | `name` AND `created` (date)                                                                                    |
-| RFT Case                | `name` AND `created` (date)                                                                                    |
-| Sector                  | (`name` OR `alias`) and `identity_class`                                                                       |
-| Task                    | *None*                                                                                                         |
-| Threat Actor            | `name` OR `alias`                                                                                              |
-| Tool                    | `name` OR `alias`                                                                                              |
-| Vulnerability           | `name` OR `alias`                                                                                              |
+| Type                    | Attributes                                                  |
+| :---------------------- |:------------------------------------------------------------|
+| Area                    | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type` |
+| Attack Pattern          | (`name` OR `alias`) AND optional `x_mitre_id`               |
+| Campaign                | `name` OR `alias`                                           |
+| Channel                 | `name` OR `alias`                                           |
+| City                    | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type` |
+| Country                 | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type` |
+| Course Of Action        | (`name` OR `alias`) AND optional `x_mitre_id`               |
+| Data Component          | `name` OR `alias`                                           |
+| Data Source             | `name` OR `alias`                                           |
+| Event                   | `name` OR `alias`                                           |
+| Feedback Case           | `name` AND `created` (date)                                 |
+| Grouping                | `name` AND `context`                                        |
+| Incident                | `name` OR `alias`                                           |
+| Incident Response Case  | `name` OR `alias`                                           |
+| Indicator               | `pattern` OR `alias`                                        |
+| Individual              | (`name` OR `x_opencti_alias`) and `identity_class`          |
+| Infrastructure          | `name` OR `alias`                                           |
+| Intrusion Set           | `name` OR `alias`                                           |
+| Language                | `name` OR `alias`                                           |
+| Malware                 | `name` OR `alias`                                           |
+| Malware Analysis        | `name` OR `alias`                                           |
+| Narrative               | `name` OR `alias`                                           |
+| Note                    | *None*                                                      |
+| Observed Data           | `name` OR `alias`                                           |
+| Opinion                 | *None*                                                      |
+| Organization            | (`name` OR `x_opencti_alias`) and `identity_class`          |
+| Position                | (`name` OR `x_opencti_alias`) AND `x_opencti_location_type` |
+| Region                  | `name` OR `alias`                                           |
+| Report                  | `name` AND `publised` (date)                                |
+| RFI Case                | `name` AND `created` (date)                                 |
+| RFT Case                | `name` AND `created` (date)                                 |
+| Sector                  | (`name` OR `alias`) and `identity_class`                    |
+| Task                    | *None*                                                      |
+| Threat Actor            | `name` OR `alias`                                           |
+| Tool                    | `name` OR `alias`                                           |
+| Vulnerability           | `name` OR `alias`                                           |
 
 ### Relationships
 
