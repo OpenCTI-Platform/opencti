@@ -488,6 +488,7 @@ const StixCoreRelationshipExternalReferencesLines = createPaginationContainer(
                 url
                 hash
                 fileId
+                entity_type
                 external_id
                 jobs(first: 100) {
                   id

@@ -77,6 +77,7 @@ const caseFragment = graphql`
     information_types
     priority
     severity
+    entity_type
     objectAssignee {
       edges {
         node {

@@ -81,6 +81,7 @@ const feedbackFragment = graphql`
     name
     description
     rating
+    entity_type
     created
     createdBy {
       ... on Identity {

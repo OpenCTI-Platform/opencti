@@ -609,6 +609,7 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
                 description
                 url
                 hash
+                entity_type
                 external_id
                 fileId
                 jobs(first: 100) {

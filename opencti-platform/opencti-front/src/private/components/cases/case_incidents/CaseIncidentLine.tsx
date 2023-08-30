@@ -77,6 +77,7 @@ const caseIncidentFragment = graphql`
     priority
     severity
     created
+    entity_type
     response_types
     objectAssignee {
       edges {

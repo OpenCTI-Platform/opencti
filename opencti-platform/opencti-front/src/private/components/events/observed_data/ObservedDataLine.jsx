@@ -174,6 +174,7 @@ const ObservedDataLineFragment = createFragmentContainer(
         id
         created
         name
+        entity_type
         first_observed
         last_observed
         number_observed

@@ -81,6 +81,7 @@ const caseFragment = graphql`
     id
     name
     description
+    entity_type
     created
     takedown_types
     priority

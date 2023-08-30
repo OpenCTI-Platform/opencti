@@ -10,6 +10,7 @@ export const externalReferencesQueriesSearchQuery = graphql`
       edges {
         node {
           id
+          entity_type
           source_name
           external_id
           description
