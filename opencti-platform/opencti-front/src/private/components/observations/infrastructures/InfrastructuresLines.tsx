@@ -6,7 +6,7 @@ import {
   InfrastructureLineDummy,
 } from './InfrastructureLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import {
   InfrastructuresLinesPaginationQuery,
@@ -29,6 +29,7 @@ interface InfrastructuresLinesProps {
     event: React.SyntheticEvent
   ) => void;
   selectAll: boolean;
+  onLabelClick?: HandleAddFilter;
 }
 
 export const infrastructuresLinesQuery = graphql`
@@ -95,6 +96,7 @@ const InfrastructuresLines: FunctionComponent<InfrastructuresLinesProps> = ({
   deSelectedElements,
   selectAll,
   onToggleEntity,
+  onLabelClick,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   InfrastructuresLinesPaginationQuery,
@@ -117,6 +119,7 @@ const InfrastructuresLines: FunctionComponent<InfrastructuresLinesProps> = ({
       LineComponent={InfrastructureLine}
       DummyLineComponent={InfrastructureLineDummy}
       dataColumns={dataColumns}
+      onLabelClick={onLabelClick}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
       selectedElements={selectedElements}

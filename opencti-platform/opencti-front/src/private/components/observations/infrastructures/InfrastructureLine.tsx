@@ -19,6 +19,7 @@ import {
   InfrastructureLine_node$key,
 } from './__generated__/InfrastructureLine_node.graphql';
 import { Theme } from '../../../../components/Theme';
+import { emptyFilled } from '../../../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -85,6 +86,7 @@ const infrastructureFragment = graphql`
   fragment InfrastructureLine_node on Infrastructure {
     id
     name
+    entity_type
     created
     modified
     confidence
@@ -163,7 +165,7 @@ export const InfrastructureLine: FunctionComponent<InfrastructureLineComponentPr
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={'Infrastructure'} />
+        <ItemIcon type='Infrastructure' />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -189,13 +191,15 @@ export const InfrastructureLine: FunctionComponent<InfrastructureLineComponentPr
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {data.createdBy?.name}
+              {emptyFilled(data.createdBy?.name)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
             >
-              {(data.creators ?? []).map((c) => c?.name).join(', ')}
+              {emptyFilled(
+                (data.creators ?? []).map((c) => c?.name).join(', '),
+              )}
             </div>
             <div
               className={classes.bodyItem}
@@ -237,6 +241,9 @@ export const InfrastructureLineDummy = ({ dataColumns }: { dataColumns: DataColu
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
+        <Checkbox edge="start" disabled={true} disableRipple={true} />
+      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton
           animation="wave"

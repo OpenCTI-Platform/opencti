@@ -60,6 +60,11 @@ const Infrastructures = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
+    let finalFilters = filters;
+    finalFilters = {
+      ...finalFilters,
+      entity_type: [{ id: 'Infrastructure', value: 'Infrastructure' }],
+    };
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -149,6 +154,7 @@ const Infrastructures = () => {
               queryRef={queryRef}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
+              onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
               deSelectedElements={deSelectedElements}
@@ -161,9 +167,8 @@ const Infrastructures = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={{
-                entity_type: [{ id: 'Infrastructure', value: 'Infrastructure' }],
-              }}
+              search={searchTerm}
+              filters={finalFilters}
               type="Infrastructure"
             />
           </React.Suspense>
