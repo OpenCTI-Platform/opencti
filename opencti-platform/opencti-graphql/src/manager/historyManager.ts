@@ -192,8 +192,12 @@ const initHistoryManager = () => {
         connectionFormat: false,
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
-        filters: [{ key: ['event_access'], values: [null] }]
-      });
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['event_access'], values: [], operator: 'nil' }],
+          filterGroups: [],
+        },
+      }, true);
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;

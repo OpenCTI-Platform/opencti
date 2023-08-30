@@ -30,7 +30,7 @@ export const administrativeAreasLinesQuery = graphql`
     $cursor: ID
     $orderBy: AdministrativeAreasOrdering
     $orderMode: OrderingMode
-    $filters: [AdministrativeAreasFiltering!]
+    $filters: FilterGroup
   ) {
     ...AdministrativeAreasLines_data
       @arguments(
@@ -52,7 +52,7 @@ const administrativeAreasLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "AdministrativeAreasOrdering" }
     orderMode: { type: "OrderingMode" }
-    filters: { type: "[AdministrativeAreasFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "AdministrativeAreasLinesRefetchQuery") {
     administrativeAreas(

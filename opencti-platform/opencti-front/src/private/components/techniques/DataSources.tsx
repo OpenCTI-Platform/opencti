@@ -1,21 +1,19 @@
 import React, { FunctionComponent } from 'react';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import type { Filters } from '../../../components/list_lines';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataSourceCreation from './data_sources/DataSourceCreation';
-import DataSourcesLines, {
-  dataSourcesLinesQuery,
-} from './data_sources/DataSourcesLines';
+import DataSourcesLines, { dataSourcesLinesQuery } from './data_sources/DataSourcesLines';
 import {
   DataSourcesLinesPaginationQuery,
   DataSourcesLinesPaginationQuery$variables,
 } from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-dataSources';
+export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'dataSources';
 
 const DataSources: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
@@ -25,7 +23,7 @@ const DataSources: FunctionComponent = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -76,6 +74,8 @@ const DataSources: FunctionComponent = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Data-Source"
@@ -85,13 +85,12 @@ const DataSources: FunctionComponent = () => {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'createdBy',
           'source_reliability',
           'confidence',
-          'created_start_date',
-          'created_end_date',
+          'created',
           'revoked',
         ]}
       >

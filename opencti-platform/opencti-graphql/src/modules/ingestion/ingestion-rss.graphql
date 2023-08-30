@@ -21,16 +21,6 @@ enum IngestionRssOrdering {
     updated_at
     uri
 }
-enum IngestionRssFilter {
-    name
-    creator
-}
-input IngestionRssFiltering {
-    key: [IngestionRssFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
 type IngestionRssConnection {
     pageInfo: PageInfo!
     edges: [IngestionRssEdge!]!
@@ -48,8 +38,7 @@ type Query {
         after: ID
         orderBy: IngestionRssOrdering
         orderMode: OrderingMode
-        filters: [IngestionRssFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         includeAuthorities: Boolean
         search: String
     ): IngestionRssConnection @auth(for: [SETTINGS])

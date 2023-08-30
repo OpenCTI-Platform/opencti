@@ -51,18 +51,6 @@ enum EntitySettingsOrdering {
   target_type
 }
 
-# Filtering
-enum EntitySettingsFilter {
-  target_type
-}
-
-input EntitySettingsFiltering {
-  key: [EntitySettingsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type EntitySettingConnection {
   pageInfo: PageInfo!
@@ -82,8 +70,7 @@ type Query {
     after: ID
     orderBy: EntitySettingsOrdering
     orderMode: OrderingMode
-    filters: [EntitySettingsFiltering!]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
   ): EntitySettingConnection @auth
 }

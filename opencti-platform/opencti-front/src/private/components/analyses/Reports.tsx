@@ -11,14 +11,14 @@ import {
   ReportsLinesPaginationQuery,
   ReportsLinesPaginationQuery$variables,
 } from './reports/__generated__/ReportsLinesPaginationQuery.graphql';
-import { Filters } from '../../../components/list_lines';
 import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.graphql';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { ReportLineDummy } from './reports/ReportLine';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-reports';
+const LOCAL_STORAGE_KEY = 'reports';
 
 interface ReportsProps {
   objectId: string;
@@ -40,15 +40,15 @@ const Reports: FunctionComponent<ReportsProps> = ({
       key: 'createdBy',
       values: [authorId],
       operator: 'eq',
-      filterMode: 'or',
+      mode: 'or',
     });
   }
   if (objectId) {
     additionnalFilters.push({
-      key: 'objectContains',
+      key: 'objects',
       values: [objectId],
       operator: 'eq',
-      filterMode: 'or',
+      mode: 'or',
     });
   }
   const {
@@ -58,7 +58,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
   } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'published',
       orderAsc: false,
@@ -96,11 +96,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-    let renderFilters = filters;
-    renderFilters = {
-      ...renderFilters,
-      entity_type: [{ id: 'Report', value: 'Report' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Report');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -154,6 +150,8 @@ const Reports: FunctionComponent<ReportsProps> = ({
           handleSearch={storageHelpers.handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
           handleToggleExports={storageHelpers.handleToggleExports}
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
@@ -171,20 +169,18 @@ const Reports: FunctionComponent<ReportsProps> = ({
           iconExtension={true}
           availableFilterKeys={[
             'x_opencti_workflow_id',
-            'labelledBy',
-            'markedBy',
+            'objectLabel',
+            'objectMarking',
             'createdBy',
             'x_opencti_reliability',
             'confidence',
-            'assigneeTo',
-            'participant',
+            'objectAssignee',
+            'objectParticipant',
             'report_types',
-            'creator',
-            'published_start_date',
-            'published_end_date',
-            'created_at_start_date',
-            'created_at_end_date',
-            'objectContains',
+            'creator_id',
+            'published',
+            'created_at',
+            'objects',
           ]}
         >
           {queryRef && (
@@ -217,7 +213,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={renderFilters}
+                filters={toolBarFilters}
                 handleClearSelectedElements={handleClearSelectedElements}
                 type="Report"
               />

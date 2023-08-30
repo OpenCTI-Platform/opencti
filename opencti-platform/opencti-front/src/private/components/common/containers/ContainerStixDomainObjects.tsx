@@ -6,7 +6,8 @@ import {
   ContainerStixDomainObjectLine_node$data,
 } from '@components/common/containers/__generated__/ContainerStixDomainObjectLine_node.graphql';
 import {
-  ContainerStixDomainObjectsLinesQuery, ContainerStixDomainObjectsLinesQuery$variables,
+  ContainerStixDomainObjectsLinesQuery,
+  ContainerStixDomainObjectsLinesQuery$variables,
 } from '@components/common/containers/__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import { ContainerStixDomainObjectLineDummy } from '@components/common/containers/ContainerStixDomainObjectLine';
 import {
@@ -17,14 +18,12 @@ import ContainerStixDomainObjectsLines, {
   containerStixDomainObjectsLinesQuery,
 } from './ContainerStixDomainObjectsLines';
 import StixDomainObjectsRightBar from '../stix_domain_objects/StixDomainObjectsRightBar';
-import { convertFilters } from '../../../../utils/ListParameters';
-import { defaultValue } from '../../../../utils/Graph';
 import ToolBar from '../../data/ToolBar';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../../components/list_lines';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -64,7 +63,7 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const containerData = useFragment(ContainerStixDomainObjectsFragment, container);
-  const LOCAL_STORAGE_KEY = `view-container-${containerData.id}-stixDomainObjects`;
+  const LOCAL_STORAGE_KEY = `container-${containerData.id}-stixDomainObjects`;
   const {
     viewStorage,
     paginationOptions,
@@ -72,7 +71,7 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
   } = usePaginationLocalStorage<ContainerStixDomainObjectsLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: false,
@@ -96,25 +95,46 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
     types: (types && types.length > 0) ? types : ['Stix-Domain-Object'],
   };
   const exportFilters = {
-    objectContains: [{ id: containerData.id, value: defaultValue(containerData) }],
-    entity_type:
-      (types && types.length > 0) ? R.map((n) => ({ id: n, value: n }), types) : [],
-    ...filters,
+    mode: filters?.mode ?? 'and',
+    filters: [
+      {
+        key: 'objects',
+        values: [containerData.id],
+        operator: 'eq',
+      },
+      {
+        key: 'entity_type',
+        values: (types && types.length > 0) ? R.map((n) => ({ id: n, value: n }), types) : [],
+        operator: 'eq',
+      },
+      ...filters?.filters ?? [],
+    ],
+    filterGroups: filters?.filterGroups ?? [],
   };
-  const exportFinalFilters = convertFilters(exportFilters);
   const exportPaginationOptions = {
-    filters: exportFinalFilters,
+    filters: exportFilters,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
     search: searchTerm,
   };
   const backgroundTaskFilters = {
-    objectContains: [{ id: containerData.id, value: defaultValue(containerData) }],
-    entity_type:
-      (types && types.length > 0)
-        ? R.map((n) => ({ id: n, value: n }), types)
-        : [{ id: 'Stix-Domain-Object', value: 'Stix-Domain-Object' }],
-    ...filters,
+    mode: filters?.mode ?? 'and',
+    filters: [
+      {
+        key: 'objects',
+        values: [containerData.id],
+        operator: 'eq',
+      },
+      {
+        key: 'entity_type',
+        values: (types && types.length > 0)
+          ? types
+          : ['Stix-Domain-Object'],
+        operator: 'eq',
+      },
+      ...filters?.filters ?? [],
+    ],
+    filterGroups: filters?.filterGroups ?? [],
   };
 
   const {
@@ -180,6 +200,8 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
           handleSearch={storageHelpers.handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
           handleToggleExports={storageHelpers.handleToggleExports}
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
@@ -189,10 +211,9 @@ const ContainerStixDomainObjects = ({ container }: { container: ContainerStixDom
           exportContext={`of-container-${containerData.id}`}
           filters={filters}
           availableFilterKeys={[
-            'labelledBy',
-            'markedBy',
-            'created_at_start_date',
-            'created_at_end_date',
+            'objectLabel',
+            'objectMarking',
+            'created_at',
             'createdBy',
           ]}
           keyword={searchTerm}

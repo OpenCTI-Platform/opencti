@@ -462,6 +462,7 @@ const caseRftKnowledgeGraphStixRelationshipQuery = graphql`
 
 class CaseRftKnowledgeGraphComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `case-rft-${props.caseData.id}-knowledge`;
     super(props);
     this.initialized = false;
     this.zoomed = 0;
@@ -471,7 +472,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-case-rft-${this.props.caseData.id}-knowledge`,
+      LOCAL_STORAGE_KEY,
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = props.caseData.objects.edges.map((n) => ({
@@ -515,7 +516,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
       sortByName,
     )(nodesAndLinks);
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
-    const markedBy = R.propOr([], 'markedBy', params);
+    const markedBy = R.propOr([], 'objectMarking', params);
     const createdBy = R.propOr([], 'createdBy', params);
     const graphWithFilters = applyFilters(
       this.graphData,
@@ -612,10 +613,11 @@ class CaseRftKnowledgeGraphComponent extends Component {
   }
 
   saveParameters(refreshGraphData = false) {
+    const LOCAL_STORAGE_KEY = `case-rft-${this.props.caseData.id}-knowledge`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-case-rfts-${this.props.caseData.id}-knowledge`,
+      LOCAL_STORAGE_KEY,
       { zoom: this.zoom, ...this.state },
     );
     if (refreshGraphData) {

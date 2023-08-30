@@ -30,7 +30,13 @@ export const batchParticipants = (context: AuthContext, user: AuthUser, caseIds:
 export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser, id: string, caseTemplateId: string) => {
   const currentCase = await findById(context, user, id);
   // Get all tasks from template
-  const opts = { filters: [{ key: buildRefRelationKey(TEMPLATE_TASK_RELATION), values: [caseTemplateId] }] };
+  const opts = {
+    filters: {
+      mode: 'and',
+      filters: [{ key: buildRefRelationKey(TEMPLATE_TASK_RELATION), values: [caseTemplateId] }],
+      filterGroups: [],
+    }
+  };
   const templateTasks = await listAllEntities<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
   // Convert template to real task
   const tasks = templateTasks.map((template) => {

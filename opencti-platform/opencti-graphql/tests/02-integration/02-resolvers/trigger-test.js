@@ -6,7 +6,7 @@ import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
 const LIST_QUERY = gql`
     query triggers(
         $search: String
-        $filters: [TriggersFiltering!]
+        $filters: FilterGroup
         $includeAuthorities: Boolean
     ) {
         triggersKnowledge(search: $search, filters: $filters, includeAuthorities: $includeAuthorities) {
@@ -146,7 +146,11 @@ describe('Trigger resolver standard behavior', () => {
   it('security user should list Admin triggers', async () => {
     const variables = {
       includeAuthorities: true,
-      filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }]
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }],
+        filterGroups: [],
+      }
     };
     const queryResult = await securityQuery({ query: LIST_QUERY, variables });
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);

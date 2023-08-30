@@ -22,7 +22,7 @@ const NotifierLineFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "NotifierOrdering", defaultValue: created }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[NotifierFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "NotifiersLinesRefetchQuery") {
     notifiers(
@@ -54,7 +54,7 @@ export const NotifiersLinesQuery = graphql`
     $cursor: ID
     $orderBy: NotifierOrdering
     $orderMode: OrderingMode
-    $filters: [NotifierFiltering!]
+    $filters: FilterGroup
   ) {
     ...NotifiersLines_data
     @arguments(

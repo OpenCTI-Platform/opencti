@@ -26,14 +26,22 @@ const Tasks = () => {
     orderBy: 'created_at',
     orderMode: 'desc',
     includeAuthorities: true,
-    filters: [{ key: 'completed', values: ['false'] }],
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'completed', values: ['false'] }],
+      filterGroups: [],
+    },
   };
   const optionsFinished = {
     count: 50,
     orderBy: 'created_at',
     orderMode: 'desc',
     includeAuthorities: true,
-    filters: [{ key: 'completed', values: ['true'] }],
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'completed', values: ['true'] }],
+      filterGroups: [],
+    },
   };
   if (!platformModuleHelpers.isTasksManagerEnable()) {
     return (

@@ -3,7 +3,7 @@ import React, { FunctionComponent, MutableRefObject } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { TriggersLines_data$key } from './__generated__/TriggersLines_data.graphql';
 import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
@@ -16,12 +16,7 @@ interface TriggerLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
   setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick?: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick?: HandleAddFilter;
   containerRef?: MutableRefObject<GridTypeMap | null>;
   bypassEditionRestriction: boolean;
 }
@@ -34,7 +29,7 @@ export const triggersLinesQuery = graphql`
     $orderBy: TriggersOrdering
     $orderMode: OrderingMode
     $includeAuthorities: Boolean
-    $filters: [TriggersFiltering!]
+    $filters: FilterGroup
   ) {
     ...TriggersLines_data
       @arguments(
@@ -58,7 +53,7 @@ const triggersLinesFragment = graphql`
     orderBy: { type: "TriggersOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     includeAuthorities: { type: "Boolean", defaultValue: false }
-    filters: { type: "[TriggersFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "TriggersLinesRefetchQuery") {
     triggersKnowledge(

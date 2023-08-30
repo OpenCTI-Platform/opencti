@@ -32,6 +32,7 @@ import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { entityLocationType, xOpenctiType, identityClass } from '../schema/attribute-definition';
 import { usersSessionRefresh } from './user';
+import { addFilter } from '../utils/filtering';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -44,7 +45,11 @@ export const findAll = async (context, user, args) => {
   if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
     throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
   }
-  let filters = args.filters ?? [];
+  let filters = args.filters ?? {
+    mode: 'and',
+    filters: [],
+    filterGroups: [],
+  };
   if (isNotEmptyField(args.elementId)) {
     // In case of element id, we look for a specific entity used by relationships independent of the direction
     // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
@@ -52,9 +57,9 @@ export const findAll = async (context, user, args) => {
     // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
     if (isNotEmptyField(args.relationship_type)) {
       const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, relationshipFilterKeys, args.elementId);
     } else {
-      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+      filters = addFilter(filters, buildRefRelationKey('*'), args.elementId);
     }
   }
   return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
@@ -102,7 +107,7 @@ export const stixDomainObjectsTimeSeries = (context, user, args) => {
 
 export const stixDomainObjectsTimeSeriesByAuthor = (context, user, args) => {
   const { authorId, types = [ABSTRACT_STIX_DOMAIN_OBJECT] } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return timeSeriesEntities(context, user, types, { ...args, filters });
 };
 
@@ -113,7 +118,7 @@ export const stixDomainObjectsNumber = (context, user, args) => ({
 
 export const stixDomainObjectsDistributionByEntity = async (context, user, args) => {
   const { relationship_type, objectId, types = [ABSTRACT_STIX_DOMAIN_OBJECT] } = args;
-  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, relationship_type.map((n) => buildRefRelationKey(n, '*')), objectId);
   return distributionEntities(context, user, types, { ...args, filters });
 };
 
@@ -126,27 +131,31 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
   const { format, type, exportType, maxMarkingDefinition, selectedIds } = args;
-  const { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, filterMode, relationship_type, elementId };
+  const { search, orderBy, orderMode, filters, relationship_type, elementId } = args;
+  const filteringArgs = { search, orderBy, orderMode, filters, relationship_type, elementId };
   const filtersOpts = stixDomainObjectOptions.StixDomainObjectsFilter;
   const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
-  let newArgsFiltersFilters = argsFilters.filters;
+  let newArgsFiltersFilters = filteringArgs.filters?.filters ?? [];
   const initialParams = {};
-  if (argsFilters.filters && argsFilters.filters.length > 0) {
-    if (argsFilters.filters.filter((n) => n.key.includes('elementId')).length > 0) {
-      initialParams.elementId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('elementId'))).values);
+  if (filteringArgs.filters?.filters && filteringArgs.filters.filters.length > 0) {
+    if (filteringArgs.filters.filters.filter((n) => n.key.includes('elementId')).length > 0) {
+      initialParams.elementId = R.head(R.head(filteringArgs.filters.filters.filter((n) => n.key.includes('elementId'))).values);
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('elementId'));
     }
-    if (argsFilters.filters.filter((n) => n.key.includes('fromId')).length > 0) {
-      initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key.includes('fromId'))).values);
+    if (filteringArgs.filters.filters.filter((n) => n.key.includes('fromId')).length > 0) {
+      initialParams.fromId = R.head(R.head(filteringArgs.filters.filters.filter((n) => n.key.includes('fromId'))).values);
       newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => !n.key.includes('fromId'));
     }
   }
-  const finalArgsFilter = {
-    ...argsFilters,
-    filters: newArgsFiltersFilters
+  const finalFilteringArgs = {
+    ...filteringArgs,
+    filters: {
+      mode: filteringArgs.filters?.mode ?? 'and',
+      filterGroups: filteringArgs.filters?.filterGroups ?? [],
+      filters: newArgsFiltersFilters,
+    },
   };
-  const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
+  const listParams = { ...initialParams, ...exportTransformFilters(finalFilteringArgs, filtersOpts, ordersOpts) };
   const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };

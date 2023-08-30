@@ -25,7 +25,6 @@ import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { treeMapOptions } from '../../../../utils/Charts';
-import { convertFilters } from '../../../../utils/ListParameters';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { defaultValue } from '../../../../utils/Graph';
@@ -49,8 +48,7 @@ const auditsTreeMapDistributionQuery = graphql`
     $limit: Int
     $order: String
     $types: [String]
-    $filters: [LogsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     auditsDistribution(
@@ -63,7 +61,6 @@ const auditsTreeMapDistributionQuery = graphql`
       order: $order
       types: $types
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       label
@@ -229,11 +226,11 @@ const AuditsTreeMap = ({
       );
     }
     const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
+    let filtersContent = selection.filters.filters;
     const dataSelectionTypes = R.head(
-      finalFilters.filter((n) => n.key === 'entity_type'),
+      filtersContent.filter((n) => n.key === 'entity_type'),
     )?.values || ['History', 'Activity'];
-    finalFilters = finalFilters.filter((n) => !['entity_type'].includes(n.key));
+    filtersContent = filtersContent.filter((n) => !['entity_type'].includes(n.key));
     return (
       <QueryRenderer
         query={auditsTreeMapDistributionQuery}
@@ -247,7 +244,7 @@ const AuditsTreeMap = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'timestamp',
-          filters: finalFilters,
+          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
           limit: selection.number ?? 10,
         }}
         render={({ props }) => {

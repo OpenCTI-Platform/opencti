@@ -17,18 +17,9 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { batchLoader, distributionEntities } from '../database/middleware';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { batchKillChainPhases } from '../domain/stixCoreObject';
-import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixRefRelationship';
 
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const batchObservablesLoader = batchLoader(batchObservables);
@@ -55,16 +46,6 @@ const indicatorResolvers = {
       }
       return distributionEntities(context, context.user, [ENTITY_TYPE_INDICATOR], args);
     },
-  },
-  IndicatorsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    objectContains: buildRefRelationKey(RELATION_OBJECT),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    basedOn: buildRefRelationKey(RELATION_BASED_ON),
-    indicates: buildRefRelationKey(RELATION_INDICATES),
-    sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
-    creator: 'creator_id',
   },
   Indicator: {
     killChainPhases: (indicator, _, context) => killChainPhasesLoader.load(indicator.id, context, context.user),

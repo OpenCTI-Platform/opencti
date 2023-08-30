@@ -82,21 +82,47 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
     {
       attribute: 'entity_type',
       filters: {
-        entity_type: [{ id: 'Stix-Domain-Object' }],
-        elementId: [{ id: incident.id }],
-        relationship_type: [{ id: 'related-to' }, { id: 'targets' }, { id: 'uses' }, { id: 'attributed-to' }],
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Stix-Domain-Object'],
+          },
+          {
+            key: 'elementId',
+            values: [incident.id],
+          },
+          {
+            key: 'relationship_type',
+            values: ['related-to', 'targets', 'uses', 'attributed-to']
+          }
+        ],
+        filterGroups: [],
       },
-    },
+    }
   ];
   const observablesDataSelection = [
     {
       attribute: 'entity_type',
       filters: {
-        entity_type: [{ id: 'Stix-Cyber-Observable' }],
-        elementId: [{ id: incident.id }],
-        relationship_type: [{ id: 'related-to' }],
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Stix-Cyber-Observable'],
+          },
+          {
+            key: 'elementId',
+            values: [incident.id],
+          },
+          {
+            key: 'relationship_type',
+            values: ['related-to']
+          }
+        ],
+        filterGroups: [],
       },
-    },
+    }
   ];
   return (
     <div style={{ height: '100%' }}>

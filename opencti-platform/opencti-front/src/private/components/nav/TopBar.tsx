@@ -399,17 +399,15 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   variant="dialog"
                   availableFilterKeys={[
                     'entity_type',
-                    'labelledBy',
-                    'markedBy',
+                    'objectLabel',
+                    'objectMarking',
                     'createdBy',
                     'source_reliability',
                     'confidence',
                     'x_opencti_organization_type',
-                    'creator',
-                    'created_start_date',
-                    'created_end_date',
-                    'created_at_start_date',
-                    'created_at_end_date',
+                    'creator_id',
+                    'created',
+                    'created_at',
                   ]}
                   disabled={location.pathname.includes('/dashboard/search/')}
                   size={undefined}

@@ -41,7 +41,7 @@ export const searchStixCoreObjectsLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
   ) {
     ...SearchStixCoreObjectsLines_data
     @arguments(
@@ -59,7 +59,7 @@ export const searchStixCoreObjectsLinesQuery = graphql`
 export const searchStixCoreObjectsLinesSearchQuery = graphql`
   query SearchStixCoreObjectsLinesSearchQuery(
     $types: [String]
-    $filters: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
     $search: String
   ) {
     stixCoreObjects(types: $types, search: $search, filters: $filters) {
@@ -288,7 +288,7 @@ export const searchStixCoreObjectsLinesFragment = graphql`
           cursor: { type: "ID" }
           orderBy: { type: "StixCoreObjectsOrdering", defaultValue: name }
           orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[StixCoreObjectsFiltering]" }
+          filters: { type: "FilterGroup" }
         )
         @refetchable(queryName: "SearchStixCoreObjectsLinesRefetchQuery") {
           globalSearch(

@@ -102,12 +102,12 @@ class TaxiiLineLineComponent extends Component {
               >
                 <ItemCopy content={node.id} variant="inLine" />
               </div>
-              <FilterIconButton
+              {filters && <FilterIconButton
                 filters={filters}
                 dataColumns={dataColumns}
                 classNameNumber={3}
                 styleNumber={3}
-              />
+              />}
             </>
           }
         />

@@ -65,7 +65,7 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
     $first: Int
     $orderBy: ContainersOrdering
     $orderMode: OrderingMode
-    $filters: [ContainersFiltering]
+    $filters: FilterGroup
   ) {
     containers(
       first: $first
@@ -325,19 +325,24 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
 class StixCoreObjectOrStixRelationshipLastContainers extends Component {
   render() {
     const { t, fsd, classes, stixCoreObjectOrStixRelationshipId, authorId } = this.props;
-    const filters = [
+    const filtersContent = [
       {
         key: 'entity_type',
         values: ['Report', 'Case', 'Observed-Data', 'Grouping'],
       },
     ];
-    if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
+    if (authorId) filtersContent.push({ key: 'createdBy', values: [authorId] });
     if (stixCoreObjectOrStixRelationshipId) {
-      filters.push({
-        key: 'objectContains',
+      filtersContent.push({
+        key: 'objects',
         values: [stixCoreObjectOrStixRelationshipId],
       });
     }
+    const filters = {
+      mode: 'and',
+      filters: filtersContent,
+      filterGroups: [],
+    };
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

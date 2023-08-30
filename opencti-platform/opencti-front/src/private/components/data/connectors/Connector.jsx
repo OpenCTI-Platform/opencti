@@ -204,17 +204,25 @@ class ConnectorComponent extends Component {
     const { classes, connector, t, nsdt } = this.props;
     const optionsInProgress = {
       count: 50,
-      filters: [
-        { key: 'connector_id', values: [connector.id] },
-        { key: 'status', values: ['wait', 'progress'] },
-      ],
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: 'connector_id', values: [connector.id], operator: 'eq', mode: 'or' },
+          { key: 'status', values: ['wait', 'progress'], operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [],
+      },
     };
     const optionsFinished = {
       count: 50,
-      filters: [
-        { key: 'connector_id', values: [connector.id] },
-        { key: 'status', values: ['complete'] },
-      ],
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: 'connector_id', values: [connector.id], operator: 'eq', mode: 'or' },
+          { key: 'status', values: ['complete'], operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [],
+      },
     };
     return (
       <div className={classes.container}>

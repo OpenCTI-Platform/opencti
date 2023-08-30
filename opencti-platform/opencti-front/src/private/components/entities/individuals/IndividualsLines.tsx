@@ -11,7 +11,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { IndividualLine, IndividualLineDummy } from './IndividualLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
@@ -20,12 +20,7 @@ interface IndividualsLinesProps {
   dataColumns: DataColumns;
   paginationOptions ? : IndividualsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 export const individualsLinesQuery = graphql`
@@ -35,7 +30,7 @@ export const individualsLinesQuery = graphql`
         $cursor: ID
         $orderBy: IndividualsOrdering
         $orderMode: OrderingMode
-        $filters: [IndividualsFiltering]
+        $filters: FilterGroup
     ) {
         ...IndividualsLines_data
         @arguments(
@@ -57,7 +52,7 @@ export const individualsLinesFragment = graphql`
         cursor: { type: "ID" }
         orderBy: { type: "IndividualsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[IndividualsFiltering]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "IndividualsLinesRefetchQuery") {
         individuals(

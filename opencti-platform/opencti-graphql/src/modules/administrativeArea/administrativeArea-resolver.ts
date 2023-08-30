@@ -1,11 +1,10 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addAdministrativeArea, findById, findAll, batchCountry } from './administrativeArea-domain';
-import { buildRefRelationKey } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { addAdministrativeArea, batchCountry, findAll, findById } from './administrativeArea-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete, stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -20,11 +19,6 @@ const administrativeAreaResolvers: Resolvers = {
   },
   AdministrativeArea: {
     country: (administrativeArea, _, context) => batchCountryLoader.load(administrativeArea.id, context, context.user),
-  },
-  AdministrativeAreasFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
     administrativeAreaAdd: (_, { input }, context) => {

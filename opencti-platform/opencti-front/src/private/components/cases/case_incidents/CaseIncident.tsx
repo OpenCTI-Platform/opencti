@@ -16,7 +16,6 @@ import ContainerStixObjectsOrStixRelationships from '../../common/containers/Con
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import {
-  TasksFilter,
   CaseTasksLinesQuery,
   CaseTasksLinesQuery$variables,
 } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
@@ -58,15 +57,15 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
   const { t } = useFormatter();
   const ref = useRef(null);
   const caseIncidentData = useFragment(caseFragment, data);
-  const tasksFilters = {
-    filters: [
-      {
-        key: ['objectContains' as TasksFilter],
-        values: [caseIncidentData.id],
-      },
-    ],
-  };
-  const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseIncidentData.id}-caseTask`;
+  const additionnalFilters = [
+    {
+      key: 'objects',
+      values: [caseIncidentData.id],
+      operator: 'eq',
+      mode: 'or',
+    },
+  ];
+  const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncidentData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
     {
@@ -74,7 +73,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
       sortBy: 'created',
       orderAsc: false,
     },
-    tasksFilters.filters,
+    additionnalFilters,
   );
   const { sortBy, orderAsc } = viewStorage;
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(

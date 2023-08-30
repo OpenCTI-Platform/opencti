@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import * as R from 'ramda';
 import ListLines from '../../../components/list_lines/ListLines';
 import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import Security from '../../../utils/Security';
@@ -8,7 +7,6 @@ import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { NoteLineDummy } from './notes/NoteLine';
@@ -18,8 +16,9 @@ import {
   NotesLinesPaginationQuery$variables,
 } from './notes/__generated__/NotesLinesPaginationQuery.graphql';
 import NoteCreation from './notes/NoteCreation';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-notes';
+const LOCAL_STORAGE_KEY = 'notes';
 
 interface NotesProps {
   objectId: string;
@@ -36,15 +35,15 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
       key: 'createdBy',
       values: [authorId],
       operator: 'eq',
-      filterMode: 'or',
+      mode: 'or',
     });
   }
   if (objectId) {
     additionnalFilters.push({
-      key: 'objectContains',
+      key: 'objects',
       values: [objectId],
       operator: 'eq',
-      filterMode: 'or',
+      mode: 'or',
     });
   }
   const {
@@ -57,7 +56,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
     additionnalFilters,
   );
@@ -90,12 +89,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-    let finalFilters = filters;
-    finalFilters = R.assoc(
-      'entity_type',
-      [{ id: 'Note', value: 'Note' }],
-      finalFilters,
-    );
+    const toolBarFilters = filtersWithEntityType(filters, 'Note');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       attribute_abstract: {
@@ -150,6 +144,8 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
           handleToggleExports={storageHelpers.handleToggleExports}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
@@ -164,15 +160,14 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
           availableFilterKeys={[
             'note_types',
             'x_opencti_workflow_id',
-            'labelledBy',
-            'markedBy',
+            'objectLabel',
+            'objectMarking',
             'createdBy',
             'source_reliability',
             'confidence',
             'likelihood',
-            'creator',
-            'created_start_date',
-            'created_end_date',
+            'creator_id',
+            'created',
           ]}
         >
           {queryRef && (
@@ -204,7 +199,7 @@ const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpen
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={finalFilters}
+                filters={toolBarFilters}
                 handleClearSelectedElements={handleClearSelectedElements}
                 type="Note"
               />

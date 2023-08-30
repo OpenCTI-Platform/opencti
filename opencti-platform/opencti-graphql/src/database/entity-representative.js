@@ -42,6 +42,8 @@ export const extractEntityRepresentativeName = (entityData) => {
   let mainValue;
   if (isStixCyberObservable(entityData.entity_type)) {
     mainValue = observableValue(entityData);
+  } else if (isNotEmptyField(entityData.template) && isNotEmptyField(entityData.template.name)) {
+    mainValue = entityData.template.name;
   } else if (isNotEmptyField(entityData.definition)) {
     mainValue = entityData.definition;
   } else if (isNotEmptyField(entityData.value)) {

@@ -40,10 +40,20 @@ export const addThreatActorIndividual = async (context: AuthContext, user: AuthU
 export const threatActorIndividualContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, threatActorIndividualId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [threatActorIndividualId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        {
+          key: 'internal_id',
+          values: [threatActorIndividualId],
+        },
+        {
+          key: buildRefRelationKey(RELATION_OBJECT),
+          values: [resolvedThingId],
+        }
+      ],
+    },
   };
   const threatActorIndividualFound = await findAll(context, user, args);
   return threatActorIndividualFound.edges.length > 0;

@@ -38,7 +38,7 @@ export const externalReferencesLinesQuery = graphql`
     $cursor: ID
     $orderBy: ExternalReferencesOrdering
     $orderMode: OrderingMode
-    $filters: [ExternalReferencesFiltering!]
+    $filters: FilterGroup
   ) {
     ...ExternalReferencesLines_data
       @arguments(
@@ -60,7 +60,7 @@ const externalReferencesLineFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "ExternalReferencesOrdering", defaultValue: source_name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[ExternalReferencesFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "ExternalReferencesLinesRefetchQuery") {
     externalReferences(

@@ -15,7 +15,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { computeLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
-import { convertFilters } from '../../../../utils/ListParameters';
 import ItemMarkings from '../../../../components/ItemMarkings';
 
 const useStyles = makeStyles((theme) => ({
@@ -60,9 +59,9 @@ export const stixRelationshipsListSearchQuery = graphql`
     $toId: [String]
     $relationship_type: [String]
     $count: Int!
-    $filters: [StixRelationshipsFiltering]
-    $dynamicFrom: [StixCoreObjectsFiltering]
-    $dynamicTo: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
+    $dynamicFrom: FilterGroup
+    $dynamicTo: FilterGroup
   ) {
     stixRelationships(
       search: $search
@@ -97,9 +96,9 @@ const stixRelationshipsListQuery = graphql`
     $first: Int!
     $orderBy: StixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixRelationshipsFiltering]
-    $dynamicFrom: [StixCoreObjectsFiltering]
-    $dynamicTo: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
+    $dynamicFrom: FilterGroup
+    $dynamicTo: FilterGroup
     $search: String
   ) {
     stixRelationships(
@@ -4512,14 +4511,14 @@ const StixRelationshipsList = ({
       return 'No data selection';
     }
     const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
-    const relationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+    let filtersContent= selection.filters.filters;
+    const relationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
       ?.values || null;
-    const fromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
-    const toId = R.head(finalFilters.filter((n) => n.key === 'toId'))?.values || null;
-    const fromTypes = R.head(finalFilters.filter((n) => n.key === 'fromTypes'))?.values || null;
-    const toTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
-    finalFilters = finalFilters.filter(
+    const fromId = R.head(filtersContent.filter((n) => n.key === 'fromId'))?.values || null;
+    const toId = R.head(filtersContent.filter((n) => n.key === 'toId'))?.values || null;
+    const fromTypes = R.head(filtersContent.filter((n) => n.key === 'fromTypes'))?.values || null;
+    const toTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
+    filtersContent = filtersContent.filter(
       (n) => ![
         'relationship_type',
         'fromId',
@@ -4532,14 +4531,14 @@ const StixRelationshipsList = ({
       ? selection.date_attribute
       : 'created_at';
     if (startDate) {
-      finalFilters.push({
+      filtersContent.push({
         key: dateAttribute,
         values: [startDate],
         operator: 'gt',
       });
     }
     if (endDate) {
-      finalFilters.push({
+      filtersContent.push({
         key: dateAttribute,
         values: [endDate],
         operator: 'lt',
@@ -4557,9 +4556,9 @@ const StixRelationshipsList = ({
           first: 50,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters: finalFilters,
-          dynamicFrom: convertFilters(selection.dynamicFrom),
-          dynamicTo: convertFilters(selection.dynamicTo),
+          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
+          dynamicFrom: selection.dynamicFrom,
+          dynamicTo: selection.dynamicTo,
         }}
         render={({ props }) => {
           if (

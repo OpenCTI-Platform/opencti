@@ -21,7 +21,7 @@ export const opinionsLinesQuery = graphql`
         $cursor: ID
         $orderBy: OpinionsOrdering
         $orderMode: OrderingMode
-        $filters: [OpinionsFiltering!]
+        $filters: FilterGroup
     ) {
         ...OpinionsLines_data
         @arguments(
@@ -43,7 +43,7 @@ const opinionsLineFragment = graphql`
         cursor: { type: "ID" }
         orderBy: { type: "OpinionsOrdering", defaultValue: created }
         orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "[OpinionsFiltering]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "OpinionsLinesRefetchQuery") {
         opinions(

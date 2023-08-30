@@ -15,6 +15,7 @@ import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import ToolBar from '../data/ToolBar';
+import { filtersWithEntityType } from '../../../utils/filters/filtersUtils';
 
 const styles = () => ({
   container: {
@@ -23,13 +24,15 @@ const styles = () => ({
   },
 });
 
+const LOCAL_STORAGE_KEY = 'Labels';
+
 class Labels extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Labels-view',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       sortBy: propOr('value', 'sortBy', params),
@@ -47,7 +50,7 @@ class Labels extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Labels-view',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }
@@ -152,7 +155,7 @@ class Labels extends Component {
       numberOfSelectedElements = numberOfElements.original
         - Object.keys(deSelectedElements || {}).length;
     }
-    const finalFilters = { entity_type: [{ id: 'Label', value: 'Label' }] };
+    const finalFilters = filtersWithEntityType(undefined, 'Label');
     const dataColumns = {
       value: {
         label: 'Value',

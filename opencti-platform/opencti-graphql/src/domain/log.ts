@@ -9,6 +9,8 @@ import {
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
+import type { FilterGroup } from '../database/middleware-loader';
+import { addFilter } from '../utils/filtering';
 
 export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
   const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY] };
@@ -27,7 +29,9 @@ export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) =>
 
 export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
   const { types } = args;
-  const filters: any[] = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
+  const filters: FilterGroup = args.userId
+    ? addFilter(args.filters, '*_id', args.userId)
+    : args.filters;
   return timeSeriesHistory(context, user, types ?? [ENTITY_TYPE_HISTORY], { ...args, filters });
 };
 

@@ -22,7 +22,7 @@ export const indicatorsLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $filters: [IndicatorsFiltering]
+    $filters: FilterGroup
     $orderBy: IndicatorsOrdering
     $orderMode: OrderingMode
   ) {
@@ -44,7 +44,7 @@ const indicatorsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    filters: { type: "[IndicatorsFiltering]" }
+    filters: { type: "FilterGroup" }
     orderBy: { type: "IndicatorsOrdering", defaultValue: valid_from }
     orderMode: { type: "OrderingMode", defaultValue: desc }
   )

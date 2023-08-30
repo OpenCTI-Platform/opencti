@@ -29,9 +29,16 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesAttributesQuery,
+} from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -167,14 +174,14 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 const FeedCreation = (props) => {
   const { t, classes } = props;
   const [selectedTypes, setSelectedTypes] = useState([]);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState(initialFilterGroup);
   const [feedAttributes, setFeedAttributes] = useState({ 0: {} });
 
   const { ignoredAttributesInFeeds } = useAttributes();
 
   const handleClose = () => {
     setSelectedTypes([]);
-    setFilters({});
+    setFilters(initialFilterGroup);
     setFeedAttributes({ 0: {} });
   };
 
@@ -297,24 +304,24 @@ const FeedCreation = (props) => {
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
   };
 
-  const handleAddFilter = (key, id, value) => {
-    if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        R.assoc(
-          key,
-          isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
-      );
-    } else {
-      setFilters(R.assoc(key, [{ id, value }], filters));
-    }
+  const handleAddFilter = (k, id, op = 'eq') => {
+    setFilters(constructHandleAddFilter(filters, k, id, op));
+  };
+  const handleRemoveFilter = (k, op = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, k, op));
   };
 
-  const handleRemoveFilter = (key) => {
-    setFilters(R.dissoc(key, filters));
+  const handleSwitchLocalMode = (localFilter) => {
+    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
 
   return (
@@ -489,11 +496,11 @@ const FeedCreation = (props) => {
                           variant="text"
                           availableFilterKeys={[
                             'x_opencti_workflow_id',
-                            'assigneeTo',
-                            'objectContains',
-                            'markedBy',
-                            'labelledBy',
-                            'creator',
+                            'objectAssignee',
+                            'objects',
+                            'objectMarking',
+                            'objectLabel',
+                            'creator_id',
                             'createdBy',
                             'priority',
                             'severity',
@@ -516,6 +523,8 @@ const FeedCreation = (props) => {
                       <FilterIconButton
                         filters={filters}
                         handleRemoveFilter={handleRemoveFilter}
+                        handleSwitchLocalMode={handleSwitchLocalMode}
+                        handleSwitchGlobalMode={handleSwitchGlobalMode}
                         classNameNumber={2}
                         styleNumber={2}
                         redirection

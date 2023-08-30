@@ -1,12 +1,17 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
-import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import { FiltersVariant, isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  Filter,
+  FilterGroup,
+  FiltersVariant,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import type { Filters as FiltersType } from '../../../../components/list_lines';
 
 interface FiltersProps {
   variant?: string;
@@ -22,6 +27,8 @@ interface FiltersProps {
   handleAddFilter?: HandleAddFilter,
   handleRemoveFilter?: (key: string, id?: string) => void,
   handleSwitchFilter?: HandleAddFilter,
+  handleSwitchGlobalMode?: () => void;
+  handleSwitchLocalMode?: (filter: Filter) => void;
   searchContext?: { entityTypes: string[], elementId?: string[] };
   type?: string;
 }
@@ -39,14 +46,16 @@ const Filters: FunctionComponent<FiltersProps> = ({
   handleAddFilter,
   handleRemoveFilter,
   handleSwitchFilter,
+  handleSwitchGlobalMode,
+  handleSwitchLocalMode,
   searchContext,
   type,
 }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
-  const [filters, setFilters] = useState<FiltersType>({});
-  const [inputValues, setInputValues] = useState({});
+  const [filters, setFilters] = useState<FilterGroup | undefined>(initialFilterGroup);
+  const [inputValues, setInputValues] = useState([]);
   const [keyword, setKeyword] = useState('');
 
   const handleOpenFilters = (event: React.SyntheticEvent) => {
@@ -58,23 +67,16 @@ const Filters: FunctionComponent<FiltersProps> = ({
     setAnchorEl(null);
   };
   const defaultHandleAddFilter = handleAddFilter
-    || ((key, id, value, event = undefined) => {
+    || ((key, id, operator = 'eq', event = undefined) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
       }
-      if ((filters[key] ?? []).length > 0) {
-        setFilters((c) => ({
-          ...c,
-          [key]: isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...c[key]]),
-        }));
-      } else {
-        setFilters((c) => ({ ...c, [key]: [{ id, value }] }));
-      }
+      setFilters(constructHandleAddFilter(filters, key, id, operator));
     });
-  const defaultHandleRemoveFilter = handleRemoveFilter || ((key) => setFilters((c) => R.dissoc(key, c)));
+  const defaultHandleRemoveFilter = handleRemoveFilter || ((key, operator = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, key, operator));
+  });
   const handleSearch = () => {
     handleCloseFilters();
     const urlParams = { filters: JSON.stringify(filters) };
@@ -114,6 +116,8 @@ const Filters: FunctionComponent<FiltersProps> = ({
         filters={filters}
         handleCloseFilters={handleCloseFilters}
         defaultHandleRemoveFilter={defaultHandleRemoveFilter}
+        handleSwitchGlobalMode={handleSwitchGlobalMode}
+        handleSwitchLocalMode={handleSwitchLocalMode}
         handleSearch={handleSearch}
         filterElement={filterElement}
       />

@@ -46,8 +46,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     lastSeenStop: DateTime
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -60,8 +59,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     limit: Int
     order: String
     types: [String]
-    filters: [StixCoreObjectsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -83,8 +81,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     relationship_type: [String]
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
   revoked: Boolean!
@@ -101,8 +98,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     after: ID
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     types: [String]
     all: Boolean
@@ -112,8 +108,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     after: ID
     orderBy: ContainersOrdering
     orderMode: OrderingMode
-    filters: [ContainersFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     types: [String]
     viaTypes: [String]
@@ -150,25 +145,7 @@ enum TasksOrdering {
   x_opencti_workflow_id
   confidence
   due_date
-  assigneeTo
-}
-# Filtering
-enum TasksFilter {
-  name
-  created
-  modified
-  context
-  created_at
-  updated_at
-  creator
-  createdBy
-  markedBy
-  labelledBy
-  assigneeTo
-  participant
-  objectContains
-  x_opencti_workflow_id
-  due_date
+  objectAssignee
 }
 
 type TaskEdge {
@@ -181,13 +158,6 @@ type TaskConnection {
   edges: [TaskEdge!]!
 }
 
-input TasksFiltering {
-  key: [TasksFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Queries
 type Query {
   task(id: String!): Task @auth
@@ -196,8 +166,7 @@ type Query {
     after: ID
     orderBy: TasksOrdering
     orderMode: OrderingMode
-    filters: [TasksFiltering!]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     toStix: Boolean
   ): TaskConnection @auth

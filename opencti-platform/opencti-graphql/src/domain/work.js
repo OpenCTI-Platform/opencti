@@ -14,6 +14,7 @@ import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
 import { AlreadyDeletedError } from '../config/errors';
+import { addFilter } from '../utils/filtering';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -51,36 +52,38 @@ export const findAll = (context, user, args = {}) => {
 };
 
 export const worksForConnector = async (context, user, connectorId, args = {}) => {
-  const { first = 10, filters = [] } = args;
-  filters.push({ key: 'connector_id', values: [connectorId] });
+  const { first = 10, filters = null } = args;
+  const finalFilters = addFilter(filters, 'connector_id', connectorId);
   return elPaginate(context, user, READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
     orderMode: 'desc',
     first,
-    filters,
+    filters: finalFilters,
   });
 };
 
 export const worksForSource = async (context, user, sourceId, args = {}) => {
-  const { first = 10, filters = [], type } = args;
-  const basicFilters = [{ key: 'event_source_id', values: [sourceId] }];
-  if (type) basicFilters.push({ key: 'event_type', values: [type] });
+  const { first = 10, filters = null, type } = args;
+  let finalFilters = addFilter(filters, 'event_source_id', sourceId);
+  if (type) {
+    finalFilters = addFilter(finalFilters, 'event_type', type);
+  }
   return elPaginate(context, user, READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
     orderMode: 'desc',
     first,
-    filters: [...basicFilters, ...filters],
+    filters: finalFilters,
   });
 };
 
 export const loadExportWorksAsProgressFiles = async (context, user, sourceId) => {
   const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
-  const filterSuccessCompleted = R.filter((w) => w.status !== 'complete' || w.errors.length > 0, works);
-  return R.map((item) => workToExportFile(item), filterSuccessCompleted);
+  const filterSuccessCompleted = works.filter((w) => w.status !== 'complete' || w.errors.length > 0);
+  return filterSuccessCompleted.map((item) => workToExportFile(item));
 };
 
 export const deleteWorksRaw = async (works) => {

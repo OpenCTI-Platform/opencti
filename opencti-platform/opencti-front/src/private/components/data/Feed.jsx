@@ -21,6 +21,7 @@ const styles = () => ({
     padding: '0 200px 50px 0',
   },
 });
+const LOCAL_STORAGE_KEY = 'feed';
 
 class Feed extends Component {
   constructor(props) {
@@ -28,7 +29,7 @@ class Feed extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'feed-view',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       orderAsc: propOr(true, 'orderAsc', params),
@@ -41,7 +42,7 @@ class Feed extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'feed-view',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

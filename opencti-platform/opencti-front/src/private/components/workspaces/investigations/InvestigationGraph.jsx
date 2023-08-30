@@ -903,9 +903,9 @@ const investigationGraphRelationsAddMutation = graphql`
     }
   }
 `;
-
 class InvestigationGraphComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `workspace-${props.workspace.id}-investigation`;
     super(props);
     this.initialized = false;
     this.zoomed = 0;
@@ -915,7 +915,7 @@ class InvestigationGraphComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-workspace-${this.props.workspace.id}-investigation`,
+      LOCAL_STORAGE_KEY,
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = R.map((n) => n.node, props.workspace.objects.edges);
@@ -955,7 +955,7 @@ class InvestigationGraphComponent extends Component {
       sortByName,
     )(R.union(this.graphData.nodes, this.graphData.links));
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
-    const markedBy = R.propOr([], 'markedBy', params);
+    const markedBy = R.propOr([], 'objectMarking', params);
     const createdBy = R.propOr([], 'createdBy', params);
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
 
@@ -1057,10 +1057,11 @@ class InvestigationGraphComponent extends Component {
   }
 
   saveParameters(refreshGraphData = false) {
+    const LOCAL_STORAGE_KEY = `workspace-${this.props.workspace.id}-investigation`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-workspace-${this.props.workspace.id}-investigation`,
+      LOCAL_STORAGE_KEY,
       { zoom: this.zoom, ...this.state },
     );
     if (refreshGraphData) {

@@ -24,7 +24,11 @@ export const addMarkingDefinition = async (context, user, markingDefinition) => 
   const result = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
   const { element } = result;
   if (result.isCreation) {
-    const filters = [{ key: 'auto_new_marking', values: [true] }];
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'auto_new_marking', values: [true] }],
+      filterGroups: [],
+    };
     // Bypass current right to read group
     const groups = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
     if (groups && groups.length > 0) {

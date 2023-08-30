@@ -63,12 +63,17 @@ const workflowStatuses = (context: AuthContext) => {
 const platformResolvedFilters = (context: AuthContext) => {
   const reloadFilters = async () => {
     const filteringIds = [];
+    const initialFilterGroup = JSON.stringify({
+      mode: 'and',
+      filters: [],
+      filterGroups: [],
+    });
     // Stream filters
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
-    filteringIds.push(...streams.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
+    filteringIds.push(...streams.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? initialFilterGroup))).flat());
     // Trigger filters
     const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
-    filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? '{}'))).flat());
+    filteringIds.push(...triggers.map((s) => extractFilterIdsToResolve(JSON.parse(s.filters ?? initialFilterGroup))).flat());
     // Playbook filters
     const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
     const playbookFilterIds = playbooks
@@ -121,8 +126,13 @@ const platformTriggers = (context: AuthContext) => {
 };
 const platformRunningPlaybooks = (context: AuthContext) => {
   const reloadPlaybooks = () => {
-    const opts = { filters: [{ key: 'playbook_running', values: [true] }], connectionFormat: false };
-    return findAllPlaybooks(context, SYSTEM_USER, opts);
+    const filters = {
+      mode: 'and',
+      filters: [{ key: 'playbook_running', values: [true] }],
+      filterGroups: [],
+    };
+    const opts = { filters, connectionFormat: false };
+    return findAllPlaybooks(context, SYSTEM_USER, opts, true);
   };
   return { values: null, fn: reloadPlaybooks };
 };

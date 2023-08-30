@@ -47,8 +47,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     lastSeenStop: DateTime
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -61,8 +60,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     limit: Int
     order: String
     types: [String]
-    filters: [StixCoreObjectsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -84,8 +82,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     relationship_type: [String]
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Stix Domain Object
   revoked: Boolean!
@@ -102,8 +99,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     after: ID
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     types: [String]
     all: Boolean
@@ -113,8 +109,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     after: ID
     orderBy: ContainersOrdering
     orderMode: OrderingMode
-    filters: [ContainersFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     types: [String]
     viaTypes: [String]
@@ -160,33 +155,6 @@ enum CaseRfisOrdering {
   priority
 }
 
-# Filtering
-enum CaseRfisFilter {
-  name
-  created
-  modified
-  created_at
-  updated_at
-  creator
-  createdBy
-  markedBy
-  labelledBy
-  assigneeTo
-  participant
-  x_opencti_workflow_id
-  confidence
-  source_reliability
-  severity
-  priority
-}
-
-input CaseRfisFiltering {
-  key: [CaseRfisFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type CaseRfiConnection {
   pageInfo: PageInfo!
@@ -206,8 +174,7 @@ type Query {
     after: ID
     orderBy: CaseRfisOrdering
     orderMode: OrderingMode
-    filters: [CaseRfisFiltering!]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     toStix: Boolean
   ): CaseRfiConnection @auth(for: [KNOWLEDGE])

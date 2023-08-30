@@ -14,7 +14,12 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -101,6 +106,7 @@ const TaxiiCollectionEditionContainer = (props) => {
       })
       .catch(() => false);
   };
+
   const handleSubmitFieldOptions = (name, value) => taxiiCollectionValidation(t)
     .validateAt(name, { [name]: value })
     .then(() => {
@@ -113,18 +119,8 @@ const TaxiiCollectionEditionContainer = (props) => {
       });
     })
     .catch(() => false);
-  const handleAddFilter = (key, id, value) => {
-    let newFilters;
-    if (filters[key] && filters[key].length > 0) {
-      newFilters = {
-        ...filters,
-        [key]: isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-      };
-    } else {
-      newFilters = { ...filters, [key]: [{ id, value }] };
-    }
+  const handleAddFilter = (key, id, op = 'eq') => {
+    const newFilters = constructHandleAddFilter(filters, key, id, op);
     const jsonFilters = JSON.stringify(newFilters);
     commitMutation({
       mutation: taxiiCollectionMutationFieldPatch,
@@ -137,8 +133,8 @@ const TaxiiCollectionEditionContainer = (props) => {
       },
     });
   };
-  const handleRemoveFilter = (key) => {
-    const newFilters = R.dissoc(key, filters);
+  const handleRemoveFilter = (key, op = 'and') => {
+    const newFilters = constructHandleRemoveFilter(filters, key, op);
     const jsonFilters = JSON.stringify(newFilters);
     const variables = {
       id: props.taxiiCollection.id,
@@ -149,6 +145,41 @@ const TaxiiCollectionEditionContainer = (props) => {
       variables,
       onCompleted: () => {
         setFilters(newFilters);
+      },
+    });
+  };
+
+  const handleSwitchLocalMode = (localFilter) => {
+    const newFilters = filtersAfterSwitchLocalMode(filters, localFilter);
+    const variables = {
+      id: props.taxiiCollection.id,
+      input: { key: 'filters', value: JSON.stringify(newFilters) },
+    };
+    commitMutation({
+      mutation: taxiiCollectionMutationFieldPatch,
+      variables,
+      onCompleted: () => {
+        setFilters(newFilters);
+      },
+    });
+  };
+
+  const handleSwitchGlobalMode = () => {
+    const newFiltersContent = filters
+      ? {
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      }
+      : initialFilterGroup;
+    const variables = {
+      id: props.taxiiCollection.id,
+      input: { key: 'filters', value: JSON.stringify(newFiltersContent) },
+    };
+    commitMutation({
+      mutation: taxiiCollectionMutationFieldPatch,
+      variables,
+      onCompleted: () => {
+        setFilters(newFiltersContent);
       },
     });
   };
@@ -211,11 +242,11 @@ const TaxiiCollectionEditionContainer = (props) => {
               availableFilterKeys={[
                 'entity_type',
                 'x_opencti_workflow_id',
-                'assigneeTo',
-                'objectContains',
-                'markedBy',
-                'labelledBy',
-                'creator',
+                'objectAssignee',
+                'objects',
+                'objectMarking',
+                'objectLabel',
+                'creator_id',
                 'createdBy',
                 'priority',
                 'severity',
@@ -239,6 +270,8 @@ const TaxiiCollectionEditionContainer = (props) => {
           <FilterIconButton
             filters={filters}
             handleRemoveFilter={handleRemoveFilter}
+            handleSwitchLocalMode={handleSwitchLocalMode}
+            handleSwitchGlobalMode={handleSwitchGlobalMode}
             classNameNumber={2}
             styleNumber={2}
             redirection

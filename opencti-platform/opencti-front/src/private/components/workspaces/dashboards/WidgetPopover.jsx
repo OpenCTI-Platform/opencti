@@ -24,7 +24,7 @@ const useStyles = makeStyles({
   },
 });
 
-const StixCyberObservablePopover = ({
+const WidgetPopover = ({
   onUpdate,
   onDuplicate,
   widget,
@@ -125,4 +125,4 @@ const StixCyberObservablePopover = ({
   );
 };
 
-export default StixCyberObservablePopover;
+export default WidgetPopover;

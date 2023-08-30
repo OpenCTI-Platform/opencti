@@ -18,7 +18,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
-import { convertFilters } from '../../../../utils/ListParameters';
 import { itemColor } from '../../../../utils/Colors';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
@@ -39,7 +38,7 @@ const stixCoreObjectsTimelineQuery = graphql`
     $first: Int
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
     $relationship_type: [String]
     $elementId: [String]
   ) {
@@ -236,28 +235,28 @@ const StixCoreObjectsTimeline = ({
   const { t, fldt } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
+    let filtersContent = selection.filters.filters;
     const dataSelectionTypes = R.head(
-      finalFilters.filter((n) => n.key === 'entity_type'),
+      filtersContent.filter((n) => n.key === 'entity_type'),
     )?.values || ['Stix-Core-Object'];
-    const dataSelectionElementId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+    const dataSelectionElementId = R.head(filtersContent.filter((n) => n.key === 'elementId'))?.values || null;
+    const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
       ?.values || null;
-    finalFilters = finalFilters.filter(
+    filtersContent = filtersContent.filter(
       (n) => !['entity_type', 'elementId', 'relationship_type'].includes(n.key),
     );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
     if (startDate) {
-      finalFilters.push({
+      filtersContent.push({
         key: dateAttribute,
         values: [startDate],
         operator: 'gt',
       });
     }
     if (endDate) {
-      finalFilters.push({
+      filtersContent.push({
         key: dateAttribute,
         values: [endDate],
         operator: 'lt',
@@ -271,7 +270,7 @@ const StixCoreObjectsTimeline = ({
           first: selection.number ?? 10,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters: finalFilters,
+          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
           elementId: dataSelectionElementId,
           relationship_type: dataSelectionRelationshipType,
         }}

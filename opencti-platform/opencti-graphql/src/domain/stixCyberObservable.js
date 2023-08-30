@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { Readable } from 'stream';
 import nconf from 'nconf';
-import { dissoc, filter } from 'ramda';
+import { dissoc } from 'ramda';
 import unzipper from 'unzipper';
 import { streamToBuffer } from '@jorgeferrero/stream-to-buffer';
 import { fileTypeFromBuffer } from 'file-type';
@@ -57,6 +57,7 @@ import {
   stixObjectOrRelationshipAddRefRelation,
   stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
+import { addFilter } from '../utils/filtering';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -65,7 +66,7 @@ export const findById = (context, user, stixCyberObservableId) => {
 export const findAll = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
-    types = filter((type) => isStixCyberObservable(type), args.types);
+    types = args.types.filter((type) => isStixCyberObservable(type));
   }
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -317,8 +318,8 @@ export const stixCyberObservableEditContext = (context, user, stixCyberObservabl
 // region export
 export const stixCyberObservablesExportAsk = async (context, user, args) => {
   const { format, exportType, maxMarkingDefinition, selectedIds } = args;
-  const { search, orderBy, orderMode, filters, filterMode, types } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, filterMode, types };
+  const { search, orderBy, orderMode, filters, types } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, types };
   const filtersOpts = stixCyberObservableOptions.StixCyberObservablesFilter;
   const ordersOpts = stixCyberObservableOptions.StixCyberObservablesOrdering;
   const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
@@ -350,7 +351,7 @@ export const stixCyberObservableDistribution = async (context, user, args) => {
 
 export const stixCyberObservableDistributionByEntity = async (context, user, args) => {
   const { relationship_type, objectId, types = [ABSTRACT_STIX_CYBER_OBSERVABLE] } = args;
-  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, relationship_type.map((n) => buildRefRelationKey(n, '*')), objectId);
   return distributionEntities(context, user, types, { ...args, filters });
 };
 

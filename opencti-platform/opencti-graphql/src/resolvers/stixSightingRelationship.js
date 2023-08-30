@@ -3,6 +3,7 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixSightingRelationship,
   batchCases,
+  batchContainers,
   batchCreatedBy,
   batchExternalReferences,
   batchLabels,
@@ -10,7 +11,6 @@ import {
   batchNotes,
   batchOpinions,
   batchReports,
-  batchContainers,
   findAll,
   findById,
   stixSightingRelationshipAddRelation,
@@ -25,9 +25,7 @@ import {
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
@@ -58,12 +56,6 @@ const stixSightingRelationshipResolvers = {
       { ...args, relationship_type: [STIX_SIGHTING_RELATIONSHIP] }
     ),
     stixSightingRelationshipsNumber: (_, args, context) => stixSightingRelationshipsNumber(context, context.user, args),
-  },
-  StixSightingRelationshipsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    creator: 'creator_id',
   },
   StixSightingRelationship: {
     relationship_type: () => 'stix-sighting-relationship',

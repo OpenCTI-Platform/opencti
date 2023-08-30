@@ -22,13 +22,15 @@ const styles = () => ({
   },
 });
 
+const LOCAL_STORAGE_KEY = 'stream';
+
 class Stream extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'stream-view',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       orderAsc: propOr(true, 'orderAsc', params),
@@ -41,7 +43,7 @@ class Stream extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'stream-view',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

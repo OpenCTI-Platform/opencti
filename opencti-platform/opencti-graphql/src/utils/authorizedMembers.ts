@@ -32,7 +32,11 @@ export const getAuthorizedMembers = async (
   const args = {
     connectionFormat: false,
     first: 100,
-    filters: [{ key: 'internal_id', values: membersIds }],
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'internal_id', values: membersIds }],
+      filterGroups: [],
+    },
   };
   const members = await findAllMembers(context, user, args);
   authorizedMembers = entity.authorized_members.map((am) => {

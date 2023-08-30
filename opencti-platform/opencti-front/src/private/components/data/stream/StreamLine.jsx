@@ -89,12 +89,14 @@ class StreamLineLineComponent extends Component {
               >
                 {node.description}
               </div>
-              <FilterIconButton
-                filters={filters}
-                dataColumns={dataColumns}
-                classNameNumber={3}
-                styleNumber={3}
-              />
+              {filters
+                && <FilterIconButton
+                  filters={filters}
+                  dataColumns={dataColumns}
+                  classNameNumber={3}
+                  styleNumber={3}
+                />
+              }
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.id.width, paddingRight: 10 }}

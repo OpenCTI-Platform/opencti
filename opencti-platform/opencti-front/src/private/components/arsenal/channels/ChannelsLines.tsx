@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ChannelLine, ChannelLineDummy } from './ChannelLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import {
   ChannelsLinesPaginationQuery,
@@ -18,12 +18,7 @@ interface ChannelsLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: ChannelsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 export const channelsLinesQuery = graphql`
@@ -33,7 +28,7 @@ export const channelsLinesQuery = graphql`
         $cursor: ID
         $orderBy: ChannelsOrdering
         $orderMode: OrderingMode
-        $filters: [ChannelsFiltering!]
+        $filters: FilterGroup
     ) {
         ...ChannelsLines_data
         @arguments(
@@ -55,7 +50,7 @@ const channelsLinesFragment = graphql`
         cursor: { type: "ID" }
         orderBy: { type: "ChannelsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[ChannelsFiltering!]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "ChannelsLinesRefetchQuery") {
         channels(

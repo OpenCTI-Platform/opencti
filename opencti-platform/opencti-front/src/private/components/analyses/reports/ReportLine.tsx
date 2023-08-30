@@ -19,6 +19,7 @@ import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { ReportLine_node$data } from './__generated__/ReportLine_node.graphql';
 import { emptyFilled } from '../../../../utils/String';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -55,12 +56,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface ReportLineComponentProps {
   node: ReportLine_node$data;
   dataColumns: DataColumns;
-  onLabelClick: (
-    key: string,
-    id: string,
-    value: string,
-    event: React.SyntheticEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
   selectedElements: Record<string, ReportLine_node$data>;
   deSelectedElements: Record<string, ReportLine_node$data>;
   onToggleEntity: (

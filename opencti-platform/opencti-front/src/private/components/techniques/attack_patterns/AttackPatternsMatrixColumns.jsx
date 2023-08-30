@@ -555,7 +555,7 @@ export const attackPatternsMatrixColumnsQuery = graphql`
     $orderMode: OrderingMode
     $count: Int!
     $cursor: ID
-    $filters: [AttackPatternsFiltering]
+    $filters: FilterGroup
   ) {
     ...AttackPatternsMatrixColumns_data
       @arguments(
@@ -578,7 +578,7 @@ const AttackPatternsMatrixColumns = createRefetchContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        filters: { type: "[AttackPatternsFiltering]" }
+        filters: { type: "FilterGroup" }
       ) {
         attackPatterns(
           orderBy: $orderBy

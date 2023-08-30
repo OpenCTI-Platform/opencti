@@ -25,7 +25,7 @@ export const caseRftKnowledgeTimeLineQuery = graphql`
     $types: [String]
     $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixObjectOrStixRelationshipsFiltering]
+    $filters: FilterGroup
   ) {
     caseRft(id: $id) {
       ...CaseRftKnowledgeTimeLine_case
@@ -127,7 +127,7 @@ export default createFragmentContainer(CaseRftKnowledgeTimeLineComponent, {
         defaultValue: name
       }
       orderMode: { type: "OrderingMode", defaultValue: asc }
-      filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
+      filters: { type: "FilterGroup" }
     ) {
       id
       name

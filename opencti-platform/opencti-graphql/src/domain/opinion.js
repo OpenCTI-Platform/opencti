@@ -15,6 +15,7 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 import { now } from '../utils/format';
+import { addFilter } from '../utils/filtering';
 
 export const findById = (context, user, opinionId) => {
   return storeLoadById(context, user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
@@ -25,10 +26,14 @@ export const findAll = async (context, user, args) => {
 export const findMyOpinion = async (context, user, entityId) => {
   const keyObject = buildRefRelationKey(RELATION_OBJECT);
   const opinionsArgs = {
-    filters: [
-      { key: keyObject, values: [entityId] },
-      { key: 'creator_id', values: [user.id] },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: keyObject, values: [entityId] },
+        { key: 'creator_id', values: [user.id] },
+      ],
+      filterGroups: [],
+    },
     connectionFormat: false,
   };
   const opinions = await findAll(context, user, opinionsArgs);
@@ -40,10 +45,14 @@ export const findMyOpinion = async (context, user, entityId) => {
 export const opinionContainsStixObjectOrStixRelationship = async (context, user, opinionId, thingId) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [opinionId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'internal_id', values: [opinionId] },
+        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const opinionFound = await findAll(context, user, args);
   return opinionFound.edges.length > 0;
@@ -66,19 +75,19 @@ export const opinionsNumber = (context, user, args) => ({
 
 export const opinionsTimeSeriesByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { ...args, filters });
 };
 
 export const opinionsTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { ...args, filters });
 };
 
 export const opinionsNumberByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
     count: elCount(
       context,
@@ -97,7 +106,7 @@ export const opinionsNumberByEntity = (context, user, args) => {
 
 export const opinionsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_OPINION], { ...args, filters });
 };
 // endregion

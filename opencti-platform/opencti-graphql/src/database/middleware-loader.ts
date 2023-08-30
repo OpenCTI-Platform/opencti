@@ -2,7 +2,8 @@ import * as R from 'ramda';
 import {
   buildPagination,
   offsetToCursor,
-  READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED,
+  READ_DATA_INDICES,
+  READ_DATA_INDICES_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
 } from './utils';
@@ -18,8 +19,8 @@ import type {
   StoreProxyRelation
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
-import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
+import type { InputMaybe, OrderingMode } from '../generated/graphql';
+import { ASSIGNEE_FILTER, checkedAndConvertedFilters, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering';
 import { publishUserAction, type UserReadActionContextData } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
 import {
@@ -35,13 +36,18 @@ const MAX_SEARCH_SIZE = 5000;
 export interface Filter {
   key: any;
   operator?: string | null;
-  filterMode?: InputMaybe<FilterMode>;
   values?: any;
   nested?: Array<{
     key: string;
     values?: Array<unknown> | null;
     operator?: string;
   }>;
+}
+
+export interface FilterGroup {
+  mode?: string;
+  filters: Filter[],
+  filterGroups: FilterGroup[],
 }
 
 export interface ListFilter<T extends BasicStoreCommon> {
@@ -54,13 +60,13 @@ export interface ListFilter<T extends BasicStoreCommon> {
   after?: string | undefined | null;
   orderBy?: any,
   orderMode?: InputMaybe<OrderingMode>;
-  filters?: Array<Filter> | null;
-  filterMode?: FilterMode | undefined | null;
+  filters?: FilterGroup | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
   types?: string[]
 }
 
-type InternalListEntities = <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>) => Promise<Array<T>>;
+type InternalListEntities = <T extends BasicStoreCommon>
+(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>, noFiltersChecking?: boolean) => Promise<Array<T>>;
 
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
@@ -156,12 +162,12 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
   const { elementId = [], isTo = null } = args;
   const { fromId, fromRole, fromTypes = [] } = args;
   const { toId, toRole, toTypes = [] } = args;
-  const filters = [];
+  const filtersContent = [];
   const nestedElement = [];
   const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
   if (elementId && optsElementIds.length > 0) {
     nestedElement.push({ key: 'internal_id', values: optsElementIds, operator: 'not_eq' });
-    filters.push({ key: 'connections', nested: nestedElement });
+    filtersContent.push({ key: 'connections', nested: nestedElement });
   }
   if (isTo === false) {
     const nestedFrom = [];
@@ -176,7 +182,7 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
     } else {
       nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
     }
-    filters.push({ key: 'connections', nested: nestedFrom });
+    filtersContent.push({ key: 'connections', nested: nestedFrom });
   }
   if (isTo === true) {
     const nestedTo = [];
@@ -191,16 +197,16 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
     } else {
       nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
     }
-    filters.push({ key: 'connections', nested: nestedTo });
+    filtersContent.push({ key: 'connections', nested: nestedTo });
   }
-  return { filters };
+  return { filters: { mode: 'and', filters: filtersContent, filterGroups: [] } };
 };
 
 export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
   const relationsToGet = Array.isArray(relationshipTypes) ? relationshipTypes : [relationshipTypes || 'stix-core-relationship'];
   const { relationFilter } = args;
   const {
-    filters = [],
+    filters = undefined,
     elementId = [],
     fromId,
     fromRole,
@@ -225,12 +231,17 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   } = args;
   // Handle relation type(s)
   // 0 - Check if we can support the query by Elastic
-  const finalFilters = filters ?? [];
+  const finalFilters = (Array.isArray(filters) || !filters) ? { // TODO remove hardcoded format and replace by 'filter' when front is migrated
+    mode: 'and',
+    filters: filters ?? [] as Filter[],
+    filterGroups: [],
+  } : filters as FilterGroup;
+  const filtersContent = finalFilters?.filters ?? [];
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
-    finalFilters.push({ key: buildRefRelationKey(relation), values: [id] });
+    filtersContent.push({ key: buildRefRelationKey(relation), values: [id] });
     if (relationId) {
-      finalFilters.push({ key: 'internal_id', values: [relationId] });
+      filtersContent.push({ key: 'internal_id', values: [relationId] });
     }
   }
   // region element filtering
@@ -240,7 +251,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedElement.push({ key: 'internal_id', values: optsElementIds });
   }
   if (nestedElement.length > 0) {
-    finalFilters.push({ key: 'connections', nested: nestedElement });
+    filtersContent.push({ key: 'connections', nested: nestedElement });
   }
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
@@ -251,7 +262,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     }
   }
   if (nestedElementTypes.length > 0) {
-    finalFilters.push({ key: 'connections', nested: nestedElementTypes });
+    filtersContent.push({ key: 'connections', nested: nestedElementTypes });
   }
   // endregion
   // region from filtering
@@ -268,7 +279,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
   }
   if (nestedFrom.length > 0) {
-    finalFilters.push({ key: 'connections', nested: nestedFrom });
+    filtersContent.push({ key: 'connections', nested: nestedFrom });
   }
   // endregion
   // region to filtering
@@ -285,23 +296,31 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
     nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
   }
   if (nestedTo.length > 0) {
-    finalFilters.push({ key: 'connections', nested: nestedTo });
+    filtersContent.push({ key: 'connections', nested: nestedTo });
   }
   // endregion
-  if (startTimeStart) finalFilters.push({ key: 'start_time', values: [startTimeStart], operator: 'gt' });
-  if (startTimeStop) finalFilters.push({ key: 'start_time', values: [startTimeStop], operator: 'lt' });
-  if (stopTimeStart) finalFilters.push({ key: 'stop_time', values: [stopTimeStart], operator: 'gt' });
-  if (stopTimeStop) finalFilters.push({ key: 'stop_time', values: [stopTimeStop], operator: 'lt' });
-  if (firstSeenStart) finalFilters.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
-  if (firstSeenStop) finalFilters.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
-  if (lastSeenStart) finalFilters.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
-  if (lastSeenStop) finalFilters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
-  if (startDate) finalFilters.push({ key: 'created_at', values: [startDate], operator: 'gt' });
-  if (endDate) finalFilters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
+  if (startTimeStart) filtersContent.push({ key: 'start_time', values: [startTimeStart], operator: 'gt' });
+  if (startTimeStop) filtersContent.push({ key: 'start_time', values: [startTimeStop], operator: 'lt' });
+  if (stopTimeStart) filtersContent.push({ key: 'stop_time', values: [stopTimeStart], operator: 'gt' });
+  if (stopTimeStop) filtersContent.push({ key: 'stop_time', values: [stopTimeStop], operator: 'lt' });
+  if (firstSeenStart) filtersContent.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
+  if (firstSeenStop) filtersContent.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
+  if (lastSeenStart) filtersContent.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
+  if (lastSeenStop) filtersContent.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
+  if (startDate) filtersContent.push({ key: 'created_at', values: [startDate], operator: 'gt' });
+  if (endDate) filtersContent.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) {
-    finalFilters.push({ key: 'confidence', values: confidences });
+    filtersContent.push({ key: 'confidence', values: confidences });
   }
-  return R.pipe(R.assoc('types', relationsToGet), R.assoc('filters', finalFilters))(args);
+  return {
+    ...args,
+    types: relationsToGet,
+    filters: {
+      mode: finalFilters?.mode ?? 'and',
+      filters: filtersContent,
+      filterGroups: finalFilters?.filterGroups ?? [],
+    }
+  };
 };
 export const listRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
@@ -339,14 +358,16 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 }
 
 export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {
-  const builtFilters = { ...args };
+  const builtArgs = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
   const { elementId, elementWithTargetTypes = [] } = args;
   const { fromId, fromRole, fromTypes = [] } = args;
   const { toId, toRole, toTypes = [] } = args;
-  const { filters = [] } = args;
+  const { filters = null } = args;
   // Config
-  const customFilters = [...(filters ?? [])];
+  // TODO remove hardcoded format and replace newFilters by filters when front is migrated
+  const newFilters = (Array.isArray(filters) || !filters) ? { mode: 'and', filters: [], filterGroups: [] } : filters;
+  const customFiltersContent = newFilters.filters;
   // region element
   const nestedElement = [];
   const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
@@ -354,7 +375,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     nestedElement.push({ key: 'internal_id', values: optsElementIds });
   }
   if (nestedElement.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedElement });
+    customFiltersContent.push({ key: 'connections', nested: nestedElement });
   }
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
@@ -365,7 +386,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     }
   }
   if (nestedElementTypes.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedElementTypes });
+    customFiltersContent.push({ key: 'connections', nested: nestedElementTypes });
   }
   // endregion
   // region from filtering
@@ -382,7 +403,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
   }
   if (nestedFrom.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedFrom });
+    customFiltersContent.push({ key: 'connections', nested: nestedFrom });
   }
   // endregion
   // region to filtering
@@ -399,13 +420,17 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
     nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
   }
   if (nestedTo.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedTo });
+    customFiltersContent.push({ key: 'connections', nested: nestedTo });
   }
   // endregion
   // Override some special filters
-  builtFilters.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
-  builtFilters.filters = customFilters;
-  return builtFilters;
+  builtArgs.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
+  const customFilters = {
+    mode: newFilters?.mode ?? 'and',
+    filters: customFiltersContent,
+    filterGroups: newFilters?.filterGroups ?? [],
+  };
+  return { ...builtArgs, filters: customFilters };
 };
 
 const entitiesAggregations = [
@@ -426,29 +451,38 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 
-export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}) => {
+export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}, noFiltersChecking = false) => {
   const { indices = READ_ENTITIES_INDICES } = args;
+  const { filters } = args;
+  const convertedFilters = (noFiltersChecking || !filters) ? filters : checkedAndConvertedFilters(filters, entityTypes);
+  if (!noFiltersChecking) {
+    console.log('convertedFilters', convertedFilters);
+  }
   // TODO Reactivate this test after global migration to typescript
   // if (connectionFormat !== false) {
   //   throw UnsupportedError('List connection require connectionFormat option to false');
   // }
-  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
+  const paginateArgs = buildEntityFilters({ entityTypes, ...args, filters: convertedFilters });
   return elPaginate(context, user, indices, paginateArgs);
 };
 export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}): Promise<Array<T>> => {
+  args: EntityOptions<T> = {}, noFiltersChecking = false): Promise<Array<T>> => {
   const { indices = READ_ENTITIES_INDICES } = args;
-  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
+  const filters = (noFiltersChecking || !args.filters) ? args.filters : checkedAndConvertedFilters(args.filters, entityTypes);
+  const paginateArgs = buildEntityFilters({ entityTypes, filters, ...args });
   return elList(context, user, indices, paginateArgs);
 };
 
 export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
+  args: EntityOptions<T> = {}, noFiltersChecking = false): Promise<StoreEntityConnection<T>> => {
   const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
   if (connectionFormat === false) {
     throw UnsupportedError('List connection require connectionFormat option to true');
   }
-  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
+  const convertedFilters = (noFiltersChecking || !args.filters)
+    ? args.filters
+    : checkedAndConvertedFilters(args.filters, args.types ?? []);
+  const paginateArgs = buildEntityFilters({ ...args, entityTypes, filters: convertedFilters });
   return elPaginate(context, user, indices, paginateArgs);
 };
 

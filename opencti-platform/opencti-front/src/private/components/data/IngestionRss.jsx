@@ -3,9 +3,7 @@ import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import IngestionRssLines, {
-  IngestionRssLinesQuery,
-} from './ingestionRss/IngestionRssLines';
+import IngestionRssLines, { IngestionRssLinesQuery, } from './ingestionRss/IngestionRssLines';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -13,7 +11,7 @@ import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 
-const LOCAL_STORAGE_KEY = 'ingestionRss-view';
+const LOCAL_STORAGE_KEY = 'ingestionRss';
 
 const useStyles = makeStyles(() => ({
   container: {

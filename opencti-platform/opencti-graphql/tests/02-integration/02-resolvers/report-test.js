@@ -13,8 +13,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
-    $filters: [ReportsFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     reports(
@@ -23,7 +22,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {
@@ -462,11 +460,15 @@ describe('Report resolver standard behavior', () => {
         ADMIN_USER,
         [ENTITY_TYPE_WORKSPACE],
         {
-          filters: [{
-            key: 'type',
-            value: 'investigation'
-          }]
-        }
+          filters: {
+            mode: 'and',
+            filters: [{
+              key: 'type',
+              value: 'investigation',
+            }],
+            filterGroups: [],
+          },
+        },
       );
 
       await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));

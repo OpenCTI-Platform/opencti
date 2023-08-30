@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { ArtifactLine_node$data } from '@components/observations/artifacts/__generated__/ArtifactLine_node.graphql';
 import {
-  ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables,
+  ArtifactsLinesPaginationQuery,
+  ArtifactsLinesPaginationQuery$variables,
 } from '@components/observations/artifacts/__generated__/ArtifactsLinesPaginationQuery.graphql';
 import { ArtifactLineDummy } from '@components/observations/artifacts/ArtifactLine';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -13,11 +14,11 @@ import ArtifactsLines, { artifactsLinesQuery } from './artifacts/ArtifactsLines'
 import ArtifactCreation from './artifacts/ArtifactCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-artifacts';
+const LOCAL_STORAGE_KEY = 'artifacts';
 
 const Artifacts: FunctionComponent = () => {
   const {
@@ -28,7 +29,7 @@ const Artifacts: FunctionComponent = () => {
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<ArtifactsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
@@ -107,11 +108,7 @@ const Artifacts: FunctionComponent = () => {
   };
 
   const renderLines = () => {
-    let renderFilters = filters;
-    renderFilters = {
-      ...renderFilters,
-      entity_type: [{ id: 'Artifact', value: 'Artifact' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Artifact');
 
     return (
           <>
@@ -123,6 +120,8 @@ const Artifacts: FunctionComponent = () => {
               handleSearch={helpers.handleSearch}
               handleAddFilter={helpers.handleAddFilter}
               handleRemoveFilter={helpers.handleRemoveFilter}
+              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
               handleToggleExports={helpers.handleToggleExports}
               openExports={openExports}
               handleToggleSelectAll={handleToggleSelectAll}
@@ -135,10 +134,9 @@ const Artifacts: FunctionComponent = () => {
               paginationOptions={paginationOptions}
               numberOfElements={numberOfElements}
               availableFilterKeys={[
-                'labelledBy',
-                'markedBy',
-                'created_at_start_date',
-                'created_at_end_date',
+                'objectLabel',
+                'objectMarking',
+                'created_at',
                 'createdBy',
               ]}
             >
@@ -170,7 +168,7 @@ const Artifacts: FunctionComponent = () => {
                     deSelectedElements={deSelectedElements}
                     numberOfSelectedElements={numberOfSelectedElements}
                     selectAll={selectAll}
-                    filters={renderFilters}
+                    filters={toolBarFilters}
                     search={searchTerm}
                     handleClearSelectedElements={handleClearSelectedElements}
                   />

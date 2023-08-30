@@ -21,13 +21,15 @@ const styles = () => ({
   },
 });
 
+const LOCAL_STORAGE_KEY = 'roles';
+
 class Roles extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-roles',
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -41,7 +43,7 @@ class Roles extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-roles',
+      LOCAL_STORAGE_KEY,
       this.state,
     );
   }

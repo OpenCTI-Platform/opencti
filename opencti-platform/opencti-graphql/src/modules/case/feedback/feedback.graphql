@@ -47,8 +47,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
     lastSeenStop: DateTime
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
@@ -61,8 +60,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
     limit: Int
     order: String
     types: [String]
-    filters: [StixCoreObjectsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
@@ -84,8 +82,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
     relationship_type: [String]
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Stix Domain Object
   revoked: Boolean!
@@ -102,8 +99,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
     after: ID
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     types: [String]
     all: Boolean
@@ -113,8 +109,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
     after: ID
     orderBy: ContainersOrdering
     orderMode: OrderingMode
-    filters: [ContainersFiltering]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     types: [String]
     viaTypes: [String]
@@ -157,32 +152,6 @@ enum FeedbacksOrdering {
   objectMarking
 }
 
-# Filtering
-enum FeedbacksFilter {
-  name
-  created
-  modified
-  context
-  created_at
-  updated_at
-  creator
-  createdBy
-  markedBy
-  labelledBy
-  assigneeTo
-  x_opencti_workflow_id
-  rating
-  confidence
-  source_reliability
-}
-
-input FeedbacksFiltering {
-  key: [FeedbacksFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type FeedbackConnection {
   pageInfo: PageInfo!
@@ -202,8 +171,7 @@ type Query {
     after: ID
     orderBy: FeedbacksOrdering
     orderMode: OrderingMode
-    filters: [FeedbacksFiltering!]
-    filterMode: FilterMode
+    filters: FilterGroup
     search: String
     toStix: Boolean
   ): FeedbackConnection @auth(for: [KNOWLEDGE])

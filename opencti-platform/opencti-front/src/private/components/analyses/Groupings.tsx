@@ -17,8 +17,9 @@ import {
 } from './groupings/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
 import { GroupingLineDummy } from './groupings/GroupingLine';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
-const LOCAL_STORAGE_KEY = 'view-groupings';
+const LOCAL_STORAGE_KEY = 'groupings';
 
 interface GroupingsProps {
   objectId: string;
@@ -41,15 +42,15 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       key: 'createdBy',
       values: [authorId],
       operator: 'eq',
-      filterMode: 'or',
+      mode: 'or',
     });
   }
   if (objectId) {
     additionnalFilters.push({
-      key: 'objectContains',
+      key: 'objects',
       values: [objectId],
       operator: 'eq',
-      filterMode: 'or',
+      mode: 'or',
     });
   }
   const {
@@ -60,7 +61,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
@@ -84,7 +85,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle<GroupingLine_node$data>('view-groupings');
+  } = useEntityToggle<GroupingLine_node$data>(LOCAL_STORAGE_KEY);
   const queryRef = useQueryLoading<GroupingsLinesPaginationQuery>(
     groupingsLinesQuery,
     paginationOptions,
@@ -101,11 +102,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
         - Object.keys(deSelectedElements || {}).length;
     }
-    let finalFilters = filters;
-    finalFilters = {
-      ...finalFilters,
-      entity_type: [{ id: 'Grouping', value: 'Grouping' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Grouping');
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
@@ -174,14 +171,13 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
           availableFilterKeys={[
             'context',
             'x_opencti_workflow_id',
-            'labelledBy',
-            'markedBy',
+            'objectLabel',
+            'objectMarking',
             'createdBy',
             'source_reliability',
             'confidence',
-            'creator',
-            'created_start_date',
-            'created_end_date',
+            'creator_id',
+            'created',
           ]}
         >
           {queryRef && (
@@ -216,7 +212,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={finalFilters}
+          filters={toolBarFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="Grouping"
         />

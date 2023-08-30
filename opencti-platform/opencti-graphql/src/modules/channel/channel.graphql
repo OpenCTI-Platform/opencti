@@ -47,8 +47,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
         lastSeenStop: DateTime
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
         relationship_type: [String]
@@ -61,8 +60,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
         limit: Int
         order: String
         types: [String]
-        filters: [StixCoreObjectsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     stixCoreRelationshipsDistribution(
@@ -84,8 +82,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
         relationship_type: [String]
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
-        filterMode: FilterMode
+        filters: FilterGroup
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
     revoked: Boolean!
@@ -128,30 +125,6 @@ enum ChannelsOrdering {
     confidence
 }
 
-# Filtering
-enum ChannelsFilter {
-    name
-    aliases
-    channel_types
-    created
-    modified
-    created_at
-    updated_at
-    createdBy
-    markedBy
-    assigneeTo
-    labelledBy
-    x_opencti_workflow_id
-    confidence
-    source_reliability
-}
-input ChannelsFiltering {
-    key: [ChannelsFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type ChannelConnection {
     pageInfo: PageInfo!
@@ -170,8 +143,7 @@ type Query {
         after: ID
         orderBy: ChannelsOrdering
         orderMode: OrderingMode
-        filters: [ChannelsFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         search: String
     ): ChannelConnection @auth(for: [KNOWLEDGE])
 }

@@ -31,7 +31,10 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 
 // check a user has the right to create a list or a query background task
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
-  const { actions, filters, ids } = input;
+  const { actions, filters: baseFilterObject, ids } = input;
+  const filters = JSON.parse(baseFilterObject)?.filters ?? [];
+  const typeFilters = filters.filter((f) => f.key === 'entity_type');
+  const typeFiltersValues = typeFilters.map((f) => f.values).flat();
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   if (scope === 'SETTINGS') {
     const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SETTINGS');
@@ -54,8 +57,8 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     }
     // 1.3. Check the modified entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
-      const parentTypes = JSON.parse(filters).entity_type?.map((n) => getParentTypes(n.id));
-      const isNotKnowledges = !areParentTypesKnowledge(parentTypes) || JSON.parse(filters).entity_type?.some((type) => type === ENTITY_TYPE_VOCABULARY);
+      const parentTypes = typeFiltersValues.map((n) => getParentTypes(n));
+      const isNotKnowledges = !areParentTypesKnowledge(parentTypes) || typeFiltersValues.some((type) => type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledges) {
         throw ForbiddenAccess(undefined, 'The targeted ids are not knowledges.');
       }
@@ -74,13 +77,16 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // Check the modified entities are Notifications
     // and the user has the right to modify them (= notifications are the ones of the user OR the user has SET_ACCESS capability)
     if (taskType === TASK_TYPE_QUERY) {
-      const isNotifications = JSON.parse(filters)?.entity_type?.length > 0
-        && JSON.parse(filters).entity_type[0].id === 'Notification';
+      const isNotifications = typeFilters.length === 1
+        && typeFilters[0].values.length === 1
+        && typeFilters[0].values[0] === 'Notification';
       if (!isNotifications) {
         throw ForbiddenAccess(undefined, 'The targeted ids are not notifications.');
       }
-      const isUserData = JSON.parse(filters)?.user_id?.length > 0
-        && JSON.parse(filters).user_id[0].id === user.id;
+      const userFilters = filters.filter((f) => f.key === 'user_id');
+      const isUserData = userFilters.length > 0
+        && userFilters[0].values.length === 1
+        && userFilters[0].values[0] === user.id;
       const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(SETTINGS_SET_ACCESSES) || isUserData;
       if (!isAuthorized) {
         throw ForbiddenAccess();

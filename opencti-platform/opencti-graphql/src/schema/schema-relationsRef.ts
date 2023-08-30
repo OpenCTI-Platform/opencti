@@ -5,6 +5,8 @@ import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, Map<string, RelationRefDefinition>>,
+  // allRelationsRef is a list of the names of all the relations ref registered in a schema definition
+  allRelationsRef: [] as string[],
 
   inputNamesCache: new Map<string, string[]>(),
   stixNamesCache: new Map<string, string[]>(),
@@ -13,6 +15,7 @@ export const schemaRelationsRefDefinition = {
   databaseNameMultipleCache: new Map<string, string[]>(),
 
   databaseNameToInputNameCache: new Map<string, Map<string, string>>(),
+  inputNameToDatabaseName: new Map<string, string>(),
   stixNameToInputNameCache: new Map<string, Map<string, string>>(),
 
   relationsRefCacheArray: new Map<string, RelationRefDefinition[]>(),
@@ -39,6 +42,7 @@ export const schemaRelationsRefDefinition = {
       }
 
       directRefs.set(relationRefDefinition.inputName, relationRefDefinition);
+      if (!this.allRelationsRef.includes(relationRefDefinition.inputName)) this.allRelationsRef.push(relationRefDefinition.inputName);
     });
 
     this.relationsRef[entityType] = directRefs;
@@ -69,6 +73,7 @@ export const schemaRelationsRefDefinition = {
     this.relationsRefCacheArray.set(entityType, computedWithParentsRefsArray);
     this.stixNamesCache.set(entityType, computedWithParentsRefsArray.map((rel) => rel.stixName));
     this.databaseNameMultipleCache.set(entityType, computedWithParentsRefsArray.filter((rel) => rel.multiple).map((rel) => rel.databaseName));
+    computedWithParentsRefsArray.forEach((ref) => this.inputNameToDatabaseName.set(ref.inputName, ref.databaseName));
     this.databaseNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.databaseName, ref.inputName])));
     this.stixNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.stixName, ref.inputName])));
   },
@@ -90,6 +95,10 @@ export const schemaRelationsRefDefinition = {
   getInputNames(entityType: string): string[] {
     this.computeCache(entityType);
     return this.inputNamesCache.get(entityType) ?? [];
+  },
+
+  getAllInputNames(): string[] {
+    return this.allRelationsRef;
   },
 
   getStixNames(entityType: string): string[] {
@@ -124,5 +133,9 @@ export const schemaRelationsRefDefinition = {
     return Array.from(this.relationsRefCacheArray.values()).flat()
       .filter((rel) => rel.datable)
       .map((rel) => rel.databaseName);
+  },
+
+  getDatabaseName(inputName: string): string | undefined {
+    return this.inputNameToDatabaseName.get(inputName);
   }
 };

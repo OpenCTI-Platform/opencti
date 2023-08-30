@@ -16,7 +16,13 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  filtersAfterSwitchLocalMode,
+  initialFilterGroup,
+  isFilterGroupNotEmpty,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
@@ -102,7 +108,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 
 const TaxiiCollectionCreation = (props) => {
   const { t, classes } = props;
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState(initialFilterGroup);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = JSON.stringify(filters);
@@ -134,20 +140,24 @@ const TaxiiCollectionCreation = (props) => {
     });
   };
 
-  const handleAddFilter = (key, id, value) => {
-    if (filters[key] && filters[key].length > 0) {
+  const handleAddFilter = (k, id, op = 'eq') => {
+    setFilters(constructHandleAddFilter(filters, k, id, op));
+  };
+  const handleRemoveFilter = (k, op = 'eq') => {
+    setFilters(constructHandleRemoveFilter(filters, k, op));
+  };
+
+  const handleSwitchLocalMode = (localFilter) => {
+    setFilters(filtersAfterSwitchLocalMode(filters, localFilter));
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
       setFilters({
         ...filters,
-        [key]: isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
+        mode: filters.mode === 'and' ? 'or' : 'and',
       });
-    } else {
-      setFilters({ ...filters, [key]: [{ id, value }] });
     }
-  };
-  const handleRemoveFilter = (key) => {
-    setFilters(R.dissoc(key, filters));
   };
 
   return (
@@ -216,11 +226,11 @@ const TaxiiCollectionCreation = (props) => {
                   availableFilterKeys={[
                     'entity_type',
                     'x_opencti_workflow_id',
-                    'assigneeTo',
-                    'objectContains',
-                    'markedBy',
-                    'labelledBy',
-                    'creator',
+                    'objectAssignee',
+                    'objects',
+                    'objectMarking',
+                    'objectLabel',
+                    'creator_id',
                     'createdBy',
                     'priority',
                     'severity',
@@ -244,6 +254,8 @@ const TaxiiCollectionCreation = (props) => {
               <FilterIconButton
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
+                handleSwitchGlobalMode={handleSwitchGlobalMode}
+                handleSwitchLocalMode={handleSwitchLocalMode}
                 classNameNumber={2}
                 styleNumber={2}
                 redirection
@@ -262,7 +274,7 @@ const TaxiiCollectionCreation = (props) => {
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                  disabled={R.isEmpty(filters) || isSubmitting}
+                  disabled={!isFilterGroupNotEmpty(filters) || isSubmitting}
                   classes={{ root: classes.button }}
                 >
                   {t('Create')}

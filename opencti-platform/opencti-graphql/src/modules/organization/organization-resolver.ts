@@ -5,16 +5,20 @@ import {
   batchMembers,
   batchParentOrganizations,
   batchSectors,
-  batchSubOrganizations, buildAdministratedOrganizations, editAuthorizedAuthorities,
+  batchSubOrganizations,
+  buildAdministratedOrganizations,
+  editAuthorizedAuthorities,
   findAll,
-  findById, findGrantableGroups, organizationAdminAdd, organizationAdminRemove
+  findById,
+  findGrantableGroups,
+  organizationAdminAdd,
+  organizationAdminRemove
 } from './organization-domain';
-import { buildRefRelationKey } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete, stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -41,11 +45,6 @@ const organizationResolvers: Resolvers = {
   },
   User: {
     administrated_organizations: (user, _, context) => buildAdministratedOrganizations(context, context.user, user),
-  },
-  OrganizationsFilter: {
-    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
-    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
     organizationAdd: (_, { input }, context) => addOrganization(context, context.user, input),

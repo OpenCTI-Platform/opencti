@@ -113,11 +113,12 @@ export const groupingKnowledgeAttackPatternsGraphQuery = graphql`
 
 class GroupingKnowledgeComponent extends Component {
   constructor(props) {
+    const LOCAL_STORAGE_KEY = `grouping-knowledge-${props.grouping.id}`;
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-grouping-knowledge-${props.grouping.id}`,
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
@@ -130,7 +131,7 @@ class GroupingKnowledgeComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-grouping-knowledge-${this.props.grouping.id}`,
+      `grouping-knowledge-${this.props.grouping.id}`,
       this.state,
     );
   }

@@ -37,16 +37,6 @@ enum IngestionTaxiiOrdering {
     uri
     version
 }
-enum IngestionTaxiiFilter {
-    name
-    creator
-}
-input IngestionTaxiiFiltering {
-    key: [IngestionTaxiiFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
 type IngestionTaxiiConnection {
     pageInfo: PageInfo!
     edges: [IngestionTaxiiEdge!]!
@@ -64,8 +54,7 @@ type Query {
         after: ID
         orderBy: IngestionTaxiiOrdering
         orderMode: OrderingMode
-        filters: [IngestionTaxiiFiltering!]
-        filterMode: FilterMode
+        filters: FilterGroup
         includeAuthorities: Boolean
         search: String
     ): IngestionTaxiiConnection @auth(for: [SETTINGS])

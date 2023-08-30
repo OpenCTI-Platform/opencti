@@ -47,7 +47,7 @@ import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useS
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery(
     $search: String
-    $filters: [ContainersFiltering]
+    $filters: FilterGroup
   ) {
     containers(search: $search, filters: $filters) {
       edges {
@@ -69,7 +69,7 @@ const filtersStixCoreObjectsSearchQuery = graphql`
     $search: String
     $types: [String]
     $count: Int
-    $filters: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
   ) {
     stixCoreObjects(
       search: $search
@@ -279,7 +279,7 @@ const useSearchEntities = ({
   availableRelationshipTypes?: string[];
   searchContext: { entityTypes: string[]; elementId?: string[] };
   searchScope: Record<string, string[]>;
-  setInputValues: Dispatch<Record<string, string | Date>>;
+  setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
   allEntityTypes?: boolean;
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
@@ -326,10 +326,11 @@ const useSearchEntities = ({
     if (!event) {
       return;
     }
-    setInputValues(((c: Record<string, string | Date>) => ({
-      ...c,
-      [filterKey]: event.target.value,
-    })) as unknown as Record<string, string | Date>);
+    console.log('event.target.value', event.target.value);
+    const newInputValue = { key: filterKey, values: [event.target.value?.toString()], operator: 'eq' };
+    setInputValues([
+      newInputValue,
+    ]);
     switch (filterKey) {
       case 'toSightingId':
         fetchQuery(identitySearchIdentitiesSearchQuery, {
@@ -410,7 +411,7 @@ const useSearchEntities = ({
         break;
       // endregion
       // region user usage
-      case 'creator': // only used
+      case 'creator_id': // only used
         if (!cacheEntities[filterKey]) {
           fetchQuery(identitySearchCreatorsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
@@ -426,18 +427,18 @@ const useSearchEntities = ({
                 type: 'Individual',
               }));
               setCacheEntities({ ...cacheEntities, [filterKey]: creators });
-              unionSetEntities('creator', creators);
+              unionSetEntities('creator_id', creators);
             });
         }
         break;
-      case 'assigneeTo': // only used
+      case 'objectAssignee': // only used
         if (!cacheEntities[filterKey]) {
           fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
             .then((data) => {
-              const assigneeToEntities = (
+              const objectAssigneeEntities = (
                 (data as ObjectAssigneeFieldAssigneesSearchQuery$data)
                   ?.assignees?.edges ?? []
               ).map((n) => ({
@@ -447,13 +448,13 @@ const useSearchEntities = ({
               }));
               setCacheEntities({
                 ...cacheEntities,
-                [filterKey]: assigneeToEntities,
+                [filterKey]: objectAssigneeEntities,
               });
-              unionSetEntities('assigneeTo', assigneeToEntities);
+              unionSetEntities('objectAssignee', objectAssigneeEntities);
             });
         }
         break;
-      case 'participant': // only used
+      case 'objectParticipant': // only used
         if (!cacheEntities[filterKey]) {
           fetchQuery(objectParticipantFieldParticipantsSearchQuery, {
             entityTypes: searchContext?.entityTypes ?? [],
@@ -472,7 +473,7 @@ const useSearchEntities = ({
                 ...cacheEntities,
                 [filterKey]: participantToEntities,
               });
-              unionSetEntities('participant', participantToEntities);
+              unionSetEntities('objectParticipant', participantToEntities);
             });
         }
         break;
@@ -602,9 +603,9 @@ const useSearchEntities = ({
             unionSetEntities('targets', toIdEntities);
           });
         break;
-      case 'objectContains':
+      case 'objects':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
-          types: (searchScope && searchScope.objectContains) || [
+          types: (searchScope && searchScope.objects) || [
             'Stix-Core-Object',
           ],
           search: event.target.value !== 0 ? event.target.value : '',
@@ -612,7 +613,7 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const objectContainsEntities = (
+            const objectsEntities = (
               (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
                 ?.stixCoreObjects?.edges ?? []
             ).map((n) => ({
@@ -621,7 +622,7 @@ const useSearchEntities = ({
               type: n?.node.entity_type,
               parentTypes: n?.node.parent_types,
             }));
-            unionSetEntities('objectContains', objectContainsEntities);
+            unionSetEntities('objects', objectsEntities);
           });
         break;
       case 'indicates':
@@ -648,10 +649,14 @@ const useSearchEntities = ({
         fetchQuery(filtersStixCoreObjectsContainersSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
-          filters: [
-            { key: 'objectContains', values: searchContext?.elementId ?? [] },
-            { key: 'entity_type', values: availableEntityTypes ?? [] },
-          ],
+          filters: {
+            mode: 'and',
+            filterGroups: [],
+            filters: [
+              { key: 'objects', values: searchContext?.elementId ?? [] },
+              { key: 'entity_type', values: availableEntityTypes ?? [] },
+            ],
+          },
         })
           .toPromise()
           .then((data) => {
@@ -668,7 +673,7 @@ const useSearchEntities = ({
             unionSetEntities('containers', containerEntities);
           });
         break;
-      case 'markedBy':
+      case 'objectMarking':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
         })
@@ -683,10 +688,10 @@ const useSearchEntities = ({
               type: 'Marking-Definition',
               color: n?.node.x_opencti_color,
             }));
-            unionSetEntities('markedBy', markedByEntities);
+            unionSetEntities('objectMarking', markedByEntities);
           });
         break;
-      case 'killChainPhase':
+      case 'killChainPhases':
         fetchQuery(killChainPhasesLinesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
@@ -703,17 +708,17 @@ const useSearchEntities = ({
               value: n?.node.id,
               type: 'Kill-Chain-Phase',
             }));
-            unionSetEntities('killChainPhase', killChainPhaseEntities);
+            unionSetEntities('killChainPhases', killChainPhaseEntities);
           });
         break;
-      case 'labelledBy':
+      case 'objectLabel':
         fetchQuery(labelsSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
-            const labelledByEntities = (
+            const objectLabelEntities = (
               (data as LabelsQuerySearchQuery$data)?.labels?.edges ?? []
             ).map((n) => ({
               label: n?.node.value,
@@ -721,14 +726,14 @@ const useSearchEntities = ({
               type: 'Label',
               color: n?.node.color,
             }));
-            unionSetEntities('labelledBy', [
+            unionSetEntities('objectLabel', [
               {
                 label: t('No label'),
                 value: null,
                 type: 'Label',
                 color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
               },
-              ...labelledByEntities,
+              ...objectLabelEntities,
             ]);
           });
         break;
@@ -1025,12 +1030,16 @@ const useSearchEntities = ({
       case 'x_opencti_workflow_id':
         fetchQuery(statusFieldStatusesSearchQuery, {
           first: 500,
-          filters: [
-            {
-              key: 'type',
-              values: isNotEmptyField(entityType) ? [entityType] : [],
-            },
-          ],
+          filters: {
+            mode: 'and',
+            filterGroups: [],
+            filters: [
+              {
+                key: 'type',
+                values: isNotEmptyField(entityType) ? [entityType] : [],
+              },
+            ],
+          },
         })
           .toPromise()
           .then((data) => {

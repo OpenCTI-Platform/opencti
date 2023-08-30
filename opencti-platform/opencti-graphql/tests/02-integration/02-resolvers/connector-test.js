@@ -17,8 +17,7 @@ const LIST_WORK_QUERY = gql`
     $orderBy: WorksOrdering
     $orderMode: OrderingMode
     $search: String
-    $filters: [WorksFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
   ) {
     works(
       first: $first
@@ -27,7 +26,6 @@ const LIST_WORK_QUERY = gql`
       orderMode: $orderMode
       search: $search
       filters: $filters
-      filterMode: $filterMode
     ) {
       edges {
         node {

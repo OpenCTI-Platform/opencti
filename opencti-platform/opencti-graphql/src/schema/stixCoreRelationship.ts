@@ -117,7 +117,7 @@ export const stixCoreRelationshipOptions = {
     creator: 'creator_id',
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
     killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
   },
   StixCoreRelationshipsOrdering: {}

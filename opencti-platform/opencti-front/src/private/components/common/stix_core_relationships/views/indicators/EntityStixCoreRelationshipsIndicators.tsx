@@ -6,6 +6,7 @@ import EntityStixCoreRelationshipsRelationshipsView from '../EntityStixCoreRelat
 import EntityStixCoreRelationshipsIndicatorsEntitiesView from './EntityStixCoreRelationshipsIndicatorsEntitiesView';
 import { PaginationOptions } from '../../../../../../components/list_lines';
 import EntityStixCoreRelationshipsIndicatorsContextualView from './EntityStixCoreRelationshipsIndicatorsContextualView';
+import { initialFilterGroup } from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -31,14 +32,15 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
 
   const relationshipTypes = ['indicates'];
   const entityTypes = ['Indicator'];
+  const LOCAL_STORAGE_KEY = `relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
 
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
-    `view-relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`,
+    LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
-      filters: {},
+      filters: initialFilterGroup,
       view: 'entities',
     },
   );

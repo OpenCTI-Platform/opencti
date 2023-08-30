@@ -40,10 +40,14 @@ export const addFeedback = async (context: AuthContext, user: AuthUser, feedback
 export const feedbackContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, feedbackId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [feedbackId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'internal_id', values: [feedbackId] },
+        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const feedbackFound = await findAll(context, user, args);
   return feedbackFound.edges.length > 0;

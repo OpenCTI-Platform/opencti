@@ -12,8 +12,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: UsersOrdering
     $orderMode: OrderingMode
-    $filters: [UsersFiltering]
-    $filterMode: FilterMode
+    $filters: FilterGroup
     $search: String
   ) {
     users(
@@ -22,7 +21,6 @@ const LIST_QUERY = gql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-      filterMode: $filterMode
       search: $search
     ) {
       edges {

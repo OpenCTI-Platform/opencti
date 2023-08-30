@@ -18,6 +18,7 @@ import ToolBar from '../../data/ToolBar';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface StixDomainObjectIndicatorsProps {
   stixDomainObjectId: string,
@@ -36,28 +37,29 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const LOCAL_STORAGE_KEY = `view-indicators-${stixDomainObjectId}`;
+  const LOCAL_STORAGE_KEY = `indicators-${stixDomainObjectId}`;
 
   const [indicatorTypes, setIndicatorTypes] = useState<string[]>([]);
   const [observableTypes, setObservablesTypes] = useState<string[]>([]);
   const additionnalFilters = [];
   additionnalFilters.push(
-    { key: 'indicates', values: [stixDomainObjectId] },
+    { key: 'indicates', values: [stixDomainObjectId], operator: 'eq', mode: 'or' },
   );
   if (indicatorTypes.length > 0) {
-    additionnalFilters.push({ key: 'pattern_type', values: indicatorTypes });
+    additionnalFilters.push({ key: 'pattern_type', values: indicatorTypes, operator: 'eq', mode: 'or' });
   }
   if (observableTypes.length > 0) {
     additionnalFilters.push({
       key: 'x_opencti_main_observable_type',
       operator: 'match',
       values: observableTypes.map((type) => type.toLowerCase().replace(/\*/g, '')),
+      mode: 'or',
     });
   }
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<StixDomainObjectIndicatorsLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
@@ -148,6 +150,8 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
               handleSearch={helpers.handleSearch}
               handleAddFilter={helpers.handleAddFilter}
               handleRemoveFilter={helpers.handleRemoveFilter}
+              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
               handleToggleExports={helpers.handleToggleExports}
               openExports={openExports}
               handleToggleSelectAll={handleToggleSelectAll}
@@ -161,20 +165,18 @@ const StixDomainObjectIndicators: FunctionComponent<StixDomainObjectIndicatorsPr
               iconExtension={true}
               numberOfElements={numberOfElements}
               availableFilterKeys={[
-                'labelledBy',
-                'markedBy',
-                'created_start_date',
-                'created_end_date',
-                'valid_from_start_date',
-                'valid_until_end_date',
+                'objectLabel',
+                'objectMarking',
+                'created',
+                'valid_until',
                 'x_opencti_score',
                 'createdBy',
-                'objectContains',
+                'objects',
                 'sightedBy',
                 'x_opencti_detection',
                 'basedOn',
                 'revoked',
-                'creator',
+                'creator_id',
                 'confidence',
                 'indicator_types',
               ]}

@@ -69,10 +69,11 @@ class RootSystem extends Component {
         params: { systemId },
       },
     } = props;
+    const LOCAL_STORAGE_KEY = `system-${systemId}`;
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-system-${systemId}`,
+      LOCAL_STORAGE_KEY,
     );
     this.state = {
       viewAs: propOr('knowledge', 'viewAs', params),
@@ -93,10 +94,11 @@ class RootSystem extends Component {
         params: { systemId },
       },
     } = this.props;
+    const LOCAL_STORAGE_KEY = `system-${systemId}`;
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-system-${systemId}`,
+      LOCAL_STORAGE_KEY,
       this.state,
       true,
     );

@@ -428,12 +428,12 @@ const createSseMiddleware = () => {
       } else {
         matches.push(false);
       }
-      // consider the filterMode
-      if (filter.filterMode === 'and') {
+      // consider the mode
+      if (filter.mode === 'and') {
         if (!matches.includes(false)) {
           match = true;
         }
-      } else if (matches.includes(true)) { // filterMode = 'or'
+      } else if (matches.includes(true)) { // mode = 'or'
         match = true;
       }
     }
