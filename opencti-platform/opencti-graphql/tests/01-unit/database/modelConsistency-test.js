@@ -468,8 +468,8 @@ describe('Testing stix ref extractor', () => {
   });
 });
 
-describe('Test if needed', () => {
-  it('Mapping', () => {
+describe('Testing relations mapping', () => {
+  it('Relations types should map', () => {
     const mapping = schemaRelationsTypesMapping();
     let relations = mapping.find((m) => m.key === 'Infrastructure_IPv4-Addr').values;
     expect(relations.includes(RELATION_COMMUNICATES_WITH)).toBe(true); // Inheritance
