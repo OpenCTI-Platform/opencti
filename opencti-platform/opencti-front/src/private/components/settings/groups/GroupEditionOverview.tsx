@@ -96,6 +96,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     relationAdd: groupMutationRelationAdd,
     relationDelete: groupMutationRelationDelete,
   };
+
   const editor = useFormEditor(group as unknown as GenericData, false, queries, groupValidator);
 
   const initialValues = {
@@ -113,7 +114,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     <div>
       <Formik
         enableReinitialize={true}
-        initialValues={initialValues as never}
+        initialValues={initialValues}
         validationSchema={groupValidator}
         onSubmit={() => {
         }}
