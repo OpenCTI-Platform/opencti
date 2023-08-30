@@ -132,11 +132,11 @@ export const schemaRelationsTypesMapping = () => {
   const flatEntries = [];
   entries.forEach(([key, values]) => {
     const [fromType, toType] = key.split('_');
-    const generatedEntries = generateEntries(fromType, toType, values);
+    const generatedEntries = flattenEntries(fromType, toType, values);
     flatEntries.push(...generatedEntries);
   });
 
-  return mergedEntries(flatEntries.map(([key, values]) => {
+  return mergeEntries(flatEntries.map(([key, values]) => {
     return {
       key,
       values: values.map((def) => def.name)
@@ -156,7 +156,7 @@ const getChildren = (type) => {
   return schemaTypesDefinition.get(type);
 };
 
-const generateEntries = (fromType, toType, values) => {
+const flattenEntries = (fromType, toType, values) => {
   if (!isParentType(fromType) && !isParentType(toType)) {
     return [[`${fromType}_${toType}`, values]];
   }
@@ -166,7 +166,7 @@ const generateEntries = (fromType, toType, values) => {
   if (isParentType(fromType) && !isParentType(toType)) {
     const children = getChildren(fromType);
     children.forEach((child) => {
-      const newEntry = generateEntries(child, toType, values).flat();
+      const newEntry = flattenEntries(child, toType, values).flat();
       entries.push(newEntry);
     });
   }
@@ -174,7 +174,7 @@ const generateEntries = (fromType, toType, values) => {
   if (!isParentType(fromType) && isParentType(toType)) {
     const children = getChildren(toType);
     children.forEach((child) => {
-      const newEntry = generateEntries(fromType, child, values).flat();
+      const newEntry = flattenEntries(fromType, child, values).flat();
       entries.push(newEntry);
     });
   }
@@ -185,7 +185,7 @@ const generateEntries = (fromType, toType, values) => {
 
     fromTypeChildren.forEach((fromChild) => {
       toTypeChildren.forEach((toChild) => {
-        const newEntry = generateEntries(fromChild, toChild, values).flat();
+        const newEntry = flattenEntries(fromChild, toChild, values).flat();
         entries.push(newEntry);
       });
     });
@@ -194,7 +194,7 @@ const generateEntries = (fromType, toType, values) => {
   return entries;
 };
 
-const mergedEntries = (entries) => entries.reduce((result, currentItem) => {
+const mergeEntries = (entries) => entries.reduce((result, currentItem) => {
   const existingItem = result.find((item) => item.key === currentItem.key);
   if (existingItem) {
     currentItem.values.forEach((value) => {
