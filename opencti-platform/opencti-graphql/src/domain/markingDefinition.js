@@ -6,9 +6,8 @@ import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
-import { groupAddRelation } from './group';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import { getEntitiesMapFromCache } from '../database/cache';
+import { groupAddRelation } from './group';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -64,15 +63,4 @@ export const markingDefinitionEditContext = async (context, user, markingDefinit
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
   });
-};
-
-export const cleanMarkings = async (context, values) => {
-  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const defaultMarkingValues = values?.map((d) => markingsMap.get(d) ?? d) ?? [];
-  const defaultGroupedMarkings = R.groupBy((m) => m.definition_type, defaultMarkingValues);
-  return Object.entries(defaultGroupedMarkings).map(([_, key]) => {
-    const max = Math.max(...key.map((m) => m.x_opencti_order));
-    const results = key.filter((m) => m.x_opencti_order === max);
-    return R.uniqWith((a, b) => a.id === b.id, results);
-  }).flat();
 };

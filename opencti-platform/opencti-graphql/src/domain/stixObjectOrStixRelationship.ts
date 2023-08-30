@@ -9,7 +9,7 @@ import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixRefRelationshipAddInput, StixRefRelationshipsAddInput } from '../generated/graphql';
-import type { BasicStoreObject } from '../types/store';
+import type { BasicStoreObject, StoreMarkingDefinition } from '../types/store';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
@@ -34,11 +34,14 @@ export const stixObjectOrRelationshipAddRefRelation = async (
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
   }
   // Create relation
-  const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(type, input.relationship_type);
+  const to : StoreMarkingDefinition = await findById(context, user, input.toId);
+  const fromRole = `${type}_from`;
+  const fromType = stixObjectOrRelationship.entity_type;
+  const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromType, input.relationship_type);
   const patch = { [fieldName as string]: [input.toId] };
   const operations = { [fieldName as string]: UPDATE_OPERATION_ADD };
   const { element } = await patchAttribute(context, user, stixObjectOrRelationshipId, type, patch, { operations });
-  const relation = { ...element, from: stixObjectOrRelationship, fromId: stixObjectOrRelationshipId };
+  const relation = { ...element, from: stixObjectOrRelationship, fromId: stixObjectOrRelationshipId, fromRole, fromType, to };
   await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, relation, user);
   return relation;
 };

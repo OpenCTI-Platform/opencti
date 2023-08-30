@@ -27,7 +27,7 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { cleanMarkings } from './markingDefinition';
+import { cleanMarkings } from '../utils/markingDefinition-utils';
 
 export const GROUP_DEFAULT = 'Default';
 
