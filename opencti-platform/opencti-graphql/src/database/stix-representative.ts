@@ -33,6 +33,7 @@ import type * as SMO from '../types/stix-smo';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_BANK_ACCOUNT,
+  ENTITY_CRYPTOGRAPHIC_KEY,
   ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
@@ -56,6 +57,7 @@ import {
   ENTITY_TEXT,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
+  ENTITY_USER_AGENT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../schema/stixCyberObservable';
@@ -183,6 +185,9 @@ export const extractStixRepresentative = (
     const bankAccount = stix as SCO.StixBankAccount;
     return bankAccount.iban ?? bankAccount.account_number ?? 'Unknown';
   }
+  if (entityType === ENTITY_CRYPTOGRAPHIC_KEY) {
+    return (stix as SCO.StixCryptographicKey).value ?? 'Unknown';
+  }
   if (entityType === ENTITY_CRYPTOGRAPHIC_WALLET) {
     return (stix as SCO.StixCryptocurrencyWallet).value ?? 'Unknown';
   }
@@ -248,6 +253,9 @@ export const extractStixRepresentative = (
   if (entityType === ENTITY_USER_ACCOUNT) {
     const userAccount = stix as SCO.StixUserAccount;
     return userAccount.account_login ?? userAccount.user_id ?? 'Unknown';
+  }
+  if (entityType === ENTITY_USER_AGENT) {
+    return (stix as SCO.StixUserAgent).value ?? 'Unknown';
   }
   if (entityType === ENTITY_WINDOWS_REGISTRY_KEY) {
     return (stix as SCO.StixWindowsRegistryKey).key ?? 'Unknown';
