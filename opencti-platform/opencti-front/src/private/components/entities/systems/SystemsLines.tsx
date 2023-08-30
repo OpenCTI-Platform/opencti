@@ -8,7 +8,7 @@ import { SystemsLines_data$key } from '@components/entities/systems/__generated_
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { SystemLine, SystemLineDummy } from './SystemLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfRowsToLoad = 50;
@@ -18,12 +18,7 @@ interface SystemsLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: SystemsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 export const systemsLinesQuery = graphql`
@@ -33,7 +28,7 @@ export const systemsLinesQuery = graphql`
         $cursor: ID
         $orderBy: SystemsOrdering
         $orderMode: OrderingMode
-        $filters: [SystemsFiltering]
+        $filters: FilterGroup
     ) {
         ...SystemsLines_data
         @arguments(
@@ -55,7 +50,7 @@ const systemsLinesFragment = graphql`
         cursor: { type: "ID" }
         orderBy: { type: "SystemsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[SystemsFiltering]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "SystemsLinesRefetchQuery") {
         systems(

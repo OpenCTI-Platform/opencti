@@ -16,6 +16,7 @@ import { now } from '../utils/format';
 import { elCount } from '../database/engine';
 import { findById as findInvestigationById } from '../modules/workspace/workspace-domain';
 import { stixCoreObjectAddRelations } from './stixCoreObject';
+import { addFilter } from '../utils/filtering';
 
 const MANUAL_OBJECT = 'manual';
 const INFERRED_OBJECT = 'inferred';
@@ -32,7 +33,7 @@ export const findAll = async (context, user, args) => {
 
 export const numberOfContainersForObject = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
     count: elCount(
       context,
@@ -54,7 +55,7 @@ export const objects = async (context, user, containerId, args) => {
   const relationArgs = { fromId: containerId, toTypes: types, baseData: true };
   const objectRelationsPromise = listAllRelations(context, user, RELATION_OBJECT, relationArgs);
   const key = buildRefRelationKey(RELATION_OBJECT, '*');
-  const filters = [{ key, values: [containerId], operator: 'wildcard' }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, key, containerId, 'wildcard');
   const queryFilters = { ...args, filters };
   let relations = [];
   let elements = [];
@@ -98,19 +99,23 @@ export const objects = async (context, user, containerId, args) => {
 export const relatedContainers = async (context, user, containerId, args) => {
   const key = buildRefRelationKey(RELATION_OBJECT);
   const types = args.viaTypes ? args.viaTypes : ['Stix-Core-Object', 'stix-core-relationship'];
-  const filters = [{ key, values: [containerId] }];
+  const filters = {
+    mode: 'and',
+    filters: [{ key, values: [containerId] }],
+    filterGroups: [],
+  };
   const elements = await listAllThings(context, user, types, { filters });
   if (elements.length === 0) {
     return buildPagination(0, null, [], 0);
   }
   const elementsIds = elements.map((element) => element.id).slice(0, 800);
-  const queryFilters = [...(args.filters || []), { key: buildRefRelationKey(RELATION_OBJECT), values: elementsIds }];
+  const queryFilters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT), elementsIds);
   const queryArgs = { ...args, filters: queryFilters };
   return findAll(context, user, queryArgs);
 };
 
 export const containersObjectsOfObject = async (context, user, { id, types, filters = [], search = null }) => {
-  const queryFilters = [...filters, { key: buildRefRelationKey(RELATION_OBJECT), values: [id] }];
+  const queryFilters = addFilter(filters, buildRefRelationKey(RELATION_OBJECT), id);
   const containers = await findAll(context, user, { types: [ENTITY_TYPE_CONTAINER], first: 1000, search, filters: queryFilters, connectionFormat: false });
   const objectIds = R.uniq(containers.map((n) => n[buildRefRelationKey(RELATION_OBJECT)]).flat());
   const resolvedObjectsMap = await internalFindByIds(context, user, objectIds, { type: types, toMap: true });

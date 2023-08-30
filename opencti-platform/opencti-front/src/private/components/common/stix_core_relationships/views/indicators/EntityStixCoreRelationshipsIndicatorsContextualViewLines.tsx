@@ -26,7 +26,7 @@ const contextualViewLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "IndicatorsOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[IndicatorsFiltering]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "IndicatorsContextualViewLines_refetch") {
     indicators(
@@ -57,7 +57,7 @@ export const contextualViewLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $filters: [IndicatorsFiltering]
+    $filters: FilterGroup
     $orderBy: IndicatorsOrdering
     $orderMode: OrderingMode
   ) {

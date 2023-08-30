@@ -515,7 +515,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
       sortByName,
     )(nodesAndLinks);
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
-    const markedBy = R.propOr([], 'markedBy', params);
+    const markedBy = R.propOr([], 'objectMarking', params);
     const createdBy = R.propOr([], 'createdBy', params);
     const graphWithFilters = applyFilters(
       this.graphData,

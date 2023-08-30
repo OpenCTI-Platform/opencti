@@ -25,7 +25,7 @@ const courseOfActionResolvers = {
   CoursesOfActionFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
     mitigatedBy: buildRefRelationKey(RELATION_MITIGATES),
     creator: 'creator_id',
   },

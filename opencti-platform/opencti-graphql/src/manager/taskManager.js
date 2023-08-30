@@ -87,8 +87,12 @@ const findTaskToExecute = async (context) => {
     orderBy: 'created_at',
     orderMode: 'asc',
     limit: 1,
-    filters: [{ key: 'completed', values: [false] }],
-  });
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'completed', values: [false] }],
+      filterGroups: [],
+    },
+  }, true);
   if (tasks.length === 0) {
     return null;
   }
@@ -116,7 +120,11 @@ const computeRuleTaskElements = async (context, user, task) => {
     }
     return { actions, elements: processingElements };
   }
-  const filters = [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }];
+  const filters = {
+    mode: 'and',
+    filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
+    filterGroups: [],
+  };
   const actions = [{ type: ACTION_TYPE_RULE_CLEAR, context: { rule: ruleDefinition } }];
   const options = {
     first: MAX_TASK_ELEMENTS,
@@ -321,8 +329,10 @@ const executeUnshare = async (context, user, actionContext, element) => {
   for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
     const target = values[indexCreate];
     // resolve all containers of this element
-    const args = { filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [element.id] }], };
-    const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args);
+    const args = { filters:
+        { mode: 'and', filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [element.id] }], filterGroups: [] },
+    };
+    const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args, true);
     const grantedTo = containers.map((n) => n[buildRefRelationKey(RELATION_GRANTED_TO)]).flat();
     if (!grantedTo.includes(target)) {
       await deleteRelationsByFromAndTo(context, user, element.id, target, RELATION_GRANTED_TO, ABSTRACT_BASIC_RELATIONSHIP);

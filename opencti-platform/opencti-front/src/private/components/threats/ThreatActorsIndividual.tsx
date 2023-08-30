@@ -14,6 +14,7 @@ import {
   ThreatActorsIndividualCardsPaginationQuery$variables,
 } from './threat_actors_individual/__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import ThreatActorIndividualCreation from './threat_actors_individual/ThreatActorIndividualCreation';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'view-threatActorsIndividuals';
 
@@ -25,7 +26,7 @@ const ThreatActorsIndividual = () => {
         number: 0,
         symbol: '',
       },
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -68,6 +69,8 @@ const ThreatActorsIndividual = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Threat-Actor-Individual"
@@ -77,14 +80,13 @@ const ThreatActorsIndividual = () => {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'createdBy',
           'source_reliability',
           'confidence',
-          'creator',
-          'created_start_date',
-          'created_end_date',
+          'creator_id',
+          'created',
           'revoked',
         ]}
       >

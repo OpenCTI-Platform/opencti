@@ -37,13 +37,19 @@ class UserHistory extends Component {
         <QueryRenderer
           query={userHistoryLinesQuery}
           variables={{
-            filters: [
-              { key: 'user_id', values: [userId], operator: 'wildcard' },
-              {
-                key: 'event_type',
-                values: ['mutation', 'create', 'update', 'delete', 'merge'],
-              },
-            ],
+            filters: {
+              mode: 'and',
+              filterGroups: [],
+              filters: [
+                { key: 'user_id', values: [userId], operator: 'wildcard', mode: 'or' },
+                {
+                  key: 'event_type',
+                  values: ['mutation', 'create', 'update', 'delete', 'merge'],
+                  operator: 'eq',
+                  mode: 'or',
+                },
+              ],
+            },
             first: 10,
             orderBy: 'timestamp',
             orderMode: 'desc',

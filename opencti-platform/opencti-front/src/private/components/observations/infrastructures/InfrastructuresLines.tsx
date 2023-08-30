@@ -39,7 +39,7 @@ export const infrastructuresLinesQuery = graphql`
     $cursor: ID
     $orderBy: InfrastructuresOrdering
     $orderMode: OrderingMode
-    $filters: [InfrastructuresFiltering!]
+    $filters: FilterGroup
   ) {
     ...InfrastructuresLines_data
     @arguments(
@@ -61,7 +61,7 @@ const infrastructuresLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "InfrastructuresOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[InfrastructuresFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "InfrastructuresLinesRefetchQuery") {
     infrastructures(

@@ -28,6 +28,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern } from '../utils/syntax';
 import { computeValidPeriod } from '../utils/indicator-utils';
+import { addFilter } from '../utils/filtering';
 
 export const findById = (context, user, indicatorId) => {
   return storeLoadById(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -145,13 +146,13 @@ export const indicatorsNumber = (context, user, args) => ({
 
 export const indicatorsTimeSeriesByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_INDICATES, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 
 export const indicatorsNumberByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_INDICATES, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
   return {
     count: elCount(
       context,
@@ -170,7 +171,7 @@ export const indicatorsNumberByEntity = (context, user, args) => {
 
 export const indicatorsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_INDICATES, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_INDICATES, '*'), objectId);
   return distributionEntities(context, user, [ENTITY_TYPE_INDICATOR], { ...args, filters });
 };
 // endregion

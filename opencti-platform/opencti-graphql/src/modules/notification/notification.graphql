@@ -29,23 +29,6 @@ enum TriggerEventType {
     update
     delete
 }
-enum TriggerFilter {
-    trigger_type
-    created
-    event_types
-    user_ids
-    group_ids
-    organization_ids
-    filters
-    instance_trigger
-}
-
-input TriggersFiltering {
-    key: [TriggerFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
 input TriggerLiveAddInput {
     name: String! @constraint(minLength: 1)
     description: String
@@ -86,7 +69,6 @@ type Trigger implements InternalObject & BasicObject {
     isDirectAdministrator: Boolean
     currentUserAccessRight: String
     instance_trigger: Boolean
-    resolved_instance_filters: [ResolvedInstanceFilter!]
 }
 type TriggerConnection {
     pageInfo: PageInfo!
@@ -98,11 +80,6 @@ type TriggerEdge {
 }
 
 # Activity Triggers
-enum TriggerActivityFilter {
-    trigger_type
-    created
-    filters
-}
 enum TriggerActivityEventType {
     authentication
     read
@@ -128,27 +105,10 @@ input TriggerActivityDigestAddInput {
     recipients: [String!]!
 }
 
-input TriggerActivityFiltering {
-    key: [TriggerActivityFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Notifications
 enum NotificationsOrdering {
     name
     created
-}
-enum NotificationFilter {
-    created
-    is_read
-}
-input NotificationsFiltering {
-    key: [NotificationFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
 }
 type NotificationCount {
     user_id: String
@@ -196,7 +156,7 @@ type Query {
         after: ID
         orderBy: TriggersOrdering
         orderMode: OrderingMode
-        filters: [TriggersFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         includeAuthorities: Boolean
         search: String
@@ -208,7 +168,7 @@ type Query {
         after: ID
         orderBy: TriggersOrdering
         orderMode: OrderingMode
-        filters: [TriggerActivityFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): TriggerConnection @auth(for: [SETTINGS])
@@ -219,7 +179,7 @@ type Query {
         after: ID
         orderBy: NotificationsOrdering
         orderMode: OrderingMode
-        filters: [NotificationsFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): NotificationConnection @auth(for: [SETTINGS_SETACCESSES])
@@ -228,7 +188,7 @@ type Query {
         after: ID
         orderBy: NotificationsOrdering
         orderMode: OrderingMode
-        filters: [NotificationsFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): NotificationConnection @auth

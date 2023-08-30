@@ -117,7 +117,11 @@ class Investigations extends Component {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: [{ key: 'type', values: ['investigation'] }],
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'type', values: ['investigation'] }],
+        filterGroups: [],
+      },
     };
     return (
       <>

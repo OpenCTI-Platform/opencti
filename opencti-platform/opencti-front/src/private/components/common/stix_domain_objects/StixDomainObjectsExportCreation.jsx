@@ -70,7 +70,7 @@ export const StixDomainObjectsExportCreationMutation = graphql`
     $search: String
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixDomainObjectsFiltering]
+    $filters: FilterGroup
     $relationship_type: [String]
     $elementId: String
     $selectedIds: [String]

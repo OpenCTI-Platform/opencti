@@ -1,4 +1,4 @@
-import { assoc, pipe, isNil } from 'ramda';
+import { assoc, isNil, pipe } from 'ramda';
 import { createEntity, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -6,6 +6,7 @@ import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { FROM_START, UNTIL_END } from '../utils/format';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { addFilter } from '../utils/filtering';
 
 export const findById = (context, user, campaignId) => {
   return storeLoadById(context, user, campaignId, ENTITY_TYPE_CAMPAIGN);
@@ -22,7 +23,7 @@ export const campaignsTimeSeries = (context, user, args) => {
 
 export const campaignsTimeSeriesByEntity = (context, user, args) => {
   const { relationship_type, objectId } = args;
-  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, relationship_type.map((n) => buildRefRelationKey(n, '*')), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CAMPAIGN], { ...args, filters });
 };
 // endregion

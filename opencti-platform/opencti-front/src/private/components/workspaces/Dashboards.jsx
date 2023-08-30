@@ -117,7 +117,11 @@ class Dashboards extends Component {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: [{ key: 'type', values: ['dashboard'] }],
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'type', values: ['dashboard'] }],
+        filterGroups: [],
+      },
     };
     return (
       <>

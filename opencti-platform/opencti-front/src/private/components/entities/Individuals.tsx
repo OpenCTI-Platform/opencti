@@ -10,8 +10,8 @@ import IndividualCreation from './individuals/IndividualCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'view-individuals';
 
@@ -23,7 +23,7 @@ const Individuals = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const renderLines = () => {
@@ -70,6 +70,8 @@ const Individuals = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="User"
@@ -78,10 +80,9 @@ const Individuals = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
+          'objectLabel',
+          'objectMarking',
+          'created',
           'createdBy',
           'x_opencti_reliability',
         ]}

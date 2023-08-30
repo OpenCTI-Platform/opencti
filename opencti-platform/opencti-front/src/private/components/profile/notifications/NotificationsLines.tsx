@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import {
   NotificationLineComponent,
@@ -22,12 +22,7 @@ interface NotificationLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: NotificationsLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
   selectedElements: Record<string, NotificationLine_node$data>;
   deSelectedElements: Record<string, NotificationLine_node$data>;
   onToggleEntity: (
@@ -44,7 +39,7 @@ export const notificationsLinesQuery = graphql`
     $cursor: ID
     $orderBy: NotificationsOrdering
     $orderMode: OrderingMode
-    $filters: [NotificationsFiltering!]
+    $filters: FilterGroup
   ) {
     ...NotificationsLines_data
       @arguments(
@@ -66,7 +61,7 @@ const notificationsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "NotificationsOrdering", defaultValue: created }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[NotificationsFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "AlertsLinesRefetchQuery") {
     myNotifications(

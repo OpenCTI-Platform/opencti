@@ -9,7 +9,7 @@ import {
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { CourseOfActionLine, CourseOfActionLineDummy } from './CourseOfActionLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 const nbOfRowsToLoad = 50;
@@ -18,12 +18,7 @@ interface CoursesOfActionLinesProps {
   dataColumns: DataColumns;
   paginationOptions ? : CoursesOfActionLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 export const coursesOfActionLinesQuery = graphql`
@@ -33,7 +28,7 @@ export const coursesOfActionLinesQuery = graphql`
         $cursor: ID
         $orderBy: CoursesOfActionOrdering
         $orderMode: OrderingMode
-        $filters: [CoursesOfActionFiltering]
+        $filters: FilterGroup
     ) {
         ...CoursesOfActionLines_data
         @arguments(
@@ -55,7 +50,7 @@ export const coursesOfActionLinesFragment = graphql`
             cursor: { type: "ID" }
             orderBy: { type: "CoursesOfActionOrdering", defaultValue: name }
             orderMode: { type: "OrderingMode", defaultValue: asc }
-            filters: { type: "[CoursesOfActionFiltering]" }
+            filters: { type: "FilterGroup" }
         )
         @refetchable(queryName: "CoursesOfActionLinesRefetchQuery") {
             coursesOfAction(

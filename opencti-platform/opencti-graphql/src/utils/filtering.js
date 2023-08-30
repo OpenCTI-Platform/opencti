@@ -1,4 +1,5 @@
-import { buildRefRelationKey, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
+import { uniq } from 'ramda';
+import { buildRefRelationKey, INPUT_LABELS, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import {
   RELATION_CREATED_BY,
   RELATION_OBJECT,
@@ -14,19 +15,20 @@ import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { extractStixRepresentative } from '../database/stix-representative';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 // Resolutions
-export const MARKING_FILTER = 'markedBy';
+export const MARKING_FILTER = 'objectMarking';
 export const CREATED_BY_FILTER = 'createdBy';
-export const CREATOR_FILTER = 'creator';
-export const ASSIGNEE_FILTER = 'assigneeTo';
-export const PARTICIPANT_FILTER = 'participant';
-export const OBJECT_CONTAINS_FILTER = 'objectContains';
+export const CREATOR_FILTER = 'creator_id';
+export const ASSIGNEE_FILTER = 'objectAssignee';
+export const PARTICIPANT_FILTER = 'objectParticipant';
+export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
 export const INSTANCE_FILTER = 'elementId';
 export const NEGATION_FILTER_SUFFIX = '_not_eq';
-export const LABEL_FILTER = 'labelledBy';
 export const RESOLUTION_FILTERS = [
   LABEL_FILTER,
   MARKING_FILTER,
@@ -46,6 +48,7 @@ export const ENTITY_FILTERS = [
   OBJECT_CONTAINS_FILTER,
 ];
 // Values
+export const LABEL_FILTER = INPUT_LABELS;
 export const TYPE_FILTER = 'entity_type';
 export const INDICATOR_FILTER = 'indicator_types';
 export const SCORE_FILTER = 'x_opencti_score';
@@ -63,9 +66,9 @@ export const RELATION_TO_TYPES = 'toTypes';
 export const GlobalFilters = {
   createdBy: buildRefRelationKey(RELATION_CREATED_BY),
   markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-  labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+  objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
   indicates: buildRefRelationKey(RELATION_INDICATES),
-  objectContains: buildRefRelationKey(RELATION_OBJECT),
+  objects: buildRefRelationKey(RELATION_OBJECT),
   creator: 'creator_id',
 };
 
@@ -101,49 +104,51 @@ export const resolvedFiltersMapForUser = async (context, user, filters) => {
   return resolveUserMap;
 };
 
-export const convertFiltersFrontendFormat = async (context, user, filters) => {
-  // Grab all values that are internal_id that needs to be converted to standard_ids
-  const resolvedMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  // Remap the format of specific keys
+const convertFiltersFrontendFormatContent = async (context, user, mainFilterGroup, resolvedMap) => {
   const adaptedFilters = [];
-  const filterEntries = Object.entries(filters);
-  for (let index = 0; index < filterEntries.length; index += 1) {
-    const [key, rawValues] = filterEntries[index];
+  const adaptedFilterGroups = [];
+  const { filters = [] } = mainFilterGroup;
+  const { filterGroups = [] } = mainFilterGroup;
+  for (let index = 0; index < filterGroups.length; index += 1) {
+    const group = filterGroups[index];
+    const adaptedGroup = await convertFiltersFrontendFormatContent(context, user, group, resolvedMap);
+    adaptedFilterGroups.push(adaptedGroup);
+  }
+  for (let index = 0; index < filters.length; index += 1) {
+    const filter = filters[index];
+    // Remap the format of specific keys
+    const rawValues = filter.values;
     const values = [];
     for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
-      const v = rawValues[vIndex];
-      if (resolvedMap.has(v.id)) {
-        const stixInstance = resolvedMap.get(v.id);
+      const id = rawValues[vIndex];
+      if (resolvedMap.has(id)) {
+        const stixInstance = resolvedMap.get(id);
         const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stixInstance);
         const value = extractStixRepresentative(stixInstance);
         // add id if user has access to the element
-        values.push({ id: isUserHasAccessToElement ? v.id : '<invalid access>', value });
+        values.push({ id: isUserHasAccessToElement ? id : '<invalid access>', value });
         // add standard id if user has access to the element
         values.push({ id: isUserHasAccessToElement ? stixInstance.id : '<invalid access>', value });
       } else {
-        values.push(v);
+        values.push({ id, value: 'deprecated' }); // TODO
       }
     }
-    if (key.endsWith('start_date') || key.endsWith('_gt')) {
-      const workingKey = key.replace('_start_date', '').replace('_gt', '');
-      adaptedFilters.push({ key: workingKey, operator: 'gt', values });
-    } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
-      const workingKey = key.replace('_end_date', '').replace('_lt', '');
-      adaptedFilters.push({ key: workingKey, operator: 'lt', values });
-    } else if (key.endsWith('_gte')) {
-      const workingKey = key.replace('_gte', '');
-      adaptedFilters.push({ key: workingKey, operator: 'gte', values });
-    } else if (key.endsWith('_lte')) {
-      const workingKey = key.replace('_lte', '');
-      adaptedFilters.push({ key: workingKey, operator: 'lte', values });
-    } else if (key.endsWith('_not_eq')) {
-      const workingKey = key.replace('_not_eq', '');
-      adaptedFilters.push({ key: workingKey, operator: 'not_eq', values, filterMode: 'and' });
-    } else {
-      adaptedFilters.push({ key, operator: 'eq', values, filterMode: 'or' });
-    }
+    adaptedFilters.push({ ...filter, values });
   }
-  return adaptedFilters;
+  return (mainFilterGroup
+    ? {
+      mode: mainFilterGroup.mode,
+      filters: adaptedFilters,
+      filterGroups: adaptedFilterGroups,
+    }
+    : undefined);
+};
+
+export const convertFiltersFrontendFormat = async (context, user, filterGroup) => {
+  // Grab all values that are internal_id that needs to be converted to standard_ids
+  const resolvedMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
+  const adaptedFilterGroup = await convertFiltersFrontendFormatContent(context, user, filterGroup, resolvedMap);
+  return adaptedFilterGroup;
 };
 
 export const convertFiltersToQueryOptions = async (context, user, filters, opts = {}) => {
@@ -239,7 +244,7 @@ export const testRefsFilter = (stix, extractedIds, operator) => {
   return true;
 };
 
-const testObjectContainsFilter = (stix, extractedIds, operator) => {
+const testObjectsFilter = (stix, extractedIds, operator) => {
   const instanceObjects = [...(stix.object_refs ?? []), ...(stix.extensions?.[STIX_EXT_OCTI]?.object_refs_inferred ?? [])];
   const isRefFound = extractedIds.some((r) => instanceObjects.includes(r));
   // If ref is available but must not be
@@ -333,7 +338,7 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
             return false; // no application
           }
           // If entity is not available but must be
-          // test on relationships target/source and on objectContains
+          // test on relationships target/source and on objects
           if (operator === 'eq'
             && !testRelationFromFilter(stix, extractedIds, operator)
             && !testRelationToFilter(stix, extractedIds, operator)
@@ -525,7 +530,7 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
       }
       // object Refs filtering
       if (key === OBJECT_CONTAINS_FILTER) {
-        if (!testObjectContainsFilter(stix, values.map((v) => v.id), operator)) {
+        if (!testObjectsFilter(stix, values.map((v) => v.id), operator)) {
           return false;
         }
       }
@@ -602,4 +607,94 @@ export const isStixMatchFilters = async (context, user, stix, adaptedFilters, us
     }
   }
   return true;
+};
+
+export const addFilter = (filterGroup, newKey, newValues, operator = 'eq') => {
+  return {
+    mode: filterGroup?.mode ?? 'and',
+    filters: [
+      {
+        key: Array.isArray(newKey) ? newKey : [newKey],
+        values: Array.isArray(newValues) ? newValues : [newValues],
+        operator,
+        mode: 'or'
+      },
+      ...(filterGroup?.filters ?? [])
+    ],
+    filterGroups: filterGroup?.filterGroups ?? [],
+  };
+};
+
+export const removeFilter = (filterGroup, filterKeys) => {
+  const keysToRemove = Array.isArray(filterKeys) ? filterKeys : [filterKeys];
+  return {
+    mode: filterGroup?.mode ?? 'and',
+    filters: filterGroup?.filters.filter((f) => !keysToRemove.includes(f.key)),
+    filterGroups: filterGroup?.filterGroups ?? [],
+  };
+};
+
+export const extractFilterKeys = (filters) => {
+  let keys = filters.filters?.map((f) => f.key).flat() ?? []; // TODO remove filters.filters can be null when filter format refacto done
+  if (filters.filterGroups && filters.filterGroups.length > 0) {
+    keys = keys.concat(filters.filterGroups.map((group) => extractFilterKeys(group)).flat());
+  }
+  return keys;
+};
+
+// extract all the ids from a filter group / all the ids corresponding to a specific key if key is specified
+export const extractFilterIds = (filters, key = null) => {
+  let ids = key
+    ? filters.filters?.filter((f) => f.key.includes(key)).map((f) => f.values).flat() ?? []
+    : filters.filters?.map((f) => f.values).flat() ?? [];
+  if (filters.filterGroups && filters.filterGroups.length > 0) {
+    ids = ids.concat(filters.filterGroups.map((group) => extractFilterIds(group, key)).flat());
+  }
+  return uniq(ids);
+};
+
+export const checkedAndConvertedFilters = (filters, entityTypes) => {
+  if (filters?.filters && entityTypes.length > 0) { // TODO replace by filters && XX
+    const keys = extractFilterKeys(filters);
+    // check filters keys correspond to the entity types
+    // correct keys are keys in AT LEAST one of the entity types schema definition
+    if (keys.length > 0) {
+      let incorrectKeys = keys;
+      entityTypes.forEach((type) => {
+        const availableAttributes = schemaAttributesDefinition.getAttributeNames(type);
+        const availableRelations = schemaRelationsRefDefinition.getInputNames(type);
+        const availableKeys = availableAttributes.concat(availableRelations).concat(['rel_object.internal_id', 'rel_object.*', 'rel_related-to.*']); // TODO remove hardcode when all the enum are removed
+        console.log('availableKeys', availableKeys);
+        keys.forEach((k) => {
+          if (availableKeys.includes(k)) {
+            incorrectKeys = incorrectKeys.filter((n) => n !== k);
+          }
+        });
+      });
+      if (incorrectKeys.length > 0) {
+        throw Error(`incorrect filter keys: ${incorrectKeys}`); // TODO remove filter keys that are not correct when dev finished
+      }
+    }
+    const newFilters = [];
+    // translate the filter keys on relation refs
+    filters.filters.forEach((f) => {
+      const key = Array.isArray(f.key) ? f.key[0] : f.key;
+      console.log('entityTypes', entityTypes);
+      const databaseName = schemaRelationsRefDefinition.getDatabaseName(key, entityTypes);
+      console.log('key', key);
+      console.log('databaseName', databaseName);
+      if (databaseName) {
+        const newKey = buildRefRelationKey(databaseName);
+        newFilters.push({ ...f, key: newKey });
+      } else {
+        newFilters.push(f);
+      }
+    });
+    return {
+      mode: filters.mode,
+      filters: newFilters,
+      filterGroups: filters.filterGroups,
+    };
+  }
+  return undefined;
 };

@@ -24,7 +24,7 @@ const dataSourceResolvers: Resolvers = {
   DataSourcesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
     dataSourceAdd: (_, { input }, context) => {

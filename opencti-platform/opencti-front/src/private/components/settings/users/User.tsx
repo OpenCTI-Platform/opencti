@@ -112,7 +112,7 @@ const userAuditsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $filters: [LogsFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
   ) {
     auditsTimeSeries(

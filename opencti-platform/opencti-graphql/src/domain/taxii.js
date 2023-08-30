@@ -14,7 +14,7 @@ import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { convertFiltersToQueryOptions } from '../utils/filtering';
+import { addFilter, convertFiltersToQueryOptions } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 
@@ -52,8 +52,8 @@ export const findAll = (context, user, args) => {
     return listEntities(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);
   }
   // No user specify, listing only public taxii collections
-  const publicFilter = { key: ['taxii_public'], values: ['true'] };
-  const publicArgs = { ...(args ?? {}), filters: [...(args?.filters ?? []), publicFilter] };
+  const filters = addFilter(args?.filters, 'taxii_public', 'true');
+  const publicArgs = { ...(args ?? {}), filters };
   return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context, user, collectionId, input) => {

@@ -33,7 +33,7 @@ export const vocabulariesLinesQuery = graphql`
     $count: Int
     $orderMode: OrderingMode
     $orderBy: VocabularyOrdering
-    $filters: [VocabularyFiltering!]
+    $filters: FilterGroup
     $category: VocabularyCategory
   ) {
     ...VocabulariesLines_data
@@ -51,7 +51,7 @@ export const vocabulariesLinesQuery = graphql`
 export const vocabulariesLinesFragment = graphql`
   fragment VocabulariesLines_data on Query
   @argumentDefinitions(
-    filters: { type: "[VocabularyFiltering!]" }
+    filters: { type: "FilterGroup" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 200 }
     orderMode: { type: "OrderingMode", defaultValue: asc }

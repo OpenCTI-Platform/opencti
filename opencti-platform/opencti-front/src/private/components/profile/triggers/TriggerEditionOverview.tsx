@@ -16,7 +16,13 @@ import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  Filter,
+  FilterGroup,
+  findFilterFromKey, findFilterIndexFromKey,
+  initialFilterGroup,
+  isUniqFilter,
+} from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
@@ -59,11 +65,6 @@ const triggerEditionOverviewFragment = graphql`
       id
       name
     }
-    resolved_instance_filters {
-        id
-        valid
-        value
-    }
   }
 `;
 
@@ -93,44 +94,108 @@ TriggerEditionOverviewProps
 > = ({ data, handleClose, paginationOptions }) => {
   const { t } = useFormatter();
   const trigger = useFragment(triggerEditionOverviewFragment, data);
-  const filters = JSON.parse(trigger.filters ?? '{}');
+  const filters = JSON.parse(trigger.filters ?? JSON.stringify(initialFilterGroup)) as FilterGroup;
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
-  const [instanceFilters, setInstanceFilters] = useState({});
+  const [instanceFilters, setInstanceFilters] = useState([]);
   const handleAddFilter = (
-    key: string,
+    k: string,
     id: string,
-    value: Record<string, unknown> | string,
+    op = 'eq',
   ) => {
-    if (filters[key] && filters[key].length > 0) {
-      const updatedFilters = R.assoc(
-        key,
-        isUniqFilter(key)
-          ? [{ id, value }]
-          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-        filters,
-      );
+    if (filters && findFilterFromKey(filters.filters, k, op)) {
+      const filter = findFilterFromKey(filters.filters, k, op);
+      const newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
+      const newFilterElement = {
+        key: k,
+        values: newValues,
+        operator: op,
+        mode: 'or',
+      };
+      const newBaseFilters = {
+        ...filters,
+        filters: [
+          ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
+          newFilterElement, // add new filter
+        ],
+      };
       commitFieldPatch({
         variables: {
           id: trigger.id,
-          input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+          input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
         },
       });
     } else {
-      const updatedFilters = R.assoc(key, [{ id, value }], filters);
+      const newFilterElement = {
+        key: k,
+        values: [id],
+        operator: op ?? 'eq',
+        mode: 'or',
+      };
+      const newBaseFilters = filters ? {
+        ...filters,
+        filters: [...filters.filters, newFilterElement], // add new filter
+      } : {
+        mode: 'and',
+        filterGroups: [],
+        filters: [newFilterElement],
+      };
       commitFieldPatch({
         variables: {
           id: trigger.id,
-          input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+          input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
         },
       });
     }
   };
-  const handleRemoveFilter = (key: string) => {
-    const updatedFilters = R.dissoc(key, filters);
+  const handleRemoveFilter = (k: string, op = 'eq') => {
+    const newBaseFilters = {
+      ...filters,
+      filters: filters.filters
+        .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+    };
     commitFieldPatch({
       variables: {
         id: trigger.id,
-        input: { key: 'filters', value: JSON.stringify(updatedFilters) },
+        input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
+      },
+    });
+  };
+
+  const handleSwitchLocalMode = (localFilter: Filter) => {
+    let newBaseFilters: FilterGroup = initialFilterGroup;
+    if (filters) {
+      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
+      if (filterIndex !== null) {
+        const newFiltersContent = [...filters.filters];
+        newFiltersContent[filterIndex] = {
+          ...localFilter,
+          mode: localFilter.mode === 'and' ? 'or' : 'and',
+        };
+        newBaseFilters = {
+          ...filters,
+          filters: newFiltersContent,
+        };
+      }
+    }
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
+      },
+    });
+  };
+
+  const handleSwitchGlobalMode = () => {
+    const newBaseFilters = filters
+      ? {
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      }
+      : initialFilterGroup;
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: { key: 'filters', value: JSON.stringify(newBaseFilters) },
       },
     });
   };
@@ -434,11 +499,11 @@ TriggerEditionOverviewProps
                       availableFilterKeys={[
                         'entity_type',
                         'x_opencti_workflow_id',
-                        'assigneeTo',
-                        'objectContains',
-                        'markedBy',
-                        'labelledBy',
-                        'creator',
+                        'objectAssignee',
+                        'objects',
+                        'objectMarking',
+                        'objectLabel',
+                        'creator_id',
                         'createdBy',
                         'priority',
                         'severity',
@@ -473,9 +538,10 @@ TriggerEditionOverviewProps
               <FilterIconButton
                 filters={filters}
                 handleRemoveFilter={handleRemoveFilter}
+                handleSwitchGlobalMode={handleSwitchGlobalMode}
+                handleSwitchLocalMode={handleSwitchLocalMode}
                 classNameNumber={2}
                 redirection
-                resolvedInstanceFilters={trigger.resolved_instance_filters ?? []}
               />
             </span>
           }

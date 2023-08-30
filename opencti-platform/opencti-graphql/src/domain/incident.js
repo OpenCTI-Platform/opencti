@@ -8,6 +8,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/gene
 import { FROM_START, now, UNTIL_END } from '../utils/format';
 import { RELATION_OBJECT_PARTICIPANT } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { addFilter } from '../utils/filtering';
 
 export const findById = (context, user, incidentId) => {
   return storeLoadById(context, user, incidentId, ENTITY_TYPE_INCIDENT);
@@ -24,7 +25,7 @@ export const batchParticipants = (context, user, incidentIds) => {
 // region time series
 export const incidentsTimeSeriesByEntity = async (context, user, args) => {
   const { relationship_type, objectId } = args;
-  const filters = [{ key: [relationship_type.map((n) => buildRefRelationKey(n, '*'))], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, relationship_type.map((n) => buildRefRelationKey(n, '*')), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INCIDENT], { ...args, filters });
 };
 

@@ -21,10 +21,10 @@ export const stixCoreObjectOptions = {
   StixCoreObjectsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
+    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     participant: buildRefRelationKey(RELATION_OBJECT_PARTICIPANT),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objectContains: buildRefRelationKey(RELATION_OBJECT),
+    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objects: buildRefRelationKey(RELATION_OBJECT),
     hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
     killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
     indicates: buildRefRelationKey(RELATION_INDICATES),

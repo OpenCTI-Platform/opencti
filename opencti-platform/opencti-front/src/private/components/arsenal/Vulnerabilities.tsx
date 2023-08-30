@@ -1,12 +1,9 @@
 import React from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import VulnerabilitiesLines, {
-  vulnerabilitiesLinesQuery,
-} from './vulnerabilities/VulnerabilitiesLines';
+import VulnerabilitiesLines, { vulnerabilitiesLinesQuery } from './vulnerabilities/VulnerabilitiesLines';
 import VulnerabilityCreation from './vulnerabilities/VulnerabilityCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { Filters } from '../../../components/list_lines';
 import { VulnerabilityLineDummy } from './vulnerabilities/VulnerabilityLine';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import {
@@ -15,6 +12,7 @@ import {
 } from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../utils/hooks/useAuth';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const Vulnerabilities = () => {
   const {
@@ -28,7 +26,7 @@ const Vulnerabilities = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const renderLines = () => {
@@ -85,6 +83,8 @@ const Vulnerabilities = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Vulnerability"
@@ -94,17 +94,16 @@ const Vulnerabilities = () => {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'createdBy',
           'source_reliability',
           'confidence',
           'x_opencti_base_score',
           'x_opencti_base_severity',
           'x_opencti_attack_vector',
-          'creator',
-          'created_start_date',
-          'created_end_date',
+          'creator_id',
+          'created',
         ]}
       >
         {queryRef && (

@@ -957,7 +957,7 @@ class InvestigationGraphComponent extends Component {
       sortByName,
     )(R.union(this.graphData.nodes, this.graphData.links));
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
-    const markedBy = R.propOr([], 'markedBy', params);
+    const markedBy = R.propOr([], 'objectMarking', params);
     const createdBy = R.propOr([], 'createdBy', params);
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
 

@@ -3,11 +3,11 @@ import { KeyboardDoubleArrowDownOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { SearchStixCoreObjectLineDummy } from '@components/search/SearchStixCoreObjectLine';
 import {
-  SearchStixCoreObjectLine_node$data,
+    SearchStixCoreObjectLine_node$data,
 } from '@components/search/__generated__/SearchStixCoreObjectLine_node.graphql';
 import {
-  SearchStixCoreObjectsLinesPaginationQuery,
-  SearchStixCoreObjectsLinesPaginationQuery$variables,
+    SearchStixCoreObjectsLinesPaginationQuery,
+    SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
@@ -18,11 +18,11 @@ import ToolBar from './data/ToolBar';
 import SearchStixCoreObjectsLines, { searchStixCoreObjectsLinesQuery } from './search/SearchStixCoreObjectsLines';
 import ExportContextProvider from '../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { Filters } from '../../components/list_lines';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
 import { useFormatter } from '../../components/i18n';
+import { initialFilterGroup } from '../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'view-search';
 
@@ -45,7 +45,7 @@ const Search = () => {
       sortBy: '_score',
       orderAsc: false,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const {
@@ -128,6 +128,8 @@ const Search = () => {
               handleSort={storageHelpers.handleSort}
               handleAddFilter={storageHelpers.handleAddFilter}
               handleRemoveFilter={storageHelpers.handleRemoveFilter}
+              handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+              handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
               handleChangeView={storageHelpers.handleChangeView}
               handleToggleSelectAll={handleToggleSelectAll}
               handleToggleExports={storageHelpers.handleToggleExports}
@@ -141,17 +143,15 @@ const Search = () => {
               iconExtension={true}
               availableFilterKeys={[
                 'entity_type',
-                'labelledBy',
-                'markedBy',
+                'objectLabel',
+                'objectMarking',
                 'createdBy',
                 'source_reliability',
                 'confidence',
                 'x_opencti_organization_type',
-                'creator',
-                'created_start_date',
-                'created_end_date',
-                'created_at_start_date',
-                'created_at_end_date',
+                'creator_id',
+                'created',
+                'created_at',
               ]}
             >
               {queryRef && (

@@ -120,7 +120,7 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = g
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
   ) {
     ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data
@@ -149,7 +149,7 @@ const StixCoreRelationshipCreationFromEntityStixCoreObjectsLines = createPaginat
           cursor: { type: "ID" }
           orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
           orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[StixCoreObjectsFiltering]" }
+          filters: { type: "FilterGroup" }
           filterMode: { type: "FilterMode" }
         ) {
           stixCoreObjects(

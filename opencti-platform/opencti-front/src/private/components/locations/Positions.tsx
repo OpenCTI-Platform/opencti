@@ -4,16 +4,14 @@ import PositionCreation from './positions/PositionCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import {
   PositionsLinesPaginationQuery,
   PositionsLinesPaginationQuery$variables,
 } from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { PositionLineDummy } from './positions/PositionLine';
-import PositionsLines, {
-  positionsLinesQuery,
-} from './positions/PositionsLines';
+import PositionsLines, { positionsLinesQuery, } from './positions/PositionsLines';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'view-positions';
 
@@ -25,7 +23,7 @@ const Positions: FunctionComponent = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -71,6 +69,8 @@ const Positions: FunctionComponent = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Position"
@@ -79,8 +79,7 @@ const Positions: FunctionComponent = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'created_start_date',
-          'created_end_date',
+          'created',
           'createdBy',
         ]}
       >

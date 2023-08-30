@@ -9,7 +9,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: ExternalReferencesOrdering
     $orderMode: OrderingMode
-    $filters: [ExternalReferencesFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
     $search: String
   ) {

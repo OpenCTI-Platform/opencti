@@ -1,19 +1,17 @@
 import React, { FunctionComponent } from 'react';
-import DataComponentLines, {
-  dataComponentsLinesQuery,
-} from './data_components/DataComponentsLines';
+import DataComponentLines, { dataComponentsLinesQuery, } from './data_components/DataComponentsLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import DataComponentCreation from './data_components/DataComponentCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
-import { Filters } from '../../../components/list_lines';
 import {
   DataComponentsLinesPaginationQuery,
   DataComponentsLinesPaginationQuery$variables,
 } from './data_components/__generated__/DataComponentsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataComponentLineDummy from './data_components/DataComponentLineDummy';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY_DATA_COMPONENTS = 'view-dataComponents';
 
@@ -25,7 +23,7 @@ const DataComponents: FunctionComponent = () => {
         number: 0,
         symbol: '',
       },
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -77,6 +75,8 @@ const DataComponents: FunctionComponent = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Data-Component"
@@ -86,13 +86,12 @@ const DataComponents: FunctionComponent = () => {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'createdBy',
           'source_reliability',
           'confidence',
-          'created_start_date',
-          'created_end_date',
+          'created',
           'revoked',
         ]}
       >

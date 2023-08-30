@@ -287,25 +287,29 @@ const SearchBulk = () => {
           if (values.length > 0) {
             setLoading(true);
             const searchPaginationOptions = {
-              filters: [
-                {
-                  key: [
-                    'name',
-                    'aliases',
-                    'x_opencti_aliases',
-                    'x_mitre_id',
-                    'value',
-                    'subject',
-                    'abstract',
-                    'hashes_MD5',
-                    'hashes_SHA1',
-                    'hashes_SHA256',
-                    'hashes_SHA512',
-                    'x_opencti_additional_names',
-                  ],
-                  values,
-                },
-              ],
+              filters: {
+                mode: 'and',
+                filters: [
+                  {
+                    key: [
+                      'name',
+                      'aliases',
+                      'x_opencti_aliases',
+                      'x_mitre_id',
+                      'value',
+                      'subject',
+                      'abstract',
+                      'hashes_MD5',
+                      'hashes_SHA1',
+                      'hashes_SHA256',
+                      'hashes_SHA512',
+                      'x_opencti_additional_names',
+                    ],
+                    values,
+                  },
+                ],
+                filterGroups: [],
+              },
               count: 5000,
             };
             const result = (

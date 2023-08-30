@@ -6,9 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
-import AttackPatternsMatrixColumns, {
-  attackPatternsMatrixColumnsQuery,
-} from './AttackPatternsMatrixColumns';
+import AttackPatternsMatrixColumns, { attackPatternsMatrixColumnsQuery } from './AttackPatternsMatrixColumns';
 
 const styles = () => ({
   container: {
@@ -41,7 +39,11 @@ class AttackPatternsMatrix extends Component {
           query={attackPatternsMatrixColumnsQuery}
           variables={{
             count: 5000,
-            filters: [{ key: 'revoked', values: ['false'] }],
+            filters: {
+              mode: 'and',
+              filters: [{ key: 'revoked', values: ['false'] }],
+              filterGroups: [],
+            },
           }}
           render={({ props }) => {
             if (props) {

@@ -24,7 +24,7 @@ export const groupingsLinesQuery = graphql`
     $cursor: ID
     $orderBy: GroupingsOrdering
     $orderMode: OrderingMode
-    $filters: [GroupingsFiltering!]
+    $filters: FilterGroup
   ) {
     ...GroupingsLines_data
       @arguments(
@@ -46,7 +46,7 @@ const groupingsLineFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "GroupingsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[GroupingsFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "GroupingsLinesRefetchQuery") {
     groupings(

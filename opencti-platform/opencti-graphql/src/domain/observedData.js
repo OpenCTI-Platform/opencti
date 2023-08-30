@@ -1,15 +1,6 @@
 import * as R from 'ramda';
-import {
-  createEntity,
-  distributionEntities,
-  timeSeriesEntities,
-} from '../database/middleware';
-import {
-  internalLoadById,
-  listEntities,
-  listRelations,
-  storeLoadById
-} from '../database/middleware-loader';
+import { createEntity, distributionEntities, timeSeriesEntities, } from '../database/middleware';
+import { internalLoadById, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
@@ -20,6 +11,7 @@ import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { addFilter } from '../utils/filtering';
 
 export const findById = (context, user, observedDataId) => {
   return storeLoadById(context, user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
@@ -43,10 +35,14 @@ export const resolveName = async (context, user, observedData) => {
 export const observedDataContainsStixObjectOrStixRelationship = async (context, user, observedDataId, thingId) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [observedDataId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'internal_id', values: [observedDataId] },
+        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const observedDataFound = await findAll(context, user, args);
   return observedDataFound.edges.length > 0;
@@ -69,19 +65,19 @@ export const observedDatasNumber = (context, user, args) => ({
 
 export const observedDatasTimeSeriesByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], { ...args, filters });
 };
 
 export const observedDatasTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], { ...args, filters });
 };
 
 export const observedDatasNumberByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
     count: elCount(
       context,
@@ -100,7 +96,7 @@ export const observedDatasNumberByEntity = (context, user, args) => {
 
 export const observedDatasDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], { ...args, filters });
 };
 // endregion

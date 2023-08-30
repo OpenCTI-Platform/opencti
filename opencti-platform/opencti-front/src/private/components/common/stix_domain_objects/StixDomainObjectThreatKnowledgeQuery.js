@@ -9,7 +9,7 @@ export const stixDomainObjectThreatKnowledgeStixRelationshipsQuery = graphql`
     $first: Int
     $orderBy: StixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixRelationshipsFiltering]
+    $filters: FilterGroup
   ) {
     ...StixDomainObjectGlobalKillChain_data
     ...StixDomainObjectTimeline_data

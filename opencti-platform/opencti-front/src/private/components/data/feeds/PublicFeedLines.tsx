@@ -59,7 +59,7 @@ const publicFeedLinesFragment = graphql`
 
 const publicFeedLinesQuery = graphql`
   query PublicFeedLinesQuery {
-    feeds(filters: [{ key: feed_public, values: ["true"] }]) {
+    feeds(filters: { mode: and, filters: [{ key: "feed_public", values: ["true"] }], filterGroups: [] }) {
       edges {
         node {
           ...PublicFeedLines_node

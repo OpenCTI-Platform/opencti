@@ -5,13 +5,12 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import * as R from 'ramda';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { heatMapOptions } from '../../../../utils/Charts';
-import { convertFilters } from '../../../../utils/ListParameters';
+import { findFilterFromKey } from "../../../../utils/filters/filtersUtils";
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -90,20 +89,22 @@ const StixCoreObjectsMultiHeatMap = ({
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       let types = ['Stix-Core-Object'];
+      const entityTypeFilter = findFilterFromKey(selection.filters.filters, 'entity_type');
       if (
-        selection.filters.entity_type
-        && selection.filters.entity_type.length > 0
+          entityTypeFilter
+        && entityTypeFilter.values.length > 0
       ) {
         if (
-          selection.filters.entity_type.filter((n) => n.id === 'all').length
+            entityTypeFilter.values.filter((n) => n === 'all').length
           === 0
         ) {
-          types = selection.filters.entity_type.map((o) => o.id);
+          types = entityTypeFilter;
         }
       }
-      const filters = convertFilters(
-        R.dissoc('entity_type', selection.filters),
-      );
+      const filters = {
+        ...selection.filters,
+        filters: selection.filters.filter((f) => f.key !== 'entity_type'),
+      };
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0

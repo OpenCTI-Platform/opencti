@@ -19,16 +19,6 @@ enum TaskTemplatesOrdering {
   updated_at
   creator
 }
-# Filtering
-enum TaskTemplatesFilter {
-  name
-  created
-  modified
-  created_at
-  updated_at
-  creator
-  taskContains
-}
 
 type TaskTemplateConnection {
   pageInfo: PageInfo!
@@ -39,13 +29,6 @@ type TaskTemplateEdge {
   node: TaskTemplate!
 }
 
-input TaskTemplatesFiltering {
-  key: [TaskTemplatesFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Queries
 type Query {
   taskTemplate(id: String!): TaskTemplate @auth(for: [SETTINGS])
@@ -54,7 +37,7 @@ type Query {
     after: ID
     orderBy: TaskTemplatesOrdering
     orderMode: OrderingMode
-    filters: [TaskTemplatesFiltering!]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     toStix: Boolean

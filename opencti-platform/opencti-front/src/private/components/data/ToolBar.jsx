@@ -28,18 +28,19 @@ import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import {
   AddOutlined,
+  AutoFixHighOutlined,
   BrushOutlined,
   CancelOutlined,
   CenterFocusStrong,
   ClearOutlined,
   CloseOutlined,
+  ContentCopyOutlined,
   DeleteOutlined,
+  Input,
   LanguageOutlined,
   LinkOffOutlined,
-  TransformOutlined,
-  ContentCopyOutlined,
-  AutoFixHighOutlined,
   MergeOutlined,
+  TransformOutlined,
   MoveToInboxOutlined,
 } from '@mui/icons-material';
 import { CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
@@ -56,31 +57,26 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
+import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import ItemIcon from '../../../components/ItemIcon';
 import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
 import { defaultValue } from '../../../utils/Graph';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
+import { findFilterFromKey } from '../../../utils/filters/filtersUtils';
 import { stixCyberObservableTypes } from '../../../utils/hooks/useAttributes';
 
 const styles = (theme) => ({
@@ -250,7 +246,11 @@ const toolBarContainersQuery = graphql`
   query ToolBarContainersQuery($search: String) {
     containers(
       search: $search
-      filters: [{ key: entity_type, values: ["Container"] }]
+      filters: {
+          mode: and
+          filters: [{ key: "entity_type", values: ["Container"] }]
+          filterGroups: []
+      }
     ) {
       edges {
         node {
@@ -356,7 +356,7 @@ class ToolBar extends Component {
     // Get enrich type
     let enrichType;
     if (this.props.selectAll) {
-      enrichType = R.head(this.props.filters.entity_type).id;
+      enrichType = this.props.type;
     } else {
       const selected = this.props.selectedElements;
       const selectedTypes = R.uniq(
@@ -875,7 +875,7 @@ class ToolBar extends Component {
     this.setState({ actionsInputs });
     fetchQuery(statusFieldStatusesSearchQuery, {
       first: 10,
-      filters: [{ key: 'type', values: [this.props.type] }],
+      filters: { mode: 'and', filterGroups: [], filters: [{ key: 'type', values: [this.props.type] }] },
       orderBy: 'order',
       orderMode: 'asc',
       search: newValue && newValue.length > 0 ? newValue : '',
@@ -1227,14 +1227,15 @@ class ToolBar extends Component {
       && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
     const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
+    const entityTypeFilterValues = findFilterFromKey(filters.filters, 'entity_type', 'eq')?.values ?? [];
     const typesAreNotUpdatable = R.includes(
       R.uniq(
         R.map((o) => o.entity_type, R.values(selectedElements || {})),
       )[0],
       notUpdatableTypes,
     )
-      || ((filters?.entity_type ?? []).length === 1
-        && notUpdatableTypes.includes(R.head(filters.entity_type).id));
+      || (entityTypeFilterValues.length === 1
+        && notUpdatableTypes.includes(entityTypeFilterValues[0]));
     // endregion
     // region rules
     const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
@@ -1244,19 +1245,15 @@ class ToolBar extends Component {
       )[0],
       notScannableTypes,
     )
-      || ((filters?.entity_type ?? []).length === 1
-        && notScannableTypes.includes(R.head(filters.entity_type).id));
+      || (entityTypeFilterValues.length === 1
+        && notScannableTypes.includes(entityTypeFilterValues[0]));
     // endregion
     // region promote filters
     const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
-    const observablesFiltered = (filters?.entity_type ?? []).length > 0
-      && filters.entity_type
-        .map((f) => f.id)
-        .every((id) => stixCyberObservableTypes.includes(id));
-    const promotionTypesFiltered = (filters?.entity_type ?? []).length > 0
-      && filters.entity_type
-        .map((f) => f.id)
-        .every((id) => promotionTypes.includes(id));
+    const observablesFiltered = entityTypeFilterValues.length > 0
+      && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
+    const promotionTypesFiltered = entityTypeFilterValues.length > 0
+      && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
     const isManualPromoteSelect = !selectAll
       && selectedTypes.length > 0
       && selectedTypes.every((type) => promotionTypes.includes(type));
@@ -1265,10 +1262,10 @@ class ToolBar extends Component {
     // region enrich
     const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
-    const isAllEnrichSelect = selectAll && (filters?.entity_type ?? []).length === 1;
+    const isAllEnrichSelect = selectAll && entityTypeFilterValues.length === 1;
     const enrichDisable = notEnrichableTypes.includes(R.head(selectedTypes))
-      || ((filters?.entity_type ?? []).length === 1
-        && notEnrichableTypes.includes(R.head(filters.entity_type).id))
+      || (entityTypeFilterValues.length === 1
+        && notEnrichableTypes.includes(entityTypeFilterValues[0]))
       || (!isManualEnrichSelect && !isAllEnrichSelect);
     // endregion
     const typesAreNotMergable = R.includes(
@@ -1282,15 +1279,15 @@ class ToolBar extends Component {
       )[0],
       notAddableTypes,
     )
-      || ((filters?.entity_type ?? []).length === 1
-        && notScannableTypes.includes(R.head(filters.entity_type).id));
+      || (entityTypeFilterValues.length === 1
+        && notScannableTypes.includes(entityTypeFilterValues[0]));
     const selectedElementsList = R.values(selectedElements || {});
     const titleCopy = this.titleCopy();
     let keptElement = null;
     let newAliases = [];
     if (!typesAreNotMergable && !typesAreDifferent) {
       keptElement = keptEntityId
-        ? R.head(R.filter((o) => o.id === keptEntityId, selectedElementsList))
+        ? R.head(selectedElementsList.filter((o) => o.id === keptEntityId))
         : R.head(selectedElementsList);
       if (keptElement) {
         const names = R.filter(
@@ -1625,7 +1622,7 @@ class ToolBar extends Component {
                                       </div>
                                     }
                                   />
-                                  {R.toPairs(filters).length > 0 && (
+                                  {filters.filters.length > 0 && (
                                     <Chip
                                       classes={{ root: classes.operator }}
                                       label={t('AND')}
@@ -1633,65 +1630,9 @@ class ToolBar extends Component {
                                   )}
                                 </span>
                               )}
-                              {R.toPairs(filters).map((currentFilter) => {
-                                const label = `${truncate(
-                                  currentFilter[0].startsWith('rel_')
-                                    ? t(
-                                      `relationship_${currentFilter[0]
-                                        .replace('rel_', '')
-                                        .replace('.*', '')}`,
-                                    )
-                                    : t(`filter_${currentFilter[0]}`),
-                                  20,
-                                )}`;
-                                const localFilterMode = currentFilter[0].endsWith('not_eq')
-                                  ? t('AND')
-                                  : t('OR');
-                                const values = (
-                                  <span>
-                                    {R.map(
-                                      (o) => (
-                                        <span
-                                          key={
-                                            typeof o === 'string' ? o : o.value
-                                          }
-                                        >
-                                          {/* eslint-disable-next-line no-nested-ternary */}
-                                          {typeof o === 'string'
-                                            ? o
-                                            : o.value && o.value.length > 0
-                                              ? truncate(o.value, 15)
-                                              : t('No label')}{' '}
-                                          {R.last(currentFilter[1]).value
-                                            !== o.value && (
-                                            <code>{localFilterMode}</code>
-                                          )}{' '}
-                                        </span>
-                                      ),
-                                      currentFilter[1],
-                                    )}
-                                  </span>
-                                );
-                                return (
-                                  <span key={currentFilter[0]}>
-                                    <Chip
-                                      classes={{ root: classes.filter }}
-                                      label={
-                                        <div>
-                                          <strong>{label}</strong>: {values}
-                                        </div>
-                                      }
-                                    />
-                                    {R.last(R.toPairs(filters))[0]
-                                      !== currentFilter[0] && (
-                                      <Chip
-                                        classes={{ root: classes.operator }}
-                                        label={t('AND')}
-                                      />
-                                    )}
-                                  </span>
-                                );
-                              })}
+                              <TasksFilterValueContainer
+                                filters={filters}
+                              ></TasksFilterValueContainer>
                             </div>
                           ) : (
                             <span>

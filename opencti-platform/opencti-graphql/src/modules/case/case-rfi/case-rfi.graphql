@@ -47,7 +47,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     lastSeenStop: DateTime
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
@@ -61,7 +61,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     limit: Int
     order: String
     types: [String]
-    filters: [StixCoreObjectsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -84,7 +84,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     relationship_type: [String]
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Stix Domain Object
@@ -102,7 +102,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     after: ID
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     types: [String]
@@ -113,7 +113,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     after: ID
     orderBy: ContainersOrdering
     orderMode: OrderingMode
-    filters: [ContainersFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     types: [String]
@@ -160,33 +160,6 @@ enum CaseRfisOrdering {
   priority
 }
 
-# Filtering
-enum CaseRfisFilter {
-  name
-  created
-  modified
-  created_at
-  updated_at
-  creator
-  createdBy
-  markedBy
-  labelledBy
-  assigneeTo
-  participant
-  x_opencti_workflow_id
-  confidence
-  source_reliability
-  severity
-  priority
-}
-
-input CaseRfisFiltering {
-  key: [CaseRfisFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type CaseRfiConnection {
   pageInfo: PageInfo!
@@ -206,7 +179,7 @@ type Query {
     after: ID
     orderBy: CaseRfisOrdering
     orderMode: OrderingMode
-    filters: [CaseRfisFiltering!]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     toStix: Boolean

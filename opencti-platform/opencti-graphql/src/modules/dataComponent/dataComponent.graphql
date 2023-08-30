@@ -48,7 +48,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
         lastSeenStop: DateTime
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
@@ -62,7 +62,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
         limit: Int
         order: String
         types: [String]
-        filters: [StixCoreObjectsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -85,7 +85,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
         relationship_type: [String]
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # Stix Domain Object
@@ -127,30 +127,6 @@ enum DataComponentsOrdering {
     confidence
 }
 
-# Filtering
-enum DataComponentsFilter {
-    name
-    aliases
-    created
-    modified
-    created_at
-    updated_at
-    createdBy
-    markedBy
-    labelledBy
-    revoked
-    x_opencti_workflow_id
-    confidence
-    source_reliability
-}
-
-input DataComponentsFiltering {
-    key: [DataComponentsFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type DataComponentConnection {
     pageInfo: PageInfo!
@@ -170,7 +146,7 @@ type Query {
         after: ID
         orderBy: DataComponentsOrdering
         orderMode: OrderingMode
-        filters: [DataComponentsFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): DataComponentConnection @auth(for: [KNOWLEDGE])

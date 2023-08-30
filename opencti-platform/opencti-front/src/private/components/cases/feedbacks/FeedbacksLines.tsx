@@ -35,7 +35,7 @@ export const feedbacksLinesQuery = graphql`
     $cursor: ID
     $orderBy: FeedbacksOrdering
     $orderMode: OrderingMode
-    $filters: [FeedbacksFiltering!]
+    $filters: FilterGroup
   ) {
     ...FeedbacksLines_data
       @arguments(
@@ -57,7 +57,7 @@ const feedbacksLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "FeedbacksOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[FeedbacksFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "FeedbackLinesRefetchQuery") {
     feedbacks(

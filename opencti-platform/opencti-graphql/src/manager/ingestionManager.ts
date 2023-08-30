@@ -174,7 +174,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
 const rssExecutor = async (context: AuthContext, turndownService: TurndownService) => {
   const httpGet = rssHttpGetter();
   const filters: Array<Filter> = [{ key: 'ingestion_running', values: [true] }];
-  const ingestions = await findAllRssIngestions(context, SYSTEM_USER, { filters, connectionFormat: false });
+  const ingestions = await findAllRssIngestions(context, SYSTEM_USER, { filters, connectionFormat: false }, true);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
@@ -239,7 +239,7 @@ const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
 };
 const taxiiExecutor = async (context: AuthContext) => {
   const filters: Array<Filter> = [{ key: 'ingestion_running', values: [true] }];
-  const ingestions = await findAllTaxiiIngestions(context, SYSTEM_USER, { filters, connectionFormat: false });
+  const ingestions = await findAllTaxiiIngestions(context, SYSTEM_USER, { filters, connectionFormat: false }, true);
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];

@@ -46,7 +46,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     lastSeenStop: DateTime
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
@@ -60,7 +60,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     limit: Int
     order: String
     types: [String]
-    filters: [StixCoreObjectsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -83,7 +83,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     relationship_type: [String]
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
@@ -101,7 +101,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     after: ID
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     types: [String]
@@ -112,7 +112,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
     after: ID
     orderBy: ContainersOrdering
     orderMode: OrderingMode
-    filters: [ContainersFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     types: [String]
@@ -150,25 +150,7 @@ enum TasksOrdering {
   x_opencti_workflow_id
   confidence
   due_date
-  assigneeTo
-}
-# Filtering
-enum TasksFilter {
-  name
-  created
-  modified
-  context
-  created_at
-  updated_at
-  creator
-  createdBy
-  markedBy
-  labelledBy
-  assigneeTo
-  participant
-  objectContains
-  x_opencti_workflow_id
-  due_date
+  objectAssignee
 }
 
 type TaskEdge {
@@ -181,13 +163,6 @@ type TaskConnection {
   edges: [TaskEdge!]!
 }
 
-input TasksFiltering {
-  key: [TasksFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Queries
 type Query {
   task(id: String!): Task @auth
@@ -196,7 +171,7 @@ type Query {
     after: ID
     orderBy: TasksOrdering
     orderMode: OrderingMode
-    filters: [TasksFiltering!]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     toStix: Boolean

@@ -27,7 +27,7 @@ export const positionsLinesQuery = graphql`
     $cursor: ID
     $orderBy: PositionsOrdering
     $orderMode: OrderingMode
-    $filters: [PositionsFiltering]
+    $filters: FilterGroup
   ) {
     ...PositionsLines_data
       @arguments(
@@ -49,7 +49,7 @@ const positionsLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "PositionsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[PositionsFiltering]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "PositionsLinesRefetchQuery") {
     positions(

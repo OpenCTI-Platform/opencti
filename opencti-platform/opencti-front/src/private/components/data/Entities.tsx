@@ -17,9 +17,9 @@ import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainO
 import useAuth from '../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -41,7 +41,7 @@ const Entities = () => {
   } = usePaginationLocalStorage<EntitiesStixDomainObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
@@ -113,18 +113,9 @@ const Entities = () => {
       },
     };
 
-    const entityTypes = types?.map((n) => ({ id: n, value: n })) ?? [];
-    const toolBarFilters = entityTypes.length > 0
-      ? { ...filters, entity_type: entityTypes }
-      : {
-        ...filters,
-        entity_type: [
-          {
-            id: 'Stix-Domain-Object',
-            value: 'Stix-Domain-Object',
-          },
-        ],
-      };
+    const toolBarFilters = (types && types.length > 0)
+      ? filtersWithEntityType(filters, types ?? [])
+      : filtersWithEntityType(filters, 'Stix-Domain-Object');
     return (
       <>
           <ListLines
@@ -135,6 +126,8 @@ const Entities = () => {
               handleSearch={storageHelpers.handleSearch}
               handleAddFilter={storageHelpers.handleAddFilter}
               handleRemoveFilter={storageHelpers.handleRemoveFilter}
+              handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+              handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
               handleToggleExports={storageHelpers.handleToggleExports}
               openExports={openExports}
               handleToggleSelectAll={handleToggleSelectAll}
@@ -149,16 +142,14 @@ const Entities = () => {
               iconExtension={true}
               secondaryAction={true}
               availableFilterKeys={[
-                'labelledBy',
-                'markedBy',
+                'objectLabel',
+                'objectMarking',
                 'createdBy',
                 'source_reliability',
                 'confidence',
-                'creator',
-                'created_start_date',
-                'created_end_date',
-                'created_at_start_date',
-                'created_at_end_date',
+                'creator_id',
+                'created',
+                'created_at',
               ]}
             >
               {queryRef && (
