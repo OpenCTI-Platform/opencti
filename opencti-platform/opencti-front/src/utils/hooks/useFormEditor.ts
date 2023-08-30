@@ -99,8 +99,7 @@ const useFormEditor = (
               id: data.id,
               input: {
                 toId: added[0].value,
-                relationship_type: relation,
-                fieldName: name,
+                relationship_type: relation
               },
             },
           });

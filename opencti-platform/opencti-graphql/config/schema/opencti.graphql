@@ -11927,7 +11927,6 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  fieldName: String
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!

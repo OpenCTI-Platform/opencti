@@ -1051,7 +1051,7 @@ describe('Upsert and merge entities', () => {
     expect(reloadMd5.hashes.MD5).toEqual(MD5);
     expect(reloadMd5.hashes['SHA-1']).toEqual(SHA1);
     expect(reloadMd5.hashes['SHA-256']).toEqual(SHA256);
-    expect(reloadMd5['object-marking'].length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
+    expect(reloadMd5['object-marking'].length).toEqual(2); // [testMarking, clearMarking, mitreMarking]
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, reloadMd5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   });
