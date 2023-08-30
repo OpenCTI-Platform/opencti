@@ -1,7 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import CountriesLines, {
-  countriesLinesQuery,
-} from './countries/CountriesLines';
+import CountriesLines, { countriesLinesQuery, } from './countries/CountriesLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
@@ -12,8 +10,8 @@ import {
   CountriesLinesPaginationQuery$variables,
 } from './countries/__generated__/CountriesLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { Filters } from '../../../components/list_lines';
 import { CountryLineDummy } from './countries/CountryLine';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'view-countries';
 
@@ -25,7 +23,7 @@ const Countries: FunctionComponent = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -71,6 +69,8 @@ const Countries: FunctionComponent = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Country"
@@ -79,8 +79,7 @@ const Countries: FunctionComponent = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'created_start_date',
-          'created_end_date',
+          'created',
           'createdBy',
         ]}
       >

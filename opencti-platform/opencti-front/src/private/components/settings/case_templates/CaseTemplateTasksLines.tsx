@@ -22,7 +22,7 @@ export const tasksLinesQuery = graphql`
     $count: Int
     $orderMode: OrderingMode
     $orderBy: TaskTemplatesOrdering
-    $filters: [TaskTemplatesFiltering!]
+    $filters: FilterGroup
   ) {
     ...CaseTemplateTasksLines_data
     @arguments(
@@ -38,7 +38,7 @@ export const tasksLinesQuery = graphql`
 export const tasksLinesFragment = graphql`
   fragment CaseTemplateTasksLines_data on Query
   @argumentDefinitions(
-    filters: { type: "[TaskTemplatesFiltering!]" }
+    filters: { type: "FilterGroup" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 200 }
     orderMode: { type: "OrderingMode", defaultValue: asc }

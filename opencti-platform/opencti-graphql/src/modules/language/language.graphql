@@ -47,7 +47,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
         lastSeenStop: DateTime
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
@@ -61,7 +61,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
         limit: Int
         order: String
         types: [String]
-        filters: [StixCoreObjectsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -84,7 +84,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
         relationship_type: [String]
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
@@ -123,26 +123,6 @@ enum LanguagesOrdering {
     x_opencti_workflow_id
 }
 
-# Filtering
-enum LanguagesFilter {
-    name
-    aliases
-    created
-    modified
-    created_at
-    updated_at
-    createdBy
-    markedBy
-    labelledBy
-    x_opencti_workflow_id
-}
-input LanguagesFiltering {
-    key: [LanguagesFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type LanguageConnection {
     pageInfo: PageInfo!
@@ -161,7 +141,7 @@ type Query {
         after: ID
         orderBy: LanguagesOrdering
         orderMode: OrderingMode
-        filters: [LanguagesFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): LanguageConnection @auth(for: [KNOWLEDGE])

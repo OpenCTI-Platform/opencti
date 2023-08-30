@@ -1,7 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, } from '../../generated/graphql';
-import { VocabularyFilter } from '../../generated/graphql';
 import { countAllThings, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
 import { notify } from '../../database/redis';
@@ -11,6 +10,7 @@ import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { getVocabulariesCategories, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { UnsupportedError } from '../../config/errors';
+import { addFilter } from '../../utils/filtering';
 
 export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
@@ -18,21 +18,23 @@ export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: Au
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabulariesArgs) => {
   const { category } = opts;
-  let filters = opts.filters ?? [];
-  const entityTypes = filters.find(({ key }) => key.includes(VocabularyFilter.EntityTypes));
+  let { filters } = opts;
+  const entityTypes = (filters?.filters ?? []).find(({ key }) => key.includes('entity_types'));
   if (category) {
-    filters.push({ key: [VocabularyFilter.Category], values: [category] });
+    filters = addFilter(filters, 'category', category);
   } else if (entityTypes?.values && entityTypes?.values.length > 0) {
     const categories = entityTypes.values.flatMap((type) => getVocabulariesCategories()
-      .filter(({ entity_types }) => entity_types.includes(type))
+      .filter(({ entity_types }) => type && entity_types.includes(type))
       .map(({ key }) => key));
-    filters = [
-      ...filters.filter(({ key }) => !key.includes(VocabularyFilter.EntityTypes)),
+    filters = addFilter(
       {
-        key: [VocabularyFilter.Category],
-        values: categories,
-        operator: entityTypes.operator,
-      }];
+        ...filters,
+        filters: (filters?.filters ?? []).filter(({ key }) => !key.includes('entity_types'))
+      },
+      'category',
+      categories,
+      entityTypes.operator ?? undefined
+    );
   }
   const args = {
     orderBy: ['order', 'name'], // Default orderBy if none
@@ -50,10 +52,14 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
     throw UnsupportedError(`Cant find category for vocabulary ${vocabulary.name}`);
   }
   return countAllThings(context, user, {
-    filters: [
-      { key: 'entity_type', values: categoryDefinition.entity_types },
-      { key: categoryDefinition.fields.map((f) => f.key), values: [vocabulary.name] }
-    ]
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'entity_type', values: categoryDefinition.entity_types },
+        { key: categoryDefinition.fields.map((f) => f.key), values: [vocabulary.name] }
+      ],
+      filterGroups: [],
+    }
   });
 };
 

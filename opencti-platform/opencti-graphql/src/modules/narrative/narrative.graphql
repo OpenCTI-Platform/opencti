@@ -47,7 +47,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
         lastSeenStop: DateTime
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
@@ -61,7 +61,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
         limit: Int
         order: String
         types: [String]
-        filters: [StixCoreObjectsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -84,7 +84,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
         relationship_type: [String]
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
@@ -130,27 +130,6 @@ enum NarrativesOrdering {
     x_opencti_workflow_id
 }
 
-# Filtering
-enum NarrativesFilter {
-    name
-    aliases
-    narrative_types
-    created
-    modified
-    created_at
-    updated_at
-    createdBy
-    markedBy
-    labelledBy
-    x_opencti_workflow_id
-}
-input NarrativesFiltering {
-    key: [NarrativesFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type NarrativeConnection {
     pageInfo: PageInfo!
@@ -169,7 +148,7 @@ type Query {
         after: ID
         orderBy: NarrativesOrdering
         orderMode: OrderingMode
-        filters: [NarrativesFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): NarrativeConnection @auth(for: [KNOWLEDGE])

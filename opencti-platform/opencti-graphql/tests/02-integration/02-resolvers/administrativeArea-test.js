@@ -10,7 +10,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: AdministrativeAreasOrdering
     $orderMode: OrderingMode
-    $filters: [AdministrativeAreasFiltering!]
+    $filters: FilterGroup
     $filterMode: FilterMode
     $search: String
   ) {

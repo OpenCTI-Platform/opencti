@@ -27,14 +27,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
-import useGranted, {
-  SETTINGS,
-  SETTINGS_SETACCESSES,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { SETTINGS, SETTINGS_SETACCESSES, } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const useStyles = makeStyles({
@@ -86,7 +82,7 @@ const auditsDistributionListDistributionQuery = graphql`
     $limit: Int
     $order: String
     $types: [String]
-    $filters: [LogsFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
     $search: String
   ) {
@@ -290,11 +286,11 @@ const AuditsDistributionList = ({
       );
     }
     const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
+    let filtersContent = selection.filters.filters;
     const dataSelectionTypes = R.head(
-      finalFilters.filter((o) => o.key === 'entity_type'),
+      filtersContent.filter((o) => o.key === 'entity_type'),
     )?.values || ['History', 'Activity'];
-    finalFilters = finalFilters.filter((o) => !['entity_type'].includes(o.key));
+    filtersContent = filtersContent.filter((o) => !['entity_type'].includes(o.key));
     return (
       <QueryRenderer
         query={auditsDistributionListDistributionQuery}
@@ -308,7 +304,7 @@ const AuditsDistributionList = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'timestamp',
-          filters: finalFilters,
+          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
           limit: selection.number ?? 10,
         }}
         render={({ props }) => {

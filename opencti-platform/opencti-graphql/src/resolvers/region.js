@@ -38,7 +38,7 @@ const regionResolvers = {
   RegionsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   Mutation: {
     regionEdit: (_, { id }, context) => ({

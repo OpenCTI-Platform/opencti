@@ -47,7 +47,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     lastSeenStop: DateTime
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
@@ -61,7 +61,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     limit: Int
     order: String
     types: [String]
-    filters: [StixCoreObjectsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -84,7 +84,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     relationship_type: [String]
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # StixDomainObject
@@ -146,33 +146,6 @@ enum OrganizationsOrdering {
   x_opencti_workflow_id
 }
 
-# Filtering
-enum OrganizationsFilter {
-  name
-  aliases
-  x_opencti_organization_type
-  x_opencti_reliability
-  created
-  modified
-  created_at
-  updated_at
-  createdBy
-  markedBy
-  assigneeTo
-  labelledBy
-  x_opencti_workflow_id
-  description
-  contact_information
-  revoked
-  authorized_authorities
-}
-input OrganizationsFiltering {
-  key: [OrganizationsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type OrganizationConnection {
   pageInfo: PageInfo!
@@ -191,7 +164,7 @@ type Query {
     after: ID
     orderBy: OrganizationsOrdering
     orderMode: OrderingMode
-    filters: [OrganizationsFiltering!]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     toStix: Boolean

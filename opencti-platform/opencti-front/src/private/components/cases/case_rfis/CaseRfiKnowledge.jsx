@@ -9,26 +9,14 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import { findFilterFromKey, initialFilterGroup, isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import CaseRfiPopover from './CaseRfiPopover';
-import CaseRfiKnowledgeGraph, {
-  caseRfiKnowledgeGraphQuery,
-} from './CaseRfiKnowledgeGraph';
-import CaseRfiKnowledgeTimeLine, {
-  caseRfiKnowledgeTimeLineQuery,
-} from './CaseRfiKnowledgeTimeLine';
-import CaseRfiKnowledgeCorrelation, {
-  caseRfiKnowledgeCorrelationQuery,
-} from './CaseRfiKnowledgeCorrelation';
+import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnowledgeGraph';
+import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
+import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
-import ContainerContent, {
-  containerContentQuery,
-} from '../../common/containers/ContainerContent';
+import ContainerContent, { containerContentQuery } from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -134,7 +122,7 @@ class CaseRfiKnowledgeComponent extends Component {
         params,
       ),
       timeLineFunctionalDate: propOr(false, 'timeLineFunctionalDate', params),
-      timeLineFilters: propOr({}, 'timeLineFilters', params),
+      timeLineFilters: propOr(initialFilterGroup, 'timeLineFilters', params),
       timeLineSearchTerm: R.propOr('', 'timeLineSearchTerm', params),
     };
   }
@@ -185,45 +173,69 @@ class CaseRfiKnowledgeComponent extends Component {
     );
   }
 
-  handleAddTimeLineFilter(key, id, value, event = null) {
+  handleAddTimeLineFilter(key, id, op = 'eq', event = null) {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
     }
+    const foundFilter = this.state.timeLineFilters ? findFilterFromKey(this.state.timeLineFilters, key, op) : undefined;
     if (
-      this.state.timeLineFilters[key]
-      && this.state.timeLineFilters[key].length > 0
+      foundFilter
+      && foundFilter.values.length > 0
     ) {
+      const values = isUniqFilter(key) ? [id] : R.uniq([...foundFilter.values, id]);
+      const newFilterElement = {
+        key,
+        values,
+        operator: op,
+        mode: 'or',
+      };
       this.setState(
         {
           timeLineFilters: {
             ...this.state.timeLineFilters,
-            [key]: isUniqFilter(key)
-              ? [{ id, value }]
-              : R.uniqBy(R.prop('id'), [
-                { id, value },
-                ...this.state.timeLineFilters[key],
-              ]),
+            filters: [
+              ...this.state.timeLineFilters.filters.filter((f) => f.key !== key || f.operator !== op),
+              newFilterElement,
+            ],
           },
         },
         () => this.saveView(),
       );
     } else {
+      const newFilterElement = {
+        key,
+        values: [id],
+        operator: op,
+        mode: 'or',
+      };
+      const newFilters = this.state.timeLineFilters
+        ? {
+          ...this.state.timeLineFilters,
+          filters: [...this.state.timeLineFilters.filters, newFilterElement],
+        }
+        : {
+          mode: 'and',
+          filterGroups: [],
+          filters: [newFilterElement],
+        };
       this.setState(
         {
-          timeLineFilters: {
-            ...this.state.timeLineFilters,
-            [key]: [{ id, value }],
-          },
+          timeLineFilters: newFilters,
         },
         () => this.saveView(),
       );
     }
   }
 
-  handleRemoveTimeLineFilter(key) {
+  handleRemoveTimeLineFilter(key, op = 'eq') {
+    const newFilters = {
+      ...this.state.timeLineFilters,
+      filters: this.state.timeLineFilters.filters
+        .filter((f) => f.key !== key || f.operator !== op),
+    };
     this.setState(
-      { timeLineFilters: R.dissoc(key, this.state.timeLineFilters) },
+      { timeLineFilters: newFilters },
       () => this.saveView(),
     );
   }
@@ -250,11 +262,10 @@ class CaseRfiKnowledgeComponent extends Component {
       timeLineFunctionalDate,
       timeLineSearchTerm,
     } = this.state;
-    const finalFilters = convertFilters(timeLineFilters);
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+    const types = R.head(timeLineFilters.filters.filter((n) => n.key === 'entity_type'))?.values
       .length > 0
       ? []
       : defaultTypes;
@@ -267,7 +278,7 @@ class CaseRfiKnowledgeComponent extends Component {
     const timeLinePaginationOptions = {
       types,
       search: timeLineSearchTerm,
-      filters: finalFilters,
+      filters: timeLineFilters,
       orderBy,
       orderMode: 'desc',
     };

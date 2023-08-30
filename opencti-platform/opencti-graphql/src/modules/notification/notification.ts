@@ -77,6 +77,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     // TODO: modify content to content_notification
     // { name: 'content', type: 'dictionary', mandatoryType: 'internal', multiple: true, upsert: false },
     { name: 'is_read', type: 'boolean', mandatoryType: 'internal', multiple: false, upsert: true },
+    { name: 'user_id', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
   ],
   relations: [],
   representative: (stix: StixNotification) => {

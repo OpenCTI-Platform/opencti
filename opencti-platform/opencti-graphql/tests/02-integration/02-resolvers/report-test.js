@@ -13,7 +13,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
-    $filters: [ReportsFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
     $search: String
   ) {
@@ -462,11 +462,15 @@ describe('Report resolver standard behavior', () => {
         ADMIN_USER,
         [ENTITY_TYPE_WORKSPACE],
         {
-          filters: [{
-            key: 'type',
-            value: 'investigation'
-          }]
-        }
+          filters: {
+            mode: 'and',
+            filters: [{
+              key: 'type',
+              value: 'investigation',
+            }],
+            filterGroups: [],
+          },
+        },
       );
 
       await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));

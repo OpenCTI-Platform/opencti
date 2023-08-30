@@ -9,7 +9,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: RegionsOrdering
     $orderMode: OrderingMode
-    $filters: [RegionsFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
     $search: String
   ) {

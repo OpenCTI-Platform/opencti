@@ -47,7 +47,7 @@ export const relationshipsStixCoreRelationshipsLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: FilterGroup
   ) {
     ...RelationshipsStixCoreRelationshipsLines_data
       @arguments(
@@ -3418,7 +3418,7 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
           defaultValue: created
         }
         orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "[StixCoreRelationshipsFiltering]" }
+        filters: { type: "FilterGroup" }
       )
       @refetchable(queryName: "RelationshipsStixCoreRelationshipsLinesRefetchQuery") {
           stixCoreRelationships(

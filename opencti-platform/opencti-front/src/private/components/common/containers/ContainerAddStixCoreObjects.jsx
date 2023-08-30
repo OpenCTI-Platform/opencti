@@ -18,8 +18,13 @@ import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../uti
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import { convertFilters } from '../../../../utils/ListParameters';
 import Drawer from '../drawer/Drawer';
+import {
+  findFilterFromKey,
+  findFilterIndexFromKey,
+  initialFilterGroup,
+  isUniqFilter,
+} from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -87,13 +92,18 @@ const ContainerAddStixCoreObjects = (props) => {
       || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
     )
       ? {
-        entity_type: targetStixCoreObjectTypes.map((n) => ({
-          id: n,
-          label: n,
-          value: n,
-        })),
+        mode: 'and',
+        filterGroups: [],
+        filters: [
+          {
+            key: 'entity_type',
+            values: targetStixCoreObjectTypes,
+            operator: 'eq',
+            mode: 'or',
+          },
+        ],
       }
-      : {},
+      : initialFilterGroup,
   );
   const [numberOfElements, setNumberOfElements] = useState({
     number: 0,
@@ -121,27 +131,78 @@ const ContainerAddStixCoreObjects = (props) => {
     setSortBy(field);
     setOrderAsc(sortOrderAsc);
   };
-  const handleAddFilter = (key, id, value, event = null) => {
+  const handleAddFilter = (key, id, op = 'eq', event = null) => {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        R.assoc(
-          key,
-          isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
-      );
+    const filter = filters ? findFilterFromKey(filters, key, op) : undefined;
+    if (filter && filter.values.length > 0) {
+      const values = isUniqFilter(key) ? [id] : R.uniq([...filter.values, id]);
+      const newFilterElement = {
+        key,
+        values,
+        operator: op,
+        mode: 'or',
+      };
+      setFilters({
+        ...filters,
+        filters: [
+          filters.filtesr.filter((f) => f.key !== key || f.operator !== op),
+          newFilterElement,
+        ],
+      });
     } else {
-      setFilters(R.assoc(key, [{ id, value }], filters));
+      const newFilterElement = {
+        key,
+        values: [id],
+        operator: op,
+        mode: 'or',
+      };
+      const newFilters = filters
+        ? {
+          ...filters,
+          filters: [...filters.filters, newFilterElement],
+        }
+        : {
+          mode: 'and',
+          filterGroups: [],
+          filters: [newFilterElement],
+        };
+      setFilters(newFilters);
     }
   };
-  const handleRemoveFilter = (key) => {
-    setFilters(R.dissoc(key, filters));
+  const handleRemoveFilter = (key, op = 'eq') => {
+    setFilters({
+      ...filters,
+      filters: filters.filters.filter((f) => f.key !== key || f.operator !== op),
+    });
+  };
+
+  const handleSwitchLocalMode = (localFilter) => {
+    if (filters) {
+      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
+      if (filterIndex !== null) {
+        const newFiltersContent = [...filters.filters];
+        newFiltersContent[filterIndex] = {
+          ...localFilter,
+          mode: localFilter.mode === 'and' ? 'or' : 'and',
+        };
+        setFilters({
+          ...filters,
+          filters: newFiltersContent,
+        });
+      }
+    }
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
   };
   const isTypeDomainObject = (types) => {
     return !types || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0);
@@ -349,6 +410,8 @@ const ContainerAddStixCoreObjects = (props) => {
               handleSort={handleSort}
               handleAddFilter={handleAddFilter}
               handleRemoveFilter={handleRemoveFilter}
+              handleSwitchLocalMode={handleSwitchLocalMode}
+              handleSwitchGlobalMode={handleSwitchGlobalMode}
               disableCards={true}
               filters={filters}
               paginationOptions={searchPaginationOptions}
@@ -359,16 +422,14 @@ const ContainerAddStixCoreObjects = (props) => {
               availableEntityTypes={[resolveAvailableTypes()]}
               availableFilterKeys={[
                 'entity_type',
-                'markedBy',
-                'labelledBy',
+                'objectMarking',
+                'objectLabel',
                 'createdBy',
                 'confidence',
                 'x_opencti_organization_type',
-                'created_start_date',
-                'created_end_date',
-                'created_at_start_date',
-                'created_at_end_date',
-                'creator',
+                'created',
+                'created_at',
+                'creator_id',
               ]}
             >
               <QueryRenderer
@@ -397,11 +458,10 @@ const ContainerAddStixCoreObjects = (props) => {
       </UserContext.Consumer>
     );
   };
-  const finalFilters = convertFilters(filters);
   const searchPaginationOptions = {
     types: [resolveAvailableTypes()],
     search: mapping && searchTerm.length === 0 ? selectedText : searchTerm,
-    filters: finalFilters,
+    filters,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
   };
@@ -455,13 +515,12 @@ const ContainerAddStixCoreObjects = (props) => {
         || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
       )
         ? {
-          entity_type: targetStixCoreObjectTypes.map((n) => ({
-            id: n,
-            label: n,
-            value: n,
-          })),
+          key: 'entity_type',
+          values: targetStixCoreObjectTypes,
+          operator: 'eq',
+          mode: 'or',
         }
-        : {},
+        : initialFilterGroup,
     );
   };
   return (

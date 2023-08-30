@@ -4,7 +4,7 @@ import { logApp } from '../config/conf';
 import { elRawUpdateByQuery, elReplace, ES_MAX_CONCURRENCY } from '../database/engine';
 import { READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
 import { openVocabularies } from '../modules/vocabulary/vocabulary-utils';
-import { VocabularyCategory, VocabularyFilter } from '../generated/graphql';
+import { VocabularyCategory } from '../generated/graphql';
 import { listAllEntities } from '../database/middleware-loader';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { DatabaseError } from '../config/errors';
@@ -34,8 +34,15 @@ export const up = async (next) => {
     });
 
   const defaultVocabularies = new Map((openVocabularies.opinion_ov ?? []).map((v) => [v.key, v]));
+  const VocabularyFilters = [
+    'name',
+    'category',
+    'description',
+    'entity_types',
+    'aliases',
+  ];
   const filters = [{
-    key: [VocabularyFilter.Category],
+    key: VocabularyFilters,
     values: [VocabularyCategory.OpinionOv]
   }];
   const vocabularies = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], {

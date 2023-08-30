@@ -18,6 +18,7 @@ import VocabularyCreation from './attributes/VocabularyCreation';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -41,6 +42,7 @@ const Vocabularies = () => {
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<VocabulariesLines_DataQuery$variables>(
     `view-vocabulary-${category}`,
     {
+      filters: initialFilterGroup,
       sortBy: 'name',
       orderAsc: true,
       searchTerm: '',
@@ -113,6 +115,11 @@ const Vocabularies = () => {
         render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.order),
       },
     };
+    const toolBarFilters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Vocabulary'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
     return (
       <ListLines
         sortBy={viewStorage.sortBy}
@@ -123,6 +130,8 @@ const Vocabularies = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         displayImport={false}
@@ -156,7 +165,7 @@ const Vocabularies = () => {
               noMarking={true}
               noWarning={true}
               deleteDisable={true}
-              filters={{ entity_type: [{ id: 'Vocabulary' }] }}
+              filters={toolBarFilters}
               variant="medium"
             />
           </>

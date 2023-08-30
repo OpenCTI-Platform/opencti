@@ -77,7 +77,7 @@ export const observedDatasLinesQuery = graphql`
     $cursor: ID
     $orderBy: ObservedDatasOrdering
     $orderMode: OrderingMode
-    $filters: [ObservedDatasFiltering]
+    $filters: FilterGroup
   ) {
     ...ObservedDatasLines_data
       @arguments(
@@ -102,7 +102,7 @@ export default createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "ObservedDatasOrdering", defaultValue: created }
         orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "[ObservedDatasFiltering]" }
+        filters: { type: "FilterGroup" }
       ) {
         observedDatas(
           search: $search

@@ -75,10 +75,10 @@ const reportResolvers = {
   ReportsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
+    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     participant: buildRefRelationKey(RELATION_OBJECT_PARTICIPANT),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
-    objectContains: buildRefRelationKey(RELATION_OBJECT, '*'),
+    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objects: buildRefRelationKey(RELATION_OBJECT, '*'),
     creator: 'creator_id',
   },
   Mutation: {

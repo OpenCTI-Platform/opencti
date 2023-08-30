@@ -24,6 +24,7 @@ import { READ_DATA_INDICES_WITHOUT_INFERRED, READ_INDEX_STIX_DOMAIN_OBJECTS } fr
 import { isStixId } from '../schema/schemaUtils';
 import { stixDomainObjectDelete } from './stixDomainObject';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { addFilter } from '../utils/filtering';
 
 export const findById = (context, user, reportId) => {
   return storeLoadById(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
@@ -40,10 +41,14 @@ export const batchParticipants = (context, user, reportIds) => {
 export const reportContainsStixObjectOrStixRelationship = async (context, user, reportId, thingId) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [reportId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'internal_id', values: [reportId] },
+        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const reportFound = await findAll(context, user, args);
   return reportFound.edges.length > 0;
@@ -52,7 +57,9 @@ export const reportContainsStixObjectOrStixRelationship = async (context, user, 
 // region series
 export const reportsTimeSeries = (context, user, args) => {
   const { reportClass } = args;
-  const filters = reportClass ? [{ key: ['report_class'], values: [args.reportClass] }, ...(args.filters || [])] : args.filters;
+  const filters = reportClass
+    ? addFilter(args.filters, 'report_class', args.reportClass)
+    : args.filters;
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
@@ -70,19 +77,19 @@ export const reportsNumber = (context, user, args) => {
 
 export const reportsTimeSeriesByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
 export const reportsTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 
 export const reportsNumberByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
     count: elCount(
       context,
@@ -101,7 +108,7 @@ export const reportsNumberByEntity = (context, user, args) => {
 
 export const reportsNumberByAuthor = (context, user, args) => {
   const { authorId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return {
     count: elCount(
       context,
@@ -120,7 +127,7 @@ export const reportsNumberByAuthor = (context, user, args) => {
 
 export const reportsDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], { ...args, filters });
 };
 // endregion
@@ -135,10 +142,15 @@ export const addReport = async (context, user, report) => {
 // Delete all report contained entities if no other reports are linked
 const buildReportDeleteElementsFilter = (reportId) => {
   const refKey = buildRefRelationKey(RELATION_OBJECT);
-  return [
+  const filters = [
     { key: [refKey], values: [reportId] },
     { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'script' }
   ];
+  return {
+    mode: 'and',
+    filters,
+    filterGroups: [],
+  };
 };
 export const reportDeleteWithElements = async (context, user, reportId) => {
   // Load all entities and see if they no longer have any report

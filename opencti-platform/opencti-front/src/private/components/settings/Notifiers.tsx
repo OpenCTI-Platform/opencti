@@ -9,14 +9,13 @@ import {
   NotifiersLinesPaginationQuery$variables,
 } from './notifiers/__generated__/NotifiersLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import NotifiersLines, {
-  NotifiersLinesQuery,
-} from './notifiers/NotifiersLines';
+import NotifiersLines, { NotifiersLinesQuery } from './notifiers/NotifiersLines';
 import { NotifierLine_node$data } from './notifiers/__generated__/NotifierLine_node.graphql';
 import { NotifierLineDummy } from './notifiers/NotifierLine';
 import NotifierCreation from './notifiers/NotifierCreation';
 import { useFormatter } from '../../../components/i18n';
 import CustomizationMenu from './CustomizationMenu';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'view-notifiers';
 
@@ -38,7 +37,7 @@ const Notifiers = () => {
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
@@ -81,12 +80,14 @@ const Notifiers = () => {
         handleSearch={storageHelpers.handleSearch}
         handleAddFilter={storageHelpers.handleAddFilter}
         handleRemoveFilter={storageHelpers.handleRemoveFilter}
+        handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
         selectAll={selectAll}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={['created_start_date', 'created_end_date']}
+        availableFilterKeys={['created']}
         message={t(
           'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.',
         )}

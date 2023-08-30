@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import {
   RelationshipsStixCoreRelationshipsLinesPaginationQuery,
   RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables,
@@ -14,9 +13,9 @@ import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from './ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'view-relationships';
 
@@ -31,7 +30,7 @@ const Relationships = () => {
   } = usePaginationLocalStorage<RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
@@ -110,9 +109,10 @@ const Relationships = () => {
         width: '8%',
       },
     };
+    const toolBarFilters = filtersWithEntityType(filters, 'stix-core-relationship');
     return (
       <>
-        <ListLines
+      <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
           dataColumns={dataColumns}
@@ -120,6 +120,8 @@ const Relationships = () => {
           handleSearch={storageHelpers.handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
           handleToggleExports={storageHelpers.handleToggleExports}
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
@@ -139,28 +141,24 @@ const Relationships = () => {
             'toId',
             'fromTypes',
             'toTypes',
-            'markedBy',
-            'created_start_date',
-            'created_end_date',
+            'objectMarking',
+            'created',
             'createdBy',
-            'creator',
+            'creator_id',
           ]}
         >
-          {queryRef && (
-            <React.Suspense
-              fallback={
-                <>
-                  {Array(20)
-                    .fill(0)
-                    .map((idx) => (
-                      <RelationshipsStixCoreRelationshipLineDummy
-                        key={idx}
-                        dataColumns={dataColumns}
-                      />
-                    ))}
-                </>
-              }
-            >
+        {queryRef && (
+              <React.Suspense
+                fallback={
+                  <>
+                    {Array(20)
+                      .fill(0)
+                      .map((idx) => (
+                        <RelationshipsStixCoreRelationshipLineDummy key={idx} dataColumns={dataColumns} />
+                      ))}
+                  </>
+                }
+              >
               <RelationshipsStixCoreRelationshipsLines
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
@@ -177,22 +175,13 @@ const Relationships = () => {
                 deSelectedElements={deSelectedElements}
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
-                filters={R.assoc(
-                  'entity_type',
-                  [
-                    {
-                      id: 'stix-core-relationship',
-                      value: 'stix-core-relationship',
-                    },
-                  ],
-                  filters,
-                )}
+                filters={toolBarFilters}
                 search={searchTerm}
                 handleClearSelectedElements={handleClearSelectedElements}
               />
-            </React.Suspense>
-          )}
-        </ListLines>
+          </React.Suspense>
+        )}
+      </ListLines>
       </>
     );
   };

@@ -1,24 +1,29 @@
 import React, { FunctionComponent } from 'react';
-import * as R from 'ramda';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
+import {
+  EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables,
+} from '@components/common/stix_core_relationships/views/indicators/__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
 import ItemPatternType from '../../../../../../components/ItemPatternType';
-import EntityStixCoreRelationshipsIndicatorsContextualViewLines from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
-import { DataColumns, Filters, PaginationOptions } from '../../../../../../components/list_lines';
+import EntityStixCoreRelationshipsIndicatorsContextualViewLines
+  from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
+import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines';
 import { isEmptyField, isNotEmptyField } from '../../../../../../utils/utils';
-import { EntityStixCoreRelationshipsIndicatorsContextualViewQuery } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewQuery.graphql';
+import {
+  EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
+} from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewQuery.graphql';
 import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../../../../components/i18n';
 import usePreloadedFragment from '../../../../../../utils/hooks/usePreloadedFragment';
 import {
   EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key,
 } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject.graphql';
-import { cleanFilters, convertFilters } from '../../../../../../utils/ListParameters';
-import { EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
 import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
-import { EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
+import {
+  EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
+} from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { defaultValue } from '../../../../../../utils/Graph';
 import StixCoreObjectLabels from '../../../stix_core_objects/StixCoreObjectLabels';
@@ -27,9 +32,18 @@ import ListLines from '../../../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../../../components/Loader';
 import ToolBar from '../../../../data/ToolBar';
 import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
-import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
+import {
+  EntityStixCoreRelationshipsContextualViewLine_node$data,
+} from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
 import { Theme } from '../../../../../../components/Theme';
+import {
+  addFilter, cleanFilters,
+  Filter,
+  filtersWithEntityType,
+  findFilterFromKey,
+  removeFilter,
+} from '../../../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   chip: {
@@ -65,24 +79,24 @@ const contextualViewQuery = graphql`
     }
   }
 `;
-const handleFilterOnContainers = (containers: ({ readonly id: string })[], filters: Filters | undefined) => {
+const handleFilterOnContainers = (containers: ({ readonly id: string })[], filters: Filter[]) => {
   if (isEmptyField(containers)) {
-    return [{ id: '' }]; // Return nothing
+    return ['']; // Return nothing
   }
-  if (isEmptyField(filters)) {
-    return containers;
+  if (filters.length === 0) {
+    return containers.map((r) => r.id);
   }
 
-  const selectedContainers = filters?.containers ?? [];
+  const selectedContainers = findFilterFromKey(filters, 'containers')?.values ?? [];
   let filterContainers;
-  if (isNotEmptyField(selectedContainers)) {
+  if (selectedContainers.length > 0) {
     const containerIds = containers.map((r) => r.id);
-    filterContainers = selectedContainers.filter((r) => isNotEmptyField(r.id) && containerIds.includes(r.id as string));
+    filterContainers = selectedContainers.filter((id) => containerIds.includes(id));
     if (filterContainers.length === 0) {
-      filterContainers = [{ id: '' }]; // Return nothing
+      filterContainers = ['']; // Return nothing
     }
   } else {
-    filterContainers = containers;
+    filterContainers = containers.map((r) => r.id);
   }
   return filterContainers;
 };
@@ -128,20 +142,20 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   } = viewStorage;
 
   const availableFilterKeys = [
-    'labelledBy',
-    'markedBy',
-    'created_start_date',
-    'created_end_date',
-    'valid_from_start_date',
-    'valid_until_end_date',
+    'objectLabel',
+    'objectMarking',
+    'created',
+    'created',
+    'valid_from',
+    'valid_until',
     'x_opencti_score',
     'createdBy',
-    'objectContains',
+    'objects',
     'sightedBy',
     'x_opencti_detection',
     'basedOn',
     'revoked',
-    'creator',
+    'creator_id',
     'confidence',
     'indicator_types',
     'pattern_type',
@@ -229,23 +243,21 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
 
   const cleanedFilters = cleanFilters(filters, availableFilterKeys);
 
-  const finalFilters = {
-    ...R.omit(['entity_type', 'containers'], cleanedFilters),
-    objectContains: handleFilterOnContainers(containers, cleanedFilters),
-  };
+  const finalFilters = addFilter(
+    removeFilter(cleanedFilters, ['entity_type', 'containers']),
+    'objects',
+    handleFilterOnContainers(containers, cleanedFilters.filters),
+  );
 
   const paginationOptions = {
     search: searchTerm,
     orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
     containersIds: containers.map((r) => r.id),
-    filters: convertFilters(finalFilters),
+    filters: finalFilters,
   } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
 
-  const backgroundTaskFilters = {
-    ...finalFilters,
-    entity_type: [{ id: 'Indicator', value: 'Indicator' }],
-  };
+  const backgroundTaskFilters = filtersWithEntityType(finalFilters, 'Indicator');
 
   const {
     selectedElements,
@@ -267,6 +279,8 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleChangeView={helpers.handleChangeView}
         handleToggleSelectAll={handleToggleSelectAll}
         paginationOptions={paginationOptions}

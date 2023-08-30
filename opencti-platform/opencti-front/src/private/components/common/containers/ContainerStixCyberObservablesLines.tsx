@@ -29,7 +29,7 @@ export const containerStixCyberObservablesLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixObjectOrStixRelationshipsFiltering]
+    $filters: FilterGroup
   ) {
     ...ContainerStixCyberObservablesLines_container
       @arguments(
@@ -58,7 +58,7 @@ const ContainerStixCyberObservablesLinesFragment = graphql`
       defaultValue: name
     }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "ContainerStixCyberObservablesLinesRefetchQuery") {
     container(id: $id) {

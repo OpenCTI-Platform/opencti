@@ -10,8 +10,8 @@ import EventCreation from './events/EventCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'view-events';
 
@@ -23,7 +23,7 @@ const Events = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
 
@@ -76,6 +76,8 @@ const Events = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Event"
@@ -86,10 +88,8 @@ const Events = () => {
         availableFilterKeys={[
           'event_types',
           'createdBy',
-          'start_time_end_date',
-          'start_time_start_date',
-          'stop_time_end_date',
-          'stop_time_start_date',
+          'start_time',
+          'stop_time',
         ]}
       >
         {queryRef && (

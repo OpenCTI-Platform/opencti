@@ -25,11 +25,15 @@ const closeOldWorks = async (context, connector) => {
   if (status) {
     const [,, timestamp] = status.split('_');
     // Get all works created before the current one and put a complete status on it.
-    const filters = [
-      { key: 'event_source_id', values: [connector.internal_id] },
-      { key: 'status', values: ['wait', 'progress'] },
-      { key: 'timestamp', values: [timestamp], operator: 'lt' }
-    ];
+    const filters = {
+      mode: 'and',
+      filters: [
+        { key: 'event_source_id', values: [connector.internal_id] },
+        { key: 'status', values: ['wait', 'progress'] },
+        { key: 'timestamp', values: [timestamp], operator: 'lt' }
+      ],
+      filterGroups: [],
+    };
     const queryCallback = async (elements) => {
       for (let i = 0; i < elements.length; i += 1) {
         const element = elements[i];
@@ -70,11 +74,15 @@ const closeOldWorks = async (context, connector) => {
 };
 
 const deleteCompletedWorks = async (context, connector) => {
-  const filters = [
-    { key: 'event_source_id', values: [connector.internal_id] },
-    { key: 'status', values: ['complete'] },
-    { key: 'completed_time', values: [`now-${CONNECTOR_WORK_RANGE}d/d`], operator: 'lte' }
-  ];
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: 'event_source_id', values: [connector.internal_id] },
+      { key: 'status', values: ['complete'] },
+      { key: 'completed_time', values: [`now-${CONNECTOR_WORK_RANGE}d/d`], operator: 'lte' }
+    ],
+    filterGroups: [],
+  };
   const queryCallback = async (elements) => {
     const message = `[WORKS] Deleting ${elements.length} works for ${connector.name}`;
     logApp.info(message);

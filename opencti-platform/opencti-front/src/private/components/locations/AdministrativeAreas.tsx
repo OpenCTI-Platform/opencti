@@ -13,7 +13,7 @@ import {
   AdministrativeAreasLinesPaginationQuery,
   AdministrativeAreasLinesPaginationQuery$variables,
 } from './administrative_areas/__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
-import { Filters } from '../../../components/list_lines';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const AdministrativeAreas: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AdministrativeAreasLinesPaginationQuery$variables>(
@@ -23,7 +23,7 @@ const AdministrativeAreas: FunctionComponent = () => {
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -69,6 +69,8 @@ const AdministrativeAreas: FunctionComponent = () => {
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={helpers.handleToggleExports}
         openExports={openExports}
         exportEntityType="Administrative-Area"
@@ -77,8 +79,7 @@ const AdministrativeAreas: FunctionComponent = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'created_start_date',
-          'created_end_date',
+          'created',
           'createdBy',
         ]}
       >

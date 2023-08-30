@@ -17,7 +17,7 @@ export const containerStixCoreObjectsMappingLinesQuery = graphql`
         $cursor: ID
         $orderBy: StixObjectOrStixRelationshipsOrdering
         $orderMode: OrderingMode
-        $filters: [StixObjectOrStixRelationshipsFiltering]
+        $filters: FilterGroup
     ) {
         ...ContainerStixCoreObjectsMappingLines_container
         @arguments(
@@ -44,7 +44,7 @@ const ContainerStixCoreObjectsMappingLinesFragment = graphql`
             defaultValue: name
         }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "ContainerStixCoreObjectsMappingLinesRefetchQuery") {
         container(id: $id) {

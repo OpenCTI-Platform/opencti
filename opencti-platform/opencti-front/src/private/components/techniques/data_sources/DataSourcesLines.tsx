@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataSourceLineComponent, DataSourceLineDummy } from './DataSourceLine';
 import {
@@ -18,12 +18,7 @@ interface DataSourceLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: DataSourcesLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 export const dataSourcesLinesQuery = graphql`
@@ -33,7 +28,7 @@ export const dataSourcesLinesQuery = graphql`
     $cursor: ID
     $orderBy: DataSourcesOrdering
     $orderMode: OrderingMode
-    $filters: [DataSourcesFiltering!]
+    $filters: FilterGroup
   ) {
     ...DataSourcesLines_data
       @arguments(
@@ -55,7 +50,7 @@ const dataSourcesLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "DataSourcesOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "[DataSourcesFiltering!]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "DataSourcesLinesRefetchQuery") {
     dataSources(

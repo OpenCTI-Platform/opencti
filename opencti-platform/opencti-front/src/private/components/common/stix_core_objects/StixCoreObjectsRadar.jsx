@@ -10,7 +10,6 @@ import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { radarChartOptions } from '../../../../utils/Charts';
-import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
@@ -35,7 +34,7 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
     $limit: Int
     $order: String
     $types: [String]
-    $filters: [StixCoreObjectsFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
     $search: String
   ) {
@@ -209,15 +208,15 @@ const StixCoreObjectsRadar = ({
   const { t } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let finalFilters = convertFilters(selection.filters);
+    let filtersContent = selection.filters.filters;
     const dataSelectionTypes = R.head(
-      finalFilters.filter((n) => n.key === 'entity_type'),
+      filtersContent.filter((n) => n.key === 'entity_type'),
     )?.values || ['Stix-Core-Object'];
-    const dataSelectionObjectId = finalFilters.filter((n) => n.key === 'elementId')?.values || null;
-    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+    const dataSelectionObjectId = filtersContent.filter((n) => n.key === 'elementId')?.values || null;
+    const dataSelectionRelationshipType = R.head(filtersContent.filter((n) => n.key === 'relationship_type'))
       ?.values || null;
-    const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;
-    finalFilters = finalFilters.filter(
+    const dataSelectionToTypes = R.head(filtersContent.filter((n) => n.key === 'toTypes'))?.values || null;
+    filtersContent = filtersContent.filter(
       (n) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
         n.key,
       ),
@@ -238,7 +237,7 @@ const StixCoreObjectsRadar = ({
             selection.date_attribute && selection.date_attribute.length > 0
               ? selection.date_attribute
               : 'created_at',
-          filters: finalFilters,
+          filters: selection.filters ? { ...selection.filters, filters: filtersContent } : undefined,
           limit: selection.number ?? 10,
         }}
         render={({ props }) => {

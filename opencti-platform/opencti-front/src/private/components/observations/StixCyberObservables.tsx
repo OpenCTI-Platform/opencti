@@ -12,16 +12,22 @@ import StixCyberObservablesLines, {
 } from './stix_cyber_observables/StixCyberObservablesLines';
 import ToolBar from '../data/ToolBar';
 import { Theme } from '../../../components/Theme';
-import { Filters } from '../../../components/list_lines';
-import { StixCyberObservablesLinesPaginationQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
+import {
+  StixCyberObservablesLinesPaginationQuery$data,
+} from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import useCopy from '../../../utils/hooks/useCopy';
-import { StixCyberObservablesLinesSearchQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
+import {
+  StixCyberObservablesLinesSearchQuery$data,
+} from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
+import {
+  StixCyberObservableLine_node$data,
+} from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -41,7 +47,7 @@ const StixCyberObservables: FunctionComponent = () => {
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
@@ -95,8 +101,14 @@ const StixCyberObservables: FunctionComponent = () => {
   const handleCopy = useCopy<StixCyberObservablesLinesSearchQuery$data>(
     {
       filters: {
-        ...filters,
-        entity_type: types ? types.map((n) => ({ id: n, value: n })) : [],
+        mode: filters?.mode ?? 'and',
+        filters: (filters?.filters ?? []).concat({
+          key: 'entity_type',
+          values: types ?? [],
+          operator: 'eq',
+          mode: 'or',
+        }),
+        filterGroups: filters?.filterGroups ?? [],
       },
       searchTerm: searchTerm ?? '',
       query: stixCyberObservablesLinesSearchQuery,
@@ -150,15 +162,8 @@ const StixCyberObservables: FunctionComponent = () => {
   };
 
   const renderLines = () => {
-    let finalType;
-    if (types && types.length > 0) {
-      finalType = types.map((n) => ({ id: n, value: n }));
-    } else {
-      finalType = [
-        { id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' },
-      ];
-    }
-    const finalFilters = { ...viewStorage.filters, entity_type: finalType };
+    const finalType = (types && types.length > 0) ? types : 'Stix-Cyber-Observable';
+    const toolBarFilters = filtersWithEntityType(filters, finalType);
     return (
       <>
         <ListLines
@@ -169,6 +174,8 @@ const StixCyberObservables: FunctionComponent = () => {
           handleSearch={helpers.handleSearch}
           handleAddFilter={helpers.handleAddFilter}
           handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
           handleToggleExports={helpers.handleToggleExports}
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
@@ -181,14 +188,13 @@ const StixCyberObservables: FunctionComponent = () => {
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           availableFilterKeys={[
-            'labelledBy',
-            'markedBy',
-            'created_at_start_date',
-            'created_at_end_date',
+            'objectLabel',
+            'objectMarking',
+            'created_at',
             'x_opencti_score',
             'createdBy',
             'sightedBy',
-            'creator',
+            'creator_id',
           ]}
         >
           <QueryRenderer
@@ -219,7 +225,7 @@ const StixCyberObservables: FunctionComponent = () => {
           deSelectedElements={deSelectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
-          filters={finalFilters}
+          filters={toolBarFilters}
           search={searchTerm}
           handleClearSelectedElements={handleClearSelectedElements}
           variant="large"

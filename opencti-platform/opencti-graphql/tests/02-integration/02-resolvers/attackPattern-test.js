@@ -8,7 +8,7 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: AttackPatternsOrdering
     $orderMode: OrderingMode
-    $filters: [AttackPatternsFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
     $search: String
   ) {

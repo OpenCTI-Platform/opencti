@@ -27,7 +27,13 @@ import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  Filter,
+  FilterGroup,
+  findFilterFromKey, findFilterIndexFromKey,
+  initialFilterGroup,
+  isUniqFilter,
+} from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
@@ -122,11 +128,9 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<
-  Record<string, { id: string; value: string }[]>
-  >({});
+  const [filters, setFilters] = useState<FilterGroup>(initialFilterGroup);
   const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
-  const [instanceFilters, setInstanceFilters] = useState({});
+  const [instanceFilters, setInstanceFilters] = useState([]);
   const eventTypesOptions: { value: TriggerEventType, label: string }[] = [
     { value: 'create', label: t('Creation') },
     { value: 'update', label: t('Modification') },
@@ -139,39 +143,88 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 
   const onReset = () => {
     handleClose?.();
-    setFilters({});
+    setFilters(initialFilterGroup);
     setInstanceTrigger(false);
     setInstanceFilters({});
   };
   const onChangeInstanceTrigger = (setFieldValue: (key: string, value: { value: string, label: string }[]) => void) => {
     setFieldValue('event_types', instance_trigger ? eventTypesOptions : instanceEventTypesOptions);
     setInstanceTrigger(!instance_trigger);
-    setFilters({});
+    setFilters(initialFilterGroup);
   };
-  const handleAddFilter = (key: string, id: string, value: Record<string, unknown> | string) => {
-    if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // TODO MIGRATE LATER
-        R.assoc(
-          key,
-          isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-          filters,
-        ),
-      );
+  const handleAddFilter = (k: string, id: string, op = 'eq') => {
+    if (filters && findFilterFromKey(filters.filters, k, op)) {
+      const filter = findFilterFromKey(filters.filters, k, op);
+      const newValues = isUniqFilter(k) ? [id] : R.uniq([...filter?.values ?? [], id]);
+      const newFilterElement = {
+        key: k,
+        values: newValues,
+        operator: op,
+        mode: 'or',
+      };
+      const newBaseFilters = {
+        ...filters,
+        filters: [
+          ...filters.filters.filter((f) => f.key !== k || f.operator !== op), // remove filter with k as key
+          newFilterElement, // add new filter
+        ],
+      };
+      setFilters(newBaseFilters);
     } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // TODO MIGRATE LATER
-      setFilters(R.assoc(key, [{ id, value }], filters));
+      const newFilterElement = {
+        key: k,
+        values: [id],
+        operator: op ?? 'eq',
+        mode: 'or',
+      };
+      const newBaseFilters = filters ? {
+        ...filters,
+        filters: [...filters.filters, newFilterElement], // add new filter
+      } : {
+        mode: 'and',
+        filterGroups: [],
+        filters: [newFilterElement],
+      };
+      setFilters(newBaseFilters);
     }
   };
-  const handleRemoveFilter = (key: string) => {
-    setFilters(R.dissoc(key, filters));
+  const handleRemoveFilter = (k: string, op = 'eq') => {
+    if (filters) {
+      const newBaseFilters = {
+        ...filters,
+        filters: filters.filters
+          .filter((f) => f.key !== k || f.operator !== op), // remove filter with key=k and operator=op
+      };
+      setFilters(newBaseFilters);
+    }
   };
+
+  const handleSwitchLocalMode = (localFilter: Filter) => {
+    if (filters) {
+      const filterIndex = findFilterIndexFromKey(filters.filters, localFilter.key, localFilter.operator);
+      if (filterIndex !== null) {
+        const newFiltersContent = [...filters.filters];
+        newFiltersContent[filterIndex] = {
+          ...localFilter,
+          mode: localFilter.mode === 'and' ? 'or' : 'and',
+        };
+        setFilters({
+          ...filters,
+          filters: newFiltersContent,
+        });
+      }
+    }
+  };
+
+  const handleSwitchGlobalMode = () => {
+    if (filters) {
+      setFilters({
+        ...filters,
+        mode: filters.mode === 'and' ? 'or' : 'and',
+      });
+    }
+  };
+
   const [commitLive] = useMutation<TriggerLiveCreationKnowledgeMutation>(triggerLiveKnowledgeCreationMutation);
   const liveInitialValues: TriggerLiveAddInput = {
     name: inputValue || '',
@@ -273,11 +326,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
                   availableFilterKeys={[
                     'entity_type',
                     'x_opencti_workflow_id',
-                    'assigneeTo',
-                    'objectContains',
-                    'markedBy',
-                    'labelledBy',
-                    'creator',
+                    'objectAssignee',
+                    'objects',
+                    'objectMarking',
+                    'objectLabel',
+                    'creator_id',
                     'createdBy',
                     'priority',
                     'severity',
@@ -335,6 +388,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       <FilterIconButton
         filters={filters}
         handleRemoveFilter={handleRemoveFilter}
+        handleSwitchGlobalMode={handleSwitchGlobalMode}
+        handleSwitchLocalMode={handleSwitchLocalMode}
         classNameNumber={2}
         redirection
       />

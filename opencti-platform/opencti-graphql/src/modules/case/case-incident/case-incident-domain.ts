@@ -44,10 +44,14 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
 export const caseIncidentContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, caseIncidentId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [caseIncidentId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'internal_id', values: [caseIncidentId] },
+        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const caseIncidentFound = await findAll(context, user, args);
   return caseIncidentFound.edges.length > 0;

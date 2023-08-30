@@ -16,6 +16,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -53,16 +54,20 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     additionalFilters.push({
       key: 'report_types',
       values: [reportFilterClass],
+      operator: 'eq',
+      mode: 'or',
     });
   }
-  if (authorId) additionalFilters.push({ key: 'createdBy', values: [authorId] });
+  if (authorId) additionalFilters.push({ key: 'createdBy', values: [authorId], operator: 'eq', mode: 'or' });
   if (
     stixDomainObjectOrStixCoreRelationship
     && stixDomainObjectOrStixCoreRelationship.id
   ) {
     additionalFilters.push({
-      key: 'objectContains',
+      key: 'objects',
       values: [stixDomainObjectOrStixCoreRelationship.id],
+      operator: 'eq',
+      mode: 'or',
     });
   }
   const {
@@ -72,7 +77,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
-      filters: {},
+      filters: initialFilterGroup,
       searchTerm: '',
       sortBy: 'created',
       orderAsc: false,
@@ -135,9 +140,9 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
     },
   };
 
-  const defaultHandleAddFilter = (inputKey, id, value, event = undefined) => {
+  const defaultHandleAddFilter = (inputKey, id, op = 'eq', event = undefined) => {
     const key = (inputKey === 'container_type') ? 'entity_type' : inputKey;
-    helpers.handleAddFilter(key, id, value, event);
+    helpers.handleAddFilter(key, id, op, event);
   };
 
   const renderLines = () => {
@@ -156,6 +161,8 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
           handleSearch={helpers.handleSearch}
           handleAddFilter={defaultHandleAddFilter}
           handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
           handleToggleExports={helpers.handleToggleExports}
           handleChangeView={helpers.handleChangeView}
           openExports={openExports}
@@ -175,11 +182,10 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
             'container_type',
             'confidence',
             'x_opencti_workflow_id',
-            'labelledBy',
+            'objectLabel',
             'createdBy',
-            'markedBy',
-            'created_start_date',
-            'created_end_date',
+            'objectMarking',
+            'created',
             'entity_type',
           ]}
       >
@@ -204,11 +210,10 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
 
   const renderGraph = () => {
     const availableFilterKeys = [
-      'labelledBy',
+      'objectLabel',
       'createdBy',
-      'markedBy',
-      'created_start_date',
-      'created_end_date',
+      'objectMarking',
+      'created',
       'container_type',
       'report_types',
     ];
@@ -226,12 +231,14 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
                 availableFilterKeys={availableFilterKeys}
                 handleAddFilter={defaultHandleAddFilter}
             />
-            <FilterIconButton
-                filters={filters ?? {}}
+            {filters?.filters && filters.filters.length > 0
+              && <FilterIconButton
+                filters={filters}
                 handleRemoveFilter={helpers.handleRemoveFilter}
                 className={5}
                 redirection
-            />
+              />
+            }
             <div className="clearfix" />
           </div>
           <QueryRenderer

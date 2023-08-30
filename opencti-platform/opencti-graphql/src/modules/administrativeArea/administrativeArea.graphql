@@ -46,7 +46,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         lastSeenStop: DateTime
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
     ): StixCoreRelationshipConnection
     stixCoreObjectsDistribution(
@@ -60,7 +60,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         limit: Int
         order: String
         types: [String]
-        filters: [StixCoreObjectsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -83,7 +83,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
         relationship_type: [String]
         confidences: [Int]
         search: String
-        filters: [StixCoreRelationshipsFiltering]
+        filters: FilterGroup
         filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
     # StixDomainObject
@@ -130,26 +130,6 @@ enum AdministrativeAreasOrdering {
     x_opencti_workflow_id
 }
 
-# Filtering
-enum AdministrativeAreasFilter {
-    name
-    aliases
-    created
-    modified
-    created_at
-    updated_at
-    createdBy
-    markedBy
-    labelledBy
-    x_opencti_workflow_id
-}
-input AdministrativeAreasFiltering {
-    key: [AdministrativeAreasFilter!]!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-}
-
 # Relay connections
 type AdministrativeAreaConnection {
     pageInfo: PageInfo!
@@ -168,7 +148,7 @@ type Query {
         after: ID
         orderBy: AdministrativeAreasOrdering
         orderMode: OrderingMode
-        filters: [AdministrativeAreasFiltering!]
+        filters: FilterGroup
         filterMode: FilterMode
         search: String
     ): AdministrativeAreaConnection @auth(for: [KNOWLEDGE])

@@ -15,7 +15,6 @@ import {
   notificationEditRead,
   notificationGet,
   notificationsFind,
-  resolvedInstanceFiltersGet,
   triggerActivityEdit,
   triggerDelete,
   triggerEdit,
@@ -51,9 +50,6 @@ const notificationResolvers: Resolvers = {
     isDirectAdministrator: (trigger, _, context) => isDirectAdministrator(context.user, trigger),
     currentUserAccessRight: (trigger, _, context) => getUserAccessRight(context.user, trigger),
     notifiers: (trigger, _, context) => getNotifiers(context, context.user, trigger.notifiers),
-    resolved_instance_filters: (trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger, _, context) => {
-      return resolvedInstanceFiltersGet(context, context.user, trigger);
-    },
   },
   TriggerFilter: {
     user_ids: 'authorized_members.id',

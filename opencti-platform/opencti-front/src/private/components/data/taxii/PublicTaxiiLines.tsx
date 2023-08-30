@@ -59,7 +59,7 @@ const publicTaxiiLinesFragment = graphql`
 
 const publicTaxiiLinesQuery = graphql`
   query PublicTaxiiLinesQuery {
-    taxiiCollections(filters: [{ key: taxii_public, values: ["true"] }]) {
+    taxiiCollections(filters: { mode: and, filters: [{ key: "taxii_public", values: ["true"] }], filterGroups: [] }) {
       edges {
         node {
           ...PublicTaxiiLines_node

@@ -75,7 +75,7 @@ export const userHistoryLinesQuery = graphql`
     $first: Int
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
-    $filters: [LogsFiltering!]
+    $filters: FilterGroup
     $filterMode: FilterMode
     $search: String
   ) {

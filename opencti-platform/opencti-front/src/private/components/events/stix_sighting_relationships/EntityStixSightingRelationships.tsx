@@ -15,8 +15,8 @@ import StixSightingRelationshipCreationFromEntity from './StixSightingRelationsh
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../../components/list_lines';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { initialFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'view-sightings';
 
@@ -52,7 +52,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
       sortBy: 'first_seen',
       orderAsc: false,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const {
@@ -120,15 +120,16 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
         handleSearch={helpers.handleSearch}
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         handleToggleExports={disableExport ? null : helpers.handleToggleExports}
         filters={filters}
         availableFilterKeys={[
           'toTypes',
-          'labelledBy',
-          'markedBy',
+          'objectLabel',
+          'objectMarking',
           'x_opencti_workflow_id',
-          'created_start_date',
-          'created_end_date',
+          'created',
           'createdBy',
           'x_opencti_negative',
         ]}

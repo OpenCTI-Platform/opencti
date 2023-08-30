@@ -242,7 +242,7 @@ const initActivityManager = () => {
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
         filters: [{ key: ['event_access'], values: ['EXISTS'] }]
-      });
+      }, true);
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;

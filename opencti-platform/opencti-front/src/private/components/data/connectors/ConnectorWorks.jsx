@@ -380,7 +380,7 @@ export const connectorWorksQuery = graphql`
     $count: Int
     $orderBy: WorksOrdering
     $orderMode: OrderingMode
-    $filters: [WorksFiltering]
+    $filters: FilterGroup
   ) {
     ...ConnectorWorks_data
       @arguments(
@@ -401,7 +401,7 @@ const ConnectorWorks = createRefetchContainer(
         count: { type: "Int" }
         orderBy: { type: "WorksOrdering", defaultValue: timestamp }
         orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "[WorksFiltering]" }
+        filters: { type: "FilterGroup" }
       ) {
         works(
           first: $count

@@ -20,6 +20,7 @@ import Slide from '@mui/material/Slide';
 import { Delete } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
+import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -68,7 +69,7 @@ export const tasksListQuery = graphql`
     $orderBy: BackgroundTasksOrdering
     $orderMode: OrderingMode
     $includeAuthorities: Boolean
-    $filters: [BackgroundTasksFiltering]
+    $filters: FilterGroup
   ) {
     ...TasksList_data
     @arguments(
@@ -88,7 +89,7 @@ const TasksListFragment = graphql`
     orderBy: { type: "BackgroundTasksOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     includeAuthorities: { type: "Boolean", defaultValue: true }
-    filters: { type: "[BackgroundTasksFiltering]" }
+    filters: { type: "FilterGroup" }
   ) {
     backgroundTasks(
       first: $count
@@ -173,262 +174,217 @@ const TasksList = ({ data }) => {
 
   const tasks = backgroundTasks?.edges ?? [];
   return (
-    <div>
-      {tasks.length === 0 && (
-        <Paper
-          classes={{ root: classes.paper }}
-          variant="outlined"
-          style={{ marginBottom: 20 }}
-        >
-          <div
-            style={{
-              display: 'table',
-              height: '100%',
-              width: '100%',
-            }}
-          >
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t('No task')}
-            </span>
-          </div>
-        </Paper>
-      )}
-      {tasks.map((taskEdge) => {
-        const task = taskEdge.node;
-        let status = '';
-        if (task.completed) {
-          status = 'complete';
-        } else if (task.task_processed_number > 0) {
-          status = 'progress';
-        } else {
-          status = 'wait';
-        }
-        let filters = null;
-        let listIds = '';
-        if (task.task_filters) {
-          filters = JSON.parse(task.task_filters);
-        } else if (task.task_ids) {
-          listIds = truncate(R.join(', ', task.task_ids), 60);
-        }
-        return (
+      <div>
+        {tasks.length === 0 && (
           <Paper
-            key={task.id}
             classes={{ root: classes.paper }}
             variant="outlined"
             style={{ marginBottom: 20 }}
           >
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={5}>
-                <Grid container={true} spacing={1}>
-                  <Grid item={true} xs={12}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Targeted entities')} ({n(task.task_expected_number)}
-                      )
-                    </Typography>
-                    {task.task_search && (
-                      <span>
+            <div
+              style={{
+                display: 'table',
+                height: '100%',
+                width: '100%',
+              }}
+            >
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No task')}
+              </span>
+            </div>
+          </Paper>
+        )}
+        {tasks.map((taskEdge) => {
+          const task = taskEdge.node;
+          let status = '';
+          if (task.completed) {
+            status = 'complete';
+          } else if (task.task_processed_number > 0) {
+            status = 'progress';
+          } else {
+            status = 'wait';
+          }
+          let filters = null;
+          let listIds = '';
+          if (task.task_filters) {
+            filters = JSON.parse(task.task_filters);
+          } else if (task.task_ids) {
+            listIds = truncate(R.join(', ', task.task_ids), 60);
+          }
+          return (
+            <Paper
+              key={task.id}
+              classes={{ root: classes.paper }}
+              variant="outlined"
+              style={{ marginBottom: 20 }}
+            >
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={5}>
+                  <Grid container={true} spacing={1}>
+                    <Grid item={true} xs={12}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Targeted entities')} ({n(task.task_expected_number)}
+                        )
+                      </Typography>
+                      {task.task_search && (
+                        <span>
+                          <Chip
+                            classes={{ root: classes.filter }}
+                            label={
+                              <div>
+                                <strong>{t('Search')}</strong>:{' '}
+                                {task.task_search}
+                              </div>
+                            }
+                          />
+                          <Chip
+                            classes={{ root: classes.operator }}
+                            label={t('AND')}
+                          />
+                        </span>
+                      )}
+                      {task.type !== 'RULE'
+                        && (filters?.filters
+                          ? <TasksFilterValueContainer
+                          filters={filters}
+                        ></TasksFilterValueContainer>
+                          : (
+                          <Chip
+                            classes={{ root: classes.filter }}
+                            label={
+                              <div>
+                                <strong>{t('List of entities')}</strong>:{' '}
+                                {listIds}
+                              </div>
+                            }
+                          />
+                          ))}
+                      {task.type === 'RULE' && (
                         <Chip
                           classes={{ root: classes.filter }}
-                          label={
-                            <div>
-                              <strong>{t('Search')}</strong>:{' '}
-                              {task.task_search}
-                            </div>
-                          }
+                          label={<div>{t('All rule targets')}</div>}
                         />
+                      )}
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Actions')}
+                      </Typography>
+                      {task.type === 'RULE' && (
                         <Chip
                           classes={{ root: classes.operator }}
-                          label={t('AND')}
+                          label={<div>{t('APPLY RULE')}</div>}
                         />
-                      </span>
-                    )}
-                    {task.type !== 'RULE'
-                      && (filters ? (
-                        R.map((currentFilter) => {
-                          const label = `${truncate(
-                            t(`filter_${currentFilter[0]}`),
-                            20,
-                          )}`;
-                          const localFilterMode = currentFilter[0].endsWith(
-                            'not_eq',
-                          )
-                            ? t('AND')
-                            : t('OR');
-                          const values = (
-                            <span>
-                              {R.map(
-                                (o) => (
-                                  <span key={o.value}>
-                                    {o.value && o.value.length > 0
-                                      ? truncate(o.value, 15)
-                                      : t('No label')}{' '}
-                                    {R.last(currentFilter[1]).value
-                                      !== o.value && (
-                                        <code>{localFilterMode}</code>
-                                    )}{' '}
-                                  </span>
-                                ),
-                                currentFilter[1],
-                              )}
-                            </span>
-                          );
-                          return (
-                            <span key={currentFilter[0]}>
-                              <Chip
-                                classes={{ root: classes.filter }}
-                                label={
-                                  <div>
-                                    <strong>{label}</strong>: {values}
-                                  </div>
-                                }
-                              />
-                              {R.last(R.toPairs(filters))[0]
-                                !== currentFilter[0] && (
-                                  <Chip
-                                    classes={{ root: classes.operator }}
-                                    label={t('AND')}
-                                  />
-                              )}
-                            </span>
-                          );
-                        }, R.toPairs(filters))
-                      ) : (
-                        <Chip
-                          classes={{ root: classes.filter }}
-                          label={
-                            <div>
-                              <strong>{t('List of entities')}</strong>:{' '}
-                              {listIds}
-                            </div>
-                          }
-                        />
-                      ))}
-                    {task.type === 'RULE' && (
-                      <Chip
-                        classes={{ root: classes.filter }}
-                        label={<div>{t('All rule targets')}</div>}
-                      />
-                    )}
-                  </Grid>
-                  <Grid item={true} xs={12}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Actions')}
-                    </Typography>
-                    {task.type === 'RULE' && (
-                      <Chip
-                        classes={{ root: classes.operator }}
-                        label={<div>{t('APPLY RULE')}</div>}
-                      />
-                    )}
-                    {task.actions
-                      && R.map(
-                        (action) => (
-                          <div key={task.actions.indexOf(action)}>
-                            <Chip
-                              classes={{ root: classes.operator }}
-                              label={action.type}
-                            />
-                            {action.context && (
-                              <Chip
-                                classes={{ root: classes.filter }}
-                                label={
-                                  <div>
-                                    {action.context.field && (
-                                      <span>
-                                        <strong>
-                                          {action.context.field}
-                                        </strong>
-                                        :{' '}
-                                      </span>
-                                    )}
-                                    {truncate(
-                                      R.join(
-                                        ', ',
-                                        action.context.values || [],
-                                      ),
-                                      80,
-                                    )}
-                                  </div>
-                                }
-                              />
-                            )}
-                          </div>
-                        ),
-                        task.actions,
                       )}
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item={true} xs={7}>
-                <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={2}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Initiator')}
-                    </Typography>
-                    {task.initiator?.name}
-                  </Grid>
-                  <Grid item={true} xs={2}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Task start time')}
-                    </Typography>
-                    {nsdt(task.created_at)}
-                  </Grid>
-                  <Grid item={true} xs={2}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {task.completed
-                        ? t('Task end time')
-                        : t('Task last execution time')}
-                    </Typography>
-                    {nsdt(task.last_execution_date)}
-                  </Grid>
-                  {(task.scope ?? task.type)
-                    && <Grid item={true} xs={2}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t('Scope')}
-                      </Typography>
-                      <TaskScope scope={task.scope ?? task.type} label={t(task.scope ?? task.type)} />
+                      {task.actions
+                        && R.map(
+                          (action) => (
+                            <div key={task.actions.indexOf(action)}>
+                              <Chip
+                                classes={{ root: classes.operator }}
+                                label={action.type}
+                              />
+                              {action.context && (
+                                <Chip
+                                  classes={{ root: classes.filter }}
+                                  label={
+                                    <div>
+                                      {action.context.field && (
+                                        <span>
+                                          <strong>
+                                            {action.context.field}
+                                          </strong>
+                                          :{' '}
+                                        </span>
+                                      )}
+                                      {truncate(
+                                        R.join(
+                                          ', ',
+                                          action.context.values || [],
+                                        ),
+                                        80,
+                                      )}
+                                    </div>
+                                  }
+                                />
+                              )}
+                            </div>
+                          ),
+                          task.actions,
+                        )}
                     </Grid>
-                  }
-                  <Grid item={true} xs={2}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Status')}
-                    </Typography>
-                    <TaskStatus status={status} label={t(status)} />
-                  </Grid>
-                  <Grid item={true} xs={10}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Progress')}
-                    </Typography>
-                    <LinearProgress
-                      classes={{ root: classes.progress }}
-                      variant="determinate"
-                      value={
-                        // eslint-disable-next-line no-nested-ternary
-                        task.task_expected_number === 0
-                          ? 0
-                          : task.completed
-                            ? 100
-                            : Math.round(
-                              (task.task_processed_number
-                                / task.task_expected_number)
-                              * 100,
-                            )
-                      }
-                    />
                   </Grid>
                 </Grid>
-              </Grid>
-              <Button
-                style={{ position: 'absolute', right: 10, top: 10 }}
-                variant="contained"
-                color="secondary"
-                onClick={() => handleOpenErrors(task.errors)}
+                <Grid item={true} xs={7}>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Initiator')}
+                      </Typography>
+                      {task.initiator?.name}
+                    </Grid>
+                    <Grid item={true} xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Task start time')}
+                      </Typography>
+                      {nsdt(task.created_at)}
+                    </Grid>
+                    <Grid item={true} xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {task.completed
+                          ? t('Task end time')
+                          : t('Task last execution time')}
+                      </Typography>
+                      {nsdt(task.last_execution_date)}
+                    </Grid>
+                    {(task.scope ?? task.type)
+                      && <Grid item={true} xs={2}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t('Scope')}
+                        </Typography>
+                        <TaskScope scope={task.scope ?? task.type} label={t(task.scope ?? task.type)} />
+                      </Grid>
+                    }
+                    <Grid item={true} xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Status')}
+                      </Typography>
+                      <TaskStatus status={status} label={t(status)} />
+                    </Grid>
+                    <Grid item={true} xs={10}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t('Progress')}
+                      </Typography>
+                      <LinearProgress
+                        classes={{ root: classes.progress }}
+                        variant="determinate"
+                        value={
+                          // eslint-disable-next-line no-nested-ternary
+                          task.task_expected_number === 0
+                            ? 0
+                            : task.completed
+                              ? 100
+                              : Math.round(
+                                (task.task_processed_number
+                                  / task.task_expected_number)
+                                  * 100,
+                              )
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Button
+                  style={{ position: 'absolute', right: 10, top: 10 }}
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => handleOpenErrors(task.errors)}
                 size="small"
               >
                 {task.errors.length} {t('errors')}
@@ -457,8 +413,8 @@ const TasksList = ({ data }) => {
               }
             </Grid>
           </Paper>
-        );
-      })}
+          );
+        })}
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayMessages}

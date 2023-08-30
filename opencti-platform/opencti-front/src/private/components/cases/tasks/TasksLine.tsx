@@ -108,7 +108,7 @@ export const tasksDataColumns: DataColumns = {
       <ItemDueDate due_date={task.due_date} variant={'inList'} />
     ),
   },
-  assigneeTo: {
+  objectAssignee: {
     label: 'Assignees',
     width: '18%',
     isSortable: true,

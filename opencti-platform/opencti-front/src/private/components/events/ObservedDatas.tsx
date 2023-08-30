@@ -1,9 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import ObservedDatasLines, {
-  observedDatasLinesQuery,
-} from './observed_data/ObservedDatasLines';
+import ObservedDatasLines, { observedDatasLinesQuery } from './observed_data/ObservedDatasLines';
 import ObservedDataCreation from './observed_data/ObservedDataCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -18,6 +16,7 @@ import {
   ObservedDatasLinesPaginationQuery$variables,
 } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 const LOCAL_STORAGE_KEY = 'view-observedDatas';
 
@@ -38,15 +37,15 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
       key: 'createdBy',
       values: [authorId],
       operator: 'eq',
-      filterMode: 'or',
+      mode: 'or',
     });
   }
   if (objectId) {
     additionnalFilters.push({
-      key: 'objectContains',
+      key: 'objects',
       values: [objectId],
       operator: 'eq',
-      filterMode: 'or',
+      mode: 'or',
     });
   }
   const {
@@ -60,7 +59,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
       sortBy: 'last_observed',
       orderAsc: false,
       openExports: false,
-      filters: {},
+      filters: initialFilterGroup,
     },
     additionnalFilters,
   );
@@ -88,11 +87,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-    let toolBarFilters = filters;
-    toolBarFilters = {
-      ...toolBarFilters,
-      entity_type: [{ id: 'Observed-Data', value: 'Observed-Data' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Observed-Data');
     const isRuntimeSort = helper?.isRuntimeFieldEnable();
     const dataColumns = {
       name: {
@@ -140,6 +135,8 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           handleSearch={storageHelpers.handleSearch}
           handleAddFilter={storageHelpers.handleAddFilter}
           handleRemoveFilter={storageHelpers.handleRemoveFilter}
+          handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
           handleToggleExports={storageHelpers.handleToggleExports}
           openExports={openExports}
           handleToggleSelectAll={handleToggleSelectAll}
@@ -154,13 +151,12 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
           iconExtension={true}
           availableFilterKeys={[
             'x_opencti_workflow_id',
-            'labelledBy',
-            'markedBy',
+            'objectLabel',
+            'objectMarking',
             'createdBy',
             'source_reliability',
             'confidence',
-            'created_start_date',
-            'created_end_date',
+            'created',
           ]}
         >
           <QueryRenderer

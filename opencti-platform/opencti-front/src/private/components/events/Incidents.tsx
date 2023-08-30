@@ -1,15 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import IncidentsLines, {
-  incidentsLinesPaginationQuery,
-} from './incidents/IncidentsLines';
+import IncidentsLines, { incidentsLinesPaginationQuery } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { Filters } from '../../../components/list_lines';
 import { IncidentLineDummy } from './incidents/IncidentLine';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { IncidentLine_node$data } from './incidents/__generated__/IncidentLine_node.graphql';
@@ -19,6 +16,7 @@ import {
   IncidentsLinesPaginationQuery,
   IncidentsLinesPaginationQuery$variables,
 } from './incidents/__generated__/IncidentsLinesPaginationQuery.graphql';
+import { filtersWithEntityType, initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY = 'view-incidents';
 
@@ -33,7 +31,7 @@ const Incidents: FunctionComponent = () => {
       sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
     },
   );
   const {
@@ -107,11 +105,7 @@ const Incidents: FunctionComponent = () => {
     },
   };
   const renderLines = () => {
-    let renderFilters = filters;
-    renderFilters = {
-      ...renderFilters,
-      entity_type: [{ id: 'Incident', value: 'Incident' }],
-    };
+    const toolBarFilters = filtersWithEntityType(filters, 'Incident');
     return (
       <>
         <ListLines
@@ -122,6 +116,8 @@ const Incidents: FunctionComponent = () => {
           handleSearch={helpers.handleSearch}
           handleAddFilter={helpers.handleAddFilter}
           handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
           handleToggleExports={helpers.handleToggleExports}
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
@@ -134,17 +130,16 @@ const Incidents: FunctionComponent = () => {
           iconExtension={true}
           availableFilterKeys={[
             'incident_type',
-            'labelledBy',
-            'markedBy',
+            'objectLabel',
+            'objectMarking',
             'createdBy',
             'source_reliability',
             'confidence',
-            'participant',
+            'objectParticipant',
             'severity',
             'source',
-            'creator',
-            'created_start_date',
-            'created_end_date',
+            'creator_id',
+            'created',
             'targets',
           ]}
         >
@@ -180,7 +175,7 @@ const Incidents: FunctionComponent = () => {
           numberOfSelectedElements={numberOfSelectedElements}
           selectAll={selectAll}
           search={searchTerm}
-          filters={renderFilters}
+          filters={toolBarFilters}
           handleClearSelectedElements={handleClearSelectedElements}
           type="Incident"
         />

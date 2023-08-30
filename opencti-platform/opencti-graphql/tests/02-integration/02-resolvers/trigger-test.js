@@ -6,7 +6,7 @@ import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
 const LIST_QUERY = gql`
     query triggers(
         $search: String
-        $filters: [TriggersFiltering!]
+        $filters: FilterGroup
         $includeAuthorities: Boolean
     ) {
         triggersKnowledge(search: $search, filters: $filters, includeAuthorities: $includeAuthorities) {

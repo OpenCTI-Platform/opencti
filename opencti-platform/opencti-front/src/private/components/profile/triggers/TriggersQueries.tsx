@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 export const triggersQueriesKnowledgeSearchQuery = graphql`
   query TriggersQueriesSearchKnowledgeQuery(
     $search: String
-    $filters: [TriggersFiltering!]
+    $filters: FilterGroup
   ) {
     triggersKnowledge(search: $search, filters: $filters) {
       edges {
@@ -27,7 +27,7 @@ export const triggersQueriesKnowledgeSearchQuery = graphql`
 export const triggersQueriesActivitySearchQuery = graphql`
   query TriggersQueriesSearchActivityQuery(
     $search: String
-    $filters: [TriggerActivityFiltering!]
+    $filters: FilterGroup
   ) {
     triggersActivity(search: $search, filters: $filters) {
       edges {

@@ -60,7 +60,7 @@ export const workspacesLinesQuery = graphql`
     $cursor: ID
     $orderBy: WorkspacesOrdering
     $orderMode: OrderingMode
-    $filters: [WorkspacesFiltering!]
+    $filters: FilterGroup
   ) {
     ...WorkspacesLines_data
       @arguments(
@@ -85,7 +85,7 @@ export default createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "WorkspacesOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[WorkspacesFiltering!]" }
+        filters: { type: "FilterGroup" }
       ) {
         workspaces(
           search: $search

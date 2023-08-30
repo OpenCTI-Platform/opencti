@@ -99,11 +99,6 @@ const triggerLineFragment = graphql`
     isDirectAdministrator
     currentUserAccessRight
     instance_trigger
-    resolved_instance_filters {
-      id
-      valid
-      value
-    }
   }
 `;
 
@@ -202,7 +197,6 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
                 classNameNumber={3}
                 styleNumber={3}
                 redirection
-                resolvedInstanceFilters={data.resolved_instance_filters ?? []}
               />
             )}
             {data.trigger_type === 'digest' && (

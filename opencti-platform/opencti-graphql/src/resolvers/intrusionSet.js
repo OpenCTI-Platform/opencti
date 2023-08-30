@@ -30,8 +30,8 @@ const intrusionSetResolvers = {
   IntrusionSetsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
-    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
-    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectAssignee: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
+    objectLabel: buildRefRelationKey(RELATION_OBJECT_LABEL),
     targets: buildRefRelationKey(RELATION_TARGETS),
     creator: 'creator_id',
   },

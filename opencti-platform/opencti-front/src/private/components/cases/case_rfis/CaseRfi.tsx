@@ -23,7 +23,6 @@ import CaseRfiPopover from './CaseRfiPopover';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import {
-  TasksFilter,
   CaseTasksLinesQuery,
   CaseTasksLinesQuery$variables,
 } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
@@ -56,14 +55,14 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
   const { t } = useFormatter();
   const ref = useRef(null);
   const caseRfiData = useFragment(caseFragment, data);
-  const tasksFilters = {
-    filters: [
-      {
-        key: ['objectContains' as TasksFilter],
-        values: [caseRfiData.id],
-      },
-    ],
-  };
+  const tasksFilters = [
+    {
+      key: 'objects',
+      values: [caseRfiData.id],
+      operator: 'eq',
+      mode: 'or',
+    },
+  ];
   const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseRfiData.id}-caseTask`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
     LOCAL_STORAGE_KEY_CASE_TASKS,
@@ -72,7 +71,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
       sortBy: 'name',
       orderAsc: true,
     },
-    tasksFilters.filters,
+    tasksFilters,
   );
   const { sortBy, orderAsc } = viewStorage;
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(

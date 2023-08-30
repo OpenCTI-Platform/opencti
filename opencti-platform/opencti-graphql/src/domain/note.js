@@ -10,6 +10,7 @@ import { isStixId } from '../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { addFilter } from "../utils/filtering";
 
 export const findById = (context, user, noteId) => {
   return storeLoadById(context, user, noteId, ENTITY_TYPE_CONTAINER_NOTE);
@@ -32,10 +33,14 @@ export const addNote = async (context, user, note) => {
 export const noteContainsStixObjectOrStixRelationship = async (context, user, noteId, thingId) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [noteId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'internal_id', values: [noteId] },
+        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const noteFound = await findAll(context, user, args);
   return noteFound.edges.length > 0;
@@ -58,19 +63,19 @@ export const notesNumber = (context, user, args) => ({
 
 export const notesTimeSeriesByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], { ...args, filters });
 };
 
 export const notesTimeSeriesByAuthor = async (context, user, args) => {
   const { authorId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_CREATED_BY, '*')], values: [authorId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_CREATED_BY, '*'), authorId);
   return timeSeriesEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], { ...args, filters });
 };
 
 export const notesNumberByEntity = (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
     count: elCount(
       context,
@@ -89,7 +94,7 @@ export const notesNumberByEntity = (context, user, args) => {
 
 export const notesDistributionByEntity = async (context, user, args) => {
   const { objectId } = args;
-  const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT, '*')], values: [objectId] }, ...(args.filters || [])];
+  const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return distributionEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], { ...args, filters });
 };
 // endregion

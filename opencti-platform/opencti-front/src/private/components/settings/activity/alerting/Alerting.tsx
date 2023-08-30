@@ -1,13 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import type { Filters } from '../../../../../components/list_lines';
-import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import { DataColumns } from '../../../../../components/list_lines';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+  usePaginationLocalStorage,
+} from '../../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
-import { DataColumns } from '../../../../../components/list_lines';
 import {
   AlertingPaginationQuery,
   AlertingPaginationQuery$variables,
@@ -17,6 +20,7 @@ import ActivityMenu from '../../ActivityMenu';
 import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graphql';
 import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
 import { Theme } from '../../../../../components/Theme';
+import { initialFilterGroup } from '../../../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-alerting';
 const nbOfRowsToLoad = 50;
@@ -35,7 +39,7 @@ export const alertingQuery = graphql`
         $cursor: ID
         $orderBy: TriggersOrdering
         $orderMode: OrderingMode
-        $filters: [TriggerActivityFiltering!]
+        $filters: FilterGroup
     ) {
         ...AlertingLines_data
         @arguments(
@@ -57,7 +61,7 @@ const alertingFragment = graphql`
         cursor: { type: "ID" }
         orderBy: { type: "TriggersOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[TriggerActivityFiltering!]" }
+        filters: { type: "FilterGroup" }
     )
     @refetchable(queryName: "AlertingLinesRefetchQuery") {
         triggersActivity(
@@ -90,12 +94,7 @@ interface AlertingLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: AlertingPaginationQuery$variables;
   setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick?: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick?: HandleAddFilter;
 }
 
 const AlertingLines: FunctionComponent<AlertingLinesProps> = ({
@@ -141,7 +140,7 @@ const Alerting: FunctionComponent = () => {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -183,14 +182,15 @@ const Alerting: FunctionComponent = () => {
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleSwitchFilter={helpers.handleSwitchFilter}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'trigger_type',
-          'created_start_date',
-          'created_end_date',
+          'created',
         ]}>
         {queryRef && (
           <React.Suspense

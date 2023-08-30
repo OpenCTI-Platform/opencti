@@ -44,10 +44,14 @@ export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAd
 export const caseRfiContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, caseRfiId: string, thingId: string) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const args = {
-    filters: [
-      { key: 'internal_id', values: [caseRfiId] },
-      { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
-    ],
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'internal_id', values: [caseRfiId] },
+        { key: buildRefRelationKey(RELATION_OBJECT), values: [resolvedThingId] },
+      ],
+      filterGroups: [],
+    },
   };
   const caseRfiFound = await findAll(context, user, args);
   return caseRfiFound.edges.length > 0;

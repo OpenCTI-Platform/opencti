@@ -3,15 +3,16 @@ import ToggleButton from '@mui/material/ToggleButton';
 import { BackupTableOutlined, CampaignOutlined, HighlightOff, HorizontalRule } from '@mui/icons-material';
 import { CheckCircleOutline } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import React, { FunctionComponent, SyntheticEvent } from 'react';
+import React, { FunctionComponent } from 'react';
 import InputLabel from '@mui/material/InputLabel';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 interface BooleanFilterProps {
   filterKey: string,
-  handleSwitchFilter: (key: string, id: string, value: string, event?: SyntheticEvent) => void,
-  defaultHandleRemoveFilter: (key: string) => void,
+  handleSwitchFilter?: HandleAddFilter,
+  defaultHandleRemoveFilter?: (key: string) => void,
 }
 
 const useStyles = makeStyles(() => ({
@@ -26,9 +27,11 @@ const InlineFilters: FunctionComponent<BooleanFilterProps> = ({ filterKey, handl
   const { t } = useFormatter();
   const classes = useStyles();
   const handleInputValues = (value: string) => {
-    defaultHandleRemoveFilter(filterKey);
-    if (value !== '') {
-      handleSwitchFilter(filterKey, value, t(value));
+    if (defaultHandleRemoveFilter && handleSwitchFilter) {
+      defaultHandleRemoveFilter(filterKey);
+      if (value !== '') {
+        handleSwitchFilter(filterKey, value);
+      }
     }
   };
 

@@ -13,6 +13,7 @@ export const schemaRelationsRefDefinition = {
   databaseNameMultipleCache: new Map<string, string[]>(),
 
   databaseNameToInputNameCache: new Map<string, Map<string, string>>(),
+  inputNameToDatabaseName: new Map<string, string>(),
   stixNameToInputNameCache: new Map<string, Map<string, string>>(),
 
   relationsRefCacheArray: new Map<string, RelationRefDefinition[]>(),
@@ -69,6 +70,7 @@ export const schemaRelationsRefDefinition = {
     this.relationsRefCacheArray.set(entityType, computedWithParentsRefsArray);
     this.stixNamesCache.set(entityType, computedWithParentsRefsArray.map((rel) => rel.stixName));
     this.databaseNameMultipleCache.set(entityType, computedWithParentsRefsArray.filter((rel) => rel.multiple).map((rel) => rel.databaseName));
+    computedWithParentsRefsArray.forEach((ref) => this.inputNameToDatabaseName.set(ref.inputName, ref.databaseName));
     this.databaseNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.databaseName, ref.inputName])));
     this.stixNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.stixName, ref.inputName])));
   },
@@ -124,5 +126,12 @@ export const schemaRelationsRefDefinition = {
     return Array.from(this.relationsRefCacheArray.values()).flat()
       .filter((rel) => rel.datable)
       .map((rel) => rel.databaseName);
+  },
+
+  getDatabaseName(inputName: string, entityTypes?: string[]): string | undefined {
+    if (entityTypes) {
+      entityTypes.forEach((type) => this.computeCache(type));
+    }
+    return this.inputNameToDatabaseName.get(inputName);
   }
 };

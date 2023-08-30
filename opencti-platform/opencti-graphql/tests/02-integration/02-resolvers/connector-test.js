@@ -17,7 +17,7 @@ const LIST_WORK_QUERY = gql`
     $orderBy: WorksOrdering
     $orderMode: OrderingMode
     $search: String
-    $filters: [WorksFiltering]
+    $filters: FilterGroup
     $filterMode: FilterMode
   ) {
     works(

@@ -47,7 +47,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     lastSeenStop: DateTime
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
@@ -61,7 +61,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     limit: Int
     order: String
     types: [String]
-    filters: [StixCoreObjectsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -84,7 +84,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     relationship_type: [String]
     confidences: [Int]
     search: String
-    filters: [StixCoreRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Stix Domain Object
@@ -102,7 +102,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     after: ID
     orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     types: [String]
@@ -113,7 +113,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     after: ID
     orderBy: ContainersOrdering
     orderMode: OrderingMode
-    filters: [ContainersFiltering]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     types: [String]
@@ -161,35 +161,6 @@ enum CaseIncidentsOrdering {
   confidence
   objectMarking
 }
-
-# Filtering
-enum CaseIncidentsFilter {
-  name
-  created
-  modified
-  context
-  created_at
-  updated_at
-  creator
-  createdBy
-  markedBy
-  labelledBy
-  assigneeTo
-  participant
-  x_opencti_workflow_id
-  severity
-  priority
-  confidence
-  source_reliability
-}
-
-input CaseIncidentsFiltering {
-  key: [CaseIncidentsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
 # Relay connections
 type CaseIncidentConnection {
   pageInfo: PageInfo!
@@ -209,7 +180,7 @@ type Query {
     after: ID
     orderBy: CaseIncidentsOrdering
     orderMode: OrderingMode
-    filters: [CaseIncidentsFiltering!]
+    filters: FilterGroup
     filterMode: FilterMode
     search: String
     toStix: Boolean

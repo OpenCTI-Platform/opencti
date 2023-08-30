@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import type { Filters } from '../../../components/list_lines';
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import TriggersLines, { triggersLinesQuery } from './triggers/TriggersLines';
@@ -10,6 +9,7 @@ import {
 } from './triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { TriggerLineDummy } from './triggers/TriggerLine';
 import TriggerCreation from './triggers/TriggerCreation';
+import { initialFilterGroup } from '../../../utils/filters/filtersUtils';
 
 export const LOCAL_STORAGE_KEY_TRIGGERS = 'view-triggers';
 
@@ -20,7 +20,7 @@ const Triggers: FunctionComponent = () => {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      filters: {} as Filters,
+      filters: initialFilterGroup,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -70,6 +70,8 @@ const Triggers: FunctionComponent = () => {
         handleAddFilter={helpers.handleAddFilter}
         handleRemoveFilter={helpers.handleRemoveFilter}
         handleSwitchFilter={helpers.handleSwitchFilter}
+        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -77,8 +79,7 @@ const Triggers: FunctionComponent = () => {
         availableFilterKeys={[
           'trigger_type',
           'instance_trigger',
-          'created_start_date',
-          'created_end_date',
+          'created',
         ]}
       >
         {queryRef && (
