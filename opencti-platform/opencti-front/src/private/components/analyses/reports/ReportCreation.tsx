@@ -354,7 +354,7 @@ const ReportCreation = ({
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
   return (
-    <div>
+    <>
       <Fab
         onClick={() => setOpen(true)}
         color="secondary"
@@ -374,7 +374,7 @@ const ReportCreation = ({
           onReset={() => setOpen(false)}
         />
       </DrawerOpenCTI>
-    </div>
+    </>
   );
 };
 

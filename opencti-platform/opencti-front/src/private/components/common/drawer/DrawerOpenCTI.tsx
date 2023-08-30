@@ -49,6 +49,7 @@ const DrawerOpenCTI: FunctionComponent<DrawerOpenCTIProps> = ({
 }) => {
   const classes = useStyles();
 
+  const handleClose = () => setOpen(false);
   return (
     <Drawer
       open={open}
@@ -56,12 +57,12 @@ const DrawerOpenCTI: FunctionComponent<DrawerOpenCTIProps> = ({
       elevation={1}
       sx={{ zIndex: 1202 }}
       classes={{ paper: classes.drawerPaper }}
-      onClose={() => setOpen(false)}
+      onClose={handleClose}
     >
       <div className={classes.header} >
         <IconButton
           aria-label="Close"
-          onClick={() => setOpen(false)}
+          onClick={handleClose}
           size="large"
           color="primary"
         >
