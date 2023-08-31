@@ -38,6 +38,7 @@ const stixCyberObservableQuery = graphql`
     stixCyberObservable(id: $id) {
       id
       standard_id
+      entity_type
       ...StixCyberObservable_stixCyberObservable
       ...StixCyberObservableHeader_stixCyberObservable
       ...StixCyberObservableDetails_stixCyberObservable

@@ -29,7 +29,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -39,6 +38,7 @@ const vulnerabilityQuery = graphql`
     vulnerability(id: $id) {
       id
       standard_id
+      entity_type
       name
       x_opencti_graph_data
       ...Vulnerability_vulnerability
@@ -48,7 +48,6 @@ const vulnerabilityQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport

@@ -42,6 +42,7 @@ const ThreatActorIndividualQuery = graphql`
     threatActorIndividual(id: $id) {
       id
       standard_id
+      entity_type
       name
       x_opencti_graph_data
       ...ThreatActorIndividual_ThreatActorIndividual

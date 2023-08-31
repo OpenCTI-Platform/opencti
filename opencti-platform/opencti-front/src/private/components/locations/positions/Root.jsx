@@ -30,7 +30,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -39,6 +38,7 @@ const positionQuery = graphql`
   query RootPositionQuery($id: String!) {
     position(id: $id) {
       id
+      entity_type
       name
       x_opencti_aliases
       ...Position_position
@@ -47,7 +47,6 @@ const positionQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport

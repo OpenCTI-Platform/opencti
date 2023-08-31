@@ -27,7 +27,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -36,6 +35,7 @@ const courseOfActionQuery = graphql`
   query RootCourseOfActionQuery($id: String!) {
     courseOfAction(id: $id) {
       id
+      entity_type
       name
       x_opencti_aliases
       ...CourseOfAction_courseOfAction
@@ -43,7 +43,6 @@ const courseOfActionQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport

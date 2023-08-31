@@ -27,7 +27,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -36,6 +35,7 @@ const observedDataQuery = graphql`
   query RootObservedDataQuery($id: String!) {
     observedData(id: $id) {
       standard_id
+      entity_type
       ...ObservedData_observedData
       ...ObservedDataDetails_observedData
       ...ContainerHeader_container
@@ -45,7 +45,6 @@ const observedDataQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForExport {
       ...FileManager_connectorsExport

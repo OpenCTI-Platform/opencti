@@ -35,7 +35,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -44,6 +43,7 @@ const systemQuery = graphql`
   query RootSystemQuery($id: String!) {
     system(id: $id) {
       id
+      entity_type
       name
       x_opencti_aliases
       ...System_system
@@ -52,7 +52,6 @@ const systemQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport

@@ -44,6 +44,7 @@ const organizationQuery = graphql`
   query RootOrganizationQuery($id: String!) {
     organization(id: $id) {
       id
+      entity_type
       name
       x_opencti_aliases
       ...Organization_organization

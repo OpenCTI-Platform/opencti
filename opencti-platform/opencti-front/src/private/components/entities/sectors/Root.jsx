@@ -30,7 +30,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -40,6 +39,7 @@ const sectorQuery = graphql`
     sector(id: $id) {
       id
       standard_id
+      entity_type
       name
       x_opencti_aliases
       x_opencti_graph_data
@@ -49,7 +49,6 @@ const sectorQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport
