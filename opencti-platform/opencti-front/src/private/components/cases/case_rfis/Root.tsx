@@ -20,6 +20,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import CaseRfiKnowledge from './CaseRfiKnowledge';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -93,6 +94,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                 />
                 <ContainerStixDomainObjects
@@ -110,6 +112,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                 />
                 <ContainerStixCyberObservables
@@ -136,6 +139,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                 />
                 <StixDomainObjectContent
@@ -160,6 +164,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                 />
                 <StixCoreObjectFilesAndHistory
@@ -182,6 +187,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                   disableSharing={true}
                 />

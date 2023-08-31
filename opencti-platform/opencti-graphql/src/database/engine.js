@@ -317,8 +317,7 @@ const buildDataRestrictions = async (context, user, opts = {}) => {
       const allGroupedMarkings = R.groupBy((m) => m.definition_type, user.all_marking);
       const markingGroups = Object.keys(allGroupedMarkings);
       const mustNotHaveOneOf = [];
-      for (let index = 0; index < markingGroups.length; index += 1) {
-        const markingGroup = markingGroups[index];
+      markingGroups.forEach((markingGroup) => {
         const markingsForGroup = allGroupedMarkings[markingGroup].map((i) => i.internal_id);
         const userMarkingsForGroup = (userGroupedMarkings[markingGroup] || []).map((i) => i.internal_id);
         // Get all markings the user has no access for this group
@@ -326,11 +325,10 @@ const buildDataRestrictions = async (context, user, opts = {}) => {
         if (res.length > 0) {
           mustNotHaveOneOf.push(res);
         }
-      }
+      });
       // If use have marking, he can access to data with no marking && data with according marking
       const mustNotMarkingTerms = [];
-      for (let i = 0; i < mustNotHaveOneOf.length; i += 1) {
-        const markings = mustNotHaveOneOf[i];
+      mustNotHaveOneOf.forEach((markings) => {
         const should = markings.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: m } }));
         mustNotMarkingTerms.push({
           bool: {
@@ -338,7 +336,7 @@ const buildDataRestrictions = async (context, user, opts = {}) => {
             minimum_should_match: 1,
           },
         });
-      }
+      });
       const markingBool = {
         bool: {
           should: [
@@ -1027,11 +1025,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     if ((types || []).some((typeElement) => isStixObjectAliased(typeElement)) || forceAliases) {
       elementTypes.push(INTERNAL_IDS_ALIASES);
     }
-    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-      const elementType = elementTypes[indexType];
+    elementTypes.forEach((elementType) => {
       const terms = { [`${elementType}.keyword`]: workingIds };
       idsTermsPerType.push({ terms });
-    }
+    });
     const should = {
       bool: {
         should: idsTermsPerType,
@@ -1084,11 +1081,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
       throw DatabaseError('[SEARCH] Error loading ids', { error: err, query });
     });
-    for (let j = 0; j < data.hits.hits.length; j += 1) {
-      const hit = data.hits.hits[j];
+    data?.hits?.hits?.forEach((hit) => {
       const element = elDataConverter(hit, withoutRels);
       hits[element.internal_id] = element;
-    }
+    });
   }
   return toMap ? hits : Object.values(hits);
 };

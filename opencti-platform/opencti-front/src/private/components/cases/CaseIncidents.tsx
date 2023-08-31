@@ -11,7 +11,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNCASES_KNCREATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CaseIncidentCreation from './case_incidents/CaseIncidentCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import {
@@ -198,7 +198,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   return (
     <ExportContextProvider>
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={[KNOWLEDGE_KNCASES_KNCREATE, KNOWLEDGE_KNUPDATE]}>
         <CaseIncidentCreation paginationOptions={paginationOptions} />
       </Security>
     </ExportContextProvider>

@@ -7,7 +7,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNCASES_KNCREATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
 import CaseRfisLines, { caseRfisLinesQuery } from './case_rfis/CaseRfiLines';
@@ -191,7 +191,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   return (
     <ExportContextProvider>
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={[KNOWLEDGE_KNCASES_KNCREATE, KNOWLEDGE_KNUPDATE]}>
         <CaseRfiCreation paginationOptions={paginationOptions} />
       </Security>
     </ExportContextProvider>

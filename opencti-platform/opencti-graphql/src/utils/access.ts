@@ -22,9 +22,14 @@ export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
 export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT';
+export const KNOWLEDGE_KNCASES = 'KNOWLEDGE_KNCASES';
+export const KNOWLEDGE_KNCASES_KNCREATE = 'KNOWLEDGE_KNCASES_KNCREATE';
+export const KNOWLEDGE_KNCASES_KNUPDATE = 'KNOWLEDGE_KNCASES_KNUPDATE';
+export const KNOWLEDGE_KNCASES_KNDELETE = 'KNOWLEDGE_KNCASES_KNDELETE';
 
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
+export const ROLE_ANALYST = 'Analyst';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const REDACTED_USER_UUID = '31afac4e-6b99-44a0-b91b-e04738d31461';
@@ -40,6 +45,13 @@ export const ADMINISTRATOR_ROLE: UserRole = {
   id: administratorRoleId,
   internal_id: administratorRoleId,
   name: ROLE_ADMINISTRATOR
+};
+
+const analystRoleId = uuidv4();
+export const ANALYST_ROLE: UserRole = {
+  id: analystRoleId,
+  internal_id: analystRoleId,
+  name: ROLE_ANALYST
 };
 
 const defaultRoleId = uuidv4();

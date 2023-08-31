@@ -29,6 +29,7 @@ import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowl
 import ContainerContent, {
   containerContentQuery,
 } from '../../common/containers/ContainerContent';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const styles = () => ({
   container: {
@@ -280,6 +281,7 @@ class CaseRfiKnowledgeComponent extends Component {
           <ContainerHeader
             container={caseData}
             PopoverComponent={<CaseRfiPopover id={caseData.id} />}
+            popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
             link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
             modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}

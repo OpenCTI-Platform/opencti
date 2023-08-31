@@ -69,6 +69,16 @@ const KNOWLEDGE_CAPABILITIES = {
         { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 }
       ],
     },
+    {
+      name: 'KNCASES',
+      description: 'Case management',
+      attribute_order: 305,
+      dependencies: [
+        { name: 'KNCREATE', description: 'Create cases', attribute_order: 306 },
+        { name: 'KNUPDATE', description: 'Update cases', attribute_order: 307 },
+        { name: 'KNDELETE', description: 'Delete cases', attribute_order: 308 },
+      ],
+    },
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
     { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
     {

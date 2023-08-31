@@ -1738,6 +1738,10 @@ export enum Capabilities {
   ExploreExupdateExdelete = 'EXPLORE_EXUPDATE_EXDELETE',
   Knowledge = 'KNOWLEDGE',
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',
+  KnowledgeKncases = 'KNOWLEDGE_KNCASES',
+  KnowledgeKncasesKncreate = 'KNOWLEDGE_KNCASES_KNCREATE',
+  KnowledgeKncasesKndelete = 'KNOWLEDGE_KNCASES_KNDELETE',
+  KnowledgeKncasesKnupdate = 'KNOWLEDGE_KNCASES_KNUPDATE',
   KnowledgeKnenrichment = 'KNOWLEDGE_KNENRICHMENT',
   KnowledgeKngetexport = 'KNOWLEDGE_KNGETEXPORT',
   KnowledgeKngetexportKnaskexport = 'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
@@ -12566,10 +12570,13 @@ export type Mutation = {
   caseDelete?: Maybe<Scalars['ID']['output']>;
   caseIncidentAdd?: Maybe<CaseIncident>;
   caseIncidentDelete?: Maybe<Scalars['ID']['output']>;
+  caseIncidentEdit?: Maybe<CaseIncident>;
   caseRfiAdd?: Maybe<CaseRfi>;
   caseRfiDelete?: Maybe<Scalars['ID']['output']>;
+  caseRfiEdit?: Maybe<CaseRfi>;
   caseRftAdd?: Maybe<CaseRft>;
   caseRftDelete?: Maybe<Scalars['ID']['output']>;
+  caseRftEdit?: Maybe<CaseRft>;
   caseSetTemplate?: Maybe<Case>;
   caseTemplateAdd?: Maybe<CaseTemplate>;
   caseTemplateDelete?: Maybe<Scalars['ID']['output']>;
@@ -12928,6 +12935,14 @@ export type MutationCaseIncidentDeleteArgs = {
 };
 
 
+export type MutationCaseIncidentEditArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
 export type MutationCaseRfiAddArgs = {
   input: CaseRfiAddInput;
 };
@@ -12938,6 +12953,14 @@ export type MutationCaseRfiDeleteArgs = {
 };
 
 
+export type MutationCaseRfiEditArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
 export type MutationCaseRftAddArgs = {
   input: CaseRftAddInput;
 };
@@ -12945,6 +12968,14 @@ export type MutationCaseRftAddArgs = {
 
 export type MutationCaseRftDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationCaseRftEditArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
@@ -33646,10 +33677,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseDeleteArgs, 'id'>>;
   caseIncidentAdd?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentAddArgs, 'input'>>;
   caseIncidentDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseIncidentDeleteArgs, 'id'>>;
+  caseIncidentEdit?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentEditArgs, 'id' | 'input'>>;
   caseRfiAdd?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiAddArgs, 'input'>>;
   caseRfiDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRfiDeleteArgs, 'id'>>;
+  caseRfiEdit?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiEditArgs, 'id' | 'input'>>;
   caseRftAdd?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftAddArgs, 'input'>>;
   caseRftDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRftDeleteArgs, 'id'>>;
+  caseRftEdit?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftEditArgs, 'id' | 'input'>>;
   caseSetTemplate?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseSetTemplateArgs, 'caseTemplatesId' | 'id'>>;
   caseTemplateAdd?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateAddArgs, 'input'>>;
   caseTemplateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseTemplateDeleteArgs, 'id'>>;

@@ -40,6 +40,7 @@ import {
 } from './IncidentKnowledgeGraphQuery';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -1400,6 +1401,7 @@ class IncidentKnowledgeGraphComponent extends Component {
               <ContainerHeader
                 container={caseData}
                 PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                 link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
                 modes={[
                   'graph',

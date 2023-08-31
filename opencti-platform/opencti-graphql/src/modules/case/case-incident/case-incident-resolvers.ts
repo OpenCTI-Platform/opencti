@@ -7,7 +7,7 @@ import {
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT_PARTICIPANT
 } from '../../../schema/stixRefRelationship';
-import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
+import { stixDomainObjectDelete, stixDomainObjectEditField } from '../../../domain/stixDomainObject';
 import {
   addCaseIncident,
   caseIncidentContainsStixObjectOrStixRelationship,
@@ -38,6 +38,9 @@ const caseIncidentResolvers: Resolvers = {
   Mutation: {
     caseIncidentAdd: (_, { input }, context) => {
       return addCaseIncident(context, context.user, input);
+    },
+    caseIncidentEdit: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },
     caseIncidentDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);

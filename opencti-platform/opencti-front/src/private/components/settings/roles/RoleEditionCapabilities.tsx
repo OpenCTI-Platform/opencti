@@ -107,7 +107,7 @@ RoleEditionCapabilitiesComponentProps
     }
   };
 
-  if (capabilities && capabilities.edges) {
+  if (capabilities?.edges) {
     return (
       <List
         dense={true}

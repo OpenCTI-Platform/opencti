@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarkings } from '../../../../utils/edition';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNCASES_KNUPDATE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -86,6 +86,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
       <ContainerHeader
         container={caseIncidentData}
         PopoverComponent={<CaseIncidentPopover id={caseIncidentData.id} />}
+        popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
         enableSuggestions={false}
         enableQuickSubscription={true}
       />
@@ -196,7 +197,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
           (edge) => edge.node,
         )}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={[KNOWLEDGE_KNCASES_KNUPDATE, KNOWLEDGE_KNUPDATE]}>
         <CaseIncidentEdition caseId={caseIncidentData.id} />
       </Security>
     </div>

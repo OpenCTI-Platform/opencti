@@ -39,6 +39,10 @@ enum Capabilities {
   KNOWLEDGE_KNGETEXPORT
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT
   KNOWLEDGE_KNENRICHMENT
+  KNOWLEDGE_KNCASES
+  KNOWLEDGE_KNCASES_KNCREATE
+  KNOWLEDGE_KNCASES_KNUPDATE
+  KNOWLEDGE_KNCASES_KNDELETE
   EXPLORE
   EXPLORE_EXUPDATE
   EXPLORE_EXUPDATE_EXDELETE
@@ -8985,10 +8989,13 @@ type Mutation {
   caseTemplateRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): CaseTemplate
   caseTemplateRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTemplate
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident
+  caseIncidentEdit(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseIncident
   caseIncidentDelete(id: ID!): ID
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
+  caseRfiEdit(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRfi
   caseRfiDelete(id: ID!): ID
   caseRftAdd(input: CaseRftAddInput!): CaseRft
+  caseRftEdit(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRft
   caseRftDelete(id: ID!): ID
   feedbackAdd(input: FeedbackAddInput!): Feedback
   feedbackDelete(id: ID!): ID

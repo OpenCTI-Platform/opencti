@@ -1,6 +1,6 @@
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -32,15 +32,14 @@ export const caseRfiMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
-        ...CaseRfiEditionOverview_case
-        ...CaseUtils_case
-      }
+    caseRfiEdit(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
+      ...CaseRfiEditionOverview_case
+      ...CaseUtils_case
     }
   }
 `;

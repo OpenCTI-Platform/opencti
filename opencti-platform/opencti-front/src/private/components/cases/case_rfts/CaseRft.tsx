@@ -5,7 +5,7 @@ import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { convertMarkings } from '../../../../utils/edition';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -84,6 +84,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
       <ContainerHeader
         container={caseRftData}
         PopoverComponent={<CaseRftPopover id={caseRftData.id} />}
+        popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
         enableSuggestions={false}
         enableQuickSubscription={true}
       />
@@ -181,7 +182,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
           (edge) => edge.node,
         )}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <Security needs={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE]}>
         <CaseRftEdition caseId={caseRftData.id} />
       </Security>
     </div>

@@ -32,15 +32,14 @@ export const caseRftMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
-        ...CaseRftEditionOverview_case
-        ...CaseUtils_case
-      }
+    caseRftEdit(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
+      ...CaseRftEditionOverview_case
+      ...CaseUtils_case
     } 
   }
 `;

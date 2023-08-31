@@ -40,6 +40,7 @@ import {
 import CaseRftPopover from './CaseRftPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
 
@@ -1399,6 +1400,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
               <ContainerHeader
                 container={caseData}
                 PopoverComponent={<CaseRftPopover id={caseData.id} />}
+                popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                 link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
                 modes={[
                   'graph',

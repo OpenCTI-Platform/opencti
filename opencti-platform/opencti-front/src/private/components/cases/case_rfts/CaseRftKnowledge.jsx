@@ -16,6 +16,7 @@ import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnow
 import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
 import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const styles = () => ({
   container: {
@@ -267,6 +268,7 @@ class CaseRftKnowledgeComponent extends Component {
           <ContainerHeader
             container={caseData}
             PopoverComponent={<CaseRftPopover id={caseData.id} />}
+            popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
             link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
             modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}

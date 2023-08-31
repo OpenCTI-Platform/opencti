@@ -246,6 +246,7 @@ input CaseRftAddInput {
 }
 
 type Mutation {
-  caseRftAdd(input: CaseRftAddInput!): CaseRft @auth
-  caseRftDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseRftAdd(input: CaseRftAddInput!): CaseRft @auth(for: [KNOWLEDGE_KNCASES_KNCREATE])
+  caseRftEdit(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRft @auth(for:[KNOWLEDGE_KNCASES_KNUPDATE])
+  caseRftDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE])
 }

@@ -20,6 +20,7 @@ import CaseIncidentPopover from './CaseIncidentPopover';
 import IncidentKnowledge from './IncidentKnowledge';
 import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -91,6 +92,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                 />
                 <ContainerStixDomainObjects
@@ -108,6 +110,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                 />
                 <ContainerStixCyberObservables
@@ -134,6 +137,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                 />
                 <StixDomainObjectContent
@@ -158,6 +162,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
                 <ContainerHeader
                   container={caseData}
                   PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
+                  popoverSecurity={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}
                   enableSuggestions={false}
                 />
                 <StixCoreObjectFilesAndHistory

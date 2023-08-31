@@ -5,7 +5,7 @@ import { print } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
-import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
+import { ADMINISTRATOR_ROLE, ANALYST_ROLE, BYPASS, DEFAULT_ROLE, executionContext, KNOWLEDGE_KNCASES, KNOWLEDGE_KNCASES_KNCREATE, KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNCASES_KNUPDATE } from '../../src/utils/access';
 
 // region static graphql modules
 import '../../src/modules/index';
@@ -178,6 +178,32 @@ export const ADMIN_USER: AuthUser = {
   default_marking: [],
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
   api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  account_lock_after_date: undefined
+};
+export const ANALYST_USER: AuthUser = {
+  entity_type: 'User',
+  id: '4a7c0402-162e-46de-91d7-0ac8c3b98afb',
+  internal_id: '4a7c0402-162e-46de-91d7-0ac8c3b98afb',
+  individual_id: undefined,
+  organizations: [],
+  name: 'analyst',
+  user_email: 'analyst@opencti.io',
+  roles: [ANALYST_ROLE],
+  groups: [],
+  capabilities: [
+    { name: KNOWLEDGE_KNCASES },
+    { name: KNOWLEDGE_KNCASES_KNCREATE },
+    { name: KNOWLEDGE_KNCASES_KNUPDATE },
+    { name: KNOWLEDGE_KNCASES_KNDELETE },
+  ],
+  all_marking: [],
+  allowed_organizations: [],
+  inside_platform_organization: true,
+  allowed_marking: [],
+  default_marking: [],
+  origin: { referer: 'test', user_id: '4a7c0402-162e-46de-91d7-0ac8c3b98afb' },
+  api_token: '9941e859-94f7-4462-9abc-0394fd7aadda',
   account_status: ACCOUNT_STATUS_ACTIVE,
   account_lock_after_date: undefined
 };

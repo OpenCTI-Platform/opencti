@@ -248,6 +248,7 @@ input CaseIncidentAddInput {
 }
 
 type Mutation {
-  caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth
-  caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth(for: [KNOWLEDGE_KNCASES_KNCREATE])
+  caseIncidentEdit(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseIncident @auth(for: [KNOWLEDGE_KNCASES_KNUPDATE])
+  caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE])
 }

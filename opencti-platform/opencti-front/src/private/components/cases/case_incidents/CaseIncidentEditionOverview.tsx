@@ -33,15 +33,14 @@ export const caseIncidentMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
-        ...CaseIncidentEditionOverview_case
-        ...CaseUtils_case
-      }
+    caseIncidentEdit(
+      id: $id,
+      input: $input,
+      commitMessage: $commitMessage,
+      references: $references
+    ) {
+      ...CaseIncidentEditionOverview_case
+      ...CaseUtils_case
     }
   }
 `;

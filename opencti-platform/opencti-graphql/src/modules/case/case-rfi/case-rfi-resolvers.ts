@@ -7,7 +7,7 @@ import {
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT_PARTICIPANT
 } from '../../../schema/stixRefRelationship';
-import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
+import { stixDomainObjectDelete, stixDomainObjectEditField } from '../../../domain/stixDomainObject';
 import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, findAll, findById } from './case-rfi-domain';
 
 const caseRfiResolvers: Resolvers = {
@@ -33,6 +33,9 @@ const caseRfiResolvers: Resolvers = {
   Mutation: {
     caseRfiAdd: (_, { input }, context) => {
       return addCaseRfi(context, context.user, input);
+    },
+    caseRfiEdit: (_, { id, input, commitMessage, references }, context) => {
+      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
     },
     caseRfiDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);

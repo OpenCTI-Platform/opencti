@@ -19,7 +19,7 @@ import Security from '../../../../utils/Security';
 import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import CaseRfiEditionContainer, { caseRfiEditionQuery } from './CaseRfiEditionContainer';
 import { CaseRfiEditionContainerCaseQuery } from './__generated__/CaseRfiEditionContainerCaseQuery.graphql';
@@ -113,7 +113,7 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        <Security needs={[KNOWLEDGE_KNCASES_KNDELETE, KNOWLEDGE_KNUPDATE_KNDELETE]}>
           <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
