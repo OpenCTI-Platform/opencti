@@ -126,7 +126,7 @@ ExternalReferencesFieldProps
       .then((data) => {
         const newExternalReferencesEdges = ((
           data as ExternalReferencesQueriesSearchQuery$data
-        )?.externalReferences?.edges ?? []) as {
+        )?.externalReferences?.edges ?? []) as unknown as {
           node: {
             description: string | null;
             external_id: string | null;
