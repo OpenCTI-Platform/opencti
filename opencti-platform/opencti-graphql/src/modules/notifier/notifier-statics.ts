@@ -263,6 +263,9 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
 export const SIMPLIFIED_EMAIL_TEMPLATE = `
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <% function parseMarkdownLink(text) {
+  if (!text) {
+    return '';
+  }
   const regex = /(.*)\\[(.*?)\\]\\((.*?)\\)/;
   const match = text.match(regex);
   if (match) {
