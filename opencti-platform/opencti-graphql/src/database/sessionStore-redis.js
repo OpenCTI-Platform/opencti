@@ -82,7 +82,8 @@ class RedisStore extends Store {
   }
 
   destroy(sid, cb = noop) {
-    return killSession(sid).then((data) => cb(data));
+    const key = this.prefix + sid;
+    return killSession(key).then((data) => cb(data));
   }
 
   all(cb = noop) {
