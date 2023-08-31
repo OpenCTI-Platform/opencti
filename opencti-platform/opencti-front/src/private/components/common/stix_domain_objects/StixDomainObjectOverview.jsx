@@ -196,12 +196,7 @@ class StixDomainObjectOverview extends Component {
                   )}
                 </Grid>
               )}
-              <StixCoreObjectOpinions
-                stixCoreObjectId={stixDomainObject.id}
-                variant="inEntity"
-                height={260}
-                marginTop={20}
-              />
+              <StixCoreObjectOpinions stixCoreObjectId={stixDomainObject.id} />
               <Typography
                 variant="h3"
                 gutterBottom={true}
