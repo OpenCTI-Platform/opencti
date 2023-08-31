@@ -2053,6 +2053,7 @@ class OpenCTIStix2:
         filters: List = None,
         order_by: str = None,
         order_mode: str = None,
+        mode: str = "simple",
         max_marking_definition: Dict = None,
         types: List = None,
         elementId: str = None,
@@ -2196,7 +2197,7 @@ class OpenCTIStix2:
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
                     self.generate_export(entity),
-                    "simple",
+                    mode,
                     max_marking_definition_entity,
                 )
                 if entity_bundle is not None:
@@ -2211,6 +2212,7 @@ class OpenCTIStix2:
         entity_type: str,
         entities_list: [str],
         element_id: str = None,
+        mode: str = "simple",
         max_marking_definition: Dict = None,
     ) -> Dict:
         max_marking_definition_entity = (
@@ -2231,7 +2233,7 @@ class OpenCTIStix2:
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
                     self.generate_export(entity),
-                    "simple",
+                    mode,
                     max_marking_definition_entity,
                 )
                 if entity_bundle is not None:
