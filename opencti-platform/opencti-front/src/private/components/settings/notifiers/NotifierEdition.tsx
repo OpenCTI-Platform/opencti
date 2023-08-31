@@ -162,7 +162,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
 
   const notifierConfiguration = useRef<string>(data?.notifier_configuration ?? ' {}');
 
-  const [testQueryRef, sendTest] = useQueryLoader<NotifierTestDialogQuery>(notifierTestQuery);
+  const [testQueryRef, sendTest, resetTest] = useQueryLoader<NotifierTestDialogQuery>(notifierTestQuery);
   return (
     <>
       <div className={classes.header}>
@@ -255,7 +255,10 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
                 </div>
                 <NotifierTestDialog
                   open={open}
-                  onClose={() => setOpen(false)}
+                  onClose={() => {
+                    setOpen(false);
+                    resetTest();
+                  }}
                   queryRef={testQueryRef}
                   onTest={(notifier_test_id) => {
                     if (values.notifier_connector_id) {
