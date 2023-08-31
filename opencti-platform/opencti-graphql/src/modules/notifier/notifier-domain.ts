@@ -22,7 +22,7 @@ import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
 
 const ajv = new Ajv();
 
-const validateNotifier = (notifier: NotifierAddInput | NotifierTestInput) => {
+const validateNotifier = (notifier: { notifier_connector_id: string, notifier_configuration: string }) => {
   const notifierConnector = BUILTIN_NOTIFIERS_CONNECTORS[notifier.notifier_connector_id];
   if (isEmptyField(notifierConnector) || isEmptyField(notifierConnector.connector_schema)) {
     throw UnsupportedError('Invalid notifier connector', { id: notifier.notifier_connector_id });
@@ -55,6 +55,11 @@ export const notifierGet = (context: AuthContext, user: AuthUser, notifierId: st
 };
 
 export const notifierEdit = async (context: AuthContext, user: AuthUser, notifierId: string, input: EditInput[]) => {
+  const fieldsToValidate = {
+    notifier_configuration: input.filter((n) => n.key === 'notifier_configuration')[0].value[0] ?? '',
+    notifier_connector_id: input.filter((n) => n.key === 'notifier_connector_id')[0].value[0] ?? '',
+  };
+  validateNotifier(fieldsToValidate);
   const finalInput = input.map(({ key, value }) => {
     const item: { key: string, value: unknown } = { key, value };
     if (key === 'authorized_members') {
@@ -115,7 +120,11 @@ export const initDefaultNotifiers = (context: AuthContext) => {
 };
 
 export const testNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierTestInput) => {
-  validateNotifier(notifier);
+  try {
+    validateNotifier(notifier);
+  } catch (error: any) {
+    return error.data.reason;
+  }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const notificationMap = new Map([
     ['default_notification_id', { name: 'test' } as BasicStoreEntityTrigger],

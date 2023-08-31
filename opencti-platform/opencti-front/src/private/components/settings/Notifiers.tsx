@@ -88,7 +88,7 @@ const Notifiers = () => {
         numberOfElements={numberOfElements}
         availableFilterKeys={['created_start_date', 'created_end_date']}
         message={t(
-          'There are two builtins notifier in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.',
+          'There are two built-in notifiers in the platform: User Interface and Default Mailer. They are not configurable and you can create your custom ones here.',
         )}
       >
         {queryRef && (
