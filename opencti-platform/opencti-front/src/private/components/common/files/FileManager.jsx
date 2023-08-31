@@ -207,6 +207,17 @@ const FileManager = ({
   const importConnsPerFormat = connectorsImport
     ? scopesConn(connectorsImport)
     : {};
+
+  const hasPictureManagement = [
+    'Threat-Actor-Group',
+    'Threat-Actor-Individual',
+    'Intrusion-Set',
+    'Tool',
+    'Individual',
+    'Organization',
+    'Malware',
+  ].includes(entity.entity_type);
+
   return (
     <div className={classes.container}>
       <Grid
@@ -232,7 +243,9 @@ const FileManager = ({
           entity={entity}
           handleOpenImport={handleOpenImport}
         />
-        <PictureManagementViewer entity={entity} />
+        {hasPictureManagement
+          && <PictureManagementViewer entity={entity} />
+        }
       </Grid>
       <div>
         <Formik

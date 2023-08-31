@@ -27,7 +27,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -37,6 +36,7 @@ const channelQuery = graphql`
     channel(id: $id) {
       id
       standard_id
+      entity_type
       name
       aliases
       x_opencti_graph_data
@@ -46,7 +46,6 @@ const channelQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport

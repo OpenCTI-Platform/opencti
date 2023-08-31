@@ -39,6 +39,7 @@ const intrusionSetQuery = graphql`
     intrusionSet(id: $id) {
       id
       standard_id
+      entity_type
       name
       aliases
       x_opencti_graph_data

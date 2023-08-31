@@ -44,6 +44,7 @@ const individualQuery = graphql`
   query RootIndividualQuery($id: String!) {
     individual(id: $id) {
       id
+      entity_type
       name
       x_opencti_aliases
       ...Individual_individual

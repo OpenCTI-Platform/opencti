@@ -26,7 +26,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -35,6 +34,7 @@ const noteQuery = graphql`
   query RootNoteQuery($id: String!) {
     note(id: $id) {
       standard_id
+      entity_type
       ...Note_note
       ...NoteDetails_note
       ...ContainerHeader_container
@@ -44,7 +44,6 @@ const noteQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForExport {
       ...FileManager_connectorsExport

@@ -31,7 +31,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -41,6 +40,7 @@ const indicatorQuery = graphql`
     indicator(id: $id) {
       id
       standard_id
+      entity_type
       name
       ...Indicator_indicator
       ...IndicatorDetails_indicator
@@ -48,7 +48,6 @@ const indicatorQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport

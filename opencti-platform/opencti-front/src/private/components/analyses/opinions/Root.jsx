@@ -35,6 +35,7 @@ const opinionQuery = graphql`
   query RootOpinionQuery($id: String!) {
     opinion(id: $id) {
       standard_id
+      entity_type
       ...Opinion_opinion
       ...OpinionDetails_opinion
       ...ContainerHeader_container

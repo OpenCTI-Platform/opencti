@@ -30,7 +30,6 @@ const subscription = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
   }
 `;
@@ -39,6 +38,7 @@ const eventQuery = graphql`
   query RootEventQuery($id: String!) {
     event(id: $id) {
       id
+      entity_type
       name
       aliases
       ...Event_event
@@ -47,7 +47,6 @@ const eventQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
-      ...PictureManagementViewer_entity
     }
     connectorsForImport {
       ...FileManager_connectorsImport
