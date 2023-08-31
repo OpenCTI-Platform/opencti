@@ -10084,7 +10084,8 @@ export type IngestionRssFiltering = {
 export enum IngestionRssOrdering {
   CreatedAt = 'created_at',
   Name = 'name',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  Uri = 'uri'
 }
 
 export type IngestionTaxii = BasicObject & InternalObject & {
@@ -10149,7 +10150,9 @@ export type IngestionTaxiiFiltering = {
 export enum IngestionTaxiiOrdering {
   CreatedAt = 'created_at',
   Name = 'name',
-  UpdatedAt = 'updated_at'
+  UpdatedAt = 'updated_at',
+  Uri = 'uri',
+  Version = 'version'
 }
 
 export type InternalObject = {
