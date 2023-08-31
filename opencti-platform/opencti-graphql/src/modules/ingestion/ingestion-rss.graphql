@@ -19,6 +19,7 @@ enum IngestionRssOrdering {
     name
     created_at
     updated_at
+    uri
 }
 enum IngestionRssFilter {
     name

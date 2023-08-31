@@ -11581,6 +11581,7 @@ enum IngestionRssOrdering {
   name
   created_at
   updated_at
+  uri
 }
 
 enum IngestionRssFilter {
@@ -11657,6 +11658,8 @@ enum IngestionTaxiiOrdering {
   name
   created_at
   updated_at
+  uri
+  version
 }
 
 enum IngestionTaxiiFilter {
