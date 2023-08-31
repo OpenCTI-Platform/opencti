@@ -120,7 +120,11 @@ export const initDefaultNotifiers = (context: AuthContext) => {
 };
 
 export const testNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierTestInput) => {
-  validateNotifier(notifier);
+  try {
+    validateNotifier(notifier);
+  } catch (error: any) {
+    return error.data.reason;
+  }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const notificationMap = new Map([
     ['default_notification_id', { name: 'test' } as BasicStoreEntityTrigger],
