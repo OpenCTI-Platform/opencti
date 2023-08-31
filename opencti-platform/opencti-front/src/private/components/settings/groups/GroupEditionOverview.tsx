@@ -1,7 +1,8 @@
 import { Field, Form, Formik } from 'formik';
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql, useMutation } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
+import { ObjectShape } from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -10,6 +11,7 @@ import TextField from '../../../../components/TextField';
 import DashboardField from '../../common/form/DashboardField';
 import { GroupEditionOverview_group$data } from './__generated__/GroupEditionOverview_group.graphql';
 import GroupHiddenTypesField from './GroupHiddenTypesField';
+import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 
 export const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
@@ -34,13 +36,38 @@ const groupEditionOverviewFocus = graphql`
   }
 `;
 
-const groupValidation = (t: (value: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  default_assignation: Yup.bool(),
-  auto_new_marking: Yup.bool(),
-  default_dashboard: Yup.object().nullable(),
-});
+const groupMutationRelationAdd = graphql`
+  mutation GroupEditionOverviewRelationAddMutation(
+    $id: ID!
+    $input: InternalRelationshipAddInput!
+  ) {
+    groupEdit(id: $id) {
+      relationAdd(input: $input) {
+        from {
+          ...GroupEditionOverview_group
+        }
+      }
+    }
+  }
+`;
+
+const groupMutationRelationDelete = graphql`
+  mutation GroupEditionOverviewRelationDeleteMutation(
+    $id: ID!
+    $fromId: StixRef!
+    $toId: StixRef!
+    $relationship_type: String!
+  ) {
+    groupEdit(id: $id) {
+      relationDelete( 
+        fromId: $fromId
+        toId: $toId
+        relationship_type: $relationship_type) {
+          ...GroupEditionOverview_group
+      }
+    }
+  }
+`;
 
 interface GroupEditionOverviewComponentProps {
   group: GroupEditionOverview_group$data,
@@ -50,12 +77,27 @@ interface GroupEditionOverviewComponentProps {
     readonly name: string;
   } | null)[]
   | null;
-}
 
+}
 const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewComponentProps> = ({ group, context }) => {
   const { t } = useFormatter();
-  const [commitFocus] = useMutation(groupEditionOverviewFocus);
-  const [commitFieldPatch] = useMutation(groupMutationFieldPatch);
+
+  const basicShape: ObjectShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    default_assignation: Yup.bool(),
+    auto_new_marking: Yup.bool(),
+  };
+
+  const groupValidator = Yup.object().shape(basicShape);
+  const queries = {
+    fieldPatch: groupMutationFieldPatch,
+    editionFocus: groupEditionOverviewFocus,
+    relationAdd: groupMutationRelationAdd,
+    relationDelete: groupMutationRelationDelete,
+  };
+
+  const editor = useFormEditor(group as unknown as GenericData, false, queries, groupValidator);
 
   const initialValues = {
     name: group.name,
@@ -68,34 +110,12 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     } : null,
   };
 
-  const handleChangeFocus = (name: string) => {
-    commitFocus({
-      variables: {
-        id: group.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  };
-
-  const handleSubmitField = (name: string, value: string) => {
-    groupValidation(t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitFieldPatch({
-          variables: { id: group.id, input: { key: name, value: value ?? '' } },
-        });
-      })
-      .catch(() => false);
-  };
-
   return (
     <div>
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={groupValidation(t)}
+        validationSchema={groupValidator}
         onSubmit={() => {
         }}
       >
@@ -106,8 +126,8 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
+              onFocus={editor.changeFocus}
+              onSubmit={editor.changeField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
@@ -120,8 +140,8 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               multiline={true}
               rows={4}
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
+              onFocus={editor.changeFocus}
+              onSubmit={editor.changeField}
               helperText={
                 <SubscriptionFocus
                   context={context}
@@ -130,7 +150,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               }
             />
             <DashboardField
-              onChange={handleSubmitField}
+              onChange={editor.changeField}
               context={context}
             />
             <Field
@@ -139,7 +159,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               name="default_assignation"
               label={t('Granted by default at user creation')}
               containerstyle={{ marginTop: 20 }}
-              onChange={handleSubmitField}
+              onChange={editor.changeField}
               helperText={
                 <SubscriptionFocus
                   context={context}
@@ -155,7 +175,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                 'Automatically authorize this group to new marking definition',
               )}
               containerstyle={{ marginTop: 20 }}
-              onChange={handleSubmitField}
+              onChange={editor.changeField}
               helperText={
                 <SubscriptionFocus
                   context={context}

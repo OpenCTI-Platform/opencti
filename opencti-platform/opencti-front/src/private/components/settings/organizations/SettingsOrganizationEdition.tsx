@@ -154,7 +154,6 @@ const SettingsOrganizationEdition = ({
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
-    default_dashboard: Yup.object().nullable(),
   };
   const organizationValidator = useSchemaEditionValidation(
     'Organization',
@@ -348,7 +347,7 @@ const SettingsOrganizationEdition = ({
                   }
                 />
                 <DashboardField
-                  onChange={handleSubmitField}
+                  onChange={editor.changeField}
                   context={context}
                 />
                 <SettingsOrganizationHiddenTypesField organizationData={organization} />
