@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import Slider from '@mui/material/Slider';
 import { ThumbsUpDownOutlined } from '@mui/icons-material';
@@ -8,28 +8,23 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
-import { graphql, useMutation, usePreloadedQuery } from 'react-relay';
+import { graphql, useMutation, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { FormikHelpers } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, {
-  KNOWLEDGE_KNPARTICIPATE,
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/hooks/useGranted';
-import {
-  opinionCreationMutation,
-  opinionCreationUserMutation,
-} from './OpinionCreation';
+import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { opinionCreationMutation, opinionCreationUserMutation } from './OpinionCreation';
 import MarkdownField from '../../../../components/MarkdownField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { opinionMutationFieldPatch } from './OpinionEditionOverview';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { isNotEmptyField } from '../../../../utils/utils';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { StixCoreObjectOpinionsRadarDialogMyOpinionQuery } from './__generated__/StixCoreObjectOpinionsRadarDialogMyOpinionQuery.graphql';
+import {
+  StixCoreObjectOpinionsRadarDialogMyOpinionQuery, StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables,
+} from './__generated__/StixCoreObjectOpinionsRadarDialogMyOpinionQuery.graphql';
 
 export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
@@ -46,6 +41,7 @@ interface StixCoreObjectOpinionsRadarDialogProps {
   queryRef: PreloadedQuery<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>
   stixCoreObjectId: string
   fetchQuery: () => void
+  fetchDistributionQuery: () => void
   opinionOptions: { label: string, value: number }[]
 }
 
@@ -67,6 +63,7 @@ StixCoreObjectOpinionsRadarDialogProps
   queryRef,
   stixCoreObjectId,
   fetchQuery,
+  fetchDistributionQuery,
   opinionOptions,
 }) => {
   const { t } = useFormatter();
@@ -116,6 +113,7 @@ StixCoreObjectOpinionsRadarDialogProps
           setSubmitting(false);
           resetForm();
           fetchQuery();
+          fetchDistributionQuery();
         },
       });
     } else {
@@ -129,6 +127,7 @@ StixCoreObjectOpinionsRadarDialogProps
           setSubmitting(false);
           resetForm();
           fetchQuery();
+          fetchDistributionQuery();
         },
       });
     }
@@ -239,15 +238,26 @@ StixCoreObjectOpinionsRadarDialogProps
   );
 };
 
-const StixCoreObjectOpinionsDialog: FunctionComponent<Omit<StixCoreObjectOpinionsRadarDialogProps, 'queryRef'>> = (
+const StixCoreObjectOpinionsDialog: FunctionComponent<Omit<StixCoreObjectOpinionsRadarDialogProps, 'queryRef' | 'fetchQuery'>> = (
   props,
 ) => {
-  const queryRef = useQueryLoading<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>(stixCoreObjectOpinionsRadarDialogMyOpinionQuery, {
+  const variables: StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables = {
     id: props.stixCoreObjectId,
-  });
+  };
+  const [queryRef, fetchLoadQuery] = useQueryLoader<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>(
+    stixCoreObjectOpinionsRadarDialogMyOpinionQuery,
+  );
+  const fetchQuery = useCallback(
+    () => fetchLoadQuery(variables, { fetchPolicy: 'network-only' }),
+    [],
+  );
+  useEffect(
+    () => fetchLoadQuery(variables, { fetchPolicy: 'store-and-network' }),
+    [],
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <StixCoreObjectOpinionsDialogComponent {...props} queryRef={queryRef} />
+      <StixCoreObjectOpinionsDialogComponent {...props} queryRef={queryRef} fetchQuery={fetchQuery}/>
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

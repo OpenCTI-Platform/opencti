@@ -69,7 +69,7 @@ StixCoreObjectOpinionsProps
   const [queryRef, fetchLoadQuery] = useQueryLoader<StixCoreObjectOpinionsRadarDistributionQuery>(
     stixCoreObjectOpinionsRadarDistributionQuery,
   );
-  const fetchQuery = useCallback(
+  const fetchDistributionQuery = useCallback(
     () => fetchLoadQuery(variables, { fetchPolicy: 'network-only' }),
     [],
   );
@@ -92,7 +92,7 @@ StixCoreObjectOpinionsProps
       <StixCoreObjectOpinionsDialog
         stixCoreObjectId={stixCoreObjectId}
         opinionOptions={opinionOptions}
-        fetchQuery={fetchQuery}
+        fetchDistributionQuery={fetchDistributionQuery}
       />
       <div className="clearfix" />
       {queryRef && (
