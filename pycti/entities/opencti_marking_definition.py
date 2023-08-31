@@ -243,7 +243,7 @@ class MarkingDefinition:
             ):
                 definition_type = stix_object["x_opencti_definition_type"]
                 definition = stix_object["x_opencti_definition"]
-            else:
+            elif "definition_type" in stix_object:
                 definition_type = stix_object["definition_type"]
                 definition = None
                 if stix_object["definition_type"] == "tlp":
@@ -272,6 +272,14 @@ class MarkingDefinition:
                             definition = stix_object["name"]
                     elif "name" in stix_object:
                         definition = stix_object["name"]
+            elif "name" in stix_object:
+                if ":" in stix_object["name"]:
+                    definition_type = stix_object["name"].split(":")[0]
+                else:
+                    definition_type = "statement"
+                definition = stix_object["name"]
+            else:
+                return None
 
             # Replace TLP:WHITE
             if definition == "TLP:WHITE":
