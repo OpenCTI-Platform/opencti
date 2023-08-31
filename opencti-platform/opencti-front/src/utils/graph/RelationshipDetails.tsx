@@ -3,10 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
-import {
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-} from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -27,7 +24,7 @@ import RelationShipFromAndTo from './RelationShipFromAndTo';
 import { Theme } from '../../components/Theme';
 import ItemIcon from '../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../Colors';
-import ItemCreator from '../../components/ItemCreator';
+import ItemCreators from '../../components/ItemCreators';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -255,63 +252,63 @@ const relationshipDetailsQuery = graphql`
         }
       }
       ... on StixSightingRelationship {
-          description
-          created
-          created_at
-          updated_at
-          confidence
-          relationship_type
-          first_seen
-          last_seen
-          from {
-            ... on StixCoreObject {
-              id
-              parent_types
-              entity_type
-            }
-            ... on StixCoreRelationship {
-              id
-              parent_types
-              entity_type
-              relationship_type
-            }
+        description
+        created
+        created_at
+        updated_at
+        confidence
+        relationship_type
+        first_seen
+        last_seen
+        from {
+          ... on StixCoreObject {
+            id
+            parent_types
+            entity_type
           }
-          to {
-            ... on StixCoreObject {
-              id
-              parent_types
-              entity_type
-            }
-            ... on StixCoreRelationship {
-              id
-              parent_types
-              entity_type
-              relationship_type
-            }
+          ... on StixCoreRelationship {
+            id
+            parent_types
+            entity_type
+            relationship_type
           }
-          createdBy {
-            ... on Identity {
-              id
-              name
-              entity_type
-            }
+        }
+        to {
+          ... on StixCoreObject {
+            id
+            parent_types
+            entity_type
           }
-          creators {
+          ... on StixCoreRelationship {
+            id
+            parent_types
+            entity_type
+            relationship_type
+          }
+        }
+        createdBy {
+          ... on Identity {
             id
             name
+            entity_type
           }
-          objectMarking {
-            edges {
-              node {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-              }
+        }
+        creators {
+          id
+          name
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
           }
-          reports(first: 10) {
+        }
+        reports(first: 10) {
           edges {
             node {
               id
@@ -368,108 +365,88 @@ RelationshipDetailsComponentProps
   const computeNotGenericDetails = () => {
     if (stixRelationship.parent_types.includes('stix-ref-relationship')) {
       return (
-        <div>
-          <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        <>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            className={classes.label}
+          >
             {t('Creators')}
           </Typography>
-          <div>
-            {(stixRelationship.creators ?? []).map((c) => {
-              return (
-                <div
-                  key={`creator-${c.id}`}
-                  style={{ float: 'left', marginRight: '10px' }}
-                >
-                  <ItemCreator creator={c}/>
-                </div>
-              );
-            })}
-            <div style={{ clear: 'both' }}/>
-          </div>
-        </div>
+          <ItemCreators creators={stixRelationship.creators ?? []} />
+        </>
       );
     }
-    return (<div>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('First seen')}
-      </Typography>
-      {stixRelationship.entity_type !== 'stix-sighting-relationship'
-        ? fldt(stixRelationship.start_time)
-        : fldt(stixRelationship.first_seen)}
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Last seen')}
-      </Typography>
-      {
-        stixRelationship.entity_type !== 'stix-sighting-relationship'
+    return (
+      <>
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t('First seen')}
+        </Typography>
+        {stixRelationship.entity_type !== 'stix-sighting-relationship'
+          ? fldt(stixRelationship.start_time)
+          : fldt(stixRelationship.first_seen)}
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t('Last seen')}
+        </Typography>
+        {stixRelationship.entity_type !== 'stix-sighting-relationship'
           ? fldt(stixRelationship.stop_time)
-          : fldt(stixRelationship.last_seen)
-      }
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Description')}
-      </Typography>
-      {
-        stixRelationship.description
-        && stixRelationship.description.length > 0
-          ? <ExpandableMarkdown
+          : fldt(stixRelationship.last_seen)}
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t('Description')}
+        </Typography>
+        {stixRelationship.description
+        && stixRelationship.description.length > 0 ? (
+          <ExpandableMarkdown
             source={stixRelationship.description}
             limit={400}
           />
-          : ('-')
-      }
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Confidence level')}
-      </Typography>
-      {
-        stixRelationship.confidence
-          ? <ItemConfidence confidence={stixRelationship.confidence} entityType="stix-core-relationship"/>
-          : ('-')
-      }
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Marking')}
-      </Typography>
-      {
-        stixRelationship.objectMarking
-        && stixRelationship.objectMarking.edges.length > 0
-          ? <ItemMarkings
+          ) : (
+            '-'
+          )}
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t('Confidence level')}
+        </Typography>
+        {stixRelationship.confidence ? (
+          <ItemConfidence
+            confidence={stixRelationship.confidence}
+            entityType="stix-core-relationship"
+          />
+        ) : (
+          '-'
+        )}
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t('Marking')}
+        </Typography>
+        {stixRelationship.objectMarking
+        && stixRelationship.objectMarking.edges.length > 0 ? (
+          <ItemMarkings
             markingDefinitionsEdges={stixRelationship.objectMarking.edges}
             limit={2}
           />
-          : ('-')
-      }
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Author')}
-      </Typography>
-      {
-        stixRelationship.createdBy
-          ? <ItemAuthor createdBy={stixRelationship.createdBy}/>
-          : ('-')
-      }
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Creators')}
-      </Typography>
-      <div>
-        {(stixRelationship.creators ?? []).map((c) => {
-          return (
-            <div
-              key={`creator-${c.id}`}
-              style={{ float: 'left', marginRight: '10px' }}
-            >
-              <ItemCreator creator={c}/>
-            </div>
-          );
-        })}
-        <div style={{ clear: 'both' }}/>
-      </div>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {`${t('Last')} ${
-          (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
-            ? 10
-            : stixRelationship.reports?.pageInfo.globalCount
-        } ${t('reports')} ${t('of')} ${
-          stixRelationship.reports?.pageInfo.globalCount
-        }`}
-      </Typography>
-      {reportsEdges && reportsEdges.length > 0
-        ? (
+          ) : (
+            '-'
+          )}
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t('Author')}
+        </Typography>
+        {stixRelationship.createdBy ? (
+          <ItemAuthor createdBy={stixRelationship.createdBy} />
+        ) : (
+          '-'
+        )}
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t('Creators')}
+        </Typography>
+        <ItemCreators creators={stixRelationship.creators ?? []} />
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {`${t('Last')} ${
+            (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
+              ? 10
+              : stixRelationship.reports?.pageInfo.globalCount
+          } ${t('reports')} ${t('of')} ${stixRelationship.reports?.pageInfo
+            .globalCount}`}
+        </Typography>
+        {reportsEdges && reportsEdges.length > 0 ? (
           <List style={{ marginBottom: 0 }}>
             {reportsEdges.map((reportEdge) => {
               const report = reportEdge?.node;
@@ -505,67 +482,67 @@ RelationshipDetailsComponentProps
               return '';
             })}
           </List>
-        )
-        : ('-')
-      }
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('External References')}
-      </Typography>
-      {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
-        <List style={{ marginBottom: 0 }}>
-          {externalReferencesEdges
-            .slice(0, expanded ? 200 : 3)
-            .map((externalReference) => {
-              const externalReferenceId = externalReference.node.external_id
-                ? `(${externalReference.node.external_id})`
-                : '';
-              let externalReferenceSecondary = '';
-              if (
-                externalReference.node.url
-                && externalReference.node.url.length > 0
-              ) {
-                externalReferenceSecondary = externalReference.node.url;
-              } else if (
-                externalReference.node.description
-                && externalReference.node.description.length > 0
-              ) {
-                externalReferenceSecondary = externalReference.node.description;
-              } else {
-                externalReferenceSecondary = t('No description');
-              }
-              return (
-                <div key={externalReference.node.id}>
-                  <ListItem
-                    component={Link}
-                    to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                  >
-                    <ListItemIcon>
-                      <ItemIcon type="External-Reference" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <div className={classes.bodyItem}>
-                          {`${externalReference.node.source_name} ${externalReferenceId}`}
-                        </div>
-                      }
-                      secondary={
-                        <div className={classes.bodyItem}>
-                          {externalReferenceSecondary}
-                        </div>
-                      }
-                    />
-                  </ListItem>
-                </div>
-              );
-            })}
-        </List>
-      ) : (
-        '-'
-      )}
-      </div>
+        ) : (
+          '-'
+        )}
+        <Typography variant="h3" gutterBottom={true} className={classes.label}>
+          {t('External References')}
+        </Typography>
+        {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
+          <List style={{ marginBottom: 0 }}>
+            {externalReferencesEdges
+              .slice(0, expanded ? 200 : 3)
+              .map((externalReference) => {
+                const externalReferenceId = externalReference.node.external_id
+                  ? `(${externalReference.node.external_id})`
+                  : '';
+                let externalReferenceSecondary = '';
+                if (
+                  externalReference.node.url
+                  && externalReference.node.url.length > 0
+                ) {
+                  externalReferenceSecondary = externalReference.node.url;
+                } else if (
+                  externalReference.node.description
+                  && externalReference.node.description.length > 0
+                ) {
+                  externalReferenceSecondary = externalReference.node.description;
+                } else {
+                  externalReferenceSecondary = t('No description');
+                }
+                return (
+                  <div key={externalReference.node.id}>
+                    <ListItem
+                      component={Link}
+                      to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
+                      dense={true}
+                      divider={true}
+                      button={true}
+                    >
+                      <ListItemIcon>
+                        <ItemIcon type="External-Reference" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <div className={classes.bodyItem}>
+                            {`${externalReference.node.source_name} ${externalReferenceId}`}
+                          </div>
+                        }
+                        secondary={
+                          <div className={classes.bodyItem}>
+                            {externalReferenceSecondary}
+                          </div>
+                        }
+                      />
+                    </ListItem>
+                  </div>
+                );
+              })}
+          </List>
+        ) : (
+          '-'
+        )}
+      </>
     );
   };
 
@@ -582,9 +559,7 @@ RelationshipDetailsComponentProps
             0.08,
           ),
           color: itemColor(stixRelationship.relationship_type),
-          border: `1px solid ${itemColor(
-            stixRelationship.relationship_type,
-          )}`,
+          border: `1px solid ${itemColor(stixRelationship.relationship_type)}`,
         }}
         label={t(`relationship_${stixRelationship.relationship_type}`)}
       />
@@ -608,25 +583,20 @@ RelationshipDetailsComponentProps
             {stixRelationship.from?.relationship_type}
           </div>
       )}
-      {!stixRelationship.to?.relationship_type
-        && stixRelationship.to?.id && (
-          <RelationShipFromAndTo
-            id={stixRelationship.to?.id}
-            direction={'To'}
-          />
+      {!stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
+        <RelationShipFromAndTo id={stixRelationship.to?.id} direction={'To'} />
       )}
-      {stixRelationship.to?.relationship_type
-        && stixRelationship.to?.id && (
-          <div>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              className={classes.label}
-            >
-              {t('Target')}
-            </Typography>
-            {stixRelationship.to?.relationship_type}
-          </div>
+      {stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
+        <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            className={classes.label}
+          >
+            {t('Target')}
+          </Typography>
+          {stixRelationship.to?.relationship_type}
+        </div>
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Creation date')}

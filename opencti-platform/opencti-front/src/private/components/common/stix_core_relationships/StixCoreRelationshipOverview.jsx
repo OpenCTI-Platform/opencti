@@ -43,7 +43,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemStatus from '../../../../components/ItemStatus';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemCreators from '../../../../components/ItemCreators';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectKillChainPhasesView from '../stix_core_objects/StixCoreObjectKillChainPhasesView';
@@ -522,19 +522,9 @@ class StixCoreRelationshipContainer extends Component {
                   >
                     {t('Creators')}
                   </Typography>
-                  <div>
-                    {(stixCoreRelationship.creators ?? []).map((c) => {
-                      return (
-                        <div
-                          key={`creator-${c.id}`}
-                          style={{ float: 'left', marginRight: '10px' }}
-                        >
-                          <ItemCreator creator={c} />
-                        </div>
-                      );
-                    })}
-                    <div style={{ clear: 'both' }} />
-                  </div>
+                  <ItemCreators
+                    creators={stixCoreRelationship.creators ?? []}
+                  />
                 </Grid>
               </Grid>
             </Paper>

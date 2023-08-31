@@ -24,7 +24,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemCreators from '../../../../components/ItemCreators';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
@@ -122,7 +122,9 @@ class StixDomainObjectOverview extends Component {
       otherStixIds,
     );
     const isReliabilityOfSource = !stixDomainObject.x_opencti_reliability;
-    const reliability = isReliabilityOfSource ? stixDomainObject.createdBy?.x_opencti_reliability : stixDomainObject.x_opencti_reliability;
+    const reliability = isReliabilityOfSource
+      ? stixDomainObject.createdBy?.x_opencti_reliability
+      : stixDomainObject.x_opencti_reliability;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -166,10 +168,14 @@ class StixDomainObjectOverview extends Component {
                       <Typography
                         variant="h3"
                         gutterBottom={true}
-                        style={{ marginTop: 20 }}>
+                        style={{ marginTop: 20 }}
+                      >
                         {t('Reliability')}
                         {isReliabilityOfSource && (
-                          <span style={{ fontStyle: 'italic' }}> ({t('of author')})</span>
+                          <span style={{ fontStyle: 'italic' }}>
+                            {' '}
+                            ({t('of author')})
+                          </span>
                         )}
                       </Typography>
                       <ItemOpenVocab
@@ -259,7 +265,9 @@ class StixDomainObjectOverview extends Component {
                   >
                     {t('Participants')}
                   </Typography>
-                  <ItemParticipants participants={stixDomainObject.objectParticipant} />
+                  <ItemParticipants
+                    participants={stixDomainObject.objectParticipant}
+                  />
                 </div>
               )}
               <Typography
@@ -295,19 +303,7 @@ class StixDomainObjectOverview extends Component {
               >
                 {t('Creators')}
               </Typography>
-              <div>
-                {(stixDomainObject.creators ?? []).map((c) => {
-                  return (
-                    <div
-                      key={`creator-${c.id}`}
-                      style={{ float: 'left', marginRight: '10px' }}
-                    >
-                      <ItemCreator creator={c} />
-                    </div>
-                  );
-                })}
-                <div style={{ clear: 'both' }} />
-              </div>
+              <ItemCreators creators={stixDomainObject.creators ?? []} />
               <div style={{ marginTop: 20 }}>
                 <Typography
                   variant="h3"

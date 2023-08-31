@@ -35,6 +35,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -144,7 +145,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
       variables: {
         type: this.props.exportEntityType,
         format: values.format,
-        exportType: 'simple',
+        exportType: values.type,
         maxMarkingDefinition,
         context,
         ...paginationOptions,
@@ -173,7 +174,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
       <ExportContext.Consumer>
         {({ selectedIds }) => {
           return (
-            <div>
+            <>
               <Tooltip
                 title={
                   isExportPossible
@@ -196,6 +197,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 enableReinitialize={true}
                 initialValues={{
                   format: '',
+                  type: 'simple',
                   maxMarkingDefinition: 'none',
                 }}
                 validationSchema={exportValidation(t)}
@@ -235,6 +237,23 @@ class StixDomainObjectsExportCreationComponent extends Component {
                                       {value}
                                     </MenuItem>
                                   ))}
+                                </Field>
+                                <Field
+                                  component={SelectField}
+                                  variant="standard"
+                                  name="type"
+                                  label={t('Export type')}
+                                  fullWidth={true}
+                                  containerstyle={fieldSpacingContainerStyle}
+                                >
+                                  <MenuItem value="simple">
+                                    {t('Simple export (just the entity)')}
+                                  </MenuItem>
+                                  <MenuItem value="full">
+                                    {t(
+                                      'Full export (entity and first neighbours)',
+                                    )}
+                                  </MenuItem>
                                 </Field>
                                 <Field
                                   component={SelectField}
@@ -282,7 +301,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                   </Form>
                 )}
               </Formik>
-            </div>
+            </>
           );
         }}
       </ExportContext.Consumer>

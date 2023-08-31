@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { append, ascend, filter, map, pathOr, pipe, prop, sortWith, union } from 'ramda';
+import {
+  append,
+  ascend,
+  filter,
+  map,
+  pathOr,
+  pipe,
+  prop,
+  sortWith,
+  union,
+} from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -23,7 +33,10 @@ import LabelCreation from '../../settings/labels/LabelCreation';
 import Security from '../../../../utils/Security';
 import { hexToRGB } from '../../../../utils/Colors';
 import { truncate } from '../../../../utils/String';
-import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  SETTINGS_SETLABELS,
+} from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
 
@@ -48,7 +61,13 @@ const useStyles = makeStyles(() => ({
 const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const { labels, marginTop, mutationRelationsAdd, mutationRelationDelete, enableReferences = false } = props;
+  const {
+    labels,
+    marginTop,
+    mutationRelationsAdd,
+    mutationRelationDelete,
+    enableReferences = false,
+  } = props;
 
   const isLabelManager = useGranted([SETTINGS_SETLABELS]);
 
@@ -193,7 +212,10 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                     borderColor: label.color,
                     backgroundColor: hexToRGB(label.color),
                   }}
-                  onDelete={() => (enableReferences ? handleOpenCommitDelete(label) : handleRemoveLabel(label.id))}
+                  onDelete={() => (enableReferences
+                    ? handleOpenCommitDelete(label)
+                    : handleRemoveLabel(label.id))
+                  }
                   deleteIcon={
                     <CancelOutlined
                       className={classes.deleteIcon}
@@ -207,10 +229,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           labelsNodes,
         )}
         {enableReferences && (
-          <Formik
-            initialValues={{}}
-            onSubmit={onSubmitDeleteLabel}
-          >
+          <Formik initialValues={{}} onSubmit={onSubmitDeleteLabel}>
             {({ submitForm, isSubmitting, setFieldValue, values }) => (
               <Form>
                 <CommitMessage
@@ -291,7 +310,8 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                   id={props.id}
                   noStoreUpdate={true}
                   open={openCommitCreate}
-                  handleClose={handleCloseCommitCreate} />
+                  handleClose={handleCloseCommitCreate}
+                />
               )}
             </DialogActions>
             <LabelCreation

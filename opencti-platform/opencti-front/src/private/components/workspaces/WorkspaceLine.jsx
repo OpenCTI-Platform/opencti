@@ -170,6 +170,17 @@ export const WorkspaceLineDummy = ({ dataColumns }) => {
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.created_at.width }}
             >
               <Skeleton

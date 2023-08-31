@@ -12,7 +12,7 @@ import ErrorNotFound from '../../components/ErrorNotFound';
 import { defaultValue } from '../Graph';
 import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
-import ItemCreator from '../../components/ItemCreator';
+import ItemCreators from '../../components/ItemCreators';
 import { StixMetaObjectDetailsQuery } from './__generated__/StixMetaObjectDetailsQuery.graphql';
 import ItemMarkings from '../../components/ItemMarkings';
 
@@ -30,48 +30,48 @@ const useStyles = makeStyles(() => ({
 }));
 
 const stixMetaObjectDetailsQuery = graphql`
-    query StixMetaObjectDetailsQuery($id: String!) {
-        stixMetaObject(id: $id) {
-            id
-            entity_type
-            parent_types
-            created_at
-            ... on Label {
-                value
-                color
-                created_at
-                creators {
-                    id
-                    name
-                }
-            }
-            ... on MarkingDefinition {
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-                creators {
-                    id
-                    name
-                }
-            }
-            ... on KillChainPhase {
-                kill_chain_name
-                phase_name
-                creators {
-                    id
-                    name
-                }
-            }
-            ... on ExternalReference {
-                source_name
-                creators {
-                    id
-                    name
-                }
-            }
+  query StixMetaObjectDetailsQuery($id: String!) {
+    stixMetaObject(id: $id) {
+      id
+      entity_type
+      parent_types
+      created_at
+      ... on Label {
+        value
+        color
+        created_at
+        creators {
+          id
+          name
         }
+      }
+      ... on MarkingDefinition {
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+        creators {
+          id
+          name
+        }
+      }
+      ... on KillChainPhase {
+        kill_chain_name
+        phase_name
+        creators {
+          id
+          name
+        }
+      }
+      ... on ExternalReference {
+        source_name
+        creators {
+          id
+          name
+        }
+      }
     }
+  }
 `;
 
 interface StixMetaObjectDetailsComponentProps {
@@ -96,17 +96,18 @@ StixMetaObjectDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Value')}
       </Typography>
-      {stixMetaObject.entity_type === 'Marking-Definition'
-        ? <Tooltip title={defaultValue(stixMetaObject, true)}>
+      {stixMetaObject.entity_type === 'Marking-Definition' ? (
+        <Tooltip title={defaultValue(stixMetaObject, true)}>
           <ItemMarkings
-              markingDefinitionsEdges={[{ node: stixMetaObject }]}
-              limit={2}
-            />
+            markingDefinitionsEdges={[{ node: stixMetaObject }]}
+            limit={2}
+          />
         </Tooltip>
-        : <Tooltip title={defaultValue(stixMetaObject, true)}>
+      ) : (
+        <Tooltip title={defaultValue(stixMetaObject, true)}>
           <span>{truncate(defaultValue(stixMetaObject), 40)}</span>
         </Tooltip>
-      }
+      )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Type')}
       </Typography>
@@ -129,19 +130,7 @@ StixMetaObjectDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Creators')}
       </Typography>
-      <div>
-        {(stixMetaObject.creators ?? []).map((c) => {
-          return (
-            <div
-              key={`creator-${c.id}`}
-              style={{ float: 'left', marginRight: '10px' }}
-            >
-              <ItemCreator creator={c} />
-            </div>
-          );
-        })}
-        <div style={{ clear: 'both' }} />
-      </div>
+      <ItemCreators creators={stixMetaObject.creators ?? []} />
     </div>
   );
 };
@@ -154,9 +143,12 @@ interface StixMetaObjectDetailsProps {
 const StixMetaObjectDetails: FunctionComponent<
 Omit<StixMetaObjectDetailsProps, 'queryRef'>
 > = ({ entity }) => {
-  const queryRef = useQueryLoading<StixMetaObjectDetailsQuery>(stixMetaObjectDetailsQuery, {
-    id: entity.id,
-  });
+  const queryRef = useQueryLoading<StixMetaObjectDetailsQuery>(
+    stixMetaObjectDetailsQuery,
+    {
+      id: entity.id,
+    },
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <StixMetaObjectDetailsComponent queryRef={queryRef} />

@@ -25,7 +25,7 @@ import Slide from '@mui/material/Slide';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import ItemScore from '../../../../components/ItemScore';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemCreators from '../../../../components/ItemCreators';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
@@ -185,19 +185,7 @@ class StixCyberObservableOverview extends Component {
               >
                 {t('Creators')}
               </Typography>
-              <div>
-                {(stixCyberObservable.creators ?? []).map((c) => {
-                  return (
-                    <div
-                      key={`creator-${c.id}`}
-                      style={{ float: 'left', marginRight: '10px' }}
-                    >
-                      <ItemCreator creator={c} />
-                    </div>
-                  );
-                })}
-                <div style={{ clear: 'both' }} />
-              </div>
+              <ItemCreators creators={stixCyberObservable.creators ?? []} />
               <Typography
                 variant="h3"
                 gutterBottom={true}

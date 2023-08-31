@@ -24,7 +24,7 @@ import { Theme } from '../../components/Theme';
 import { defaultValue } from '../Graph';
 import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
-import ItemCreator from '../../components/ItemCreator';
+import ItemCreators from '../../components/ItemCreators';
 import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ItemConfidence from '../../components/ItemConfidence';
 import FieldOrEmpty from '../../components/FieldOrEmpty';
@@ -268,8 +268,8 @@ const entityDetailsQuery = graphql`
         description
       }
       ... on Channel {
-          name
-          description
+        name
+        description
       }
       ... on Narrative {
         name
@@ -353,18 +353,25 @@ EntityDetailsComponentProps
       ) : (
         '-'
       )}
-      {!stixCoreObject.parent_types.includes('Stix-Cyber-Observable')
-        && (<div>
-          <Typography variant="h3" gutterBottom={true} className={classes.label}>
+      {!stixCoreObject.parent_types.includes('Stix-Cyber-Observable') && (
+        <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            className={classes.label}
+          >
             {t('Confidence level')}
           </Typography>
           <FieldOrEmpty source={stixCoreObject.confidence}>
-            {stixCoreObject.confidence
-              && <ItemConfidence confidence={stixCoreObject.confidence} entityType="stix-core-object"/>
-            }
+            {stixCoreObject.confidence && (
+              <ItemConfidence
+                confidence={stixCoreObject.confidence}
+                entityType="stix-core-object"
+              />
+            )}
           </FieldOrEmpty>
-        </div>)
-      }
+        </div>
+      )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Marking')}
       </Typography>
@@ -384,27 +391,14 @@ EntityDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Creators')}
       </Typography>
-      <div>
-        {(stixCoreObject.creators ?? []).map((c) => {
-          return (
-            <div
-              key={`creator-${c.id}`}
-              style={{ float: 'left', marginRight: '10px' }}
-            >
-              <ItemCreator creator={c} />
-            </div>
-          );
-        })}
-        <div style={{ clear: 'both' }} />
-      </div>
+      <ItemCreators creators={stixCoreObject.creators ?? []} />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {`${t('Last')} ${
           (stixCoreObject.reports?.pageInfo.globalCount ?? 0) >= 10
             ? 10
             : stixCoreObject.reports?.pageInfo.globalCount
-        } ${t('reports')} ${t('of')} ${
-          stixCoreObject.reports?.pageInfo.globalCount
-        }`}
+        } ${t('reports')} ${t('of')} ${stixCoreObject.reports?.pageInfo
+          .globalCount}`}
       </Typography>
       {reportsEdges && reportsEdges.length > 0 ? (
         <List style={{ marginBottom: 0 }}>

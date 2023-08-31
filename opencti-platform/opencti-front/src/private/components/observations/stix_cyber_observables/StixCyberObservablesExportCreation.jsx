@@ -35,6 +35,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -143,7 +144,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
       mutation: StixCyberObservablesExportCreationMutation,
       variables: {
         format: values.format,
-        exportType: 'all',
+        exportType: values.type,
         maxMarkingDefinition,
         context,
         ...paginationOptions,
@@ -195,6 +196,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                 enableReinitialize={true}
                 initialValues={{
                   format: '',
+                  type: 'simple',
                   maxMarkingDefinition: 'none',
                 }}
                 validationSchema={exportValidation(t)}
@@ -234,6 +236,23 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                       {value}
                                     </MenuItem>
                                   ))}
+                                </Field>
+                                <Field
+                                  component={SelectField}
+                                  variant="standard"
+                                  name="type"
+                                  label={t('Export type')}
+                                  fullWidth={true}
+                                  containerstyle={fieldSpacingContainerStyle}
+                                >
+                                  <MenuItem value="simple">
+                                    {t('Simple export (just the entity)')}
+                                  </MenuItem>
+                                  <MenuItem value="full">
+                                    {t(
+                                      'Full export (entity and first neighbours)',
+                                    )}
+                                  </MenuItem>
                                 </Field>
                                 <Field
                                   component={SelectField}

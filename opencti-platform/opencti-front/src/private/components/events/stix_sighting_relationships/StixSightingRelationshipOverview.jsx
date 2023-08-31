@@ -37,7 +37,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemCreators from '../../../../components/ItemCreators';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
@@ -537,19 +537,9 @@ class StixSightingRelationshipContainer extends Component {
                   >
                     {t('Creators')}
                   </Typography>
-                  <div>
-                    {(stixSightingRelationship.creators ?? []).map((c) => {
-                      return (
-                        <div
-                          key={`creator-${c.id}`}
-                          style={{ float: 'left', marginRight: '10px' }}
-                        >
-                          <ItemCreator creator={c} />
-                        </div>
-                      );
-                    })}
-                    <div style={{ clear: 'both' }} />
-                  </div>
+                  <ItemCreators
+                    creators={stixSightingRelationship.creators ?? []}
+                  />
                 </Grid>
               </Grid>
             </Paper>

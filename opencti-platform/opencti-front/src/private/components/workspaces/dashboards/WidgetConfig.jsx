@@ -1239,12 +1239,12 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                           )}
                           {getCurrentIsRelationships() && (
                             <MenuItem value="first_seen">
-                              start_time ({t('Functional date')})
+                              first_seen ({t('Functional date')})
                             </MenuItem>
                           )}
                           {getCurrentIsRelationships() && (
                             <MenuItem value="last_seen">
-                              stop_time ({t('Functional date')})
+                              last_seen ({t('Functional date')})
                             </MenuItem>
                           )}
                         </Select>

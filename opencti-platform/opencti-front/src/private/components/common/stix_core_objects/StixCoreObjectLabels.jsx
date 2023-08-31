@@ -60,7 +60,7 @@ class StixCoreObjectLabels extends Component {
       : null;
 
     return (
-      <div className={classes.objectLabel}>
+      <>
         {
           /* eslint-disable-next-line no-nested-ternary */
           !revoked && labelsNodes && labelsNodes.length > 0 ? (
@@ -128,7 +128,7 @@ class StixCoreObjectLabels extends Component {
             />
           )
         }
-      </div>
+      </>
     );
   }
 }

@@ -1,8 +1,7 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
-import StixCoreObjectOrCoreRelationshipLabelsView
-  from '../stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView';
+import StixCoreObjectOrCoreRelationshipLabelsView from '../stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const stixCoreObjectMutationRelationsAdd = graphql`
@@ -64,10 +63,14 @@ const stixCoreObjectMutationRelationDelete = graphql`
 `;
 
 const StixCoreObjectLabelsView = (props) => {
-  return <StixCoreObjectOrCoreRelationshipLabelsView {...props}
-                                                     mutationRelationsAdd={stixCoreObjectMutationRelationsAdd}
-                                                     mutationRelationDelete={stixCoreObjectMutationRelationDelete}
-                                                     enableReferences={useIsEnforceReference(props.entity_type)}/>;
+  return (
+    <StixCoreObjectOrCoreRelationshipLabelsView
+      {...props}
+      mutationRelationsAdd={stixCoreObjectMutationRelationsAdd}
+      mutationRelationDelete={stixCoreObjectMutationRelationDelete}
+      enableReferences={useIsEnforceReference(props.entity_type)}
+    />
+  );
 };
 
 StixCoreObjectLabelsView.propTypes = {

@@ -14,7 +14,7 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemCreators from '../../../../components/ItemCreators';
 import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles(() => ({
@@ -75,19 +75,7 @@ ExternalReferenceDetailsComponentProps
             >
               {t('Creators')}
             </Typography>
-            <div>
-              {(externalReference.creators ?? []).map((c) => {
-                return (
-                  <div
-                    key={`creator-${c.id}`}
-                    style={{ float: 'left', marginRight: '10px' }}
-                  >
-                    <ItemCreator creator={c} />
-                  </div>
-                );
-              })}
-              <div style={{ clear: 'both' }} />
-            </div>
+            <ItemCreators creators={externalReference.creators ?? []} />
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
