@@ -1,21 +1,12 @@
-import React, {
-  createRef,
-  FunctionComponent,
-  MutableRefObject,
-  useRef,
-  useState,
-} from 'react';
+import React, { createRef, FunctionComponent, MutableRefObject, useRef, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import CoreForm from '@rjsf/core';
 import * as Yup from 'yup';
 import JsonForm from '@rjsf/mui';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import makeStyles from '@mui/styles/makeStyles';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikHelpers } from 'formik/dist/types';
@@ -32,19 +23,10 @@ import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import { uiSchema } from './NotifierUtils';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
+import DrawerOpenCTI from '../../common/drawer/DrawerOpenCTI';
 import notifierValidator from './NotifierValidator';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -56,19 +38,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -309,48 +278,29 @@ const NotifierCreation: FunctionComponent<{
   const { t } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_notifiers', paginationOptions, 'notifierAdd');
   return (
     <>
       <Fab
-        onClick={handleOpen}
+        onClick={() => setOpen(true)}
         color="secondary"
         aria-label="Add"
         className={classes.createButton}
       >
         <Add />
       </Fab>
-      <Drawer
+      <DrawerOpenCTI
+        title={t('Create a notifier')}
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
+        setOpen={setOpen}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a notifier')}</Typography>
-        </div>
-        <div className={classes.container}>
           <NotifierCreationForm
             inputValue={inputValue}
             updater={updater}
-            onCompleted={handleClose}
-            onReset={handleClose}
+            onCompleted={() => setOpen(false)}
+            onReset={() => setOpen(false)}
           />
-        </div>
-      </Drawer>
+      </DrawerOpenCTI>
     </>
   );
 };

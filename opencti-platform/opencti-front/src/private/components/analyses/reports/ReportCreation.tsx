@@ -1,11 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -31,27 +28,13 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { ReportsLinesPaginationQuery$variables } from './__generated__/ReportsLinesPaginationQuery.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import { Theme } from '../../../../components/Theme';
-import {
-  ReportCreationMutation,
-  ReportCreationMutation$variables,
-} from './__generated__/ReportCreationMutation.graphql';
+import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
-import useAuth from '../../../../utils/hooks/useAuth';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import DrawerOpenCTI from '../../common/drawer/DrawerOpenCTI';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -64,22 +47,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '0 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    left: 5,
-    color: 'inherit',
-  },
   importButton: {
     position: 'absolute',
     top: 15,
     right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
   icon: {
     paddingTop: 4,
@@ -379,14 +350,11 @@ const ReportCreation = ({
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
   const classes = useStyles();
-  const {
-    bannerSettings: { bannerHeightNumber },
-  } = useAuth();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
   return (
-    <div>
+    <>
       <Fab
         onClick={() => setOpen(true)}
         color="secondary"
@@ -395,40 +363,18 @@ const ReportCreation = ({
       >
         <Add />
       </Fab>
-      <Drawer
+      <DrawerOpenCTI
+        title={t('Create a report')}
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={() => setOpen(false)}
-        disableEnforceFocus={true}
+        setOpen={setOpen}
       >
-        <div
-          className={classes.header}
-          style={{ paddingTop: bannerHeightNumber + 20 }}
-        >
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            style={{ top: bannerHeightNumber + 12 }}
-            onClick={() => setOpen(false)}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a report')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <ReportCreationForm
-            updater={updater}
-            onCompleted={() => setOpen(false)}
-            onReset={() => setOpen(false)}
-          />
-        </div>
-      </Drawer>
-    </div>
+        <ReportCreationForm
+          updater={updater}
+          onCompleted={() => setOpen(false)}
+          onReset={() => setOpen(false)}
+        />
+      </DrawerOpenCTI>
+    </>
   );
 };
 
