@@ -16,6 +16,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
 import { convertUser } from '../../../../utils/edition';
 import SelectField from '../../../../components/SelectField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   header: {
@@ -61,6 +62,10 @@ const ingestionTaxiiValidation = (t) => Yup.object().shape({
   key: Yup.string().nullable(),
   ca: Yup.string().nullable(),
   user_id: Yup.object().nullable(),
+  current_state_cursor: Yup.string().nullable(),
+  added_after_start: Yup.date()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+    .nullable(),
 });
 
 const IngestionTaxiiEditionContainer = ({
@@ -164,6 +169,8 @@ const IngestionTaxiiEditionContainer = ({
       'key',
       'ca',
       'user_id',
+      'current_state_cursor',
+      'added_after_start',
     ]),
   )(ingestionTaxii);
   return (
@@ -326,6 +333,26 @@ const IngestionTaxiiEditionContainer = ({
                   />
                 </>
               )}
+              <Field
+                component={DateTimePickerField}
+                name="added_after_start"
+                onSubmit={handleSubmitField}
+                TextFieldProps={{
+                  label: t(
+                    'Import from date (empty = all TAXII collection possible items)',
+                  ),
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
+              />
+              <Field
+                component={TextField}
+                name="current_state_cursor"
+                label={t('Current state cursor')}
+                fullWidth={true}
+                onSubmit={handleSubmitField}
+                style={fieldSpacingContainerStyle}
+              />
               <CreatorField
                 name="user_id"
                 label={t('User responsible for data creation (empty = System)')}

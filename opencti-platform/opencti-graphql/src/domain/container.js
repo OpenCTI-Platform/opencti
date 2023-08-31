@@ -11,7 +11,7 @@ import {
   ENTITY_TYPE_CONTAINER
 } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
-import { buildPagination, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { buildPagination, isInferredIndex, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { now } from '../utils/format';
 import { elCount } from '../database/engine';
 
@@ -62,10 +62,11 @@ export const objects = async (context, user, containerId, args) => {
   for (let relIndex = 0; relIndex < relations.length; relIndex += 1) {
     const relation = relations[relIndex];
     const relData = relationsMap.get(relation.toId);
+    const isInferred = isInferredIndex(relation._index);
     if (relData) {
-      relationsMap.set(relation.toId, relData.push(relation.is_inferred ? INFERRED_OBJECT : MANUAL_OBJECT));
+      relationsMap.set(relation.toId, relData.push(isInferred ? INFERRED_OBJECT : MANUAL_OBJECT));
     } else {
-      relationsMap.set(relation.toId, [relation.is_inferred ? INFERRED_OBJECT : MANUAL_OBJECT]);
+      relationsMap.set(relation.toId, [isInferred ? INFERRED_OBJECT : MANUAL_OBJECT]);
     }
   }
   // Rebuild the final result

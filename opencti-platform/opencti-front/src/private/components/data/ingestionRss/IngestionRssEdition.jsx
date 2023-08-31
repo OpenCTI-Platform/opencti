@@ -21,6 +21,7 @@ import {
   convertMarkingsWithoutEdges,
   convertUser,
 } from '../../../../utils/edition';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   header: {
@@ -60,6 +61,9 @@ const ingestionRssValidation = (t) => Yup.object().shape({
   report_types: Yup.array().nullable(),
   created_by_ref: Yup.mixed().nullable(),
   user_id: Yup.object().nullable(),
+  current_state_date: Yup.date()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+    .nullable(),
 });
 
 const IngestionRssEditionContainer = ({
@@ -94,7 +98,10 @@ const IngestionRssEditionContainer = ({
   };
   const initialValues = R.pipe(
     R.assoc('report_types', ingestionRss.report_types ?? []),
-    R.assoc('created_by_ref', convertCreatedBy(ingestionRss, 'defaultCreatedBy')),
+    R.assoc(
+      'created_by_ref',
+      convertCreatedBy(ingestionRss, 'defaultCreatedBy'),
+    ),
     R.assoc('user_id', convertUser(ingestionRss, 'user')),
     R.assoc(
       'object_marking_refs',
@@ -108,6 +115,7 @@ const IngestionRssEditionContainer = ({
       'created_by_ref',
       'object_marking_refs',
       'report_types',
+      'current_state_date',
     ]),
   )(ingestionRss);
   return (
@@ -163,6 +171,19 @@ const IngestionRssEditionContainer = ({
                 label={t('User responsible for data creation (empty = System)')}
                 onChange={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={DateTimePickerField}
+                name="current_state_date"
+                TextFieldProps={{
+                  label: t(
+                    'Import from date (empty = all RSS feed possible items)',
+                  ),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
+                onChange={handleSubmitField}
               />
               <OpenVocabField
                 label={t('Report types')}

@@ -89,6 +89,9 @@ const ingestionTaxiiCreationValidation = (t) => Yup.object().shape({
   key: Yup.string().nullable(),
   ca: Yup.string().nullable(),
   user_id: Yup.object().nullable(),
+  added_after_start: Yup.date()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+    .nullable(),
 });
 
 const IngestionTaxiiCreation = (props) => {
