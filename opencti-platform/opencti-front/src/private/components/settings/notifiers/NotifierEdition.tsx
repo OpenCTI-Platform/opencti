@@ -1,7 +1,4 @@
-import { Close } from '@mui/icons-material';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import CoreForm from '@rjsf/core';
 import JsonForm from '@rjsf/mui';
@@ -33,19 +30,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -164,120 +148,104 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
 
   const [testQueryRef, sendTest, resetTest] = useQueryLoader<NotifierTestDialogQuery>(notifierTestQuery);
   return (
-    <>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={onClose}
-          size="large" color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>{t('Notifier edition')}</Typography>
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
-        <div>
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={notifierValidation(t)}
-            onSubmit={() => {}}
-            onClose={onClose}
-          >
-            {({ values, setFieldValue, setSubmitting, setErrors, isSubmitting }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                />
-                <Field
-                  component={TextField}
-                  name="description"
-                  variant="standard"
-                  label={t('Description')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <NotifierConnectorField
-                  disabled={true}
-                  name="notifier_connector_id"
-                  style={{ marginTop: 20 }}
-                />
-                <ObjectMembersField
-                  label={'Accessible for'}
-                  style={fieldSpacingContainerStyle}
-                  onChange={setFieldValue}
-                  multiple={true}
-                  name="authorized_members"
-                />
-                <JsonForm
-                  uiSchema={{
-                    ...JSON.parse(data?.notifier_connector?.connector_schema_ui ?? ' {}'),
-                    ...uiSchema,
-                  }}
-                  ref={formRef}
-                  showErrorList={false}
-                  liveValidate
-                  schema={JSON.parse(data?.notifier_connector?.connector_schema ?? ' {}')}
-                  formData={JSON.parse(notifierConfiguration.current)}
-                  validator={notifierValidator}
-                  onChange={(newValue) => {
-                    notifierConfiguration.current = JSON.stringify(newValue.formData);
-                  }}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                      notifierConfiguration.current = JSON.stringify(formRef.current?.state.formData);
-                      setOpen(true);
-                    }}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}>
-                    {t('Test')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => {
-                      submitForm(setSubmitting, setErrors, values, formRef.current);
-                    }}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}>
-                    {t('Save')}
-                  </Button>
-                </div>
-                <NotifierTestDialog
-                  open={open}
-                  onClose={() => {
-                    setOpen(false);
-                    resetTest();
-                  }}
-                  queryRef={testQueryRef}
-                  onTest={(notifier_test_id) => {
-                    if (values.notifier_connector_id) {
-                      sendTest({
-                        input: {
-                          notifier_test_id,
-                          notifier_connector_id: values.notifier_connector_id.value,
-                          notifier_configuration: notifierConfiguration.current,
-                        },
-                      }, { fetchPolicy: 'network-only' });
-                    }
-                  }}
-                />
-              </Form>
-            )}
-          </Formik>
-        </div>
-      </div>
-    </>
+    <div>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={notifierValidation(t)}
+        onSubmit={() => {}}
+        onClose={onClose}
+      >
+        {({ values, setFieldValue, setSubmitting, setErrors, isSubmitting }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+            />
+            <Field
+              component={TextField}
+              name="description"
+              variant="standard"
+              label={t('Description')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+            />
+            <NotifierConnectorField
+              disabled={true}
+              name="notifier_connector_id"
+              style={{ marginTop: 20 }}
+            />
+            <ObjectMembersField
+              label={'Accessible for'}
+              style={fieldSpacingContainerStyle}
+              onChange={setFieldValue}
+              multiple={true}
+              name="authorized_members"
+            />
+            <JsonForm
+              uiSchema={{
+                ...JSON.parse(data?.notifier_connector?.connector_schema_ui ?? ' {}'),
+                ...uiSchema,
+              }}
+              ref={formRef}
+              showErrorList={false}
+              liveValidate
+              schema={JSON.parse(data?.notifier_connector?.connector_schema ?? ' {}')}
+              formData={JSON.parse(notifierConfiguration.current)}
+              validator={notifierValidator}
+              onChange={(newValue) => {
+                notifierConfiguration.current = JSON.stringify(newValue.formData);
+              }}
+            />
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  notifierConfiguration.current = JSON.stringify(formRef.current?.state.formData);
+                  setOpen(true);
+                }}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}>
+                {t('Test')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => {
+                  submitForm(setSubmitting, setErrors, values, formRef.current);
+                }}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}>
+                {t('Save')}
+              </Button>
+            </div>
+            <NotifierTestDialog
+              open={open}
+              onClose={() => {
+                setOpen(false);
+                resetTest();
+              }}
+              queryRef={testQueryRef}
+              onTest={(notifier_test_id) => {
+                if (values.notifier_connector_id) {
+                  sendTest({
+                    input: {
+                      notifier_test_id,
+                      notifier_connector_id: values.notifier_connector_id.value,
+                      notifier_configuration: notifierConfiguration.current,
+                    },
+                  }, { fetchPolicy: 'network-only' });
+                }
+              }}
+            />
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 };
 

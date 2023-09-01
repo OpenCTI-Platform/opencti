@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
 import { deleteNode } from '../../../../utils/store';
 import { NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
@@ -17,20 +15,6 @@ import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graph
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
-
 export const notifierPopoverDeletionMutation = graphql`
   mutation NotifierPopoverDeletionMutation($id: ID!) {
     notifierDelete(id: $id)
@@ -39,7 +23,6 @@ export const notifierPopoverDeletionMutation = graphql`
 
 const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$data, paginationOptions?: NotifiersLinesPaginationQuery$variables }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   const [queryRef, loadQuery] = useQueryLoader<NotifierEditionQuery>(notifierEditionQuery);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
@@ -74,7 +57,7 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
   };
   // Loader
   return (
-    <div className={classes.container}>
+    <div>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -92,11 +75,8 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
         submitDelete={submitDelete}
       />
       <Drawer
+        title={t('Notifier edition')}
         open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={() => setDisplayEdit(false)}
       >
         {queryRef && (

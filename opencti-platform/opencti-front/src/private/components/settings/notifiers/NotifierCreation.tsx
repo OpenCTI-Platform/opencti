@@ -5,11 +5,10 @@ import * as Yup from 'yup';
 import JsonForm from '@rjsf/mui';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikHelpers } from 'formik/dist/types';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
@@ -23,15 +22,9 @@ import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import { uiSchema } from './NotifierUtils';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
-import DrawerOpenCTI from '../../common/drawer/DrawerOpenCTI';
 import notifierValidator from './NotifierValidator';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -65,10 +58,9 @@ interface NotifierAddInput {
 }
 
 interface NotifierFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  inputValue?: string;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onClose?: () => void
+  inputValue?: string
 }
 
 const notifierValidation = (t: (value: string) => string) => Yup.object().shape({
@@ -78,24 +70,19 @@ const notifierValidation = (t: (value: string) => string) => Yup.object().shape(
   authorized_members: Yup.array().nullable(),
 });
 
-type NotifierFormikHelpers = Pick<
-FormikHelpers<NotifierAddInput>,
-'setErrors' | 'setSubmitting' | 'resetForm'
->;
+type NotifierFormikHelpers = Pick<FormikHelpers<NotifierAddInput>,
+'setErrors' | 'setSubmitting' | 'resetForm'>;
 
 export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   updater,
-  onReset,
+  onClose,
   inputValue,
-  onCompleted,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const formRef = createRef<CoreForm>();
   const [open, setOpen] = useState(false);
-  const [connector, setCurrentConnector] = useState<
-  Option & { schema?: string; ui_schema?: string }
-  >();
+  const [connector, setCurrentConnector] = useState<Option & { schema?: string; ui_schema?: string }>();
   const initialValues: NotifierAddInput = {
     name: inputValue || '',
     description: '',
@@ -135,8 +122,8 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             onCompleted: () => {
               setSubmitting(false);
               resetForm();
-              if (onCompleted) {
-                onCompleted();
+              if (onClose) {
+                onClose();
               }
             },
           });
@@ -150,8 +137,9 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
     <Formik<NotifierAddInput>
       initialValues={initialValues}
       validationSchema={notifierValidation(t)}
-      onSubmit={() => {}}
-      onReset={onReset}
+      onSubmit={() => {
+      }}
+      onReset={onClose}
     >
       {({
         setErrors,
@@ -276,32 +264,17 @@ const NotifierCreation: FunctionComponent<{
   paginationOptions: NotifiersLinesPaginationQuery$variables;
 }> = ({ inputValue, paginationOptions }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
-  const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_notifiers', paginationOptions, 'notifierAdd');
   return (
-    <>
-      <Fab
-        onClick={() => setOpen(true)}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <DrawerOpenCTI
-        title={t('Create a notifier')}
-        open={open}
-        setOpen={setOpen}
-      >
-          <NotifierCreationForm
-            inputValue={inputValue}
-            updater={updater}
-            onCompleted={() => setOpen(false)}
-            onReset={() => setOpen(false)}
-          />
-      </DrawerOpenCTI>
-    </>
+    <Drawer
+      title={t('Create a notifier')}
+      variant={DrawerVariant.createWithPanel}
+    >
+      <NotifierCreationForm
+        inputValue={inputValue}
+        updater={updater}
+      />
+    </Drawer>
   );
 };
 

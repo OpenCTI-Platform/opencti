@@ -1,8 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -10,6 +8,7 @@ import { SimpleFileUpload } from 'formik-mui';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useHistory } from 'react-router-dom';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -32,38 +31,14 @@ import { ReportCreationMutation, ReportCreationMutation$variables } from './__ge
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import DrawerOpenCTI from '../../common/drawer/DrawerOpenCTI';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -106,8 +81,7 @@ interface ReportFormProps {
     key: string,
     response: { id: string; name: string } | null
   ) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
+  onClose?: () => void;
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
@@ -116,8 +90,7 @@ interface ReportFormProps {
 
 export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   updater,
-  onReset,
-  onCompleted,
+  onClose,
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
@@ -176,8 +149,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        if (onCompleted) {
-          onCompleted();
+        if (onClose) {
+          onClose();
         }
         if (mapAfter) {
           history.push(
@@ -208,7 +181,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       initialValues={initialValues}
       validationSchema={reportValidator}
       onSubmit={onSubmit}
-      onReset={onReset}
+      onReset={onClose}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -349,32 +322,20 @@ const ReportCreation = ({
 }: {
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_reports',
+    paginationOptions,
+    'reportAdd',
+  );
   return (
-    <>
-      <Fab
-        onClick={() => setOpen(true)}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <DrawerOpenCTI
-        title={t('Create a report')}
-        open={open}
-        setOpen={setOpen}
-      >
-        <ReportCreationForm
-          updater={updater}
-          onCompleted={() => setOpen(false)}
-          onReset={() => setOpen(false)}
-        />
-      </DrawerOpenCTI>
-    </>
+    <Drawer
+      title={t('Create a report')}
+      variant={DrawerVariant.create}
+    >
+      <ReportCreationForm updater={updater} />
+    </Drawer>
   );
 };
 
