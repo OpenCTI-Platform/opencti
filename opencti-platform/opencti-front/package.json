@@ -18,7 +18,7 @@
     "@rjsf/mui": "5.12.1",
     "@rjsf/utils": "5.12.1",
     "apexcharts": "3.42.0",
-    "axios": "1.4.0",
+    "axios": "1.5.0",
     "ckeditor5-custom-build": "0.0.1",
     "dagre": "0.8.5",
     "date-fns": "2.30.0",
