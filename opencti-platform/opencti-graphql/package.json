@@ -38,7 +38,7 @@
     "@aws-sdk/lib-storage": "3.400.0",
     "@aws-sdk/property-provider": "3.374.0",
     "@elastic/elasticsearch": "8.9.0",
-    "@escape.tech/graphql-armor": "2.2.0",
+    "@escape.tech/graphql-armor": "2.3.0",
     "@graphql-tools/schema": "10.0.0",
     "@graphql-tools/utils": "10.0.5",
     "@opensearch-project/opensearch": "2.3.1",
