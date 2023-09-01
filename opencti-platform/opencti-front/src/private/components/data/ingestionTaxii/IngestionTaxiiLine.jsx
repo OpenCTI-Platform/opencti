@@ -105,9 +105,9 @@ class IngestionTaxiiLineLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.current_state_cursor.width }}
+                style={{ width: dataColumns.added_after_start.width }}
               >
-                <code>{node.current_state_cursor}</code>
+                <code>{node.added_after_start}</code>
               </div>
             </div>
           }
@@ -143,7 +143,7 @@ const IngestionTaxiiLineFragment = createFragmentContainer(
         uri
         version
         ingestion_running
-        current_state_cursor
+        added_after_start
       }
     `,
   },
@@ -216,7 +216,7 @@ class IngestionTaxiiDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.current_state_cursor.width }}
+                style={{ width: dataColumns.added_after_start.width }}
               >
                 <Skeleton
                   animation="wave"

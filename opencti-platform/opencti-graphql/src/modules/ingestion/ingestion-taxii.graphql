@@ -28,7 +28,6 @@ type IngestionTaxii implements InternalObject & BasicObject {
     user_id: String
     user: Creator
     added_after_start: DateTime
-    current_state_cursor: String
     ingestion_running: Boolean
 }
 enum IngestionTaxiiOrdering {

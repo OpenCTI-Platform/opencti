@@ -26,7 +26,7 @@ import { TaxiiVersion } from '../generated/graphql';
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
 // If the lock is free, every API as the right to take it.
-const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 60000;
+const SCHEDULE_TIME = conf.get('ingestion_manager:interval') || 300000;
 const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingestion_manager_lock';
 
 let running = false;
@@ -59,8 +59,8 @@ interface RssItem {
   pubDate: string
   lastBuildDate: string
 }
-const rssItemConvert = (turndownService: TurndownService, element: RssElement, item: RssItem) => {
-  const { pubDate, lastBuildDate } = element;
+const rssItemConvert = (turndownService: TurndownService, channel: RssElement, item: RssItem) => {
+  const { pubDate } = channel;
   return {
     title: turndownService.turndown(item.title),
     description: turndownService.turndown(item.description),
@@ -68,7 +68,6 @@ const rssItemConvert = (turndownService: TurndownService, element: RssElement, i
     content: turndownService.turndown(item['content:encoded'] ?? item.content ?? ''),
     labels: R.uniq(asArray(item.category).map((c) => c.trim())),
     pubDate: utcDate(item.pubDate ?? pubDate),
-    lastBuildDate: utcDate(item.lastBuildDate ?? lastBuildDate)
   };
 };
 const rssHttpGetter = () : Getter => {
@@ -82,12 +81,13 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
   const data = await httpRssGet(ingestion.uri);
   // Build items from XML
   const xmlData = await xmlParse(data, { explicitArray: false });
-  const elements = asArray(xmlData?.rss?.channel);
-  const items = elements
-    .map((e) => asArray(e.item).map((item) => rssItemConvert(turndownService, e, item)))
+  const channels = asArray(xmlData?.rss?.channel);
+  const items = channels
+    .map((channel) => asArray(channel.item).map((item) => rssItemConvert(turndownService, channel, item)))
     .flat()
-    .filter((e) => isNotEmptyField(e.pubDate) && (isEmptyField(ingestion.current_state_date) || e.lastBuildDate.isAfter(ingestion.current_state_date)))
-    .sort((a, b) => a.lastBuildDate.diff(b.lastBuildDate));
+    // TODO lastBuildDate Not always here
+    .filter((e) => isNotEmptyField(e.pubDate) && (isEmptyField(ingestion.current_state_date) || e.pubDate.isAfter(ingestion.current_state_date)))
+    .sort((a, b) => a.pubDate.diff(b.pubDate));
   // Build Stix bundle from items
   if (items.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Rss ingestion execution for ${items.length} items`);
@@ -107,7 +107,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
       if (item.link) {
         report.external_references = [{
           source_name: item.title,
-          description: `${ingestion.name} ${item.title}. Retrieved ${item.lastBuildDate.toISOString()}.`,
+          description: `${ingestion.name} ${item.title}. Retrieved ${item.pubDate.toISOString()}.`,
           url: item.link
         }];
       }
@@ -119,7 +119,8 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
     await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
     // Update the state
-    await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: utcDate() });
+    const lastPubDate = R.last(items)?.pubDate;
+    await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
   }
 };
 const rssExecutor = async (context: AuthContext, turndownService: TurndownService) => {
@@ -135,12 +136,12 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
       });
     ingestionPromises.push(ingestionPromise);
   }
-  return ingestionPromises;
+  return Promise.all(ingestionPromises);
 };
 // endregion
 
 // region Taxii ingestion
-interface TaxiiResponseData { more: boolean, next: string, objects: object[] }
+interface TaxiiResponseData { data: { more: boolean, next: string, objects: object[] }, addedLast: string | undefined | null }
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii) : Promise<TaxiiResponseData> => {
   const headers = new AxiosHeaders();
   if (ingestion.authentication_type === 'basic') {
@@ -157,24 +158,22 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii) : Promise
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
   const preparedUri = ingestion.uri.endsWith('/') ? ingestion.uri : `${ingestion.uri}/`;
-  const url = `${preparedUri}root/collections/${ingestion.collection}/objects`;
-  const { data } = await httpClient.get(url, { params: { added_after: ingestion.added_after_start, next: ingestion.current_state_cursor } });
-  return data;
+  const url = `${preparedUri}collections/${ingestion.collection}/objects/`;
+  const { data, headers: resultHeaders } = await httpClient.get(url, { params: { added_after: ingestion.added_after_start } });
+  return { data, addedLast: resultHeaders['x-taxii-date-added-last'] };
 };
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
-  const data = await taxiiHttpGet(ingestion);
-  if (data.objects.length > 0) {
+  const { data, addedLast } = await taxiiHttpGet(ingestion);
+  if (data.objects.length > 0 && (isEmptyField(ingestion.added_after_start) || utcDate(addedLast).isAfter(utcDate(ingestion.added_after_start)))) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items`);
     const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: data.objects };
     // Push the bundle to absorption queue
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
     await pushToSync({ type: 'bundle', applicant_id: ingestion.user_id ?? OPENCTI_SYSTEM_UUID, content, update: true });
-  }
-  // Update the state
-  if (isNotEmptyField(data.next)) {
-    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_cursor: data.next });
+    // Update the state
+    await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { added_after_start: utcDate(addedLast) });
   }
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
@@ -192,11 +191,11 @@ const taxiiExecutor = async (context: AuthContext) => {
     }
     const ingestionPromise = taxiiHandler(context, ingestion)
       .catch((e) => {
-        logApp.error(`[OPENCTI-MODULE] Taxii ingestion execution error for ${ingestion}`, { error: e });
+        logApp.error(`[OPENCTI-MODULE] Taxii ingestion execution error for ${ingestion.name}`, { error: e });
       });
     ingestionPromises.push(ingestionPromise);
   }
-  return ingestionPromises;
+  return Promise.all(ingestionPromises);
 };
 // endregion
 
@@ -211,8 +210,8 @@ const ingestionHandler = async () => {
     // noinspection JSUnusedLocalSymbols
     const context = executionContext('ingestion_manager');
     const ingestionPromises = [];
-    ingestionPromises.push(await rssExecutor(context, turndownService));
-    ingestionPromises.push(await taxiiExecutor(context));
+    ingestionPromises.push(rssExecutor(context, turndownService));
+    ingestionPromises.push(taxiiExecutor(context));
     await Promise.all(ingestionPromises);
   } catch (e: any) {
     // We dont care about failing to get the lock.

@@ -56,7 +56,7 @@ const IngestionTaxii = () => {
       width: '15%',
       isSortable: false,
     },
-    current_state_cursor: {
+    added_after_start: {
       label: 'Current state',
       width: '15%',
       isSortable: false,

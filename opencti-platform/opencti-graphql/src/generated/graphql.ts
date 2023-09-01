@@ -10095,7 +10095,6 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   authentication_value?: Maybe<Scalars['String']['output']>;
   collection: Scalars['String']['output'];
   created_at?: Maybe<Scalars['DateTime']['output']>;
-  current_state_cursor?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -32637,7 +32636,6 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  current_state_cursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

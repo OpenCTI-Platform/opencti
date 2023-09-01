@@ -909,9 +909,9 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     login_provider: provider,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
-    impersonate: impersonate !== undefined,
     groups: user.groups,
     roles: user.roles,
+    impersonate: impersonate !== undefined,
     impersonate_user_id: impersonate !== undefined ? origin.id : null,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     default_hidden_types: user.default_hidden_types,
@@ -1023,7 +1023,7 @@ const validateUser = (user, settings) => {
   }
 };
 
-export const internalAuthenticateUser = async (context, req, user, provider, token, isSessionRefresh = false) => {
+export const internalAuthenticateUser = async (context, req, user, provider, { token, previousSession, isSessionRefresh }) => {
   let impersonate;
   const logged = await buildCompleteUser(context, user);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -1040,10 +1040,16 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
     }
   }
   const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
+  // If previous session stored, some specific attributes needs to follow
+  if (previousSession) {
+    sessionUser.otp_validated = previousSession.otp_validated;
+    sessionUser.impersonate = previousSession.impersonate;
+    sessionUser.impersonate_user_id = previousSession.impersonate_user_id;
+  }
   const userOrigin = userWithOrigin(req, sessionUser);
   if (!isSessionRefresh) {
     await publishUserAction({
-      user: userOrigin,
+      user: userWithOrigin(req, logged),
       event_type: 'authentication',
       event_access: 'administration',
       event_scope: 'login',
@@ -1057,15 +1063,15 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   return userOrigin;
 };
 
-export const authenticateUser = async (context, req, user, provider, token = '') => {
+export const authenticateUser = async (context, req, user, provider, opts = {}) => {
   // Build the user session with only required fields
-  return internalAuthenticateUser(context, req, user, provider, token);
+  return internalAuthenticateUser(context, req, user, provider, opts);
 };
 
-export const authenticateUserFromRequest = async (context, req, res) => {
+export const authenticateUserFromRequest = async (context, req, res, isSessionRefresh = false) => {
   const auth = req.session?.user;
   // If user already have a session
-  if (auth) {
+  if (auth && !isSessionRefresh) {
     // User already identified, we need to enforce the session validity
     const { provider, token } = req.session.session_provider;
     // For bearer, validate that the bearer is the same as the session
@@ -1098,16 +1104,14 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     const isNowImpersonate = isNotSameUser && !auth.impersonate && isBypassUser(auth) && applicantId;
     if (isImpersonateChange || isNowImpersonate) {
       // Impersonate doesn't match, kill the current session and try to re auth
-      await logout(context, auth, req, res, true);
-      return await authenticateUserFromRequest(context, req, res);
+      return await authenticateUserFromRequest(context, req, res, true);
     }
     // If session is marked for refresh, reload the user data in the session
     // If session is old by a past application version, make a refresh
     if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
-      const { session_provider } = req.session;
-      const { provider: userProvider, token: userToken } = session_provider;
-      const reloadedUser = await storeLoadById(context, SYSTEM_USER, auth.id, ENTITY_TYPE_USER);
-      return await internalAuthenticateUser(context, req, reloadedUser, userProvider, userToken, true);
+      const refreshOpts = { token, previousSession: auth, isSessionRefresh: true };
+      const user = await internalLoadById(context, SYSTEM_USER, auth.id);
+      return await internalAuthenticateUser(context, req, user, provider, refreshOpts);
     }
     // If everything ok, return the authenticated user.
     return userWithOrigin(req, auth);
@@ -1125,7 +1129,8 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     try {
       const user = await resolveUserByToken(context, tokenUUID);
       if (user) {
-        return await authenticateUser(context, req, user, loginProvider, tokenUUID);
+        const opts = { token: tokenUUID, isSessionRefresh };
+        return await authenticateUser(context, req, user, loginProvider, opts);
       }
     } catch (err) {
       logApp.error('[OPENCTI] Authentication error', { error: err });

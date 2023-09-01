@@ -62,7 +62,6 @@ const ingestionTaxiiValidation = (t) => Yup.object().shape({
   key: Yup.string().nullable(),
   ca: Yup.string().nullable(),
   user_id: Yup.object().nullable(),
-  current_state_cursor: Yup.string().nullable(),
   added_after_start: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
@@ -169,7 +168,6 @@ const IngestionTaxiiEditionContainer = ({
       'key',
       'ca',
       'user_id',
-      'current_state_cursor',
       'added_after_start',
     ]),
   )(ingestionTaxii);
@@ -345,14 +343,6 @@ const IngestionTaxiiEditionContainer = ({
                   style: { marginTop: 20 },
                 }}
               />
-              <Field
-                component={TextField}
-                name="current_state_cursor"
-                label={t('Current state cursor')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
-                style={fieldSpacingContainerStyle}
-              />
               <CreatorField
                 name="user_id"
                 label={t('User responsible for data creation (empty = System)')}
@@ -387,7 +377,6 @@ const IngestionTaxiiEditionFragment = createFragmentContainer(
         collection
         ingestion_running
         added_after_start
-        current_state_cursor
         authentication_type
         authentication_value
         user {

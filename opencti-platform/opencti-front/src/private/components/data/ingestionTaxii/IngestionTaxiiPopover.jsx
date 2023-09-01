@@ -58,7 +58,6 @@ const ingestionTaxiiEditionQuery = graphql`
       uri
       version
       ingestion_running
-      current_state_cursor
       ...IngestionTaxiiEdition_ingestionTaxii
     }
   }

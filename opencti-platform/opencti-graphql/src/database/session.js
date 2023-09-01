@@ -45,7 +45,7 @@ export const findSessions = () => {
   const { store } = applicationSession;
   return new Promise((accept) => {
     store.all((err, result) => {
-      const sessionsPerUser = R.groupBy((s) => s.user.id, R.filter((n) => n.user, result));
+      const sessionsPerUser = R.groupBy((s) => s.user.impersonate_user_id ?? s.user.id, R.filter((n) => n.user, result));
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
         const userSessions = v.map((s) => {
           return {

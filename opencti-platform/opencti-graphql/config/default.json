@@ -131,7 +131,7 @@
   "ingestion_manager": {
     "enabled": true,
     "lock_key": "ingestion_manager_lock",
-    "interval": 10000
+    "interval": 300000
   },
   "retention_manager": {
     "enabled": true,
