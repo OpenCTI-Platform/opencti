@@ -15,7 +15,7 @@ import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
-import { PROVIDERS } from '../config/providers';
+import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
@@ -62,7 +62,7 @@ export const getSettings = async (context) => {
   return {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),
-    platform_providers: PROVIDERS,
+    platform_providers: PROVIDERS.filter((p) => p.name !== INTERNAL_SECURITY_PROVIDER),
     platform_user_statuses: Object.entries(ACCOUNT_STATUSES).map(([k, v]) => ({ status: k, message: v })),
     platform_cluster: clusterInfo.info,
     platform_demo: ENABLED_DEMO_MODE,

@@ -260,13 +260,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         </Paper>
       )}
       {isAuthButtons && !isConsentMessage && renderExternalAuth(authSSOs)}
-      {providers?.length === 0 && (
-        <div>No authentication provider available</div>
-      )}
-      {isAuthButtons &&
-        isConsentMessage &&
-        checked &&
-        renderExternalAuth(authSSOs)}
+      {isAuthButtons && isConsentMessage && checked && renderExternalAuth(authSSOs)}
       {providers?.length === 0 && (
         <div>No authentication provider available</div>
       )}

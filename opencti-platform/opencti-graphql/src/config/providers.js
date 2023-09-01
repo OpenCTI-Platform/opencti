@@ -13,7 +13,7 @@ import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logApp } from './conf';
-import { ConfigurationError } from './errors';
+import { AuthenticationFailure, ConfigurationError } from './errors';
 import { isNotEmptyField } from '../database/utils';
 
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
@@ -96,6 +96,7 @@ const configRemapping = (config) => {
 };
 
 // Providers definition
+export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
 const STRATEGY_LOCAL = 'LocalStrategy';
 export const STRATEGY_CERT = 'ClientCertStrategy';
 const STRATEGY_LDAP = 'LdapStrategy';
@@ -141,9 +142,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     // FORM Strategies
     if (strategy === STRATEGY_LOCAL) {
       const localStrategy = new LocalStrategy({}, (username, password, done) => {
-        logApp.debug('[LOCAL] Successfully logged', { username });
         return login(username, password)
           .then((info) => {
+            logApp.debug('[LOCAL] Successfully logged', { username });
             return done(null, info);
           })
           .catch((err) => {
@@ -490,6 +491,25 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       // This strategy is directly handled by express
       providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
     }
+  }
+  // In case of disable local strategy, setup protected fallback for the admin user
+  const hasLocal = providers.find((p) => p.strategy === STRATEGY_LOCAL);
+  if (!hasLocal) {
+    const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
+      const adminEmail = conf.get('app:admin:email');
+      if (username !== adminEmail) {
+        return done(AuthenticationFailure());
+      }
+      return login(username, password)
+        .then((info) => {
+          return done(null, info);
+        })
+        .catch((err) => {
+          done(err);
+        });
+    });
+    passport.use('local', adminLocalStrategy);
+    providers.push({ name: INTERNAL_SECURITY_PROVIDER, type: AUTH_FORM, strategy, provider: 'local' });
   }
 }
 
