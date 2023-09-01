@@ -20,6 +20,7 @@ import { batchLoader, distributionRelations } from '../database/middleware';
 import { elBatchIds } from '../database/engine';
 import { batchNotes, batchOpinions, batchReports, batchContainers } from '../domain/stixCoreRelationship';
 import { batchCreators } from '../domain/user';
+import { schemaRelationsRefTypesMapping } from '../database/stix-ref';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const notesLoader = batchLoader(batchNotes);
@@ -36,6 +37,7 @@ const stixRefRelationshipResolvers = {
     stixSchemaRefRelationships: (_, { id, toType }, context) => schemaRefRelationships(context, context.user, id, toType),
     stixRefRelationshipsDistribution: (_, args, context) => distributionRelations(context, context.user, args),
     stixRefRelationshipsNumber: (_, args, context) => stixRefRelationshipsNumber(context, context.user, args),
+    schemaRelationsRefTypesMapping: () => schemaRelationsRefTypesMapping(),
   },
   StixRefRelationship: {
     from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load(rel.fromId, context, context.user)),

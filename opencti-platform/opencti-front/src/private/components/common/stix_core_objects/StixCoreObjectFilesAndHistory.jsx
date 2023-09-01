@@ -22,6 +22,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import * as R from 'ramda';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/SelectField';
@@ -62,11 +63,13 @@ export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
     $fileName: ID!
     $connectorId: String
     $bypassEntityId: String
+    $configuration: String
   ) {
     askJobImport(
       fileName: $fileName
       connectorId: $connectorId
       bypassEntityId: $bypassEntityId
+      configuration: $configuration
     ) {
       ...FileLine_file
     }
@@ -126,9 +129,18 @@ const exportValidation = (t) => Yup.object().shape({
   type: Yup.string().required(t('This field is required')),
 });
 
-const importValidation = (t) => Yup.object().shape({
-  connector_id: Yup.string().required(t('This field is required')),
-});
+const importValidation = (t, configurations) => {
+  const shape = {
+    connector_id: Yup.string().required(t('This field is required')),
+  };
+  if (configurations) {
+    return Yup.object().shape({
+      ...shape,
+      configuration: Yup.string().required(t('This field is required')),
+    });
+  }
+  return Yup.object().shape(shape);
+};
 
 const StixCoreObjectFilesAndHistory = ({
   id,
@@ -142,6 +154,7 @@ const StixCoreObjectFilesAndHistory = ({
 }) => {
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
+  const [selectedConnector, setSelectedConnector] = useState(null);
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
@@ -161,6 +174,7 @@ const StixCoreObjectFilesAndHistory = ({
         fileName: fileToImport.id,
         connectorId: values.connector_id,
         bypassEntityId: bypassEntityId ? id : null,
+        configuration: values.configuration,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -210,9 +224,15 @@ const StixCoreObjectFilesAndHistory = ({
     });
   };
 
-  const importConnsPerFormat = connectorsImport
-    ? scopesConn(connectorsImport)
+  const connectors = connectorsImport.filter((n) => !n.only_contextual).filter((n) => !R.isEmpty(n.configurations));
+  const importConnsPerFormat = connectors
+    ? scopesConn(connectors)
     : {};
+
+  const handleSelectConnector = (_, value) => {
+    setSelectedConnector(connectors.find((c) => c.id === value));
+  };
+
   return (
     <div className={classes.container}>
       <Grid
@@ -248,8 +268,8 @@ const StixCoreObjectFilesAndHistory = ({
       </div>
       <Formik
         enableReinitialize={true}
-        initialValues={{ connector_id: '' }}
-        validationSchema={importValidation(t)}
+        initialValues={{ connector_id: '', configuration: '' }}
+        validationSchema={importValidation(t, selectedConnector?.configurations?.length > 0)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
       >
@@ -262,7 +282,7 @@ const StixCoreObjectFilesAndHistory = ({
               onClose={handleCloseImport}
               fullWidth={true}
             >
-              <DialogTitle>{t('Launch an import')}</DialogTitle>
+              <DialogTitle>{t('Launch an import bbb')}</DialogTitle>
               <DialogContent>
                 <Field
                   component={SelectField}
@@ -271,6 +291,7 @@ const StixCoreObjectFilesAndHistory = ({
                   label={t('Connector')}
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
+                  onChange={handleSelectConnector}
                 >
                   {connectorsImport.map((connector, i) => {
                     const disabled = !fileToImport
@@ -290,6 +311,27 @@ const StixCoreObjectFilesAndHistory = ({
                     );
                   })}
                 </Field>
+                  {selectedConnector?.configurations?.length > 0
+                      && <Field
+                          component={SelectField}
+                          variant="standard"
+                          name="configuration"
+                          label={t('Configuration')}
+                          fullWidth={true}
+                          containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                          {selectedConnector.configurations.map((config, i) => {
+                            return (
+                                  <MenuItem
+                                      key={i}
+                                      value={config.configuration}
+                                  >
+                                      {config.name}
+                                  </MenuItem>
+                            );
+                          })}
+                      </Field>
+                  }
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleReset} disabled={isSubmitting}>
@@ -448,6 +490,11 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
         active
         connector_scope
         updated_at
+          configurations {
+              id
+              name,
+              configuration
+          }
       }
     `,
   },

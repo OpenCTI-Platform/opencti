@@ -1,0 +1,166 @@
+# Type
+type AttributeColumnConfiguration {
+  separator: String
+  pattern_date: String
+  timezone: String
+}
+type AttributeColumn {
+  column_name: String
+  configuration: AttributeColumnConfiguration
+}
+type AttributeBasedOn {
+  representations: [String]
+}
+type AttributeRef {
+  multiple: Boolean
+  id: String
+  ids: [String]
+}
+
+type CsvMapperRepresentationAttribute {
+  key: String!
+  column: AttributeColumn
+  based_on: AttributeBasedOn
+  ref: AttributeRef
+}
+
+enum Operator {
+  eq
+  neq
+}
+type CsvMapperRepresentationTargetColumn {
+  column_reference: String
+  operator: Operator
+  value: String
+}
+type CsvMapperRepresentationTarget {
+  entity_type: String!
+  column_based: CsvMapperRepresentationTargetColumn
+}
+
+enum CsvMapperRepresentationType {
+  entity
+  relationship
+}
+type CsvMapperRepresentation {
+  id: ID!
+  type: CsvMapperRepresentationType!
+  target: CsvMapperRepresentationTarget!
+  attributes: [CsvMapperRepresentationAttribute!]!
+  from: String
+  to: String
+}
+
+type CsvMapper implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String! @auth
+  standard_id: String! @auth
+  parent_types: [String!]! @auth
+  # CsvMapper
+  name: String! @auth
+  has_header: Boolean! @auth
+  separator: String! @auth
+  representations: [CsvMapperRepresentation!]! @auth
+  errors: String
+}
+
+# Ordering
+enum CsvMapperOrdering {
+  name
+}
+
+# Filtering
+enum CsvMapperFilter {
+  name
+}
+input CsvMapperFiltering {
+  key: [CsvMapperFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+# Relay connections
+type CsvMapperConnection {
+  pageInfo: PageInfo!
+  edges: [CsvMapperEdge!]!
+}
+type CsvMapperEdge {
+  cursor: String!
+  node: CsvMapper!
+}
+
+# Queries
+type Query {
+  csvMapper(id: String!): CsvMapper @auth
+  csvMappers(
+    first: Int
+    after: ID
+    orderBy: CsvMapperOrdering
+    orderMode: OrderingMode
+    filters: [CsvMapperFiltering!]
+    filterMode: FilterMode
+    search: String
+  ): CsvMapperConnection @auth
+  csvMapperTest(
+    configuration: String!
+    content: String!
+  ): JSON @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+}
+
+# Mutations
+input AttributeColumnConfigurationInput {
+  separator: String
+  pattern_date: String
+  timezone: String
+}
+input AttributeColumnInput {
+  column_name: String
+  configuration: AttributeColumnConfigurationInput
+}
+input AttributeBasedOnInput {
+  representations: [String]
+}
+input AttributeRefInput {
+  multiple: Boolean
+  id: String
+  ids: [String]
+}
+
+input CsvMapperRepresentationAttributeInput {
+  key: String
+  column: AttributeColumnInput
+  based_on: AttributeBasedOnInput
+  ref: AttributeRefInput
+}
+
+input CsvMapperRepresentationTargetColumnInput {
+  column_reference: String
+  operator: Operator
+  value: String
+}
+input CsvMapperRepresentationTargetInput {
+  entity_type: String!
+  column_based: CsvMapperRepresentationTargetColumnInput
+}
+
+input CsvMapperRepresentationInput {
+  id: ID!
+  type: CsvMapperRepresentationType!
+  target: CsvMapperRepresentationTargetInput!
+  attributes: [CsvMapperRepresentationAttributeInput]!
+  from: String
+  to: String
+}
+input CsvMapperAddInput {
+  name: String! @constraint(minLength: 2)
+  has_header: Boolean!
+  separator: String!
+  representations: String!
+}
+
+type Mutation {
+  csvMapperAdd(input: CsvMapperAddInput!): CsvMapper @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+  csvMapperDelete(id: ID!): ID @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+  csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper @auth(for: [TAXIIAPI_SETCSVMAPPERS])
+}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
+import CsvMappers from '@components/data/CsvMappers';
 import Security from '../../../utils/Security';
 import Connectors from './Connectors';
 import Entities from './Entities';
@@ -64,6 +65,11 @@ const Root = () => {
         path="/dashboard/data/ingestion/taxii"
         component={IngestionTaxiis}
       />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/ingestion/csv_mapper"
+      component={CsvMappers}
+    />
       <BoundaryRoute
         exact
         path="/dashboard/data/sharing"

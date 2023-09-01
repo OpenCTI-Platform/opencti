@@ -71,6 +71,7 @@
     "compression": "1.7.4",
     "content-disposition": "0.5.4",
     "cors": "2.8.5",
+    "csv-parse": "5.5.2",
     "dataloader": "2.2.2",
     "domino": "2.1.6",
     "dot-object": "2.1.4",

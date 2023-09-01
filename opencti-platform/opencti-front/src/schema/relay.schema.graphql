@@ -20,6 +20,8 @@ scalar StixId
 """STIX Reference Scalar Type"""
 scalar StixRef
 
+scalar JSON
+
 enum State {
   wait
   progress
@@ -49,6 +51,7 @@ enum Capabilities {
   SETTINGS_SETMARKINGS
   SETTINGS_SETLABELS
   TAXIIAPI_SETCOLLECTIONS
+  TAXIIAPI_SETCSVMAPPERS
 }
 
 enum MemberType {
@@ -1575,6 +1578,16 @@ type ConnectorConfig {
   push_exchange: String!
 }
 
+type ConnectorMetadata {
+  configuration: String!
+}
+
+type ConnectorConfiguration {
+  id: ID!
+  name: String!
+  configuration: String!
+}
+
 type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -1596,6 +1609,8 @@ type Connector implements BasicObject & InternalObject {
   created_at: DateTime
   config: ConnectorConfig
   works(status: String): [Work]
+  built_in: Boolean
+  configurations: [ConnectorConfiguration!]
 }
 
 type RuleExecutionError {
@@ -7628,9 +7643,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | Creator | Group | Workspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | Creator | Group | Workspace | CsvMapper
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace | CsvMapper
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace
 
@@ -8143,6 +8158,7 @@ type Query {
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: [WorksFiltering], filterMode: FilterMode): WorkConnection
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
+  schemaAttributes(entityType: String!): [TypeAttribute!]!
   retentionRule(id: String!): RetentionRule
   retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection
   taxiiCollection(id: String!): TaxiiCollection
@@ -8279,6 +8295,7 @@ type Query {
   stixRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, dynamicFrom: [StixCoreObjectsFiltering], dynamicTo: [StixCoreObjectsFiltering], aggregateOnConnections: Boolean): [Distribution]
   stixRelationshipsNumber(authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, dynamicFrom: [StixCoreObjectsFiltering], dynamicTo: [StixCoreObjectsFiltering]): Number
   schemaRelationsTypesMapping: [StixRelationshipSchema!]!
+  schemaRelationsRefTypesMapping: [StixRelationshipSchema!]!
   stixCoreRelationship(id: String): StixCoreRelationship
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixCoreRelationshipConnection
   stixCoreRelationshipsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, elementId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode, dynamicFrom: [StixCoreObjectsFiltering], dynamicTo: [StixCoreObjectsFiltering]): [TimeSeries]
@@ -8374,6 +8391,9 @@ type Query {
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: [IngestionTaxiiFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: [OrganizationsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): OrganizationConnection
+  csvMapper(id: String!): CsvMapper
+  csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: [CsvMapperFiltering!], filterMode: FilterMode, search: String): CsvMapperConnection
+  csvMapperTest(configuration: String!, content: String!): JSON
 }
 
 type Subscription {
@@ -8827,7 +8847,7 @@ type Mutation {
   deleteImport(fileName: String): ID
   uploadImport(file: Upload!): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File
-  askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String, bypassValidation: Boolean): File
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
   synchronizerEdit(id: ID!): SynchronizerEditMutations
   synchronizerStart(id: ID!): Synchronizer
@@ -9107,6 +9127,9 @@ type Mutation {
   organizationContextClean(id: ID!): Organization
   organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization
+  csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
+  csvMapperDelete(id: ID!): ID
+  csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12170,4 +12193,154 @@ type MeOrganizationEdge {
 type MeOrganizationConnection {
   pageInfo: PageInfo!
   edges: [MeOrganizationEdge!]!
+}
+
+type AttributeColumnConfiguration {
+  separator: String
+  pattern_date: String
+  timezone: String
+}
+
+type AttributeColumn {
+  column_name: String
+  configuration: AttributeColumnConfiguration
+}
+
+type AttributeBasedOn {
+  representations: [String]
+}
+
+type AttributeRef {
+  multiple: Boolean
+  id: String
+  ids: [String]
+}
+
+type CsvMapperRepresentationAttribute {
+  key: String!
+  column: AttributeColumn
+  based_on: AttributeBasedOn
+  ref: AttributeRef
+}
+
+enum Operator {
+  eq
+  neq
+}
+
+type CsvMapperRepresentationTargetColumn {
+  column_reference: String
+  operator: Operator
+  value: String
+}
+
+type CsvMapperRepresentationTarget {
+  entity_type: String!
+  column_based: CsvMapperRepresentationTargetColumn
+}
+
+enum CsvMapperRepresentationType {
+  entity
+  relationship
+}
+
+type CsvMapperRepresentation {
+  id: ID!
+  type: CsvMapperRepresentationType!
+  target: CsvMapperRepresentationTarget!
+  attributes: [CsvMapperRepresentationAttribute!]!
+  from: String
+  to: String
+}
+
+type CsvMapper implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  has_header: Boolean!
+  separator: String!
+  representations: [CsvMapperRepresentation!]!
+  errors: String
+}
+
+enum CsvMapperOrdering {
+  name
+}
+
+enum CsvMapperFilter {
+  name
+}
+
+input CsvMapperFiltering {
+  key: [CsvMapperFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type CsvMapperConnection {
+  pageInfo: PageInfo!
+  edges: [CsvMapperEdge!]!
+}
+
+type CsvMapperEdge {
+  cursor: String!
+  node: CsvMapper!
+}
+
+input AttributeColumnConfigurationInput {
+  separator: String
+  pattern_date: String
+  timezone: String
+}
+
+input AttributeColumnInput {
+  column_name: String
+  configuration: AttributeColumnConfigurationInput
+}
+
+input AttributeBasedOnInput {
+  representations: [String]
+}
+
+input AttributeRefInput {
+  multiple: Boolean
+  id: String
+  ids: [String]
+}
+
+input CsvMapperRepresentationAttributeInput {
+  key: String
+  column: AttributeColumnInput
+  based_on: AttributeBasedOnInput
+  ref: AttributeRefInput
+}
+
+input CsvMapperRepresentationTargetColumnInput {
+  column_reference: String
+  operator: Operator
+  value: String
+}
+
+input CsvMapperRepresentationTargetInput {
+  entity_type: String!
+  column_based: CsvMapperRepresentationTargetColumnInput
+}
+
+input CsvMapperRepresentationInput {
+  id: ID!
+  type: CsvMapperRepresentationType!
+  target: CsvMapperRepresentationTargetInput!
+  attributes: [CsvMapperRepresentationAttributeInput]!
+  from: String
+  to: String
+}
+
+input CsvMapperAddInput {
+  name: name_String_NotNull_minLength_2!
+  has_header: Boolean!
+  separator: String!
+  representations: String!
 }

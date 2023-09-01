@@ -122,7 +122,7 @@ export const REL_BUILT_IN: RelationType = 'builtin';
 export const REL_NEW: RelationType = 'new';
 export const REL_EXTENDED: RelationType = 'extended';
 export type RelationDefinition = { name: string; type: RelationType };
-type RelationshipMappings = { [k: `${string}_${string}`]: Array<RelationDefinition>; };
+export type RelationshipMappings = { [k: `${string}_${string}`]: Array<RelationDefinition>; };
 
 export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // Core

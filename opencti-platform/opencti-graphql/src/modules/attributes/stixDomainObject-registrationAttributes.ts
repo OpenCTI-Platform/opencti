@@ -53,7 +53,7 @@ schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, stixD
 const stixDomainObjectIdentityAttributes: Array<AttributeDefinition> = [
   { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
   { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-  { name: 'contact_information', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+  { name: 'contact_information', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Contact information' },
   identityClass,
   { name: 'roles', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
 ];
@@ -214,7 +214,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       upsert: false,
       label: 'Pattern type'
     },
-    { name: 'pattern_version', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'pattern_version', type: 'string', mandatoryType: 'no', multiple: false, upsert: false, label: 'Pattern version' },
     { name: 'pattern', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     {
       name: 'indicator_types',
@@ -403,7 +403,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       upsert: false,
       label: 'Tool types'
     },
-    { name: 'tool_version', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'tool_version', type: 'string', mandatoryType: 'no', multiple: false, upsert: false, label: 'Tool version' },
   ],
   [ENTITY_TYPE_VULNERABILITY]: [
     xOpenctiAliases,

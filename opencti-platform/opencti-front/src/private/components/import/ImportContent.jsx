@@ -158,9 +158,18 @@ export const importContentQuery = graphql`
   }
 `;
 
-const importValidation = (t) => Yup.object().shape({
-  connector_id: Yup.string().required(t('This field is required')),
-});
+const importValidation = (t, configurations) => {
+  const shape = {
+    connector_id: Yup.string().required(t('This field is required')),
+  };
+  if (configurations) {
+    return Yup.object().shape({
+      ...shape,
+      configuration: Yup.string().required(t('This field is required')),
+    });
+  }
+  return Yup.object().shape(shape);
+};
 
 class ImportContentComponent extends Component {
   constructor(props) {
@@ -171,6 +180,7 @@ class ImportContentComponent extends Component {
       displayCreate: false,
       sortBy: 'name',
       orderAsc: true,
+      selectedConnector: null,
     };
   }
 
@@ -214,6 +224,7 @@ class ImportContentComponent extends Component {
       variables: {
         fileName: this.state.fileToImport.id,
         connectorId: values.connector_id,
+        configuration: values.configuration,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -287,8 +298,13 @@ class ImportContentComponent extends Component {
     const { edges: importFilesEdges } = importFiles;
     const { edges: pendingFilesEdges } = pendingFiles;
     const { fileToImport, fileToValidate, displayCreate } = this.state;
-    const connectors = R.filter((n) => !n.only_contextual, connectorsImport);
+    const connectors = connectorsImport.filter((n) => !n.only_contextual).filter((n) => !R.isEmpty(n.configurations)); // Can be null but not empty
     const importConnsPerFormat = scopesConn(connectors);
+
+    const handleSelectConnector = (_, value) => {
+      this.setState({ selectedConnector: connectors.find((c) => c.id === value) });
+    };
+
     return (
       <div className={classes.container}>
         <Typography
@@ -479,8 +495,8 @@ class ImportContentComponent extends Component {
         <div>
           <Formik
             enableReinitialize={true}
-            initialValues={{ connector_id: '' }}
-            validationSchema={importValidation(t)}
+            initialValues={{ connector_id: '', configuration: '' }}
+            validationSchema={importValidation(t, this.state.selectedConnector?.configurations?.length > 0)}
             onSubmit={this.onSubmitImport.bind(this)}
             onReset={this.handleCloseImport.bind(this)}
           >
@@ -502,6 +518,7 @@ class ImportContentComponent extends Component {
                       label={t('Connector')}
                       fullWidth={true}
                       containerstyle={{ width: '100%' }}
+                      onChange={handleSelectConnector}
                     >
                       {connectors.map((connector, i) => {
                         const disabled = !fileToImport
@@ -521,6 +538,27 @@ class ImportContentComponent extends Component {
                         );
                       })}
                     </Field>
+                    {this.state.selectedConnector?.configurations?.length > 0
+                      && <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="configuration"
+                        label={t('Configuration')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                        {this.state.selectedConnector.configurations.map((config, i) => {
+                          return (
+                            <MenuItem
+                              key={i}
+                              value={config.configuration}
+                            >
+                              {config.name}
+                            </MenuItem>
+                          );
+                        })}
+                      </Field>
+                    }
                   </DialogContent>
                   <DialogActions>
                     <Button onClick={handleReset} disabled={isSubmitting}>
@@ -639,6 +677,11 @@ const ImportContent = createRefetchContainer(
         only_contextual
         connector_scope
         updated_at
+        configurations {
+          id
+          name,
+          configuration
+        }
       }
     `,
   },

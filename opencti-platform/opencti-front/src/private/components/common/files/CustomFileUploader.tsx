@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, FunctionComponent, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -25,9 +25,9 @@ interface CustomFileUploadProps {
     field: string,
     value: File | string | undefined,
     shouldValidate?: boolean | undefined
-  ) => void
-  ,
-  isEmbeddedInExternalReferenceCreation?: boolean
+  ) => void;
+  isEmbeddedInExternalReferenceCreation?: boolean;
+  label?: string;
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -60,10 +60,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const CustomFileUploader = (
-  { setFieldValue, isEmbeddedInExternalReferenceCreation }
-  : CustomFileUploadProps,
-) => {
+const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
+  setFieldValue,
+  isEmbeddedInExternalReferenceCreation,
+  label,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [fileNameForDisplay, setFileNameForDisplay] = useState('');
@@ -89,7 +90,7 @@ const CustomFileUploader = (
         htmlFor="label"
         className={classes.label}
       >
-        {t('Associated file')}
+        {label ? t(label) : t('Associated file')}
       </label>
       <br/>
       <Box

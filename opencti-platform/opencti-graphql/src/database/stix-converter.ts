@@ -76,7 +76,8 @@ import {
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObject,
   isStixDomainObjectIdentity,
-  isStixDomainObjectLocation, isStixDomainObjectThreatActor,
+  isStixDomainObjectLocation,
+  isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';

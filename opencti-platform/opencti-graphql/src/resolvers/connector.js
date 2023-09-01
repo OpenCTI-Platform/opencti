@@ -6,7 +6,6 @@ import {
   fetchRemoteStreams,
   findAllSync,
   findSyncById,
-  loadConnectorById,
   patchSync,
   pingConnector,
   registerConnector,
@@ -32,14 +31,20 @@ import {
 } from '../domain/work';
 import { batchCreator } from '../domain/user';
 import { now } from '../utils/format';
-import { connectors, connectorsForImport, connectorsForNotification, connectorsForWorker } from '../database/repository';
+import {
+  connector,
+  connectors,
+  connectorsForImport,
+  connectorsForNotification,
+  connectorsForWorker
+} from '../database/repository';
 import { batchLoader } from '../database/middleware';
 
 const creatorLoader = batchLoader(batchCreator);
 
 const connectorResolvers = {
   Query: {
-    connector: (_, { id }, context) => loadConnectorById(context, context.user, id),
+    connector: (_, { id }, context) => connector(context, context.user, id),
     connectors: (_, __, context) => connectors(context, context.user),
     connectorsForWorker: (_, __, context) => connectorsForWorker(context, context.user),
     connectorsForExport: (_, __, context) => connectorsForExport(context, context.user),
@@ -52,7 +57,7 @@ const connectorResolvers = {
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
   },
   Connector: {
-    works: (connector, args, context) => worksForConnector(context, context.user, connector.id, args),
+    works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
@@ -69,8 +74,8 @@ const connectorResolvers = {
     pingConnector: (_, { id, state }, context) => pingConnector(context, context.user, id, state),
     // Work part
     workAdd: async (_, { connectorId, friendlyName }, context) => {
-      const connector = await loadConnectorById(context, context.user, connectorId);
-      return createWork(context, context.user, connector, friendlyName, connector.id, { receivedTime: now() });
+      const connectorEntity = await connector(context, context.user, connectorId);
+      return createWork(context, context.user, connectorEntity, friendlyName, connectorEntity.id, { receivedTime: now() });
     },
     workEdit: (_, { id }, context) => ({
       delete: () => deleteWork(context, context.user, id),

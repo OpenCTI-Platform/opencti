@@ -7,25 +7,38 @@ import {
   CONNECTOR_INTERNAL_IMPORT_FILE,
   CONNECTOR_INTERNAL_NOTIFICATION
 } from '../schema/general';
-import { listEntities } from './middleware-loader';
-import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE } from './utils';
+import { listEntities, storeLoadById } from './middleware-loader';
+import { INTERNAL_PLAYBOOK_QUEUE, INTERNAL_SYNC_QUEUE, isEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
+import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 
-// region connectors
 export const completeConnector = (connector) => {
   if (connector) {
     const completed = { ...connector };
     completed.connector_scope = connector.connector_scope ? connector.connector_scope.split(',') : [];
     completed.config = connectorConfig(connector.id);
-    completed.active = sinceNowInMinutes(connector.updated_at) < 5;
+    completed.active = connector.built_in ? true : (sinceNowInMinutes(connector.updated_at) < 5);
     return completed;
   }
   return null;
 };
 
-export const connectors = (context, user) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false })
-    .then((elements) => map((conn) => completeConnector(conn), elements));
+export const connector = async (context, user, id) => {
+  // Database connector
+  const element = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR)
+    .then((conn) => completeConnector(conn));
+  if (isEmptyField(element)) {
+    // Built in connector
+    const conn = builtInConnector(id);
+    return completeConnector(conn);
+  }
+  return element;
+};
+
+export const connectors = async (context, user) => {
+  const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
+  const builtInElements = await builtInConnectorsRuntime(context, user);
+  return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
 };
 
 export const connectorsForWorker = async (context, user) => {
@@ -86,4 +99,3 @@ export const connectorsForNotification = async (context, user, scope, onlyAlive 
   const notificationConnectors = await connectorsFor(context, user, CONNECTOR_INTERNAL_NOTIFICATION, scope, onlyAlive, onlyAuto, onlyContextual);
   return [...notificationConnectors, ...Object.values(BUILTIN_NOTIFIERS_CONNECTORS)];
 };
-// endregion

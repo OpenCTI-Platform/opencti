@@ -27,6 +27,7 @@ scalar ConstraintNumber
 scalar Upload
 scalar StixId
 scalar StixRef
+scalar JSON
 enum State {
   wait
   progress
@@ -55,6 +56,7 @@ enum Capabilities {
   SETTINGS_SETMARKINGS
   SETTINGS_SETLABELS
   TAXIIAPI_SETCOLLECTIONS
+  TAXIIAPI_SETCSVMAPPERS
 }
 enum MemberType {
   User
@@ -1505,6 +1507,15 @@ type ConnectorConfig {
   push_routing: String!
   push_exchange: String!
 }
+
+type ConnectorMetadata {
+  configuration: String!
+}
+type ConnectorConfiguration {
+  id: ID!
+  name: String!
+  configuration: String!
+}
 type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -1527,6 +1538,9 @@ type Connector implements BasicObject & InternalObject {
   created_at: DateTime
   config: ConnectorConfig
   works(status: String): [Work]
+  ## Built in Connector
+  built_in: Boolean
+  configurations: [ConnectorConfiguration!]
 }
 
 ############## Rules
@@ -11261,6 +11275,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Creator
   | Group
   | Workspace
+  | CsvMapper
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -11339,6 +11354,7 @@ union StixObjectOrStixRelationship =
   | Task
   | EntitySetting
   | Workspace
+  | CsvMapper
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -12040,6 +12056,7 @@ type Query {
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE])
+  schemaAttributes(entityType: String!) : [TypeAttribute!]! @auth(for: [KNOWLEDGE])
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS])
   retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS])
   taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
@@ -12900,6 +12917,7 @@ type Query {
     dynamicTo: [StixCoreObjectsFiltering]
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   schemaRelationsTypesMapping: [StixRelationshipSchema!]! @auth(for: [KNOWLEDGE])
+  schemaRelationsRefTypesMapping: [StixRelationshipSchema!]! @auth(for: [KNOWLEDGE])
 
   ######## STIX CORE RELATIONSHIPS
 
@@ -13613,7 +13631,7 @@ type Mutation {
   deleteImport(fileName: String): ID @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String, bypassValidation: Boolean): File
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean): File
   @auth(for: [KNOWLEDGE_KNASKIMPORT])
 
   ### SYNC

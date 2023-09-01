@@ -366,6 +366,7 @@ class ConnectorsStatusComponent extends Component {
                         aria-haspopup="true"
                         color="primary"
                         size="large"
+                        disabled={connector.built_in}
                       >
                         <PlaylistRemoveOutlined />
                       </IconButton>
@@ -426,6 +427,7 @@ const ConnectorsStatus = createRefetchContainer(
             push
             push_exchange
           }
+          built_in
         }
         rabbitMQMetrics {
           queues {

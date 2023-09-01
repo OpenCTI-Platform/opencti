@@ -35,7 +35,7 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 
 const stixCyberObservableAttributes: Array<AttributeDefinition> = [
-  { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+  { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true, label: 'Description' },
   { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CYBER_OBSERVABLE, stixCyberObservableAttributes);

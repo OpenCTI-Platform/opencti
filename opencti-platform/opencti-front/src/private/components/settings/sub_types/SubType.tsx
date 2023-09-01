@@ -34,7 +34,7 @@ const useStyles = makeStyles(() => ({
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
     entitySetting(id: $id) {
-      id
+      ...EntitySettingSettings_entitySetting
     }
   }
 `;

@@ -106,6 +106,10 @@
     "works_day_range": 7,
     "interval": 60000
   },
+  "import_csv_built_in_connector": {
+    "enabled": true,
+    "interval": 10000
+  },
   "task_scheduler": {
     "enabled": true,
     "lock_key": "task_manager_lock",

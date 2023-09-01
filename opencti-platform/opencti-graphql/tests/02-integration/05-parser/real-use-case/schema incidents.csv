@@ -1,0 +1,935 @@
+ID,Date,Week,Country 1,Country 2,Subject,Category,Sector 1,Sector 2,Confidence,Severity,Threat actor /Malware Family,Victim,Threat type,Description,Analysis,Source 1,Source 2,Motivation,Relevance
+2453,24/07/2023,30,DE,,Scharco Elektronik victim of Play ransomware,INCIDENT,MANUFACTURING,RETAIL,B1,MEDIUM,Play,Scharco Elektronik,RANSOMWARE," - Reported on July 24, Play ransomware claimed Scharco Elektronik (https://www.scharco.eu) as its victim.
+
+ - Scharco Elektronik is known as developer and manufacturer of customised control systems and is particularly successful in the retail sector, with a focus on checkout systems. We work together with well-known checkout counter builders and shop fitters throughout Europe.",59496,https://twitter.com/TMRansomMonitor/status/1683573087244017666,,FINANCIAL GAIN,MEDIUM
+2454,24/07/2023,30,DE,,Unauthorized RDP access to Bayer reported to be on sale,INCIDENT,HEALTH,DIGITAL INFRASTRUCTURE,B1,MEDIUM,Unknown,Bayer,INTRUSION," - Reported on July 24, a user in a hackers forum claimed to be selling for 8.000 dollars, unauthorized RDP access to Bayer.
+
+ - Bayer AG is a German multinational pharmaceutical and biotechnology company and one of the largest pharmaceutical companies in the world.",,https://twitter.com/DailyDarkWeb/status/1683552634832027651,,FINANCIAL GAIN,MEDIUM
+2455,25/07/2023,30,ES,,"NoName057 claimed attacks against the websites of the royal family of Spain, the Spanish Constitutional Court, El Mundo, Banco Cooperativo Español and Movelia on July 25",INCIDENT,PUBLIC ADMIN,MEDIA/ENTERTAINMENT,B1,MEDIUM,NoName057,"Website of royal family of Spain
+Spanish Constitutional Court
+El Mundo
+Banco Cooperativo Español
+Movelia",DOS/DDOS/RDOS," - Reported on July 25, pro-Russian hacking group NoName057 claimed targeting on its Telegram channel, the following Spanish websites:
+
+the official website of the royal family of Spain (https://www.casareal.es/ES/Paginas/home.aspx), reported initially offline on July 25, 07:40 UTC. Checked again on 11:23 UTC, the website was found to be back online.
+the site administrators of the Spanish Constitutional Court (https://www.tribunalconstitucional.es/), reported initially offline on July 25, 07:46 UTC. The website was checked again on 11:25 UTC and displayed a loading error message.
+the authorization service on the portal of one of the most popular newspapers in Spain - ""El Mundo"" (https://seguro.elmundo.es/registro/v3/?view=login). The website was initially reported offline on July 25, 07:29 UTC and it remained offline at least until 11:27 UTC of the same day.
+the website of the financial cooperative of Spanish banks Banco Cooperativo Español (https://www.bancocooperativo.es/en/), initially reported offline on July 25, 08:00 UTC. The websites was still unreachable at 13:09 UTC.
+the Spanish online service for buying tickets for buses -Movelia (https://www.movelia.es/es), initially reported offline on July 25, 08:23 UTC. The website when visited on 13:10 UTC, displayed a message in Spanish, informing that the webpage is not available.",,"https://t.me/noname05716/4284
+https://t.me/noname05716/4285","https://t.me/noname05716/4287?single
+https://t.me/noname05716/4289",DISRUPTION,LOW
+2456,24/07/2023,30,ES,,Play ransomware added Grupo MH in its victims list,INCIDENT,ENERGY,SERVICES,B1,MEDIUM,Play,Grupo MH,RANSOMWARE," - Reported on July 25, Play ransomware group added Grupo MH in its victims list.
+
+ - Grupo MH is a group of companies dedicated to maintenance, installations, engineering and energy management, in addition to offering Official Technical Services from the main manufacturers in climate, heating, renewables and other areas.",59496,https://twitter.com/TMRansomMonitor/status/1683551243463999490,,FINANCIAL GAIN,LOW
+2457,25/07/2023,30,EU,GLOBAL,TETRA Radio Hacking Risks Global Infrastructure,VULNERABILITY,TRANSPORT,ENERGY,B1,HIGH,Unknown,"TETRA, Terrestrial Trunked Radio",WEB THREATS," - Reported on July 25, Dutch cybersecurity researchers have discovered significant vulnerabilities in the widely used TETRA radio technology, raising concerns about the safety of critical infrastructure worldwide – These vulnerabilities have been dubbed TETRA:BURST by researchers.
+
+ - TETRA, or Terrestrial Trunked Radio, employed to control essential systems like power grids, gas pipelines, and trains, has been found to possess a deliberate backdoor in its encryption algorithm, allowing for relatively easy hacking.
+
+The team at cybersecurity firm Midnight Blue made this alarming discovery and alerted relevant authorities. Despite efforts to raise awareness, many critical infrastructure entities remain unresponsive to the risks posed by these vulnerabilities.
+
+ - Two of the flaws are characterized as critical. The first (CVE-2022-24401) is an oracle decryption attack that can be used to reveal text, voice, or data communication. It is made possible by the Air Interface Encryption (AIE) keystream generator's reliance on network time, which is broadcast publicly and without encryption.
+
+ - The second (CVE-2022-24402) is an engineering weakness – the TEA1 [PDF] encryption algorithm, according to the researchers, ""has a backdoor that reduces the original 80-bit key to a key size which is trivially brute-forceable on consumer hardware in minutes.""
+
+ - Researchers from Midnight Blue identified a backdoor in the encryption algorithm of TETRA radios, which are manufactured by companies such as Motorola, Damm, and Hytera. The intentional vulnerability, easy to exploit, allows attackers to compromise the network and execute malicious commands. These attacks can disrupt critical infrastructure operations and even enable unauthorized access to emergency services, posing a grave threat to public safety.
+
+ - TETRA technology is widely used across the world, controlling vital infrastructure in more than 120 countries. For instance, in the Netherlands, the port of Rotterdam, public transport companies, most airports, and the C2000 communication system utilized by the police, fire brigade, ambulance services, and parts of the Ministry of Defence rely on TETRA.
+
+ - Additionally, many critical infrastructure authorities in Germany, France, Spain, and various European countries, as well as several equivalent entities in the USA, depend on this radio technology.
+
+ - The most concerning aspect of these vulnerabilities is how accessible they are to potential hackers. According to Midnight Blue, even individuals without extensive hacking expertise can infiltrate the TETRA network in under a minute using simple hardware. Once inside, attackers can execute malicious commands on critical infrastructure systems without detection, leading to severe consequences.",59502,https://www.hackread.com/power-grids-airports-tetra-radio-hacking-risks/,"https://www.rtlnieuws.nl/nieuws/nederland/artikel/5397898/tetra-lek-kritieke-infrastructuur-c2000-nederlanderse-onderzoekers
+https://www.theregister.com/2023/07/24/tetra_hardware_backdoor_opened_by/",UNKNOWN,HIGH
+2458,25/07/2023,30,EU,MD,Cyber-attack on the government's communications system was detected in the vicinity of the European Political Community summit in Bulboaca,INCIDENT,PUBLIC ADMIN,,B1,MEDIUM,APT29,"Moldovan Ministry of Foreign Affairs
+Information regarding European partners",DATA," - Reported on July 25, ten days before the European Community summit in Chisinau, the employees of the Information Technology and Cyber ??Security Service reported about the breach of the government communications system.
+
+ - The main target would have been the Ministry of Foreign Affairs. Documents, conversations and information related to Chisinau's plans for the summit were allegedly stolen from the Ministry's accounts. The Russians would have learned about the agreements, which the authorities were going to reach with the European partners. An analysis of how the network was fraudulently entered and the data stolen, according sources, turned out to be similar to the method used by a cybercrime group called APT29, which multiple journalistic investigations showed to be coordinated and financed by Russia's Foreign Intelligence Service, SVR. ",,https://radiochisinau.md/-un-atac-cibernetic-masiv-asupra-sistemului-guvernamental-de-comunicatii-a-fost-detectat-in-preajma-summitului-comunitatii-politice-europene-de-la-bulboaca-revista-presei---183639.html,,ESPIONAGE,HIGH
+2459,24/07/2023,30,FR,,The city of Angoulême and its agglomeration victims of a cyberattack ,INCIDENT,PUBLIC ADMIN,,A2,MEDIUM,Unknown,City of Angoulême and its agglomeration,PHISHING," - Reported on July 24, GrandAngoulême and the city of Angoulême suffered a cyber-attack which led to a total shutdown of the network and telephony . A diagnostic phase is in progress, during which the websites were still unavailable.
+
+ - Sources suggest that the attack was initiated from a simple email that allowed hackers to break into the computer servers of GrandAngoulême. However, no one would have clicked on the link introduced in the e-mail. The servers being connected to those of the city of Angoulême, they too were also affected.
+
+ - In the meantime, the urban community specifies that all the services and facilities of GrandAngoulême remain physically open at the usual times, such as the Nautilis aquatic complex, for example. The Alpha media library remains open but only on-site consultation is possible. The town planning services remain open to the public, but the examination of files is suspended. GrandAngoulême Habitat physically receives users but cannot respond to requests by telephone.
+
+ - For the city of Angoulême, all services remain open, but only physically. Some cultural or childhood spaces no longer accept the blue card, temporarily.
+
+ - The two communities are still trying to counter the effects of this cyber-attack. A specialist firm was called for help. A complaint was also filed at the Angoulême police station. ",59498,"https://www.francebleu.fr/infos/societe/les-sites-web-de-la-ville-d-angouleme-et-de-son-agglomeration-victimes-d-une-cyberattaque-8847598
+https://twitter.com/villeangouleme/status/1683499904323186689",https://m.facebook.com/photo.php?fbid=676083821227083&id=100064764126369&set=a.560050106163789&source=57&refid=52&__tn__=EH-R,UNKNOWN,LOW
+2460,25/07/2023,30,IT,,Double AgentTesla campaign via false invoice from a courier reported in Italy ,CAMPAIGN,POSTAL/COURIER ,TARGETED INDIVIDUAL,B1,MEDIUM,Unknown,Italian general public,PHISHING," - Reported on July 25, a double AgentTesla campaign via false invoice from a courier has been observed to be circulating in Italy. The malicious email contains 2 compressed attachments of the email “Re: Sea Arrival notice BL: AWB 5331810761”, containing the same exe file that includeds the malware, AgentTesla. Stolen data is exfiltrated with Telegram API.
+
+ - The malicious emal is reportedly sent by DHL.
+
+ - AgentTesla, through the keylogger function, can capture everything the user types. Also, it can steal emails and browser credentials and take screenshots. Finally, it has the ability to remotely issue commands to the infected PC, such as downloading additional payloads or updating existing ones. ",,https://www.difesaesicurezza.com/cyber/cybercrime-doppia-campagna-agenttesla-via-falsa-fattura-di-un-corriere/,,FINANCIAL GAIN,LOW
+2461,24/07/2023,30,IT,,Cybercat claims to have hacked the Climair Firenze website,INCIDENT,SERVICES,ENERGY,B1,MEDIUM,Cybercat,Climair Firenze,DATA," - Reported on July 24, the cybercriminal group Cybercat claimed to have hacked the Climair Firenze website and put access to their FTP server and all data up for sale for $200.
+
+ - The group also provides a screenshot on their Telegram channel to show that the company's site is compromised and returns the message ""404 hacked by Cybercat"" (at the time of publishing the post it is actually still like this).
+
+ - Cybercat states that if no one buys access to the server, the files present will be deleted.
+
+ - Climair Firenze ptovides technical consultancy and installation services for both residential and industrial heating-air conditioning systems in Italy. ",,https://twitter.com/SofiaSZM/status/1683432336413663234,,FINANCIAL GAIN,LOW
+2462,24/07/2023,30,LT,,Cyber-attacks againsts cybersecurity-related Lithuanian Facebook accounts ,INCIDENT,TARGETED INDIVIDUAL,,B1,MEDIUM,Unknown,"Military columnist Aurim Navis
+Cybersecurity related Lithuanian individuals",INTRUSION," - Reported on July 24, Lithuania is currently experiencing a reportedly massive cyber-attack, during which attempts are made to hack into personal Facebook accounts.
+
+ - The Facebook account of military columnist Aurim Navis was hijacked on July 23. On July 24, more specialists who speak publicly about cyber security report such attempts, and users receive a link to change their password en masse.
+
+ - Experts at Telia's Digital Advancement Center warn that all users should be more careful at this time and protect their data from potential pests. ",,https://www.svyturiolaikrastis.lt/2023/07/24/ispeja-apie-masines-atakas-siekiama-nulauzti-facebook-paskyras/,,UNKNOWN,LOW
+2463,24/07/2023,30,LV,,CERT LV warns about fraudsters impersonating Riga Stradins University,WARNING,EDUCATION/RESEARCH,TARGETED INDIVIDUAL,A1,MEDIUM,Unknown,Latvian general public,PHISHING," - Reported on July 24, CERT LV warned about fraudsters impersonating the Riga Stradins University by distributing phishing emails to spoof email usernames and passwords.
+
+ - CERT LV advised the public to always check the sender's email address, and before entering any data, to check the website address to see if the website is what it claims to be. ",,https://twitter.com/certlv/status/1683394939982413824,,UNKNOWN,LOW
+2464,24/07/2023,30,LV,,The State Revenue Service (SRS) calls on citizens to beware of fraudsters' text messages and e-mails sent on its behalf,WARNING,BANKING/FINANCE,TARGETED INDIVIDUAL,A1,MEDIUM,Unknown,Latvian general public,PHISHING," - Reproted on July 24, the State Revenue Service (SRS) calls on citizens to beware of fraudsters' text messages and e-mails written as if on behalf of the SRS. The SRS reminds that all information sent by the SRS can be viewed in the Electronic Declaration System (EDS). SRS never sends text messages to residents. On the other hand, in the e-mail, citizens only receive notifications about the information available in the EDS, in addition, this notification contains a link to the eds.vid.gov.lv. EDS
+
+ - Recently, a number of residents who have received e-mails or text messages from fraudsters have contacted the SRS. Fraudsters impersonate the SRS and call for certain actions related to tax refunds. The goal of fraudsters is most likely to obtain people's bank account access data, so the SRS calls on citizens to be especially careful. ",,https://www.vid.gov.lv/lv/jaunums/vid-aicina-iedzivotajus-uzmanities-no-krapniekiem-interneta?utm_source=https%3A%2F%2Ft.co%2F,,FINANCIAL GAIN,LOW
+2465,24/07/2023,30,PL,,NoName057 targeted Polish websites on July 24,INCIDENT,TRANSPORT,PUBLIC ADMIN,A3,MEDIUM,NoName057,"Airport Zielona Góra
+PKP
+Rada Doskona?o?ci Naukowej - Council of Scientific Excellence
+Gdansk Lech Walesa Airport
+Polityka",DOS/DDOS/RDOS," - Reported on July 24, NoName057 claimed on its Telegram channel, targeting the following Polish websites:
+
+the website of the airport Zielona Góra (https://airport.lubuskie.pl), reported initially offline on July 24, 11:19 UTC. The website was found to be still offline on July 25.
+the railway ticket purchase service of the Polish carrier PKP (https://www.skm.pkp.pl), initially reported offline on July 24, 11:20 UTC. The website returned a connection timeout after loading for some time.
+the website of Rada Doskona?o?ci Naukowej - Council of Scientific Excellence (https://www.rdn.gov.pl/), reported initially offline on July 24, 11:22 UTC. The website remained offline when checked on July 25.
+the website of the Gdansk Lech Walesa Airport (https://www.airport.gdansk.pl), reported initially offline on July 24, 07:51 UTC, it remained unreachable on July 25.
+the portal of the Polish weekly Polityka (https://www.polityka.pl), intially reported offline on July 24, 07:50 UTC. As of July 25, the website was checked and found to be back online to normal operation. Polityka itself claimed that this time, the attack was several times stronger than the previous ons, which took place on May 18.",,"https://t.me/noname05716/4272
+https://t.me/noname05716/4273","https://t.me/noname05716/4274
+https://t.me/noname05716/4278
+https://t.me/noname05716/4277
+https://www.polityka.pl/tygodnikpolityka/kraj/2221066,1,cyberatak-na-serwis-politykapl-dziekujemy-za-zrozumienie-i-wyrazy-wsparcia.read",DISRUPTION,LOW
+2466,24/07/2023,30,NL,,Play ransomware added Primoteq in its victims list,INCIDENT,MANUFACTURING,SERVICES,B1,MEDIUM,Play,Primoteq,RANSOMWARE," - Reported on July 24, Play ransomware group claimed Primoteq among its latest victims, posted on its darkweb portal.
+
+ - Primoteq, based in Hengelo, the Netherlands is a service and maintenance company for metalworking machines and lifting and handling equipment.",,https://twitter.com/TMRansomMonitor/status/1683573092671520773,,FINANCIAL GAIN,LOW
+2467,24/07/2023,30,NL,,Akira ransomware claimed SBM Offshore at its latest victim,INCIDENT,ENERGY,,B1,MEDIUM,Akira,SBM Offshore,RANSOMWARE," - Reported on July 24, Akira ransomware group claimed to have targeted SBM Offshore.
+
+ - SBM Offshore N.V. is a Dutch-based global group of companies selling systems and services to the offshore oil and gas industry.",,https://twitter.com/TMRansomMonitor/status/1683551134730813442,,FINANCIAL GAIN,MEDIUM
+2468,25/07/2023,30,GLOBAL,,Atlassian Security Updates Address Critical Flaws in Confluence and Bamboo Products,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Atlassian Confluence Server, Data Center, and Bamboo Data Center Users",INTRUSION," - Reported on July 25, Atlassian has recently released updates to address three security vulnerabilities affecting its Confluence Server, Data Center, and Bamboo Data Center products.
+
+- These flaws, identified as CVE-2023-22505, CVE-2023-22508, and CVE-2023-22506, could lead to remote code execution on vulnerable systems if successfully exploited. CVE-2023-22505 and CVE-2023-22508 allow authenticated attackers to execute arbitrary code with high impact on confidentiality, integrity, and availability, without requiring user interaction.
+
+- On the other hand, CVE-2023-22506 permits an authenticated attacker to modify system call actions and execute arbitrary code with similar high impacts. Atlassian advises users to promptly apply the provided patches to protect their systems, especially given the growing trend of security vulnerabilities in their servers becoming targets for attacks in recent times.",,https://thehackernews.com/2023/07/atlassian-releases-patches-for-critical.html,,FINANCIAL GAIN,HIGH
+2469,24/07/2023,30,GLOBAL,,Zero-Day Authentication Bypass Vulnerability Exploited in Ivanti Endpoint Manager Mobile,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+(Users of Ivanti Endpoint Manager Mobile (EPMM) Software (formerly MobileIron Core))",ZERO DAY," - On July 24, US-based IT software company Ivanti has issued patches to address an actively exploited zero-day authentication bypass vulnerability affecting its Endpoint Manager Mobile (EPMM) mobile device management software (formerly MobileIron Core).
+
+- The vulnerability, identified as CVE-2023-35078, allows unauthorized remote actors to access restricted functionality and users' personally identifiable information without proper authentication.
+
+- The security patches are available for supported versions, including EPMM 11.8.1.1, 11.9.1.1, and 11.10.0.2, as well as for unsupported and end-of-life software versions lower than 11.8.1.0. Ivanti has released a security advisory detailing the flaw, but the information is accessible only to users with Ivanti customer accounts.
+
+- While the company hasn't publicly confirmed active exploitation, a private bulletin acknowledged attacks on a limited number of customers. Cybersecurity experts urge network admins to apply the patches promptly due to the vulnerability's ease of exploitation.
+
+- Over 2,900 MobileIron user portals, including some linked to US local and state government agencies, have been found exposed online, further emphasizing the urgency of patching.",59497,https://www.bleepingcomputer.com/news/security/ivanti-patches-mobileiron-zero-day-bug-exploited-in-attacks/,,FINANCIAL GAIN,HIGH
+2470,24/07/2023,30,GLOBAL,,"""Zenbleed"" Vulnerability in AMD Zen2 CPUs Exposes Sensitive Data",VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+( Users of AMD Zen2 CPUs, including Ryzen 3000, Ryzen 4000U/H, Ryzen 5000U, Ryzen 7020, ThreadRipper 3000, and Epyc server processors)",INTRUSION," - On July 24, Google's security researcher Tavis Ormandy has discovered a new vulnerability, named CVE-2023-20593, affecting AMD Zen2 CPUs. The flaw arises from improper handling of the 'vzeroupper' instruction during speculative execution, a technique used in modern processors for performance enhancement.
+
+- By exploiting this vulnerability, a malicious actor could steal sensitive data, like passwords and encryption keys, from each CPU core at a rate of 30KB/sec. The flaw impacts all AMD CPUs built on the Zen 2 architecture, including Ryzen 3000, Ryzen 4000U/H, Ryzen 5000U, Ryzen 7020, ThreadRipper 3000, and Epyc server processors.
+
+- Ormandy reported the issue to AMD, which has released microcode updates to address the problem. Users are advised to apply the updates promptly, but an alternate mitigation method is available by setting the ""chicken bit"" to DE_CFG[9], though it may cause a CPU performance drop. While the practical impact on regular users is relatively low due to requiring local access and specialized knowledge, it is essential to keep systems updated with the latest security patches and BIOS upgrades to prevent exploitation.",,https://www.bleepingcomputer.com/news/security/zenbleed-attack-leaks-sensitive-data-from-amd-zen2-processors/,,UNKNOWN,HIGH
+2471,24/07/2023,30,GLOBAL,,Apple Releases Security Updates to Address Zero-Day Exploits,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+(Users of Apple Devices Running Vulnerable Software Versions)",ZERO DAY," - On July 24, Apple has released security updates to address zero-day vulnerabilities that have been exploited in attacks targeting iPhones, Macs, and iPads. The vulnerabilities include a WebKit flaw (CVE-2023-37450) and a Kernel flaw (CVE-2023-38606).
+
+- The WebKit flaw was part of a zero-click exploit chain used to deploy Triangulation spyware on iPhones via iMessage exploits. The company also backported security patches for a zero-day (CVE-2023-32409) addressed in May.
+
+- The list of impacted devices is extensive, covering various iPhone and iPad models, as well as Macs running different macOS versions. In total, Apple has patched 11 zero-day flaws exploited by attackers this year across iOS, macOS, and iPadOS.",,https://www.bleepingcomputer.com/news/apple/apple-fixes-new-zero-day-used-in-attacks-against-iphones-macs/,,UNKNOWN,HIGH
+2472,24/07/2023,30,GLOBAL,,Critical Zero-Day Vulnerabilities in Atera Remote Monitoring Software Allow Privilege Escalation Attacks,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+(Users of Atera Remote Monitoring and Management Software)",ZERO DAY," - On July 24, zero-day vulnerabilities in Windows Installers for the Atera remote monitoring and management software have been discovered by Mandiant, posing a potential risk for privilege escalation attacks.
+
+- The flaws, tracked as CVE-2023-26077 and CVE-2023-26078, were addressed by Atera in versions 1.8.3.7 and 1.8.4.9 released on April 17, 2023, and June 26, 2023, respectively.
+
+- These vulnerabilities could allow attackers to execute arbitrary code with elevated privileges through DLL hijacking and executing system commands that trigger the Windows Console Host (conhost.exe) as a child process. Successful exploitation of these weaknesses may enable attackers to gain access to a Command Prompt as the NT AUTHORITY\SYSTEM user, leading to local privilege escalation attacks. Security researcher Andrew Oliveau highlights the importance of thoroughly reviewing Custom Actions to prevent attackers from exploiting NT AUTHORITY\SYSTEM operations triggered by MSI repairs.
+
+- This discovery coincides with Kaspersky shedding light on another severe privilege escalation flaw in Windows (CVE-2023-23397), which has been actively exploited in the wild, targeting government and critical infrastructure entities in multiple countries.",,https://thehackernews.com/2023/07/critical-zero-days-in-atera-windows.html,,UNKNOWN,HIGH
+2473,24/07/2023,30,GLOBAL,,Critical OpenSSH Vulnerability Allows Remote Code Execution,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+(Users and Organizations using OpenSSH before version 9.3p2)",INTRUSION," - On July 24, a now-patched vulnerability in OpenSSH has been discovered that could potentially allow remote attackers to execute arbitrary commands on compromised hosts under specific conditions.
+
+- The flaw, tracked as CVE-2023-38408, affects all versions of OpenSSH before 9.3p2. To exploit the vulnerability, certain libraries must be present on the victim system, and the SSH authentication agent must be forwarded to an attacker-controlled system. The vulnerability allows the attacker, with access to the remote server where the SSH agent is forwarded to, to load and unload shared libraries on the victim's workstation.
+
+- Qualys has successfully devised a proof-of-concept (PoC) against default installations of Ubuntu Desktop 22.04 and 21.10, although other Linux distributions may also be vulnerable. Users of OpenSSH are strongly advised to update to the latest version to protect against potential cyber threats.",,https://thehackernews.com/2023/07/new-openssh-vulnerability-exposes-linux.html,,UNKNOWN,HIGH
+2474,24/07/2023,30,GLOBAL,,Lazarus Hackers Target Windows IIS Servers for Malware Distribution,INCIDENT,BANKING/FINANCE,PUBLIC ADMIN,B1,MEDIUM,North Korean State-Sponsored Lazarus Hacking Group,"Unknown
+(Users and Visitors of Compromised Websites and Services Hosted on Breached IIS Servers)",MALWARE," - Reported on July 24, the North Korean state-sponsored hacking group, Lazarus, is targeting Windows Internet Information Service (IIS) web servers to distribute malware.
+
+- Lazarus leverages poorly protected IIS services for malware distribution, taking advantage of the ease of infecting visitors and users of websites and services hosted on breached IIS servers. In recent attacks observed in South Korea, Lazarus compromised legitimate websites to carry out 'Watering Hole' attacks on visitors using a vulnerable version of the INISAFE CrossWeb EX V6 software, commonly used for electronic financial transactions and internet banking.
+
+- The group exploits known vulnerabilities in INISAFE to deliver malware payloads from compromised IIS web servers. Lazarus uses 'JuicyPotato' privilege escalation malware to gain higher-level access to the compromised system and execute additional malware loaders for AV evasion.
+
+- To mitigate the risk, ASEC recommends updating to the latest version of INISAFE CrossWeb EX V6. Microsoft application servers, including IIS and Exchange, are increasingly targeted by hackers for malware distribution, highlighting the need for robust security measures and regular updates to prevent such attacks.",,https://asec.ahnlab.com/en/55369/,https://www.bleepingcomputer.com/news/security/lazarus-hackers-hijack-microsoft-iis-servers-to-spread-malware/,UNKNOWN,MEDIUM
+2475,25/07/2023,30,GLOBAL,,Python Script in Hackers Forum Targets Crypto Wallets and Browsers,WARNING,DIGITAL INFRASTRUCTURE,,B3,MEDIUM,Unknown,"Unknown
+(Users of Cryptocurrency Wallets and Popular Web Browsers)",MINER/CRYPTO," - On July 25, in a hackers forum, a user has claimed to share a Python script designed to steal from cryptocurrency wallets and browsers.
+
+- The script specifically targets popular web browsers such as Firefox, Chrome, Brave, Opera, Yandex, and Edge, as well as various cryptocurrency wallets and browser extensions.
+
+- This malicious script poses a significant security risk to users who store cryptocurrencies or use these browsers and extensions, potentially leading to the unauthorized theft of their digital assets and sensitive information.
+
+- Users are strongly advised to remain vigilant, keep their software and extensions up-to-date, and take additional security measures to protect their cryptocurrency holdings and personal data.",,https://twitter.com/FalconFeedsio/status/1683748545122168834,,UNKNOWN,MEDIUM
+2476,24/07/2023,30,GLOBAL,,A New Open-Source Rootkit Threat Discovered on GitHub,NEW TTPS,DIGITAL INFRASTRUCTURE,,B1,MEDIUM,"Unknown
+(Reptile Rootkit)","Unknown
+(Users of Linux-based systems, particularly those exposed to Reptile's attack vectors)",MALWARE," - Reported on July 24, a new open-source rootkit malware called Reptile has been discovered on GitHub by cybersecurity researchers at ASEC. This kernel module rootkit has the ability to conceal itself, other malicious codes, files, directories, and network traffic.
+
+- What sets Reptile apart is its reverse shell, allowing easy system control, and its use of Port Knocking to connect to a Command and Control (C&C) server. Reptile aids in malware installation and equips attackers with Listener, a command-line tool for executing commands on infected systems.
+
+- The rootkit's reverse shell connects to the C&C server using the Port Knocking technique, making it harder to detect. Reptile shares similarities with other backdoor malware, suggesting it may be influenced by existing rootkits and backdoors. European users should be cautious and implement strong security measures to protect against this new threat.",,https://cybersecuritynews.com/reptile-malware-linux-systems-using-port-knocking/,,UNKNOWN,MEDIUM
+2477,24/07/2023,30,ID,,Data Breach Exposes BCA Bank Credit Card Users' Information,INCIDENT,BANKING/FINANCE,,B3,MEDIUM,Unknown,BCA Bank and its Credit Card Users,DATA," - On July 24, a user on a hackers forum is advertising the sale of a database containing the personal information of BCA Bank credit card users. The sample provided includes sensitive details such as addresses, emails, phone numbers, and more.
+
+- This poses a serious risk to the affected individuals as their personal information could be misused for fraudulent activities or identity theft. Authorities and BCA Bank must take immediate action to investigate the breach, secure the data, and inform and protect their customers from potential harm and financial loss.",,https://twitter.com/FalconFeedsio/status/1683431233374547968,,FINANCIAL GAIN,LOW
+2478,25/07/2023,30,KE,,Cyberattack on Kenya's Health Sector,INCIDENT,HEALTH,,B3,HIGH,Anonymous Sudan,Kenya's Health Sector,DOS/DDOS/RDOS," - On July 25, the health sector in Kenya is facing a cyberattack from Anonymous Sudan, as part of an ongoing Distributed Denial of Service (DDoS) attack that began a few days ago.
+
+- The notorious hacking group's actions have targeted Kenya, causing disruptions and potential vulnerabilities in the country's health infrastructure. Kenyan authorities and cybersecurity teams are working to mitigate the impact of the attacks and secure the health sector against further threats.",,https://twitter.com/FalconFeedsio/status/1683726282138296320,,UNKNOWN,LOW
+2479,25/07/2023,30,NO,,Zero-Day Cyberattack Hits Norwegian Ministries: Ivanti EPMM Vulnerability Exploited,INCIDENT,PUBLIC ADMIN,,B1,HIGH,Unknown,Software platform used by 12 ministries in Norway,ZERO DAY," - Reported on July 25, the Norwegian National Security Authority (NSM) confirmed a cyberattack on a software platform used by 12 ministries in Norway, facilitated by a zero-day vulnerability in Ivanti's Endpoint Manager Mobile (EPMM) solution.
+
+- The attack did not affect high-profile government offices but may have resulted in a data breach, as the Norwegian Data Protection Authority (DPA) was notified. The vulnerability, tracked as CVE-2023-35078, is an authentication bypass flaw impacting Ivanti's EPMM, allowing remote attackers to access specific API paths without authentication, potentially accessing sensitive information like personally identifiable information (PII).
+
+- The National Cyber Security Center (NCSC) advised system owners to install security updates immediately. Shodan's scans revealed thousands of exposed MobileIron user portals worldwide, emphasizing the importance of prompt patching to protect against potential attacks.
+
+- European organizations and governments should also be vigilant about implementing security updates to safeguard their systems from potential cyber threats.",59491,https://www.bleepingcomputer.com/news/security/norway-says-ivanti-zero-day-was-used-to-hack-govt-it-systems/,,ESPIONAGE,HIGH
+2480,24/07/2023,30,UA,,Increased SmokeLoader Malware Attacks Targeting Ukrainian Entities,WARNING,ALL,DIGITAL INFRASTRUCTURE,A1,HIGH,"UAC-0006 Group
+(SmokeLoader malware)","Unknown
+(Ukrainian Entities and Businesses)",MALWARE," - Reported on July 24, the Government Computer Emergency Response Team of Ukraine (CERT-UA) has reported on 21st and 24th July 2023 about attacks conducted by the UAC-0006 group using SmokeLoader malware.
+
+- The attackers use a ZIP polyglot with different content accessible to the user depending on the archiver program used to open the archive. In one case, the ZIP archive contains JavaScript files, while in another, it contains an executable file and other malicious components.
+
+- The botnet used by the group is sizable, suggesting the use of compromised authentication data for mass email distribution. The renewed activity of the group is expected to lead to an increase in fraud cases involving remote banking systems. CERT-UA advises enterprises and accountants to secure automated workplaces, limit the execution of certain utilities, and filter outgoing information flows to protect against these attacks.",,https://cert.gov.ua/article/5269451,,UNKNOWN,LOW
+2481,24/07/2023,30,US,GLOBAL,McDonald's Hit by Snatch Ransomware Attack,INCIDENT,FOOD,,B3,MEDIUM,Snatch Ransomware Group,McDonald's (@McDonalds),RANSOMWARE," - On July 24, the Snatch ransomware group has reportedly hacked into the systems of the American fast-food franchise, McDonald's (@McDonalds).
+
+- The attack has raised concerns about the potential impact on the company's operations and data security.
+
+- The group is known for using ransomware to encrypt victim's files and demanding a ransom for their release, posing a significant threat to businesses and their sensitive information.
+
+- As the situation unfolds, McDonald's will likely be working to contain the breach and mitigate any damage caused by the cyberattack.
+
+- McDonald's is a multinational fast-food chain with a significant presence in Europe, making the ransomware attack relevant to European operations and customers. European branches of McDonald's may also be impacted by the cybersecurity breach, potentially leading to operational disruptions and data security concerns.",,https://twitter.com/_bettercyberES_/status/1683268263147347969,,FINANCIAL GAIN,MEDIUM
+2482,24/07/2023,30,US,,Collins Aerospace Targeted by BianLian Ransomware Group,INCIDENT,DEFENSE,TRANSPORT,B3,MEDIUM,BianLian Ransomware Group,Collins Aerospace (a unit of Raytheon Technologies),RANSOMWARE," - On July 24, the BianLian ransomware group has recently targeted Collins Aerospace, a unit of Raytheon Technologies known for its technology and solutions in the aerospace and defense industry.
+
+- The threat actors have threatened to publish the company's data on July 28, 2023. As a significant player in the global aerospace and defense sector, the attack on Collins Aerospace raises concerns about data security and potential impacts on its operations and reputation.
+
+- The aerospace and defense industry is globally interconnected, and Collins Aerospace being part of Raytheon Technologies, a multinational company with operations in Europe, makes the attack relevant to the region. The incident highlights the ongoing cybersecurity threats faced by European aerospace and defense companies, prompting increased vigilance and security measures across the sector.",,https://twitter.com/FalconFeedsio/status/1683459395881955330,,FINANCIAL GAIN,MEDIUM
+2483,26/07/2023,30,ES,,"NoName targeted the website of the Spanish branch of the Dutch bank ""Triodos Bank"", the website of the Spanish branch of the Italian conglomerate of banks Banco Mediolanum and the authorization service on the portal of the Spanish newspaper ""Expansión"" on July 26",INCIDENT,BANKING/FINANCE,,B3,MEDIUM,NoName,"The website of the Spanish branch of the Dutch bank ""Triodos Bank""
+The website of the Spanish branch of the Italian conglomerate of banks Banco Mediolanum
+The authorization service on the portal of the Spanish newspaper ""Expansión""",DOS/DDOS/RDOS," - On July 26, NoName claimed to have targeted the following websites:
+The website of the Spanish branch of the Dutch bank ""Triodos Bank"" (https://www.triodos.es/es)
+The website of the Spanish branch of the Italian conglomerate of banks Banco Mediolanum (https://www.bancomediolanum.es/es-ES/)
+The authorization service on the portal of the Spanish newspaper ""Expansión""(https://seguro.expansion.com/registro/v3/?view=login)
+
+- The websites ""https://www.triodos.es/es"" and ""https://www.bancomediolanum.es/es-ES/"" are still down at the moment (July 26, 14:40).",,https://t.me/noname05716/4300,"https://t.me/noname05716/4298
+
+https://t.me/noname05716/4292",DISRUPTION,LOW
+2484,25/07/2023,30,ES,,8BASE Ransomware Breach at Mental Health Center in Barcelona,INCIDENT,HEALTH,,B3,HIGH,8Base,Institut Mensalus S.L.,RANSOMWARE," - On July 25, a hacker group called 8BASE ransomware claims to have hacked Institut Mensalus S.L., a mental health medical center in Barcelona, Spain.
+
+- The threat actor alleges that they had ongoing communication with the company, but it was cut off.
+
+- As a result, the hackers downloaded sensitive data, including personal information of clients, personal correspondence, financial statements, and confidential documents.
+
+- The group has threatened to publish this data on August 1.
+
+- Institut Mensalus S.L. is a private healthcare company that offers various medical services, including medical consultations and treatments.",,https://twitter.com/_bettercyberES_/status/1683924828393476096,https://twitter.com/FalconFeedsio/status/1684093370585714689,FINANCIAL GAIN,LOW
+2485,25/07/2023,30,EU,GLOBAL,SiegedSec Cyber Attack on NATO: Compromising Data of at least 70 NATO Officials,INCIDENT,DEFENSE,PUBLIC ADMIN,B1,MEDIUM,SiegedSec Hacking Group,70 NATO Officials,DATA," - Reported on July 25, the hacktivist group ""SiegedSec"" has conducted a cyber attack on NATO, compromising its COI portal and leaking sensitive documents intended for NATO countries and partners.
+
+- The data contains personal information of at least 70 NATO officials, including their names, email addresses, phone numbers, office addresses, and ranks. SiegedSec's motives appear to be a blend of hacktivism and personal gain, with the attack serving as retaliation against perceived human rights infringements by NATO.
+
+- Cybersecurity research firm Cyberint has been monitoring SiegedSec's activities, describing them as a specialized ""special forces unit"" within the hacktivist landscape. The leaked documents are of critical importance to NATO countries and partners, raising concerns about potential security implications.
+
+- This is not the first time NATO has been targeted by hackers, with previous attacks attributed to pro-Russian hacktivist group KillNet causing significant disruptions to NATO's electronic infrastructure.",,https://www.hackread.com/siegedsec-hacktivist-hack-nato-data-leak/,,IDEOLOGY,MEDIUM
+2486,26/07/2023,30,IT,,Phishing Campaign Exploiting DocuSign: Credential Theft Scheme,CAMPAIGN,TARGETED INDIVIDUAL,,B1,MEDIUM,Unknown,"Unknown
+(Recipients of Fake DocuSign Emails)",PHISHING," - On July 26, a new phishing campaign is using DocuSign as bait to steal victims' email credentials.
+
+- The scam prompts recipients to open a link, supposedly from Cloudflare, claiming that the document has been verified by Symantec. To access the file, the victim is asked to enter a password, but regardless of the input, after three attempts, they are redirected to a fake Microsoft support page.
+
+- In reality, the cybercriminals behind the campaign have already stolen the data entered by the user, leaving them vulnerable to potential identity theft or other cyber threats.",,https://www.difesaesicurezza.com/cyber/cybercrime-nuova-truffa-phishing-via-docusign/,,UNKNOWN,LOW
+2487,26/07/2023,30,NL,,Data Breach at Saxion University of Applied Sciences,INCIDENT,EDUCATION/RESEARCH,,B1,MEDIUM,Two Students (Internal),Saxion University of Applied Sciences and Its Students,INSIDER THREAT," - On July 26, Saxion University of Applied Sciences disclosed a data breach to the Dutch Data Protection Authority following a mass email sent by two students.
+
+- The email was sent to over thirteen thousand Saxion email addresses, and recipients' addresses were visible to all. In response to the incident, Saxion restricted mass responses to the email and reported the breach as the email addresses could indirectly be linked to students.
+
+- The university spokesman mentioned that the senders of the mass email violated Saxion's Code of Conduct for ICT facilities, but the consequences for the students involved are yet to be determined and will likely be addressed after the summer holidays.",,https://www.security.nl/posting/804808/Hogeschool+Saxion+meldt+datalek+nadat+studenten+massamail+versturen?channel=rss,,IDEOLOGY,LOW
+2488,26/07/2023,30,NL,GLOBAL,Cl0p ransomware claimed to have targeted  the company SBM Offshore,INCIDENT,MANUFACTURING,SERVICES,B3,MEDIUM,Cl0p ,SBM Offshore,RANSOMWARE," - On July 26, Cl0p ransomware added to their targeted list the company SBM Offshore, a company specializing in offshore floating solutions for the oil and gas industry, has relevance in Europe. While SBM Offshore is a global company with operations worldwide, including in Asia and the Americas, it has a significant presence in Europe as well.
+
+- In Europe, SBM Offshore has been involved in various projects related to offshore oil and gas production and storage. They have provided their expertise and services to several European countries where offshore oil and gas activities are prominent, including Norway, the United Kingdom, and the Netherlands.
+
+- On July 24, Akira ransomware group claimed to have targeted SBM Offshore.
+",,https://twitter.com/StefanoFavarato/status/1684075671083945984,,FINANCIAL GAIN,MEDIUM
+2489,25/07/2023,30,PT,,8BASE ransomware group added the company Crowd to their darkweb portal,INCIDENT,MEDIA/ENTERTAINMENT,,B3,MEDIUM,8Base,Crowd,RANSOMWARE," - On July 25, 8Base ransomware added the company Crowd to their victim list.
+
+- They claimed that they have downloaded personal information of the company's clients, personal correspondence, financial statements and documents containing confidential information.
+
+- They also asserted to publish them on August 1. ",,https://twitter.com/FalconFeedsio/status/1684093367498547202,,FINANCIAL GAIN,LOW
+2490,26/07/2023,30,SE,,Cl0p ransomware added the company AMF Pensionsförsäkring AB to their victim list,INCIDENT,SERVICES,,B3,MEDIUM,Cl0p ,AMF Pensionsförsäkring AB,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company AMF Pensionsförsäkring AB a Swedish pension company. AMF provides pension and insurance solutions to individuals and companies in Sweden.
+
+- AMF is one of the largest pension companies in Sweden and manages pension funds for millions of Swedes. They offer various pension products and investment options to help individuals and businesses plan for their financial future.",,https://twitter.com/StefanoFavarato/status/1684075671083945984,,FINANCIAL GAIN,LOW
+2491,26/07/2023,30,AE,,Cl0p ransomware claimed to have targeted  the company Drydocks World-Dubai,INCIDENT,SERVICES,ENERGY,B3,MEDIUM,Cl0p ,Drydocks World-Dubai,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Drydocks World-Dubai.
+
+- Over the past 36 years Drydocks World-Dubai has become a leading provider of marine and offshore services to the shipping, oil, gas and energy sectors. Conceived as an ambitious project under the guidance of H.H. Sheikh Rashid Bin Saeed Al Maktoum the late Ruler of Dubai, the yard is strategically located in a rapidly developing region of the world.
+
+- Drydocks World completes over 300 projects a year on average, with a record of handling 42 refurbishment projects simultaneously. The yard is spread over 200 hectares, 4 dry docks, with the largest dock capable of handling the world’s largest ship, and over 3,700m of berth space. Innovative projects have been constructed in Drydocks World, breaking records for some of the largest new build offshore fabrication projects worldwide.
+
+- The yard has received numerous awards and accolades including the British Safety Council’s prestigious “5 Star” rating for the past 14 years and the “Sword of Honor” on 11 occasions.",,https://twitter.com/StefanoFavarato/status/1684075671083945984,,FINANCIAL GAIN,LOW
+2492,26/07/2023,30,CH,,"Cl0p ransomware targeted the companies Ferring Pharmaceuticals, Garrett Motion and Qbits in Switzerland",INCIDENT,HEALTH,MANUFACTURING,B3,MEDIUM,Cl0p ,"Ferring Pharmaceuticals
+Garrett Motion
+Qbits",RANSOMWARE," - On July 26, Cl0p ransomware targeted the following companies:
+Ferring Pharmaceuticals
+Garrett Motion
+Qbits
+
+- Ferring Pharmaceuticals is a global biopharmaceutical company that focuses on research, development, and marketing of innovative products in the fields of reproductive health, maternal health, gastroenterology, urology, and endocrinology.
+
+- Ferring Pharmaceuticals has a significant presence worldwide, with offices, research facilities, and manufacturing sites in various countries. They operate in Europe, the Americas, Asia, the Middle East, and Africa.
+
+- Garrett Motion provides automotive technology solutions, specifically turbochargers and electric-boosting systems, which are widely used in the automotive industry in Europe and other regions.
+
+- Europe is a significant market for automotive manufacturers and suppliers, and Garrett Motion plays a crucial role in providing advanced turbocharging technology to improve vehicle performance, fuel efficiency, and emissions in the region. Their products are utilized by various European car manufacturers and have applications in passenger cars, commercial vehicles, and other types of vehicles.
+
+- Qbits is a Switzerland-based company that operates in the field of technology, software development, or any other domain associated with the name.",,https://twitter.com/StefanoFavarato/status/1684075671083945984,,FINANCIAL GAIN,MEDIUM
+2493,26/07/2023,30,CN,,Wuhan Earthquake Monitoring Center hit by overseas cyber-attack,INCIDENT,EDUCATION/RESEARCH,SERVICES,B3,MEDIUM,Unknown,Wuhan Earthquake Monitoring Center,INTRUSION," - Reported on July 26, an earthquake monitoring center of the Wuhan Municipal Emergency Management Bureau was hit by an overseas cyber-attack, the police in Wuhan, central China's Hubei Province, said in a statement on .
+
+ - The police said that preliminary findings show hacking organizations and criminals with foreign government backgrounds to be behind the attack, and they have launched an investigation into the case.
+
+ - The China Computer Virus Emergency Response Center (CVERC) and internet security company 360's monitoring found that the network at the front-end station of the Wuhan Earthquake Monitoring Center, affiliated with the bureau, was attacked by foreign organizations, said the statement.
+
+ - The earthquake monitoring center sealed the relevant network equipment in time and reported the situation to the public security organ for further investigation, according to the statement, adding that the bureau reserves the right to pursue the case.
+
+ - The Wuhan Municipal Public Security Bureau said in a post that such attacks pose serious threats to national security, and the Jianghan branch of the Wuhan Municipal Public Security Bureau has filed an investigation.
+
+ - The earthquake monitoring center is another state unit that was attacked by a foreign hacker group after China's Northwestern Polytechnical University in June last year.
+
+ - After the attack on the university, CVERC and 360 jointly formed a technical team to conduct a comprehensive technical analysis of the case. The findings showed that the U.S. National Security Agency-affiliated Tailored Access Operations mounted hundreds of thousands of malicious cyber attacks targeting Chinese objectives.",,https://news.cgtn.com/news/2023-07-26/Wuhan-Earthquake-Monitoring-Center-hit-by-overseas-cyber-attack-1lKlm4ZN9FC/index.html,,DISRUPTION,LOW
+2494,26/07/2023,30,GB,,Cl0p ransomware claimed to have targeted  the company Pro2col,INCIDENT,DIGITAL INFRASTRUCTURE,,B3,MEDIUM,Cl0p ,Pro2col,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Pro2col, a UK-based company that specializes in providing data transfer and file transfer solutions for businesses.
+
+- Pro2col offers a range of managed file transfer (MFT) and secure file sharing solutions to help businesses securely exchange data and files with their clients, partners, and employees.
+
+- Their services include consultation, implementation, and support for various MFT products, ensuring data security and compliance for businesses across different industries.",,https://twitter.com/StefanoFavarato/status/1684075671083945984,,FINANCIAL GAIN,LOW
+2495,25/07/2023,30,GB,,Rhysida ransomware group added University of the West of Scotland to their victim list,INCIDENT,EDUCATION/RESEARCH,,B1,MEDIUM,Rhysida,University of the West of Scotland,RANSOMWARE," - Reported on July 25, Rhysida ransomware group added University of the West of Scotland (http://uws.ac.uk) to their victim list and claimed to have kept the data for auction in their darkweb portal.
+
+",,https://twitter.com/FalconFeedsio/status/1683826919777640448,,FINANCIAL GAIN,LOW
+2496,26/07/2023,30,GLOBAL,,Cl0p ransomware added 11 companies to their victim list,INCIDENT,ALL,,B3,MEDIUM,Cl0p ,"gensler.com
+mcw.edu
+orau.org
+encoreanywhere.com
+hillrom.com
+mesvision.com
+hindujagroup.com
+goalsolutions.com
+smurfitcappa.com
+agilysysap.com
+ajoomal.com",RANSOMWARE," - On July 26, Cl0p ransomware claimed to have targeted the following companies:
+gensler.com
+mcw.edu
+orau.org
+encoreanywhere.com
+hillrom.com
+mesvision.com
+hindujagroup.com
+goalsolutions.com
+smurfitcappa.com
+agilysysap.com
+ajoomal.com",,https://twitter.com/StefanoFavarato/status/1684075671083945984,,FINANCIAL GAIN,LOW
+2497,25/07/2023,30,GLOBAL,,"Over 400,000 corporate credentials stolen by info-stealing malware",RESEARCH,ALL,,B1,MEDIUM,"Redline
+Raccoon
+Titan
+Aurora
+Vidar","Salesforce
+Hubspot
+Quickbooks
+AWS
+GCP
+Okta
+DocuSign",MALWARE," - Reported on July 25, the analysis of nearly 20 million information-stealing malware logs sold on the dark web and Telegram channels revealed that they had achieved significant infiltration into business environments.
+
+ - Information stealers are malware that steals data stored in applications such as web browsers, email clients, instant messengers, cryptocurrency wallets, FTP clients, and gaming services. The stolen information is packaged into archives called 'logs,' which are then uploaded back to the threat actor for use in attacks or sold on cybercrime marketplaces.
+
+ - The most prominent information-stealing families are Redline, Raccoon, Titan, Aurora, and Vidar, offered to cyber criminals on a subscription-based model, allowing them to conduct malware campaigns that steal data from infected devices.
+
+ - While information stealers primarily target careless internet users who download software, such as cracks, warez, game cheats, and fake software from dubious sources, it has also been found to have a massive impact on corporate environments.
+
+ - This is because employees use personal devices for work or access personal stuff from work computers, resulting in many info-stealer infections stealing business credentials and authentication cookies.
+
+ - More specifically, as cybersecurity firm Flare explains in a new report shared with BleepingComputer, there are approximately 375,000 logs containing access to business applications such as Salesforce, Hubspot, Quickbooks, AWS, GCP, Okta, and DocuSign.
+
+More specifically, Flare found the following in the examined stealer logs:
+
+    179,000 AWS Console credentials
+    2,300 Google Cloud credentials
+    64,500 DocuSign credentials
+    15,500 QuickBooks credentials
+    23,000 Salesforce credentials
+    66,000 CRM credentials
+
+ - In addition to the above, there are about 48,000 logs that include access to ""okta.com,"" an enterprise-grade identity management service used by organizations for cloud and on-premise user authentication.
+
+ - Most of these logs (74%) were posted on Telegram channels, while 25% were seen on Russian-speaking marketplaces, like the 'Russian Market.'",,https://www.bleepingcomputer.com/news/security/over-400-000-corporate-credentials-stolen-by-info-stealing-malware/,,FINANCIAL GAIN,MEDIUM
+2498,26/07/2023,30,GLOBAL,,Rust-based Realst Infostealer Targeting Apple macOS Users' Cryptocurrency Wallets,NEW TTPS,DIGITAL INFRASTRUCTURE,DIGITAL SERVICE PROVIDER,A2,MEDIUM,Realst,"Apple macOS systems
+macOS 14 Sonoma",MALWARE," - Reported on July 26, a new malware family called Realst has become the latest to target Apple macOS systems, with a third of the samples already designed to infect macOS 14 Sonoma, the upcoming major release of the operating system.
+
+ - Written in the Rust programming language, the malware is distributed in the form of bogus blockchain games and is capable of ""emptying crypto wallets and stealing stored password and browser data"" from both Windows and macOS machines. Realst was first discovered in the wild by security researcher iamdeadlyz.
+
+ - Realst Infostealer is distributed via malicious websites advertising fake blockchain games with names such as Brawl Earth, WildWorld, Dawnland, Destruction, Evolion, Pearl, Olymp of Reptiles, and SaintLegend. Each version of the fake blockchain game is hosted on its own website complete with associated Twitter and Discord accounts.
+
+ - 16 variants across 59 samples were identified, with the activity likely having links to another information stealer campaign called Pureland, which came to light earlier this March. Windows machines, on the other hand, are infected with RedLine Stealer.
+
+ - The attack chains begin with threat actors approaching potential victims through direct messages on social media, convincing them to test a game as part of a paid collaboration, only to drain their cryptocurrency wallets and steal sensitive information upon execution.
+
+ - The web browsers targeted for harvesting include Brave, Google Chrome, Mozilla Firefox, Opera, and Vivaldi. Apple Safari is a notable exception. The malware is also capable of gathering information from Telegram and capturing screenshots.
+
+ - The developments come as data captured via commercial information stealers are being packaged and sold for profit on dark web marketplaces and Telegram channels, with over 200,000 OpenAI credentials leaked via stealer logs in 2022 and 2023, according to multiple reports from Bitdefender and Flare.
+
+ - Stolen enterprise credentials, in particular, can act as a channel for initial access brokers to breach organizations, which can then be auctioned off to other actors looking to exploit the foothold for follow-on activities such as ransomware deployment.",,https://thehackernews.com/2023/07/rust-based-realst-infostealer-targeting.html,https://iamdeadlyz.gitbook.io/malware-research/july-2023/fake-blockchain-games-deliver-redline-stealer-and-realst-stealer-a-new-macos-infostealer-malware,FINANCIAL GAIN,MEDIUM
+2499,26/07/2023,30,GLOBAL,,Hackers Mimic Popular VPN Download page to Deliver Malware,NEW TTPS,DIGITAL INFRASTRUCTURE,,B1,MEDIUM,SparkRAT,Unknown,TROJAN," - Reported on July 26, threat actors have been using domestic VPN installation files for distributing SparkRAT malware which leads to MeshAgent infection on the victim systems. The difference between previous incidents and the current one is that previously Sliver C2 was instead of SparkRAT.
+
+ - Further investigations revealed that all of the VPN programs were developed by the same developer. Threat actors have spoofed the certificate of the corresponding developer for distributing the malware.
+
+ - It was concluded that threat actors had attacked the developer of the program for these malware file distributions. These kinds of attacks have been ongoing since the first half of 2023.
+
+ - SparkRAT is a remote access trojan that is available open-source and written in the Go language. It is capable of controlling the infected system with command execution, information stealing, and control processes.",,https://cybersecuritynews.com/hackers-mimic-popular-vpn/,,FINANCIAL GAIN,MEDIUM
+2500,26/07/2023,30,GLOBAL,,Era Lend on zkSync exploited for $3.4M in reentrancy attack ,VULNERABILITY,DIGITAL INFRASTRUCTURE,BANKING/FINANCE,B1,MEDIUM,Unknown,Era Lend,MINER/CRYPTO," - Reported on July 26, lending app Era Lend on zkSync has been exploited for $3.4 million worth of crypto, according to a July 25 report from blockchain security firm CertiK.
+
+ - The attacker used a “read-only reentrancy attack” to drain the funds, which is a type of attack that interrupts a multi-step process and then causes it to continue after a malicious action has been performed. Specifically, a “read-only” reentrancy is one that does not update the state of a contract.
+
+ - According to the report, the attacker drained funds in two separate transactions using the externally owned account. The attacker relied on a vulnerability in “the callback and _updateReserves function” to manipulate a contract into reporting old values that had not yet been updated.
+
+ - Era Lend is a fork of the Syncswap project, and CertiK claimed that other projects based on Syncswap may also be vulnerable to the exploit.
+
+ - Era Lend team had also acknowledged the attack and paused the protocol’s zkSync contracts to prevent further exploits.
+
+  - These vulnerabilities are difficult for auditors to spot, since typically, auditors and bug hunters are only concerned with entry points that modify state when looking for reentrancy. To help alleviate this problem, it has been recommended that auditors should use specialized software to aid them in finding these vulnerabilities.
+
+ - EraLend is designed to maximize the capital efficiency while minimizing the risks associated with the dependency on external liquidity & oracles. This will allow users to lend and borrow crypto assets more efficiently than any existing solutions in the market.",,https://cointelegraph.com/news/era-lend-zksync-exploited-reentrancy-attack,,FINANCIAL GAIN,MEDIUM
+2501,25/07/2023,30,GLOBAL,,Casbaneiro Banking Malware Goes Under the Radar with UAC Bypass Technique,NEW TTPS,DIGITAL INFRASTRUCTURE,BANKING/FINANCE,B1,MEDIUM,Casbaneiro,Latin American financial institutions,FRAUD," - Reported on July 25, the financially motivated threat actors behind the Casbaneiro banking malware family have been observed making use of a User Account Control (UAC) bypass technique to gain full administrative privileges on a machine, a sign that the threat actor is evolving their tactics to avoid detection and execute malicious code on compromised assets.
+
+ - They are still heavily focused on Latin American financial institutions, but the changes in their techniques represent a significant risk to multi-regional financial organizations as well.
+
+ - Casbaneiro, also known as Metamorfo and Ponteiro, is best known for its banking trojan, which first emerged in mass email spam campaigns targeting the Latin American financial sector in 2018.
+
+ - Infection chains typically begin with a phishing email pointing to a booby-trapped attachment that, when launched, activates a series of steps that culminate in the deployment of the banking malware, alongside scripts that leverage living-off-the-land (LotL) techniques to fingerprint the host and gather system metadata.
+
+ - Also downloaded at this stage is a binary called Horabot that's designed to propagate the infection internally to other unsuspecting employees of the breached organization.
+
+ - This adds credibility to the email sent, as there are no obvious anomalies in the email headers (suspicious external domains), which would typically trigger email security solutions to act and mitigate. The emails include the same PDF attachment used to compromise the previous victim hosts, and so the chain is executed once more.
+
+ - What's changed in recent spam waves is that the attack is kick-started by a spear-phishing email embedded with a link to an HTML file that redirects the target to download a RAR file, a deviation from the use of malicious PDF attachments with a download link to a ZIP file.",,https://thehackernews.com/2023/07/casbaneiro-banking-malware-goes-under.html,,FINANCIAL GAIN,LOW
+2502,25/07/2023,30,GLOBAL,,Critical Flaws Exposed Microsoft Message Queuing Service to DoS Attacks,VULNERABILITY,DIGITAL INFRASTRUCTURE,,A1,HIGH,Unknown,Microsoft Message Queuing (MSMQ),WEB THREATS," - Reported on July 25, researchers at the AI-powered Security solutions provider, FortiGuard Labs, have been monitoring Microsoft Message Queuing (MSMQ) service for the past few months. In an exclusive research report shared with Hackread.com, the company revealed details of multiple security vulnerabilities in the widely used message queuing service.
+
+ - The vulnerabilities allow remote code execution and denial of service attacks (DoS attacks), mainly impacting Windows-based devices with MSMQ installed.
+
+ - FortiGuard Lab’s research report, authored by Wayne Low and published on July 24, 2023, explains that the vulnerabilities have been categorized as critical. The details of each flaw are as follows:
+
+FG-VD-23-001: Message Queuing Exactly-One-Delivery (EOD) Header Out-of-Bounds Read
+FG-VD-23-002: Message Queuing Message Header Out-of-Bounds Write
+FG-VD-23-015: Message Queuing Compound Message Header Out-of-bounds Write
+
+ - MSMQ is a standalone Windows server hosted under MQSVC.EXE. Microsoft developed this proprietary messaging protocol much on the lines of the open-source RabitMQ so that applications running on different computers can communicate in a failsafe manner.
+
+ - Fortinet urges customers to immediately identify network assets vulnerable to the abovementioned vulnerabilities and apply patches. The company notified Microsoft about these issues as part of responsible disclosure practice. Microsoft promptly released patches in April and July 2023 security updates.",,https://www.hackread.com/microsoft-message-queuing-service-flaw-dos-attacks/,https://www.fortinet.com/blog/threat-research/microsoft-message-queuing-service-vulnerabilities,UNKNOWN,MEDIUM
+2503,26/07/2023,30,GLOBAL,,Critical MikroTik RouterOS Vulnerability Exposes Over Half a Million Devices to Hacking,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,MikroTik RouterOS,WEB THREATS," - Reported on July 26, a severe privilege escalation issue impacting MikroTik RouterOS could be weaponized by remote malicious actors to execute arbitrary code and seize full control of vulnerable devices.
+
+ - Cataloged as CVE-2023-30799 (CVSS score: 9.1), the shortcoming is expected to put approximately 500,000 and 900,000 RouterOS systems at risk of exploitation via their web and/or Winbox interfaces, respectively.
+
+ - CVE-2023-30799 does require authentication, in fact, the vulnerability itself is a simple privilege escalation from admin to 'super-admin' which results in access to an arbitrary function. Acquiring credentials to RouterOS systems is easier than one might expect.
+
+ - This is because the Mikrotik RouterOS operating system does not offer any protection against password brute-force attacks and ships with a well-known default ""admin"" user, with its password being an empty string until October 2021, at which point administrators were prompted to update the blank passwords with the release of RouterOS 6.49.
+
+  - Mitigation advice includes removing MikroTik administrative interfaces from the internet, limiting the IP addresses administrators can login from, disabling the Winbox and the web interfaces, and configuring SSH to use public/private keys and disable passwords.",,https://thehackernews.com/2023/07/critical-mikrotik-routeros.html,https://vulncheck.com/blog/mikrotik-foisted-revisited,UNKNOWN,MEDIUM
+2504,26/07/2023,30,GLOBAL,,BlackCat/ ALPHV ransomware adds data leak API in new extortion strategy,RESEARCH,ALL,,A2,MEDIUM,BlackCat/ ALPHV,Unknown,RANSOMWARE," - Reported on July 26, the ALPHV ransomware gang, also referred to as BlackCat, is trying to put more pressure on their victims to pay a ransom by providing an API for their leak site to increase visibility for their attacks.
+
+ - This move follows the gang’s recent breach of Estée Lauder that ended with the beauty company completely ignoring the threat actor’s effort to engage in negotiations for a ransom payment.
+
+ - Multiple researchers spotted earlier this week that the ALPHV/BlackCat data leak site added a new page with instructions for using their API to collect timely updates about new victims.
+
+ - APIs, or Application Programming Interfaces, are typically used to enable communication between two software components based on agreed definitions and protocols.
+
+ - Malware research group VX-Underground pointed to the new section on ALPHV’s site but it appears that the “feature” has been partially available for months though not to the larger audience.
+
+ - The ransomware gang posted the API calls that would help fetch various information about new victims added to their leak site or updates starting a specific date.
+
+ - Although the gang did not explain the release of the API, one reason could be that fewer victims are succumbing to ransomware demands.
+
+ - A report from ransomware incident response company Coveware notes that the number of paying victims that suffered a ransomware attack “fell to a record low of 34%” in the second quarter of this year.
+
+ - However, some threat actors continue to make big money by focusing on targeting the supply chain to breach a large number of organizations.",,https://www.bleepingcomputer.com/news/security/alphv-ransomware-adds-data-leak-api-in-new-extortion-strategy/,https://www.coveware.com/blog/2023/7/21/ransom-monetization-rates-fall-to-record-low-despite-jump-in-average-ransom-payments,FINANCIAL GAIN,MEDIUM
+2505,25/07/2023,30,GLOBAL,,Mysterious Decoy Dog malware toolkit still lurks in DNS shadows,NEW TTPS,PUBLIC ADMIN,TARGETED INDIVIDUAL,A2,MEDIUM,Decoy Dog,Unknown,WEB THREATS," - Reported on July 25, new details have emerged about Decoy Dog, a largely undetected sophisticated toolkit likely used for at least a year in cyber intelligence operations, relying on the domain name system (DNS) for command and control activity.
+
+ - It is unclear who is behind the malware but researchers at DNS-focused security vendor Infoblox believe that four actors are wielding and developing it for highly-targeted operations.
+
+ - Observed activity is limited to the Russian and Eastern Europe space and appears to be related to Russia’s invasion of Ukraine.
+
+ -  DecoyDog likely has the ability to download malware payloads on infected devices and execute commands sent by the attackers.
+
+ - At the time, the researchers said that they “found the identical DNS query patterns arising from enterprise networks, which could not be tied to consumer devices” and “confirmed that the queries originated from network appliances in a very limited number of customer networks.”
+
+ - Whoever operates the toolkit did not cease activity after Infoblox announced their discovery and published a technical analysis showing that Decoy Dog was heavily based on the Pupy open-source post-exploitation remote access trojan (RAT).
+
+ - New Infoblox research revealed that “Decoy Dog is a major upgrade from Pupy that uses commands and configurations that are not in the public repo.”
+
+ - Some of the differences observed include:
+
+    Decoy Dog uses Python 3.8 while Pupy was written in Python 2.7. Decoy Dog requires Python 3.8
+    numerous improvements including Windows compatibility and better memory operations
+    Decoy Dog significantly expands the communications vocabulary in Pupy by adding multiple communications modules
+    Decoy Dog responds to replays of previous DNS queries where Pupy does not.
+    unlike Pupy, Decoy Dog responds to wildcard DNS requests, which doubles the number of resolutions seen in passive DNS.
+    Decoy Dog responds to DNS requests that don’t match the structure of valid communication with a client.
+    Decoy Dog adds the ability to run arbitrary Java code by injecting it into a JVM thread and adds methods to maintain persistence on a victim device.
+
+ - Based on passive DNS traffic analysis, it is difficult to determine an accurate number of Data Dog clients, which would indicate impacted devices, but the largest number of active concurrent connections that Infoblox observed on any one controller was less than 50 and the smallest was four.
+
+ - It is estimateed that the current number of compromised devices would be less than a few hundred, indicating a very small set of targets, typical of an intelligence operation.
+
+ - Some of the changes one Decoy Dog operator made after Infoblox’s disclosure was to add a geofencing mechanism that limits responses from controller domains to DNS queries from IP addresses in specific regions. Although this may imply that the victims are in Russia, the actor could also have chosen to route victim traffic through the region as a decoy or to limit the queries to relevant ones.
+
+ - Infoblox distinguishes between the four actors operating Decoy Dog based on the observed tactics, techniques, and procedures (TTPs). However, it appears that they all respond to queries that match the right format for Decoy Dog or Pupy. If the theory of multiple actors handling Decoy Dog is true, there may be two development groups that improved the toolkit with new functionality.
+
+ - At the moment, Decoy Dog operations remain a mystery as far as their purpose and handlers go. Infoblox has done its part in uncovering the toolkit using DNS data from its systems and bringing it to the attention of the infosec community. However, additional research is required to determine the targets, the initial compromise method (e.g. supply chain, known vulnerability, zero-day in targeted devices), and how actors move into the network",,https://www.bleepingcomputer.com/news/security/mysterious-decoy-dog-malware-toolkit-still-lurks-in-dns-shadows/,https://blogs.infoblox.com/cyber-threat-intelligence/decoy-dog-is-no-ordinary-pupy-distinguishing-malware-via-dns/,ESPIONAGE,MEDIUM
+2506,26/07/2023,30,GLOBAL,,"NoBit RAAS, a New Generation Ransomware Builder Marketed on Dark Web",NEW TTPS,UNKNOWN,,B1,MEDIUM,NoBit,Unknown,RANSOMWARE," - Reported on July 26, a new and powerful ransomware as a service (RAAS) has emerged and is marketing its prowess on the dark web.
+
+ - Dubbed as NoBit RAAS builder, the malicious software is being promoted by an elusive threat actor and is being called the “hottest product” on the dark web.
+
+ - The threat actor responsible for promoting NoBit RAAS builder is not holding back on its claims of destructive capabilities. The ransomware builder’s straightforward interface enables even novice hackers to easily create potent ransomware strains.
+
+ - One of the aspects of NoBit RAAS builder is its ability to encrypt virtually any file, leaving no data safe from its grasp. This includes sensitive information tucked away in directories like the recycle bin and AppData, where users often store personal and important files.
+
+ - This includes sensitive information tucked away in directories like the recycle bin and AppData, where users often store personal and important files.
+
+ - According to the threat actor’s post, the NoBit RAAS builder offers a range of powerful features that make it the weapon of choice for malicious actors.
+
+ - For $200, users gain access to a lifetime license for the builder, allowing them to create unlimited ransomware strains. If they wish to explore the source code and delve into the program’s inner workings, it comes at a higher price tag of $1000.
+
+ - The builder comes equipped with a range of essential blocks that users can manipulate to customize their ransomware.
+
+ - Among these are a key block, an AES-128 key, and a wallpaper editor, allowing users to craft a unique and ominous message for their victims.
+
+ - Additionally, there’s a ransom note block where users can draft and upload their demands in .rtf file format, specifying the ransom amount and the contact email for negotiating the payment.
+
+ - A separate miscellaneous section allows users to omit language restrictions, ensuring that the ransom demand reaches a wide audience.
+
+ - Once the NoBit RAAS attack has been successfully executed on a victim’s computer, a threat message is displayed on the desktop, leaving them with very few options.
+
+ - The message explicitly states that all their files have been encrypted using an advanced encryption system, and the only way to regain access to their precious data is by paying the hefty ransom of $5000.
+
+ - The threat actors are cunning enough to warn victims against changing file types, editing the content, or decrypting the files without the provided key, as it could lead to irreversible data loss.
+
+ - The contact email, NoBit@yourcomputer, serves as the point of contact between the victims and the malicious actors. Once the payment is made, victims are instructed to click the “Decrypt…” button to initiate the decryption process using the provided key.
+
+ - NoBit RAAS builder is a dangerous and sophisticated ransomware as a service that highlights the increasing sophistication of cybercriminals. Since NoBit RAAS builder is active on the dark web marketplaces, threat actors might want to invest in this service to create ransomware strains, which can later be used to target unsuspecting victims. Apart from RAAS builders, leaked code also come handy for cybercriminals.",,https://thecyberexpress.com/nobit-raas-new-generation-ransomware-builder/,https://twitter.com/Cyberknow20/status/1683839884480622599,FINANCIAL GAIN,MEDIUM
+2507,26/07/2023,30,GLOBAL,US,"Android stalkerware app has infected 60,000 devices",INCIDENT,DIGITAL INFRASTRUCTURE,TARGETED INDIVIDUAL,B1,MEDIUM,Spyhide stalkerware,Android phones,SPYWARE," - Reported on July 26, tens of thousands of the best Android phones are infected with a stalkerware app that secretly collects private data from them.
+
+ - As reported, the Spyhide stalkerware has been installed on 60,000 Android phones since 2016. Unlike malicious apps which send stolen data to hackers, Spyhide and other stalkerware apps steal sensitive data and send it back to spouses or other people looking to keep tabs on victims.
+
+ - What makes stalkerware apps so dangerous is their ability to stay hidden on a compromised phone which makes them difficult to detect and uninstall. Once loaded onto an Android smartphone, Spyhide silently collects and uploads a victim’s contacts, messages, photos, call logs, recordings of their calls and even their location in real-time.
+
+ - While Spyhide has been quietly collecting data on victims for years now, a Switzerland-based hacker has managed to gain access to part of the stalkerware’s development environment which has shed new light on this stalkerware.
+
+ - The hacker was able to gain access to Spyhide’s back-end database by exploiting a vulnerability in the stalkerware’s dashboard and has detailed their findings in a new blog post.
+
+ - The stalkerware’s database contains detailed records of 60,000 compromised Android devices including call logs, text messages and years of location history. Alongside this sensitive data, there’s also information about each file like when a photo or video was taken and uploaded by Spyhide.
+
+ - According to TechCrunch’s analysis, Spyhide’s operations are worldwide. While there are only 3,100 compromised devices in the U.S., American victims are the most surveilled based on the fact that there are more than 100,000 location data points in the country alone.
+
+ - At the same time, the stalkerware’s database also contains records on 750,000 users that signed up to gain access to Spyhide, likely with the intention of installing the stalkerware on someone else’s smartphone.
+
+ - Additionally, the database includes 3.29 million text messages, 2FA codes, password reset links, over 1.2 million call logs, 312,00 call recording files, 925,000+ contact lists and records for 382,000 photos and images. Suffice it to say, Spyhide collects loads of personal data from its victims.",,"https://techcrunch.com/2023/07/24/spyhide-stalkerware-android/?guccounter=1&guce_referrer=aHR0cHM6Ly93d3cudG9tc2d1aWRlLmNvbS8&guce_referrer_sig=AQAAAIcvTJ5OJsAKt_HfL7JfiZdmz8Cuof_ENoWYP-p_TwjKNdXzNcLYVxDByUQr21PM_oSSuR0L3EuNQsZ_AepFo422z_Xil0tkseAJIYeU9xG4PY4b9i7RAt804_fFMll_kj_t0LiqCPL1QtvpRSTNKCx0H9Puhm9RiDsLFpgqKZs_
+https://www.tomsguide.com/news/this-android-stalkerware-app-has-infected-60000-devices-is-it-on-your-phone",https://maia.crimew.gay/posts/fuckstalkerware-2/,ESPIONAGE,MEDIUM
+2508,25/07/2023,30,IL,,Anonymous Sudan targeted Israel’s Electricity service provider IEC,INCIDENT,ENERGY,,B1,LOW,Anonymous Sudan,Israel’s Electricity service provider IEC,DOS/DDOS/RDOS," - Reported on July 25, Anonymous Sudan claimed on its Telegram channel, targeting Israel’s Electricity service provider IEC (https://www.iec.co.il/home). The website was back online on July 26. ",,https://twitter.com/FalconFeedsio/status/1683890812512509952,https://t.me/AnonymousSudan/1759,DISRUPTION,LOW
+2509,25/07/2023,30,RU,UA,Major internet service provider Luganet disrupted by a DDoS attack,INCIDENT,DIGITAL SERVICE PROVIDER,,B1,LOW,IT Army Ukraine,Luganet,DOS/DDOS/RDOS," - Reported on July 25, Luganet, a major internet service provider in Russian-occupied part of #Ukraine, was disrupted by a #DDOS attack carried out by IT Army Ukraine on July 24.",,https://twitter.com/cyber_etc/status/1683758693253251073,https://twitter.com/ITArmyUKR/status/1683553334437789697,DISRUPTION,LOW
+2510,25/07/2023,30,US,,BlackCat/ ALPHV hit Interior Design Firm Hirsch Bedner Associates,INCIDENT,SERVICES,,B1,MEDIUM,BlackCat/ ALPHV,Hirsch Bedner Associates,RANSOMWARE," - Reported on July 25, multinational interior design firm Hirsch Bedner Associates (HBA) has fallen victim to the ALPHV/BlackCat ransomware group. The hackers group has claimed the Hirsch Bedner Associates data breach, saying it has gained access to a massive 1TB of the company’s critical data.
+
+ - The ALPHV ransomware group made the announcement about Hirsch Bedner Associates data breach on 21 July, boasting about their extensive infiltration into HBA’s network.
+
+ - According to their post, the hackers have been stealthily lurking within HBA’s system for a considerable period, meticulously studying the firm’s business operations.
+
+ - They assert that their expert team has even implanted a potent backdoor, providing them with the means to re-enter the network at any given time and execute their nefarious plans at will.
+
+ - Hirsch Bedner Associates has not yet released an official statement regarding the data breach.
+
+ - The gravity of the situation escalates further as the ransomware group threatens to publicly release all stolen data from the Hirsch Bedner Associates data breach if their demands are not met.
+
+ - With their blog boasting a vast following, including prominent media outlets, the potential fallout from the Hirsch Bedner Associates data breach could be devastating to HBA’s reputation and overall business operations.
+
+ - HBA/Hirsch Bedner Associates is an American international hospitality design firm founded in 1965 in Santa Monica, California and now based in Singapore HBA is the largest hosting design company in the world.",,https://thecyberexpress.com/alphv-hirsch-bedner-associates-data-breach/,,FINANCIAL GAIN,LOW
+2511,26/07/2023,30,US,EU,"Cl0p ransomware claimed to have targeted  the company Arrow Electronics, Inc.",INCIDENT,DIGITAL SERVICE PROVIDER,,B3,MEDIUM,Cl0p,"Arrow Electronics, Inc.",RANSOMWARE," - Reported on July 26, Cl0p ransomware targeted the company Arrow Electronics, Inc., a global technology solutions provider and distributor. Arrow Electronics is one of the largest electronic component distributors in the world and offers a wide range of products and services to various industries, including aerospace, automotive, telecommunications, healthcare, and more.
+
+- Arrow Electronics provides electronic components, computing solutions, enterprise IT solutions, and engineering services to help businesses and organizations in their technology needs. It has a significant presence and relevance in Europe. The company operates in various countries throughout the region and serves a wide range of industries with their technology solutions and distribution services.
+
+- Arrow Electronics has multiple offices, distribution centers, and sales teams across Europe, allowing them to provide electronic components, computing solutions, and other technology products and services to customers in the region. They support industries such as automotive, aerospace, industrial, telecommunications, healthcare, and more.
+
+- Being one of the leading electronic component distributors globally, Arrow Electronics plays a crucial role in supplying and supporting the technology needs of businesses in Europe. Their products and services help European companies design and manufacture innovative products and solutions.",,https://twitter.com/StefanoFavarato/status/1684075671083945984,,FINANCIAL GAIN,MEDIUM
+2512,26/07/2023,30,US,EU,Cl0p ransomware claimed to have targeted  the company  MAXIMUS,INCIDENT,DIGITAL SERVICE PROVIDER,,B3,MEDIUM,Cl0p,MAXIMUS,RANSOMWARE," - Reported on July 26, Cl0p ransomware targeted the company MAXIMUS, a global provider of business process management and technology solutions. MAXIMUS primarily works with government agencies to improve their operations, enhance citizen services, and deliver better outcomes for the public.
+
+- MAXIMUS offers a wide range of services, including program management, citizen engagement, eligibility and enrollment, case management, and health and human services solutions. They work with various government entities, including those in the United States, Canada, the United Kingdom, Australia, and other countries.
+
+- MAXIMUS, the global provider of business process management and technology solutions, has a presence and relevance in Europe. MAXIMUS works with various government agencies and organizations in Europe to provide services and solutions that improve citizen services, streamline operations, and deliver better outcomes for the public.
+
+- MAXIMUS' solutions are particularly relevant in the context of health and human services, employment programs, and citizen engagement across Europe. They work with governments in different countries to implement technology-driven solutions that help manage programs efficiently and effectively.",,https://twitter.com/StefanoFavarato/status/1684075671083945984,,FINANCIAL GAIN,MEDIUM
+2513,26/07/2023,30,BE,,Cl0p ransomware claimed to have targeted  the company  Toyota Boshoku Belgium,INCIDENT,MANUFACTURING,,B3,MEDIUM,Cl0p,Toyota Boshoku Belgium,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Toyota Boshoku Belgium, a division of Toyota Boshoku Corporation. Toyota Boshoku is a global automotive parts manufacturer and a member of the Toyota Group.
+
+- Toyota Boshoku Belgium is responsible for manufacturing and supplying various automotive interior components and systems for Toyota vehicles and other automotive manufacturers. The company's products include seats, door trims, headliners, and other interior parts.
+
+
+- Toyota Boshoku has a presence in various regions, including Europe. Toyota Boshoku Belgium, in particular, serves as a division of the company that operates in Europe.",59508,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2514,26/07/2023,30,DE,,Cl0p ransomware claimed to have targeted  the companies Hörmann Group and Payback Group,INCIDENT,MANUFACTURING,SERVICES,B3,MEDIUM,Cl0p,"Hörmann Group
+Payback Group",RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Hörmann Group, a leading manufacturer of doors, gates, frames, and operators for residential and commercial applications and the company Payback Group.
+
+- Hörmann is a global company with a strong presence in Europe and other regions. Hörmann Group is highly relevant in Europe due to its significant presence and operations in the region. Its products are widely used in both residential and commercial applications throughout Europe.
+
+- Hörmann has a strong distribution network in Europe, with manufacturing facilities, sales offices, and authorized dealers in various European countries.
+
+- PAYBACK GROUP is a loyalty program company headquartered in Munich, Germany. It is one of the largest loyalty programs in Europe, with over 20 million members in 14 countries.",,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2515,26/07/2023,30,ES,,"NoName targeted the site of the financial group ""Creand Wealth Management"", the site of the Spanish search service for air tickets, hotels, cruises, trains, cars and restaurants ""Reservalis"", the website of the tourist information office of Barcelona ""Turismo de Barcelona"" and the site of the boutique hotel ""Only YOU Boutique Hotel Madrid"" on July 26 & 27",INCIDENT,BANKING/FINANCE,SERVICES,B3,MEDIUM,NoName,"Financial group ""Creand Wealth Management""
+Spanish search service for air tickets, hotels, cruises, trains, cars and restaurants ""Reservalis""
+The website of the tourist information office of Barcelona ""Turismo de Barcelona""
+The site of the boutique hotel ""Only YOU Boutique Hotel Madrid""",DOS/DDOS/RDOS," - On July 26, NoName claimed to have targeted the site of the financial group ""Creand Wealth Management"" (https://creand.es/) and on July 27 they targeted the site of the Spanish search service for air tickets, hotels, cruises, trains, cars and restaurants ""Reservalis"" (https://www.reservalis.com/quienessomos.php), the website of the tourist information office of Barcelona ""Turismo de Barcelona"" (https://www.barcelonaturisme.com/wv3/en/) and the site of the boutique hotel ""Only YOU Boutique Hotel Madrid"" (https://www.onlyyouhotels.com/en/hotels/only-you-boutique-hotel-madrid/location/).
+
+- The websites ""https://www.reservalis.com/quienessomos.php"", ""https://www.barcelonaturisme.com/wv3/en/"" and ""https://www.onlyyouhotels.com/en/hotels/only-you-boutique-hotel-madrid/location/"" are still down at the moment (July 27).",,https://t.me/noname05716/4305,"https://t.me/noname05716/4313
+
+https://t.me/noname05716/4312
+
+https://t.me/noname05716/4314",DISRUPTION,LOW
+2516,27/07/2023,30,ES,,NoEscape ransomware group added Beijer Ref España to their darkweb portal,INCIDENT,RETAIL,MANUFACTURING,B3,MEDIUM,NoEscape,Beijer Ref España,RANSOMWARE," - On July 27, NoEscape ransomware added Beijer Ref España to their victim list.
+
+- The attackers claimed to have gained access to 5GB of data from Beijer Ref España, it could potentially include sensitive information about the company, its employees, customers, business operations, or other confidential data. A data breach of this nature can be significant and may have serious implications for the company and individuals involved.
+
+- Beijer Ref is one of the largest refrigeration wholesalers globally, and its operations involve the distribution of refrigeration and air conditioning products to various markets.
+
+-  As a part of the Beijer Ref group, Beijer Ref España contributes to the company's operations and distribution network in the European market. The refrigeration and HVAC industry is significant in Europe due to the region's diverse climate, ranging from cold northern countries to warmer Mediterranean regions. ",,https://twitter.com/FalconFeedsio/status/1684474245827416066,,FINANCIAL GAIN,MEDIUM
+2517,27/07/2023,30,EU,,Cl0p ransomware claimed to have targeted DATAENGINE,INCIDENT,DIGITAL INFRASTRUCTURE,SERVICES,B3,MEDIUM,Cl0p,DATAENGINE,RANSOMWARE," - On July 27, Cl0p ransomware targeted DATAENGINE (dataengine.eu).",,https://twitter.com/FalconFeedsio/status/1684512138197438464,,FINANCIAL GAIN,MEDIUM
+2518,26/07/2023,30,FR, ,Cl0p ransomware claimed to have targeted  the company  SYNLAB France,INCIDENT,HEALTH,,B3,HIGH,Cl0p,SYNLAB France,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company SYNLAB France, a leading medical diagnostics company in France.
+
+- SYNLAB is a major European provider of medical laboratory services and is active in multiple countries, including France, offering a wide range of medical testing and diagnostic solutions to patients and healthcare providers.
+
+- SYNLAB is highly relevant in Europe due to its significant presence and operations in multiple European countries, including France. ",,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2519,26/07/2023,30,FR,,Ransomware Attack Hits Ville de Chevilly-Larue: Sensitive Data at Risk,INCIDENT,PUBLIC ADMIN,,A1,MEDIUM,NoEscape,Ville de Chevilly-Larue,RANSOMWARE," - Reported on July 26, the cybercriminal group NoEscape ransomware claims to have hacked into the website of Ville de Chevilly-Larue, a commune in France near Paris.
+
+- They assert that the network has been successfully encrypted and compromised, with sensitive data including banking, finance, budget, passports, contracts, certificates, employment, tax data, backup data, and more at risk of being published if the company does not engage in dialogue with them.
+
+- The municipal services of Ville de Chevilly-Larue are currently unreachable by phone and email due to the computer attack, but physical services are available during usual times.
+
+- The victim urges others to contact them via the Contact section of their website.  It is important to note that engaging in or supporting cybercrime is illegal and unethical, and such incidents should be reported to the appropriate authorities for investigation and resolution.",,http://ville-chevilly-larue.fr/fonctionnalites/actualites-109/piratage-informatique-services-inaccessibles-4706.html?cHash=50b13ab059543031bbb17d915b30d4b5,https://twitter.com/_bettercyberES_/status/1684244833009905675,FINANCIAL GAIN,LOW
+2520,26/07/2023,30,IE,,Cl0p ransomware claimed to have targeted  the company Flutter Entertainment plc,INCIDENT,MEDIA/ENTERTAINMENT,,B3,MEDIUM,Cl0p,Flutter Entertainment plc,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Flutter Entertainment plc, a global sports betting, gaming, and entertainment company.
+
+- Flutter Entertainment is one of the largest and most well-known gambling companies in the world.
+
+- Regarding relevance in Europe, Flutter Entertainment is highly relevant in the region due to its significant presence and operations. The company owns several well-known brands that operate in various European countries, providing online sports betting, gaming, and entertainment services to European customers.",59508,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2521,26/07/2023,30,IT,,Cl0p ransomware claimed to have targeted  the company Safilo Group,INCIDENT,MANUFACTURING,,B3,MEDIUM,Cl0p,Safilo Group,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Safilo Group, an Italian eyewear company and one of the world's largest manufacturers of high-quality glasses and sunglasses.
+
+- Safilo designs, produces, and distributes eyewear for a wide range of premium brands, including its own house brands.
+
+- Safilo Group is highly relevant in Europe due to its strong presence and operations in the region. The company is an Italian eyewear manufacturer and distributor, and Europe is one of its primary markets.",,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2522,26/07/2023,30,IT,,BlackCat Ransomware Gang Strikes Italian Insurer CF Assicurazioni in Cyber Attack,INCIDENT,SERVICES,,B1,MEDIUM,ALPHV / BlackCat,CF Assicurazioni,RANSOMWARE," - Reported on July 26, the infamous BlackCat/ALPHV ransomware gang has claimed responsibility for a cyber attack on the Italian organization CF Assicurazioni.
+
+- The group posted details of the attack on their Data Leak Site, showcasing samples of data exfiltrated from the company's IT systems.
+
+- It remains uncertain whether these data indeed belong to the company. CF Assicurazioni, known for its innovative and customer-oriented services in the insurance sector, comprises CF Assicurazioni, CF Life, and Geco.IT, an IT company supporting business development and the Sales Network's requirements.
+
+- As the situation unfolds, further updates may clarify the extent and impact of the ransomware attack on the company.",,https://www.redhotcyber.com/post/attacco-informatico-al-gruppo-italiano-cf-assicurazioni-blackcat-minaccia-di-scrivere-ai-clienti/,https://twitter.com/FalconFeedsio/status/1684290363643641862,FINANCIAL GAIN,LOW
+2523,27/07/2023,30,IT,,Remcos RAT Exploits Fake Hotel Reservation Emails in Italy,CAMPAIGN,ALL,TARGETED INDIVIDUAL,B1,MEDIUM,"Unknown
+(Cybercriminals utilizing the Remcos Remote Access Trojan (RAT))","Unknown
+(Individuals and organizations in Italy receiving the fake hotel reservation email with the malicious attachment)",MALWARE," - Reported on July 27, the cybercriminals behind Remcos, a Remote Access Trojan (RAT), are using a fake hotel reservation email to deliver malware in Italy. The email contains a 7z attachment, which, when executed, installs the Remcos RAT on the victim's system.
+
+- Remcos is associated with courier-themed phishing campaigns and possesses various capabilities, including closely monitoring user activities, recording audio and video, stealing credentials and digital currency, downloading additional malware, and exfiltrating confidential data while evading detection and sandboxes.
+
+- The C2 (Command and Control) server used by the attackers is closen.kozow[.com 85.208.139.] 146.",,https://www.difesaesicurezza.com/cyber/cybercrime-una-falsa-prenotazione-alberghiera-esca-per-remcos/,,FINANCIAL GAIN,LOW
+2524,27/07/2023,30,IT,,NoEscape ransomware group added Rampi Srl to their darkweb portal,INCIDENT,RETAIL,MANUFACTURING,B3,MEDIUM,NoEscape,Rampi Srl,RANSOMWARE," - On July 27, NoEscape ransomware added Rampi Srl to their victim list.
+
+- The attackers claimed to have gained access to 100GB of data from Rampi Srl, it could potentially include sensitive information about the company, its employees, customers, business operations, or other confidential data. A data breach of this nature can be significant and may have serious implications for the company and individuals involved.",,https://twitter.com/FalconFeedsio/status/1684474245827416066,,FINANCIAL GAIN,LOW
+2525,25/07/2023,30,IT,,Phishing Campaign 'Bank Payment Notice' Targets Users for Email Credential Theft,CAMPAIGN,TARGETED INDIVIDUAL,,A3,MEDIUM,Unknown,"Unknown
+(Unsuspecting Email Users)",PHISHING," - Reported on July 25, a new phishing threat that has been circulating via email, targeting unsuspecting users with the deceptive subject ""Bank Payment Notice"". This malicious campaign, orchestrated by cybercriminals, aims to steal victims' email login credentials for illicit purposes.
+
+- The modus operandi of the attack involves sending an email that appears legitimate, notifying recipients of a supposed bank payment in their favor. To ""view"" the payment receipt, users are invited to click on a link provided in the email body. Once the user clicks on the link, they are redirected to a fake webpage that appears to belong to a legitimate bank or payment service. On this page, two images are displayed: a fake invoice and a fake bank transfer receipt, both skillfully created to appear authentic.
+
+- However, to download these documents, the victim is asked to provide their email login credentials, including the email address and associated password. This is where the malicious actors attempt to exploit people's good faith for malicious purposes.
+
+- If successful, the cybercriminals steal the victim's credentials, granting them unauthorized access to the email account. Once this access is obtained, the user's personal, financial, and sensitive data become prey to the scammers. The consequences can be severe and include identity theft, reputation damage, and potential financial harm.
+
+- The ""Bank Payment Notice"" phishing campaign is just one example of scams aimed at taking advantage of users' inexperience. Awareness, attention, and caution are the best defenses against these malicious operations.",,https://www.cybersecurity360.it/nuove-minacce/nuovo-phishing-a-tema-bancario-attenti-alle-mail-avviso-di-pagamento-e-una-truffa/,,UNKNOWN,MEDIUM
+2526,26/07/2023,30,LT,,"NoName targeted the portal of the Lithuanian media project - ""Lithuania in a Week"" and the website of the Vilnius bus station on July 26",INCIDENT,TRANSPORT,MEDIA/ENTERTAINMENT,B3,MEDIUM,NoName,"The portal of the Lithuanian media project - ""Lithuania in a Week""
+The website of the Vilnius bus station",DOS/DDOS/RDOS," - Reported on July 26, NoName targeted the portal of the Lithuanian media project - ""Lithuania in a Week"" (https://www.zanedeliu.lt/) and the website of the Vilnius bus station (https://autobusustotis.lt/).
+
+- The websites ""https://www.zanedeliu.lt/"" is still down at the moment (July 27).",,https://t.me/noname05716/4307,https://t.me/noname05716/4304,DISRUPTION,LOW
+2527,26/07/2023,30,LU,,"Phishing Attack Hits Post Luxembourg Users, Leading to Money Theft",INCIDENT,BANKING/FINANCE,,B1,MEDIUM,Unknown,"Unknown
+(Users of Post Luxembourg banking service who fell victim to the phishing scam)",PHISHING," - Reported on July 26, users of the Post Luxembourg banking service have reported money being stolen from their accounts through unauthorized transactions.
+
+- The thefts are believed to have been facilitated by phishing emails, where victims were directed to click on fraudulent links impersonating Post or LuxTrust. Upon clicking the links, account holders were instructed to link their accounts to a Payconiq app.
+
+- Swiss Post, the parent company of Post Luxembourg, confirmed the incidents and urged affected customers to contact their ""Post Finance"" contact center immediately. While the security system of eboo, Post Luxembourg's online banking, is asserted to be secure, investigations are underway to determine if the weak point lies with a payment service provider connected to smartphones or accounts.",59505,https://www.wort.lu/wirtschaft/post-kunden-wurde-geld-vom-konto-gestohlen/2250630.html,https://www.virgule.lu/luxembourg/des-clients-de-post-se-sont-fait-voler-de-largent-sur-leur-compte/2250904.html,FINANCIAL GAIN,LOW
+2528,26/07/2023,30,NL,,Cl0p ransomware claimed to have targeted  the company SoftTech,INCIDENT,DIGITAL INFRASTRUCTURE,,B3,MEDIUM,Cl0p,SoftTech,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company SoftTech, a software development company based in the Netherlands.
+
+- SoftTech specializes in providing custom software solutions and IT services to businesses and organizations.
+
+- SoftTech, as a software development company, is relevant in Europe due to its proximity to and operations within the region.
+
+- The Netherlands is known for its strong technology and software development industry, and companies like SoftTech play an essential role in providing custom software solutions and IT services to businesses in various European countries.",,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2529,26/07/2023,30,SE,,Cl0p ransomware claimed to have targeted  the company Alektum Group,INCIDENT,BANKING/FINANCE,SERVICES,B3,MEDIUM,Cl0p,Alektum Group,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Alektum Group, a leading company specializing in credit management and debt collection services. Alektum Group operates in multiple countries and provides a range of services to businesses, helping them manage credit risk, improve cash flow, and handle debt recovery.
+
+- Alektum Group is highly relevant in Europe due to its significant presence and operations in the region. The company specializes in credit management and debt collection services, which are essential functions for businesses across various industries in Europe.",,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2530,26/07/2023,30,CA,,Cl0p ransomware claimed to have targeted  the company WSP Global Inc.,INCIDENT,SERVICES,,B3,MEDIUM,Cl0p,WSP Global Inc.,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company WSP Global Inc., a leading professional services firm that offers engineering, design, and consulting services on various projects around the world. WSP provides services in areas such as infrastructure, transportation, buildings, environment, energy, and more.
+
+- WSP has a global presence, with operations in numerous countries, including Europe. The company works on a wide range of projects in Europe, providing expertise and solutions for infrastructure development, urban planning, sustainable building design, environmental consulting, and other engineering and consulting services.",,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2531,26/07/2023,30,CA,,Cyberattack Halts CardioComm's Heart Monitoring Services,INCIDENT,HEALTH,,B1,HIGH,Unknown,CardioComm Solutions,RANSOMWARE," - Reported on July 26, Canadian heart monitoring technology provider, CardioComm Solutions, experienced a cyberattack that has suspended its business activities.
+
+- The company's servers were affected, disrupting several products and services, including HeartCheck CardiBeat, Global Cardio 3, and Home Flex, which users rely on to monitor their health. While the full impact on users is yet to be known, there is no evidence of compromised customer health data so far.
+
+- The nature of the incident was not disclosed, but it's suspected to be a ransomware attack. Despite the cyberattack, CardioComm's shares have not been significantly impacted on the stock exchange.",,https://www.redhotcyber.com/post/attacco-informatico-al-cuore-delle-persone-la-cardiocomm-solutions-sospende-le-sue-attivita/,,FINANCIAL GAIN,LOW
+2532,26/07/2023,30,CH,,Cl0p ransomware claimed to have targeted  the company Infinigate Schweiz AG,INCIDENT,DIGITAL INFRASTRUCTURE,,B3,MEDIUM,Cl0p,Infinigate Schweiz AG,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Infinigate Schweiz AG, a leading distributor of IT security solutions in Switzerland. Infinigate specializes in providing cybersecurity products and services to businesses and organizations in Switzerland, helping them safeguard their digital assets and protect against cyber threats.
+
+- Infinigate Schweiz AG is highly relevant in Europe due to its presence and operations in multiple European countries. While ""infinigate.ch"" specifically represents the Swiss division of Infinigate, the company has a broader European footprint with subsidiaries and offices in various European countries.",,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2533,27/07/2023,30,GB,,"Cybercat, pro-russian hacktivist group, is claiming to have breached the UK hydrographic office",INCIDENT,PUBLIC ADMIN,,B3,MEDIUM,Cybercat,UK hydrographic office,DATA," - Reported on July 27, Cybercat, pro-russian hacktivist group, claimed to have breached the UK hydrographic office and they demanded 2BTC ransom.",,https://twitter.com/Cyberknow20/status/1684387098319818752,,FINANCIAL GAIN,LOW
+2534,26/07/2023,30,GB,,"Cl0p ransomware claimed to have targeted  the companies DDC Outsourcing Solutions, Adare SEC and Awaze ",INCIDENT,DIGITAL INFRASTRUCTURE,SERVICES,B3,MEDIUM,Cl0p,"DDC Outsourcing Solutions
+Adare SEC
+Awaze",RANSOMWARE," - On July 26, Cl0p ransomware targeted the companies DDC Outsourcing Solutions, Adare SEC and Awaze.
+
+- Adare SEC, a leading provider of communication solutions and secure document services. Adare SEC serves clients across various industries, including financial services, utilities, retail, and healthcare.  Adare SEC is highly relevant in Europe due to its strong presence and operations in the region. The company is a leading provider of communication solutions and secure document services, serving clients across various industries in Europe.
+
+- DDC Outsourcing Solutions, delivers value-added services for clients across many international locations. The company also has various branches especially in Europe such as in Sarajevo, in Belgrade, in Banja Luka.
+
+- Awaze is a vacation rental company headquartered in Lowestoft, Suffolk, United Kingdom. It is the largest managed vacation rentals and holiday resorts business in Europe, which brings together some of the continent's most trusted travel brands, including cottages.com, Hoseasons, James Villa Holidays and NOVASOL.",,https://twitter.com/FalconFeedsio/status/1684231080973328384,https://ddcos.com/contact-us/,FINANCIAL GAIN,MEDIUM
+2535,26/07/2023,30,GB,,Ortivus Cyber Attack Disrupts Ambulance Services' Patient Records,INCIDENT,HEALTH,,B1,HIGH,Unknown,Ortivus and its British customers South Western Ambulance Service Trust and South Central Ambulance Service Trust,INTRUSION," - On July 26, two British ambulance services faced disruptions in accessing electronic patient records due to a cyber attack on their software provider, Ortivus, a Swedish company specializing in healthcare solutions.
+
+- The attack occurred on July 18, 2023, affecting UK customers within Ortivus's hosted datacenter environment. Patient records became unavailable, leading to the use of manual systems temporarily. Ortivus confirmed that no evidence of data theft was found and is working to restore the affected systems.
+
+- The impacted ambulance services, South Western Ambulance Service Trust and South Central Ambulance Service Trust, serve around 12 million people. As of July 20, 2023, Ortivus announced the readiness to re-initiate the affected MobiMed ePR system for British customers, subject to approval from an independent actor and verification by NHS England and Ambulance Trusts.",59512,https://securityaffairs.com/148847/cyber-crime/ambulance-services-cyberattack.html,https://www.theregister.com/2023/07/26/uk_ambulance_services_cyber_attack/,UNKNOWN,MEDIUM
+2536,26/07/2023,30,GLOBAL,,Cl0p ransomware targeted 30 companies in the world,INCIDENT,ALL,,B3,MEDIUM,Cl0p,30 companies,RANSOMWARE," - On July 26, Cl0p ransomware targeted the following companies:
+gnc.com
+genesisenergy.com
+metrobank.com.ph
+planethomelending.com
+sleepcountry.ca
+siu.edu
+chuckecheese.com
+tricoproducts.com
+mechanicsbank.com
+enterprisebanking.com
+salelytics.com
+hubbell.com
+kellyservices.com
+amerisave.com
+convergeone.com
+alogent.com
+alohacare.org
+informatica.com
+quark.com
+aclara.com
+emsbilling.com
+informa.com
+thevitalitygroup.com
+joneslanglasalle.com
+aristocrat.com
+virginpulse.com
+kalepw.com
+macom.com
+cced.com.om
+saul.org.uk",,https://twitter.com/FalconFeedsio/status/1684512138197438464,,FINANCIAL GAIN,LOW
+2537,26/07/2023,30,GLOBAL,,Critical Linux Vulnerabilities in Ubuntu Kernel: Implications and Remediation,VULNERABILITY,DIGITAL INFRASTRUCTURE,TARGETED INDIVIDUAL,B1,HIGH,Unknown,"Unknown
+(Users of Ubuntu Linux distributions, including both individual users and organizations)",INTRUSION," - Reported on July 26, two recently discovered Linux vulnerabilities in the Ubuntu kernel have the potential to allow unprivileged local users to gain elevated privileges on a significant number of devices.
+
+- The flaws, CVE-2023-32629 and CVE-2023-2640, impact approximately 40% of Ubuntu's user base, potentially affecting over 40 million users. One vulnerability allows a local attacker to gain elevated privileges, while the other may lead to arbitrary code execution.
+
+- The vulnerabilities are unique to Ubuntu due to conflicts in custom changes made to the OverlayFS module, and weaponized exploits for these flaws have been publicly available for some time.
+
+- Ubuntu has released a security bulletin and updates to address these vulnerabilities, advising users to perform updates via their package manager and reboot for the changes to take effect.",,https://www.bleepingcomputer.com/news/security/almost-40-percent-of-ubuntu-users-vulnerable-to-new-privilege-elevation-flaws/,,UNKNOWN,MEDIUM
+2538,26/07/2023,30,GLOBAL,,North Korean Lazarus Group Targets Crypto Payment Provider in $60 Million Heist,INCIDENT,DIGITAL INFRASTRUCTURE,,B1,MEDIUM,Lazarus Group,Alphapo,MINER/CRYPTO," - Reported on July 26, Blockchain analysts attribute the recent theft of nearly $60 million in crypto from the payment processing platform Alphapo to the North Korean Lazarus hacking group.
+
+- Alphapo, a centralized crypto payment provider for various online platforms, was attacked, with initial estimates placing the stolen amount at $23 million. The attackers targeted hot wallets and likely gained access through leaked private keys.
+
+- Crypto investigator ""ZackXBT"" revealed that an additional $37 million of TRON and BTC were drained, bringing the total stolen amount to $60 million. Lazarus Group has a history of high-profile crypto heists and is known for using fake job offers to compromise crypto firms' employees and gain unauthorized access to networks.
+
+- The stolen funds are being laundered through cryptocurrency exchanges, and analysts believe that Lazarus' distinct on-chain fingerprint points to their involvement in the attack. However, independent confirmation from blockchain analysis firms or law enforcement agencies is still pending.",,https://www.bleepingcomputer.com/news/security/lazarus-hackers-linked-to-60-million-alphapo-cryptocurrency-heist/,,FINANCIAL GAIN,MEDIUM
+2539,26/07/2023,30,GLOBAL,,Fenix Cybercrime Group Targets Tax-Paying Individuals in LATAM with Cloned Portals,INCIDENT,TARGETED INDIVIDUAL,,B1,MEDIUM,"Fenix, a Mexico-based cybercrime group","Unknown
+(Tax-paying individuals in Mexico and Chile accessing the cloned portals.)",PHISHING," - Reported on July 26, a Mexico-based cybercrime group known as Fenix is targeting tax-paying individuals in Mexico and Chile by cloning official portals of their tax authorities (SAT and SII) to steal valuable data.
+
+- The attackers prompt victims to download a supposed security tool, but instead, it installs malware, enabling the theft of sensitive information like credentials. Fenix's goal is to gain initial access to different companies in the region and sell this access to ransomware affiliates.
+
+- The group employs phishing campaigns and compromises weak websites, using vulnerable WordPress engines and typosquatting domains to deceive users. The researchers warn that these sophisticated Latin America-focused actors are difficult to track and anticipate, emphasizing the need for proactive measures against their actions.",,https://thehackernews.com/2023/07/fenix-cybercrime-group-poses-as-tax.html,,FINANCIAL GAIN,LOW
+2540,26/07/2023,30,GLOBAL,,Nitrogen Malware Campaign Targets North American Organizations with Fake Software Ads,INCIDENT,DIGITAL INFRASTRUCTURE,TARGETED INDIVIDUAL,B1,MEDIUM,Nitrogen cybercrime group,"Unknown
+(Users who click on fake software ads displayed in Google and Bing search results)",PHISHING," - On July 26, the Nitrogen initial access malware campaign exploits Google and Bing search ads to promote fake software sites, infecting users with Cobalt Strike and potentially BlackCat/ALPHV ransomware payloads.
+
+- Targeting technology and non-profit organizations in North America, the campaign impersonates popular software like AnyDesk, WinSCP, Cisco AnyConnect, and TreeSize Free. Victims are redirected to compromised WordPress pages mimicking legitimate download sites for the software.
+
+- Users unknowingly download trojanized ISO installers that contain the Nitrogen initial access malware, which establishes communication with the threat actor's command-and-control server and deploys Cobalt Strike Beacons onto the victim's system.
+
+- The ultimate goal appears to be staging compromised systems for possible ransomware deployment, as previously seen with BlackCat ransomware. Users are advised to download software only from official developer sites and be cautious of ISO files, which are uncommon for distributing legitimate Windows software.",,https://www.bleepingcomputer.com/news/security/new-nitrogen-malware-pushed-via-google-ads-for-ransomware-attacks/,,UNKNOWN,MEDIUM
+2541,26/07/2023,30,GLOBAL,,AI-Driven FraudGPT Raises Concerns for Cybersecurity,RESEARCH,TARGETED INDIVIDUAL,,B1,MEDIUM,Unknown individual or group  (FraudGPT),"Potential targets of cyber attacks, including individuals and organizations",PHISHING," - On July 26, a new platform called FraudGPT, utilizing generative AI, has been spotted on multiple marketplaces and Telegram since July 22, 2023.
+
+- Advertised by an author claiming to be a verified vendor on dark web marketplaces, FraudGPT is designed for offensive purposes, including creating spear-phishing emails, conducting BEC attacks, developing undetectable malware, and finding vulnerabilities in targeted platforms.
+
+- The chatbot offers various features, and the subscription prices range from $200 per month to $1,700 for twelve months. Researchers have identified the threat actor's email and warn about the potential dangers associated with AI-driven cybercrime tools like FraudGPT and WormGPT.
+
+- While organizations can implement ethical safeguards in AI tools, cybercriminals may find ways to exploit similar technologies for malicious purposes, making it crucial to remain vigilant and use conventional tools to detect and combat AI-enabled phishing attacks.",,https://securityaffairs.com/148829/cyber-crime/fraudgpt-cybercrime-generative-ai.html,https://www.infosecurity-magazine.com/news/dark-web-markets-fraudgpt-ai-tool/,FINANCIAL GAIN,MEDIUM
+2542,26/07/2023,30,HK,,Cl0p ransomware claimed to have targeted  the company TTI (Techtronic Industries) Group,INCIDENT,MANUFACTURING,,B3,MEDIUM,Cl0p,TTI (Techtronic Industries) Group,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company TTI (Techtronic Industries) Group, a global leader in the design, manufacturing, and marketing of power tools, outdoor power equipment, and related products.
+
+- TTI Group owns several well-known brands, including Milwaukee, Ryobi, Hoover, Oreck, and AEG.
+
+- TTI (Techtronic Industries) Group is highly relevant in Europe due to its significant presence and operations in the region. TTI Group is a global leader in the power tools and outdoor power equipment industry, and their products are widely available in many European countries.",,https://twitter.com/FalconFeedsio/status/1684231080973328384,,FINANCIAL GAIN,MEDIUM
+2543,27/07/2023,30,PK,,BLOODNET hackers group claims to have targeted multiple government websites from Pakistan,INCIDENT,PUBLIC ADMIN,,B3,MEDIUM,BLOODNET,8 government websites ,DOS/DDOS/RDOS," - Reported on July 27, BLOODNET hackers group claimed to have targeted multiple government websites from Pakistan:
+https://abc.gov.pk/
+https://business.gov.pk/
+https://cii.gov.pk/
+https://fto.gov.pk/
+https://hit.gov.pk/
+https://iap.gov.pk/
+https://moip.gov.pk/
+https://ncsw.gov.pk/
+
+- All of the above websites are up at the moment (July 27).",,https://t.me/BLOODNET_RUS/298,https://twitter.com/FalconFeedsio/status/1684455081276575745,DISRUPTION,LOW
+2544,27/07/2023,30,TR,,CL0P ransomware group added Kale Pratt & Whitney to their victim list,INCIDENT,MANUFACTURING,,B3,MEDIUM,Cl0p,Kale Pratt & Whitney,RANSOMWARE," - On July 27, Cl0p ransomware targeted Kale Pratt & Whitney, is a joint venture between Kale Group and Pratt & Whitney, a subsidiary of United Technologies Corporation. The company is headquartered in ?zmir, Turkey, and it produces components for aircraft engines.
+
+- Kale Pratt & Whitney is relevant in Europe because the company is a major supplier of aircraft engine components to the European aerospace industry. The company's products are used in a variety of European aircraft, including the Airbus A320 family and the Boeing 737 MAX.",,https://twitter.com/FalconFeedsio/status/1684512138197438464,,FINANCIAL GAIN,MEDIUM
+2545,26/07/2023,30,US,GLOBAL,CL0P ransomware group added Deloitte to their victim list,INCIDENT,SERVICES,,B3,MEDIUM,Cl0p,Deloitte,RANSOMWARE," - On July 26, Cl0p ransomware targeted the company Deloitte (http://deloitte.com).
+
+- Deloitte is a global professional services firm with a significant presence in Europe. Deloitte provides a wide range of services, including audit, consulting, tax, and advisory services to clients across various industries.
+
+- In Europe, Deloitte operates in multiple countries and has offices in major cities.",59508,https://twitter.com/FalconFeedsio/status/1684238243619909636,,FINANCIAL GAIN,MEDIUM
+2546,26/07/2023,30,US,,Cybercriminal Group Cl0p Targets PBI Research Services in Major Data Breach,INCIDENT,BANKING/FINANCE,HEALTH,B3,HIGH,Cl0p,"PBI Research Services
+Genworth Financial
+Wilton Reassurance
+CalPERS",RANSOMWARE," - Reported on July 26, the cybercriminal group Cl0p targeted PBI Research Services (PBI) and exploited the MOVEit vulnerability, resulting in a data breach of at least 99 GB of data from the company.
+
+- PBI had previously confirmed the breach in June before Cl0p listed them as victims. The breach also affected other organizations, including Genworth Financial, Wilton Reassurance, and CalPERS, with millions of individuals' personal data stolen. Genworth Financial reported that data of between 2.5 and 2.7 million people was impacted, Wilton Reassurance had data of about 1,482,490 customers stolen, and CalPERS had around 769,000 of its members impacted by the incident.",,https://twitter.com/SofiaSZM/status/1684228901726199808,,FINANCIAL GAIN,LOW
+2547,27/07/2023,30,CZ,,NoName targeted the administrators of the portal of the Czech Ministry of Defense and the authorization service on the e-learning site on July 27,INCIDENT,DEFENSE,PUBLIC ADMIN,B3,MEDIUM,NoName,"The portal of the Czech Ministry of Defense
+The authorization service on the e-learning site",DOS/DDOS/RDOS," - Reported on July 27, NoName claimed to have targeted:
+The portal of the Czech Ministry of Defense (https://www.army.cz/)
+The authorization service on the e-learning site (https://elearning.mzv.cz)
+
+- The websites are still down at the moment (July 28).",,https://t.me/noname05716/4316,https://t.me/noname05716/4317,DISRUPTION,LOW
+2548,27/07/2023,30,EE,,CoinsPaid Crypto-Payments Service Hit by Lazarus Cyber Attack,INCIDENT,DIGITAL INFRASTRUCTURE,,B1,MEDIUM,Lazarus,CoinsPaid (Estonian crypto-payments service provider),MINER/CRYPTO," - Reported on July 27, Estonian crypto-payments service provider CoinsPaid suffered a cyber attack on July 22nd, 2023, resulting in the theft of $37.2 million worth of cryptocurrency.
+
+- The company attributes the attack to the North Korean hacking group Lazarus, a sophisticated state-backed actor with financial motivations. Despite the significant economic damage, CoinsPaid assures that client funds are secure and fully available, and the incident won't have a material impact on its business. The company's team of experts has been working to fortify its systems, gradually restoring services to a new, secure environment.
+
+- Chainalysis, Binance, Crystal, and other organizations are assisting in the investigation, and Estonian law enforcement authorities are also involved in tracking the hackers. The attack is part of a recent wave of targeting cryptocurrency payment processors, with Alphapo also recently falling victim to Lazarus.
+
+- The cyber attack on CoinsPaid, is relevant to Europe due to its impact on the financial services sector and the potential risk posed to European cryptocurrency users. ",,https://www.bleepingcomputer.com/news/security/coinspaid-blames-lazarus-hackers-for-theft-of-37-300-000-in-crypto/,,FINANCIAL GAIN,MEDIUM
+2549,27/07/2023,30,ES,,"NoName targeted the portal of the Catalan hotel group ""Majestic Hotel Group"", the website of the leading Spanish hotel chain in Barcelona ""Catalonia Hotels & Resorts"" , the Spanish site ""Autobuses"", the website of the Spanish state chain of luxury hotels ""Paradores de Turismo de España"", the official website of the Spanish operator company ""Telefónica Global Solutions"" and the site of the Spanish operator Orange Espagne on July 27 & 28",INCIDENT,TRANSPORT,MEDIA/ENTERTAINMENT,B3,MEDIUM,NoName,"The Catalan hotel group ""Majestic Hotel Group""
+The website of the leading Spanish hotel chain in Barcelona ""Catalonia Hotels & Resorts""
+The Spanish site ""Autobuses""
+The website of the Spanish state chain of luxury hotels ""Paradores de Turismo de España""
+The official website of the Spanish operator company ""Telefónica Global Solutions""
+The site of the Spanish operator Orange Spanish",DOS/DDOS/RDOS," - Reported on July 27, NoName targeted the following Spanish victims:
+The Catalan hotel group ""Majestic Hotel Group"" (https://www.majestichotelgroup.com/en/barcelona/hotel-majestic)
+The website of the leading Spanish hotel chain in Barcelona ""Catalonia Hotels & Resorts"" (https://www.cataloniahotels.com/ca/sobre-nosaltres)
+The Spanish site ""Autobuses"" (https://www.autobuses.net/)
+The website of the Spanish state chain of luxury hotels ""Paradores de Turismo de España"" (https://paradores.es/es)
+
+- On July 28, NoName targeted the following Spanish victims:
+The official website of the Spanish operator company ""Telefónica Global Solutions"" (https://www.globalsolutions.telefonica.com/en/)
+The site of the Spanish operator Orange Espagne (https://www.orange.es/)
+
+- Some of the websites are still down at the moment (July 28).",,https://t.me/noname05716/4323,"https://t.me/noname05716/4322
+
+https://t.me/noname05716/4318
+
+https://t.me/noname05716/4315
+
+https://t.me/noname05716/4326
+
+https://t.me/noname05716/4330",DISRUPTION,LOW
+2550,28/07/2023,30,EU,,BlueBravo's GraphicalProton: Advanced Phishing Attack on Eastern European Diplomatic Entities,CAMPAIGN,PUBLIC ADMIN,,B1,MEDIUM,BlueBravo,Diplomatic Organizations in Eastern Europe,PHISHING," - On July 28, the Russian nation-state actor, BlueBravo (also known as APT29, Cloaked Ursa, and Midnight Blizzard), has been targeting diplomatic entities in Eastern Europe with a new backdoor called GraphicalProton.
+
+- The phishing campaign, observed between March and May 2023, utilizes legitimate internet services (LIS) for command-and-control obfuscation, making detection more challenging. GraphicalProton is the latest addition to BlueBravo's arsenal of malware, and it uses Microsoft's OneDrive or Dropbox for communication, unlike its predecessor GraphicalNeutrino, which used Notion for C2. BlueBravo seems to prioritize cyber espionage against European government sector entities, possibly linked to the Russian government's interest in strategic data during and after the war in Ukraine.
+
+- The malware is delivered through ISO or ZIP files attached to phishing emails, disguised as vehicle-themed lures, and targeted towards diplomatic organizations. Network defenders are urged to be vigilant about the misuse of legitimate services within their enterprises to prevent such attacks.",,https://thehackernews.com/2023/07/bluebravo-deploys-graphicalproton.html,,ESPIONAGE,MEDIUM
+2551,26/07/2023,30,EU,GLOBAL,"Massive Data Breach Hits NATO's COI Portal: 845MB of Stolen Files and 8,000 Rows of Sensitive User Data Exposed",INCIDENT,DEFENSE,PUBLIC ADMIN,B1,HIGH,SiegedSec Hacking Group,NATO (COI Portal),DATA," - Reported on July 26, NATO's IT team was investigating an alleged data theft hack on the Communities of Interest (COI) Cooperation Portal by a hacking group called SiegedSec.
+
+- The COI Cooperation Portal is an unclassified information-sharing platform used to support NATO organizations and member nations. The hacking group posted on Telegram, claiming to have stolen hundreds of documents from the portal, compromising 845MB of files, 8,000 rows of sensitive user-related information, unclassified documents, and user account access details.
+
+- The leaked data includes full names, company/unit details, job titles, business email IDs, residence addresses, and photos, affecting 31 NATO member nations. While SiegedSec doesn't seem financially motivated, they appear to be hacktivists targeting NATO in protest against member countries' attacks on human rights. NATO is taking the situation seriously and actively responding to the alleged cyber attack.",59520,https://www.bleepingcomputer.com/news/security/nato-investigates-alleged-data-theft-by-siegedsec-hackers/,,IDEOLOGY,HIGH
+2552,28/07/2023,30,FR,,Bluenet Z targeted the website of the company JLP Automatisme France,INCIDENT,SERVICES,MANUFACTURING,B3,MEDIUM,Bluenet Z,JLP Automatisme France,DOS/DDOS/RDOS," - Reported on July 28, Bluenet Z targeted the website of the company JLP Automatisme France (https://www.jlpautomatisme.fr/).
+
+- The website is not functional at the moment (July 28).",,https://twitter.com/Cyberknow20/status/1684677091063914497,,DISRUPTION,LOW
+2553,27/07/2023,30,GR,,Security Breach at Papaki.com: Unauthorized Access to Customer Data Exposes Personal Information,INCIDENT,DIGITAL SERVICE PROVIDER,,A1,MEDIUM,Unknown,Customers of Papaki.com,DATA," - On July 27, Papaki.com, a web hosting and domain name services provider, confirmed a recent security breach that resulted in unauthorized third-party access to their systems in July 2023.
+
+- The company is urging customers to enable two-factor authentication (2FA) on their accounts and change their service codes as a security precaution. The investigation shows that the breach possibly affected personal data such as login details, contact information, invoicing data, and domain-related details.
+
+- While credit card details were not compromised, the company is taking measures to strengthen security, including hiring a forensic IT contractor and notifying relevant authorities. Customers are advised to implement 2FA, change passwords for various services, and remain vigilant about potential risks to their accounts.
+
+- Papaki.com is a web hosting and domain name services provider that operates in Europe, making the breach highly relevant to the region. The exposure of personal data, such as login details, contact information, invoicing data, and domain-related details, poses significant privacy and security concerns for European customers. Additionally, the company's response, including hiring a forensic IT contractor and notifying competent authorities, highlights the importance of cybersecurity measures within the European business landscape.",59521,https://www.papaki.com/blog/2023/07/27/mh-eksousiodothmeni-prosvasi/,https://techblog.gr/internet/to-papaki-dechthike-kyvernoepithesi-poia-dedomena-echoyn-paraviastei/,UNKNOWN,MEDIUM
+2554,27/07/2023,30,IT,,Transnational Call Center Scam Targets Italian Citizens in Massive Financial Fraud,INCIDENT,DIGITAL INFRASTRUCTURE,TARGETED INDIVIDUAL,B1,MEDIUM,"Unknown
+(Criminal organization with international reach)","Unknown
+(Italian citizens, residing throughout the national territory)",FRAUD," - Reported on July 27, Italian and Albanian authorities have jointly conducted an extensive investigation targeting a transnational organization engaged in fraudulent online trading activities.
+
+- The investigation led to the issuance of fourteen pre-trial detention orders, with nine subjects arrested and five being actively sought. The criminal group operated through a sophisticated call center, using persuasion techniques to convince victims to invest small amounts initially, promising high returns through fake trading platforms.
+
+- Over 90,000 telephone contacts of Italian citizens were identified, and around 42,000 phone calls made by the call center were intercepted. The investigation revealed an estimated financial scam exceeding five million euros, with potentially much larger sums involved. The group's sophisticated technical skills allowed them to obfuscate their true IP addresses, making it difficult to trace their actions.
+
+- Additionally, victims' money was converted into cryptocurrencies linked to untraceable foreign accounts. The investigation unveiled a complex organizational structure, with operators competing to secure commissions from scams at the expense of unsuspecting victims.",,https://www.redhotcyber.com/post/la-polizia-postale-smaschera-una-operazione-albanese-che-truffava-le-persone-con-facili-guadagni-online/,,FINANCIAL GAIN,LOW
+2555,28/07/2023,30,IT,,Phishing Scam Targets Shipping Customers Using GLS as Bait,INCIDENT,POSTAL/COURIER ,,B1,MEDIUM,Unknown,"Unknown
+(Recipients of GLS-related shipping emails)",PHISHING," - Reported on July 28, the shipping phishing scam has switched carriers, using GLS as the new bait in its fraudulent emails. The scam operates similarly to previous versions, with a fake package notification leading recipients to a simulated delivery organization page.
+
+- Victims are prompted to make a small payment to receive the package, but when providing personal and credit card information, they unknowingly fall victim to data theft and involuntary subscriptions to a costly fraudulent service, which is challenging to cancel, costing over 43 euros every two weeks.",,https://www.difesaesicurezza.com/cyber/cybercrime-nuovo-template-per-la-truffa-phishing-a-tema-spedizioni/,,FINANCIAL GAIN,LOW
+2556,26/07/2023,30,IT,,Cybercriminal Group Cybercat Claims Breach of Italian Accounting Council's Network,INCIDENT,PUBLIC ADMIN,,B3,MEDIUM,Cybercat,National Council of Chartered Accountants and Accounting Experts of Italy (CNDCEC),INTRUSION," - On July 26, the cybercriminal group Cybercat has asserted via its Telegram channel that it successfully breached the network of the National Council of Chartered Accountants and Accounting Experts of Italy (CNDCEC, http://commercialisti.it).",,https://twitter.com/SofiaSZM/status/1684175270842884096,,UNKNOWN,LOW
+2557,27/07/2023,30,SE,GLOBAL,High-Severity Vulnerability in Axis Network Door Controller Exposes Physical and Cyber Threats,VULNERABILITY,DIGITAL SERVICE PROVIDER,,B1,HIGH,Unknown,"Unknown
+(Users of Axis A1001 Network Door Controller and facilities relying on its security features)",INTRUSION," - Reported on July 27, Swedish security solutions provider Axis Communications has identified a high-severity vulnerability (CVE-2023-21406) in its A1001 network door controller, which could expose facilities to physical and cyber threats.
+
+- The flaw, related to the Open Supervised Device Protocol (OSDP), allows a heap-based buffer overflow in the controller's pacsiod process, potentially leading to arbitrary code execution. The vulnerability, discovered by industrial cybersecurity firm Otorio during an access control assessment project, can be exploited by attackers with physical access to the RS-485 twisted pair cable at the back of the access control reader.
+
+- This could enable unauthorized access to secured facilities, tampering with logs, and even remote code execution, posing a potential gateway to the internal IP network. Axis has released patches and security enhancements to address the issue, and Otorio plans to release an open-source OSDP assessment tool in the future.",,https://www.securityweek.com/axis-door-controller-vulnerability-exposes-facilities-to-physical-cyber-threats/,,UNKNOWN,HIGH
+2558,26/07/2023,30,CN,,Cyber-Attack on Wuhan Earthquake Monitoring Center Linked to Overseas Government,INCIDENT,PUBLIC ADMIN,,B1,MEDIUM,"Unknown
+(Hacker group with an ""overseas government background"")",Wuhan Earthquake Monitoring Center (China),INTRUSION," - The Wuhan Earthquake Monitoring Center in China fell victim to a cyber-incident perpetrated by a hacker group with an ""overseas government background,"" according to the Chinese Communist Party-owned Global Times newspaper's report on July 26.
+
+- The Wuhan Municipal Emergency Management Bureau confirmed the cyber-attack and stated that affected equipment was immediately sealed off and authorities were informed.
+
+- The newspaper claimed that preliminary evidence pointed to the US as the source of the government-backed cyber-attack. The incident took place amidst rising tensions between the US and China, with both sides accusing each other of engaging in cyber espionage and cyber warfare.
+
+- However, some experts expressed skepticism about the involvement of the US government, suggesting that the attack might be the work of independent hackers or hacktivists with different motives.",,https://www.infosecurity-magazine.com/news/china-wuhan-earthquake-cyber-attack/,,ESPIONAGE,LOW
+2559,28/07/2023,30,GLOBAL,,Critical Vulnerability in Metabase Exposes Businesses to Remote Code Execution,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+(Users of Metabase software (open-source editions prior to 0.46.6.1 and Metabase Enterprise versions before 1.46.6.1))",INTRUSION," - On July 28, users of Metabase, a widely used business intelligence and data visualization software, are urged to update to the latest version due to the discovery of a critical vulnerability (CVE-2023-38646) that could lead to pre-authenticated remote code execution on affected installations.
+
+- The flaw impacts open-source editions prior to 0.46.6.1 and Metabase Enterprise versions before 1.46.6.1. Exploiting this flaw would allow an unauthenticated attacker to run arbitrary commands with the same privileges as the Metabase server, posing a significant security risk.
+
+- Though there is no evidence of active exploitation, data indicates that a large number of Metabase instances are vulnerable, with 5,488 out of 6,936 instances at risk as of July 26, 2023. The vulnerability is attributed to a JDBC connection issue in the API endpoint ""/api/setup/validate,"" enabling an SQL injection flaw in the H2 database driver to be exploited to obtain a reverse shell on the system.
+
+- Users who cannot immediately apply the patches are advised to take protective measures such as blocking requests to the vulnerable endpoint, isolating the Metabase instance from the production network, and monitoring for suspicious activity.",,https://thehackernews.com/2023/07/major-security-flaw-discovered-in.html,,UNKNOWN,HIGH
+2560,27/07/2023,30,GLOBAL,,Mirai Botnet Targets Misconfigured Apache Tomcat Servers with Cryptocurrency Mining Malware,INCIDENT,DIGITAL INFRASTRUCTURE,,B1,MEDIUM,Unknown,Misconfigured and poorly secured Apache Tomcat servers,BOTNETS," - On July 27, Aqua Security has reported a new campaign that targets misconfigured and insecure Apache Tomcat servers with the aim of delivering the Mirai botnet malware and cryptocurrency miners.
+
+- Over a two-year period, Aqua detected more than 800 attacks against its Tomcat server honeypots, with 96% of them linked to the Mirai botnet. The attackers utilized a web shell script named ""neww"" to gain access to the Tomcat web application manager through a brute force attack using different credential combinations. Once successful, the threat actors deployed a malicious WAR file containing the web shell class 'cmd.jsp', allowing them to execute arbitrary commands on the compromised Tomcat server, including downloading and running the ""neww"" script.
+
+- The final stage malware is a variant of the notorious Mirai botnet, which utilizes the infected hosts for distributed denial-of-service (DDoS) attacks. To defend against this campaign, organizations are advised to secure their environments and practice good credential hygiene to thwart brute-force attacks. Additionally, the report highlights the rise of cryptocurrency mining, with a 399% increase in cryptojacking attacks globally in the first half of 2023, indicating the lucrative nature of such cyber activities.",,https://thehackernews.com/2023/07/hackers-target-apache-tomcat-servers.html,,FINANCIAL GAIN,MEDIUM
+2561,27/07/2023,30,GLOBAL,,DoS Vulnerability in ModSecurity Web Application Firewall,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+(Users and organizations relying on ModSecurity WAF for web application protection)",DOS/DDOS/RDOS," - Reported on July 27, Trustwave's open-source Web Application Firewall (WAF) engine, ModSecurity, has been found to have a Denial of Service (DoS) risk due to a vulnerability in four transformation actions.
+
+- The flaw, tracked as CVE-2023-38285, was identified by Trustwave's cybersecurity researchers who alerted the ModSecurity team. The vulnerability affects v3.0.10 of ModSecurity, while v2 remains unaffected. The impacted transformations include removeWhitespace, removeNull, replaceNull, and removeCommentsChar.
+
+- Although functionally correct, these transformations proved inefficient against worst-case performance with maliciously crafted HTTP requests, potentially causing significant delays. The ModSecurity team released fixes to address the issue, but users can also implement alternative mitigations and configuration changes to prevent DoS attacks on affected installations.",,https://cybersecuritynews.com/modsecurity-waf-flaw-let-hackers-trigger-dos-attack/,,DISRUPTION,HIGH
+2562,27/07/2023,30,GLOBAL,,Critical Vulnerabilities in Ninja Forms Plugin Pose Data Theft Risk for WordPress Users,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+(Users and organizations utilizing the Ninja Forms plugin for WordPress)",INTRUSION," - On July 27, the popular WordPress form-building plugin, Ninja Forms, has been found to have three vulnerabilities that could lead to privilege escalation and data theft.
+
+- Patchstack researchers disclosed the issues to the plugin's developer, Saturday Drive, and the vulnerabilities impact versions 3.6.25 and older. The vulnerabilities include a POST-based reflected XSS flaw (CVE-2023-37979) that allows unauthenticated users to escalate privileges and steal information, as well as broken access control issues (CVE-2023-38393 and CVE-2023-38386) that enable Subscribers and Contributors to export user-submitted data.
+
+- The developer released version 3.6.26 on July 4th, 2023, to fix the flaws, but statistics show that around 400,000 sites remain vulnerable due to not updating. The delay in publicly reporting the vulnerabilities aimed to give users time to patch, but many haven't done so yet. Website admins are strongly advised to update to version 3.6.26 or later immediately or disable the plugin until the patch can be applied.",,https://www.bleepingcomputer.com/news/security/wordpress-ninja-forms-plugin-flaw-lets-hackers-steal-submitted-data/,https://www.infosecurity-magazine.com/news/high-severity-flaws-ninja-forms/,UNKNOWN,HIGH
+2563,27/07/2023,30,GLOBAL,,Purple Fox Malware: New Techniques Targeting MS SQL Servers,NEW TTPS,DIGITAL INFRASTRUCTURE,,B1,MEDIUM,Unknown,"Unknown
+(Organizations with MS SQL servers at risk of exploitation)",MALWARE," - Reported on July 27 that, the Purple Fox malware has been active since 2018 and has recently adopted a new technique to deliver its payload through poorly managed MS SQL servers.
+
+- Threat actors use PowerShell commands to install malicious MSI files and conceal themselves as a rootkit. Initially distributed as a fake malicious Telegram installer in early 2022, the malware uses obfuscated PowerShell downloaded from a URL, containing functions like MsiMake and Invoke-Tater, which can exploit vulnerabilities and run malware files in a fileless manner.
+
+- By executing PowerShell code, the threat actors can install the malicious MSI file as an admin without user intervention, ensuring persistence and privilege escalation through changes in registry keys. The malware installs a rootkit and sets up a service that can only be launched in safe mode, making it challenging to detect and remove. Security administrators using EDR software can mitigate its spread by shutting down infection vectors before they are exploited. ",,https://cybersecuritynews.com/purplefox-malware-ms-sql-servers/,,UNKNOWN,MEDIUM
+2564,27/07/2023,30,GLOBAL,,Emerging Threat: Mysterious Elephant APT Targeting Asia-Pacific Region,INCIDENT,TARGETED INDIVIDUAL,,B1,MEDIUM,Mysterious Elephant APT group,"Unknown
+(Entities in the Asia-Pacific region)",INTRUSION," - Reported on July 27, in the second quarter of 2023, a new malicious actor called ""Mysterious Elephant"" emerged in the Asia-Pacific region, displaying distinct tactics, techniques, and procedures (TTPs) that set them apart while sharing similarities with other threat actors like Confucius and SideWinder.
+
+- Cybersecurity firm Kaspersky's report also highlighted more details about the ""Operation Triangulation"" campaign, which utilized an unknown iOS malware platform distributed through zero-click iMessage exploits. The report further revealed that the notorious hacking group Lazarus upgraded its MATA framework and introduced a new variant, MATAv5, along with Lazarus subgroup BlueNoroff adopting new delivery methods and programming languages.
+
+- Geopolitical influences continue to drive APT (Advanced Persistent Threat) activity across regions like Europe, Latin America, the Middle East, and various parts of Asia. Kaspersky researchers emphasized the need for vigilance and preparedness against evolving threats, recommending timely software updates, cybersecurity training, and the use of threat intelligence and Endpoint Detection and Response (EDR) solutions to protect against targeted attacks and minimize their impact.",,https://www.infosecurity-magazine.com/news/apt-mysterious-elephant-q2-2023/,,UNKNOWN,MEDIUM
+2565,27/07/2023,30,GLOBAL,,Sensitive Data Exposure in DepositFiles Exposes High-Risk Threat Landscape,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,MEDIUM,Unknown,"Unknown
+(DepositFiles users and the company itself)",DATA," - On July 27, the cybersecurity firm Cybernews has discovered that DepositFiles, a file storage and sharing service, exposed sensitive information through a publicly accessible environment configuration file. The exposed data includes credentials for multiple databases, email accounts, payment systems, and social media accounts, leaving DepositFiles' user privacy and the company itself at risk.
+
+- The exposed Redis database credentials can lead to data breaches, data manipulation, and unauthorized access to sensitive information, while leaked credentials for ""billing"" and ""uploads"" databases indicate potential access to sensitive financial information.
+
+- Additionally, the exposed payment wall secret key could be abused for fraudulent transactions, and the disclosure of Google App ID and Secret raises concerns about unauthorized access to Google services and APIs. Cybercriminals could use the exposed information to impersonate the company, conduct phishing attacks, and distribute harmful files or links. DepositFiles has since fixed the issue after being informed by Cybernews.",,https://securityaffairs.com/148875/data-breach/depositfiles-exposed-config-file.html,,UNKNOWN,MEDIUM
+2566,27/07/2023,30,GLOBAL,,Call of Duty: Modern Warfare 2 Players Targeted by Auto-Infection Malware,INCIDENT,DIGITAL INFRASTRUCTURE,MEDIA/ENTERTAINMENT,B1,MEDIUM,Unknown,"Unknown
+(Players of Call of Duty: Modern Warfare 2)",MALWARE," - On July 27, Attackers have discovered a method to automatically infect players of the game Call of Duty: Modern Warfare 2 with a computer worm, as reported by TechCrunch.
+
+- Last month, a message on gaming platform Steam indicated that ""hacked lobbies"" were used to distribute the malware among players, with a dll file of the game being replaced during the process.
+
+- The exact mechanism of the spread remains unknown. Instructions have been posted on the game's forum for players who may have visited a ""hacked lobby"". As a response to reports of the issue, game publisher Activision took the servers of the 2009 game offline. Further details about the malware and its implications are currently not available.
+
+- The malware attack is relevant to the gaming community in Europe, as Call of Duty: Modern Warfare 2 is widely played in the region. European players are at risk of being infected if they encounter the ""hacked lobbies"" distributing the malware. Game publisher Activision's response to the issue also affects European players, as the servers were taken offline due to reports of the problem. ",,https://www.security.nl/posting/804980/%22Spelers+Call+of+Duty%3A+Modern+Warfare+2+besmet+door+computerworm%22?channel=rss,,FINANCIAL GAIN,MEDIUM
+2567,28/07/2023,30,GLOBAL,,Joint Cybersecurity Advisory: ACSC and CISA Warn of Critical IDOR Flaws in Web Applications,WARNING,DIGITAL INFRASTRUCTURE,,B1,HIGH,Unknown,"Unknown
+(Users and Consumers of Web Applications)",INTRUSION," - Reported on July 28, the Australian Cyber Security Centre (ACSC) and the U.S. Cybersecurity and Infrastructure Security Agency (CISA), along with the U.S. National Security Agency (NSA), have issued a joint cybersecurity advisory warning about security vulnerabilities in web applications that could be exploited by malicious actors to conduct data breaches and steal confidential data.
+
+- Specifically, the advisory highlights the risks associated with Insecure Direct Object Reference (IDOR) flaws, which occur when applications lack adequate authentication and authorization checks, allowing unauthorized access to sensitive data.
+
+- These vulnerabilities have been increasingly exploited by adversaries to compromise the personal, financial, and health information of users and consumers. The agencies recommend adopting secure-by-design principles and ensuring proper authentication and authorization checks for all requests that modify, delete, or access sensitive data.
+
+- The advisory comes in the wake of CISA's analysis of risk and vulnerability assessments, revealing that ""Valid Accounts"" were the most common successful attack technique used by threat actors. To counter this, critical infrastructure entities are urged to implement strong password policies and employ phishing-resistant multi-factor authentication while monitoring access and network communication logs for abnormal activities.
+
+- In addition the advisory highlights critical vulnerabilities that could impact users and businesses worldwide, including those in Europe. European organizations and individuals who use web applications could be at risk of falling victim to data breaches and unauthorized access due to IDOR flaws.",,https://thehackernews.com/2023/07/cybersecurity-agencies-warn-against.html,,UNKNOWN,HIGH
+2568,27/07/2023,30,GLOBAL,,Active Attacks Target Zimbra Email Servers with Zero-Day XSS Vulnerability,VULNERABILITY,DIGITAL SERVICE PROVIDER,,B1,MEDIUM,Unknown,"Unknown
+(Users of Zimbra Collaboration Suite (ZCS) email servers)",ZERO DAY," - On July 27, Zimbra Collaboration Suite (ZCS) email servers were targeted in active attacks exploiting a zero-day vulnerability, CVE-2023-38750, reflecting Cross-Site Scripting (XSS).
+
+- Google Threat Analysis Group (TAG) discovered the flaw, which allowed unauthorized access to internal JSP and XML files. Zimbra urged customers to manually install updates to fix the vulnerability and recently released ZCS 10.0.2 with the necessary security fixes.
+
+- The Cybersecurity and Infrastructure Security Agency (CISA) added the vulnerability to its Known Exploited Vulnerabilities Catalog, mandating federal agencies to address the issue by August 17, 2023, to protect their networks. Experts advise private organizations to review the Catalog and promptly address the identified vulnerabilities in their infrastructure to mitigate risks from potential exploits.",,https://securityaffairs.com/148880/security/zimbra-fixed-2023-38750-zcs.html,,UNKNOWN,MEDIUM
+2569,28/07/2023,30,GLOBAL,,Exploiting Windows Search: A New Cyber Threat Unveiled,VULNERABILITY,DIGITAL INFRASTRUCTURE,,B1,MEDIUM,Unknown,"Unknown
+(Users of Windows OS)",INTRUSION," - Reported on July 28, cybersecurity researchers at Trellix have uncovered a new attack technique that exploits the ""search-ms"" URI protocol in Windows to deceive users through emails, compromised websites, and disguised attachments.
+
+- Threat actors use this protocol to deliver malicious payloads, including remote access trojans (RATs) like Async RAT and Remcos RAT. The attackers employ various PowerShell file variants, continuously updating files to evade security product detection. They also use file servers lacking authentication, increasing the risk of further exploitation.
+
+- To protect against this threat, users are advised to exercise caution with untrusted links, avoid engaging with suspicious URLs and files, and keep their systems and antivirus tools up-to-date with the latest security patches and updates.",,https://cybersecuritynews.com/hackers-exploit-windows-search/,,UNKNOWN,MEDIUM
+2570,27/07/2023,30,TW,,"LockBit Ransomware Targets Show Chwan Memorial Hospital, Threatens Data Exposure",INCIDENT,HEALTH,,B3,MEDIUM,Lockbit,Show Chwan Memorial Hospital ,RANSOMWARE," - On July 27, the notorious LockBit ransomware group has targeted Show Chwan Memorial Hospital (http://scmh.org.tw), adding the medical institution to their growing list of victims.
+
+- The group has threatened to publish the hospital's data on August 12, 2023, raising serious concerns about the potential exposure of sensitive information and the risk of data breach in the healthcare sector.",,https://twitter.com/FalconFeedsio/status/1684539067877163010,,FINANCIAL GAIN,LOW

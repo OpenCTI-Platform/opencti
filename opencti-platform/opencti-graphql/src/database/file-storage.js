@@ -207,7 +207,7 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
 };
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
-  const { manual = false, connectorId = null, bypassValidation = false } = opts;
+  const { manual = false, connectorId = null, configuration = null, bypassValidation = false } = opts;
   let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
@@ -221,9 +221,9 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
       const work = await createWork(context, user, connector, 'Manual import', fileId);
       return { connector, work };
     };
-    const actionList = await Promise.all(R.map((connector) => createConnectorWork(connector), connectors));
+    const actionList = await Promise.all(connectors.map((connector) => createConnectorWork(connector)));
     // Send message to all correct connectors queues
-    const buildConnectorMessage = (data) => {
+    const buildConnectorMessage = (data, connectorConfiguration) => {
       const { work } = data;
       return {
         internal: {
@@ -237,14 +237,15 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
           entity_id: entityId, // Context of the upload
           bypass_validation: bypassValidation, // Force no validation
         },
+        configuration: connectorConfiguration
       };
     };
     const pushMessage = (data) => {
       const { connector } = data;
-      const message = buildConnectorMessage(data);
+      const message = buildConnectorMessage(data, configuration);
       return pushToConnector(connector.internal_id, message);
     };
-    await Promise.all(R.map((data) => pushMessage(data), actionList));
+    await Promise.all(actionList.map((data) => pushMessage(data)));
   }
   return connectors;
 };

@@ -30,6 +30,8 @@ import notificationManager from './manager/notificationManager';
 import publisherManager from './manager/publisherManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
+import importCsvConnector from './connector/importCsv/importCsv-connector';
+import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './connector/importCsv/importCsv-configuration';
 import playbookManager from './manager/playbookManager';
 
 // region dynamic modules
@@ -54,6 +56,13 @@ const startModules = async () => {
     await connectorManager.start();
   } else {
     logApp.info('[OPENCTI-MODULE] Connector manager not started (disabled by configuration)');
+  }
+  // endregion
+  // region import csv built in connector
+  if (ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR) {
+    await importCsvConnector.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] Connector built in manager not started (disabled by configuration)');
   }
   // endregion
   // region Retention manager
@@ -139,6 +148,11 @@ const shutdownModules = async () => {
   // region Connector manager
   if (ENABLED_CONNECTOR_MANAGER) {
     stoppingPromises.push(connectorManager.shutdown());
+  }
+  // endregion
+  // region import csv built in connector
+  if (ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR) {
+    stoppingPromises.push(importCsvConnector.shutdown());
   }
   // endregion
   // region Retention manager

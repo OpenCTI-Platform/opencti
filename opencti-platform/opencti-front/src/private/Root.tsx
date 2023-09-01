@@ -101,6 +101,14 @@ const rootPrivateQuery = graphql`
         }
       }
     }
+    schemaSMOs: subTypes(type: "Stix-Meta-Object") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
     schemaSROs: subTypes(type: "stix-core-relationship") {
       edges {
         node {
@@ -110,6 +118,10 @@ const rootPrivateQuery = graphql`
       }
     }
     schemaRelationsTypesMapping {
+      key
+      values
+    }
+    schemaRelationsRefTypesMapping {
       key
       values
     }
@@ -145,12 +157,14 @@ interface RootComponentProps {
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const [analyticsInstance, setAnalyticsInstance] = useState(Analytics({ app: 'opencti' }));
   const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
-  const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSROs, schemaRelationsTypesMapping } = queryData;
+  const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSMOs, schemaSROs, schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = queryData;
   const schema = {
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),
+    smos: schemaSMOs.edges.map((smo) => smo.node),
     sros: schemaSROs.edges.map((sco) => sco.node),
     schemaRelationsTypesMapping: new Map(schemaRelationsTypesMapping.map((n) => [n.key, n.values])),
+    schemaRelationsRefTypesMapping: new Map(schemaRelationsRefTypesMapping.map((n) => [n.key, n.values])),
   };
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);

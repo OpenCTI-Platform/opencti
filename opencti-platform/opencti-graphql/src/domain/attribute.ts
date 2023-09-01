@@ -5,13 +5,19 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination, isNotEmptyField } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
-import { defaultScale, getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
+import {
+  defaultScale,
+  getAttributesConfiguration,
+  getEntitySettingFromCache
+} from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { RelationRefDefinition } from '../schema/relationRef-definition';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { internalFindByIds } from '../database/middleware-loader';
 import type { BasicStoreEntity } from '../types/store';
 import { telemetry } from '../config/tracing';
+import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from './attribute-utils';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 interface ScaleAttribute {
   name: string
@@ -33,6 +39,8 @@ interface AttributeConfigMeta {
   defaultValues?: DefaultValue[]
   scale?: string
 }
+
+// -- ATTRIBUTE CONFIGURATION --
 
 // Returns a filtered list of AttributeConfigMeta objects built from schema attributes definition and
 // stored entity settings attributes configuration (only attributes that can be customized in entity settings)
@@ -146,15 +154,7 @@ export const getDefaultValuesAttributesForSetting = async (context: AuthContext,
   return attributes.filter((a) => a.defaultValues).map((a) => ({ ...a, defaultValues: a.defaultValues ?? [] }));
 };
 
-const queryAttributeNames = async (types: string[]) => {
-  const attributes = R.uniq(types.map((type) => schemaAttributesDefinition.getAttributeNames(type)).flat());
-  const sortByLabel = R.sortBy(R.toLower);
-  const finalResult = R.pipe(
-    sortByLabel,
-    R.map((n) => ({ node: { id: n, key: types[0], value: n } }))
-  )(attributes);
-  return buildPagination(0, null, finalResult, finalResult.length);
-};
+// -- ATTRIBUTES --
 
 export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, opts: QueryRuntimeAttributesArgs = {} as QueryRuntimeAttributesArgs) => {
   const { attributeName } = opts;
@@ -162,5 +162,71 @@ export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, 
 };
 
 export const getSchemaAttributeNames = (elementTypes: string[]) => {
-  return queryAttributeNames(elementTypes);
+  const attributes = R.uniq(elementTypes.map((type) => schemaAttributesDefinition.getAttributeNames(type)).flat());
+  const sortByLabel = R.sortBy(R.toLower);
+  const finalResult = R.pipe(
+    sortByLabel,
+    R.map((n) => ({ node: { id: n, key: elementTypes[0], value: n } }))
+  )(attributes);
+  return buildPagination(0, null, finalResult, finalResult.length);
+};
+
+export const getSchemaAttributes = async (context: AuthContext, entityType: string) => {
+  // Handle attributes
+  const mapAttributes = schemaAttributesDefinition.getAttributes(entityType);
+  const resultAttributes: AttributeConfigMeta[] = Array.from(mapAttributes.values())
+    .filter((attribute) => !INTERNAL_ATTRIBUTES.includes(attribute.name))
+    .map((attribute) => ({
+      ...attribute,
+      mandatory: attribute.mandatoryType === 'external',
+    }));
+
+  // Handle ref
+  const refs = schemaRelationsRefDefinition.getRelationsRef(entityType);
+  const resultRefs: AttributeConfigMeta[] = refs
+    .filter((ref) => !INTERNAL_REFS.includes(ref.inputName))
+    .map((ref) => ({
+      name: ref.inputName,
+      label: ref.label,
+      type: 'ref',
+      mandatoryType: ref.mandatoryType,
+      multiple: ref.multiple,
+      mandatory: ref.mandatoryType === 'external',
+    }));
+  if (isStixCoreRelationship(entityType)) {
+    resultRefs.push({
+      name: 'from',
+      label: 'from',
+      type: 'ref',
+      mandatoryType: 'external',
+      multiple: false,
+      mandatory: true,
+    });
+    resultRefs.push({
+      name: 'to',
+      label: 'to',
+      type: 'ref',
+      mandatoryType: 'external',
+      multiple: false,
+      mandatory: true,
+    });
+  }
+
+  const results = [...resultAttributes, ...resultRefs];
+
+  // Handle user defined attributes
+  const entitySetting = await getEntitySettingFromCache(context, entityType);
+  if (entitySetting) {
+    const userDefinedAttributes = getAttributesConfiguration(entitySetting);
+    userDefinedAttributes?.forEach((userDefinedAttr) => {
+      const customizableAttr = results.find((a) => a.name === userDefinedAttr.name);
+      if (customizableAttr) {
+        if (customizableAttr.mandatoryType === 'customizable' && isNotEmptyField(userDefinedAttr.mandatory)) {
+          customizableAttr.mandatory = userDefinedAttr.mandatory;
+        }
+      }
+    });
+  }
+
+  return results;
 };

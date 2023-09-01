@@ -238,6 +238,7 @@ class ConnectorComponent extends Component {
                   aria-haspopup="true"
                   color="primary"
                   size="large"
+                  disabled={connector.built_in}
                 >
                   <LayersRemove />
                 </IconButton>
@@ -522,6 +523,7 @@ const Connector = createRefetchContainer(
           push
           push_exchange
         }
+        built_in
       }
     `,
   },

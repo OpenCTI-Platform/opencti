@@ -143,8 +143,8 @@ export const batchMarkingDefinitions = (context, user, stixCoreRelationshipIds) 
 
 export const getSpecVersionOrDefault = ({ spec_version }) => spec_version ?? STIX_SPEC_VERSION;
 
-export const schemaRelationsTypesMapping = () => {
-  const entries = Object.entries(stixCoreRelationshipsMapping);
+export const schemaTypesMapping = (mapping) => {
+  const entries = Object.entries(mapping);
   const flatEntries = [];
   entries.forEach(([key, values]) => {
     const [fromType, toType] = key.split('_');
@@ -158,6 +158,9 @@ export const schemaRelationsTypesMapping = () => {
       values: values.map((def) => def.name)
     };
   }));
+};
+export const schemaRelationsTypesMapping = () => {
+  return schemaTypesMapping(stixCoreRelationshipsMapping);
 };
 
 const isParentType = (key) => {
