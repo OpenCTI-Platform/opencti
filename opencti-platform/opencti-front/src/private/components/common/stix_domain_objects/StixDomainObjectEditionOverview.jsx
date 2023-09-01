@@ -25,7 +25,7 @@ import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import ConfidenceField from "../form/ConfidenceField";
+import ConfidenceField from '../form/ConfidenceField';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -299,14 +299,14 @@ const StixDomainObjectEditionContainer = (props) => {
     R.assoc('objectMarking', objectMarking),
     R.pick(['name', 'description', 'createdBy', 'objectMarking', 'confidence']),
   )(stixDomainObject);
-  if ('aliases' in stixDomainObject) {
+  if ('aliases' in stixDomainObject && stixDomainObject.aliases !== undefined) {
     initialValues = R.assoc(
       'aliases',
       stixDomainObject.aliases ? R.join(',', stixDomainObject.aliases) : '',
       initialValues,
     );
   }
-  if ('x_opencti_aliases' in stixDomainObject) {
+  if ('x_opencti_aliases' in stixDomainObject && stixDomainObject.x_opencti_aliases !== undefined) {
     initialValues = R.assoc(
       'x_opencti_aliases',
       stixDomainObject.x_opencti_aliases
@@ -359,7 +359,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   }
                 />
               )}
-              {'aliases' in stixDomainObject && (
+              {'aliases' in stixDomainObject && stixDomainObject.aliases !== undefined && (
                 <Field
                   component={TextField}
                   variant="standard"
@@ -377,7 +377,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   }
                 />
               )}
-              {'x_opencti_aliases' in stixDomainObject && (
+              {'x_opencti_aliases' in stixDomainObject && stixDomainObject.x_opencti_aliases !== undefined && (
                 <Field
                   component={TextField}
                   variant="standard"
