@@ -1,8 +1,8 @@
 <h1 align="center">
-  <a href="https://www.opencti.io"><img src="https://www.filigran.io/wp-content/uploads/2023/08/opencti_github.png" alt="OpenCTI"></a>
+  <a href="https://opencti.io"><img src="https://filigran.io/wp-content/uploads/2023/08/opencti_github.png" alt="OpenCTI"></a>
 </h1>
 <p align="center">
-  <a href="https://www.opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
+  <a href="https://opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
   <a href="https://docs.opencti.io" alt="Documentation"><img src="https://img.shields.io/badge/documentation-latest-orange.svg" /></a>
   <a href="https://community.filigran.io" alt="Slack"><img src="https://img.shields.io/badge/slack-3K%2B%20members-4A154B" /></a>
   <a href="https://drone.filigran.io/OpenCTI-Platform/opencti"><img src="https://drone.filigran.io/api/badges/OpenCTI-Platform/opencti/status.svg" /></a>
@@ -18,7 +18,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 The structuration of the data is performed using a knowledge schema based on the [STIX2 standards](https://oasis-open.github.io/cti-documentation/). It has been designed as a modern web application including a [GraphQL API](https://graphql.org) and an UX oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as [MISP](https://github.com/MISP/MISP), [TheHive](https://github.com/TheHive-Project/TheHive), [MITRE ATT&CK](https://github.com/mitre/cti), etc.
 
-![Screenshot](https://www.filigran.io/wp-content/uploads/2022/08/dashboard.png "Screenshot")
+![Screenshot](https://filigran.io/wp-content/uploads/2023/08/opencti-dashboard.png "Screenshot")
 
 ## Objective
 
@@ -30,12 +30,12 @@ OpenCTI not only allows [imports](https://docs.opencti.io/latest/usage/import-ex
 
 ## Editions of the platform
 
-OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features](https://www.filigran.io/en/solutions/offers/enterprise-editions) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
+OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features]((https://filigran.io/offering/opencti-enterprise-edition) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
 
 * OpenCTI Community Edition, licensed under the [Apache 2, Version 2.0 license](LICENSE).
 * OpenCTI Enterprise Edition, licensed under the [Non-Commercial license](LICENSE).
 
-To understand what OpenCTI Enterprise Edition brings in terms of features, just check the [Enterprise Editions page](https://www.filigran.io/en/solutions/offers/enterprise-editions) on the Filigran website. You can also try this edition by enabling it in the settings of the platform.
+To understand what OpenCTI Enterprise Edition brings in terms of features, just check the [Enterprise Editions page](https://filigran.io/offering/opencti-enterprise-edition) on the Filigran website. You can also try this edition by enabling it in the settings of the platform.
 
 ## Documentation and demonstration
 
@@ -86,9 +86,9 @@ If you need support or you wish to engage a discussion about the OpenCTI platfor
 
 ### Authors
 
-OpenCTI is a product designed and developed by the company [Filigran](https://www.filigran.io).
+OpenCTI is a product designed and developed by the company [Filigran](https://filigran.io).
 
-<a href="https://www.filigran.io" alt="Filigran"><img src="https://www.filigran.io/wp-content/uploads/2023/08/filigran_text_small.png" width="200" /></a>
+<a href="https://filigran.io" alt="Filigran"><img src="https://filigran.io/wp-content/uploads/2023/08/filigran_text_medium.png" width="200" /></a>
 
 ### GDPR and the OpenCTI OpenStreetMap server
 
