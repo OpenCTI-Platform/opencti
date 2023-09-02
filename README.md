@@ -1,6 +1,6 @@
 # OpenCTI client for Python
 
-[![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://www.opencti.io)
+[![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://opencti.io)
 [![CircleCI](https://circleci.com/gh/OpenCTI-Platform/client-python.svg?style=shield)](https://circleci.com/gh/OpenCTI-Platform/client-python/tree/master)
 [![readthedocs](https://readthedocs.org/projects/opencti-client-for-python/badge/?style=flat)](https://opencti-client-for-python.readthedocs.io/en/latest/)
 [![GitHub release](https://img.shields.io/github/release/OpenCTI-Platform/client-python.svg)](https://github.com/OpenCTI-Platform/client-python/releases/latest)
@@ -91,6 +91,6 @@ $ pytest ./tests/02-integration/
 
 ## About
 
-OpenCTI is a product designed and developed by the company [Filigran](https://www.filigran.io).
+OpenCTI is a product designed and developed by the company [Filigran](https://filigran.io).
 
-<a href="https://www.filigran.io" alt="Filigran"><img src="https://www.filigran.io/wp-content/uploads/2023/08/filigran_text_small.png" width="200" /></a>
+<a href="https://filigran.io" alt="Filigran"><img src="https://filigran.io/wp-content/uploads/2023/08/filigran_text_medium.png" width="200" /></a>
