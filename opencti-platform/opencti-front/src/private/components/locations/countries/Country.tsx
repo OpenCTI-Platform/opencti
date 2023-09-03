@@ -20,9 +20,6 @@ const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
   },
-  container: {
-    margin: 0,
-  },
 }));
 
 export const countryFragment = graphql`
@@ -97,7 +94,7 @@ const CountryComponent = ({
     countryData,
   );
   return (
-    <div className={classes.container}>
+    <>
       <StixDomainObjectHeader
         entityType="Country"
         disableSharing={true}
@@ -123,7 +120,10 @@ const CountryComponent = ({
           />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={country} displayConfidence={false} />
+          <StixDomainObjectOverview
+            stixDomainObject={country}
+            displayConfidence={false}
+          />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -152,7 +152,7 @@ const CountryComponent = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CountryEdition countryId={country.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

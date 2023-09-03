@@ -331,7 +331,7 @@ const PositionCreation = ({
   const onReset = () => handleClose();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_positions', paginationOptions, 'positionAdd');
   return (
-    <div>
+    <>
       <Fab
         onClick={handleOpen}
         color="secondary"
@@ -368,7 +368,7 @@ const PositionCreation = ({
           />
         </div>
       </Drawer>
-    </div>
+    </>
   );
 };
 

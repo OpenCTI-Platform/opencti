@@ -4,7 +4,9 @@ import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
 import { useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import CountryEditionContainer, { countryEditionQuery } from './CountryEditionContainer';
+import CountryEditionContainer, {
+  countryEditionQuery,
+} from './CountryEditionContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -31,15 +33,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const CountryEdition = ({ countryId } : { countryId: string }) => {
+const CountryEdition = ({ countryId }: { countryId: string }) => {
   const classes = useStyles();
   const [open, setOpen] = useState<boolean>(false);
   const [commit] = useMutation(countryEditionOverviewFocus);
-
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
     commit({
       variables: {
@@ -49,11 +49,12 @@ const CountryEdition = ({ countryId } : { countryId: string }) => {
     });
     setOpen(false);
   };
-
-  const queryRef = useQueryLoading<CountryEditionContainerQuery>(countryEditionQuery, { id: countryId });
-
+  const queryRef = useQueryLoading<CountryEditionContainerQuery>(
+    countryEditionQuery,
+    { id: countryId },
+  );
   return (
-    <div>
+    <>
       <Fab
         onClick={handleOpen}
         color="secondary"
@@ -71,7 +72,9 @@ const CountryEdition = ({ countryId } : { countryId: string }) => {
         onClose={handleClose}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
             <CountryEditionContainer
               queryRef={queryRef}
               handleClose={handleClose}
@@ -79,7 +82,7 @@ const CountryEdition = ({ countryId } : { countryId: string }) => {
           </React.Suspense>
         )}
       </Drawer>
-    </div>
+    </>
   );
 };
 

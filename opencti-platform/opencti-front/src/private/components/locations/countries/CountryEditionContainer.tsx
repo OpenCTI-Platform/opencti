@@ -42,8 +42,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CountryEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<CountryEditionContainerQuery>
+  handleClose: () => void;
+  queryRef: PreloadedQuery<CountryEditionContainerQuery>;
 }
 
 export const countryEditionQuery = graphql`
@@ -58,12 +58,12 @@ export const countryEditionQuery = graphql`
   }
 `;
 
-const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> = ({ handleClose, queryRef }) => {
+const CountryEditionContainer: FunctionComponent<
+CountryEditionContainerProps
+> = ({ handleClose, queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const queryData = usePreloadedQuery(countryEditionQuery, queryRef);
-
   if (queryData.country) {
     return (
       <>
@@ -94,7 +94,6 @@ const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> =
       </>
     );
   }
-
   return <Loader variant={LoaderVariant.inElement} />;
 };
 

@@ -40,14 +40,15 @@ export const countryOverviewFragment = graphql`
 `;
 
 interface CountryOverviewProps {
-  countryRef: CountryOverview_country$key,
+  countryRef: CountryOverview_country$key;
 }
 
-const CountryOverviewComponent: FunctionComponent<CountryOverviewProps> = ({ countryRef }) => {
+const CountryOverviewComponent: FunctionComponent<CountryOverviewProps> = ({
+  countryRef,
+}) => {
   const { t, fldt } = useFormatter();
   const classes = useStyles();
   const country = useFragment(countryOverviewFragment, countryRef);
-
   return (
     <div style={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>
@@ -58,27 +59,15 @@ const CountryOverviewComponent: FunctionComponent<CountryOverviewProps> = ({ cou
           {t('Creation date')}
         </Typography>
         {fldt(country.created)}
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
+        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
           {t('Modification date')}
         </Typography>
         {fldt(country.modified)}
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
+        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
           {t('Author')}
         </Typography>
         <ItemAuthor createdBy={propOr(null, 'createdBy', country)} />
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
+        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
           {t('Description')}
         </Typography>
         <ExpandableMarkdown source={country.description} limit={400} />

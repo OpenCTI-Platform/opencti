@@ -10,7 +10,11 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { CountryEditionOverview_country$key } from './__generated__/CountryEditionOverview_country.graphql';
 import { Option } from '../../common/form/ReferenceField';
@@ -72,10 +76,7 @@ const countryMutationRelationDelete = graphql`
     $relationship_type: String!
   ) {
     countryEdit(id: $id) {
-      relationDelete(
-        toId: $toId, 
-        relationship_type: $relationship_type
-      ) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CountryEditionOverview_country
       }
     }
@@ -118,34 +119,32 @@ const countryEditionOverviewFragment = graphql`
 `;
 
 interface CountryEditionOverviewProps {
-  countryRef: CountryEditionOverview_country$key,
-  context: readonly ({
+  countryRef: CountryEditionOverview_country$key;
+  context:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  } | null)[]
+  | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface CountryEditionFormValues {
-  name: string
-  description: string | null
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  x_opencti_workflow_id: Option
-  message?: string,
-  references?: Option[]
+  name: string;
+  description: string | null;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  x_opencti_workflow_id: Option;
+  message?: string;
+  references?: Option[];
 }
 
-const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewProps> = ({
-  countryRef,
-  context,
-  enableReferences = false,
-  handleClose,
-}) => {
+const CountryEditionOverviewComponent: FunctionComponent<
+CountryEditionOverviewProps
+> = ({ countryRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -153,16 +152,22 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
     x_opencti_workflow_id: Yup.object(),
   };
   const countryValidator = useSchemaEditionValidation('Country', basicShape);
-
   const queries = {
     fieldPatch: countryMutationFieldPatch,
     relationAdd: countryMutationRelationAdd,
     relationDelete: countryMutationRelationDelete,
     editionFocus: countryEditionOverviewFocus,
   };
-  const editor = useFormEditor(country, enableReferences, queries, countryValidator);
-
-  const onSubmit: FormikConfig<CountryEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const editor = useFormEditor(
+    country,
+    enableReferences,
+    queries,
+    countryValidator,
+  );
+  const onSubmit: FormikConfig<CountryEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -191,7 +196,6 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
       },
     });
   };
-
   const handleSubmitField = (name: string, value: Option | string) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
@@ -211,7 +215,6 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
         .catch(() => false);
     }
   };
-
   const initialValues: CountryEditionFormValues = {
     name: country.name,
     description: country.description,
@@ -220,93 +223,94 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
     objectMarking: convertMarkings(country),
     x_opencti_workflow_id: convertStatus(t, country) as Option,
   };
-
   return (
-      <Formik enableReinitialize={true}
-        initialValues={initialValues as never}
-        validationSchema={countryValidator}
-        onSubmit={onSubmit}>
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues as never}
+      validationSchema={countryValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          {country?.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Country"
               onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
-            />
-            {country?.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Country"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
+              onChange={handleSubmitField}
               setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
               }
-              onChange={editor.changeCreated}
             />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
-              }
-              onChange={editor.changeMarking}
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
+            onChange={editor.changeMarking}
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={country.id}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={country.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 

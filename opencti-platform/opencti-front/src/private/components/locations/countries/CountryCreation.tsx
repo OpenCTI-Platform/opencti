@@ -98,21 +98,21 @@ const countryMutation = graphql`
 `;
 
 interface CountryAddInput {
-  name: string
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: Option[]
-  file: File | undefined
+  name: string;
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  file: File | undefined;
 }
 
 interface CountryFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   inputValue?: string;
 }
 
@@ -128,19 +128,18 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t('This field is required')),
-    description: Yup.string()
-      .nullable(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    description: Yup.string().nullable(),
   };
-  const countryValidator = useSchemaCreationValidation(COUNTRY_TYPE, basicShape);
+  const countryValidator = useSchemaCreationValidation(
+    COUNTRY_TYPE,
+    basicShape,
+  );
   const [commit] = useMutation<CountryCreationMutation>(countryMutation);
-
-  const onSubmit: FormikConfig<CountryAddInput>['onSubmit'] = (values, {
-    setSubmitting,
-    resetForm,
-  }) => {
+  const onSubmit: FormikConfig<CountryAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     const input: CountryCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -168,158 +167,151 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
       },
     });
   };
-
-  const initialValues = useDefaultValues<CountryAddInput>(
-    COUNTRY_TYPE,
-    {
-      name: '',
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
-
-  return <Formik<CountryAddInput>
-    initialValues={initialValues}
-    validationSchema={countryValidator}
-    onSubmit={onSubmit}
-    onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          detectDuplicate={['Country']}
-        />
-        <Field
-          component={MarkdownField}
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows="4"
-          style={{ marginTop: 20 }}
-        />
-        <CreatedByField
-          name="createdBy"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-        />
-        <ObjectLabelField
-          name="objectLabel"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-          values={values.objectLabel}
-        />
-        <ObjectMarkingField
-          name="objectMarking"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-        />
-        <ExternalReferencesField
-          name="externalReferences"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-          values={values.externalReferences}
-        />
-        <Field
-          component={SimpleFileUpload}
-          name="file"
-          label={t('Associated file')}
-          FormControlProps={{
-            style: {
+  const initialValues = useDefaultValues<CountryAddInput>(COUNTRY_TYPE, {
+    name: '',
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
+  return (
+    <Formik<CountryAddInput>
+      initialValues={initialValues}
+      validationSchema={countryValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Country']}
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={{
               marginTop: 20,
               width: '100%',
-            },
-          }}
-          InputLabelProps={{
-            fullWidth: true,
-            variant: 'standard',
-          }}
-          InputProps={{
-            fullWidth: true,
-            variant: 'standard',
-          }}
-          fullWidth={true}
-        />
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleReset}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={submitForm}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Create')}
-          </Button>
-        </div>
-      </Form>
-    )}
-  </Formik>;
+            }}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
 };
 
-const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLinesPaginationQuery$variables }) => {
+const CountryCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: CountriesLinesPaginationQuery$variables;
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_countries',
-    paginationOptions,
-    'countryAdd',
-  );
-
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_countries', paginationOptions, 'countryAdd');
   return (
-    <div>
-      <Fab onClick={handleOpen}
-           color="secondary"
-           aria-label="Add"
-           className={classes.createButton}>
+    <>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={handleClose}>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary">
+            color="primary"
+          >
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a country')}</Typography>
@@ -332,7 +324,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
           />
         </div>
       </Drawer>
-    </div>
+    </>
   );
 };
 
