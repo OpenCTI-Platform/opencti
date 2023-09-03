@@ -2,22 +2,22 @@
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import React from 'react';
-import { Route, Switch } from 'react-router-dom';
-import { graphql, useFragment } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
-import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import CityPopover from './CityPopover';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
-import { CityKnowledge_city$key } from './__generated__/CityKnowledge_city.graphql';
+import React from "react";
+import { Route, Switch } from "react-router-dom";
+import { graphql, useFragment } from "react-relay";
+import makeStyles from "@mui/styles/makeStyles";
+import EntityStixCoreRelationships from "../../common/stix_core_relationships/EntityStixCoreRelationships";
+import StixDomainObjectKnowledge from "../../common/stix_domain_objects/StixDomainObjectKnowledge";
+import StixCoreRelationship from "../../common/stix_core_relationships/StixCoreRelationship";
+import CityPopover from "./CityPopover";
+import StixDomainObjectHeader from "../../common/stix_domain_objects/StixDomainObjectHeader";
+import StixSightingRelationship from "../../events/stix_sighting_relationships/StixSightingRelationship";
+import { CityKnowledge_city$key } from "./__generated__/CityKnowledge_city.graphql";
 
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: "0 200px 0 0",
   },
 }));
 
@@ -31,17 +31,15 @@ const cityKnowledgeFragment = graphql`
 
 const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
   const classes = useStyles();
-
   const city = useFragment<CityKnowledge_city$key>(
     cityKnowledgeFragment,
     cityData,
   );
   const link = `/dashboard/locations/cities/${city.id}/knowledge`;
-
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
-        entityType={'City'}
+        entityType={"City"}
         disableSharing={true}
         stixDomainObject={city}
         PopoverComponent={CityPopover}
@@ -87,17 +85,17 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['targets']}
+              relationshipTypes={["targets"]}
               isRelationReversed
               entityLink={link}
               stixCoreObjectTypes={[
-                'Attack-Pattern',
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-                'Tool',
+                "Attack-Pattern",
+                "Threat-Actor",
+                "Intrusion-Set",
+                "Campaign",
+                "Incident",
+                "Malware",
+                "Tool",
               ]}
               {...routeProps}
             />
@@ -109,23 +107,23 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['related-to']}
+              relationshipTypes={["related-to"]}
               stixCoreObjectTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-                'Tool',
-                'Vulnerability',
-                'Individual',
-                'Organization',
-                'Sector',
-                'Region',
-                'Country',
-                'Administrative-Area',
-                'City',
-                'Position',
+                "Threat-Actor",
+                "Intrusion-Set",
+                "Campaign",
+                "Incident",
+                "Malware",
+                "Tool",
+                "Vulnerability",
+                "Individual",
+                "Organization",
+                "Sector",
+                "Region",
+                "Country",
+                "Administrative-Area",
+                "City",
+                "Position",
               ]}
               entityLink={link}
               allDirections={true}
@@ -139,8 +137,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['located-at']}
-              stixCoreObjectTypes={['Organization']}
+              relationshipTypes={["located-at"]}
+              stixCoreObjectTypes={["Organization"]}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -153,8 +151,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['located-at']}
-              stixCoreObjectTypes={['Administrative-Area']}
+              relationshipTypes={["located-at"]}
+              stixCoreObjectTypes={["Administrative-Area"]}
               entityLink={link}
               isRelationReversed={false}
               {...routeProps}
@@ -167,8 +165,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['located-at']}
-              stixCoreObjectTypes={['Country']}
+              relationshipTypes={["located-at"]}
+              stixCoreObjectTypes={["Country"]}
               entityLink={link}
               isRelationReversed={false}
               {...routeProps}
@@ -181,8 +179,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['located-at']}
-              stixCoreObjectTypes={['Region']}
+              relationshipTypes={["located-at"]}
+              stixCoreObjectTypes={["Region"]}
               entityLink={link}
               isRelationReversed={false}
               {...routeProps}
@@ -195,8 +193,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Threat-Actor']}
+              relationshipTypes={["targets"]}
+              stixCoreObjectTypes={["Threat-Actor"]}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -209,8 +207,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Intrusion-Set']}
+              relationshipTypes={["targets"]}
+              stixCoreObjectTypes={["Intrusion-Set"]}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -223,8 +221,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Campaign']}
+              relationshipTypes={["targets"]}
+              stixCoreObjectTypes={["Campaign"]}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -237,8 +235,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Incident']}
+              relationshipTypes={["targets"]}
+              stixCoreObjectTypes={["Incident"]}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -251,8 +249,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Malware']}
+              relationshipTypes={["targets"]}
+              stixCoreObjectTypes={["Malware"]}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -265,8 +263,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Attack-Pattern']}
+              relationshipTypes={["targets"]}
+              stixCoreObjectTypes={["Attack-Pattern"]}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -279,8 +277,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['targets']}
-              stixCoreObjectTypes={['Tool']}
+              relationshipTypes={["targets"]}
+              stixCoreObjectTypes={["Tool"]}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -293,8 +291,8 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipTypes={['related-to', 'located-at']}
-              stixCoreObjectTypes={['Stix-Cyber-Observable']}
+              relationshipTypes={["related-to", "located-at"]}
+              stixCoreObjectTypes={["Stix-Cyber-Observable"]}
               entityLink={link}
               allDirections={true}
               isRelationReversed={true}

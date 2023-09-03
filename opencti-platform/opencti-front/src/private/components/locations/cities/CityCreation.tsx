@@ -1,73 +1,73 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
-import { FormikConfig } from 'formik/dist/types';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { SimpleFileUpload } from 'formik-mui';
-import { useFormatter } from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/MarkdownField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { Theme } from '../../../../components/Theme';
-import { insertNode } from '../../../../utils/store';
-import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLinesPaginationQuery.graphql';
-import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { Option } from '../../common/form/ReferenceField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import React, { FunctionComponent, useState } from "react";
+import { Field, Form, Formik } from "formik";
+import Drawer from "@mui/material/Drawer";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Fab from "@mui/material/Fab";
+import { Add, Close } from "@mui/icons-material";
+import * as Yup from "yup";
+import { graphql, useMutation } from "react-relay";
+import makeStyles from "@mui/styles/makeStyles";
+import { FormikConfig } from "formik/dist/types";
+import { RecordSourceSelectorProxy } from "relay-runtime";
+import { SimpleFileUpload } from "formik-mui";
+import { useFormatter } from "../../../../components/i18n";
+import TextField from "../../../../components/TextField";
+import CreatedByField from "../../common/form/CreatedByField";
+import ObjectMarkingField from "../../common/form/ObjectMarkingField";
+import MarkdownField from "../../../../components/MarkdownField";
+import { ExternalReferencesField } from "../../common/form/ExternalReferencesField";
+import { Theme } from "../../../../components/Theme";
+import { insertNode } from "../../../../utils/store";
+import { CitiesLinesPaginationQuery$variables } from "./__generated__/CitiesLinesPaginationQuery.graphql";
+import { CityCreationMutation$variables } from "./__generated__/CityCreationMutation.graphql";
+import ObjectLabelField from "../../common/form/ObjectLabelField";
+import { Option } from "../../common/form/ReferenceField";
+import { useSchemaCreationValidation } from "../../../../utils/hooks/useEntitySettings";
+import { fieldSpacingContainerStyle } from "../../../../utils/field";
+import useDefaultValues from "../../../../utils/hooks/useDefaultValues";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
+    minHeight: "100vh",
+    width: "50%",
+    position: "fixed",
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
   },
   createButton: {
-    position: 'fixed',
+    position: "fixed",
     bottom: 30,
     right: 30,
   },
   buttons: {
     marginTop: 20,
-    textAlign: 'right',
+    textAlign: "right",
   },
   button: {
     marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
+    padding: "20px 20px 20px 60px",
   },
   closeButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 12,
     left: 5,
-    color: 'inherit',
+    color: "inherit",
   },
   importButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 15,
     right: 20,
   },
   container: {
-    padding: '10px 20px 20px 20px',
+    padding: "10px 20px 20px 20px",
   },
 }));
 
@@ -106,7 +106,7 @@ interface CityFormProps {
   inputValue?: string;
 }
 
-const CITY_TYPE = 'City';
+const CITY_TYPE = "City";
 
 export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   updater,
@@ -118,23 +118,22 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().min(2).required(t("This field is required")),
     description: Yup.string().nullable(),
     latitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t("This field must be a number"))
       .nullable(),
     longitude: Yup.number()
-      .typeError(t('This field must be a number'))
+      .typeError(t("This field must be a number"))
       .nullable(),
   };
   const cityValidator = useSchemaCreationValidation(CITY_TYPE, basicShape);
   const [commit] = useMutation(cityMutation);
-
-  const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (
+  const onSubmit: FormikConfig<CityAddInput>["onSubmit"] = (
     values,
     { setSubmitting, resetForm },
   ) => {
-    const input: CityCreationMutation$variables['input'] = {
+    const input: CityCreationMutation$variables["input"] = {
       name: values.name,
       description: values.description,
       latitude: parseFloat(values.latitude),
@@ -151,7 +150,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'cityAdd');
+          updater(store, "cityAdd");
         }
       },
       onCompleted: () => {
@@ -163,19 +162,17 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
       },
     });
   };
-
   const initialValues = useDefaultValues(CITY_TYPE, {
-    name: '',
-    description: '',
-    latitude: '',
-    longitude: '',
+    name: "",
+    description: "",
+    latitude: "",
+    longitude: "",
     createdBy: defaultCreatedBy,
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
     file: undefined,
   });
-
   return (
     <Formik<CityAddInput>
       initialValues={initialValues}
@@ -184,18 +181,18 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ margin: "20px 0 20px 0" }}>
           <Field
             component={TextField}
             name="name"
-            label={t('Name')}
+            label={t("Name")}
             fullWidth={true}
-            detectDuplicate={['City']}
+            detectDuplicate={["City"]}
           />
           <Field
             component={MarkdownField}
             name="description"
-            label={t('Description')}
+            label={t("Description")}
             fullWidth={true}
             multiline={true}
             rows={4}
@@ -204,14 +201,14 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           <Field
             component={TextField}
             name="latitude"
-            label={t('Latitude')}
+            label={t("Latitude")}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
           <Field
             component={TextField}
             name="longitude"
-            label={t('Longitude')}
+            label={t("Longitude")}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
@@ -239,20 +236,20 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           <Field
             component={SimpleFileUpload}
             name="file"
-            label={t('Associated file')}
+            label={t("Associated file")}
             FormControlProps={{
               style: {
                 marginTop: 20,
-                width: '100%',
+                width: "100%",
               },
             }}
             InputLabelProps={{
               fullWidth: true,
-              variant: 'standard',
+              variant: "standard",
             }}
             InputProps={{
               fullWidth: true,
-              variant: 'standard',
+              variant: "standard",
             }}
             fullWidth={true}
           />
@@ -263,7 +260,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
+              {t("Cancel")}
             </Button>
             <Button
               variant="contained"
@@ -272,7 +269,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
+              {t("Create")}
             </Button>
           </div>
         </Form>
@@ -288,12 +285,11 @@ const CityCreation = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
-
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, "Pagination_cities", paginationOptions, "cityAdd");
   return (
     <div>
       <Fab
@@ -322,7 +318,7 @@ const CityCreation = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a city')}</Typography>
+          <Typography variant="h6">{t("Create a city")}</Typography>
         </div>
         <div className={classes.container}>
           <CityCreationForm
