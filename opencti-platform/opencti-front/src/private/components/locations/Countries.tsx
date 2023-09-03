@@ -32,7 +32,6 @@ const Countries: FunctionComponent = () => {
       },
     },
   );
-
   const renderLines = () => {
     const {
       searchTerm,
@@ -63,7 +62,6 @@ const Countries: FunctionComponent = () => {
       countriesLinesQuery,
       paginationOptions,
     );
-
     return (
       <ListLines
         sortBy={sortBy}
@@ -109,7 +107,6 @@ const Countries: FunctionComponent = () => {
       </ListLines>
     );
   };
-
   return (
     <>
       {renderLines()}

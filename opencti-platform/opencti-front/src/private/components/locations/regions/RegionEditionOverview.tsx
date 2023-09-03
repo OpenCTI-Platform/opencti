@@ -9,7 +9,11 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { Option } from '../../common/form/ReferenceField';
@@ -72,10 +76,7 @@ const regionMutationRelationDelete = graphql`
     $relationship_type: String!
   ) {
     regionEdit(id: $id) {
-      relationDelete(
-        toId: $toId,
-        relationship_type: $relationship_type
-      ) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...RegionEditionOverview_region
       }
     }
@@ -118,52 +119,55 @@ const regionEditionOverviewFragment = graphql`
 `;
 
 interface RegionEdititionOverviewProps {
-  regionRef: RegionEditionOverview_region$key,
-  context: readonly ({
+  regionRef: RegionEditionOverview_region$key;
+  context:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  } | null)[]
+  | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface RegionEditionFormValues {
-  name: string
-  description: string | null
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  x_opencti_workflow_id: Option
-  message?: string,
-  references?: Option[]
+  name: string;
+  description: string | null;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  x_opencti_workflow_id: Option;
+  message?: string;
+  references?: Option[];
 }
 
-const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewProps> = ({
-  regionRef,
-  context,
-  enableReferences = false,
-  handleClose,
-}) => {
+const RegionEditionOverviewComponent: FunctionComponent<
+RegionEdititionOverviewProps
+> = ({ regionRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
   const region = useFragment(regionEditionOverviewFragment, regionRef);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-
   const regionValidator = useSchemaEditionValidation('Region', basicShape);
-
   const queries = {
     fieldPatch: regionMutationFieldPatch,
     relationAdd: regionMutationRelationAdd,
     relationDelete: regionMutationRelationDelete,
     editionFocus: regionEditionOverviewFocus,
   };
-  const editor = useFormEditor(region, enableReferences, queries, regionValidator);
-
-  const onSubmit: FormikConfig<RegionEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const editor = useFormEditor(
+    region,
+    enableReferences,
+    queries,
+    regionValidator,
+  );
+  const onSubmit: FormikConfig<RegionEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
@@ -192,7 +196,6 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
       },
     });
   };
-
   const handleSubmitField = (name: string, value: Option | string) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
@@ -212,7 +215,6 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
         .catch(() => false);
     }
   };
-
   const initialValues = {
     name: region.name,
     description: region.description,
@@ -221,7 +223,6 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
     x_opencti_workflow_id: convertStatus(t, region) as Option,
     references: [],
   };
-
   return (
     <Formik
       enableReinitialize={true}

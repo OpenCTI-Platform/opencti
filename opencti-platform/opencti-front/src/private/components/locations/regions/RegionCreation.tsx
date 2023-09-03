@@ -126,21 +126,15 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t('This field is required')),
-    description: Yup.string()
-      .nullable(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    description: Yup.string().nullable(),
   };
   const regionValidator = useSchemaCreationValidation(REGION_TYPE, basicShape);
   const [commit] = useMutation(regionMutation);
 
   const onSubmit: FormikConfig<RegionAddInput>['onSubmit'] = (
     values,
-    {
-      setSubmitting,
-      resetForm,
-    },
+    { setSubmitting, resetForm },
   ) => {
     const input: RegionCreationMutation$variables['input'] = {
       name: values.name,
@@ -169,20 +163,15 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
       },
     });
   };
-
-  const initialValues = useDefaultValues(
-    REGION_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
-
+  const initialValues = useDefaultValues(REGION_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
   return (
     <Formik<RegionAddInput>
       initialValues={initialValues}
@@ -190,13 +179,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -294,12 +277,10 @@ const RegionCreation = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_regions', paginationOptions, 'regionAdd');
-
   return (
     <div>
       <Fab

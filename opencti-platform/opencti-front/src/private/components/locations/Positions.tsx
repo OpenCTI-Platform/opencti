@@ -11,26 +11,27 @@ import {
 } from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { PositionLineDummy } from './positions/PositionLine';
-import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';
+import PositionsLines, {
+  positionsLinesQuery,
+} from './positions/PositionsLines';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'view-positions';
 
 const Positions: FunctionComponent = () => {
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage < PositionsLinesPaginationQuery$variables >(LOCAL_STORAGE_KEY_POSITIONS, {
-    searchTerm: '',
-    sortBy: 'name',
-    orderAsc: true,
-    openExports: false,
-    filters: {} as Filters,
-    numberOfElements: {
-      number: 0,
-      symbol: '',
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PositionsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY_POSITIONS,
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+      openExports: false,
+      filters: {} as Filters,
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
     },
-  });
+  );
   const {
     searchTerm,
     sortBy,
@@ -57,8 +58,10 @@ const Positions: FunctionComponent = () => {
         isSortable: true,
       },
     };
-    const queryRef = useQueryLoading<PositionsLinesPaginationQuery>(positionsLinesQuery, paginationOptions);
-
+    const queryRef = useQueryLoading<PositionsLinesPaginationQuery>(
+      positionsLinesQuery,
+      paginationOptions,
+    );
     return (
       <ListLines
         sortBy={sortBy}
@@ -82,9 +85,17 @@ const Positions: FunctionComponent = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense fallback={
-            <>{Array(20).fill(0).map((idx) => (<PositionLineDummy key={idx} dataColumns={dataColumns}/>))}</>
-          }>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <PositionLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
             <PositionsLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
@@ -96,7 +107,6 @@ const Positions: FunctionComponent = () => {
       </ListLines>
     );
   };
-
   return (
     <>
       {renderLines()}

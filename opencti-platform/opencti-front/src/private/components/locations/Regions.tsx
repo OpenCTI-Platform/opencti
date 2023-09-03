@@ -28,7 +28,6 @@ const Regions: FunctionComponent = () => {
       },
     },
   );
-
   const renderLines = () => {
     const {
       searchTerm,
@@ -104,7 +103,6 @@ const Regions: FunctionComponent = () => {
       </ListLines>
     );
   };
-
   return (
     <>
       {renderLines()}

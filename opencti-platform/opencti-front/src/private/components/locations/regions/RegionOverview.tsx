@@ -40,10 +40,12 @@ export const regionOverviewFragment = graphql`
 `;
 
 interface RegionOverviewProps {
-  regionRef: RegionOverview_region$key,
+  regionRef: RegionOverview_region$key;
 }
 
-const RegionOverview: FunctionComponent<RegionOverviewProps> = ({ regionRef }) => {
+const RegionOverview: FunctionComponent<RegionOverviewProps> = ({
+  regionRef,
+}) => {
   const classes = useStyles();
   const { t, fldt } = useFormatter();
   const region = useFragment(regionOverviewFragment, regionRef);
@@ -57,27 +59,15 @@ const RegionOverview: FunctionComponent<RegionOverviewProps> = ({ regionRef }) =
           {t('Creation date')}
         </Typography>
         {fldt(region.created)}
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
+        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
           {t('Modification date')}
         </Typography>
         {fldt(region.modified)}
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
+        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
           {t('Author')}
         </Typography>
         <ItemAuthor createdBy={propOr(null, 'createdBy', region)} />
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 20 }}
-        >
+        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
           {t('Description')}
         </Typography>
         <ExpandableMarkdown source={region.description} limit={400} />

@@ -4,7 +4,9 @@ import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useMutation } from 'react-relay';
-import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
+import RegionEditionContainer, {
+  regionEditionQuery,
+} from './RegionEditionContainer';
 import { regionEditionOverviewFocus } from './RegionEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -35,11 +37,9 @@ const RegionEdition = ({ regionId }: { regionId: string }) => {
   const classes = useStyles();
   const [open, setOpen] = useState<boolean>(false);
   const [commit] = useMutation(regionEditionOverviewFocus);
-
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
     commit({
       variables: {
@@ -49,37 +49,40 @@ const RegionEdition = ({ regionId }: { regionId: string }) => {
     });
     setOpen(false);
   };
-
-  const queryRef = useQueryLoading<RegionEditionContainerQuery>(regionEditionQuery, { id: regionId });
-
+  const queryRef = useQueryLoading<RegionEditionContainerQuery>(
+    regionEditionQuery,
+    { id: regionId },
+  );
   return (
-      <div>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}
-        >
-          <Edit />
-        </Fab>
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
-          {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <RegionEditionContainer
-                queryRef={queryRef}
-                handleClose={handleClose}
-              />
-            </React.Suspense>
-          )}
-        </Drawer>
-      </div>
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Edit"
+        className={classes.editButton}
+      >
+        <Edit />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <RegionEditionContainer
+              queryRef={queryRef}
+              handleClose={handleClose}
+            />
+          </React.Suspense>
+        )}
+      </Drawer>
+    </div>
   );
 };
 

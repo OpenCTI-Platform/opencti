@@ -55,15 +55,15 @@ const Root = () => {
         path="/dashboard/locations/countries/:countryId"
         component={RootCountry}
       />
-        <BoundaryRoute
-            exact
-            path="/dashboard/locations/administrative_areas"
-            component={AdministrativeAreas}
-        />
-        <BoundaryRoute
-            path="/dashboard/locations/administrative_areas/:administrativeAreaId"
-            component={RootAdministrativeArea}
-        />
+      <BoundaryRoute
+        exact
+        path="/dashboard/locations/administrative_areas"
+        component={AdministrativeAreas}
+      />
+      <BoundaryRoute
+        path="/dashboard/locations/administrative_areas/:administrativeAreaId"
+        component={RootAdministrativeArea}
+      />
       <BoundaryRoute
         exact
         path="/dashboard/locations/cities"

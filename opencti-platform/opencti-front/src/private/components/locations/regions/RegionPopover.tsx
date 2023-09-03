@@ -20,7 +20,9 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { Theme } from '../../../../components/Theme';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import Transition from '../../../../components/Transition';
-import RegionEditionContainer, { regionEditionQuery } from './RegionEditionContainer';
+import RegionEditionContainer, {
+  regionEditionQuery,
+} from './RegionEditionContainer';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -50,43 +52,37 @@ const RegionPopoverDeletionMutation = graphql`
 const RegionPopover = ({ id }: { id: string }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const navigate = useNavigate();
-
   const [anchorEl, setAnchorEl] = useState<Element>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
 
   const [commit] = useMutation(RegionPopoverDeletionMutation);
-  const queryRef = useQueryLoading<RegionEditionContainerQuery>(regionEditionQuery, { id });
-
+  const queryRef = useQueryLoading<RegionEditionContainerQuery>(
+    regionEditionQuery,
+    { id },
+  );
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(undefined);
   };
-
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
   };
-
   const handleCloseDelete = () => {
     setDisplayDelete(false);
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   const handleCloseEdit = () => {
     setDisplayEdit(false);
   };
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -110,18 +106,10 @@ const RegionPopover = ({ id }: { id: string }) => {
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenEdit}>
-          {t('Update')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
       <Dialog
@@ -137,17 +125,10 @@ const RegionPopover = ({ id }: { id: string }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>
@@ -161,7 +142,9 @@ const RegionPopover = ({ id }: { id: string }) => {
         onClose={handleCloseEdit}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
             <RegionEditionContainer
               queryRef={queryRef}
               handleClose={handleClose}

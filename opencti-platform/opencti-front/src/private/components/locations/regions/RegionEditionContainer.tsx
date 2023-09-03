@@ -63,9 +63,7 @@ RegionEditionContainerProps
 > = ({ handleClose, queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const queryData = usePreloadedQuery(regionEditionQuery, queryRef);
-
   if (queryData.region) {
     return (
       <>
