@@ -83,7 +83,7 @@ class RootPosition extends Component {
     } = this.props;
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
     return (
-      <div>
+      <>
         <TopBar />
         <Route path="/dashboard/locations/positions/:positionId/knowledge">
           <StixCoreObjectKnowledgeBar
@@ -227,7 +227,7 @@ class RootPosition extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

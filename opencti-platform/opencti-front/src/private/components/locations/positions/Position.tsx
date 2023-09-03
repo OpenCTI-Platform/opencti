@@ -23,9 +23,6 @@ import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } fr
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -39,7 +36,6 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
   position,
 }) => {
   const classes = useStyles();
-
   const queryRef = useQueryLoading<PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery>(
     positionDetailsLocationRelationshipsLinesQuery,
     {
@@ -48,9 +44,8 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
       relationship_type: ['located-at'],
     },
   );
-
   return (
-    <div className={classes.container}>
+    <>
       <StixDomainObjectHeader
         entityType={'Position'}
         disableSharing={true}
@@ -84,7 +79,10 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
           />
         </Grid>
         <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={position} displayConfidence={false} />
+          <StixDomainObjectOverview
+            stixDomainObject={position}
+            displayConfidence={false}
+          />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -113,7 +111,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <PositionEdition positionId={position.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

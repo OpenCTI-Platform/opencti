@@ -14,82 +14,85 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 const nbOfRowsToLoad = 50;
 
 interface PositionsLinesProps {
-  queryRef: PreloadedQuery<PositionsLinesPaginationQuery>,
-  dataColumns: DataColumns,
-  paginationOptions?: PositionsLinesPaginationQuery$variables,
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
+  queryRef: PreloadedQuery<PositionsLinesPaginationQuery>;
+  dataColumns: DataColumns;
+  paginationOptions?: PositionsLinesPaginationQuery$variables;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 export const positionsLinesQuery = graphql`
-    query PositionsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: PositionsOrdering
-        $orderMode: OrderingMode
-        $filters: [PositionsFiltering]
-    ) {
-        ...PositionsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query PositionsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: PositionsOrdering
+    $orderMode: OrderingMode
+    $filters: [PositionsFiltering]
+  ) {
+    ...PositionsLines_data
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 const positionsLinesFragment = graphql`
-    fragment PositionsLines_data on Query
-        @argumentDefinitions(
-            search: { type: "String" }
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            orderBy: { type: "PositionsOrdering", defaultValue: name }
-            orderMode: { type: "OrderingMode", defaultValue: asc }
-            filters: { type: "[PositionsFiltering]" }
-        ) @refetchable(queryName: "PositionsLinesRefetchQuery") {
-            positions(
-                search: $search
-                first: $count
-                after: $cursor
-                orderBy: $orderBy
-                orderMode: $orderMode
-                filters: $filters
-            ) @connection(key: "Pagination_positions") {
-                edges {
-                    node {
-                        id
-                        name
-                        description
-                        ...PositionLine_node
-                    }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
-                }
-            }
+  fragment PositionsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "PositionsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "[PositionsFiltering]" }
+  )
+  @refetchable(queryName: "PositionsLinesRefetchQuery") {
+    positions(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_positions") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...PositionLine_node
         }
-    `;
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
-const PositionsLines: FunctionComponent<PositionsLinesProps> = ({ setNumberOfElements, queryRef, dataColumns, paginationOptions }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<PositionsLinesPaginationQuery, PositionsLines_data$key>({
+const PositionsLines: FunctionComponent<PositionsLinesProps> = ({
+  setNumberOfElements,
+  queryRef,
+  dataColumns,
+  paginationOptions,
+}) => {
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+  PositionsLinesPaginationQuery,
+  PositionsLines_data$key
+  >({
     linesQuery: positionsLinesQuery,
     linesFragment: positionsLinesFragment,
     queryRef,
     nodePath: ['positions', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
-
   return (
     <ListLinesContent
       initialLoading={!data}

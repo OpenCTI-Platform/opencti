@@ -64,7 +64,7 @@ class PositionEdition extends Component {
   render() {
     const { classes, positionId } = this.props;
     return (
-      <div>
+      <>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
@@ -87,14 +87,17 @@ class PositionEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <PositionEditionContainer position={props.position} handleClose={this.handleClose.bind(this)} />
+                  <PositionEditionContainer
+                    position={props.position}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;
             }}
           />
         </Drawer>
-      </div>
+      </>
     );
   }
 }

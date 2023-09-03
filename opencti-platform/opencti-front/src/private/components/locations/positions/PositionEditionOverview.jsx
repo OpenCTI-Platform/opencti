@@ -11,7 +11,11 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
@@ -82,7 +86,6 @@ const positionMutationRelationDelete = graphql`
 const PositionEditionOverviewComponent = (props) => {
   const { position, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
@@ -92,21 +95,26 @@ const PositionEditionOverviewComponent = (props) => {
     longitude: Yup.number()
       .typeError(t('This field must be a number'))
       .nullable(),
-    street_address: Yup.string().nullable().max(1000, t('The value is too long')),
+    street_address: Yup.string()
+      .nullable()
+      .max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const positionValidator = useSchemaEditionValidation('Position', basicShape);
-
   const queries = {
     fieldPatch: positionMutationFieldPatch,
     relationAdd: positionMutationRelationAdd,
     relationDelete: positionMutationRelationDelete,
     editionFocus: positionEditionOverviewFocus,
   };
-  const editor = useFormEditor(position, enableReferences, queries, positionValidator);
-
+  const editor = useFormEditor(
+    position,
+    enableReferences,
+    queries,
+    positionValidator,
+  );
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -133,7 +141,6 @@ const PositionEditionOverviewComponent = (props) => {
       },
     });
   };
-
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
       let finalValue = value;
@@ -156,7 +163,6 @@ const PositionEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(position)),
     R.assoc('objectMarking', convertMarkings(position)),
@@ -176,182 +182,185 @@ const PositionEditionOverviewComponent = (props) => {
     ]),
   )(position);
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={positionValidator}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={positionValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            style={{ marginTop: 20 }}
+            name="latitude"
+            label={t('Latitude')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="latitude" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            style={{ marginTop: 20 }}
+            name="longitude"
+            label={t('Longitude')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="longitude" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            style={{ marginTop: 20 }}
+            name="street_address"
+            label={t('Street address')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="street_address" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            style={{ marginTop: 20 }}
+            name="postal_code"
+            label={t('Postal code')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="postal_code" />
+            }
+          />
+          {position.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Position"
               onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              style={{ marginTop: 20 }}
-              name="latitude"
-              label={t('Latitude')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="latitude" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              style={{ marginTop: 20 }}
-              name="longitude"
-              label={t('Longitude')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="longitude" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              style={{ marginTop: 20 }}
-              name="street_address"
-              label={t('Street address')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="street_address" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              style={{ marginTop: 20 }}
-              name="postal_code"
-              label={t('Postal code')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="postal_code" />
-              }
-            />
-            {position.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Position"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-                }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
+              onChange={handleSubmitField}
               setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
               }
-              onChange={editor.changeCreated}
             />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
-              }
-              onChange={editor.changeMarking}
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
+            onChange={editor.changeMarking}
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={position.id}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={position.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(PositionEditionOverviewComponent, {
   position: graphql`
-      fragment PositionEditionOverview_position on Position {
-        id
-        name
-        latitude
-        longitude
-        street_address
-        postal_code
-        description
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
-        }
-        status {
+    fragment PositionEditionOverview_position on Position {
+      id
+      name
+      latitude
+      longitude
+      street_address
+      postal_code
+      description
+      createdBy {
+        ... on Identity {
           id
-          order
-          template {
-            name
-            color
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
-        workflowEnabled
       }
-    `,
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

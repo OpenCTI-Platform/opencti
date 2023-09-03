@@ -24,9 +24,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -108,7 +105,7 @@ class PositionPopover extends Component {
   render() {
     const { classes, t, id } = this.props;
     return (
-      <div className={classes.container}>
+      <>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
@@ -183,7 +180,7 @@ class PositionPopover extends Component {
             }}
           />
         </Drawer>
-      </div>
+      </>
     );
   }
 }

@@ -76,9 +76,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
-
   const data = useFragment(positionLineFragment, node);
-
   return (
     <ListItem
       classes={{ root: classes.item }}
