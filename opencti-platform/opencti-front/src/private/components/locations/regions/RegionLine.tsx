@@ -92,7 +92,7 @@ RegionLineComponentProps
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -111,7 +111,7 @@ RegionLineComponentProps
             >
               {fd(data.modified)}
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
@@ -134,7 +134,7 @@ export const RegionLineDummy = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -168,7 +168,7 @@ export const RegionLineDummy = ({
                 height="100%"
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>

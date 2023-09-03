@@ -1,43 +1,43 @@
-import React, { FunctionComponent } from "react";
-import { graphql, PreloadedQuery, usePreloadedQuery } from "react-relay";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import { Close } from "@mui/icons-material";
-import makeStyles from "@mui/styles/makeStyles";
-import { SubscriptionAvatars } from "../../../../components/Subscription";
-import CityEditionOverview from "./CityEditionOverview";
-import { Theme } from "../../../../components/Theme";
-import { useFormatter } from "../../../../components/i18n";
-import ErrorNotFound from "../../../../components/ErrorNotFound";
-import { CityEditionContainerQuery } from "./__generated__/CityEditionContainerQuery.graphql";
-import { useIsEnforceReference } from "../../../../utils/hooks/useEntitySettings";
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import { Close } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
+import { SubscriptionAvatars } from '../../../../components/Subscription';
+import CityEditionOverview from './CityEditionOverview';
+import { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
-    padding: "20px 20px 20px 60px",
+    padding: '20px 20px 20px 60px',
   },
   closeButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 12,
     left: 5,
-    color: "inherit",
+    color: 'inherit',
   },
   importButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 15,
     right: 20,
   },
   container: {
-    padding: "10px 20px 20px 20px",
+    padding: '10px 20px 20px 20px',
   },
   appBar: {
-    width: "100%",
+    width: '100%',
     zIndex: theme.zIndex.drawer + 1,
-    borderBottom: "1px solid #5c5c5c",
+    borderBottom: '1px solid #5c5c5c',
   },
   title: {
-    float: "left",
+    float: 'left',
   },
 }));
 
@@ -80,7 +80,7 @@ const CityEditionContainer: FunctionComponent<CityEditionContainerProps> = ({
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t("Update a city")}
+          {t('Update a city')}
         </Typography>
         <SubscriptionAvatars context={queryData.city.editContext} />
         <div className="clearfix" />
@@ -88,7 +88,7 @@ const CityEditionContainer: FunctionComponent<CityEditionContainerProps> = ({
       <div className={classes.container}>
         <CityEditionOverview
           cityRef={queryData.city}
-          enableReferences={useIsEnforceReference("City")}
+          enableReferences={useIsEnforceReference('City')}
           context={queryData.city.editContext}
           handleClose={handleClose}
         />

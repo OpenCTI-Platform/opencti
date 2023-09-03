@@ -90,7 +90,7 @@ export const CityLine: FunctionComponent<CityLineComponentProps> = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -109,7 +109,7 @@ export const CityLine: FunctionComponent<CityLineComponentProps> = ({
             >
               {fd(data.modified)}
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
@@ -132,7 +132,7 @@ export const CityLineDummy = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -166,7 +166,7 @@ export const CityLineDummy = ({
                 height="100%"
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>

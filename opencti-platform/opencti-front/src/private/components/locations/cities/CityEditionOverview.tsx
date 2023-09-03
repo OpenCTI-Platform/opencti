@@ -1,27 +1,27 @@
-import React, { FunctionComponent } from "react";
-import { graphql, useFragment } from "react-relay";
-import { Field, Form, Formik } from "formik";
-import * as Yup from "yup";
-import { FormikConfig } from "formik/dist/types";
-import TextField from "../../../../components/TextField";
-import { SubscriptionFocus } from "../../../../components/Subscription";
-import CreatedByField from "../../common/form/CreatedByField";
-import ObjectMarkingField from "../../common/form/ObjectMarkingField";
-import MarkdownField from "../../../../components/MarkdownField";
-import CommitMessage from "../../common/form/CommitMessage";
-import { adaptFieldValue } from "../../../../utils/String";
-import StatusField from "../../common/form/StatusField";
+import React, { FunctionComponent } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
+import * as Yup from 'yup';
+import { FormikConfig } from 'formik/dist/types';
+import TextField from '../../../../components/TextField';
+import { SubscriptionFocus } from '../../../../components/Subscription';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkdownField from '../../../../components/MarkdownField';
+import CommitMessage from '../../common/form/CommitMessage';
+import { adaptFieldValue } from '../../../../utils/String';
+import StatusField from '../../common/form/StatusField';
 import {
   convertCreatedBy,
   convertMarkings,
   convertStatus,
-} from "../../../../utils/edition";
-import { useFormatter } from "../../../../components/i18n";
-import { Option } from "../../common/form/ReferenceField";
-import { CityEditionOverview_city$key } from "./__generated__/CityEditionOverview_city.graphql";
-import { useSchemaEditionValidation } from "../../../../utils/hooks/useEntitySettings";
-import useFormEditor from "../../../../utils/hooks/useFormEditor";
-import { fieldSpacingContainerStyle } from "../../../../utils/field";
+} from '../../../../utils/edition';
+import { useFormatter } from '../../../../components/i18n';
+import { Option } from '../../common/form/ReferenceField';
+import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const cityMutationFieldPatch = graphql`
   mutation CityEditionOverviewFieldPatchMutation(
@@ -122,11 +122,11 @@ export const cityEditionOverviewFragment = graphql`
 interface CityEditionOverviewProps {
   cityRef: CityEditionOverview_city$key;
   context:
-    | readonly ({
-        readonly focusOn: string | null;
-        readonly name: string;
-      } | null)[]
-    | null;
+  | readonly ({
+    readonly focusOn: string | null;
+    readonly name: string;
+  } | null)[]
+  | null;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -148,18 +148,18 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
   const { t } = useFormatter();
   const city = useFragment(cityEditionOverviewFragment, cityRef);
   const basicShape = {
-    name: Yup.string().min(2).required(t("This field is required")),
-    description: Yup.string().nullable().max(5000, t("The value is too long")),
+    name: Yup.string().min(2).required(t('This field is required')),
+    description: Yup.string().nullable().max(5000, t('The value is too long')),
     latitude: Yup.number()
-      .typeError(t("This field must be a number"))
+      .typeError(t('This field must be a number'))
       .nullable(),
     longitude: Yup.number()
-      .typeError(t("This field must be a number"))
+      .typeError(t('This field must be a number'))
       .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const cityValidator = useSchemaEditionValidation("City", basicShape);
+  const cityValidator = useSchemaEditionValidation('City', basicShape);
   const queries = {
     fieldPatch: cityMutationFieldPatch,
     relationAdd: cityMutationRelationAdd,
@@ -167,12 +167,12 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
     editionFocus: cityEditionOverviewFocus,
   };
   const editor = useFormEditor(city, enableReferences, queries, cityValidator);
-  const onSubmit: FormikConfig<CityEditionFormValues>["onSubmit"] = (
+  const onSubmit: FormikConfig<CityEditionFormValues>['onSubmit'] = (
     values,
     { setSubmitting },
   ) => {
     const { message, references, ...otherValues } = values;
-    const commitMessage = message ?? "";
+    const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
     const inputValues = Object.entries({
       ...otherValues,
@@ -197,7 +197,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
   const handleSubmitField = (name: string, value: Option | string) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
-      if (name === "x_opencti_workflow_id") {
+      if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
       cityValidator
@@ -206,7 +206,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           editor.fieldPatch({
             variables: {
               id: city.id,
-              input: [{ key: name, value: [finalValue ?? ""] }],
+              input: [{ key: name, value: [finalValue ?? ''] }],
             },
           });
         })
@@ -238,12 +238,12 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: "20px 0 20px 0" }}>
+        <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
             variant="standard"
             name="name"
-            label={t("Name")}
+            label={t('Name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -254,7 +254,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
           <Field
             component={MarkdownField}
             name="description"
-            label={t("Description")}
+            label={t('Description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -270,7 +270,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             variant="standard"
             style={{ marginTop: 20 }}
             name="latitude"
-            label={t("Latitude")}
+            label={t('Latitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -283,7 +283,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             variant="standard"
             style={{ marginTop: 20 }}
             name="longitude"
-            label={t("Longitude")}
+            label={t('Longitude')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}

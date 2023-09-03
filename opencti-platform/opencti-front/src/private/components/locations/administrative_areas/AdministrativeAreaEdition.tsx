@@ -4,7 +4,9 @@ import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
 import { useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import AdministrativeAreaEditionContainer, { administrativeAreaEditionQuery } from './AdministrativeAreaEditionContainer';
+import AdministrativeAreaEditionContainer, {
+  administrativeAreaEditionQuery,
+} from './AdministrativeAreaEditionContainer';
 import { administrativeAreaEditionOverviewFocus } from './AdministrativeAreaEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
@@ -31,12 +33,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const AdministrativeAreaEdition = ({ administrativeAreaId }: { administrativeAreaId: string }) => {
+const AdministrativeAreaEdition = ({
+  administrativeAreaId,
+}: {
+  administrativeAreaId: string;
+}) => {
   const classes = useStyles();
-
   const [open, setOpen] = useState<boolean>(false);
   const [commit] = useMutation(administrativeAreaEditionOverviewFocus);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     commit({
@@ -47,37 +51,40 @@ const AdministrativeAreaEdition = ({ administrativeAreaId }: { administrativeAre
     });
     setOpen(false);
   };
-
-  const queryRef = useQueryLoading<AdministrativeAreaEditionContainerQuery>(administrativeAreaEditionQuery, { id: administrativeAreaId });
-
+  const queryRef = useQueryLoading<AdministrativeAreaEditionContainerQuery>(
+    administrativeAreaEditionQuery,
+    { id: administrativeAreaId },
+  );
   return (
-        <div>
-            <Fab
-                onClick={handleOpen}
-                color="secondary"
-                aria-label="Edit"
-                className={classes.editButton}
-            >
-                <Edit />
-            </Fab>
-            <Drawer
-                open={open}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={handleClose}
-            >
-                {queryRef && (
-                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                        <AdministrativeAreaEditionContainer
-                            queryRef={queryRef}
-                            handleClose={handleClose}
-                        />
-                    </React.Suspense>
-                )}
-            </Drawer>
-        </div>
+    <>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Edit"
+        className={classes.editButton}
+      >
+        <Edit />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <AdministrativeAreaEditionContainer
+              queryRef={queryRef}
+              handleClose={handleClose}
+            />
+          </React.Suspense>
+        )}
+      </Drawer>
+    </>
   );
 };
 

@@ -1,29 +1,29 @@
-import React, { useState } from "react";
-import Drawer from "@mui/material/Drawer";
-import Fab from "@mui/material/Fab";
-import { Edit } from "@mui/icons-material";
-import { useMutation } from "react-relay";
-import makeStyles from "@mui/styles/makeStyles";
-import CityEditionContainer, { cityEditionQuery } from "./CityEditionContainer";
-import { cityEditionOverviewFocus } from "./CityEditionOverview";
-import Loader, { LoaderVariant } from "../../../../components/Loader";
-import { Theme } from "../../../../components/Theme";
-import useQueryLoading from "../../../../utils/hooks/useQueryLoading";
-import { CityEditionContainerQuery } from "./__generated__/CityEditionContainerQuery.graphql";
+import React, { useState } from 'react';
+import Drawer from '@mui/material/Drawer';
+import Fab from '@mui/material/Fab';
+import { Edit } from '@mui/icons-material';
+import { useMutation } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
+import CityEditionContainer, { cityEditionQuery } from './CityEditionContainer';
+import { cityEditionOverviewFocus } from './CityEditionOverview';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { Theme } from '../../../../components/Theme';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {
-    position: "fixed",
+    position: 'fixed',
     bottom: 30,
     right: 30,
     zIndex: 400,
   },
   drawerPaper: {
-    minHeight: "100vh",
-    width: "50%",
-    position: "fixed",
-    overflow: "auto",
-    transition: theme.transitions.create("width", {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    overflow: 'auto',
+    transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -40,7 +40,7 @@ const CityEdition = ({ cityId }: { cityId: string }) => {
     commit({
       variables: {
         id: cityId,
-        input: { focusOn: "" },
+        input: { focusOn: '' },
       },
     });
     setOpen(false);

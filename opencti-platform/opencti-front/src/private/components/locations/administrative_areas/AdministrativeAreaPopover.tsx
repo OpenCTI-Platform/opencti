@@ -14,7 +14,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
-import AdministrativeAreaEditionContainer, { administrativeAreaEditionQuery } from './AdministrativeAreaEditionContainer';
+import AdministrativeAreaEditionContainer, {
+  administrativeAreaEditionQuery,
+} from './AdministrativeAreaEditionContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { Theme } from '../../../../components/Theme';
@@ -25,9 +27,6 @@ import { AdministrativeAreaEditionContainerQuery } from './__generated__/Adminis
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    margin: 0,
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -42,40 +41,35 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const AdministrativeAreaPopoverDeletionMutation = graphql`
-    mutation AdministrativeAreaPopoverDeletionMutation($id: ID!) {
-        administrativeAreaDelete(id: $id) 
-    }
+  mutation AdministrativeAreaPopoverDeletionMutation($id: ID!) {
+    administrativeAreaDelete(id: $id)
+  }
 `;
 
 const AdministrativeAreaPopover = ({ id }: { id: string }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const navigate = useNavigate();
-
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-
   const [commit] = useMutation(AdministrativeAreaPopoverDeletionMutation);
-  const queryRef = useQueryLoading<AdministrativeAreaEditionContainerQuery>(administrativeAreaEditionQuery, { id });
-
+  const queryRef = useQueryLoading<AdministrativeAreaEditionContainerQuery>(
+    administrativeAreaEditionQuery,
+    { id },
+  );
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(undefined);
   };
-
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
-
   const handleCloseEdit = () => {
     setDisplayEdit(false);
   };
-
   const {
     deleting,
     handleOpenDelete,
@@ -83,7 +77,6 @@ const AdministrativeAreaPopover = ({ id }: { id: string }) => {
     handleCloseDelete,
     setDeleting,
   } = useDeletion({ handleClose });
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -97,77 +90,63 @@ const AdministrativeAreaPopover = ({ id }: { id: string }) => {
       },
     });
   };
-
   return (
-        <div className={classes.container}>
-            <IconButton
-                onClick={handleOpen}
-                aria-haspopup="true"
-                style={{ marginTop: 3 }}
-                size="large"
-            >
-                <MoreVert />
-            </IconButton>
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-            >
-                <MenuItem onClick={handleOpenEdit}>
-                    {t('Update')}
-                </MenuItem>
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                    <MenuItem onClick={handleOpenDelete}>
-                        {t('Delete')}
-                    </MenuItem>
-                </Security>
-            </Menu>
-            <Dialog
-                PaperProps={{ elevation: 1 }}
-                open={displayDelete}
-                keepMounted={true}
-                TransitionComponent={Transition}
-                onClose={handleCloseDelete}
-            >
-                <DialogContent>
-                    <DialogContentText>
-                        {t('Do you want to delete this area?')}
-                    </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                    <Button
-                        onClick={handleCloseDelete}
-                        disabled={deleting}
-                    >
-                        {t('Cancel')}
-                    </Button>
-                    <Button
-                        color="secondary"
-                        onClick={submitDelete}
-                        disabled={deleting}
-                    >
-                        {t('Delete')}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-            <Drawer
-                open={displayEdit}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={handleCloseEdit}
-            >
-                {queryRef && (
-                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                        <AdministrativeAreaEditionContainer
-                            queryRef={queryRef}
-                            handleClose={handleClose}
-                        />
-                    </React.Suspense>
-                )}
-            </Drawer>
-        </div>
+    <>
+      <IconButton
+        onClick={handleOpen}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        size="large"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        </Security>
+      </Menu>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayDelete}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={handleCloseDelete}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this area?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete} disabled={deleting}>
+            {t('Cancel')}
+          </Button>
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+            {t('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Drawer
+        open={displayEdit}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleCloseEdit}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <AdministrativeAreaEditionContainer
+              queryRef={queryRef}
+              handleClose={handleClose}
+            />
+          </React.Suspense>
+        )}
+      </Drawer>
+    </>
   );
 };
 

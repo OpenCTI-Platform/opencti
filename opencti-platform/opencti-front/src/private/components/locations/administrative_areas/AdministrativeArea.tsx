@@ -17,9 +17,6 @@ import { AdministrativeArea_administrativeArea$key } from './__generated__/Admin
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -92,14 +89,12 @@ const AdministrativeArea = ({
   administrativeAreaData: AdministrativeArea_administrativeArea$key;
 }) => {
   const classes = useStyles();
-
   const administrativeArea = useFragment<AdministrativeArea_administrativeArea$key>(
     administrativeAreaFragment,
     administrativeAreaData,
   );
-
   return (
-    <div className={classes.container}>
+    <>
       <StixDomainObjectHeader
         entityType="Administrative-Area"
         disableSharing={true}
@@ -125,7 +120,10 @@ const AdministrativeArea = ({
           />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <StixDomainObjectOverview stixDomainObject={administrativeArea} displayConfidence={false} />
+          <StixDomainObjectOverview
+            stixDomainObject={administrativeArea}
+            displayConfidence={false}
+          />
         </Grid>
         <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -160,7 +158,7 @@ const AdministrativeArea = ({
           administrativeAreaId={administrativeArea.id}
         />
       </Security>
-    </div>
+    </>
   );
 };
 

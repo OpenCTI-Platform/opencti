@@ -35,13 +35,11 @@ const AdministrativeAreaKnowledge = ({
   administrativeAreaData: AdministrativeAreaKnowledge_administrativeArea$key;
 }) => {
   const classes = useStyles();
-
   const administrativeArea = useFragment<AdministrativeAreaKnowledge_administrativeArea$key>(
     administrativeAreaKnowledgeFragment,
     administrativeAreaData,
   );
   const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
-
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader

@@ -21,9 +21,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
-import {
-  AdministrativeAreaCreationMutation$variables,
-} from './__generated__/AdministrativeAreaCreationMutation.graphql';
+import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -112,7 +110,9 @@ interface AdministrativeAreaFormProps {
 
 const ADMINISTRATIVE_AREA_TYPE = 'Administrative-Area';
 
-export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAreaFormProps> = ({
+export const AdministrativeAreaCreationForm: FunctionComponent<
+AdministrativeAreaFormProps
+> = ({
   updater,
   onReset,
   onCompleted,
@@ -123,11 +123,8 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t('This field is required')),
-    description: Yup.string()
-      .nullable(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    description: Yup.string().nullable(),
     latitude: Yup.number()
       .typeError(t('This field must be a number'))
       .nullable(),
@@ -142,10 +139,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const [commit] = useMutation(administrativeAreaMutation);
   const onSubmit: FormikConfig<AdministrativeAreaAddInput>['onSubmit'] = (
     values,
-    {
-      setSubmitting,
-      resetForm,
-    },
+    { setSubmitting, resetForm },
   ) => {
     const input: AdministrativeAreaCreationMutation$variables['input'] = {
       name: values.name,
@@ -176,7 +170,6 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       },
     });
   };
-
   const initialValues = useDefaultValues<AdministrativeAreaAddInput>(
     ADMINISTRATIVE_AREA_TYPE,
     {
@@ -191,7 +184,6 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       file: undefined,
     },
   );
-
   return (
     <Formik<AdministrativeAreaAddInput>
       initialValues={initialValues}
@@ -199,13 +191,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}

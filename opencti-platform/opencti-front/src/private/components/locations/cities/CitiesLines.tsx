@@ -1,15 +1,15 @@
-import React, { FunctionComponent } from "react";
-import { graphql, PreloadedQuery } from "react-relay";
-import ListLinesContent from "../../../../components/list_lines/ListLinesContent";
-import { CityLine, CityLineDummy } from "./CityLine";
-import { DataColumns } from "../../../../components/list_lines";
-import { UseLocalStorageHelpers } from "../../../../utils/hooks/useLocalStorage";
-import usePreloadedPaginationFragment from "../../../../utils/hooks/usePreloadedPaginationFragment";
+import React, { FunctionComponent } from 'react';
+import { graphql, PreloadedQuery } from 'react-relay';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { CityLine, CityLineDummy } from './CityLine';
+import { DataColumns } from '../../../../components/list_lines';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import {
   CitiesLinesPaginationQuery,
   CitiesLinesPaginationQuery$variables,
-} from "./__generated__/CitiesLinesPaginationQuery.graphql";
-import { CitiesLines_data$key } from "./__generated__/CitiesLines_data.graphql";
+} from './__generated__/CitiesLinesPaginationQuery.graphql';
+import { CitiesLines_data$key } from './__generated__/CitiesLines_data.graphql';
 
 const nbOfRowsToLoad = 50;
 
@@ -17,7 +17,7 @@ interface CitiesLinesProps {
   paginationOptions?: CitiesLinesPaginationQuery$variables;
   dataColumns: DataColumns;
   queryRef: PreloadedQuery<CitiesLinesPaginationQuery>;
-  setNumberOfElements: UseLocalStorageHelpers["handleSetNumberOfElements"];
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 export const citiesLinesQuery = graphql`
@@ -83,17 +83,16 @@ const CitiesLines: FunctionComponent<CitiesLinesProps> = ({
   queryRef,
   paginationOptions,
 }) => {
-  const { data, hasMore, loadMore, isLoadingMore } =
-    usePreloadedPaginationFragment<
-      CitiesLinesPaginationQuery,
-      CitiesLines_data$key
-    >({
-      linesQuery: citiesLinesQuery,
-      linesFragment: citiesLinesFragment,
-      queryRef,
-      nodePath: ["cities", "pageInfo", "globalCount"],
-      setNumberOfElements,
-    });
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+  CitiesLinesPaginationQuery,
+  CitiesLines_data$key
+  >({
+    linesQuery: citiesLinesQuery,
+    linesFragment: citiesLinesFragment,
+    queryRef,
+    nodePath: ['cities', 'pageInfo', 'globalCount'],
+    setNumberOfElements,
+  });
   return (
     <ListLinesContent
       initialLoading={!data}

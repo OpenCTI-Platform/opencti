@@ -107,7 +107,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -126,7 +126,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
             >
               {fd(data.modified)}
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
@@ -149,7 +149,7 @@ export const CountryLineDummy = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -183,7 +183,7 @@ export const CountryLineDummy = ({
                 height="100%"
               />
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>

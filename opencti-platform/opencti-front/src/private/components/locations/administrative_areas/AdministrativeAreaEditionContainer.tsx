@@ -62,9 +62,7 @@ AdministrativeAreaEditionContainerProps
 > = ({ queryRef, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const queryData = usePreloadedQuery(administrativeAreaEditionQuery, queryRef);
-
   if (queryData.administrativeArea === null) {
     return <ErrorNotFound />;
   }
