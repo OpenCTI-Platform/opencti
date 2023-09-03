@@ -19,9 +19,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -31,7 +28,7 @@ class ChannelComponent extends Component {
   render() {
     const { classes, channel } = this.props;
     return (
-      <div className={classes.container}>
+      <>
         <StixDomainObjectHeader
           entityType="Channel"
           stixDomainObject={channel}
@@ -75,7 +72,7 @@ class ChannelComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ChannelEdition channelId={channel.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }

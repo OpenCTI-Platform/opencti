@@ -17,9 +17,6 @@ import { City_city$key } from './__generated__/City_city.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -90,7 +87,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
   const classes = useStyles();
   const city = useFragment<City_city$key>(cityFragment, cityData);
   return (
-    <div className={classes.container}>
+    <>
       <StixDomainObjectHeader
         entityType={'City'}
         disableSharing={true}
@@ -147,7 +144,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CityEdition cityId={city.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

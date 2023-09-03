@@ -17,9 +17,6 @@ import { Region_region$key } from './__generated__/Region_region.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -102,7 +99,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
     (countryEdge) => countryEdge.node,
   );
   return (
-    <div className={classes.container}>
+    <>
       <StixDomainObjectHeader
         entityType="Region"
         disableSharing={true}
@@ -160,7 +157,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <RegionEdition regionId={region.id} />
       </Security>
-    </div>
+    </>
   );
 };
 

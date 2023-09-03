@@ -17,9 +17,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import ReportPopover from './ReportPopover';
 
 const styles = () => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -29,7 +26,7 @@ class ReportComponent extends Component {
   render() {
     const { classes, report } = this.props;
     return (
-      <div className={classes.container}>
+      <>
         <ContainerHeader
           container={report}
           PopoverComponent={<ReportPopover />}
@@ -67,7 +64,7 @@ class ReportComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ReportEdition reportId={report.id} />
         </Security>
-      </div>
+      </>
     );
   }
 }
@@ -134,7 +131,7 @@ const Report = createFragmentContainer(ReportComponent, {
           }
         }
       }
-      objectParticipant{
+      objectParticipant {
         edges {
           node {
             id

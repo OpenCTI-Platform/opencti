@@ -18,9 +18,6 @@ import OpinionPopover from './OpinionPopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
   gridContainer: {
     marginBottom: 20,
   },
@@ -29,7 +26,7 @@ const useStyles = makeStyles(() => ({
 const OpinionComponent = ({ opinion }) => {
   const classes = useStyles();
   return (
-    <div className={classes.container}>
+    <>
       <CollaborativeSecurity
         data={opinion}
         needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
@@ -76,7 +73,7 @@ const OpinionComponent = ({ opinion }) => {
       <CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE]}>
         <OpinionEdition opinionId={opinion.id} />
       </CollaborativeSecurity>
-    </div>
+    </>
   );
 };
 
