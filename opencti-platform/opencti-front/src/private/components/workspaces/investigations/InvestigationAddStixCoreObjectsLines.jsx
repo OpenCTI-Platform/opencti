@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { append, assoc, compose, filter, groupBy, keys, map } from 'ramda';
+import { assoc, compose, groupBy, keys, map, includes } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -87,21 +87,16 @@ export const investigationAddStixCoreObjectsLinesRelationsDeleteMutation = graph
 class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
   constructor(props) {
     super(props);
-    this.state = { expandedPanels: {}, addedStixCoreObjects: [] };
-  }
-
-  getWorkspaceStixCoreObjectsIds() {
-    const { workspaceStixCoreObjects } = this.props;
-    // eslint-disable-next-line no-underscore-dangle
-    return map((n) => n.node.__id, workspaceStixCoreObjects || []);
+    this.state = {
+      expandedPanels: {},
+      addedStixCoreObjects: (props.workspaceStixCoreObjects || []).map((n) => n.node.id),
+    };
   }
 
   toggleStixCoreObject(stixCoreObject) {
     const { workspaceId, onAdd, onDelete } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const workspaceStixCoreObjectsIds = this.getWorkspaceStixCoreObjectsIds();
-    const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
-      || workspaceStixCoreObjectsIds.includes(stixCoreObject.id);
+    const alreadyAdded = includes(stixCoreObject.id, addedStixCoreObjects);
     if (alreadyAdded) {
       commitMutation({
         mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
@@ -115,10 +110,8 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         },
         onCompleted: () => {
           this.setState({
-            addedStixCoreObjects: filter(
-              (n) => n !== stixCoreObject.id,
-              this.state.addedStixCoreObjects,
-            ),
+            addedStixCoreObjects: addedStixCoreObjects
+              .filter((n) => n !== stixCoreObject.id),
           });
           if (typeof onDelete === 'function') {
             onDelete(stixCoreObject);
@@ -138,10 +131,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         },
         onCompleted: () => {
           this.setState({
-            addedStixCoreObjects: append(
-              stixCoreObject.id,
-              this.state.addedStixCoreObjects,
-            ),
+            addedStixCoreObjects: [...addedStixCoreObjects, stixCoreObject.id],
           });
           if (typeof onAdd === 'function') {
             onAdd(stixCoreObject);
@@ -174,7 +164,6 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
     const stixCoreObjects = byType(stixCoreObjectsNodes);
     const stixCoreObjectsTypes = keys(stixCoreObjects);
-    const workspaceStixCoreObjectsIds = this.getWorkspaceStixCoreObjectsIds();
     return (
       <div className={classes.investigation}>
         {stixCoreObjectsTypes.length > 0 ? (
@@ -202,8 +191,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
               >
                 <List classes={{ root: classes.list }}>
                   {stixCoreObjects[type].map((stixCoreObject) => {
-                    const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
-                      || workspaceStixCoreObjectsIds.includes(stixCoreObject.id);
+                    const alreadyAdded = includes(stixCoreObject.id, addedStixCoreObjects);
                     return (
                       <ListItem
                         key={stixCoreObject.id}
