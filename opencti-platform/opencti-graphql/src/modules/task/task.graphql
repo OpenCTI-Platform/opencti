@@ -11,6 +11,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   updated_at: DateTime!
   x_opencti_inferences: [Inference]
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -94,7 +95,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
   objects(
     first: Int
     after: ID

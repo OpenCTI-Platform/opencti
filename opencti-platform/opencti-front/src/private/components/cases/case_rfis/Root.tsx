@@ -83,7 +83,6 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     <div>
       {caseData ? (
         <Switch>
-          ya
           <Route
             exact
             path="/dashboard/cases/rfis/:caseId"

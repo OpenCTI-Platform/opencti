@@ -9,7 +9,6 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
-  extractEntityRepresentative,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
@@ -87,6 +86,7 @@ import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject
 import { telemetry } from '../config/tracing';
 import { isBooleanAttribute, isDateAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
+import { extractEntityRepresentativeName } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const ELK_ENGINE = 'elk';
@@ -1740,7 +1740,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   if (resolveToRepresentative) {
     const baseFields = ['internal_id', 'name', 'entity_type']; // Needs to take elements required to fill extractEntityRepresentative function
     const aggsElements = await elFindByIds(context, user, aggsValues, { baseData: true, baseFields });
-    const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: extractEntityRepresentative(element) })));
+    const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: extractEntityRepresentativeName(element) })));
     return aggsMap.map((agg) => {
       const values = data.aggregations[agg].buckets?.map((b) => ({ label: aggsElementsCache[b.key], value: b.key }))?.filter((v) => !!v.label);
       return { name: agg, values };
@@ -2144,13 +2144,13 @@ const prepareRelation = (thing) => {
   const { from, to } = thing;
   connections.push({
     internal_id: from.internal_id,
-    name: from.name,
+    name: extractEntityRepresentativeName(from),
     types: [from.entity_type, ...getParentTypes(from.entity_type)],
     role: thing.fromRole,
   });
   connections.push({
     internal_id: to.internal_id,
-    name: to.name,
+    name: extractEntityRepresentativeName(to),
     types: [to.entity_type, ...getParentTypes(to.entity_type)],
     role: thing.toRole,
   });
@@ -2323,7 +2323,7 @@ export const elUpdateEntityConnections = async (elements) => {
   }
 };
 
-export const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
+const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
   const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
     + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
   return elRawUpdateByQuery({
@@ -2355,7 +2355,7 @@ export const elUpdateElement = async (instance) => {
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {
-    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name });
+    connectionPromise = elUpdateConnectionsOfElement(instance.internal_id, { name: esData.representative.main });
   }
   return Promise.all([replacePromise, connectionPromise]);
 };

@@ -14,7 +14,6 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
-import { extractEntityRepresentative } from '../database/utils';
 import { investigationAddFromContainer } from '../modules/workspace/investigation-domain';
 
 const containerResolvers = {
@@ -30,7 +29,6 @@ const containerResolvers = {
       }
       return 'Unknown';
     },
-    representative: (container, _, __) => extractEntityRepresentative(container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),
   },

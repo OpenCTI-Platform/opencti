@@ -27,7 +27,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
-import { extractEntityRepresentative } from '../database/utils';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 
 export const GROUP_DEFAULT = 'Default';
 
@@ -160,7 +160,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `adds ${created.entity_type} \`${extractEntityRepresentative(created)}\` for group \`${group.name}\``,
+    message: `adds ${created.entity_type} \`${extractEntityRepresentativeName(created)}\` for group \`${group.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   await groupSessionRefresh(context, user, groupId);
@@ -189,7 +189,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `removes ${target.entity_type} \`${extractEntityRepresentative(target)}\` for group \`${group.name}\``,
+    message: `removes ${target.entity_type} \`${extractEntityRepresentativeName(target)}\` for group \`${group.name}\``,
     context_data: { id: groupId, entity_type: ENTITY_TYPE_GROUP, input }
   });
   await groupSessionRefresh(context, user, groupId);

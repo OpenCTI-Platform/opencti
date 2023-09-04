@@ -44,7 +44,9 @@ const filtersStixCoreObjectsContainersSearchQuery = graphql`
           id
           entity_type
           parent_types
-          representative
+          representative {
+            main
+          }
         }
       }
     }
@@ -622,7 +624,7 @@ const useSearchEntities = ({
               (data as useSearchEntitiesStixCoreObjectsContainersSearchQuery$data)
                 ?.containers?.edges ?? []
             ).map((n) => ({
-              label: n?.node.representative,
+              label: n?.node.representative.main,
               value: n?.node.id,
               type: n?.node.entity_type,
               parentTypes: n?.node.parent_types,

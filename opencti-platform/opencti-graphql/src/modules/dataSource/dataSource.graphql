@@ -14,7 +14,8 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     # inferences
     x_opencti_inferences: [Inference]
 
-    # Stix Core Object
+    # StixCoreObject
+    representative: Representative!
     createdBy: Identity
     objectMarking: MarkingDefinitionConnection
     objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])

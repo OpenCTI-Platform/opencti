@@ -15,14 +15,12 @@ import {
   UnsupportedError,
   ValidationError,
 } from '../config/errors';
+import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import {
   buildPagination,
   computeAverage,
-  extractEntityRepresentative,
   extractIdsFromStoreObject,
   fillTimeSeries,
-  generateCreateMessage,
-  generateUpdateMessage,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -236,6 +234,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
+import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -593,7 +592,7 @@ export const distributionHistory = async (context, user, types, args) => {
     await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
       .then((hits) => {
         result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentative(hit.entity),
+          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
           value: hit.value,
           entity: hit.entity,
         }));
@@ -629,7 +628,7 @@ export const distributionEntities = async (context, user, types, args) => {
     await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
       .then((hits) => {
         result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentative(hit.entity),
+          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
           value: hit.value,
           entity: hit.entity,
         }));
@@ -900,6 +899,7 @@ const partialInstanceWithInputs = (instance, inputs) => {
     _index: instance._index,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
+    representative: extractRepresentative(instance),
     ...inputData,
   };
 };

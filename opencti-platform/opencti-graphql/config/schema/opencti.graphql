@@ -1870,6 +1870,11 @@ input KillChainPhaseAddInput {
 
 ######## STIX CORE OBJECT ENTITIES
 
+type Representative {
+  main: String!
+  secondary: String
+}
+
 enum StixCoreObjectsOrdering {
   name
   entity_type
@@ -1971,6 +1976,7 @@ interface StixCoreObject {
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2168,6 +2174,7 @@ interface StixDomainObject {
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2343,6 +2350,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2535,6 +2543,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2724,6 +2733,7 @@ interface Container {
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2807,7 +2817,6 @@ interface Container {
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
   objects(
     first: Int
     after: ID
@@ -2898,6 +2907,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2981,7 +2991,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
   objects(
     first: Int
     after: ID
@@ -3126,6 +3135,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3209,7 +3219,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
   objects(
     first: Int
     after: ID
@@ -3331,6 +3340,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3414,7 +3424,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
   objects(
     first: Int
     after: ID
@@ -3556,6 +3565,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3639,7 +3649,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
   objects(
     first: Int
     after: ID
@@ -3766,7 +3775,8 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3949,7 +3959,8 @@ interface Identity {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4130,7 +4141,8 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4316,7 +4328,8 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4498,7 +4511,8 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4707,7 +4721,8 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4912,7 +4927,8 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5094,7 +5110,8 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5281,7 +5298,8 @@ interface Location {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5458,7 +5476,8 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5644,7 +5663,8 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5824,7 +5844,8 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6000,7 +6021,8 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6191,7 +6213,8 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6385,7 +6408,8 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6520,7 +6544,8 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6715,7 +6740,8 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6900,7 +6926,8 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7097,7 +7124,8 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7294,7 +7322,8 @@ interface StixCyberObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7396,7 +7425,8 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7508,7 +7538,8 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7624,7 +7655,8 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7732,7 +7764,8 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7842,7 +7875,8 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7962,7 +7996,8 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8090,7 +8125,8 @@ interface HashedObservable {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8194,7 +8230,8 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8315,7 +8352,8 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8445,7 +8483,8 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8610,7 +8649,8 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8721,7 +8761,8 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8830,7 +8871,8 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8938,7 +8980,8 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9046,7 +9089,8 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9173,7 +9217,8 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9327,7 +9372,8 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9454,7 +9500,8 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9562,7 +9609,8 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9697,7 +9745,8 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9809,7 +9858,8 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9921,7 +9971,8 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10029,7 +10080,8 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10137,7 +10189,8 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10245,7 +10298,8 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10353,7 +10407,8 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10461,7 +10516,8 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10574,7 +10630,8 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10682,7 +10739,8 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10796,7 +10854,8 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   updated_at: DateTime!
   # inferences
   x_opencti_inferences: [Inference]
-  # StixCoreObject
+    # StixCoreObject
+  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
@@ -11415,6 +11474,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   # StixCoreRelationship
+  representative: Representative!
   description: String
   start_time: DateTime
   stop_time: DateTime
@@ -11566,6 +11626,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   # StixSightingRelationship
+  representative: Representative!
   description: String
   first_seen: DateTime
   last_seen: DateTime

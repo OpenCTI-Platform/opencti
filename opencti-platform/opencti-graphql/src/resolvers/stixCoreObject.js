@@ -9,7 +9,8 @@ import {
   batchMarkingDefinitions,
   batchNotes,
   batchObservedData,
-  batchOpinions, batchReports,
+  batchOpinions,
+  batchReports,
   findAll,
   findById,
   stixCoreObjectAddRelation,
@@ -44,6 +45,7 @@ import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
+import { extractRepresentative } from '../database/entity-representative';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -93,6 +95,7 @@ const stixCoreObjectResolvers = {
       return 'Unknown';
     },
     toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
+    representative: (container, _, __) => extractRepresentative(container),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     stixCoreObjectsDistribution: (stixCoreObject, args, context) => stixCoreObjectsDistributionByEntity(context, context.user, { ...args, objectId: stixCoreObject.id }),
     stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),

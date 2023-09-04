@@ -95,7 +95,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
+  representative: Representative!
   objects(
     first: Int
     after: ID

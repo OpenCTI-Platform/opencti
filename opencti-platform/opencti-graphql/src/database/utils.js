@@ -1,26 +1,15 @@
 import * as R from 'ramda';
 import moment from 'moment';
-import { DatabaseError, UnsupportedError } from '../config/errors';
-import { ENTITY_TYPE_CAPABILITY, isHistoryObject, isInternalObject } from '../schema/internalObject';
+import { DatabaseError } from '../config/errors';
+import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from '../schema/stixCyberObservable';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixObject } from '../schema/stixCoreObject';
 import conf from '../config/conf';
-import { FROM_START_STR, now, observableValue, UNTIL_END_STR } from '../utils/format';
-import { isBasicRelationship } from '../schema/stixRelationship';
-import { truncate } from '../utils/mailData';
-import {
-  isDateAttribute,
-  isDictionaryAttribute,
-  isJsonAttribute, isObjectAttribute,
-  schemaAttributesDefinition
-} from '../schema/schema-attributes';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { creators } from '../schema/attribute-definition';
+import { now } from '../utils/format';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
@@ -250,130 +239,6 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   if (isStixRefRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
 
   throw DatabaseError(`Cant find index for type ${conceptType}`);
-};
-
-// TODO migrate to extractStixRepresentative from convertStoreToStix
-export const extractEntityRepresentative = (entityData) => {
-  let mainValue;
-  if (isStixCyberObservable(entityData.entity_type)) {
-    mainValue = observableValue(entityData);
-  } else if (isNotEmptyField(entityData.definition)) {
-    mainValue = entityData.definition;
-  } else if (isNotEmptyField(entityData.value)) {
-    mainValue = entityData.value;
-  } else if (isNotEmptyField(entityData.attribute_abstract)) {
-    mainValue = entityData.attribute_abstract;
-  } else if (isNotEmptyField(entityData.opinion)) {
-    mainValue = entityData.opinion;
-  } else if (isNotEmptyField(entityData.observable_value)) {
-    mainValue = entityData.observable_value;
-  } else if (isNotEmptyField(entityData.indicator_pattern)) {
-    mainValue = entityData.indicator_pattern;
-  } else if (isNotEmptyField(entityData.source_name)) {
-    mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
-  } else if (isNotEmptyField(entityData.kill_chain_name)) {
-    mainValue = entityData.kill_chain_name;
-  } else if (isNotEmptyField(entityData.phase_name)) {
-    mainValue = entityData.phase_name;
-  } else if (isNotEmptyField(entityData.first_observed) && isNotEmptyField(entityData.last_observed)) {
-    const from = moment(entityData.first_observed).utc().toISOString();
-    const to = moment(entityData.last_observed).utc().toISOString();
-    mainValue = `${from} - ${to}`;
-  } else if (entityData.entity_type === ENTITY_TYPE_CAPABILITY) {
-    return entityData.description;
-  } else if (isNotEmptyField(entityData.name)) {
-    mainValue = entityData.name;
-  } else if (isNotEmptyField(entityData.description)) {
-    mainValue = entityData.description;
-  }
-  // If no representative value found, return the standard id
-  if (isEmptyField(mainValue) || mainValue === 'Unknown') {
-    return entityData.standard_id;
-  }
-  return String(mainValue);
-};
-
-export const generateMergeMessage = (instance, sources) => {
-  const name = extractEntityRepresentative(instance);
-  const sourcesNames = sources.map((source) => extractEntityRepresentative(source)).join(', ');
-  return `merges ${instance.entity_type} \`${sourcesNames}\` in \`${name}\``;
-};
-const generateCreateDeleteMessage = (type, instance) => {
-  const name = extractEntityRepresentative(instance);
-  if (isStixObject(instance.entity_type)) {
-    let entityType = instance.entity_type;
-    if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-      entityType = 'File';
-    }
-    return `${type}s a ${entityType} \`${name}\``;
-  }
-  if (isBasicRelationship(instance.entity_type)) {
-    const from = extractEntityRepresentative(instance.from);
-    let fromType = instance.from.entity_type;
-    if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-      fromType = 'File';
-    }
-    const to = extractEntityRepresentative(instance.to);
-    let toType = instance.to.entity_type;
-    if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-      toType = 'File';
-    }
-    return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
-  }
-  return '-';
-};
-
-export const generateCreateMessage = (instance) => {
-  return generateCreateDeleteMessage(EVENT_TYPE_CREATE, instance);
-};
-export const generateDeleteMessage = (instance) => {
-  return generateCreateDeleteMessage(EVENT_TYPE_DELETE, instance);
-};
-
-export const generateUpdateMessage = (entityType, inputs) => {
-  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
-  const patchElements = Object.entries(inputsByOperations);
-  if (patchElements.length === 0) {
-    throw UnsupportedError('[OPENCTI] Error generating update message with empty inputs');
-  }
-  // noinspection UnnecessaryLocalVariableJS
-  const generatedMessage = patchElements.slice(0, 3).map(([type, operations]) => {
-    return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
-      let message = 'nothing';
-      let convertedKey;
-      const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
-      if (relationsRefDefinition) {
-        convertedKey = relationsRefDefinition.label ?? relationsRefDefinition.stixName;
-      } else {
-        const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
-        convertedKey = attributeDefinition.label ?? attributeDefinition.name;
-      }
-      const fromArray = Array.isArray(value) ? value : [value];
-      const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
-      if (isNotEmptyField(values)) {
-        // If update is based on internal ref, we need to extract the value
-        if (relationsRefDefinition) {
-          message = values.map((val) => truncate(extractEntityRepresentative(val))).join(', ');
-        } else if (key === creators.name) {
-          message = 'itself'; // Creator special case
-        } else if (isDictionaryAttribute(key)) {
-          message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
-        } else if (isObjectAttribute(key)) {
-          message = 'elements';
-        } else if (isJsonAttribute(key)) {
-          message = values.map((v) => truncate(JSON.stringify(v)));
-        } else if (isDateAttribute(key)) {
-          message = values.map((v) => ((v === FROM_START_STR || v === UNTIL_END_STR) ? 'nothing' : v));
-        } else {
-          // If standard primitive data, just join the values
-          message = values.join(', ');
-        }
-      }
-      return `\`${message}\` in \`${convertedKey}\`${(fromArray.length > 3) ? ` and ${fromArray.length - 3} more items` : ''}`;
-    }).join(' - ')}`;
-  }).join(' | ');
-  // Return generated update message
-  return `${generatedMessage}${patchElements.length > 3 ? ` and ${patchElements.length - 3} more operations` : ''}`;
 };
 
 export const pascalize = (s) => {

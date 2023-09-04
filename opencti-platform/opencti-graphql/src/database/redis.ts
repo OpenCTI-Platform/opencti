@@ -12,9 +12,6 @@ import {
   EVENT_TYPE_DELETE,
   EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
-  generateCreateMessage,
-  generateDeleteMessage,
-  generateMergeMessage,
   isEmptyField,
   waitInSec,
 } from './utils';
@@ -40,6 +37,7 @@ import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../manager/clusterManager';
 import type { ActivityStreamEvent } from '../manager/activityListener';
+import { generateCreateMessage, generateDeleteMessage, generateMergeMessage } from './generate-message';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const USE_SSL = booleanConf('redis:use_ssl', false);

@@ -12,6 +12,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
+    representative: Representative!
     createdBy: Identity
     objectMarking: MarkingDefinitionConnection
     objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])

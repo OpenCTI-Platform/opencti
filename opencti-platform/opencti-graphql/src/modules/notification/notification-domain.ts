@@ -38,7 +38,8 @@ import {
 } from './notification-types';
 import { now } from '../../utils/format';
 import { elCount, elFindByIds } from '../../database/engine';
-import { extractEntityRepresentative, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { ENTITY_FILTERS } from '../../utils/filtering';
 import type { BasicStoreEntity, BasicStoreObject, InternalEditInput } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -68,7 +69,7 @@ export const batchResolvedInstanceFilters = async (context: AuthContext, user: A
       .map((id) => [
         id,
         Object.keys(instances).includes(id),
-        instances[id] ? extractEntityRepresentative(instances[id]) : '',
+        instances[id] ? extractEntityRepresentativeName(instances[id]) : '',
       ]));
 };
 

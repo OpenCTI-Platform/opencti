@@ -24,7 +24,8 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   INPUT_GRANTED_REFS
 } from '../schema/general';
-import { extractEntityRepresentative, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './backgroundTask';
@@ -63,7 +64,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
     export_scope: 'query', // query or selection or single
     id: entity?.id,
     element_id: entity?.id,
-    entity_name: entity ? extractEntityRepresentative(entity) : 'global',
+    entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type: entityType, // Exported entity type
     export_type: type, // Simple or full
     max_marking: maxMarkingId, // Max marking id
@@ -79,7 +80,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
         event: {
           export_scope: 'selection', // query or selection or single
           element_id: entity?.id,
-          entity_name: entity ? extractEntityRepresentative(entity) : 'global',
+          entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
           entity_type: entityType, // Exported entity type
           export_type: type, // Simple or full
           file_name: fileName, // Export expected file name
@@ -134,7 +135,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
     export_scope: 'single', // query or selection or single
     id: entity.id, // Location of the file export = the exported element
     entity_id: entity.id, // Location of the file export = the exported element
-    entity_name: extractEntityRepresentative(entity),
+    entity_name: extractEntityRepresentativeName(entity),
     entity_type: entity.entity_type, // Exported entity type
     export_type: type, // Simple or full
     max_marking: maxMarkingId, // Max marking id

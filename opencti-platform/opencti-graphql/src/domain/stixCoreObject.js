@@ -10,7 +10,7 @@ import {
   storeLoadByIdWithRefs,
   timeSeriesEntities,
 } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { delEditContext, lockResource, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -52,7 +52,6 @@ import { elCount, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import {
-  extractEntityRepresentative,
   isEmptyField,
   isNotEmptyField,
   READ_ENTITIES_INDICES,
@@ -67,6 +66,7 @@ import {
   stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -106,10 +106,6 @@ export const findAll = async (context, user, args) => {
 
 export const findById = async (context, user, stixCoreObjectId) => {
   return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-};
-
-export const findByIds = async (context, user, stixCoreObjectIds) => {
-  return storeLoadByIds(context, user, stixCoreObjectIds, ABSTRACT_STIX_CORE_OBJECT);
 };
 
 export const batchCreatedBy = async (context, user, stixCoreObjectIds) => {
@@ -213,7 +209,7 @@ export const askElementEnrichmentForConnector = async (context, user, elementId,
       id: elementId,
       connector_id: connectorId,
       connector_name: connector.name,
-      entity_name: extractEntityRepresentative(element),
+      entity_name: extractEntityRepresentativeName(element),
       entity_type: element.entity_type
     }
   });

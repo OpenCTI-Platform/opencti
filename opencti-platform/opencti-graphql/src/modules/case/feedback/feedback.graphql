@@ -95,7 +95,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: String!
+  representative: Representative!
   objects(
     first: Int
     after: ID

@@ -75,10 +75,6 @@ const contextualViewLineFragment = graphql`
         edges {
           node {
             id
-            entity_type
-            ... on Container {
-              representative
-            }
           }
         }
       }

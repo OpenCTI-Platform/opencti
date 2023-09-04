@@ -16,9 +16,10 @@ import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject'
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/engine';
-import { extractEntityRepresentative, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { isStixId } from '../schema/schemaUtils';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
 
 export const findById = (context, user, observedDataId) => {
   return storeLoadById(context, user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
@@ -33,7 +34,7 @@ export const resolveName = async (context, user, observedData) => {
   const observedDataRelations = await listRelations(context, user, RELATION_OBJECT, relationArgs);
   if (observedDataRelations.length === 1) {
     const firstElement = await internalLoadById(context, user, observedDataRelations[0].toId);
-    return extractEntityRepresentative(firstElement);
+    return extractEntityRepresentativeName(firstElement);
   }
   return 'empty';
 };
