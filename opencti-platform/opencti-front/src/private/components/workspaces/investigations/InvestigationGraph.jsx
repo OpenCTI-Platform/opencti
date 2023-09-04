@@ -2075,7 +2075,7 @@ class InvestigationGraphComponent extends Component {
                 timeRangeValues={timeRangeValues}
                 handleSearch={this.handleSearch.bind(this)}
                 navOpen={navOpen}
-                resetAllFilters={this.resetAllFilters.bind(this)}
+                resetAllFilters={this.resetAllFilters.bind(this, false)}
               />
               {selectedEntities.length > 0 && (
                 <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
