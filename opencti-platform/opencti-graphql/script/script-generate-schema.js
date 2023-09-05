@@ -12,7 +12,7 @@ const schema = createSchema();
 const printedSchema = printSchema(schema);
 
 try {
-  fs.mkdirSync('../opencti-front/src/schema/');
+  fs.mkdirSync('../opencti-front/src/schema/', {recursive: true});
 } catch (error) {
   if (!(error.message.startsWith("EEXIST"))) {
     throw error;
