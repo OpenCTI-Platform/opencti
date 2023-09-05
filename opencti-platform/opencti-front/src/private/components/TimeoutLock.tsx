@@ -18,6 +18,7 @@ interface TimeoutState {
   sessionLimit: number;
   idleCount: number | null;
   startDate: Date;
+  startDateEpoch: number;
 }
 
 type Action = { type: 'count down' } | { type: 'reset timeout' };
@@ -26,11 +27,26 @@ type Action = { type: 'count down' } | { type: 'reset timeout' };
  * Handles various state changes for the timeout counting functionality.
  */
 const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
-  const { idleLimit, sessionLimit, idleCount, startDate } = state;
+  const { idleLimit, sessionLimit } = state;
+  let { idleCount, startDate, startDateEpoch } = state;
+  if (idleCount === null) {
+    idleCount = sessionLimit;
+  }
+  const timeoutJSON = localStorage.getItem('lockoutTracker');
+  if (timeoutJSON !== null) {
+    const timeoutData = JSON.parse(timeoutJSON);
+    startDate = timeoutData.startDate;
+    startDateEpoch = timeoutData.startDateEpoch;
+
+    idleCount = sessionLimit - (Date.now() - timeoutData.startDateEpoch) / 1000;
+  } else {
+    idleCount -= 1;
+  }
+
   switch (action.type) {
     case 'count down':
       if (idleCount) {
-        return { idleLimit, sessionLimit, idleCount: idleCount - 1, startDate };
+        return { idleLimit, sessionLimit, idleCount, startDate, startDateEpoch };
       }
       return state;
     case 'reset timeout':
@@ -39,6 +55,7 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
         sessionLimit,
         idleCount: sessionLimit,
         startDate: new Date(),
+        startDateEpoch: Date.now(),
       };
     default:
       return state;
@@ -68,9 +85,24 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
     sessionLimit,
     idleCount: null,
     startDate: new Date(),
+    startDateEpoch: Date.now(),
   });
   const [resetCounter, triggerReset] = useState(false);
   const interval = useRef<NodeJS.Timeout | null>(null);
+
+  /**
+   * Set some stateful data to share between browser tabs
+   */
+  const [lockoutTracker] = useState([]);
+  useEffect(() => {
+    const uniqueTime = Date.now();
+    const newTimeItem = {
+      id: uniqueTime,
+      startDate: state.startDate,
+      startDateEpoch: state.startDateEpoch,
+    };
+    localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
+  }, [lockoutTracker]);
 
   /**
    * Decrements the idle timeout counter by one until it is zero.
@@ -101,16 +133,33 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
 
   /**
    * Locks the application screen by opening a dialog which blurs the current application view.
+   *
+   * Note: Blurred tabs will remain blurred until either "Continue" is confirmed or session is logged out
+   *       If you have multiple tabs open, and the user confirms "Continue" in one tab, the timer on the other
+   *       tabs will update but the screen will remain blurred until the user confirms the "Continue" for
+   *       that window/tab. This is an intentional security constraint.
    */
   const lockScreen = () => {
     setDialogOpen(true);
   };
 
   /**
-   * Unlocks the application screen by closing the dialog and refreshes the session.
+   * Unlocks the application screen by closing the dialog, un-blurring screen, and refreshes the session.
+   *
+   * Note: Blurred tabs will remain blurred until either "Continue" is confirmed or session is logged out
+   *       If you have multiple tabs open, and the user confirms "Continue" in one tab, the timer on the other
+   *       tabs will update but the screen will remain blurred until the user confirms the "Continue" for
+   *       that window/tab. This is an intentional security constraint.
    */
   const unlockScreen = () => {
     setDialogOpen(false);
+    const uniqueTime = Date.now();
+    const newTimeItem = {
+      id: uniqueTime,
+      startDate: new Date(),
+      startDateEpoch: uniqueTime,
+    };
+    localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
   };
 
   /**
