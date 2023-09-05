@@ -109,7 +109,6 @@ const ContainerAddStixCoreObjects = (props) => {
     confidence,
     withPadding,
     simple,
-    paginationOptions,
     onAdd,
     onDelete,
     mapping,
@@ -423,7 +422,7 @@ const ContainerAddStixCoreObjects = (props) => {
                   <ContainerAddStixCoreObjectsLines
                     data={renderProps}
                     containerId={containerId}
-                    paginationOptions={paginationOptions}
+                    paginationOptions={searchPaginationOptions}
                     dataColumns={buildColumns(platformModuleHelpers)}
                     initialLoading={renderProps === null}
                     knowledgeGraph={knowledgeGraph}
