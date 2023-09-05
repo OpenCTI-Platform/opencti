@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO Remove this when V6
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
@@ -6,13 +10,13 @@ import RootStixCyberObservable from './stix_cyber_observables/Root';
 import Artifacts from './Artifacts';
 import Indicators from './Indicators';
 import RootIndicator from './indicators/Root';
-import Infrastructures from './Infrastructures';
-import RootInfrastructure from './infrastructures/Root';
 import RootArtifact from './artifacts/Root';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import Infrastructures from './Infrastructures';
+import RootInfrastructure from './infrastructures/Root';
 
 const Root = () => {
-  let redirect = null;
+  let redirect: string | null = null;
   if (!useIsHiddenEntity('Stix-Cyber-Observable')) {
     redirect = 'observables';
   } else if (!useIsHiddenEntity('Artifact')) {

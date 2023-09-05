@@ -1,8 +1,8 @@
-import React from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import React, { FunctionComponent } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import * as R from 'ramda';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -19,13 +19,17 @@ import {
   convertStatus,
 } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { buildDate, parse } from '../../../../utils/Time';
+import { buildDate, formatDate } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import {
+  InfrastructureEditionOverview_infrastructure$key,
+} from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
+import { Option } from '../../common/form/ReferenceField';
 
 const infrastructureMutationFieldPatch = graphql`
   mutation InfrastructureEditionOverviewFieldPatchMutation(
@@ -89,9 +93,86 @@ const infrastructureMutationRelationDelete = graphql`
   }
 `;
 
-const InfrastructureEditionOverviewComponent = (props) => {
-  const { infrastructure, enableReferences, context, handleClose } = props;
+export const infrastructureEditionOverviewFragment = graphql`
+  fragment InfrastructureEditionOverview_infrastructure on Infrastructure {
+    id
+    name
+    description
+    confidence
+    first_seen
+    last_seen
+    infrastructure_types
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    killChainPhases {
+      edges {
+        node {
+          id
+          entity_type
+          kill_chain_name
+          phase_name
+          x_opencti_order
+        }
+      }
+    }
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+  }
+`;
+
+interface InfrastructureEditionOverviewProps {
+  infrastructureData: InfrastructureEditionOverview_infrastructure$key,
+  context: readonly ({
+    readonly focusOn: string | null;
+    readonly name: string;
+  } | null)[] | null
+  enableReferences: boolean
+  handleClose: () => void
+}
+
+interface InfrastructureEditionFormValues {
+  message?: string
+  references?: Option[]
+  createdBy: Option | undefined
+  x_opencti_workflow_id: Option
+  objectMarking?: Option[]
+  killChainPhases?: Option[];
+  first_seen: null | Date;
+  last_seen: null | Date;
+  confidence: number | null;
+}
+
+const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEditionOverviewProps> = ({
+  infrastructureData,
+  context,
+  enableReferences,
+  handleClose,
+}) => {
   const { t } = useFormatter();
+  const infrastructure = useFragment(infrastructureEditionOverviewFragment, infrastructureData);
 
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
@@ -103,10 +184,6 @@ const InfrastructureEditionOverviewComponent = (props) => {
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_seen: Yup.date()
       .nullable()
-      .min(
-        Yup.ref('first_seen'),
-        "The last seen date can't be before first seen date",
-      )
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -129,35 +206,28 @@ const InfrastructureEditionOverviewComponent = (props) => {
     infrastructureValidator,
   );
 
-  const onSubmit = (values, { setSubmitting }) => {
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
-      R.assoc('infrastructure_types', values.infrastructure_types),
-      R.assoc(
-        'first_seen',
-        values.first_seen ? parse(values.first_seen).format() : null,
-      ),
-      R.assoc(
-        'last_seen',
-        values.last_seen ? parse(values.last_seen).format() : null,
-      ),
-      R.toPairs,
-      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
-    )(values);
+  const onSubmit: FormikConfig<InfrastructureEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
+
+    const inputValues = Object.entries({
+      ...otherValues,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+      killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
+      first_seen: formatDate(values.first_seen),
+      last_seen: formatDate(values.last_seen),
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
         id: infrastructure.id,
         input: inputValues,
         commitMessage:
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references,
+        references: commitReferences,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -166,50 +236,39 @@ const InfrastructureEditionOverviewComponent = (props) => {
     });
   };
 
-  const handleSubmitField = (name, value) => {
+  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = value.value;
+        finalValue = (value as Option).value;
       }
-      editor.fieldPatch({
-        variables: {
-          id: infrastructure.id,
-          input: { key: name, value: finalValue ?? '' },
-        },
-      });
+      infrastructureValidator
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          editor.fieldPatch({
+            variables: {
+              id: infrastructure.id,
+              input: { key: name, value: finalValue || '' },
+            },
+          });
+        })
+        .catch(() => false);
     }
   };
 
-  const initialValues = R.pipe(
-    R.assoc('createdBy', convertCreatedBy(infrastructure)),
-    R.assoc('killChainPhases', convertKillChainPhases(infrastructure)),
-    R.assoc('objectMarking', convertMarkings(infrastructure)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, infrastructure)),
-    R.assoc('first_seen', buildDate(infrastructure.first_seen)),
-    R.assoc('last_seen', buildDate(infrastructure.last_seen)),
-    R.assoc(
-      'infrastructure_types',
-      infrastructure.infrastructure_types
-        ? infrastructure.infrastructure_types
-        : [],
-    ),
-    R.assoc('references', []),
-    R.pick([
-      'name',
-      'references',
-      'description',
-      'infrastructure_types',
-      'confidence',
-      'first_seen',
-      'last_seen',
-      'createdBy',
-      'killChainPhases',
-      'objectMarking',
-      'x_opencti_workflow_id',
-      'confidence',
-    ]),
-  )(infrastructure);
+  const initialValues = {
+    name: infrastructure.name,
+    description: infrastructure.description,
+    createdBy: convertCreatedBy(infrastructure) as Option,
+    objectMarking: convertMarkings(infrastructure),
+    killChainPhases: convertKillChainPhases(infrastructure),
+    x_opencti_workflow_id: convertStatus(t, infrastructure) as Option,
+    confidence: infrastructure.confidence,
+    first_seen: buildDate(infrastructure.first_seen),
+    last_seen: buildDate(infrastructure.last_seen),
+    infrastructure_types: infrastructure.infrastructure_types ?? [],
+    references: [],
+  };
   return (
     <Formik
       enableReinitialize={true}
@@ -240,11 +299,10 @@ const InfrastructureEditionOverviewComponent = (props) => {
           />
           <OpenVocabField
             label={t('Infrastructure types')}
-            type="infrastructure-type-ov"
+            type="infrastructure_type_ov"
             name="infrastructure_types"
-            onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             variant="edit"
             multiple={true}
@@ -262,7 +320,7 @@ const InfrastructureEditionOverviewComponent = (props) => {
             component={DateTimePickerField}
             name="first_seen"
             onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
+            onChange={editor.changeField}
             TextFieldProps={{
               label: t('First seen'),
               variant: 'standard',
@@ -277,7 +335,7 @@ const InfrastructureEditionOverviewComponent = (props) => {
             component={DateTimePickerField}
             name="last_seen"
             onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
+            onChange={editor.changeField}
             TextFieldProps={{
               label: t('Last seen'),
               variant: 'standard',
@@ -363,54 +421,4 @@ const InfrastructureEditionOverviewComponent = (props) => {
   );
 };
 
-export default createFragmentContainer(InfrastructureEditionOverviewComponent, {
-  infrastructure: graphql`
-    fragment InfrastructureEditionOverview_infrastructure on Infrastructure {
-      id
-      name
-      description
-      confidence
-      first_seen
-      last_seen
-      infrastructure_types
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      killChainPhases {
-        edges {
-          node {
-            id
-            entity_type
-            kill_chain_name
-            phase_name
-            x_opencti_order
-          }
-        }
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
-      }
-      status {
-        id
-        order
-        template {
-          name
-          color
-        }
-      }
-      workflowEnabled
-    }
-  `,
-});
+export default InfrastructureEditionOverviewComponent;

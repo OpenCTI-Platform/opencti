@@ -80,6 +80,7 @@ const IncidentLineFragment = graphql`
     created
     modified
     confidence
+    entity_type
     objectAssignee {
       edges {
         node {

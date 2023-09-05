@@ -1,25 +1,25 @@
 import React, { FunctionComponent } from 'react';
+import { Link } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined } from '@mui/icons-material';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
-import { Link } from 'react-router-dom';
+import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
-import Tooltip from '@mui/material/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
-import { DataColumns } from '../../../../components/list_lines';
-import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import { DataColumns } from '../../../../components/list_lines';
 import {
-  CaseRftLineCase_node$data,
-  CaseRftLineCase_node$key,
-} from './__generated__/CaseRftLineCase_node.graphql';
+  InfrastructureLine_node$data,
+  InfrastructureLine_node$key,
+} from './__generated__/InfrastructureLine_node.graphql';
+import { Theme } from '../../../../components/Theme';
+import { emptyFilled } from '../../../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -50,9 +50,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey?.[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+  },
 }));
 
-interface CaseRftLineComponentProps {
+interface InfrastructureLineComponentProps {
   dataColumns: DataColumns;
   onLabelClick: (
     k: string,
@@ -60,39 +66,36 @@ interface CaseRftLineComponentProps {
     value: Record<string, unknown>,
     event: React.KeyboardEvent
   ) => void;
-  node: CaseRftLineCase_node$key;
-  selectedElements: Record<string, CaseRftLineCase_node$data>;
-  deSelectedElements: Record<string, CaseRftLineCase_node$data>;
+  node: InfrastructureLine_node$key;
+  selectedElements: Record<string, InfrastructureLine_node$data>;
+  deSelectedElements: Record<string, InfrastructureLine_node$data>;
   onToggleEntity: (
-    entity: CaseRftLineCase_node$data,
+    entity: InfrastructureLine_node$data,
     event: React.SyntheticEvent
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
-    entity: CaseRftLineCase_node$data,
+    entity: InfrastructureLine_node$data,
     event: React.SyntheticEvent
   ) => void;
   index: number;
 }
 
-const caseFragment = graphql`
-  fragment CaseRftLineCase_node on CaseRft {
+const infrastructureFragment = graphql`
+  fragment InfrastructureLine_node on Infrastructure {
     id
     name
-    description
     entity_type
     created
-    takedown_types
-    priority
-    severity
-    objectAssignee {
-      edges {
-        node {
-          entity_type
-          id
-          name
-        }
+    modified
+    confidence
+    infrastructure_types
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
       }
     }
     objectMarking {
@@ -119,19 +122,10 @@ const caseFragment = graphql`
       id
       name
     }
-    status {
-      id
-      order
-      template {
-        name
-        color
-      }
-    }
-    workflowEnabled
   }
 `;
 
-export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
+export const InfrastructureLine: FunctionComponent<InfrastructureLineComponentProps> = ({
   dataColumns,
   node,
   onLabelClick,
@@ -143,15 +137,15 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
   index,
 }) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
-  const data = useFragment(caseFragment, node);
+  const { fd, t } = useFormatter();
+  const data = useFragment(infrastructureFragment, node);
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       button={true}
       component={Link}
-      to={`/dashboard/cases/rfts/${data.id}`}
+      to={`/dashboard/observations/infrastructures/${data.id}`}
     >
       <ListItemIcon
         classes={{ root: classes.itemIcon }}
@@ -171,42 +165,41 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={'Case-Rft'} />
+        <ItemIcon type='Infrastructure' />
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <Tooltip title={data.name}>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {data.name}
-              </div>
-            </Tooltip>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.priority.width }}
+              style={{ width: dataColumns.name.width }}
             >
-              {data.priority}
+              {data.name}
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.severity.width }}
+              style={{ width: dataColumns.infrastructure_types.width }}
             >
-              {data.severity}
+              <Chip
+                classes={{ root: classes.chipInList }}
+                color="primary"
+                variant="outlined"
+                label={data.infrastructure_types?.at(0) ?? t('Unknown')}
+              />
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.objectAssignee.width }}
+              style={{ width: dataColumns.createdBy.width }}
             >
-              {(data.objectAssignee?.edges ?? []).map((p) => p?.node.name).join(', ')}
+              {emptyFilled(data.createdBy?.name)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
             >
-              {(data.creators ?? []).map((c) => c?.name).join(', ')}
+              {emptyFilled(
+                (data.creators ?? []).map((c) => c?.name).join(', '),
+              )}
             </div>
             <div
               className={classes.bodyItem}
@@ -226,16 +219,6 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.x_opencti_workflow_id.width }}
-            >
-              <ItemStatus
-                status={data.status}
-                variant="inList"
-                disabled={!data.workflowEnabled}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
@@ -248,28 +231,26 @@ export const CaseRftLine: FunctionComponent<CaseRftLineComponentProps> = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRight />
       </ListItemIcon>
     </ListItem>
   );
 };
 
-export const CaseRftLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const InfrastructureLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
-      >
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton animation="wave" variant="circular" width={30} height={30} />
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+        <Skeleton
+          animation="wave"
+          variant="circular"
+          width={30}
+          height={30}
+        />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -287,7 +268,7 @@ export const CaseRftLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.priority.width }}
+              style={{ width: dataColumns.infrastructure_types.width }}
             >
               <Skeleton
                 animation="wave"
@@ -298,18 +279,7 @@ export const CaseRftLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.severity.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectAssignee.width }}
+              style={{ width: dataColumns.createdBy.width }}
             >
               <Skeleton
                 animation="wave"
@@ -353,23 +323,12 @@ export const CaseRftLineDummy = ({
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.x_opencti_workflow_id.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
               style={{ width: dataColumns.objectMarking.width }}
             >
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width="90%"
+                width={100}
                 height="100%"
               />
             </div>
@@ -377,7 +336,7 @@ export const CaseRftLineDummy = ({
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
+        <KeyboardArrowRight />
       </ListItemIcon>
     </ListItem>
   );

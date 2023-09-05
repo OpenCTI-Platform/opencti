@@ -482,6 +482,7 @@ const StixSightingRelationshipExternalReferencesLines = createPaginationContaine
                 node {
                   id
                   source_name
+                  entity_type
                   description
                   url
                   hash
