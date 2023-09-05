@@ -56,7 +56,7 @@ At the top right of each Card, you can click the star icon to put it as favorite
 When clicking on an Intrusion set Card, you land on its Overview tab. The following tabs are accessible:
 
 - Overview: as described [here](overview.md).
-- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Threat actor. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Threat actor, etc. 
+- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Intrusion Set. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Intrusion Set, etc. 
 - Analyses: as described [here](overview.md).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
@@ -79,7 +79,7 @@ At the top right of each Card, you can click the star icon to put it as favorite
 When clicking on an Campaign Card, you land on its Overview tab. The following tabs are accessible:
 
 - Overview: as described [here](overview.md).
-- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Threat actor. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Threat actor, etc. 
+- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Campaign. Different thematic views are proposed to easily see the victimology, arsenal and techniques used in the context of the Campaign. 
 - Analyses: as described [here](overview.md).
 - Data: as described [here](overview.md).
 - History: as described [here](overview.md).
