@@ -27,17 +27,20 @@ class ThreatActorIndividualLocationsComponent extends Component {
       mutation: addLocationsThreatActorMutationRelationDelete,
       variables: {
         fromId: this.props.threatActorIndividual.id,
-        toId: locationEdge.node.id,
+        toId: locationEdge.node.to.id,
         relationship_type: 'located-at',
       },
       updater: (store) => {
         const node = store.get(this.props.threatActorIndividual.id);
-        const locations = node.getLinkedRecord('locations');
-        const edges = locations.getLinkedRecords('edges');
+        const stixCoreRelationships = node.getLinkedRecord('stixCoreRelationships');
+        const edges = stixCoreRelationships.getLinkedRecords('edges');
         const newEdges = edges.filter(
-          (n) => n.getLinkedRecord('node').getValue('id') !== locationEdge.node.id,
+          (n) => {
+            const relationshipNode = n.getLinkedRecord('node');
+            return relationshipNode.getLinkedRecord('to').getValue('id') !== locationEdge.node.to.id;
+          },
         );
-        locations.setLinkedRecords(newEdges, 'edges');
+        stixCoreRelationships.setLinkedRecords(newEdges, 'edges');
       },
     });
   }
@@ -62,13 +65,13 @@ class ThreatActorIndividualLocationsComponent extends Component {
         </Security>
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
-          {threatActorIndividual.locations.edges.length === 0 && (
+          {threatActorIndividual.stixCoreRelationships.edges.length === 0 && (
             <ListItem dense={true} divider={true} button={false}>
               <ListItemText primary="-" />
             </ListItem>
           )}
-          {threatActorIndividual.locations.edges.map((locationEdge) => {
-            const location = locationEdge.node;
+          {threatActorIndividual.stixCoreRelationships.edges.map((locationEdge) => {
+            const location = locationEdge.node.to;
             const link = resolveLink(location.entity_type);
             const flag = location.entity_type === 'Country'
               && R.head(
@@ -76,6 +79,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   (n) => n?.length === 2,
                 ),
               );
+            const isInferred = locationEdge.node.is_inferred;
             return (
               <ListItem
                 key={location.id}
@@ -98,15 +102,19 @@ class ThreatActorIndividualLocationsComponent extends Component {
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
                 <ListItemSecondaryAction>
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeLocation.bind(this, locationEdge)}
-                      size="large"
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </Security>
+                  { isInferred ? (
+                      <></>
+                  ) : (
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <IconButton
+                          aria-label="Remove"
+                          onClick={() => this.removeLocation(locationEdge)}
+                          size="large"
+                        >
+                          <LinkOff />
+                        </IconButton>
+                      </Security>
+                  )}
                 </ListItemSecondaryAction>
               </ListItem>
             );
@@ -133,6 +141,23 @@ const ThreatActorIndividualLocations = createFragmentContainer(
         name
         parent_types
         entity_type
+        stixCoreRelationships {
+          edges {
+            node {
+              is_inferred
+              to {
+                ... on Location {
+                  id
+                  parent_types
+                  entity_type
+                  name
+                  x_opencti_aliases
+                  description
+                }
+              }
+            }
+          }
+        }
         locations {
           edges {
             node {
