@@ -21,7 +21,10 @@ export enum OrderMode {
 }
 
 export interface PaginationOptions {
-  toId?: string;
+  toId?: string | string[];
+  fromId?: string[];
+  toTypes?: string[];
+  fromTypes?: string[];
   search?: string;
   orderBy?: string;
   orderMode?: OrderMode;

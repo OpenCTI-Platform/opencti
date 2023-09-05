@@ -60,6 +60,8 @@ export interface UseLocalStorageHelpers {
   }) => void;
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
+  handleToggleTypes: (type: string) => void;
+  handleClearTypes: () => void;
 }
 
 const localStorageToPaginationOptions = (
@@ -86,11 +88,24 @@ const localStorageToPaginationOptions = (
     basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
     basePagination.orderBy = sortBy;
   }
+  let convertedFilters = (convertFilters(filters ?? {}) as unknown as BackendFilters);
+  const fromId = R.head(convertedFilters.filter((n) => n.key === 'fromId'))?.values || undefined;
+  const toId = R.head(convertedFilters.filter((n) => n.key === 'toId'))?.values || undefined;
+  const fromTypes = R.head(convertedFilters.filter((n) => n.key === 'fromTypes'))?.values || undefined;
+  const toTypes = R.head(convertedFilters.filter((n) => n.key === 'toTypes'))?.values || undefined;
+  convertedFilters = convertedFilters.filter(
+    (n) => !['fromId', 'toId', 'fromTypes', 'toTypes'].includes(Array.isArray(n.key) ? n.key[0] : n.key),
+  );
+
   const paginationFilters: BackendFilters = [
-    ...(convertFilters(filters ?? {}) as unknown as BackendFilters),
+    ...convertedFilters,
     ...(additionalFilters ?? []),
   ];
   basePagination.filters = paginationFilters.length > 0 ? paginationFilters : undefined;
+  basePagination.fromId = fromId;
+  basePagination.toId = toId;
+  basePagination.fromTypes = fromTypes;
+  basePagination.toTypes = toTypes;
   return basePagination;
 };
 
@@ -362,6 +377,18 @@ export const usePaginationLocalStorage = <U>(
           };
         });
       }
+    },
+    handleToggleTypes: (type: string) => {
+      if (viewStorage.types?.includes(type)) {
+        const newTypes = viewStorage.types.filter((t) => t !== type);
+        setValue((c) => ({ ...c, types: newTypes }));
+      } else {
+        const newTypes = viewStorage.types ? [...viewStorage.types, type] : [type];
+        setValue((c) => ({ ...c, types: newTypes }));
+      }
+    },
+    handleClearTypes: () => {
+      setValue((c) => ({ ...c, types: [] }));
     },
   };
 

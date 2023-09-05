@@ -1,36 +1,32 @@
 import React, { FunctionComponent } from 'react';
+import * as R from 'ramda';
 import ListLines from '../../../components/list_lines/ListLines';
-import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
-import ReportCreation from './reports/ReportCreation';
-import ToolBar from '../data/ToolBar';
+import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
+import ToolBar from '../data/ToolBar';
+import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import {
-  ReportsLinesPaginationQuery,
-  ReportsLinesPaginationQuery$variables,
-} from './reports/__generated__/ReportsLinesPaginationQuery.graphql';
 import { Filters } from '../../../components/list_lines';
-import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.graphql';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { ReportLineDummy } from './reports/ReportLine';
-import ExportContextProvider from '../../../utils/ExportContextProvider';
+import { NoteLineDummy } from './notes/NoteLine';
+import { NoteLine_node$data } from './notes/__generated__/NoteLine_node.graphql';
+import {
+  NotesLinesPaginationQuery,
+  NotesLinesPaginationQuery$variables,
+} from './notes/__generated__/NotesLinesPaginationQuery.graphql';
+import NoteCreation from './notes/NoteCreation';
 
-const LOCAL_STORAGE_KEY = 'view-reports';
+const LOCAL_STORAGE_KEY = 'view-notes';
 
-interface ReportsProps {
+interface NotesProps {
   objectId: string;
   authorId: string;
   onChangeOpenExports: () => void;
 }
-
-const Reports: FunctionComponent<ReportsProps> = ({
-  objectId,
-  authorId,
-  onChangeOpenExports,
-}) => {
+const Notes: FunctionComponent<NotesProps> = ({ objectId, authorId, onChangeOpenExports }) => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
@@ -53,40 +49,38 @@ const Reports: FunctionComponent<ReportsProps> = ({
   }
   const {
     viewStorage,
-    paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(
+    paginationOptions } = usePaginationLocalStorage<NotesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      filters: {} as Filters,
       searchTerm: '',
-      sortBy: 'published',
+      sortBy: 'created',
       orderAsc: false,
       openExports: false,
-      redirectionMode: 'overview',
+      filters: {} as Filters,
     },
     additionnalFilters,
   );
   const {
-    numberOfElements,
-    filters,
-    searchTerm,
     sortBy,
     orderAsc,
+    searchTerm,
+    filters,
     openExports,
-    redirectionMode,
+    numberOfElements,
   } = viewStorage;
+
   const {
+    onToggleEntity,
+    numberOfSelectedElements,
+    handleClearSelectedElements,
     selectedElements,
     deSelectedElements,
     selectAll,
-    handleClearSelectedElements,
     handleToggleSelectAll,
-    onToggleEntity,
-    numberOfSelectedElements,
-  } = useEntityToggle<ReportLine_node$data>(LOCAL_STORAGE_KEY);
-  const queryRef = useQueryLoading<ReportsLinesPaginationQuery>(
-    reportsLinesQuery,
+  } = useEntityToggle<NoteLine_node$data>(LOCAL_STORAGE_KEY);
+  const queryRef = useQueryLoading<NotesLinesPaginationQuery>(
+    notesLinesQuery,
     paginationOptions,
   );
   const renderLines = () => {
@@ -96,19 +90,20 @@ const Reports: FunctionComponent<ReportsProps> = ({
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
-    let renderFilters = filters;
-    renderFilters = {
-      ...renderFilters,
-      entity_type: [{ id: 'Report', value: 'Report' }],
-    };
+    let finalFilters = filters;
+    finalFilters = R.assoc(
+      'entity_type',
+      [{ id: 'Note', value: 'Note' }],
+      finalFilters,
+    );
     const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
-      name: {
-        label: 'Title',
+      attribute_abstract: {
+        label: 'Abstract',
         width: '25%',
         isSortable: true,
       },
-      report_types: {
+      note_types: {
         label: 'Type',
         width: '8%',
         isSortable: true,
@@ -128,7 +123,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
         width: '15%',
         isSortable: false,
       },
-      published: {
+      created: {
         label: 'Date',
         width: '10%',
         isSortable: true,
@@ -159,32 +154,25 @@ const Reports: FunctionComponent<ReportsProps> = ({
           handleToggleSelectAll={handleToggleSelectAll}
           selectAll={selectAll}
           noPadding={typeof onChangeOpenExports === 'function'}
-          exportEntityType="Report"
+          exportEntityType="Note"
           exportContext={exportContext}
           keyword={searchTerm}
-          redirectionMode={redirectionMode}
-          handleSwitchRedirectionMode={(value: string) => storageHelpers.handleAddProperty('redirectionMode', value)
-          }
           filters={filters}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           iconExtension={true}
           availableFilterKeys={[
+            'note_types',
             'x_opencti_workflow_id',
             'labelledBy',
             'markedBy',
             'createdBy',
-            'x_opencti_reliability',
+            'source_reliability',
             'confidence',
-            'assigneeTo',
-            'participant',
-            'report_types',
+            'likelihood',
             'creator',
-            'published_start_date',
-            'published_end_date',
-            'created_at_start_date',
-            'created_at_end_date',
-            'objectContains',
+            'created_start_date',
+            'created_end_date',
           ]}
         >
           {queryRef && (
@@ -194,12 +182,12 @@ const Reports: FunctionComponent<ReportsProps> = ({
                   {Array(20)
                     .fill(0)
                     .map((idx) => (
-                      <ReportLineDummy key={idx} dataColumns={dataColumns} />
+                      <NoteLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>
               }
             >
-              <ReportsLines
+              <NotesLines
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
@@ -209,7 +197,6 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 onToggleEntity={onToggleEntity}
                 selectAll={selectAll}
                 setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                redirectionMode={redirectionMode}
               />
               <ToolBar
                 selectedElements={selectedElements}
@@ -217,9 +204,9 @@ const Reports: FunctionComponent<ReportsProps> = ({
                 numberOfSelectedElements={numberOfSelectedElements}
                 selectAll={selectAll}
                 search={searchTerm}
-                filters={renderFilters}
+                filters={finalFilters}
                 handleClearSelectedElements={handleClearSelectedElements}
-                type="Report"
+                type="Note"
               />
             </React.Suspense>
           )}
@@ -230,11 +217,11 @@ const Reports: FunctionComponent<ReportsProps> = ({
   return (
     <ExportContextProvider>
       {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ReportCreation paginationOptions={paginationOptions} />
+      <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+        <NoteCreation paginationOptions={paginationOptions} />
       </Security>
     </ExportContextProvider>
   );
 };
 
-export default Reports;
+export default Notes;

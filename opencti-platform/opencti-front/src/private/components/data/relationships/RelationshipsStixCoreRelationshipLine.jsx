@@ -1,12 +1,10 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
-import { compose, pathOr } from 'ramda';
+import { pathOr } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import { VisibilityOutlined } from '@mui/icons-material';
@@ -16,14 +14,15 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import Chip from '@mui/material/Chip';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -56,31 +55,29 @@ const styles = (theme) => ({
     textTransform: 'uppercase',
     borderRadius: 0,
   },
-});
+}));
 
-class RelationshipsStixCoreRelationshipLineComponent extends Component {
-  render() {
-    const {
-      t,
-      fd,
-      classes,
-      dataColumns,
-      node,
-      onToggleEntity,
-      selectedElements,
-      deSelectedElements,
-      selectAll,
-      onToggleShiftEntity,
-      index,
-    } = this.props;
-    const remoteNode = node.from ? node.from : node.to;
-    let link = null;
-    if (remoteNode) {
-      link = `${resolveLink(remoteNode.entity_type)}/${
-        remoteNode.id
-      }/knowledge/relations/${node.id}`;
-    }
-    return (
+const RelationshipsStixCoreRelationshipLineComponent = ({
+  dataColumns,
+  node,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+  onToggleShiftEntity,
+  index,
+}) => {
+  const classes = useStyles();
+  const { t, fd } = useFormatter();
+
+  const remoteNode = node.from ? node.from : node.to;
+  let link = null;
+  if (remoteNode) {
+    link = `${resolveLink(remoteNode.entity_type)}/${
+      remoteNode.id
+    }/knowledge/relations/${node.id}`;
+  }
+  return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
@@ -264,23 +261,10 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
           </IconButton>
         </ListItemSecondaryAction>
       </ListItem>
-    );
-  }
-}
-
-RelationshipsStixCoreRelationshipLineComponent.propTypes = {
-  dataColumns: PropTypes.object,
-  node: PropTypes.object,
-  classes: PropTypes.object,
-  fd: PropTypes.func,
-  t: PropTypes.func,
-  onLabelClick: PropTypes.func,
-  onToggleEntity: PropTypes.func,
-  selectedElements: PropTypes.object,
-  deSelectedElements: PropTypes.object,
+  );
 };
 
-const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
+export const RelationshipsStixCoreRelationshipLine = createFragmentContainer(
   RelationshipsStixCoreRelationshipLineComponent,
   {
     node: graphql`
@@ -3857,15 +3841,9 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
     `,
   },
 );
-export const RelationshipsStixCoreRelationshipLine = compose(
-  inject18n,
-  withStyles(styles),
-)(RelationshipsStixCoreRelationshipLineFragment);
-
-class RelationshipsStixCoreRelationshipLineDummyComponent extends Component {
-  render() {
-    const { classes, dataColumns } = this.props;
-    return (
+export const RelationshipsStixCoreRelationshipLineDummy = ({ dataColumns }) => {
+  const classes = useStyles();
+  return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
@@ -4001,16 +3979,5 @@ class RelationshipsStixCoreRelationshipLineDummyComponent extends Component {
           </IconButton>
         </ListItemSecondaryAction>
       </ListItem>
-    );
-  }
-}
-
-RelationshipsStixCoreRelationshipLineDummyComponent.propTypes = {
-  dataColumns: PropTypes.object,
-  classes: PropTypes.object,
+  );
 };
-
-export const RelationshipsStixCoreRelationshipLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(RelationshipsStixCoreRelationshipLineDummyComponent);
