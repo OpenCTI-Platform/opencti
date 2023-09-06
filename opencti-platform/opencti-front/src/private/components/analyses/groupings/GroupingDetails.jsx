@@ -146,7 +146,7 @@ const GroupingDetailsComponent = (props) => {
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
-          {t('Related groupings')}
+          {t('Correlated groupings')}
         </Typography>
         <List>
           {R.take(expanded ? 200 : 5, grouping.relatedContainers.edges)

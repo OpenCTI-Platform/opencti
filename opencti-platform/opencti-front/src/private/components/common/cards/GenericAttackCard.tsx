@@ -213,7 +213,7 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             {entityType === 'Malware' ? (
               <div className={classes.extraColumn} style={{ paddingLeft: 10 }}>
                 <Typography variant="h4">
-                  {t('Related intrusion sets')}
+                  {t('Correlated intrusion sets')}
                 </Typography>
                 <Typography variant="body2">
                   {emptyFilled(relatedIntrusionSets)}
