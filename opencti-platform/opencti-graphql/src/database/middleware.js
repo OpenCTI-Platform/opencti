@@ -287,6 +287,14 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     targetIds = targetIds.filter((id) => elementIds.includes(id));
   }
   const targets = await elFindByIds(context, user, targetIds, opts);
+  // pour chaque target trouver la relation qui a pour toId, l'ID de la target
+  // puis écrire dans la target si la relation est inferred ou pas
+  const relationsId = targets.map((target) => {
+    const targetId = target.id;
+    return relations.find((relation) => relation.toId === targetId);
+  });
+  console.log('relationsId', relationsId);
+
   // Group and rebuild the result
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
   if (paginate) {

@@ -27,20 +27,17 @@ class ThreatActorIndividualLocationsComponent extends Component {
       mutation: addLocationsThreatActorMutationRelationDelete,
       variables: {
         fromId: this.props.threatActorIndividual.id,
-        toId: locationEdge.node.to.id,
+        toId: locationEdge.node.id,
         relationship_type: 'located-at',
       },
       updater: (store) => {
         const node = store.get(this.props.threatActorIndividual.id);
-        const stixCoreRelationships = node.getLinkedRecord('stixCoreRelationships');
-        const edges = stixCoreRelationships.getLinkedRecords('edges');
+        const locations = node.getLinkedRecord('locations');
+        const edges = locations.getLinkedRecords('edges');
         const newEdges = edges.filter(
-          (n) => {
-            const relationshipNode = n.getLinkedRecord('node');
-            return relationshipNode.getLinkedRecord('to').getValue('id') !== locationEdge.node.to.id;
-          },
+          (n) => n.getLinkedRecord('node').getValue('id') !== locationEdge.node.id,
         );
-        stixCoreRelationships.setLinkedRecords(newEdges, 'edges');
+        locations.setLinkedRecords(newEdges, 'edges');
       },
     });
   }
@@ -70,8 +67,8 @@ class ThreatActorIndividualLocationsComponent extends Component {
               <ListItemText primary="-" />
             </ListItem>
           )}
-          {threatActorIndividual.stixCoreRelationships.edges.map((locationEdge) => {
-            const location = locationEdge.node.to;
+          {threatActorIndividual.locations.edges.map((locationEdge) => {
+            const location = locationEdge.node;
             const link = resolveLink(location.entity_type);
             const flag = location.entity_type === 'Country'
               && R.head(
