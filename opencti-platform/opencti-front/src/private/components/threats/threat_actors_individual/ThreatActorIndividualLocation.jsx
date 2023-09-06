@@ -65,7 +65,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
         </Security>
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
-          {threatActorIndividual.stixCoreRelationships.edges.length === 0 && (
+          {threatActorIndividual.locations.edges.length === 0 && (
             <ListItem dense={true} divider={true} button={false}>
               <ListItemText primary="-" />
             </ListItem>
