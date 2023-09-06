@@ -212,7 +212,8 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
   };
   const input = {
     filters: JSON.stringify(filters),
-    actions: [{ type, context: { values: [organizationId] } }]
+    actions: [{ type, context: { values: [organizationId] } }],
+    scope: 'KNOWLEDGE',
   };
   await createQueryTask(context, context.user, input);
 };
