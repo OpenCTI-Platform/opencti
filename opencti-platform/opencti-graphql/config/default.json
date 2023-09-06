@@ -154,6 +154,14 @@
     "lock_key": "retention_manager_lock",
     "interval": 60000
   },
+  "file_index_manager": {
+    "enabled": true,
+    "lock_key": "file_index_manager_lock",
+    "stream_lock_key": "file_index_manager_stream_lock",
+    "interval": 300000,
+    "max_file_size": 5242880,
+    "accept_mime_types": ["application/pdf", "text/plain", "text/csv", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
+  },
   "redis": {
     "mode": "single",
     "namespace": "",

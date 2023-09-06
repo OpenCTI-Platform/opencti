@@ -71,6 +71,7 @@ import {
   DatabaseExportOutline,
   DiamondOutline,
   FileDelimitedOutline,
+  FileOutline,
   Fire,
   HexagonOutline,
   LabelOutline,
@@ -172,6 +173,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       );
     case 'label':
       return <LabelOutline style={style} fontSize={fontSize} role="img" />;
+    case 'file':
+      return <FileOutline style={style} fontSize={fontSize} role="img" />;
     case 'attack-pattern':
       return <LockPattern style={style} fontSize={fontSize} role="img" />;
     case 'campaign':

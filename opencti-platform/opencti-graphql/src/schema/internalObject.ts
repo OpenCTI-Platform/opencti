@@ -14,6 +14,7 @@ export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
 export const ENTITY_TYPE_HISTORY = 'History';
 export const ENTITY_TYPE_ACTIVITY = 'Activity';
+export const ENTITY_TYPE_FILE_INDEX_STATUS = 'FileIndexStatus';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_BACKGROUND_TASK = 'BackgroundTask';
 export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';
@@ -37,6 +38,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_FEED,
+  ENTITY_TYPE_FILE_INDEX_STATUS,
   ENTITY_TYPE_STREAM_COLLECTION,
   ENTITY_TYPE_STATUS_TEMPLATE,
   ENTITY_TYPE_STATUS,

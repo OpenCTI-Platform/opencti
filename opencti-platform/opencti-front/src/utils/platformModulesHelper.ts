@@ -11,6 +11,7 @@ export const TASK_MANAGER = 'TASK_MANAGER';
 export const EXPIRATION_SCHEDULER = 'EXPIRATION_SCHEDULER';
 export const SYNC_MANAGER = 'SYNC_MANAGER';
 export const INGESTION_MANAGER = 'INGESTION_MANAGER';
+export const FILE_INDEX_MANAGER = 'FILE_INDEX_MANAGER';
 export const RETENTION_MANAGER = 'RETENTION_MANAGER';
 export const PLAYBOOK_MANAGER = 'PLAYBOOK_MANAGER';
 
@@ -24,6 +25,7 @@ export interface ModuleHelper {
   isSyncManagerEnable: () => boolean;
   isRetentionManagerEnable: () => boolean;
   isIngestionManagerEnable: () => boolean;
+  isFileIndexManagerEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
 }
 
@@ -57,6 +59,7 @@ const platformModuleHelper = (
   isPlayBookManagerEnable: () => isModuleEnable(settings, PLAYBOOK_MANAGER),
   isRetentionManagerEnable: () => isModuleEnable(settings, RETENTION_MANAGER),
   isIngestionManagerEnable: () => isModuleEnable(settings, INGESTION_MANAGER),
+  isFileIndexManagerEnable: () => isModuleEnable(settings, FILE_INDEX_MANAGER),
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
 });
 

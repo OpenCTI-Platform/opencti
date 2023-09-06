@@ -839,6 +839,23 @@ type FileConnection {
   edges: [FileEdge]
 }
 
+type IndexedFile {
+  id: ID!
+  name: String!
+  file_id: String!
+  uploaded_at: DateTime!
+  entity: StixObject
+  searchOccurrences: Int
+}
+type IndexedFileEdge {
+  cursor: String!
+  node: IndexedFile!
+}
+type IndexedFileConnection {
+  pageInfo: PageInfo!
+  edges: [IndexedFileEdge]
+}
+
 type OpenCtiFile {
   id: ID!
   name: String!
@@ -12050,6 +12067,7 @@ type Query {
   file(id: String!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   pendingFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection @auth(for: [KNOWLEDGE])
 
   ###### ENTITIES
 

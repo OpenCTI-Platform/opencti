@@ -7,7 +7,7 @@ import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remot
 import { defaultProvider } from '@aws-sdk/credential-provider-node/dist-cjs/defaultProvider';
 import mime from 'mime-types';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError, FunctionalError } from '../config/errors';
 import { createWork, deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
@@ -15,6 +15,7 @@ import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
+import { elDeleteFilesByIds, isAttachmentProcessorEnabled } from './engine';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -98,6 +99,15 @@ export const deleteFile = async (context, user, id) => {
     Key: id
   }));
   await deleteWorkForFile(context, user, id);
+  // delete in index if file has been indexed
+  // TODO test if file index manager is activated (dependency cycle issue with isModuleActivated)
+  if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
+    logApp.info(`[FILE STORAGE] delete file ${id} in index`);
+    await elDeleteFilesByIds(context, user, [id])
+      .catch((databaseError) => {
+        logApp.error('[FILE STORAGE] Error deleting file in index', { databaseError });
+      });
+  }
   return up;
 };
 
@@ -123,21 +133,21 @@ export const downloadFile = async (id) => {
   }
 };
 
-const streamToString = (stream) => {
+const streamToString = (stream, encoding = 'utf8') => {
   return new Promise((resolve, reject) => {
     const chunks = [];
     stream.on('data', (chunk) => chunks.push(chunk));
     stream.on('error', reject);
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    stream.on('end', () => resolve(Buffer.concat(chunks).toString(encoding)));
   });
 };
 
-export const getFileContent = async (id) => {
+export const getFileContent = async (id, encoding = 'utf8') => {
   const object = await s3Client.send(new s3.GetObjectCommand({
     Bucket: bucketName,
     Key: id
   }));
-  return streamToString(object.Body);
+  return streamToString(object.Body, encoding);
 };
 
 export const storeFileConverter = (user, file) => {
@@ -155,7 +165,13 @@ export const loadFile = async (user, filename) => {
       Bucket: bucketName,
       Key: filename
     }));
-    const metaData = { ...object.Metadata, messages: [], errors: [] };
+    const metaData = {
+      ...object.Metadata,
+      mimetype: object.Metadata.mimetype,
+      entity_id: object.Metadata.entity_id,
+      messages: [],
+      errors: [],
+    };
     if (metaData.labels_text) {
       metaData.labels = metaData.labels_text.split(';');
     }
@@ -182,7 +198,8 @@ export const isFileObjectExcluded = (id) => {
   return excludedFiles.map((e) => e.toLowerCase()).includes(fileName.toLowerCase());
 };
 
-export const rawFilesListing = async (context, user, directory, recursive = false) => {
+export const rawFilesListing = async (context, user, directory, recursive = false, opts = {}) => {
+  const { modifiedSince, excludePath } = opts;
   const storageObjects = [];
   const requestParams = {
     Bucket: bucketName,
@@ -203,7 +220,12 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
       truncated = false;
     }
   }
-  const filteredObjects = storageObjects.filter((obj) => !isFileObjectExcluded(obj.Key));
+  const filteredObjects = storageObjects.filter((obj) => {
+    return !isFileObjectExcluded(obj.Key)
+        && (!modifiedSince || obj.LastModified > modifiedSince)
+        && (!excludePath || !obj.Key.startsWith(excludePath));
+  });
+  // TODO limit loadFile : sort by LastModified and get the first 50 ? => waiting for performance test
   // Load file metadata with 5 // call maximum
   return BluePromise.map(filteredObjects, (f) => loadFile(user, f.Key), { concurrency: 5 });
 };
