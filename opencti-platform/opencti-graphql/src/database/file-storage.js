@@ -306,18 +306,18 @@ export const upload = async (context, user, path, fileUpload, opts) => {
 
 export const filesListing = async (context, user, first, path, entity = null, prefixMimeType = '') => {
   const filesListingFn = async () => {
-    const files = await rawFilesListing(context, user, path);
+    let files = await rawFilesListing(context, user, path);
+    if (entity) {
+      files = files.filter((file) => file.metaData.entity_id === entity.internal_id);
+      files = await resolveImageFiles(context, user, files, entity);
+    }
+    if (prefixMimeType) {
+      files = files.filter((file) => file.metaData.mimetype.includes(prefixMimeType));
+    }
     const inExport = await loadExportWorksAsProgressFiles(context, user, path);
     const allFiles = R.concat(inExport, files);
     const sortedFiles = allFiles.sort((a, b) => b.lastModified - a.lastModified);
-    let fileNodes = sortedFiles.map((f) => ({ node: f }));
-    if (prefixMimeType) {
-      fileNodes = fileNodes.filter((n) => n.node.metaData.mimetype.includes(prefixMimeType));
-    }
-    if (entity) {
-      fileNodes = fileNodes.filter((n) => n.node.metaData.entity_id === entity.internal_id, fileNodes);
-      fileNodes = await resolveImageFiles(context, user, fileNodes, entity);
-    }
+    const fileNodes = sortedFiles.map((f) => ({ node: f }));
     return buildPagination(first, null, fileNodes, fileNodes.length);
   };
   return telemetry(context, user, `STORAGE ${path}`, {
@@ -334,28 +334,25 @@ export const deleteAllFiles = async (context, user, path) => {
   return deleteFiles(context, user, ids);
 };
 
-const resolveImageFiles = async (context, user, fileNodes, resolveEntity) => {
+const resolveImageFiles = async (context, user, files, resolveEntity) => {
   const elasticFiles = resolveEntity.x_opencti_files;
-  return fileNodes.map((file) => {
-    const elasticFile = (elasticFiles ?? []).find((e) => e.id === file.node.id);
+  return files.map((file) => {
+    const elasticFile = (elasticFiles ?? []).find((e) => e.id === file.id);
     if (elasticFile) {
       return {
         ...file,
-        node: {
-          ...file.node,
-          metaData: {
-            ...file.node.metaData,
-            order: elasticFile.order,
-            inCarousel: elasticFile.inCarousel,
-            description: elasticFile.description
-          }
+        metaData: {
+          ...file.metaData,
+          order: elasticFile.order,
+          inCarousel: elasticFile.inCarousel,
+          description: elasticFile.description
         }
       };
     }
     return file;
   }).sort((a, b) => {
-    const orderA = a.node.metaData?.order ?? Infinity;
-    const orderB = b.node.metaData?.order ?? Infinity;
+    const orderA = a.metaData?.order ?? Infinity;
+    const orderB = b.metaData?.order ?? Infinity;
     return orderA - orderB;
   });
 };
