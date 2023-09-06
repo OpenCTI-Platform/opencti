@@ -1809,6 +1809,7 @@ enum ExternalReferencesFilter {
   external_id
   fileId
   creator
+  created
 }
 
 input ExternalReferencesFiltering {
