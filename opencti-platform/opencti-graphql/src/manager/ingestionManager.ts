@@ -144,6 +144,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
 interface TaxiiResponseData { data: { more: boolean, next: string, objects: object[] }, addedLast: string | undefined | null }
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii) : Promise<TaxiiResponseData> => {
   const headers = new AxiosHeaders();
+  headers.Accept = 'application/taxii+json;version=2.1';
   if (ingestion.authentication_type === 'basic') {
     const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;

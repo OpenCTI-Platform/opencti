@@ -37,6 +37,7 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'uri', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'version', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
+    { name: 'collection', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
     { name: 'authentication_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'authentication_value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
