@@ -142,6 +142,15 @@ const entityDetailsQuery = graphql`
         name
         x_mitre_id
         description
+        killChainPhases {
+          edges {
+            node {
+              id
+              phase_name
+              x_opencti_order
+            }
+          }
+        }
       }
       ... on Campaign {
         name
@@ -191,10 +200,28 @@ const entityDetailsQuery = graphql`
       ... on Indicator {
         name
         description
+        killChainPhases {
+          edges {
+            node {
+              id
+              phase_name
+              x_opencti_order
+            }
+          }
+        }
       }
       ... on Infrastructure {
         name
         description
+        killChainPhases {
+          edges {
+            node {
+              id
+              phase_name
+              x_opencti_order
+            }
+          }
+        }
       }
       ... on IntrusionSet {
         name
@@ -227,6 +254,19 @@ const entityDetailsQuery = graphql`
         first_seen
         last_seen
         description
+        killChainPhases {
+          edges {
+            node {
+              id
+              phase_name
+              x_opencti_order
+            }
+          }
+        }
+      }
+      ... on MalwareAnalysis {
+        result_name
+        product
       }
       ... on ThreatActor {
         name
@@ -237,6 +277,15 @@ const entityDetailsQuery = graphql`
       ... on Tool {
         name
         description
+        killChainPhases {
+          edges {
+            node {
+              id
+              phase_name
+              x_opencti_order
+            }
+          }
+        }
       }
       ... on Vulnerability {
         name

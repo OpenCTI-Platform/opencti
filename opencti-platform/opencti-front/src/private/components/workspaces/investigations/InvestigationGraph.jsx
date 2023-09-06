@@ -166,6 +166,9 @@ const investigationGraphStixCoreObjectQuery = graphql`
         first_seen
         last_seen
       }
+      ... on MalwareAnalysis {
+        result_name
+      }
       ... on ThreatActor {
         name
         first_seen
@@ -526,6 +529,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
               first_seen
               last_seen
             }
+            ... on MalwareAnalysis {
+              result_name
+            }
             ... on ThreatActor {
               name
               first_seen
@@ -753,6 +759,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
               name
               first_seen
               last_seen
+            }
+            ... on MalwareAnalysis {
+              result_name
             }
             ... on ThreatActor {
               name
@@ -2440,6 +2449,9 @@ const InvestigationGraph = createFragmentContainer(
                 name
                 first_seen
                 last_seen
+              }
+              ... on MalwareAnalysis {
+                result_name
               }
               ... on ThreatActor {
                 name

@@ -232,6 +232,18 @@ const StixDomainObjectEditionContainer = (props) => {
     }
   };
 
+  const handleResultName = (resultName, value) => {
+    if (!enableReferences) {
+      commitMutation({
+        mutation: stixDomainObjectMutationFieldPatch,
+        variables: {
+          id: stixDomainObject.id,
+          input: { key: resultName, value },
+        },
+      });
+    }
+  };
+
   const handleChangeCreatedBy = (name, value) => {
     if (!enableReferences) {
       commitMutation({
@@ -297,8 +309,11 @@ const StixDomainObjectEditionContainer = (props) => {
   let initialValues = R.pipe(
     R.assoc('createdBy', createdBy),
     R.assoc('objectMarking', objectMarking),
-    R.pick(['name', 'description', 'createdBy', 'objectMarking', 'confidence']),
+    R.pick(['name', 'result_name', 'description', 'createdBy', 'objectMarking', 'confidence']),
   )(stixDomainObject);
+  if ('result_name' in stixDomainObject && stixDomainObject.result_name !== undefined) {
+    initialValues = R.assoc('result_name', stixDomainObject.result_name, initialValues);
+  }
   if ('aliases' in stixDomainObject && stixDomainObject.aliases !== undefined) {
     initialValues = R.assoc(
       'aliases',
@@ -342,7 +357,23 @@ const StixDomainObjectEditionContainer = (props) => {
         >
           {({ submitForm, isSubmitting, setFieldValue, values }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              {'name' in stixDomainObject && (
+              {'result_name' in stixDomainObject ? (
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="result_name"
+                  label={t('Result Name')}
+                  fullWidth={true}
+                  disabled={typesWithoutName.includes(
+                    stixDomainObject.entity_type,
+                  )}
+                  onFocus={handleChangeFocus}
+                  onSubmit={handleResultName}
+                  helperText={
+                    <SubscriptionFocus context={editContext} fieldName="result_name" />
+                  }
+                />
+              ) : (
                 <Field
                   component={TextField}
                   variant="standard"
@@ -562,6 +593,10 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
           name
           description
           aliases
+        }
+        ... on MalwareAnalysis {
+          result_name
+          product
         }
         ... on ThreatActor {
           name
