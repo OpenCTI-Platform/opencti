@@ -15,6 +15,9 @@ services:
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+      - essnapshots:/usr/share/elasticsearch/snapshots
     environment:
       - discovery.type=single-node
       - xpack.ml.enabled=false
@@ -73,3 +76,9 @@ services:
     ports:
       - 16686:16686
       - 4318:4318
+
+volumes:
+  esdata:
+    driver: local
+  essnapshots:
+    driver: local
