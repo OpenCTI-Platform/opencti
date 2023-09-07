@@ -1,6 +1,6 @@
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import { ObservableResult, ValueType } from '@opentelemetry/api-metrics';
+import { type ObservableResult, ValueType } from '@opentelemetry/api-metrics';
 import type { Counter } from '@opentelemetry/api-metrics/build/src/types/Metric';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore

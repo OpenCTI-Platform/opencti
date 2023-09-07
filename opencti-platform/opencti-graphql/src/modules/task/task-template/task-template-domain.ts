@@ -1,15 +1,11 @@
 import { BUS_TOPICS } from '../../../config/conf';
-import {
-  createEntity,
-  deleteElementById,
-  updateAttribute
-} from '../../../database/middleware';
-import { EntityOptions, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { createEntity, deleteElementById, updateAttribute } from '../../../database/middleware';
+import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from './task-template-types';
+import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from './task-template-types';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import type { EditInput, TaskTemplateAddInput } from '../../../generated/graphql';
 

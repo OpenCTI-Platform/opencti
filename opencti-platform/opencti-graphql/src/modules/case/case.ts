@@ -5,7 +5,7 @@ import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import convertCaseToStix from './case-converter';
 import caseResolvers from './case-resolvers';
-import { ENTITY_TYPE_CONTAINER_CASE, StixCase, StoreEntityCase } from './case-types';
+import { ENTITY_TYPE_CONTAINER_CASE, type StixCase, type StoreEntityCase } from './case-types';
 import caseTypeDefs from './case.graphql';
 
 const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {

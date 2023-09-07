@@ -1,6 +1,6 @@
 import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectAssignee, objectOrganization, objectParticipant } from '../../schema/stixRefRelationship';
 import convertCaseTaskToStix from './task-converter';
 import taskResolvers from './task-resolvers';

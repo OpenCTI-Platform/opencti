@@ -1,10 +1,10 @@
 import {
-  AttributeDefinition,
+  type AttributeDefinition,
   created,
+  files,
   modified,
   specVersion,
-  xOpenctiStixIds,
-  files
+  xOpenctiStixIds
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_STIX_OBJECT } from '../../schema/general';

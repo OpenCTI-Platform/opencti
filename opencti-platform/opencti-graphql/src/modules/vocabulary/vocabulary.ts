@@ -2,14 +2,14 @@ import vocabularyTypeDefs from './vocabulary.graphql';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import {
   ENTITY_TYPE_VOCABULARY,
-  StixVocabulary,
-  StoreEntityVocabulary,
+  type StixVocabulary,
+  type StoreEntityVocabulary,
   vocabularyDefinitions
 } from './vocabulary-types';
 import vocabularyResolvers from './vocabulary-resolver';
 import convertVocabularyToStix from './vocabulary-converter';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 
 const generateInputDependencyKeys = () => {
   return Object.values(vocabularyDefinitions)

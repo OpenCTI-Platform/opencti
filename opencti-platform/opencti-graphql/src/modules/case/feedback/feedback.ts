@@ -1,5 +1,5 @@
 import feedbackTypeDefs from './feedback.graphql';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK, StixFeedback, StoreEntityFeedback } from './feedback-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK, type StixFeedback, type StoreEntityFeedback } from './feedback-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';

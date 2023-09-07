@@ -10,7 +10,7 @@ import {
 } from './general';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
-import { aliases, AttributeDefinition, xOpenctiAliases } from './attribute-definition';
+import { aliases, type AttributeDefinition, xOpenctiAliases } from './attribute-definition';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { schemaTypesDefinition } from './schema-types';
 
@@ -59,7 +59,7 @@ const STIX_DOMAIN_OBJECT_CONTAINERS: Array<string> = [
 
 schemaTypesDefinition.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
 export const isStixDomainObjectContainer = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_CONTAINER)
-    || type === ENTITY_TYPE_CONTAINER;
+  || type === ENTITY_TYPE_CONTAINER;
 
 const STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS: Array<string> = [
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -95,7 +95,7 @@ const STIX_DOMAIN_OBJECT_THREAT_ACTORS: Array<string> = [
 ];
 schemaTypesDefinition.register(ENTITY_TYPE_THREAT_ACTOR, STIX_DOMAIN_OBJECT_THREAT_ACTORS);
 export const isStixDomainObjectThreatActor = (type: string): boolean => schemaTypesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_THREAT_ACTOR)
-    || type === ENTITY_TYPE_THREAT_ACTOR;
+  || type === ENTITY_TYPE_THREAT_ACTOR;
 
 const STIX_DOMAIN_OBJECTS: Array<string> = [
   ENTITY_TYPE_ATTACK_PATTERN,

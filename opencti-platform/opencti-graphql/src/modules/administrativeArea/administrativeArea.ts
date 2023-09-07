@@ -2,7 +2,10 @@ import administrativeAreaTypeDefs from './administrativeArea.graphql';
 import convertAdministrativeAreaToStix from './administrativeArea-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import administrativeAreaResolvers from './administrativeArea-resolver';
-import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, StoreEntityAdministrativeArea } from './administrativeArea-types';
+import {
+  ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
+  type StoreEntityAdministrativeArea
+} from './administrativeArea-types';
 import { REL_BUILT_IN } from '../../database/stix';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../../schema/stixDomainObject';

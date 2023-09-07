@@ -5,8 +5,31 @@ import type { Resolvers } from '../../generated/graphql';
 import { TriggerType } from '../../generated/graphql';
 import { getUserAccessRight, isDirectAdministrator } from '../../utils/access';
 import { getNotifiers } from '../notifier/notifier-domain';
-import { addTrigger, addTriggerActivity, getTriggerRecipients, myNotificationsFind, myUnreadNotificationsCount, notificationDelete, notificationEditRead, notificationGet, notificationsFind, resolvedInstanceFiltersGet, triggerActivityEdit, triggerDelete, triggerEdit, triggerGet, triggersActivityFind, triggersGet, triggersKnowledgeFind, } from './notification-domain';
-import { BasicStoreEntityLiveTrigger, BasicStoreEntityTrigger, ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
+import {
+  addTrigger,
+  addTriggerActivity,
+  getTriggerRecipients,
+  myNotificationsFind,
+  myUnreadNotificationsCount,
+  notificationDelete,
+  notificationEditRead,
+  notificationGet,
+  notificationsFind,
+  resolvedInstanceFiltersGet,
+  triggerActivityEdit,
+  triggerDelete,
+  triggerEdit,
+  triggerGet,
+  triggersActivityFind,
+  triggersGet,
+  triggersKnowledgeFind,
+} from './notification-domain';
+import {
+  type BasicStoreEntityLiveTrigger,
+  type BasicStoreEntityTrigger,
+  ENTITY_TYPE_NOTIFICATION,
+  NOTIFICATION_NUMBER
+} from './notification-types';
 
 const notificationResolvers: Resolvers = {
   Query: {
@@ -60,7 +83,11 @@ const notificationResolvers: Resolvers = {
         const filtering = withFilter(() => asyncIterator, (payload) => {
           return payload && payload.instance.user_id === context.user.id;
         })();
-        return { [Symbol.asyncIterator]() { return filtering; } };
+        return {
+          [Symbol.asyncIterator]() {
+            return filtering;
+          }
+        };
       },
     },
     notification: {
@@ -70,7 +97,11 @@ const notificationResolvers: Resolvers = {
         const filtering = withFilter(() => asyncIterator, (payload) => {
           return payload && payload.instance.user_id === context.user.id;
         })();
-        return { [Symbol.asyncIterator]() { return filtering; } };
+        return {
+          [Symbol.asyncIterator]() {
+            return filtering;
+          }
+        };
       },
     },
   },

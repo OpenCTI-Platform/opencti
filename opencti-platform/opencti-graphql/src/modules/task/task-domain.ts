@@ -1,6 +1,17 @@
 import { BUS_TOPICS } from '../../config/conf';
-import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import {
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
+  createEntity,
+  deleteElementById,
+  updateAttribute
+} from '../../database/middleware';
+import {
+  type EntityOptions,
+  internalLoadById,
+  listEntitiesPaginated,
+  storeLoadById
+} from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 
@@ -8,7 +19,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/g
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_OBJECT, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { BasicStoreEntityTask, ENTITY_TYPE_CONTAINER_TASK } from './task-types';
+import { type BasicStoreEntityTask, ENTITY_TYPE_CONTAINER_TASK } from './task-types';
 import {
   stixObjectOrRelationshipAddRefRelation,
   stixObjectOrRelationshipDeleteRefRelation

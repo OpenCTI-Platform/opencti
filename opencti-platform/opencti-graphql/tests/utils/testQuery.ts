@@ -2,7 +2,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { print } from 'graphql';
-import axios, { AxiosInstance } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
@@ -83,7 +83,13 @@ export const adminQuery = async (query: unknown, variables = {}) => {
 };
 
 // Roles
-interface Role { id: string, name: string, description: string, capabilities: string[] }
+interface Role {
+  id: string,
+  name: string,
+  description: string,
+  capabilities: string[]
+}
+
 const ROLE_PARTICIPATE: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge and participate' }),
   name: 'Access knowledge and participate',
@@ -103,8 +109,15 @@ export const ROLE_SECURITY: Role = {
   description: 'Knowledge/exploration/settings edit/delete',
   capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES']
 };
+
 // Groups
-interface Group { id: string, name: string, markings: string[], roles: Role[] }
+interface Group {
+  id: string,
+  name: string,
+  markings: string[],
+  roles: Role[]
+}
+
 export const GREEN_GROUP: Group = {
   id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'GREEN GROUP' }),
   name: 'GREEN GROUP',
@@ -126,7 +139,10 @@ export const AMBER_STRICT_GROUP: Group = {
 };
 
 // Organization
-interface Organization { name: string, id: string }
+interface Organization {
+  name: string,
+  id: string
+}
 
 const TEST_ORGANIZATION: Organization = {
   name: 'TestOrganization',
@@ -134,7 +150,16 @@ const TEST_ORGANIZATION: Organization = {
 };
 
 // Users
-interface User { id: string, email: string, password: string, roles?: Role[], organizations?: Organization[], groups: Group[], client: AxiosInstance }
+interface User {
+  id: string,
+  email: string,
+  password: string,
+  roles?: Role[],
+  organizations?: Organization[],
+  groups: Group[],
+  client: AxiosInstance
+}
+
 export const ADMIN_USER: AuthUser = {
   entity_type: 'User',
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',

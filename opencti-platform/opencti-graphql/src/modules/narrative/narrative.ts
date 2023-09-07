@@ -2,11 +2,11 @@ import narrativeTypeDefs from './narrative.graphql';
 import convertNarrativeToStix from './narrative-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import narrativeResolvers from './narrative-resolver';
-import { ENTITY_TYPE_NARRATIVE, StixNarrative, StoreEntityNarrative } from './narrative-types';
+import { ENTITY_TYPE_NARRATIVE, type StixNarrative, type StoreEntityNarrative } from './narrative-types';
 import { REL_NEW } from '../../database/stix';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative> = {
@@ -36,10 +36,12 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
     { name: 'narrative_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
   ],
   relations: [
-    { name: RELATION_SUBNARRATIVE_OF,
+    {
+      name: RELATION_SUBNARRATIVE_OF,
       targets: [
         { name: ENTITY_TYPE_NARRATIVE, type: REL_NEW },
-      ] },
+      ]
+    },
   ],
   relationsRefs: [
     objectOrganization

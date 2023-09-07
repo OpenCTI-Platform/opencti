@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ModuleDefinition, registerDefinition } from '../../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import type { StixCaseTemplate, StoreEntityCaseTemplate } from './case-template-types';
 import { ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';

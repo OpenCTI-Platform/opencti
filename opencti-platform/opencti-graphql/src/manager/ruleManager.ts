@@ -2,13 +2,13 @@
 import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
-import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import {
   createStreamProcessor,
   EVENT_CURRENT_VERSION,
   lockResource,
   REDIS_STREAM_NAME,
-  StreamProcessor
+  type StreamProcessor
 } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';

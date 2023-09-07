@@ -1,11 +1,11 @@
-import type { AuthUser, AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ChannelAddInput, QueryChannelsArgs } from '../../generated/graphql';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { BasicStoreEntityChannel, ENTITY_TYPE_CHANNEL } from './channel-types';
+import { type BasicStoreEntityChannel, ENTITY_TYPE_CHANNEL } from './channel-types';
 
 export const findById = (context: AuthContext, user: AuthUser, channelId: string): BasicStoreEntityChannel => {
   return storeLoadById(context, user, channelId, ENTITY_TYPE_CHANNEL) as unknown as BasicStoreEntityChannel;

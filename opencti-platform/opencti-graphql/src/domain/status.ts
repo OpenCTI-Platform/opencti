@@ -1,23 +1,22 @@
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
-import {
-  createEntity,
-  deleteElementById, internalDeleteElementById,
-  updateAttribute
-} from '../database/middleware';
+import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
-import type {
-  EditInput,
-  QueryStatusesArgs,
-  QueryStatusTemplatesArgs,
-  StatusAddInput,
-  StatusTemplate,
-  StatusTemplateAddInput,
+import {
+  type EditContext,
+  type EditInput,
+  OrderingMode,
+  type QueryStatusesArgs,
+  type QueryStatusTemplatesArgs,
+  type StatusAddInput,
+  StatusFilter,
+  StatusOrdering,
+  type StatusTemplate,
+  type StatusTemplateAddInput
 } from '../generated/graphql';
-import { EditContext, OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';

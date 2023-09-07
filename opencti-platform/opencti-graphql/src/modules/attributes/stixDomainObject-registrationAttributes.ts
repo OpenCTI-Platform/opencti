@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 import {
   aliases,
-  AttributeDefinition,
-  files,
+  type AttributeDefinition,
   confidence,
   created,
   entityLocationType,
+  files,
   iAliasedIds,
   lang,
   revoked,

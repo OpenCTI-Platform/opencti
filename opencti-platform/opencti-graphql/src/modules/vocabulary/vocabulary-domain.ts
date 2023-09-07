@@ -3,7 +3,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, } from '../../generated/graphql';
 import { VocabularyFilter } from '../../generated/graphql';
 import { countAllThings, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';

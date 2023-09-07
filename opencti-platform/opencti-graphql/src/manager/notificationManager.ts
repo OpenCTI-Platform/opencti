@@ -1,14 +1,14 @@
 import * as R from 'ramda';
 import { head } from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
-import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
 import {
   createStreamProcessor,
   fetchRangeNotifications,
   lockResource,
   storeNotificationEvent,
-  StreamProcessor
+  type StreamProcessor
 } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -25,9 +25,9 @@ import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-common';
 import {
-  BasicStoreEntityDigestTrigger,
-  BasicStoreEntityLiveTrigger,
-  BasicStoreEntityTrigger,
+  type BasicStoreEntityDigestTrigger,
+  type BasicStoreEntityLiveTrigger,
+  type BasicStoreEntityTrigger,
   ENTITY_TYPE_TRIGGER
 } from '../modules/notification/notification-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters, resolvedFiltersMapForUser } from '../utils/filtering';
@@ -383,8 +383,8 @@ const generateNotificationMessageForFilteredSideEvents = async (
   const listenedInstanceIdsMap = await resolvedFiltersMapForUser(context, user, frontendFilters);
   // -- 01. Notification for relationships (creation/deletion/newly visible/no more visible)
   if ([STIX_TYPE_RELATION, STIX_TYPE_SIGHTING].includes(data.type) // the event is a relationship
-      && isRelationFromOrToMatchFilters(listenedInstanceIdsMap, data as StixRelation | StixSighting) // and the relationship from/to contains an instance of the trigger filters
-      && translatedType !== EVENT_TYPE_UPDATE // if displayed type is update, we should have notifications in case a listened instance is in the patch (= case 1.2.)
+    && isRelationFromOrToMatchFilters(listenedInstanceIdsMap, data as StixRelation | StixSighting) // and the relationship from/to contains an instance of the trigger filters
+    && translatedType !== EVENT_TYPE_UPDATE // if displayed type is update, we should have notifications in case a listened instance is in the patch (= case 1.2.)
   ) {
     // User should be notified of the relationship creation / deletion / newly visible / no more visible
     return generateNotificationMessageForInstance(context, user, data);
@@ -455,7 +455,7 @@ export const buildTargetEvents = async (
           const message = await generateNotificationMessageForInstance(context, user, data);
           targets.push({ user: notificationUser, type: translatedType, message });
         } else
-        // Case 02. Newly visible because of a data update (gain of rights OR instance_trigger & add a listened instance in the refs)
+          // Case 02. Newly visible because of a data update (gain of rights OR instance_trigger & add a listened instance in the refs)
           if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = create
             const message = await generateNotificationMessageForInstance(context, user, data);
             targets.push({ user: notificationUser, type: translatedType, message });

@@ -11,12 +11,16 @@ import type {
   QueryGroupingsTimeSeriesArgs,
 } from '../../generated/graphql';
 import {
-  EntityOptions,
+  type EntityOptions,
   internalLoadById,
   listEntitiesPaginated,
   storeLoadById
 } from '../../database/middleware-loader';
-import { BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, GroupingNumberResult } from './grouping-types';
+import {
+  type BasicStoreEntityGrouping,
+  ENTITY_TYPE_CONTAINER_GROUPING,
+  type GroupingNumberResult
+} from './grouping-types';
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { elCount } from '../../database/engine';

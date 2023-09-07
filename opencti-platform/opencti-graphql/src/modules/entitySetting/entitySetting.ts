@@ -5,7 +5,7 @@ import entitySettingResolvers from './entitySetting-resolvers';
 import entitySettingTypeDefs from './entitySetting.graphql';
 import convertEntitySettingToStix from './entitySetting-converter';
 import { attributeConfiguration, } from './entitySetting-utils';
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { validateEntitySettingCreation, validateEntitySettingUpdate } from './entitySetting-validators';
 
 const TARGET_TYPE = 'target_type';
