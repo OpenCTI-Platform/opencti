@@ -63,10 +63,10 @@ import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
 import { findAll } from '../../../src/domain/subType';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from "../../../src/modules/organization/organization-types";
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
-import { addOrganization } from "../../../src/modules/organization/organization-domain";
+import { addOrganization } from '../../../src/modules/organization/organization-domain';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -955,7 +955,12 @@ describe('Upsert and merge entities', () => {
     const organization2 = await createOrganization({ name: 'organization2' });
     // 02. Create reports with an organization as author
     const report1 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_01', published: '2022-10-06T22:00:00.000Z', createdBy: organization1.id });
-    const report2 = await addReport(testContext, ADMIN_USER, { name: 'REPORT_TEST_02', published: '2022-10-06T22:00:00.000Z', createdBy: organization2.id });
+    const report2 = await addReport(testContext, ADMIN_USER, {
+      name: 'REPORT_TEST_02',
+      published: '2022-10-06T22:00:00.000Z',
+      createdBy: organization2.id,
+      objects: [report1.id]
+    });
     // Merge with fully resolved entities
     const merged = await mergeEntities(testContext, ADMIN_USER, organization1.internal_id, [organization2.internal_id]);
     // List of ids that should disappear
@@ -966,6 +971,7 @@ describe('Upsert and merge entities', () => {
     const loadedMergedOrganization = await storeLoadByIdWithRefs(testContext, ADMIN_USER, merged.id);
     expect(loadedMergedOrganization).not.toBeNull();
     expect(loadedMergedOrganization.x_opencti_aliases.length).toEqual(1);
+    // expect(loadedMergedOrganization.objects.length).toEqual(0);
     expect(loadedMergedOrganization.id).toEqual(organization1.id);
     // Test the reports have kept a correct author
     const report1AfterMerged = await storeLoadByIdWithRefs(testContext, ADMIN_USER, report1.id);
@@ -974,10 +980,13 @@ describe('Upsert and merge entities', () => {
     const report2AfterMerged = await storeLoadByIdWithRefs(testContext, ADMIN_USER, report2.id);
     expect(report2AfterMerged.createdBy).not.toBeUndefined();
     expect(report2AfterMerged.createdBy.id).toEqual(organization1.id);
+    // Try to merge the reports now
+    const mergedReport = await mergeEntities(testContext, ADMIN_USER, report1.internal_id, [report2.internal_id]);
+    expect(mergedReport).not.toBeNull();
+    expect(mergedReport.object.length).toEqual(0); // Self object_refs must be auto cleaned
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-    await deleteElementById(testContext, ADMIN_USER, report1.id, ENTITY_TYPE_CONTAINER_REPORT);
-    await deleteElementById(testContext, ADMIN_USER, report2.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, mergedReport.id, ENTITY_TYPE_CONTAINER_REPORT);
   });
   it('should multiple createdBy correction merged to empty target', async () => {
     const organization1 = await createOrganization({ name: 'REPORT_CREATED_BY_ORGANIZATION01' });

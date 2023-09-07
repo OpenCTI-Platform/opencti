@@ -51,7 +51,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(69);
+      expect(deleteEvents.length).toBe(68);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
@@ -60,7 +60,7 @@ describe('Raw streams tests', () => {
       }
       // 04 - CHECK MERGE EVENTS
       const mergeEvents = events.filter((e) => e.type === EVENT_TYPE_MERGE);
-      expect(mergeEvents.length).toBe(6);
+      expect(mergeEvents.length).toBe(7);
       for (let mergeIndex = 0; mergeIndex < mergeEvents.length; mergeIndex += 1) {
         const { data: insideData, origin } = mergeEvents[mergeIndex];
         const { context } = insideData;
