@@ -89,7 +89,7 @@
     "@types/react-dom": "18.2.7",
     "@types/react-relay": "14.1.5",
     "@types/react-router-dom": "5.3.3",
-    "@types/react-test-renderer": "18.0.0",
+    "@types/react-test-renderer": "18.0.1",
     "@types/relay-test-utils": "14.1.0",
     "@types/uuid": "9.0.2",
     "@vitejs/plugin-react": "4.0.4",
