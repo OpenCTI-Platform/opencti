@@ -44,8 +44,6 @@ class ThreatActorIndividualLocationsComponent extends Component {
 
   render() {
     const { t, threatActorIndividual } = this.props;
-    const isInferredFromThreatActor = threatActorIndividual.is_from_relation_inferred;
-    console.log('isInferredFromThreatActor', isInferredFromThreatActor);
     return (
       <>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -79,7 +77,6 @@ class ThreatActorIndividualLocationsComponent extends Component {
                 ),
               );
             const isInferred = location.is_from_relation_inferred;
-            console.log('isInferred', isInferred);
             return (
               <ListItem
                 key={location.id}
@@ -141,7 +138,6 @@ const ThreatActorIndividualLocations = createFragmentContainer(
         name
         parent_types
         entity_type
-          is_from_relation_inferred
         locations {
           edges {
             node {

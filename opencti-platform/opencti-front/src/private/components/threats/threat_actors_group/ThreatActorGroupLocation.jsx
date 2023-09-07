@@ -74,6 +74,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                   (n) => n?.length === 2,
                 ),
               );
+            const isInferred = location.is_from_relation_inferred;
             return (
               <ListItem
                 key={location.id}
@@ -98,15 +99,19 @@ class ThreatActorGroupLocationsComponent extends Component {
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
                 <ListItemSecondaryAction>
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeLocation.bind(this, locationEdge)}
-                      size="large"
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </Security>
+                  { isInferred ? (
+                    <></>
+                  ) : (
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={() => this.removeLocation(locationEdge)}
+                        size="large"
+                      >
+                        <LinkOff />
+                      </IconButton>
+                    </Security>
+                  )}
                 </ListItemSecondaryAction>
               </ListItem>
             );
@@ -142,6 +147,7 @@ const ThreatActorGroupLocations = createFragmentContainer(
               name
               x_opencti_aliases
               description
+              is_from_relation_inferred
             }
           }
         }

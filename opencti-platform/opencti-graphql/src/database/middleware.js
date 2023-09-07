@@ -289,8 +289,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
   const targets = await elFindByIds(context, user, targetIds, opts);
   const findAllTargets = targets.map((target) => {
     const findRelation = relations.find((relation) => relation.toId === target.id);
-    console.log('findRelation', findRelation);
-    return { ...target, is_from_relation_inferred: findRelation.is_inferred };
+    return { ...target, is_from_relation_inferred: !!findRelation.x_opencti_inferences };
   });
 
   // Group and rebuild the result
@@ -302,7 +301,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
       if (values) {
         const data = first ? R.take(first, values) : values;
         const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
-        const filteredElements = targets.filter((t) => filterIds.includes(t.internal_id));
+        const filteredElements = findAllTargets.filter((t) => filterIds.includes(t.internal_id));
         edges.push(...filteredElements.map((n) => ({ node: n })));
       }
       return buildPagination(0, null, edges, edges.length);
