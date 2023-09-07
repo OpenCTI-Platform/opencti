@@ -2019,9 +2019,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@escape.tech/graphql-armor@npm:2.3.0":
-  version: 2.3.0
-  resolution: "@escape.tech/graphql-armor@npm:2.3.0"
+"@escape.tech/graphql-armor@npm:2.3.1":
+  version: 2.3.1
+  resolution: "@escape.tech/graphql-armor@npm:2.3.1"
   dependencies:
     "@escape.tech/graphql-armor-block-field-suggestions": 2.1.0
     "@escape.tech/graphql-armor-cost-limit": 2.1.0
@@ -2034,7 +2034,14 @@ __metadata:
     "@apollo/server": ^4.0.0
     "@envelop/core": ^4.0.0
     "@escape.tech/graphql-armor-types": 0.5.0
-  checksum: 76a66ba05a0fcc3dae105f4f584591fb2b1caeea7cf17c3e6f47a13ec279e180eecbf13fdee3023cc3e9f7da000cc7d1e2d25cd2f1139d443f5f2a1dadc7c266
+  peerDependenciesMeta:
+    "@apollo/server":
+      optional: true
+    "@envelop/core":
+      optional: true
+    "@escape.tech/graphql-armor-types":
+      optional: true
+  checksum: effde77876d994fff61ca7a36371232e34080bbc60cb238169c110110bea2bffa13e865cd1fc5a38763ad2ae77891f4131d2cfdd5b2c9c880c695fc59a035896
   languageName: node
   linkType: hard
 
@@ -10531,7 +10538,7 @@ __metadata:
     "@aws-sdk/lib-storage": 3.405.0
     "@aws-sdk/property-provider": 3.374.0
     "@elastic/elasticsearch": 8.9.0
-    "@escape.tech/graphql-armor": 2.3.0
+    "@escape.tech/graphql-armor": 2.3.1
     "@graphql-codegen/cli": 5.0.0
     "@graphql-codegen/client-preset": 4.1.0
     "@graphql-codegen/introspection": 4.0.0
