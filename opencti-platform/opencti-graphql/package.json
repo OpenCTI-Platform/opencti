@@ -154,7 +154,7 @@
     "@types/ramda": "0.29.3",
     "@types/tough-cookie": "4.0.2",
     "@types/turndown": "5.0.1",
-    "@types/uuid": "9.0.2",
+    "@types/uuid": "9.0.3",
     "@types/xml2js": "0.4.11",
     "@typescript-eslint/eslint-plugin": "6.6.0",
     "@typescript-eslint/parser": "6.6.0",
