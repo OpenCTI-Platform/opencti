@@ -56,7 +56,10 @@ const buildQueryFilters = async (context, user, rawFilters, search, taskPosition
         const nestedElement = [{ key: 'internal_id', values: values.map((v) => v.id) }];
         queryFilters.push({ key: 'connections', nested: nestedElement });
       } else if (key === 'elementWithTargetTypes') {
-        const nestedElementTypes = [{ key: 'types', values: values.map((v) => v.id) }];
+        const nestedElementTypes = [
+          { key: 'types', values: values.map((v) => v.id) },
+          { key: 'role', values: ['*_to'], operator: 'wildcard' }
+        ];
         queryFilters.push({ key: 'connections', nested: nestedElementTypes });
       } else if (key === 'fromId') {
         nestedFrom.push({ key: 'internal_id', values: values.map((v) => v.id) });

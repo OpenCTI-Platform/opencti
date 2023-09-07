@@ -347,6 +347,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
     nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
+    nestedElementTypes.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
   }
   if (nestedElementTypes.length > 0) {
     customFilters.push({ key: 'connections', nested: nestedElementTypes });
