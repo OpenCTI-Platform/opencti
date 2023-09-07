@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Narrative from './Narrative';
 import NarrativeKnowledge from './NarrativeKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -85,7 +84,6 @@ class RootNarrative extends Component {
     const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/techniques/narratives/:narrativeId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

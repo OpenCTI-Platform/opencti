@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservable from './StixCyberObservable';
 import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
@@ -85,7 +84,6 @@ class RootStixCyberObservable extends Component {
     const link = `/dashboard/observations/observables/${observableId}/knowledge`;
     return (
       <>
-        <TopBar />
         <QueryRenderer
           query={stixCyberObservableQuery}
           variables={{ id: observableId, relationship_type: 'indicates' }}

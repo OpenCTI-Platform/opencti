@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import CourseOfAction from './CourseOfAction';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -79,7 +78,6 @@ class RootCourseOfAction extends Component {
     } = this.props;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={courseOfActionQuery}
           variables={{ id: courseOfActionId }}

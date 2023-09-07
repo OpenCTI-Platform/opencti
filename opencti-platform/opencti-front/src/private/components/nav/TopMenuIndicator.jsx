@@ -41,9 +41,7 @@ class TopMenuIndicator extends Component {
     const {
       t,
       location,
-      match: {
-        params: { indicatorId },
-      },
+      id: indicatorId,
       classes,
     } = this.props;
     return (
@@ -203,9 +201,8 @@ class TopMenuIndicator extends Component {
 TopMenuIndicator.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
+  id: PropTypes.string,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(

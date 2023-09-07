@@ -5,7 +5,6 @@ import React, { useMemo } from 'react';
 import { Route, Redirect, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import Country from './Country';
 import CountryKnowledge from './CountryKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -189,8 +188,7 @@ const RootCountry = () => {
   const link = `/dashboard/locations/countries/${countryId}/knowledge`;
   return (
     <div>
-      <TopBar />
-      <Route path="/dashboard/locations/countries/:countryId/knowledge">
+            <Route path="/dashboard/locations/countries/:countryId/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
           availableSections={[

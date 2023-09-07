@@ -6,7 +6,6 @@ import React, { useMemo } from 'react';
 import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -67,9 +66,7 @@ const RootThreatActorIndividualComponent = ({
   queryRef,
   threatActorIndividualId,
 }) => {
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>>(
     () => ({
       subscription,
       variables: { id: threatActorIndividualId },
@@ -220,7 +217,6 @@ const Root = () => {
   );
   return (
     <>
-      <TopBar/>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <RootThreatActorIndividualComponent

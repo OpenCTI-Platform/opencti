@@ -30,7 +30,7 @@ const RootSubType = () => {
           if (props.subType) {
             return (
               <Switch>
-                <Route
+        <Route
                   exact
                   path="/dashboard/settings/customization/entity_types/:subTypeId"
                   render={() => <SubType data={props.subType} />}

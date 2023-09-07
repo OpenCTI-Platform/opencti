@@ -7,7 +7,6 @@ import { Route, Switch, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { QueryRenderer } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import DataComponent from './DataComponent';
@@ -70,8 +69,7 @@ const RootDataComponent = () => {
   useSubscription(subConfig);
   return (
     <div>
-      <TopBar />
-      <QueryRenderer
+            <QueryRenderer
         query={dataComponentQuery}
         variables={{ id: dataComponentId }}
         render={({ props }: { props: RootDataComponentQuery$data }) => {

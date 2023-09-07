@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import IntrusionSet from './IntrusionSet';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -87,7 +86,6 @@ class RootIntrusionSet extends Component {
     const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

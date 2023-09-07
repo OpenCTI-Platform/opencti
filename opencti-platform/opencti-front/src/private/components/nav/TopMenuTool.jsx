@@ -40,9 +40,7 @@ class TopMenuTool extends Component {
     const {
       t,
       location,
-      match: {
-        params: { toolId },
-      },
+      id: toolId,
       classes,
     } = this.props;
     return (
@@ -171,9 +169,8 @@ class TopMenuTool extends Component {
 TopMenuTool.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(inject18n, withRouter, withStyles(styles))(TopMenuTool);

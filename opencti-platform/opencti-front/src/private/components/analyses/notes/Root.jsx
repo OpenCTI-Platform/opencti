@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Note from './Note';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -80,7 +79,6 @@ class RootNote extends Component {
     } = this.props;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={noteQuery}
           variables={{ id: noteId }}

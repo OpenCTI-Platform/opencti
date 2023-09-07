@@ -36,9 +36,7 @@ class TopMenuStixCyberObservable extends Component {
     const {
       t,
       location,
-      match: {
-        params: { observableId },
-      },
+      id: observableId,
       classes,
     } = this.props;
     return (
@@ -193,9 +191,8 @@ class TopMenuStixCyberObservable extends Component {
 TopMenuStixCyberObservable.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
+  id: PropTypes.string,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(

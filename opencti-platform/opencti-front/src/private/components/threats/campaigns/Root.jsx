@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Campaign from './Campaign';
 import CampaignKnowledge from './CampaignKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -85,7 +84,6 @@ class RootCampaign extends Component {
     const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/threats/campaigns/:campaignId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

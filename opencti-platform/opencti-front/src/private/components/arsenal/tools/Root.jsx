@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Tool from './Tool';
 import ToolKnowledge from './ToolKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -87,7 +86,6 @@ class RootTool extends Component {
     const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/arsenal/tools/:toolId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

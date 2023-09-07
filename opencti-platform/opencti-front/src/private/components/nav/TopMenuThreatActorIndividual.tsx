@@ -1,15 +1,12 @@
 import React from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { LaptopAccount } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 import { Theme } from '../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -35,11 +32,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuThreatActorIndividual = () => {
+const TopMenuThreatActorIndividual = ({ id: threatActorIndividualId }: { id: string }) => {
   const classes = useStyles();
   const location = useLocation();
   const { t } = useFormatter();
-  const { threatActorIndividualId } = useParams();
   return (
     <div>
       <Button

@@ -37,9 +37,7 @@ class TopMenuEvent extends Component {
     const {
       t,
       location,
-      match: {
-        params: { eventId },
-      },
+      id: eventId,
       classes,
     } = this.props;
     return (
@@ -195,9 +193,8 @@ class TopMenuEvent extends Component {
 TopMenuEvent.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(inject18n, withRouter, withStyles(styles))(TopMenuEvent);

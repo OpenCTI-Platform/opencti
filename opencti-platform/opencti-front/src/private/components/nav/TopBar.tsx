@@ -5,24 +5,13 @@ import { Link, useLocation } from 'react-router-dom-v5-compat';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import {
-  AccountCircleOutlined,
-  ContentPasteSearchOutlined,
-  ExploreOutlined,
-  InsertChartOutlined,
-  NotificationsOutlined,
-} from '@mui/icons-material';
+import { AccountCircleOutlined, ContentPasteSearchOutlined, ExploreOutlined, InsertChartOutlined, NotificationsOutlined } from '@mui/icons-material';
 import { DatabaseCogOutline } from 'mdi-material-ui';
 import Menu from '@mui/material/Menu';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import {
-  graphql,
-  usePreloadedQuery,
-  useSubscription,
-  PreloadedQuery,
-} from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -85,18 +74,11 @@ import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
 import TopMenuMalwareAnalysis from './TopMenuMalwareAnalysis';
 import { Theme } from '../../../components/Theme';
-import {
-  EXPLORE,
-  KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
-} from '../../../utils/hooks/useGranted';
+import { EXPLORE, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import TopMenuProfile from '../profile/TopMenuProfile';
 import TopMenuNotifications from '../profile/TopMenuNotifications';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import {
-  TopBarNotificationNumberSubscription,
-  TopBarNotificationNumberSubscription$data,
-} from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import { TopBarNotificationNumberSubscription, TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import TopMenuCaseRfi from './TopMenuCaseRfi';
 import TopMenuCaseRft from './TopMenuCaseRft';
 import TopMenuTask from './TopMenuTask';
@@ -163,6 +145,7 @@ export const handleLogout = (redirect = '') => {
     if (redirect === '' || redirect.length === undefined) window.location.reload();
     else window.location.replace(redirect);
   }
+
   commitMutation({
     mutation: logoutMutation,
     variables: {},
@@ -194,6 +177,79 @@ const topBarQuery = graphql`
   }
 `;
 
+const routes = {
+  // ME
+  '/dashboard/profile/me': () => <TopMenuProfile />,
+  '/dashboard/profile/': () => <TopMenuNotifications />,
+  // CASES
+  '/dashboard/cases/feedbacks/': (id: string) => <TopMenuCaseFeedback id={id} />,
+  '/dashboard/cases/tasks/': (id: string) => <TopMenuTask id={id} />,
+  '/dashboard/cases/rfts/': (id: string) => <TopMenuCaseRft id={id} />,
+  '/dashboard/cases/rfis/': (id: string) => <TopMenuCaseRfi id={id} />,
+  '/dashboard/cases/incidents/': (id: string) => <TopMenuCaseIncident id={id} />,
+  '/dashboard/cases': () => <TopMenuCases />,
+  // ANALYSIS
+  '/dashboard/analyses/reports/': (id: string) => <TopMenuReport id={id} />,
+  '/dashboard/analyses/groupings/': (id: string) => <TopMenuGrouping id={id} />,
+  '/dashboard/analyses/malware_analyses/': (id: string) => <TopMenuMalwareAnalysis id={id} />,
+  '/dashboard/analyses/notes/': (id: string) => <TopMenuNote id={id} />,
+  '/dashboard/analyses/opinions/': (id: string) => <TopMenuOpinion id={id} />,
+  '/dashboard/analyses/external_references/': (id: string) => <TopMenuExternalReference id={id} />,
+  '/dashboard/analyses': () => <TopMenuAnalyses />,
+  // EVENTS
+  '/dashboard/events/sightings/': () => <TopMenuEvents />,
+  '/dashboard/events/observed_data/': (id: string) => <TopMenuObservedData id={id} />,
+  '/dashboard/events/incidents/': (id: string) => <TopMenuIncident id={id} />,
+  '/dashboard/events': () => <TopMenuEvents />,
+  // OBSERVATIONS
+  '/dashboard/observations/indicators/': (id: string) => <TopMenuIndicator id={id} />,
+  '/dashboard/observations/infrastructures/': (id: string) => <TopMenuInfrastructure id={id} />,
+  '/dashboard/observations/observables/': (id: string) => <TopMenuStixCyberObservable id={id} />,
+  '/dashboard/observations/artifacts/': (id: string) => <TopMenuArtifact id={id} />,
+  '/dashboard/observations': () => <TopMenuObservations />,
+  // THREATS
+  '/dashboard/threats/threat_actors_group/': (id: string) => <TopMenuThreatActorGroup id={id} />,
+  '/dashboard/threats/threat_actors_individual/': (id: string) => <TopMenuThreatActorIndividual id={id} />,
+  '/dashboard/threats/intrusion_sets/': (id: string) => <TopMenuIntrusionSet id={id} />,
+  '/dashboard/threats/campaigns/': (id: string) => <TopMenuCampaign id={id} />,
+  '/dashboard/threats': () => <TopMenuThreats />,
+  // ARSENAL
+  '/dashboard/arsenal/malwares/': (id: string) => <TopMenuMalware id={id} />,
+  '/dashboard/arsenal/tools/': (id: string) => <TopMenuTool id={id} />,
+  '/dashboard/arsenal/channels/': (id: string) => <TopMenuChannel id={id} />,
+  '/dashboard/arsenal/vulnerabilities/': (id: string) => <TopMenuVulnerability id={id} />,
+  '/dashboard/arsenal': () => <TopMenuArsenal />,
+  // ENTITIES
+  '/dashboard/entities/sectors/': (id: string) => <TopMenuSector id={id} />,
+  '/dashboard/entities/systems/': (id: string) => <TopMenuSystem id={id} />,
+  '/dashboard/entities/events/': (id: string) => <TopMenuEvent id={id} />,
+  '/dashboard/entities/organizations/': (id: string) => <TopMenuOrganization id={id} />,
+  '/dashboard/entities/individuals/': (id: string) => <TopMenuIndividual id={id} />,
+  '/dashboard/entities': () => <TopMenuEntities />,
+  // LOCATIONS
+  '/dashboard/locations/countries/': (id: string) => <TopMenuCountry id={id} />,
+  '/dashboard/locations/regions/': (id: string) => <TopMenuRegion id={id} />,
+  '/dashboard/locations/administrative_areas/': (id: string) => <TopMenuAdministrativeArea id={id} />,
+  '/dashboard/locations/cities/': (id: string) => <TopMenuCity id={id} />,
+  '/dashboard/locations/positions/': (id: string) => <TopMenuPosition id={id} />,
+  '/dashboard/locations': () => <TopMenuLocation />,
+  // TECHNIQUES
+  '/dashboard/techniques/attack_patterns/': (id: string) => <TopMenuAttackPattern id={id} />,
+  '/dashboard/techniques/narratives/': (id: string) => <TopMenuNarrative id={id} />,
+  '/dashboard/techniques/courses_of_action/': (id: string) => <TopMenuCourseOfAction id={id} />,
+  '/dashboard/techniques/data_components/': (id: string) => <TopMenuDataComponent id={id} />,
+  '/dashboard/techniques/data_sources/': (id: string) => <TopMenuDataSource id={id} />,
+  '/dashboard/techniques': () => <TopMenuTechniques />,
+  '/dashboard/data': () => <TopMenuData />,
+  '/dashboard/activity': () => <TopMenuAudits />,
+  '/dashboard/settings': () => <TopMenuSettings />,
+  '/dashboard/workspaces/dashboards': () => <TopMenuWorkspacesDashboards />,
+  '/dashboard/workspaces/investigations': () => <TopMenuWorkspacesInvestigations />,
+  '/dashboard/search': () => <TopMenuSearch />,
+  '/dashboard/import': () => <TopMenuImport />,
+  '/dashboard': () => <TopMenuDashboard />,
+};
+
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
   keyword,
@@ -219,9 +275,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const isNewNotification = notificationsNumber !== null
     ? notificationsNumber > 0
     : (data.myUnreadNotificationsCount ?? 0) > 0;
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<TopBarNotificationNumberSubscription>>(
     () => ({
       subscription: topBarNotificationNumberSubscription,
       variables: {},
@@ -273,6 +327,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     handleCloseMenu();
   };
 
+  const extractId = (path = '') => location.pathname.split(path)[1].split('/')[0];
+  const [routePath, routeFn] = Object.entries(routes).find(([path]) => location.pathname.includes(path)) ?? [];
   return (
     <AppBar
       position="fixed"
@@ -294,187 +350,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           </Link>
         </div>
         <div className={classes.menuContainer}>
-          {location.pathname === '/dashboard' && <TopMenuDashboard />}
-          {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
-          {location.pathname.includes('/dashboard/import') && <TopMenuImport />}
-          {(location.pathname === '/dashboard/analyses'
-            || location.pathname.match('/dashboard/analyses/[a-z_]+$')) && (
-            <TopMenuAnalyses />
-          )}
-          {location.pathname === '/dashboard/profile/me' && <TopMenuProfile />}
-          {location.pathname !== '/dashboard/profile/me'
-            && location.pathname.includes('/dashboard/profile/') && (
-              <TopMenuNotifications />
-          )}
-          {(location.pathname === '/dashboard/cases'
-            || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
-            <TopMenuCases />
-          )}
-          {location.pathname.includes('/dashboard/cases/incidents/') && (
-            <TopMenuCaseIncident />
-          )}
-          {location.pathname.includes('/dashboard/cases/rfis/') && (
-            <TopMenuCaseRfi />
-          )}
-          {location.pathname.includes('/dashboard/cases/rfts/') && (
-            <TopMenuCaseRft />
-          )}
-          {location.pathname.includes('/dashboard/cases/tasks/') && (
-            <TopMenuTask />
-          )}
-          {location.pathname.includes('/dashboard/cases/feedbacks/') && (
-            <TopMenuCaseFeedback />
-          )}
-          {location.pathname.includes('/dashboard/analyses/reports/') && (
-            <TopMenuReport />
-          )}
-          {location.pathname.includes('/dashboard/analyses/groupings/') && (
-            <TopMenuGrouping />
-          )}
-          {location.pathname.includes(
-            '/dashboard/analyses/malware_analyses/',
-          ) && <TopMenuMalwareAnalysis />}
-          {location.pathname.includes('/dashboard/analyses/notes/') && (
-            <TopMenuNote />
-          )}
-          {location.pathname.includes('/dashboard/analyses/opinions/') && (
-            <TopMenuOpinion />
-          )}
-          {location.pathname.includes(
-            '/dashboard/analyses/external_references/',
-          ) && <TopMenuExternalReference />}
-          {(location.pathname === '/dashboard/events'
-            || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
-            <TopMenuEvents />
-          )}
-          {location.pathname.includes('/dashboard/events/incidents/') && (
-            <TopMenuIncident />
-          )}
-          {location.pathname.includes('/dashboard/events/observed_data/') && (
-            <TopMenuObservedData />
-          )}
-          {location.pathname.includes('/dashboard/events/sightings/') && (
-            <TopMenuEvents />
-          )}
-          {(location.pathname === '/dashboard/observations'
-            || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
-            <TopMenuObservations />
-          )}
-          {location.pathname.includes(
-            '/dashboard/observations/indicators/',
-          ) && <TopMenuIndicator />}
-          {location.pathname.includes(
-            '/dashboard/observations/infrastructures/',
-          ) && <TopMenuInfrastructure />}
-          {location.pathname.includes(
-            '/dashboard/observations/observables/',
-          ) && <TopMenuStixCyberObservable />}
-          {location.pathname.includes('/dashboard/observations/artifacts/') && (
-            <TopMenuArtifact />
-          )}
-          {(location.pathname === '/dashboard/threats'
-            || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
-            <TopMenuThreats />
-          )}
-          {location.pathname.includes(
-            '/dashboard/threats/threat_actors_group/',
-          ) && <TopMenuThreatActorGroup />}
-          {location.pathname.includes(
-            '/dashboard/threats/threat_actors_individual/',
-          ) && <TopMenuThreatActorIndividual />}
-          {location.pathname.includes('/dashboard/threats/intrusion_sets/') && (
-            <TopMenuIntrusionSet />
-          )}
-          {location.pathname.includes('/dashboard/threats/campaigns/') && (
-            <TopMenuCampaign />
-          )}
-          {(location.pathname === '/dashboard/arsenal'
-            || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
-            <TopMenuArsenal />
-          )}
-          {location.pathname.includes('/dashboard/arsenal/malwares/') && (
-            <TopMenuMalware />
-          )}
-          {location.pathname.includes('/dashboard/arsenal/tools/') && (
-            <TopMenuTool />
-          )}
-          {location.pathname.includes('/dashboard/arsenal/channels/') && (
-            <TopMenuChannel />
-          )}
-          {location.pathname.includes(
-            '/dashboard/arsenal/vulnerabilities/',
-          ) && <TopMenuVulnerability />}
-          {(location.pathname === '/dashboard/entities'
-            || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
-            <TopMenuEntities />
-          )}
-          {location.pathname.includes('/dashboard/entities/sectors/') && (
-            <TopMenuSector />
-          )}
-          {location.pathname.includes('/dashboard/entities/systems/') && (
-            <TopMenuSystem />
-          )}
-          {location.pathname.includes('/dashboard/entities/events/') && (
-            <TopMenuEvent />
-          )}
-          {location.pathname.includes('/dashboard/entities/organizations/') && (
-            <TopMenuOrganization />
-          )}
-          {location.pathname.includes('/dashboard/entities/individuals/') && (
-            <TopMenuIndividual />
-          )}
-          {(location.pathname === '/dashboard/locations'
-            || location.pathname.match('/dashboard/locations/[a-z_]+$')) && (
-            <TopMenuLocation />
-          )}
-          {location.pathname.includes('/dashboard/locations/countries/') && (
-            <TopMenuCountry />
-          )}
-          {location.pathname.includes('/dashboard/locations/regions/') && (
-            <TopMenuRegion />
-          )}
-          {location.pathname.includes(
-            '/dashboard/locations/administrative_areas/',
-          ) && <TopMenuAdministrativeArea />}
-          {location.pathname.includes('/dashboard/locations/cities/') && (
-            <TopMenuCity />
-          )}
-          {location.pathname.includes('/dashboard/locations/positions/') && (
-            <TopMenuPosition />
-          )}
-          {(location.pathname === '/dashboard/techniques'
-            || location.pathname.match('/dashboard/techniques/[a-z_]+$')) && (
-            <TopMenuTechniques />
-          )}
-          {location.pathname.includes(
-            '/dashboard/techniques/attack_patterns/',
-          ) && <TopMenuAttackPattern />}
-          {location.pathname.includes('/dashboard/techniques/narratives/') && (
-            <TopMenuNarrative />
-          )}
-          {location.pathname.includes(
-            '/dashboard/techniques/courses_of_action/',
-          ) && <TopMenuCourseOfAction />}
-          {location.pathname.includes(
-            '/dashboard/techniques/data_components/',
-          ) && <TopMenuDataComponent />}
-          {location.pathname.includes(
-            '/dashboard/techniques/data_sources/',
-          ) && <TopMenuDataSource />}
-          {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
-          {location.pathname.includes('/dashboard/activity') && (
-            <TopMenuAudits />
-          )}
-          {location.pathname.includes('/dashboard/settings') && (
-            <TopMenuSettings />
-          )}
-          {location.pathname.includes('/dashboard/workspaces/dashboards') && (
-            <TopMenuWorkspacesDashboards />
-          )}
-          {location.pathname.includes(
-            '/dashboard/workspaces/investigations',
-          ) && <TopMenuWorkspacesInvestigations />}
-          {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
+          {routeFn?.(extractId(routePath))}
         </div>
         <div className={classes.barRight}>
           <Security needs={[KNOWLEDGE]}>

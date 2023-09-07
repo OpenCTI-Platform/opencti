@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import Indicator from './Indicator';
 import Loader from '../../../../components/Loader';
@@ -84,7 +83,6 @@ class RootIndicator extends Component {
     } = this.props;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={indicatorQuery}
           variables={{ id: indicatorId, relationship_type: 'indicates' }}

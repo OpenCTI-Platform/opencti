@@ -7,7 +7,6 @@ import {
   useQueryLoader,
   useSubscription,
 } from 'react-relay';
-import TopBar from '../../nav/TopBar';
 import User, { userQuery } from './User';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -100,8 +99,7 @@ const RootUser = () => {
 
   return (
     <>
-      <TopBar />
-      {queryRef ? (
+            {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootUserComponent
             queryRef={queryRef}

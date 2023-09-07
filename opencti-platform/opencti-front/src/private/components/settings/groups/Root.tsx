@@ -4,7 +4,6 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Route, Switch, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -87,14 +86,13 @@ const RootGroup = () => {
   const queryRef = useQueryLoading<RootGroupQuery>(groupQuery, { id: groupId, rolesOrderBy: 'name', rolesOrderMode: 'asc' });
   return (
     <div>
-      <TopBar />
-      {queryRef ? (
+            {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootGroupComponent queryRef={queryRef} groupId={groupId} />
         </React.Suspense>
-      ) : (
+            ) : (
         <Loader variant={LoaderVariant.container} />
-      )}
+            )}
     </div>
   );
 };

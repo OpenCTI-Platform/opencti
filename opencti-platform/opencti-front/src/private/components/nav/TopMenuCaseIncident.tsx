@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -32,11 +32,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuCaseIncident = () => {
+const TopMenuCaseIncident = ({ id: caseId }: { id: string }) => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = useStyles();
-  const { caseId } = useParams();
   return (
     <div>
       <Button

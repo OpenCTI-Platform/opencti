@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Investigation from './Investigation';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -56,7 +55,6 @@ class RootInvestigation extends Component {
     } = this.props;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={investigationQuery}
           variables={{ id: workspaceId }}

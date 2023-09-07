@@ -37,9 +37,7 @@ class TopMenuRegion extends Component {
     const {
       t,
       location,
-      match: {
-        params: { regionId },
-      },
+      id: regionId,
       classes,
     } = this.props;
     return (
@@ -195,9 +193,8 @@ class TopMenuRegion extends Component {
 TopMenuRegion.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import AttackPattern from './AttackPattern';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -85,7 +84,6 @@ class RootAttackPattern extends Component {
     const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

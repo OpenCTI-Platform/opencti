@@ -43,9 +43,7 @@ class TopMenuNarrative extends Component {
     const {
       t,
       location,
-      match: {
-        params: { narrativeId },
-      },
+      id: narrativeId,
       classes,
     } = this.props;
     return (
@@ -182,9 +180,8 @@ class TopMenuNarrative extends Component {
 TopMenuNarrative.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

@@ -1,7 +1,7 @@
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { Fire } from 'mdi-material-ui';
@@ -31,10 +31,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuIncident = () => {
+const TopMenuIncident = ({ id: incidentId }: { id: string }) => {
   const location = useLocation();
   const { t } = useFormatter();
-  const { incidentId } = useParams() as { incidentId: string };
   const classes = useStyles();
   const isUploaderOrExporter = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]);
   const computePath = (path?: string) => `/dashboard/events/incidents/${incidentId}${path ?? ''}`;

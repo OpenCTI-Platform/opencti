@@ -5,7 +5,6 @@ import React, { useMemo } from 'react';
 import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -188,8 +187,7 @@ const RootIncident = () => {
   const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
   return (
     <div>
-      <TopBar />
-      <Route path="/dashboard/events/incidents/:incidentId/knowledge">
+            <Route path="/dashboard/events/incidents/:incidentId/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
           availableSections={[

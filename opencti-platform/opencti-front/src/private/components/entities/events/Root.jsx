@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Event from './Event';
 import EventKnowledge from './EventKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -84,7 +83,6 @@ class RootEvent extends Component {
     const link = `/dashboard/entities/events/${eventId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/entities/events/:eventId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

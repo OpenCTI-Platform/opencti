@@ -37,9 +37,7 @@ class TopMenuPosition extends Component {
     const {
       t,
       location,
-      match: {
-        params: { positionId },
-      },
+      id: positionId,
       classes,
     } = this.props;
     return (
@@ -195,9 +193,8 @@ class TopMenuPosition extends Component {
 TopMenuPosition.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

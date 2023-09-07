@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Opinion from './Opinion';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -82,7 +81,6 @@ class RootOpinion extends Component {
     } = this.props;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={opinionQuery}
           variables={{ id: opinionId }}
