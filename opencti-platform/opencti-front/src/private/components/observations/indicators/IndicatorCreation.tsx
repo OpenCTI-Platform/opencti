@@ -121,6 +121,7 @@ interface IndicatorAddInput {
   pattern: string
   pattern_type: string
   x_opencti_main_observable_type: string
+  createObservables: boolean
   x_mitre_platforms: string[];
   valid_from: Date | null
   valid_until: Date | null
@@ -194,6 +195,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       indicator_types: values.indicator_types,
       pattern: values.pattern,
       pattern_type: values.pattern_type,
+      createObservables: values.createObservables,
       x_opencti_main_observable_type: values.x_opencti_main_observable_type,
       x_mitre_platforms: values.x_mitre_platforms,
       confidence: parseInt(String(values.confidence), 10),
@@ -250,6 +252,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       objectLabel: [],
       externalReferences: [],
       x_opencti_detection: false,
+      createObservables: false,
       x_opencti_score: 50,
       file: undefined,
     },
