@@ -6224,7 +6224,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:^2.2.5":
+"classnames@npm:2.3.2, classnames@npm:^2.2.5":
   version: 2.3.2
   resolution: "classnames@npm:2.3.2"
   checksum: 2c62199789618d95545c872787137262e741f9db13328e216b093eea91c85ef2bfb152c1f9e63027204e2559a006a92eb74147d46c800a9f96297ae1d9f96f4e
@@ -13465,6 +13465,7 @@ __metadata:
     babel-plugin-relay: 15.0.0
     chokidar: 3.5.3
     ckeditor5-custom-build: 0.0.1
+    classnames: 2.3.2
     compression: 1.7.4
     cross-env: 7.0.3
     dagre: 0.8.5

@@ -120,6 +120,10 @@ export const useSettingsMessagesBannerHeight = () => {
     },
     [bannerHeight],
   );
+  // At first render, some component might have finished their render while settings message send the dispatch.
+  if (bannerHeight !== ref.current?.clientHeight && ref.current?.clientHeight != null) {
+    setBannerHeight(ref.current?.clientHeight);
+  }
   return bannerHeight;
 };
 
