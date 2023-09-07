@@ -237,6 +237,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
     nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
+    nestedElementTypes.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
   }
   if (nestedElementTypes.length > 0) {
     finalFilters.push({ key: 'connections', nested: nestedElementTypes });
