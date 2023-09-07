@@ -5129,40 +5129,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server-core@npm:3.12.0":
-  version: 3.12.0
-  resolution: "apollo-server-core@npm:3.12.0"
-  dependencies:
-    "@apollo/utils.keyvaluecache": ^1.0.1
-    "@apollo/utils.logger": ^1.0.0
-    "@apollo/utils.usagereporting": ^1.0.0
-    "@apollographql/apollo-tools": ^0.5.3
-    "@apollographql/graphql-playground-html": 1.6.29
-    "@graphql-tools/mock": ^8.1.2
-    "@graphql-tools/schema": ^8.0.0
-    "@josephg/resolvable": ^1.0.0
-    apollo-datasource: ^3.3.2
-    apollo-reporting-protobuf: ^3.4.0
-    apollo-server-env: ^4.2.1
-    apollo-server-errors: ^3.3.1
-    apollo-server-plugin-base: ^3.7.2
-    apollo-server-types: ^3.8.0
-    async-retry: ^1.2.1
-    fast-json-stable-stringify: ^2.1.0
-    graphql-tag: ^2.11.0
-    loglevel: ^1.6.8
-    lru-cache: ^6.0.0
-    node-abort-controller: ^3.0.1
-    sha.js: ^2.4.11
-    uuid: ^9.0.0
-    whatwg-mimetype: ^3.0.0
-  peerDependencies:
-    graphql: ^15.3.0 || ^16.0.0
-  checksum: b7a37a78901d38a330c9df8fe870da3dcf512f43ab60fdf9ab0ba37be03977db5d4b72eabf51a830d2a9dcfb2974d7bfbc5aa8719e3afac113c8bd7222740b8f
-  languageName: node
-  linkType: hard
-
-"apollo-server-core@npm:^3.12.0":
+"apollo-server-core@npm:3.12.1, apollo-server-core@npm:^3.12.1":
   version: 3.12.1
   resolution: "apollo-server-core@npm:3.12.1"
   dependencies:
@@ -5213,9 +5180,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server-express@npm:3.12.0":
-  version: 3.12.0
-  resolution: "apollo-server-express@npm:3.12.0"
+"apollo-server-express@npm:3.12.1":
+  version: 3.12.1
+  resolution: "apollo-server-express@npm:3.12.1"
   dependencies:
     "@types/accepts": ^1.3.5
     "@types/body-parser": 1.19.2
@@ -5223,7 +5190,7 @@ __metadata:
     "@types/express": 4.17.14
     "@types/express-serve-static-core": 4.17.31
     accepts: ^1.3.5
-    apollo-server-core: ^3.12.0
+    apollo-server-core: ^3.12.1
     apollo-server-types: ^3.8.0
     body-parser: ^1.19.0
     cors: ^2.8.5
@@ -5231,7 +5198,7 @@ __metadata:
   peerDependencies:
     express: ^4.17.1
     graphql: ^15.3.0 || ^16.0.0
-  checksum: bd4bc213f506e2aeb2be961961de51e431f8774344b349e9b02f475714a623703eb62423ad968a8f8b6859919ae0d1912c40cf15a4df24e6f81b4f4c5653e70b
+  checksum: c4cacd258985eba10b7aa9a78a6534f4e55d1a3c05895d905d5fa8ad5b598dcbea7d3e0a4f7fe5da6a1cb166d2b5351cea02685c82f2ff859e19110b231868bc
   languageName: node
   linkType: hard
 
@@ -10567,8 +10534,8 @@ __metadata:
     amqplib: 0.10.3
     antlr4: 4.13.0
     apollo-errors: 1.9.0
-    apollo-server-core: 3.12.0
-    apollo-server-express: 3.12.0
+    apollo-server-core: 3.12.1
+    apollo-server-express: 3.12.1
     async-lock: 1.4.0
     axios: 1.5.0
     axios-cookiejar-support: 4.0.7
