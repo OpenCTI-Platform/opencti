@@ -44,6 +44,8 @@ class ThreatActorIndividualLocationsComponent extends Component {
 
   render() {
     const { t, threatActorIndividual } = this.props;
+    const isInferredFromThreatActor = threatActorIndividual.is_from_relation_inferred;
+    console.log('isInferredFromThreatActor', isInferredFromThreatActor);
     return (
       <>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -76,7 +78,8 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   (n) => n?.length === 2,
                 ),
               );
-            const isInferred = locationEdge.node.is_inferred;
+            const isInferred = location.is_from_relation_inferred;
+            console.log('isInferred', isInferred);
             return (
               <ListItem
                 key={location.id}
@@ -138,23 +141,7 @@ const ThreatActorIndividualLocations = createFragmentContainer(
         name
         parent_types
         entity_type
-        stixCoreRelationships {
-          edges {
-            node {
-              is_inferred
-              to {
-                ... on Location {
-                  id
-                  parent_types
-                  entity_type
-                  name
-                  x_opencti_aliases
-                  description
-                }
-              }
-            }
-          }
-        }
+          is_from_relation_inferred
         locations {
           edges {
             node {
@@ -164,6 +151,7 @@ const ThreatActorIndividualLocations = createFragmentContainer(
               name
               x_opencti_aliases
               description
+              is_from_relation_inferred
             }
           }
         }

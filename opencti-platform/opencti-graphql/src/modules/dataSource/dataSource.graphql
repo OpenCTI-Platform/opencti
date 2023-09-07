@@ -14,6 +14,8 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
+    representative: Representative!
+    is_from_relation_inferred: Boolean
     createdBy: Identity
     numberOfConnectedElement: Int!
     objectMarking: MarkingDefinitionConnection

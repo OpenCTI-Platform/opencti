@@ -14,6 +14,8 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     # inferences
     x_opencti_inferences: [Inference]
     # StixCoreObject
+    representative: Representative!
+    is_from_relation_inferred: Boolean
     createdBy: Identity
     numberOfConnectedElement: Int!
     objectMarking: MarkingDefinitionConnection

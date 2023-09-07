@@ -287,13 +287,11 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     targetIds = targetIds.filter((id) => elementIds.includes(id));
   }
   const targets = await elFindByIds(context, user, targetIds, opts);
-  // pour chaque target trouver la relation qui a pour toId, l'ID de la target
-  // puis écrire dans la target si la relation est inferred ou pas
-  const relationsId = targets.map((target) => {
-    const targetId = target.id;
-    return relations.find((relation) => relation.toId === targetId);
+  const findAllTargets = targets.map((target) => {
+    const findRelation = relations.find((relation) => relation.toId === target.id);
+    console.log('findRelation', findRelation);
+    return { ...target, is_from_relation_inferred: findRelation.is_inferred };
   });
-  console.log('relationsId', relationsId);
 
   // Group and rebuild the result
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
@@ -314,7 +312,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     const values = elGrouped[id];
     const data = first ? R.take(first, values) : values;
     const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
-    return targets.filter((t) => filterIds.includes(t.internal_id));
+    return findAllTargets.filter((t) => filterIds.includes(t.internal_id));
   });
   if (batched) {
     return elements;
