@@ -635,7 +635,7 @@ export const distributionEntities = async (context, user, types, args) => {
       });
     return result;
   }
-  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
+  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData)); // label not good
 };
 export const distributionRelations = async (context, user, args) => {
   const { field } = args; // Mandatory fields
