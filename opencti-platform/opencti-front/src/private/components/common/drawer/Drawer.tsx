@@ -31,7 +31,7 @@ const useStyles = makeStyles<Theme>((theme) => {
         easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen,
       }),
       paddingTop: `${bannerHeightNumber}px`,
-      paddingBottom: `${bannerHeightNumber}px`, // TODO ? keep it ?
+      paddingBottom: `${bannerHeightNumber}px`,
     },
     header: {
       backgroundColor: theme.palette.background.nav,
@@ -44,7 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => {
     },
     mainButton: {
       position: 'fixed',
-      bottom: `${bannerHeightNumber + 30}px`, // TODO ? add height of banner ?
+      bottom: `${bannerHeightNumber + 30}px`,
     },
     withPanel: {
       right: 230,
