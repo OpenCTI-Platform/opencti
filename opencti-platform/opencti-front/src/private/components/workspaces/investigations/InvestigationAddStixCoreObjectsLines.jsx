@@ -219,6 +219,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                             stixCoreObject.name
                             || stixCoreObject.observable_value
                             || stixCoreObject.attribute_abstract
+                            || stixCoreObject.result_name
                             || truncate(stixCoreObject.content, 30)
                             || stixCoreObject.opinion
                             || `${fd(stixCoreObject.first_observed)} - ${fd(
@@ -230,6 +231,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                               content={
                                 stixCoreObject.description
                                 || fd(stixCoreObject.created_at)
+                                || stixCoreObject.product
                               }
                               limit={200}
                               remarkGfmPlugin={true}
@@ -428,6 +430,10 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 description
                 first_seen
                 last_seen
+              }
+              ... on MalwareAnalysis {
+                result_name
+                product
               }
               ... on ThreatActor {
                 name

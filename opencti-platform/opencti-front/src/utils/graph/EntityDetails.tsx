@@ -147,6 +147,7 @@ const entityDetailsQuery = graphql`
             node {
               id
               phase_name
+              kill_chain_name
               x_opencti_order
             }
           }
@@ -205,6 +206,7 @@ const entityDetailsQuery = graphql`
             node {
               id
               phase_name
+              kill_chain_name
               x_opencti_order
             }
           }
@@ -217,6 +219,7 @@ const entityDetailsQuery = graphql`
           edges {
             node {
               id
+              kill_chain_name
               phase_name
               x_opencti_order
             }
@@ -258,6 +261,7 @@ const entityDetailsQuery = graphql`
           edges {
             node {
               id
+              kill_chain_name
               phase_name
               x_opencti_order
             }
@@ -281,6 +285,7 @@ const entityDetailsQuery = graphql`
           edges {
             node {
               id
+              kill_chain_name
               phase_name
               x_opencti_order
             }

@@ -309,11 +309,8 @@ const StixDomainObjectEditionContainer = (props) => {
   let initialValues = R.pipe(
     R.assoc('createdBy', createdBy),
     R.assoc('objectMarking', objectMarking),
-    R.pick(['name', 'result_name', 'description', 'createdBy', 'objectMarking', 'confidence']),
+    R.pick(['name', 'result_name', 'description', 'product', 'createdBy', 'objectMarking', 'confidence']),
   )(stixDomainObject);
-  if ('result_name' in stixDomainObject && stixDomainObject.result_name !== undefined) {
-    initialValues = R.assoc('result_name', stixDomainObject.result_name, initialValues);
-  }
   if ('aliases' in stixDomainObject && stixDomainObject.aliases !== undefined) {
     initialValues = R.assoc(
       'aliases',
@@ -364,16 +361,13 @@ const StixDomainObjectEditionContainer = (props) => {
                   name="result_name"
                   label={t('Result Name')}
                   fullWidth={true}
-                  disabled={typesWithoutName.includes(
-                    stixDomainObject.entity_type,
-                  )}
                   onFocus={handleChangeFocus}
                   onSubmit={handleResultName}
                   helperText={
                     <SubscriptionFocus context={editContext} fieldName="result_name" />
                   }
                 />
-              ) : (
+              ) : ('name' in stixDomainObject && (
                 <Field
                   component={TextField}
                   variant="standard"
@@ -389,7 +383,7 @@ const StixDomainObjectEditionContainer = (props) => {
                     <SubscriptionFocus context={editContext} fieldName="name" />
                   }
                 />
-              )}
+              ))}
               {'aliases' in stixDomainObject && stixDomainObject.aliases !== undefined && (
                 <Field
                   component={TextField}
@@ -435,7 +429,7 @@ const StixDomainObjectEditionContainer = (props) => {
                 editContext={editContext}
                 entityType={'Stix-Domain-Object'}
               />
-              {'description' in stixDomainObject && (
+              {'description' in stixDomainObject && stixDomainObject.description !== undefined && (
                 <Field
                   component={MarkdownField}
                   name="description"
