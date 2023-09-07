@@ -6,15 +6,21 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { stixObjectOrStixRelationshipOptions } from '../schema/stixObjectOrStixRelationship';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
+import { extractRepresentative } from "../database/entity-representative";
 
 const stixObjectOrStixRelationshipOrCreatorResolvers = {
   StixObject: {
     is_inferred: (object) => isInferredIndex(object._index),
     x_opencti_stix_ids: (object) => onlyStableStixIds(object.x_opencti_stix_ids || []),
+    representative: (object) => extractRepresentative(object),
   },
   StixRelationship: {
     is_inferred: (object) => isInferredIndex(object._index),
     x_opencti_stix_ids: (object) => onlyStableStixIds(object.x_opencti_stix_ids || []),
+    representative: (object) => extractRepresentative(object),
+  },
+  Creator: {
+    representative: (object) => extractRepresentative(object),
   },
   StixObjectOrStixRelationshipOrCreatorsFilter: stixObjectOrStixRelationshipOptions.StixObjectOrStixRelationshipsFilter,
   StixObjectOrStixRelationshipOrCreator: {

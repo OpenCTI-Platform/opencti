@@ -4470,6 +4470,7 @@ export type Creator = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  representative: Representative;
 };
 
 export type CreatorConnection = {
@@ -6783,6 +6784,7 @@ export type ExternalReference = BasicObject & StixMetaObject & StixObject & {
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
   references?: Maybe<StixObjectOrStixRelationshipConnection>;
+  representative: Representative;
   source_name: Scalars['String']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -10524,6 +10526,7 @@ export type KillChainPhase = BasicObject & StixMetaObject & StixObject & {
   modified?: Maybe<Scalars['DateTime']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   phase_name: Scalars['String']['output'];
+  representative: Representative;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -10621,6 +10624,7 @@ export type Label = BasicObject & StixMetaObject & StixObject & {
   is_inferred: Scalars['Boolean']['output'];
   modified?: Maybe<Scalars['DateTime']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  representative: Representative;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   toStix?: Maybe<Scalars['String']['output']>;
@@ -12124,6 +12128,7 @@ export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
   is_inferred: Scalars['Boolean']['output'];
   modified?: Maybe<Scalars['DateTime']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  representative: Representative;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   toStix?: Maybe<Scalars['String']['output']>;
@@ -23241,6 +23246,7 @@ export type StixObject = {
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  representative: Representative;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -23350,6 +23356,7 @@ export type StixRefRelationship = BasicRelationship & StixRelationship & {
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
+  representative: Representative;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   start_time?: Maybe<Scalars['DateTime']['output']>;
@@ -23491,6 +23498,7 @@ export type StixRelationship = {
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   relationship_type: Scalars['String']['output'];
+  representative: Representative;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   to?: Maybe<StixObjectOrStixRelationshipOrCreator>;
@@ -27010,6 +27018,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   name: Scalars['String']['output'];
   order?: Maybe<Scalars['Int']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  representative: Representative;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
@@ -31121,6 +31130,7 @@ export type CreatorResolvers<ContextType = any, ParentType extends ResolversPare
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -31795,6 +31805,7 @@ export type ExternalReferenceResolvers<ContextType = any, ParentType extends Res
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ExternalReferencePendingFilesArgs>>;
   references?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ExternalReferenceReferencesArgs>>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   source_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -32881,6 +32892,7 @@ export type KillChainPhaseResolvers<ContextType = any, ParentType extends Resolv
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   phase_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -32923,6 +32935,7 @@ export type LabelResolvers<ContextType = any, ParentType extends ResolversParent
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33363,6 +33376,7 @@ export type MarkingDefinitionResolvers<ContextType = any, ParentType extends Res
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -36009,6 +36023,7 @@ export type StixObjectResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -36077,6 +36092,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixRefRelationshipReportsArgs>>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   start_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -36125,6 +36141,7 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
@@ -37193,6 +37210,7 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

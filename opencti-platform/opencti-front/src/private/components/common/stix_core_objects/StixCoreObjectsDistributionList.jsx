@@ -13,7 +13,6 @@ import ListItemText from '@mui/material/ListItemText';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { convertFilters } from '../../../../utils/ListParameters';
-import { defaultValue } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import useGranted, {
@@ -99,148 +98,27 @@ const stixCoreObjectsDistributionListDistributionQuery = graphql`
       label
       value
       entity {
-        ... on BasicObject {
-          entity_type
-          id
-        }
-        ... on BasicRelationship {
-          entity_type
-          id
-        }
-        ... on AttackPattern {
-          name
-          description
-        }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on System {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on AdministrativeArea {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on MalwareAnalysis {
-          result_name
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on Incident {
-          name
-          description
-        }
-        ... on Event {
-          name
-          description
-        }
-        ... on Channel {
-          name
-          description
-        }
-        ... on Narrative {
-          name
-          description
-        }
-        ... on Language {
-          name
-        }
-        ... on DataComponent {
-          name
-        }
-        ... on DataSource {
-          name
-        }
-        ... on Case {
-          name
-        }
-        ... on Task {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on MarkingDefinition {
-          definition_type
-          definition
-        }
-        ... on Creator {
-          entity_type
-          name
-        }
-        ... on Report {
-          name
-        }
-        ... on Grouping {
-          name
-        }
-        ... on Note {
-          attribute_abstract
-          content
-        }
-        ... on Opinion {
-          opinion
-        }
+          ... on StixObject {
+              id
+              entity_type
+              representative {
+                  main
+              }
+          }
+          ... on StixRelationship {
+              id
+              entity_type
+              representative {
+                  main
+              }
+          }
+          ... on Creator {
+              id
+              entity_type
+              representative {
+                  main
+              }
+          }
       }
     }
   }
@@ -272,6 +150,14 @@ const StixCoreObjectsDistributionList = ({
         o.key,
       ),
     );
+
+    const computeLink = (entry) => {
+      const resolution = resolveLink(entry.type);
+      if (resolution) { // Handle type with no link
+        return `${resolution}/${entry.id}`;
+      }
+      return null;
+    };
     return (
       <QueryRenderer
         query={stixCoreObjectsDistributionListDistributionQuery}
@@ -301,7 +187,7 @@ const StixCoreObjectsDistributionList = ({
               label:
                 // eslint-disable-next-line no-nested-ternary
                 selection.attribute.endsWith('_id')
-                  ? defaultValue(o.entity)
+                  ? o.entity?.representative?.main
                   : selection.attribute === 'entity_type'
                     ? t(`entity_${o.label}`)
                     : o.label,
@@ -319,7 +205,7 @@ const StixCoreObjectsDistributionList = ({
                     const link = entry.type === 'User' && !hasSetAccess
                       ? null
                       : entry.id
-                        ? `${resolveLink(entry.type)}/${entry.id}`
+                        ? computeLink(entry)
                         : null;
                     return (
                       <ListItem

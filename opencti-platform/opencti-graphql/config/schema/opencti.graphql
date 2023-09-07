@@ -1255,6 +1255,7 @@ type Creator {
   id: ID! # internal_id
   name: String!
   entity_type: String!
+  representative: Representative!
 }
 type User implements BasicObject & InternalObject {
   id: ID! # internal_id
@@ -1537,6 +1538,7 @@ interface StixObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -1627,6 +1629,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -1693,6 +1696,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -1763,6 +1767,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -1839,6 +1844,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -1971,13 +1977,13 @@ interface StixCoreObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2169,13 +2175,13 @@ interface StixDomainObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2343,6 +2349,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2351,7 +2358,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2536,6 +2542,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2544,7 +2551,6 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2728,13 +2734,13 @@ interface Container {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -2900,6 +2906,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -2908,7 +2915,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3128,6 +3134,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3136,7 +3143,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3333,6 +3339,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3341,7 +3348,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3558,6 +3564,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3566,7 +3573,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3769,6 +3775,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -3777,7 +3784,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -3955,13 +3961,13 @@ interface Identity {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
-    # StixCoreObject
-  representative: Representative!
+  # StixCoreObject
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4135,6 +4141,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4143,7 +4150,6 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4322,6 +4328,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4330,7 +4337,6 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4505,6 +4511,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4513,7 +4520,6 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4715,6 +4721,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4723,7 +4730,6 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -4921,6 +4927,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -4929,7 +4936,6 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5104,6 +5110,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5112,7 +5119,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5294,13 +5300,13 @@ interface Location {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5470,6 +5476,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5478,7 +5485,6 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5657,6 +5663,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5665,7 +5672,6 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -5838,6 +5844,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -5846,7 +5853,6 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6015,6 +6021,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6023,7 +6030,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6207,6 +6213,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6215,7 +6222,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6402,6 +6408,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6410,7 +6417,6 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6538,6 +6544,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6546,7 +6553,6 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6734,6 +6740,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6742,7 +6749,6 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -6920,6 +6926,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -6928,7 +6935,6 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7118,6 +7124,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7126,7 +7133,6 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7318,13 +7324,13 @@ interface StixCyberObservable {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7419,6 +7425,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7427,7 +7434,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7532,6 +7538,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7540,7 +7547,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7649,6 +7655,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7657,7 +7664,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7758,6 +7764,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7766,7 +7773,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7869,6 +7875,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7877,7 +7884,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -7990,6 +7996,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -7998,7 +8005,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8121,13 +8127,13 @@ interface HashedObservable {
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8224,6 +8230,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8232,7 +8239,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8346,6 +8352,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8354,7 +8361,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8477,6 +8483,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8485,7 +8492,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8643,6 +8649,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8651,7 +8658,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8755,6 +8761,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8763,7 +8770,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8865,6 +8871,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8873,7 +8880,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -8974,6 +8980,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -8982,7 +8989,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9083,6 +9089,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9091,7 +9098,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9211,6 +9217,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9219,7 +9226,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9366,6 +9372,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9374,7 +9381,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9494,6 +9500,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9502,7 +9509,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9603,6 +9609,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9611,7 +9618,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9739,6 +9745,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9747,7 +9754,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9852,6 +9858,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9860,7 +9867,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -9965,6 +9971,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -9973,7 +9980,6 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10074,6 +10080,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10082,7 +10089,6 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10183,6 +10189,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10191,7 +10198,6 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10292,6 +10298,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10300,7 +10307,6 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10401,6 +10407,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10409,7 +10416,6 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10510,6 +10516,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10518,7 +10525,6 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10624,6 +10630,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10632,7 +10639,6 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10733,6 +10739,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10741,7 +10748,6 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -10848,6 +10854,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -10856,7 +10863,6 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   # inferences
   x_opencti_inferences: [Inference]
     # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
@@ -11365,6 +11371,7 @@ interface StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   # StixRelationship
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationshipOrCreator
@@ -11458,6 +11465,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   # StixRelationship
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationshipOrCreator
@@ -11475,7 +11483,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   # StixCoreRelationship
-  representative: Representative!
   description: String
   start_time: DateTime
   stop_time: DateTime
@@ -11610,6 +11617,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   # StixRelationship
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationshipOrCreator
@@ -11627,7 +11635,6 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   # StixSightingRelationship
-  representative: Representative!
   description: String
   first_seen: DateTime
   last_seen: DateTime
@@ -11720,6 +11727,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   # StixRelationship
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationshipOrCreator

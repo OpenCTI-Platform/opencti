@@ -4,8 +4,8 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     standard_id: String!
     entity_type: String!
     parent_types: [String]!
-
     # Stix Object
+    representative: Representative!
     x_opencti_stix_ids: [StixId]
     is_inferred: Boolean!
     spec_version: String!
@@ -13,9 +13,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     updated_at: DateTime!
     # inferences
     x_opencti_inferences: [Inference]
-
     # StixCoreObject
-    representative: Representative!
     createdBy: Identity
     objectMarking: MarkingDefinitionConnection
     objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -89,7 +87,6 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
         filters: [StixCoreRelationshipsFiltering]
         filterMode: FilterMode
     ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-
     # Stix Domain Object
     revoked: Boolean!
     confidence: Int
@@ -110,7 +107,6 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
-
     # Data Source
     name: String!
     description: String
