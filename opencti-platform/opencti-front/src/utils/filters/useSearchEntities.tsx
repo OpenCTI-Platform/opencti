@@ -35,6 +35,7 @@ import { ObjectAssigneeFieldMembersSearchQuery$data } from '../../private/compon
 import { ObjectParticipantFieldParticipantsSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectParticipantFieldParticipantsSearchQuery.graphql';
 import { objectParticipantFieldParticipantsSearchQuery } from '../../private/components/common/form/ObjectParticipantField';
 import { useSearchEntitiesStixCoreObjectsContainersSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsContainersSearchQuery.graphql';
+import { isNotEmptyField } from '../utils';
 
 const filtersStixCoreObjectsContainersSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsContainersSearchQuery($filters: [ContainersFiltering]) {
@@ -991,7 +992,7 @@ const useSearchEntities = ({
         fetchQuery(statusFieldStatusesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',
           first: 50,
-          filters: [{ key: 'type', values: [entityType] }],
+          filters: [{ key: 'type', values: isNotEmptyField(entityType) ? [entityType] : [] }],
         })
           .toPromise()
           .then((data) => {
