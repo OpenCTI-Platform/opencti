@@ -810,6 +810,7 @@ type BackgroundTaskError {
 enum BackgroundTaskScope {
   KNOWLEDGE
   USER
+  SETTINGS
 }
 enum BackgroundTaskActionType {
   DELETE
