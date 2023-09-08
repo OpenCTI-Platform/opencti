@@ -6,11 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../components/i18n';
-import {
-  ONE_SECOND,
-  formatSeconds,
-  secondsBetweenDates,
-} from '../../utils/Time';
+import { formatSeconds, ONE_SECOND, secondsBetweenDates } from '../../utils/Time';
 import { handleLogout } from './nav/TopBar';
 import useAuth from '../../utils/hooks/useAuth';
 
@@ -74,7 +70,7 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
     startDate: new Date(),
   });
   const [resetCounter, triggerReset] = useState(false);
-  const interval = useRef<NodeJS.Timer | null>(null);
+  const interval = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Decrements the idle timeout counter by one until it is zero.
@@ -197,7 +193,8 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
   return (
     <Dialog
       open={dialogOpen}
-      onClose={() => {}}
+      onClose={() => {
+      }}
       disableEscapeKeyDown={true}
       maxWidth="sm"
       PaperProps={{ elevation: 1 }}
@@ -214,7 +211,7 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
       <DialogContent>
         <DialogContentText sx={{ textAlign: 'center' }}>
           {t('You will be automatically logged out at end of the timer.')}
-          <br />
+          <br/>
           {t('Select')} <code>{t('CONTINUE')}</code>{' '}
           {t('to keep working or select')} <code>{t('LOGOUT')}</code>{' '}
           {t('to terminate your session.')}
