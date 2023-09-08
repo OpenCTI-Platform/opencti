@@ -1,6 +1,6 @@
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
-import { ModuleDefinition, registerDefinition } from '../../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
 import convertCaseTaskToStix from './task-template-converter';
 import taskTemplateResolvers from './task-template-resolvers';
 import type { StixTaskTemplate, StoreEntityTaskTemplate } from './task-template-types';

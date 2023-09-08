@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import workspaceTypeDefs from './workspace.graphql';
 import { normalizeName } from '../../schema/identifier';
 import workspaceResolvers from './workspace-resolver';
-import { ENTITY_TYPE_WORKSPACE, StixWorkspace, StoreEntityWorkspace } from './workspace-types';
+import { ENTITY_TYPE_WORKSPACE, type StixWorkspace, type StoreEntityWorkspace } from './workspace-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';

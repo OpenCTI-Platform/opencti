@@ -1,7 +1,7 @@
 import threatActorIndividualTypeDefs from './threatActorIndividual.graphql';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import { INNER_TYPE, NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
@@ -21,15 +21,20 @@ import {
   RELATION_USES
 } from '../../schema/stixCoreRelationship';
 import {
-  ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, ENTITY_TYPE_INFRASTRUCTURE,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION,
-  ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_TOOL, ENTITY_TYPE_VULNERABILITY
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
 import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
@@ -82,7 +87,8 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'personal_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [
-    { name: RELATION_USES,
+    {
+      name: RELATION_USES,
       targets: [
         { name: ENTITY_TYPE_TOOL, type: REL_BUILT_IN },
         { name: ENTITY_HASHED_OBSERVABLE_STIX_FILE, type: REL_EXTENDED },
@@ -93,7 +99,8 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_TARGETS,
+    {
+      name: RELATION_TARGETS,
       targets: [
         { name: ENTITY_TYPE_LOCATION_CITY, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_BUILT_IN },
@@ -108,7 +115,8 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_LOCATED_AT,
+    {
+      name: RELATION_LOCATED_AT,
       targets: [
         { name: ENTITY_TYPE_LOCATION_CITY, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_BUILT_IN },
@@ -117,45 +125,53 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
         { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_ATTRIBUTED_TO,
+    {
+      name: RELATION_ATTRIBUTED_TO,
       targets: [
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_IMPERSONATES,
+    {
+      name: RELATION_IMPERSONATES,
       targets: [
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_COMPROMISES,
+    {
+      name: RELATION_COMPROMISES,
       targets: [
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_HOSTS,
+    {
+      name: RELATION_HOSTS,
       targets: [
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_OWNS,
+    {
+      name: RELATION_OWNS,
       targets: [
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_PARTICIPATES_IN,
+    {
+      name: RELATION_PARTICIPATES_IN,
       targets: [
         { name: ENTITY_TYPE_CAMPAIGN, type: REL_NEW },
       ]
     },
-    { name: RELATION_PART_OF,
+    {
+      name: RELATION_PART_OF,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_NEW },
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },
       ]
     },
-    { name: RELATION_COOPERATES_WITH,
+    {
+      name: RELATION_COOPERATES_WITH,
       targets: [
         { name: ENTITY_TYPE_THREAT_ACTOR_GROUP, type: REL_NEW },
         { name: ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL, type: REL_NEW },

@@ -1,4 +1,4 @@
-import { BasicStoreEntityIngestionRss, ENTITY_TYPE_INGESTION_RSS } from './ingestion-types';
+import { type BasicStoreEntityIngestionRss, ENTITY_TYPE_INGESTION_RSS } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';

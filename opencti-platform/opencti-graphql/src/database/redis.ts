@@ -1,5 +1,5 @@
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import Redis, { Cluster, RedisOptions } from 'ioredis';
+import Redis, { Cluster, type RedisOptions } from 'ioredis';
 import Redlock from 'redlock';
 import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -26,7 +26,8 @@ import type {
   CreateEventOpts,
   DeleteEvent,
   EventOpts,
-  MergeEvent, SseEvent,
+  MergeEvent,
+  SseEvent,
   StreamDataEvent,
   UpdateEvent,
   UpdateEventOpts

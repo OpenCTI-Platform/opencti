@@ -1,5 +1,5 @@
 import { batchListThroughGetFrom, batchListThroughGetTo, createEntity } from '../../database/middleware';
-import { EntityOptions, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../schema/stixDomainObject';
@@ -7,7 +7,7 @@ import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
+import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { OrganizationAddInput } from '../../generated/graphql';
 

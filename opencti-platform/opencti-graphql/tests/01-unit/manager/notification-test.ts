@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isTimeTrigger, ResolvedDigest } from '../../../src/manager/notificationManager';
+import { isTimeTrigger, type ResolvedDigest } from '../../../src/manager/notificationManager';
 import { utcDate } from '../../../src/utils/format';
 
 const digest = (period: 'hour' | 'day' | 'week' | 'month', triggerTime = ''): ResolvedDigest => {

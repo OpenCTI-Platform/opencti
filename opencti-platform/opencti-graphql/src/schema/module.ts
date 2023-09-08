@@ -19,7 +19,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
 } from './general';
 import { UnsupportedError } from '../config/errors';
-import { AttributeDefinition, iAliasedIds, standardId } from './attribute-definition';
+import { type AttributeDefinition, iAliasedIds, standardId } from './attribute-definition';
 import { depsKeysRegister, schemaAttributesDefinition } from './schema-attributes';
 import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 import type { ValidatorFn } from './validator-register';

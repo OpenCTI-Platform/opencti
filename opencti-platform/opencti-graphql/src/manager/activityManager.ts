@@ -13,13 +13,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import {
   ACTIVITY_STREAM_NAME,
   createStreamProcessor,
   lockResource,
   storeNotificationEvent,
-  StreamProcessor
+  type StreamProcessor
 } from '../database/redis';
 import conf, { ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
@@ -31,7 +31,8 @@ import { listEntities } from '../database/middleware-loader';
 import {
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_HISTORY,
-  ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_USER,
 } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import { OrderingMode } from '../generated/graphql';
@@ -41,12 +42,7 @@ import { BASE_TYPE_ENTITY } from '../schema/general';
 import { elIndexElements } from '../database/engine';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
-import type {
-  ActivityNotificationEvent,
-  NotificationUser,
-  ResolvedLive,
-  ResolvedTrigger
-} from './notificationManager';
+import type { ActivityNotificationEvent, NotificationUser, ResolvedLive, ResolvedTrigger } from './notificationManager';
 import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications } from './notificationManager';
 import { convertFiltersFrontendFormat } from '../utils/filtering';
 import type { BasicStoreEntityLiveTrigger } from '../modules/notification/notification-types';
@@ -55,7 +51,7 @@ const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
 
 export const isLiveActivity = (n: ResolvedTrigger): n is ResolvedLive => n.trigger.trigger_type === 'live'
-    && n.trigger.trigger_scope === 'activity';
+  && n.trigger.trigger_scope === 'activity';
 
 export const getLiveActivityNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
   const liveNotifications = await getNotifications(context);

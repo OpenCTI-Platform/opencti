@@ -2,7 +2,7 @@ import languageTypeDefs from './language.graphql';
 import convertLanguageToStix from './language-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import languageResolvers from './language-resolver';
-import { ENTITY_TYPE_LANGUAGE, StixLanguage, StoreEntityLanguage } from './language-types';
+import { ENTITY_TYPE_LANGUAGE, type StixLanguage, type StoreEntityLanguage } from './language-types';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';

@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_INGESTION_RSS, StixIngestionRss, StoreEntityIngestionRss } from './ingestion-types';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import { ENTITY_TYPE_INGESTION_RSS, type StixIngestionRss, type StoreEntityIngestionRss } from './ingestion-types';
 import { convertIngestionRssToStix } from './ingestion-converter';
 import ingestionTypeDefs from './ingestion-rss.graphql';
 import ingestionRssResolvers from './ingestion-rss-resolver';

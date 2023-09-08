@@ -1,14 +1,13 @@
-import { EntityOptions, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { BasicStoreEntityCaseTemplate, ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';
+import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import {
+  type BasicStoreEntityCaseTemplate,
+  ENTITY_TYPE_CASE_TEMPLATE,
+  TEMPLATE_TASK_RELATION
+} from './case-template-types';
 import type { CaseTemplateAddInput, EditInput, StixRefRelationshipAddInput } from '../../../generated/graphql';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  deleteElementById,
-  updateAttribute
-} from '../../../database/middleware';
+import { batchListThroughGetTo, createEntity, deleteElementById, updateAttribute } from '../../../database/middleware';
 import { notify } from '../../../database/redis';
 import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';

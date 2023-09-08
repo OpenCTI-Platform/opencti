@@ -21,7 +21,7 @@ import {
   ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
 import channelResolvers from './channel-resolver';
-import { ENTITY_TYPE_CHANNEL, StixChannel, StoreEntityChannel } from './channel-types';
+import { ENTITY_TYPE_CHANNEL, type StixChannel, type StoreEntityChannel } from './channel-types';
 import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
@@ -68,7 +68,8 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
     { name: 'channel_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Channel types' },
   ],
   relations: [
-    { name: RELATION_TARGETS,
+    {
+      name: RELATION_TARGETS,
       targets: [
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
@@ -78,8 +79,10 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
         { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_EXTENDED },
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_EXTENDED },
         { name: ENTITY_TYPE_EVENT, type: REL_EXTENDED },
-      ] },
-    { name: RELATION_USES,
+      ]
+    },
+    {
+      name: RELATION_USES,
       targets: [
         { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_EXTENDED },
         { name: ENTITY_TYPE_LANGUAGE, type: REL_EXTENDED },
@@ -87,8 +90,10 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_EXTENDED },
         { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
         { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
-      ] },
-    { name: RELATION_PUBLISHES,
+      ]
+    },
+    {
+      name: RELATION_PUBLISHES,
       targets: [
         { name: ENTITY_HASHED_OBSERVABLE_STIX_FILE, type: REL_NEW },
         { name: ENTITY_URL, type: REL_NEW },
@@ -96,17 +101,22 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
         { name: ENTITY_DOMAIN_NAME, type: REL_NEW },
         { name: ENTITY_HOSTNAME, type: REL_NEW },
         { name: ENTITY_MEDIA_CONTENT, type: REL_NEW },
-      ] },
-    { name: RELATION_AMPLIFIES,
+      ]
+    },
+    {
+      name: RELATION_AMPLIFIES,
       targets: [
         { name: ENTITY_TYPE_CHANNEL, type: REL_NEW },
-      ] },
-    { name: RELATION_BELONGS_TO,
+      ]
+    },
+    {
+      name: RELATION_BELONGS_TO,
       targets: [
         { name: ENTITY_USER_ACCOUNT, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
-      ] }
+      ]
+    }
   ],
   relationsRefs: [
     objectOrganization

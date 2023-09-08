@@ -8,7 +8,7 @@ import type { EditInput, QueryEntitySettingsArgs } from '../../generated/graphql
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
-import { defaultEntitySetting, getAvailableSettings, typeAvailableSetting } from './entitySetting-utils';
+import { defaultEntitySetting, getAvailableSettings, type typeAvailableSetting } from './entitySetting-utils';
 import { queryDefaultSubTypes } from '../../domain/subType';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { telemetry } from '../../config/tracing';

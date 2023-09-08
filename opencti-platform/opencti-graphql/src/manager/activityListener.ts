@@ -15,11 +15,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import LRU from 'lru-cache';
 import {
-  ActionHandler,
-  ActionListener,
+  type ActionHandler,
+  type ActionListener,
   registerUserActionListener,
-  UserAction,
-  UserReadAction,
+  type UserAction,
+  type UserReadAction,
 } from '../listener/UserActionListener';
 import conf, { logAudit } from '../config/conf';
 import { isEmptyField } from '../database/utils';

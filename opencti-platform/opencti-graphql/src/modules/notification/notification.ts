@@ -4,9 +4,11 @@ import { convertNotificationToStix, convertTriggerToStix } from './notification-
 import notificationResolvers from './notification-resolver';
 import {
   ENTITY_TYPE_NOTIFICATION,
-  ENTITY_TYPE_TRIGGER, StixNotification, StixTrigger,
-  StoreEntityNotification,
-  StoreEntityTrigger
+  ENTITY_TYPE_TRIGGER,
+  type StixNotification,
+  type StixTrigger,
+  type StoreEntityNotification,
+  type StoreEntityTrigger
 } from './notification-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';

@@ -28,13 +28,13 @@ import {
   storeLoadById,
 } from '../../database/middleware-loader';
 import {
-  BasicStoreEntityLiveTrigger,
-  BasicStoreEntityNotification,
-  BasicStoreEntityTrigger,
+  type BasicStoreEntityLiveTrigger,
+  type BasicStoreEntityNotification,
+  type BasicStoreEntityTrigger,
   ENTITY_TYPE_NOTIFICATION,
   ENTITY_TYPE_TRIGGER,
   NOTIFICATION_NUMBER,
-  NotificationAddInput
+  type NotificationAddInput
 } from './notification-types';
 import { now } from '../../utils/format';
 import { elCount, elFindByIds } from '../../database/engine';
@@ -44,7 +44,7 @@ import { ENTITY_FILTERS } from '../../utils/filtering';
 import type { BasicStoreEntity, BasicStoreObject, InternalEditInput } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
-  AuthorizedMember,
+  type AuthorizedMember,
   getUserAccessRight,
   isUserHasCapability,
   MEMBER_ACCESS_RIGHT_ADMIN,

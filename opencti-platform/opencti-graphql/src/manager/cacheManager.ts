@@ -7,10 +7,10 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { OrderingMode } from '../generated/graphql';
 import { extractFilterIdsToResolve } from '../utils/filtering';
-import { BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
+import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { stixLoadByIds } from '../database/middleware';
-import { EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
+import { type EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
 import { resolveUserById } from '../domain/user';
@@ -18,7 +18,13 @@ import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import {
-  ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_USER
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_RULE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_STATUS_TEMPLATE,
+  ENTITY_TYPE_STREAM_COLLECTION,
+  ENTITY_TYPE_USER
 } from '../schema/internalObject';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -26,7 +32,13 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type {
-  BasicStoreRelation, BasicStreamEntity, BasicTriggerEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity, StoreEntity, StoreRelation,
+  BasicStoreRelation,
+  BasicStreamEntity,
+  BasicTriggerEntity,
+  BasicWorkflowStatusEntity,
+  BasicWorkflowTemplateEntity,
+  StoreEntity,
+  StoreRelation,
 } from '../types/store';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -34,7 +46,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
     const templates = await listAllEntities<BasicWorkflowTemplateEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { connectionFormat: false });
-    const args:EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: OrderingMode.Asc, connectionFormat: false };
+    const args: EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: OrderingMode.Asc, connectionFormat: false };
     const statuses = await listAllEntities<BasicWorkflowStatusEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS], args);
     return statuses.map((status) => {
       const template = templates.find((t) => t.internal_id === status.template_id);
@@ -174,7 +186,10 @@ const initCacheManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping cache manager');
       if (subscribeIdentifier) {
-        try { subscribeIdentifier.unsubscribe(); } catch { /* dont care */ }
+        try {
+          subscribeIdentifier.unsubscribe();
+        } catch { /* dont care */
+        }
       }
       return true;
     }

@@ -10,10 +10,11 @@ import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { computeAverage } from '../../database/utils';
 import { createRuleContent } from '../rules';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
-import { listAllRelations, RelationOptions } from '../../database/middleware-loader';
+import { listAllRelations, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_INDICATES, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import {
-  ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP

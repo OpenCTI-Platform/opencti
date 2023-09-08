@@ -3,7 +3,14 @@ import { isEmptyField } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
 import type { MemberAccess } from '../generated/graphql';
-import { AuthorizedMember, BYPASS, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER, validateUserAccessOperation } from './access';
+import {
+  type AuthorizedMember,
+  BYPASS,
+  MEMBER_ACCESS_ALL,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  SYSTEM_USER,
+  validateUserAccessOperation
+} from './access';
 import { findAllMembers, findById as findUser } from '../domain/user';
 import { findById as findGroup } from '../domain/group';
 import { findById as findOrganization } from '../modules/organization/organization-domain';

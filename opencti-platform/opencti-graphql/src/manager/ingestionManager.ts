@@ -9,7 +9,7 @@ import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { GetHttpClient, getHttpClient } from '../utils/http-client';
+import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
@@ -18,7 +18,10 @@ import { pushToSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
-import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
+import type {
+  BasicStoreEntityIngestionRss,
+  BasicStoreEntityIngestionTaxii
+} from '../modules/ingestion/ingestion-types';
 import type { Filter } from '../database/middleware-loader';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
@@ -45,10 +48,12 @@ const asArray = (data: unknown) => {
 
 // region Rss ingestion
 type Getter = (uri: string) => Promise<object>;
+
 interface RssElement {
   pubDate: string
   lastBuildDate: string
 }
+
 interface RssItem {
   title: string
   description: string
@@ -59,6 +64,7 @@ interface RssItem {
   pubDate: string
   lastBuildDate: string
 }
+
 const rssItemConvert = (turndownService: TurndownService, channel: RssElement, item: RssItem) => {
   const { pubDate } = channel;
   return {
@@ -70,7 +76,7 @@ const rssItemConvert = (turndownService: TurndownService, channel: RssElement, i
     pubDate: utcDate(item.pubDate ?? pubDate),
   };
 };
-const rssHttpGetter = () : Getter => {
+const rssHttpGetter = (): Getter => {
   const httpClient = getHttpClient({ responseType: 'text' });
   return async (uri: string) => {
     const { data } = await httpClient.get(uri);
@@ -141,8 +147,12 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
 // endregion
 
 // region Taxii ingestion
-interface TaxiiResponseData { data: { more: boolean, next: string, objects: object[] }, addedLast: string | undefined | null }
-const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii) : Promise<TaxiiResponseData> => {
+interface TaxiiResponseData {
+  data: { more: boolean, next: string, objects: object[] },
+  addedLast: string | undefined | null
+}
+
+const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {
   const headers = new AxiosHeaders();
   headers.Accept = 'application/taxii+json;version=2.1';
   if (ingestion.authentication_type === 'basic') {

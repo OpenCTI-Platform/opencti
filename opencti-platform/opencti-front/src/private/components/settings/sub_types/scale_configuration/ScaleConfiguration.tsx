@@ -4,22 +4,10 @@ import * as Yup from 'yup';
 import { FormikErrors, FormikValues } from 'formik';
 import { clone } from 'ramda';
 import { Add } from '@mui/icons-material';
-import {
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Typography,
-} from '@mui/material';
+import { FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Typography } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
 import { Theme } from '../../../../../components/Theme';
-import {
-  allScales,
-  customScaleName,
-  findSelectedScaleName,
-} from '../../../../../utils/hooks/useScale';
+import { allScales, customScaleName, findSelectedScaleName } from '../../../../../utils/hooks/useScale';
 import { ScaleConfig, Tick, UndefinedTick } from './scale';
 import ScaleConfigurationLine from './ScaleConfigurationLine';
 import ScaleBar from './ScaleBar';
@@ -107,8 +95,8 @@ const isTickDefinitionValid = (
   tickDefinition.ticks.forEach((tick) => {
     if (
       !tick.value
-      || tick.value < tickDefinition.min.value
-      || tick.value > tickDefinition.max.value
+      || Number(tick.value) < tickDefinition.min.value
+      || Number(tick.value) > tickDefinition.max.value
     ) {
       setErrors({
         [fieldName]:
@@ -238,7 +226,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               })}
             </Select>
           </FormControl>
-          <ScaleBar scale={tickDefinition} />
+          <ScaleBar scale={tickDefinition}/>
           <Typography variant="h4">{t('Customize scale')}</Typography>
           <Typography variant="h3" gutterBottom={true}>
             {t('Limits')}
@@ -288,7 +276,7 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               size="large"
               classes={{ root: classes.createButton }}
             >
-              <Add fontSize="small" />
+              <Add fontSize="small"/>
             </IconButton>
           </div>
           {tickDefinition.ticks.map((tick, index) => (

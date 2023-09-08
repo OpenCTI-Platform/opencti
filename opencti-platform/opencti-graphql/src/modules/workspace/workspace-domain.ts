@@ -10,7 +10,7 @@ import {
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
-import { BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from './workspace-types';
+import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import { FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {

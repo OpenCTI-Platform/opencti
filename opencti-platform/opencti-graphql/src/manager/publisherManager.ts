@@ -1,17 +1,26 @@
 import axios from 'axios';
 import ejs from 'ejs';
 import * as R from 'ramda';
-import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { createStreamProcessor, lockResource, NOTIFICATION_STREAM_NAME, StreamProcessor } from '../database/redis';
+import { createStreamProcessor, lockResource, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { sendMail, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
 import { addNotification } from '../modules/notification/notification-domain';
 import type { BasicStoreEntityTrigger, NotificationContentEvent } from '../modules/notification/notification-types';
-import { NOTIFIER_CONNECTOR_EMAIL, NOTIFIER_CONNECTOR_EMAIL_INTERFACE, NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL, NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE, NOTIFIER_CONNECTOR_UI, NOTIFIER_CONNECTOR_WEBHOOK, NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE, SIMPLIFIED_EMAIL_TEMPLATE, } from '../modules/notifier/notifier-statics';
-import { BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
+import {
+  NOTIFIER_CONNECTOR_EMAIL,
+  type NOTIFIER_CONNECTOR_EMAIL_INTERFACE,
+  NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL,
+  type NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE,
+  NOTIFIER_CONNECTOR_UI,
+  NOTIFIER_CONNECTOR_WEBHOOK,
+  type NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE,
+  SIMPLIFIED_EMAIL_TEMPLATE,
+} from '../modules/notifier/notifier-statics';
+import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { SseEvent, StreamNotifEvent } from '../types/event';
 import type { BasicStoreSettings } from '../types/settings';
@@ -19,7 +28,13 @@ import type { AuthContext } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
-import { ActivityNotificationEvent, DigestEvent, getNotifications, KnowledgeNotificationEvent, NotificationUser, } from './notificationManager';
+import {
+  type ActivityNotificationEvent,
+  type DigestEvent,
+  getNotifications,
+  type KnowledgeNotificationEvent,
+  type NotificationUser,
+} from './notificationManager';
 
 const DOC_URI = 'https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -33,7 +48,7 @@ export const internalProcessNotification = async (
   notifier: BasicStoreEntityNotifier | NotifierTestInput,
   data: NotificationData[],
   notification: BasicStoreEntityTrigger,
-// eslint-disable-next-line consistent-return
+  // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
     const { name: notification_name, trigger_type } = notification;

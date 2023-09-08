@@ -4,8 +4,11 @@ import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../dat
 import { notify } from '../../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { BasicStoreEntityCase, ENTITY_TYPE_CONTAINER_CASE, } from './case-types';
-import { BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../task/task-template/task-template-types';
+import { type BasicStoreEntityCase, ENTITY_TYPE_CONTAINER_CASE, } from './case-types';
+import {
+  type BasicStoreEntityTaskTemplate,
+  ENTITY_TYPE_TASK_TEMPLATE
+} from '../task/task-template/task-template-types';
 import { TEMPLATE_TASK_RELATION } from './case-template/case-template-types';
 import { RELATION_OBJECT_MARKING, RELATION_OBJECT_PARTICIPANT } from '../../schema/stixRefRelationship';
 import { taskAdd } from '../task/task-domain';

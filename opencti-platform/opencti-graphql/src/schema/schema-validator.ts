@@ -10,6 +10,7 @@ import { getAttributesConfiguration } from '../modules/entitySetting/entitySetti
 import { externalReferences } from './stixRefRelationship';
 import { telemetry } from '../config/tracing';
 import type { AttributeDefinition } from './attribute-definition';
+import type { EditInput } from '../generated/graphql';
 
 const ajv = new Ajv();
 
@@ -153,7 +154,7 @@ export const validateInputUpdate = async (
   context: AuthContext,
   user: AuthUser,
   instanceType: string,
-  input: Array<unknown>,
+  input: Array<EditInput>,
   entitySetting: BasicStoreEntityEntitySetting,
   initial: Record<string, unknown>
 ) => {

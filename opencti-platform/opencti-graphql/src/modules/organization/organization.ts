@@ -1,4 +1,4 @@
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import type { StixOrganization, StoreEntityOrganization } from './organization-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
@@ -6,9 +6,19 @@ import organizationTypeDefs from './organization.graphql';
 import organizationResolvers from './organization-resolver';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { iAliasedIds, xOpenctiAliases, xOpenctiReliability } from '../../schema/attribute-definition';
-import { RELATION_LOCATED_AT, RELATION_PART_OF, RELATION_PUBLISHES, RELATION_USES } from '../../schema/stixCoreRelationship';
 import {
-  ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_TOOL
+  RELATION_LOCATED_AT,
+  RELATION_PART_OF,
+  RELATION_PUBLISHES,
+  RELATION_USES
+} from '../../schema/stixCoreRelationship';
+import {
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_LOCATION_REGION,
+  ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
 import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ENTITY_MEDIA_CONTENT } from '../../schema/stixCyberObservable';
@@ -51,13 +61,15 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     { name: 'default_hidden_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [
-    { name: RELATION_PART_OF,
+    {
+      name: RELATION_PART_OF,
       targets: [
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_NEW },
         { name: ENTITY_TYPE_IDENTITY_SECTOR, type: REL_NEW },
       ]
     },
-    { name: RELATION_LOCATED_AT,
+    {
+      name: RELATION_LOCATED_AT,
       targets: [
         { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_CITY, type: REL_BUILT_IN },
@@ -66,12 +78,14 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_BUILT_IN },
       ]
     },
-    { name: RELATION_USES,
+    {
+      name: RELATION_USES,
       targets: [
         { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
       ]
     },
-    { name: RELATION_PUBLISHES,
+    {
+      name: RELATION_PUBLISHES,
       targets: [
         { name: ENTITY_MEDIA_CONTENT, type: REL_NEW },
       ]

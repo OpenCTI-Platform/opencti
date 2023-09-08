@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import notificationTypeDefs from './notifier.graphql';
 import webhookResolvers from './notifier-resolver';
-import { ENTITY_TYPE_NOTIFIER, StixNotifier, StoreEntityNotifier } from './notifier-types';
+import { ENTITY_TYPE_NOTIFIER, type StixNotifier, type StoreEntityNotifier } from './notifier-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';

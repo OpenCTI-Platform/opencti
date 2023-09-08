@@ -10,7 +10,7 @@ import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { computeAverage } from '../../database/utils';
 import { createRuleContent } from '../rules';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
-import { listAllRelations, RelationOptions } from '../../database/middleware-loader';
+import { listAllRelations, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { RuleRuntime } from '../../types/rules';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';

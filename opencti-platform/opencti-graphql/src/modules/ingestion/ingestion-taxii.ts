@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { normalizeName } from '../../schema/identifier';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import {
   ENTITY_TYPE_INGESTION_TAXII,
-  StixIngestionTaxii,
-  StoreEntityIngestionTaxii
+  type StixIngestionTaxii,
+  type StoreEntityIngestionTaxii
 } from './ingestion-types';
 import { convertIngestionTaxiiToStix } from './ingestion-converter';
 import ingestionTypeDefs from './ingestion-taxii.graphql';

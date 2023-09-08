@@ -1,4 +1,4 @@
-import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { v4 as uuid } from 'uuid';
 import conf, { logApp } from '../config/conf';
 import historyManager from './historyManager';
