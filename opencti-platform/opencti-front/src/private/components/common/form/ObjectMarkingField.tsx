@@ -2,12 +2,19 @@ import React, { useState, FunctionComponent } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { useFormatter } from '../../../../components/i18n';
-import { RenderOption } from '../../../../components/list_lines';
-import { Option } from './ReferenceField';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import useAuth from '../../../../utils/hooks/useAuth';
-import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
+import Transition from '../../../../components/Transition';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { RenderOption } from '../../../../components/list_lines';
+import { useFormatter } from '../../../../components/i18n';
+import { convertMarking } from '../../../../utils/edition';
+import { Option } from './ReferenceField';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -37,30 +44,14 @@ export const objectMarkingFieldAllowedMarkingsQuery = graphql`
     }
 `;
 
-interface MarkingDefinitionProps {
-  id: string;
-  definition: string;
-  definition_type: string;
-  entity_type: string;
-  standard_id: string;
-  x_opencti_color: string;
-  x_opencti_order: number;
-}
-
-interface MarkingDefinition {
-  label: string;
-  value: string;
-  color: string;
-  entity: MarkingDefinitionProps;
-}
 interface ObjectMarkingFieldProps {
   name: string;
   style?: React.CSSProperties;
-  onChange?: (name: string, value: Option[]) => void;
+  onChange: (name: string, values: Option[]) => void;
   helpertext?: unknown;
   disabled?: boolean;
-  label: string;
-  defaultMarkingDefinitions?: MarkingDefinitionProps[];
+  label?: string;
+  setFieldValue?: (name: string, values: Option[]) => void
 }
 
 const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
@@ -70,34 +61,39 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   helpertext,
   disabled,
   label,
-  defaultMarkingDefinitions,
+  setFieldValue,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const [markingDefinitions, setMarkingDefinitions] = useState<MarkingDefinition[]>(defaultMarkingDefinitions ? defaultMarkingDefinitions.map((m : MarkingDefinitionProps) => ({
-    label: m.definition,
-    value: m.id,
-    color: m.x_opencti_color,
-    entity: m,
-  })) : []);
+  const [newMarking, setNewMarking] = useState<Option[] | undefined>(undefined);
 
   const { me } = useAuth();
-  const searchMarkingDefinitions = () => {
-    const allowedMarkingDefinitions : any[] = me.allowed_marking ? me.allowed_marking.map((m) => ({
-      label: m.definition,
-      value: m.id,
-      color: m.x_opencti_color,
-      entity: m,
-    })) : [];
-    setMarkingDefinitions(allowedMarkingDefinitions);
-  };
+  const allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
 
-  const optionSorted = markingDefinitions.sort((a, b) => {
+  const optionSorted = allowedMarkingDefinitions.sort((a, b) => {
     if (a.entity.definition_type === b.entity.definition_type) {
       return (a.entity.x_opencti_order < b.entity.x_opencti_order ? -1 : 1);
     } return (a.entity.definition_type < b.entity.definition_type ? -1 : 1);
   });
+  const handleClose = () => {
+    setNewMarking(undefined);
+  };
+  const handleCancellation = () => {
+    newMarking?.pop();
+    setFieldValue?.(name, newMarking as Option[]);
+    setNewMarking(undefined);
+  };
+  const submitUpdate = () => {
+    onChange(name, newMarking as Option[]);
+    handleClose();
+  };
+  const handleOnChange = (n: string, values: Option[]) => {
+    const valueAdded = values.filter((m) => values.find((item) => item.definition_type === m.definition_type && item.x_opencti_order !== m.x_opencti_order));
+
+    if (valueAdded.length) {
+      setNewMarking([...values]);
+    } else onChange(name, values);
+  };
 
   const renderOption: RenderOption = (props, option) => (
       <li {...props}>
@@ -109,6 +105,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   );
 
   return (
+      <>
         <Field
             component={AutocompleteField}
             style={style}
@@ -119,14 +116,37 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
               variant: 'standard',
               label: label ?? t('Markings'),
               helperText: helpertext,
-              onFocus: searchMarkingDefinitions,
             }}
             noOptionsText={t('No available options')}
             options={optionSorted}
-            onInputChange={searchMarkingDefinitions}
-            onChange={typeof onChange === 'function' ? onChange : null}
+            onChange={typeof onChange === 'function' ? handleOnChange : null}
             renderOption={renderOption}
         />
+         <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={!!newMarking}
+            keepMounted={true}
+            TransitionComponent={Transition}
+            onClose={handleClose}
+         >
+          <DialogContent>
+            <DialogContentText>
+              {t('You are about to change the marking with another rank.')}
+            </DialogContentText>
+              <DialogContentText>
+              {t('Are you sure you want to make the change?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+             <Button onClick={handleCancellation}>
+              {t('Cancel')}
+             </Button>
+             <Button color="secondary" onClick={submitUpdate}>
+              {t('Replace')}
+             </Button>
+          </DialogActions>
+         </Dialog>
+      </>
   );
 };
 
