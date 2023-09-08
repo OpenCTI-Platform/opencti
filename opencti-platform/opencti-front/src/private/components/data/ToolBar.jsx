@@ -80,6 +80,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
+import { stixCyberObservableTypes } from '../../../utils/hooks/useAttributes';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -1219,17 +1220,15 @@ class ToolBar extends Component {
         && notScannableTypes.includes(R.head(filters.entity_type).id));
     // endregion
     // region promote filters
-    const promotionTypes = ['Stix-Cyber-Observable', 'Indicator'];
-    const observablesFiltered = (filters?.entity_type ?? []).length === 1
-      && R.head(filters.entity_type).id === 'Stix-Cyber-Observable';
-    const isManualPromoteSelect = observablesFiltered
-      || (!selectAll
-        && selectedTypes.length === 1
-        && promotionTypes.includes(R.head(selectedTypes)));
-    const isAllPromoteSelect = selectAll
-      && (filters?.entity_type ?? []).length === 1
-      && promotionTypes.includes(R.head(filters.entity_type).id);
-    const promoteDisable = !isManualPromoteSelect && !isAllPromoteSelect;
+    const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
+    const observablesFiltered = (filters?.entity_type ?? []).length > 0
+      && (filters.entity_type.map((f) => f.id)).every((id) => stixCyberObservableTypes.includes(id));
+    const promotionTypesFiltered = (filters?.entity_type ?? []).length > 0
+      && (filters.entity_type.map((f) => f.id)).every((id) => promotionTypes.includes(id));
+    const isManualPromoteSelect = !selectAll
+        && selectedTypes.length > 0
+        && selectedTypes.every((type) => promotionTypes.includes(type));
+    const promoteDisable = !isManualPromoteSelect && !promotionTypesFiltered;
     // endregion
     // region enrich
     const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
