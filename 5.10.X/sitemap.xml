@@ -2,387 +2,387 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.opencti.io/latest/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/enterprise/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/entities/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/introduction/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/merging/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/ontologies/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/parameters/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/policies/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/reasoning/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/retentions/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/segregation/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/sourcing/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/users/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/audit/configuration/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/audit/events/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/audit/overview/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/administration/audit/triggers/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/authentication/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/clustering/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/configuration/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/connectors/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/installation/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/integrations/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/overview/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/resources/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/rollover/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/troubleshooting/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/deployment/upgrade/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/development/api-usage/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/development/connectors/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/development/environment_ubuntu/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/development/environment_windows/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/development/platform/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/development/python/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/api/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/csv-feeds/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/data-intelligence/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/data-model/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/graph/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/security/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/streaming/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/taxii-feeds/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/reference/taxonomy/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/background-tasks/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/case-management/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/containers/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/dashboards/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/data-model/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/deduplication/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/enrichment/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-analysis/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-arsenal/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-cases/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-entities/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-events/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-locations/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-observations/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-techniques/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/exploring-threats/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/export-documents/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/export-structured/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/feeds/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/getting-started/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/import-automated/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/import-files/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/inferences/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/manual-creation/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/merging/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/nested/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/notifications/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/notifiers/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/overview/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/pivoting/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/reliability-confidence/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/search/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/workbench/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/latest/usage/workflows/</loc>
-         <lastmod>2023-08-29</lastmod>
+         <lastmod>2023-09-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

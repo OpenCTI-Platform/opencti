@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21+insiders-4.39.0">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.3">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.3a36e643.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.cac7c1ad.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ecc776e4.min.css">
@@ -102,7 +102,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#exploring-analysis" class="md-skip">
+        <a href="#exploring-analyses" class="md-skip">
           Skip to content
         </a>
       
@@ -1529,10 +1529,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#malware-analysis" class="md-nav__link">
+  <a href="#malware-analyses" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Malware Analysis
+        Malware Analyses
       
     </span>
   </a>
@@ -4048,10 +4048,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#malware-analysis" class="md-nav__link">
+  <a href="#malware-analyses" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Malware Analysis
+        Malware Analyses
       
     </span>
   </a>
@@ -4192,35 +4192,35 @@
   
 
 
-<h1 id="exploring-analysis">Exploring "Analysis"</h1>
-<p>When you click on "Analysis" in the left-side bar, you access all the "Analysis" tabs, visible on the top bar on the left. By default, the user directly access the "Reports" tab, but can navigate to the other tabs as well.</p>
-<p>From the <code>Analysis</code> section, users can access the following tabs:</p>
+<h1 id="exploring-analyses">Exploring "Analyses"</h1>
+<p>When you click on "Analyses" in the left-side bar, you see all the "Analyses" tabs, visible on the top bar on the left. By default, the user directly access the "Reports" tab, but can navigate to the other tabs as well.</p>
+<p>From the <code>Analyses</code> section, users can access the following tabs:</p>
 <ul>
 <li><code>Reports</code>: See Reports as a sort of containers to detail and structure what is contained on a specific report, either from a source or write by yourself. Think of it as an Intelligence Production in OpenCTI.</li>
 <li><code>Groupings</code>: Groupings are containers, like Reports, but do not represent an Intelligence Production. They regroup Objects sharing an explicit context. For example, a Grouping might represent a set of data that, in time, given sufficient analysis, would mature to convey an incident or threat report as Report container.</li>
-<li><code>Malware Analysis</code>: As define by STIX 2.1 standard, Malware Analysis captures the metadata and results of a particular static or dynamic analysis performed on a malware instance or family.</li>
+<li><code>Malware Analyses</code>: As define by STIX 2.1 standard, Malware Analyses captures the metadata and results of a particular static or dynamic analysis performed on a malware instance or family.</li>
 <li><code>Notes</code>: Through this tab, you can find all the Notes that have been written in the platform, for example to add some analyst's unstructured knowledge about an Object.</li>
 <li><code>External references</code>: Intelligence is never created from nothing. External references give user a way to link sources or reference documents to any Object in the platform.</li>
 </ul>
-<p><a class="glightbox" href="../assets/analysis-default-page.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Analysis Default page is Reports" src="../assets/analysis-default-page.png" /></a></p>
+<p><a class="glightbox" href="../assets/analysis-default-page.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Analyses Default page is Reports" src="../assets/analysis-default-page.png" /></a></p>
 <h2 id="reports">Reports</h2>
 <h3 id="general-presentation">General presentation</h3>
-<p>Reports are one of the central component of the platform. It is from a <code>Report</code> that knowledge is extracted and integrated in the platform for further navigation, analysis and exports. Always tying the information back to a report allows for the user to be able to identify the source of any piece of information in the platform at all time.</p>
+<p>Reports are one of the central component of the platform. It is from a <code>Report</code> that knowledge is extracted and integrated in the platform for further navigation, analyses and exports. Always tying the information back to a report allows for the user to be able to identify the source of any piece of information in the platform at all time.</p>
 <p>In the MITRE STIX 2.1 documentation, a <code>Report</code> is defined as such :</p>
 <blockquote>
 <p>Reports are collections of threat intelligence focused on one or more topics, such as a description of a threat actor, malware, or attack technique, including context and related details. They are used to group related threat intelligence together so that it can be published as a comprehensive cyber threat story.</p>
 </blockquote>
 <p>As a result, a <code>Report</code> object in OpenCTI is a set of attributes and metadata defining and describing a document outside the platform, which can be a threat intelligence report from a security reseearch team, a blog post, a press article a video, a conference extract, a MISP event, or any type of document and source.</p>
-<p>When clicking on the Reports tab at the top left, you access the list of all Reports you have access too, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes of reports.</p>
+<p>When clicking on the Reports tab at the top left, you see the list of all the Reports you have access to, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes of reports.</p>
 <h3 id="visualizing-knowledge-within-a-report">Visualizing Knowledge within a Report</h3>
 <p>When clicking on a Report, you land on the Overview tab. For a Report, the following tabs are accessible:</p>
 <ul>
-<li>Overview: as described <a href="../overview/">here</a>.</li>
-<li>Knowledge: a complex tab that regroups all the structured Knowledge contained in the report, accessible through different views (See below for a dive-in).</li>
-<li>Content: a tab to upload or creates outcomes document displaying the content of the Report (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format.</li>
+<li>Overview: as described <a href="../overview/#overview-section">here</a>.</li>
+<li>Knowledge: a complex tab that regroups all the structured Knowledge contained in the report, accessible through different views (See below for a dive-in). As described <a href="../overview/#knowledge-section">here</a>.</li>
+<li>Content: a tab to upload or creates outcomes document displaying the content of the Report (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format. As described <a href="../overview/#content-section">here</a>.</li>
 <li>Entities: A table containing all SDO (Stix Domain Objects) contained in the Report, with search and filters available. It also display if the SDO has been added directly or through <a href="../inferences/">inferences with the reasonging engine</a></li>
 <li>Observables: A table containing all SCO (Stix Cyber Observable) contained in the Report, with search and filters available. It also display if the SDO has been added directly or through <a href="../inferences/">inferences with the reasonging engine</a></li>
-<li>Data: as described <a href="../overview/">here</a>.</li>
+<li>Data: as described <a href="../overview/#data-section">here</a>.</li>
 </ul>
 <p>Exploring and modifying the structured Knowledge contained in a Report can be done through different lenses.</p>
 <h4 id="graph-view">Graph View</h4>
@@ -4254,45 +4254,45 @@ The view can be filtered and displayed relationships too.</p>
 <blockquote>
 <p>A Grouping object explicitly asserts that the referenced STIX Objects have a shared context, unlike a STIX Bundle (which explicitly conveys no context). A Grouping object should not be confused with an intelligence product, which should be conveyed via a STIX Report. A STIX Grouping object might represent a set of data that, in time, given sufficient analysis, would mature to convey an incident or threat report as a STIX Report object. For example, a Grouping could be used to characterize an ongoing investigation into a security event or incident. A Grouping object could also be used to assert that the referenced STIX Objects are related to an ongoing analysis process, such as when a threat analyst is collaborating with others in their trust community to examine a series of Campaigns and Indicators.</p>
 </blockquote>
-<p>When clicking on the Groupings tab at the top of the interface, you access the list of all Groupings you have access too, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes of the groupings.</p>
+<p>When clicking on the Groupings tab at the top of the interface, you see the list of all the Groupings you have access to, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes of the groupings.</p>
 <p>Clicking on a Grouping, you land on its Overview tab. For a Groupings, the following tabs are accessible:
-- Overview: as described <a href="../overview/">here</a>.
-- Knowledge: a complex tab that regroups all the structured Knowledge contained in the groupings, as for a Report, except for the Timeline view.
+- Overview: as described <a href="../overview/#overview-section">here</a>.
+- Knowledge: a complex tab that regroups all the structured Knowledge contained in the groupings, as for a Report, except for the Timeline view. As described <a href="../overview/#knowledge-section">here</a>.
 - Entities: A table containing all SDO (Stix Domain Objects) contained in the Grouping, with search and filters available. It also display if the SDO has been added directly or through <a href="../inferences/">inferences with the reasonging engine</a>
 - Observables: A table containing all SCO (Stix Cyber Observable) contained in the Grouping, with search and filters available. It also display if the SDO has been added directly or through <a href="../inferences/">inferences with the reasonging engine</a>
-- Data: as described <a href="../overview/">here</a>.</p>
-<h2 id="malware-analysis">Malware Analysis</h2>
+- Data: as described <a href="../overview/#data-section">here</a>.</p>
+<h2 id="malware-analyses">Malware Analyses</h2>
 <p>Malware analyses are an important part of the Cyber Threat Intelligence, allowing an precise understanding of what and how a malware really do on the host but also how and from where it receives its command and communicates its results.</p>
-<p>In OpenCTI, Malware Analyses can be created from enrichment connectors that will take an Observable as input and perform a scan on a online service platform to bring back results. As such, Malware Analysis can be done on File, Domain and URL.</p>
-<p>In the MITRE STIX 2.1 documentation, a <code>Malware Analysis</code> is defined as such :</p>
+<p>In OpenCTI, Malware Analyses can be created from enrichment connectors that will take an Observable as input and perform a scan on a online service platform to bring back results. As such, Malware Analyses can be done on File, Domain and URL.</p>
+<p>In the MITRE STIX 2.1 documentation, a <code>Malware Analyses</code> is defined as such :</p>
 <blockquote>
-<p>Malware Analysis captures the metadata and results of a particular static or dynamic analysis performed on a malware instance or family.</p>
+<p>Malware Analyses captures the metadata and results of a particular static or dynamic analysis performed on a malware instance or family.</p>
 </blockquote>
-<p>When clicking on the Malware Analysis tab at the top of the interface, you access the list of all Malware Analysis you have access too, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes of the Malware Analysis.</p>
-<p>Clicking on a Malware Analysis, you land on its Overview tab. The following tabs are accessible:
-- Overview: This view contains some additions from the common Overview <a href="../overview/">here</a>. You will find here details about how the analysis have been performed, what is the global result regarding the malicioussness of the analysed artifact and all the Observables that have been found during the analysis. 
-- Knowledge: If you Malware analysis is linked to other Objects that are not part of the analysis result, they will be displayed here.
-- Data: as described <a href="../overview/">here</a>.
-- History: as described <a href="../overview/">here</a>.</p>
-<p><a class="glightbox" href="../assets/malwareanalysis-overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Malware Analysis Overview" src="../assets/malwareanalysis-overview.png" /></a></p>
+<p>When clicking on the Malware Analyses tab at the top of the interface, you see the list of all the Malware Analyses you have access to, in respect with your <a href="../../administration/users/">allowed marking definitions</a>. You can then search and filter on some common and specific attributes of the Malware Analyses.</p>
+<p>Clicking on a Malware Analyses, you land on its Overview tab. The following tabs are accessible:
+- Overview: This view contains some additions from the common Overview <a href="../overview/#overview-section">here</a>. You will find here details about how the analysis have been performed, what is the global result regarding the malicioussness of the analysed artifact and all the Observables that have been found during the analysis. 
+- Knowledge: If you Malware analysis is linked to other Objects that are not part of the analysis result, they will be displayed here. As described <a href="../overview/#knowledge-section">here</a>.
+- Data: as described <a href="../overview/#data-section">here</a>.
+- History: as described <a href="../overview/#history-section">here</a>.</p>
+<p><a class="glightbox" href="../assets/malwareanalysis-overview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Malware Analyses Overview" src="../assets/malwareanalysis-overview.png" /></a></p>
 <h2 id="notes">Notes</h2>
-<p>Not every Knowledge can be structured. For allowing any users to share their insights about a specific Knowledge, they can create a Note for every Object and relationship in OpenCTI they can access to. All the Notes are listed within the Analysis menu for allowing global review of this unstructured addition to the global Knowledge.</p>
+<p>Not every Knowledge can be structured. For allowing any users to share their insights about a specific Knowledge, they can create a Note for every Object and relationship in OpenCTI they can access to. All the Notes are listed within the Analyses menu for allowing global review of this unstructured addition to the global Knowledge.</p>
 <p>In the MITRE STIX 2.1 documentation, a <code>Note</code> is defined as such :</p>
 <blockquote>
 <p>A Note is intended to convey informative text to provide further context and/or to provide additional analysis not contained in the STIX Objects, Marking Definition objects, or Language Content objects which the Note relates to. Notes can be created by anyone (not just the original object creator).</p>
 </blockquote>
 <p>Clicking on a Note, you land on its Overview tab. The following tabs are accessible:
-- Overview: as described <a href="../overview/">here</a>.
-- Data: as described <a href="../overview/">here</a>.
-- History: as described <a href="../overview/">here</a>.</p>
+- Overview: as described <a href="../overview/#overview-section">here</a>.
+- Data: as described <a href="../overview/#data-section">here</a>.
+- History: as described <a href="../overview/#history-section">here</a>.</p>
 <h2 id="external-references">External references</h2>
-<p>Intelligence is never created from nothing. External references give user a way to link sources or reference documents to any Object in the platform. All external references are listed within the Analysis menu for accessing directly sources of the structured Knowledge.</p>
+<p>Intelligence is never created from nothing. External references give user a way to link sources or reference documents to any Object in the platform. All external references are listed within the Analyses menu for accessing directly sources of the structured Knowledge.</p>
 <p>In the MITRE STIX 2.1 documentation, a <code>External references</code> is defined as such :</p>
 <blockquote>
 <p>External references are used to describe pointers to information represented outside of STIX. For example, a Malware object could use an external reference to indicate an ID for that malware in an external database or a report could use references to represent source material.</p>
 </blockquote>
 <p>Clicking on an External reference, you land on its Overview tab. The following tabs are accessible:
-- Overview: as described <a href="../overview/">here</a>.</p>
+- Overview: as described <a href="../overview/#overview-section">here</a>.</p>
 
   
     
@@ -4308,7 +4308,7 @@ The view can be filtered and displayed relationships too.</p>
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-07-24T16:05:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-07-24</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-09-08T12:32:09+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-09-08</span>
       </span>
     
     
@@ -4331,6 +4331,11 @@ The view can be filtered and displayed relationships too.</p>
             <a href="https://github.com/Jipegien" class="md-author" title="@Jipegien">
               
               <img src="https://avatars.githubusercontent.com/u/104078945?size=72" alt="Jipegien">
+            </a>
+          
+            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+              
+              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
             </a>
           
           
@@ -4489,7 +4494,7 @@ The view can be filtered and displayed relationships too.</p>
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.footer", "navigation.expand", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "search.highlight"], "search": "../../assets/javascripts/workers/search.6c7302c4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.7c5c0157.min.js"></script>
+      <script src="../../assets/javascripts/bundle.10c6cd24.min.js"></script>
       
         
           <script src="../../js/timeago.min.js"></script>

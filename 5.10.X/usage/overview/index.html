@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21+insiders-4.39.0">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.3">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.3a36e643.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.cac7c1ad.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ecc776e4.min.css">
@@ -1460,10 +1460,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#analysis" class="md-nav__link">
+  <a href="#content" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Analysis
+        Content
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analyses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analyses
       
     </span>
   </a>
@@ -4111,10 +4122,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#analysis" class="md-nav__link">
+  <a href="#content" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Analysis
+        Content
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analyses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analyses
       
     </span>
   </a>
@@ -4249,7 +4271,7 @@
 <p>When the user connects to the platform, the home page is the <code>Dashboard</code>. This <code>Dashboard</code> contains several visuals summarizing the types and quantity of data recently imported into the platform.</p>
 <div class="admonition note">
 <p class="admonition-title">Dashboard</p>
-<p>To get more information about the components of the default dashboard, you can consult the <a href="../getting-started/">Getting started</a>.</p>
+<p>To get more information about the components of the default dashboard, you can consult the <a href="../getting-started/#dashboard-section">Getting started</a>.</p>
 </div>
 <p>The left side panel allows the user to navigate through different windows and access different views and categories of knowledge.</p>
 <figure>
@@ -4259,7 +4281,7 @@
 <h3 id="the-hot-knowledge">The "hot knowledge"</h3>
 <p>The first part of the platform in the left menu is dedicated to what we call the "hot knowledge", which means this is the entities and relationships which are added on a daily basis in the platform and which generally require work / analysis from the users.</p>
 <ul>
-<li><code>Analysis</code>: all containers which convey relevant knowledge such as reports, groupings and malware analysis.</li>
+<li><code>Analyses</code>: all containers which convey relevant knowledge such as reports, groupings and malware analyses.</li>
 <li><code>Cases</code>: all types of case like incident responses, requests for information, for takedown, etc.</li>
 <li><code>Events</code>: all incidents &amp; alerts coming from operational systems as well as sightings.</li>
 <li><code>Observations</code>: all technical data in the platform such as observables, artifacts and indicators.</li>
@@ -4287,6 +4309,7 @@
 <figure>
 <p><a class="glightbox" href="../assets/top-menu.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Top menu of an entity" src="../assets/top-menu.png" /></a></p>
 </figure>
+<p><a id="overview-section"></a></p>
 <h3 id="overview_1">Overview</h3>
 <p>In the <code>Overview</code> tab on the entity, you will find all properties of the entity as well as the recent activities.</p>
 <p>First, you will find the <code>Details</code> section, where are displayed all properties specific to the type of entity you are looking at, an example below with a piece of malware:</p>
@@ -4296,15 +4319,16 @@
 <p>Below these two sections, you will find latest modifications in the Knowledge base related to the Entity:</p>
 <ul>
 <li><code>Latest created relationships</code>: display the latest relationships that have been created <u>from</u> or <u>to</u> this Entity. For example, latest Indicators of Compromise and associated Threat Actor of a Malware.</li>
-<li><code>latest containers about the object</code>: display all the Cases and Analysis that contains this Entity. For example, the latest Reports about a Malware.</li>
+<li><code>latest containers about the object</code>: display all the Cases and Analyses that contains this Entity. For example, the latest Reports about a Malware.</li>
 <li><code>External references</code>: display all the the external sources associated with the Entity. You will often find here links to external reports or webpages from where Entity's information came from.</li>
 <li><code>History</code>: display the latest chronological modifications of the Entity and its relationships that occured in the platform, in order to traceback any alteration.</li>
 </ul>
 <p><a class="glightbox" href="../assets/latest_additions.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Latest relations and containers" src="../assets/latest_additions.png" /></a>
 <a class="glightbox" href="../assets/ref_and_history.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="References and History" src="../assets/ref_and_history.png" /></a></p>
 <p>Last, all Notes written by users of the platform about this Entity are displayed in order to access unstructured analysis comments.</p>
+<p><a id="knowledge-section"></a></p>
 <h3 id="knowledge">Knowledge</h3>
-<p>In the <code>Knowledge</code> tab, which is the central part of the entity, you will find all the Knowledge related to the current entity. The <code>Knowledge</code> tab is different for Analysis (<code>Report</code>, <code>Groupings</code>) and Cases (<code>Incident response</code>, <code>Request for Information</code>, <code>Request for Takedown</code>) entities than for all the other entity types.</p>
+<p>In the <code>Knowledge</code> tab, which is the central part of the entity, you will find all the Knowledge related to the current entity. The <code>Knowledge</code> tab is different for Analyses (<code>Report</code>, <code>Groupings</code>) and Cases (<code>Incident response</code>, <code>Request for Information</code>, <code>Request for Takedown</code>) entities than for all the other entity types.</p>
 <ul>
 <li>The <code>Knowledge</code> tab of those entities (who represents Analyses or Cases that can contains a collection of Objects) is the place to integrate and link together entities. For more information on how to integrate information in OpenCTI using the knowledge tab of a report, please refer to the part <a href="../manual-creation/">Manual creation</a>.</li>
 <li><code>Knowledge</code> tabs of any other entity (that does not aim to contain a collection of Objects) gather all the entities which have been at some point linked to the entity the user is looking at (for instance, as shown in the following capture, the <code>Knowledge</code> tab of Intrusion set APT29) gives access to the list of all entities APT29 is attributed to, all victims the intrusion set has targeted, all its campaigns, TTPs, malwares etc. For entities to appear in theses tabs under <code>Knowledge</code>, they need to have been linked to the entity directly or have been computed with the inference engine (to come).</li>
@@ -4316,11 +4340,18 @@
 - The <code>relationship view</code>, which displays the various relationships between the indicators/observables linked to the entity and the entity itself.
 - The <code>contextual view</code>, which displays the indicators/observables contained in the cases and analyses that contain the entity.</p>
 <p><a class="glightbox" href="../assets/knowledge_focus_indicators_observable_views.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="The Knowledge Focus on Indicators and Observables views" src="../assets/knowledge_focus_indicators_observable_views.png" /></a></p>
-<h3 id="analysis">Analysis</h3>
-<p>The <code>Analysis</code> tab contains the list of all Analysis (<code>Report</code>, <code>Groupings</code>) and Cases (<code>Incident response</code>, <code>Request for Information</code>, <code>Request for Takedown</code>) in which the entity has been identified.</p>
+<p><a id="content-section"></a></p>
+<h3 id="content">Content</h3>
+<p>The <code>Content</code> tab allows for uploading and creating outcomes documents related to the content of the current entity (in PDF, text, HTML or markdown files). This specific tab enable to previzualize, manage and write deliverable associated with the entity. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc.</p>
+<p>The <code>Content</code> tab is available for a subset of entities: <code>Report</code>, <code>Incident</code>, <code>Incident response</code>, <code>Request for Information</code>, and <code>Request for Takedown</code>.</p>
+<p><a class="glightbox" href="../assets/entity-content-tab.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="The Content tab of an Incident" src="../assets/entity-content-tab.png" /></a></p>
+<p><a id="analyses-section"></a></p>
+<h3 id="analyses">Analyses</h3>
+<p>The <code>Analyses</code> tab contains the list of all Analyses (<code>Report</code>, <code>Groupings</code>) and Cases (<code>Incident response</code>, <code>Request for Information</code>, <code>Request for Takedown</code>) in which the entity has been identified.</p>
 <p><a class="glightbox" href="../assets/entity_analysis-tab.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Example of the list of reports in which the attack pattern &quot;data obfuscation&quot; has been identified." src="../assets/entity_analysis-tab.png" /></a></p>
 <p>By default, this tab display the list, but you can also display the content of all the listed Analyses on a graph, allowing you to explore all their Knowledge and have a glance of the context around the Entity.</p>
 <p><a class="glightbox" href="../assets/analyses-graphview.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Graph view of all the Knowledge contained in the listed analyses" src="../assets/analyses-graphview.png" /></a></p>
+<p><a id="data-section"></a></p>
 <h3 id="data">Data</h3>
 <p>The Data tab contains documents that are associated to the object and were either :</p>
 <ul>
@@ -4330,9 +4361,10 @@
 </ul>
 <p><a href="../workbench/">Analyst Workbench</a> can also be created from here. They will contain the entity by default.
 <a class="glightbox" href="../assets/entity-data-tab.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="The Data tab of a Threat Actor" src="../assets/entity-data-tab.png" /></a></p>
+<p><a id="history-section"></a></p>
 <h3 id="history">History</h3>
 <p>The <code>History</code> tab display the history of change of the Entity, update of attributes, creation of relations, ...</p>
-<p>Because of the volumes of information the history is written in a specific index by the history connector (<a href="https://www.notion.so/17503579a70c467ba02ec11350c593bf?pvs=21">https://www.notion.so/luatix/History-17503579a70c467ba02ec11350c593bf</a>) that consume the redis stream to rebuild the history for the UI.
+<p>Because of the volumes of information the history is written in a specific index that consume the redis stream to rebuild the history for the UI.
 <a class="glightbox" href="../assets/history.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="History tab of a Malware" src="../assets/history.png" /></a></p>
 <p>Less frequent tabs are the following:</p>
 <ul>
@@ -4356,7 +4388,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-08-26T14:15:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-08-26</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-09-08T12:32:09+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-09-08</span>
       </span>
     
     
@@ -4389,6 +4421,11 @@
             <a href="https://github.com/marieflorescontact" class="md-author" title="@marieflorescontact">
               
               <img src="https://avatars.githubusercontent.com/u/73853856?size=72" alt="marieflorescontact">
+            </a>
+          
+            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+              
+              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
             </a>
           
           
@@ -4547,7 +4584,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.footer", "navigation.expand", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "search.highlight"], "search": "../../assets/javascripts/workers/search.6c7302c4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.7c5c0157.min.js"></script>
+      <script src="../../assets/javascripts/bundle.10c6cd24.min.js"></script>
       
         
           <script src="../../js/timeago.min.js"></script>

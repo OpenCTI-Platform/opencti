@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21+insiders-4.39.0">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.3">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.3a36e643.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.cac7c1ad.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ecc776e4.min.css">
@@ -1981,6 +1981,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Case management
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1996,6 +2013,58 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-case-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Case management?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-manage-your-case-in-opencti" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to manage your Case in OpenCTI?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-example-a-suspicious-observable-is-sighted-by-a-defense-system-is-it-important" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use case example: A suspicious observable is sighted by a defense system. Is it important?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -3750,6 +3819,47 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-case-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Case management?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-manage-your-case-in-opencti" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to manage your Case in OpenCTI?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-case-example-a-suspicious-observable-is-sighted-by-a-defense-system-is-it-important" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use case example: A suspicious observable is sighted by a defense system. Is it important?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3844,12 +3954,32 @@
 
 
 <h1 id="case-management">Case management</h1>
-<div class="admonition tip">
-<p class="admonition-title">Under construction</p>
-<p>We are doing our best to complete this page. 
-If you want to participae, dont hesitate to join the <a href="https://community.filigran.io">Filigran Community on Slack</a> 
-or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/docs">Github doc repository</a>.</p>
-</div>
+<h2 id="why-case-management">Why Case management?</h2>
+<p>Compiling CTI data in one place, deduplicate and correlate to transform it into Intelligence is very important. <strong>But ultimately, you need to act based on this Intelligence</strong>. Some situations will need to be taken care of, like cybersecurity incidents, requests for information or requests for takedown. Some actions will then need to be traced, to be coordinated and oversaw. Some actions will include feedback and content delivery.</p>
+<p>OpenCTI includes <a href="../exploring-cases/">Cases</a> to allow organizations to manage situations and organize their team's work. Better, <strong>by doing Case management in OpenCTI, you handle your cases with all the context and Intelligence you need, at hand.</strong></p>
+<h2 id="how-to-manage-your-case-in-opencti">How to manage your Case in OpenCTI?</h2>
+<p>Multiple situations can be modelize in OpenCTI as a Case, either an Incident Response, a Request for Takedown or a Request for Information.</p>
+<p><a class="glightbox" href="../assets/cases-list.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Incident Responses' list" src="../assets/cases-list.png" /></a></p>
+<p>All Cases can contain any entities and relationships you need to represent the Intelligence context related to the situation. At the beginning of your case, you may find yourself with only some Observables sighted in a system. At the end, you may have Indicators, Threat Actor, impacted systems, attack patterns. All representing your findings, ready to be presented and exported as graph, pdf report, timeline, etc.</p>
+<p><a class="glightbox" href="../assets/cases-observables.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Incident Responses' list" src="../assets/cases-observables.png" /></a></p>
+<p>Some Cases may need some collaborative work and specific Tasks to be performed by people that have the skillset for. OpenCTI allows you to associate <code>Tasks</code> in your Cases and assign them to users in the platform. As some type of situation may need the same tasks to be done, it is also possible to pre-define lists of tasks to be applied on your case. You can define these lists by accessing the Settings/Taxonomies/Case templates panel. Then you just need to add it from the overview of your desire Case.</p>
+<p>Tip: A user can have a custom dashboard showing him all the tasks that have been assigned to him.</p>
+<p><a class="glightbox" href="../assets/case-applying-template.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Incident Responses' list" src="../assets/case-applying-template.png" /></a></p>
+<p>As with other objects in OpenCTI, you can also leverage the <code>Notes</code> to add some investigation and analysis related comments, helping you shaping up the content of your case with unstructured data and trace all the work that have been done.</p>
+<p>You can also use <code>Opinions</code> to collect how the Case has been handled, helping you to build Lessons Learned.</p>
+<p><a class="glightbox" href="../assets/case-opinion.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Incident Responses' list" src="../assets/case-opinion.png" /></a></p>
+<p>To trace the evolution of your Case and define specific resolution worflows, you can use the <code>Status</code> (that can be define in Settings/Taxonomies/Status templates).</p>
+<p>At the end of your Case, you will certainly want to report on what have been done. OpenCTI allows you to export the content of the Case in a simple but customizable PDF (currently in refactor). But of course, your company have its own documents' templates, right? With OpenCTI, you will be able to include some nice graphics in it. For example, a Matrix view of the attacker attack pattern or even a graph display of how things are connected. </p>
+<p>Also, we are currently working a more meaningfull Timeline view that will be possible to export too.</p>
+<h2 id="use-case-example-a-suspicious-observable-is-sighted-by-a-defense-system-is-it-important">Use case example: A suspicious observable is sighted by a defense system. Is it important?</h2>
+<ul>
+<li>Daily, your SIEM and EDR are feeded Indicators of Compromise from your OpenCTI instance. </li>
+<li>Today, your SIEM have sighted the domain name "bad.com" matching one of them. Its alert has been transfered to OpenCTI and have created a <code>Sighting</code> relationship between your System "SIEM permiter A" and the Observable "bad.com". </li>
+<li>You are alerted immediatly, because you have activated the inference rule creating a corresponding <code>Incident</code> in this situation, and you have created an alert based on new Incident that send you email <code>notification</code> and Teams message (webhook).</li>
+<li>In OpenCTI, you can clearly see the link between the alerting System, the sighted Observable and the corresponding Indicator. Better, you can also see all the context of the Indicator. It is linked to a notorious and recent phishing <code>campaign</code> targeting your activity <code>sector</code>. "bad.com" is clearly something to investigate ASAP.</li>
+<li>You quickly select all the context you have found, and add it to a new <code>Incident response</code>case. You position the priority to High, regarding the context, and the severity to Low, as you don't know yet if someone really interact with "bad.com"</li>
+<li>You also assign the case to one of your collegue, on duty for investigative work. To guide him, you also create a <code>Task</code> in your case for verifying if an actual interaction happened with "bad.com".</li>
+</ul>
 
   
     
@@ -3865,7 +3995,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-30T13:25:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-30</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-09-08T12:32:09+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-09-08</span>
       </span>
     
     
@@ -3888,6 +4018,16 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
             <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
               
               <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
+            </a>
+          
+            <a href="https://github.com/Jipegien" class="md-author" title="@Jipegien">
+              
+              <img src="https://avatars.githubusercontent.com/u/104078945?size=72" alt="Jipegien">
+            </a>
+          
+            <a href="https://github.com/Lhorus6" class="md-author" title="@Lhorus6">
+              
+              <img src="https://avatars.githubusercontent.com/u/70956706?size=72" alt="Lhorus6">
             </a>
           
           
@@ -4046,7 +4186,7 @@ or submit your pull request on the <a href="https://github.com/OpenCTI-Platform/
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.footer", "navigation.expand", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "search.highlight"], "search": "../../assets/javascripts/workers/search.6c7302c4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.7c5c0157.min.js"></script>
+      <script src="../../assets/javascripts/bundle.10c6cd24.min.js"></script>
       
         
           <script src="../../js/timeago.min.js"></script>
