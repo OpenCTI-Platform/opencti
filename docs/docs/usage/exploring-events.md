@@ -31,7 +31,7 @@ When clicking on an `Incident` in the list, you land on its Overview tab. For an
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
 
-![Incident Overview](assets/incident_overview.png)
+![Incident Overview](assets/Incident_overview.png)
 
 ## Sightings
 
