@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import {
   buildPagination,
   offsetToCursor,
-  READ_DATA_INDICES,
+  READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED,
   READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
 } from './utils';
@@ -401,7 +401,7 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
   if (!aggregation) {
     throw FunctionalError(`filter ${filter} is not supported as an aggregation.`);
   }
-  const aggregationsList = await elAggregationsList(context, user, READ_ENTITIES_INDICES, [aggregation], args);
+  const aggregationsList = await elAggregationsList(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, [aggregation], args);
   const values = aggregationsList.find((agg) => agg.name === filter)?.values ?? [];
   const nodeElements = values
     .sort((a: { value: string, label: string }, b: { value: string, label: string }) => a.label.localeCompare(b.label))
