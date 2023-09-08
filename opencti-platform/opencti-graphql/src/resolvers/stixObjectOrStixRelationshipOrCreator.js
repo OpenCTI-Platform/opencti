@@ -6,7 +6,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { stixObjectOrStixRelationshipOptions } from '../schema/stixObjectOrStixRelationship';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
-import { extractRepresentative } from "../database/entity-representative";
+import { extractRepresentative } from '../database/entity-representative';
 
 const stixObjectOrStixRelationshipOrCreatorResolvers = {
   StixObject: {
