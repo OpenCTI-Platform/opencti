@@ -1,11 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -27,69 +23,19 @@ import { insertNode } from '../../../../utils/store';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  GroupingCreationMutation,
-  GroupingCreationMutation$variables,
-} from './__generated__/GroupingCreationMutation.graphql';
+import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
 import { GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
   },
 }));
 
@@ -128,8 +74,7 @@ interface GroupingFormProps {
     key: string,
     response: { id: string; name: string } | null
   ) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
+  onClose?: () => void;
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
@@ -138,8 +83,7 @@ interface GroupingFormProps {
 
 export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   updater,
-  onReset,
-  onCompleted,
+  onClose,
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
@@ -192,8 +136,8 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        if (onCompleted) {
-          onCompleted();
+        if (onClose) {
+          onClose();
         }
         if (mapAfter) {
           history.push(
@@ -222,7 +166,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       initialValues={initialValues}
       validationSchema={groupingValidator}
       onSubmit={onSubmit}
-      onReset={onReset}
+      onReset={onClose}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -338,51 +282,15 @@ const GroupingCreation = ({
 }: {
   paginationOptions: GroupingsLinesPaginationQuery$variables;
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-  const onReset = () => setOpen(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
-    <div>
-      <Fab
-        onClick={() => setOpen(true)}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={() => setOpen(false)}
-        disableEnforceFocus={true}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={() => setOpen(false)}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a grouping')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <GroupingCreationForm
-            updater={updater}
-            onCompleted={onReset}
-            onReset={onReset}
-          />
-        </div>
-      </Drawer>
-    </div>
+    <Drawer
+      title={t('Create a grouping')}
+      variant={DrawerVariant.create}
+    >
+      <GroupingCreationForm updater={updater} />
+    </Drawer>
   );
 };
 

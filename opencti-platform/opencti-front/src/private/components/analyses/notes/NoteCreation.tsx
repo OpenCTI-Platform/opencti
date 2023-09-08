@@ -2,15 +2,13 @@ import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
-import Drawer from '@mui/material/Drawer';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -39,26 +37,11 @@ import { NoteCreationMutation$variables } from './__generated__/NoteCreationMuta
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButtonContextual: {
     position: 'fixed',
     bottom: 30,
     right: 30,
     zIndex: 2000,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
   },
   buttons: {
     marginTop: 20,
@@ -66,24 +49,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -138,8 +103,7 @@ interface NoteCreationProps {
 
 interface NoteFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
+  onClose?: () => void;
   inputValue?: string;
   defaultCreatedBy?: Option;
   defaultMarkingDefinitions?: Option[];
@@ -150,9 +114,8 @@ export const NOTE_TYPE = 'Note';
 
 export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   updater,
-  onReset,
+  onClose,
   inputValue,
-  onCompleted,
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
@@ -212,8 +175,8 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        if (onCompleted) {
-          onCompleted();
+        if (onClose) {
+          onClose();
         }
       },
     });
@@ -238,7 +201,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       initialValues={initialValues}
       validationSchema={noteValidator}
       onSubmit={onSubmit}
-      onReset={onReset}
+      onReset={onClose}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -357,45 +320,12 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   };
   const renderClassic = () => {
     return (
-      <div>
-        <Fab
-          onClick={() => setOpen(true)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={() => setOpen(false)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={() => setOpen(false)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a note')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <NoteCreationForm
-              inputValue={inputValue}
-              updater={updater}
-              onCompleted={() => setOpen(false)}
-              onReset={() => setOpen(false)}
-            />
-          </div>
-        </Drawer>
-      </div>
+      <Drawer
+        title={t('Create a note')}
+        variant={DrawerVariant.create}
+      >
+        <NoteCreationForm inputValue={inputValue} updater={updater} />
+      </Drawer>
     );
   };
   const renderContextual = () => {
@@ -419,8 +349,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
             <NoteCreationForm
               inputValue={inputValue}
               updater={updater}
-              onCompleted={() => setOpen(false)}
-              onReset={() => setOpen(false)}
+              onClose={() => setOpen(false)}
             />
           </DialogContent>
         </Dialog>
