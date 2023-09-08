@@ -19,7 +19,7 @@ Beware, groups of attackers might be modelized as "Intrusion sets" in feeds, as 
 
 ![The Threat actor (Group) cards](assets/cards-threat-group.png)
 
-When clicking on the Threat actor (Group or Individual) tabs at the top left, you access the list of all the groups of Threat actors or INdivudual Threat actors you have access too, in respect with your [allowed marking definitions](../administration/users.md). These groups or individual are displayed as **Cards** where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares they used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Threat actors.
+When clicking on the Threat actor (Group or Individual) tabs at the top left, you see the list of all the groups of Threat actors or Indivudual Threat actors you have access to, in respect with your [allowed marking definitions](../administration/users.md). These groups or individual are displayed as **Cards** where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares they used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Threat actors.
 
 At the top right of each Card, you can click the star icon to put it as favorite. It will pin the card on top of the list. You will also be able to display all your favorite easily in your [Custom Dashboards](dashboards.md).
 
@@ -27,11 +27,11 @@ At the top right of each Card, you can click the star icon to put it as favorite
 
 When clicking on a Threat actor Card, you land on its Overview tab. For a Threat actor, the following tabs are accessible:
 
-- Overview: as described [here](overview.md).
-- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Threat actor. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Threat actor, etc. 
-- Analyses: as described [here](overview.md).
-- Data: as described [here](overview.md).
-- History: as described [here](overview.md).
+- Overview: as described [here](overview.md#overview-section).
+- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Threat actor. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Threat actor, etc. As described [here](overview.md#knowledge-section).
+- Analyses: as described [here](overview.md#analyses-section).
+- Data: as described [here](overview.md#data-section).
+- History: as described [here](overview.md#history-section).
 
 ## Intrusion Sets
 
@@ -47,7 +47,7 @@ As OpenCTI is very customizable, each organization or individual may use these c
 
 ![Intrusion set Cards](assets/instrusion-set-cards.png)
 
-When clicking on the Intrusion set tab on the top left, you access the list of all the Intrusion sets you have access too, in respect with your [allowed marking definitions](../administration/users.md). These intrusion sets are displayed as **Cards** where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares they used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Intrusion set.
+When clicking on the Intrusion set tab on the top left, you see the list of all the Intrusion sets you have access to, in respect with your [allowed marking definitions](../administration/users.md). These intrusion sets are displayed as **Cards** where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares they used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Intrusion set.
 
 At the top right of each Card, you can click the star icon to put it as favorite. It will pin the card on top of the list. You will also be able to display all your favorite easily in your [Custom Dashboards](dashboards.md).
 
@@ -55,11 +55,11 @@ At the top right of each Card, you can click the star icon to put it as favorite
 
 When clicking on an Intrusion set Card, you land on its Overview tab. The following tabs are accessible:
 
-- Overview: as described [here](overview.md).
-- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Intrusion Set. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Intrusion Set, etc. 
-- Analyses: as described [here](overview.md).
-- Data: as described [here](overview.md).
-- History: as described [here](overview.md).
+- Overview: as described [here](overview.md#overview-section).
+- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Intrusion Set. Different thematic views are proposed to easily see the victimology, arsenal and techniques used by the Intrusion Set, etc. As described [here](overview.md#knowledge-section).
+- Analyses: as described [here](overview.md#analyses-section).
+- Data: as described [here](overview.md#data-section).
+- History: as described [here](overview.md#history-section).
 
 
 ## Campaigns
@@ -70,7 +70,7 @@ Campaigns can be attributed to an Intrusion set.
 
 ![Campaings cards](assets/campaigns-cards.png)
 
-When clicking on the Campaign tab on the top left, you access the list of all the Campaigns you have access too, in respect with your [allowed marking definitions](../administration/users.md). These campaigns are displayed as **Cards** where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Campaigns.
+When clicking on the Campaign tab on the top left, you see the list of all the Campaigns you have access to, in respect with your [allowed marking definitions](../administration/users.md). These campaigns are displayed as **Cards** where you can find a summary of the important Knowledge associated with each of them: description, aliases, malwares used, countries and industries they target, labels. You can then search and filter on some common and specific attributes of Campaigns.
 
 At the top right of each Card, you can click the star icon to put it as favorite. It will pin the card on top of the list. You will also be able to display all your favorite easily in your [Custom Dashboards](dashboards.md).
 
@@ -78,8 +78,8 @@ At the top right of each Card, you can click the star icon to put it as favorite
 
 When clicking on an Campaign Card, you land on its Overview tab. The following tabs are accessible:
 
-- Overview: as described [here](overview.md).
-- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Campaign. Different thematic views are proposed to easily see the victimology, arsenal and techniques used in the context of the Campaign. 
-- Analyses: as described [here](overview.md).
-- Data: as described [here](overview.md).
-- History: as described [here](overview.md).
+- Overview: as described [here](overview.md#overview-section).
+- Knowledge: a complex tab that regroups all the structured Knowledge linked to the Campaign. Different thematic views are proposed to easily see the victimology, arsenal and techniques used in the context of the Campaign. As described [here](overview.md#knowledge-section).
+- Analyses: as described [here](overview.md#analyses-section).
+- Data: as described [here](overview.md#data-section).
+- History: as described [here](overview.md#history-section).

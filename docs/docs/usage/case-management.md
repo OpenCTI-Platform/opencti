@@ -35,6 +35,7 @@ At the end of your Case, you will certainly want to report on what have been don
 Also, we are currently working a more meaningfull Timeline view that will be possible to export too.
 
 ## Use case example: A suspicious observable is sighted by a defense system. Is it important?
+
 - Daily, your SIEM and EDR are feeded Indicators of Compromise from your OpenCTI instance. 
 - Today, your SIEM have sighted the domain name "bad.com" matching one of them. Its alert has been transfered to OpenCTI and have created a `Sighting` relationship between your System "SIEM permiter A" and the Observable "bad.com". 
 - You are alerted immediatly, because you have activated the inference rule creating a corresponding `Incident` in this situation, and you have created an alert based on new Incident that send you email `notification` and Teams message (webhook).

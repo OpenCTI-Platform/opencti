@@ -26,18 +26,18 @@ To bring context, you can use your Case as a container (like Reports or Grouping
 
 Incident Response, Request for Information & Request for Takedown are not STIX 2.1 Objects.
 
-When clicking on the Incident Response, Request for Information & Request for Takedown tabs at the top, you access the list of all Cases you have access too, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes.
+When clicking on the Incident Response, Request for Information & Request for Takedown tabs at the top, you see the list of all the Cases you have access to, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes.
 
 ### Visualizing Knowledge within an Incident Response, Request for Information & Request for Takedown
 
 When clicking on an Incident Response, Request for Information or Request for Takedown, you land on the Overview tab. The following tabs are accessible:
 
-- Overview: Overview of Cases are slightly different than the usual (described [here](overview.md)). Cases' Overview displays also the list of the tasks associated with the case. It also let you hightlight Incident, Report or Sighting at the origin of the case. If other cases contains some Observables with your Case, they will be displayed as Related Cases in the Overview.
-- Knowledge: a complex tab that regroups all the structured Knowledge contained in the Case, accessible through different views (See below for a dive-in).
-- Content: a tab to upload or creates outcomes document displaying the content of the Case (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format.
+- Overview: Overview of Cases are slightly different than the usual (described [here](overview.md#overview-section)). Cases' Overview displays also the list of the tasks associated with the case. It also let you hightlight Incident, Report or Sighting at the origin of the case. If other cases contains some Observables with your Case, they will be displayed as Related Cases in the Overview.
+- Knowledge: a complex tab that regroups all the structured Knowledge contained in the Case, accessible through different views (See below for a dive-in). As described [here](overview.md#knowledge-section).
+- Content: a tab to upload or creates outcomes document displaying the content of the Case (for example in PDF, text, HTML or markdown files). The Content of the document is displayed to ease the access of Knowledge through a readable format. As described [here](overview.md#content-section).
 - Entities: A table containing all SDO (Stix Domain Objects) contained in the Case, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
 - Observables: A table containing all SCO (Stix Cyber Observable) contained in the Case, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
-- Data: as described [here](overview.md).
+- Data: as described [here](overview.md#data-section).
 
 Exploring and modifying the structured Knowledge contained in a Case can be done through different lenses.
 
@@ -78,12 +78,12 @@ If your Case contains attack patterns, you will be able to visualize them in a M
 
 Tasks are actions to be performed in the context of a Case (Incident Response, Request for Information, Request for Takedown). Usually, a task is assigned to a user, but important tasks may involved more participants.
 
-When clicking on the Tasks tab at the top of the interface, you access the list of all Tasks you have access too, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of the tasks.
+When clicking on the Tasks tab at the top of the interface, you see the list of all the Tasks you have access to, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of the tasks.
 
 Clicking on a Task, you land on its Overview tab. For a Tasks, the following tabs are accessible:
-- Overview: as described [here](overview.md).
-- Data: as described [here](overview.md).
-- History: as described [here](overview.md).
+- Overview: as described [here](overview.md#overview-section).
+- Data: as described [here](overview.md#data-section).
+- History: as described [here](overview.md#history-section).
 
 
 ## Feedbacks
@@ -95,7 +95,7 @@ This feature gives the opportunity to engage with other users of your platform a
 ![Feedback Overview](assets/feedback-overview.png)
 
 Clicking on a Feedback, you land on its Overview tab. For a Feedback, the following tabs are accessible:
-- Overview: as described [here](overview.md).
-- Content: as described [here](overview.md). 
-- Data: as described [here](overview.md).
-- History: as described [here](overview.md).
+- Overview: as described [here](overview.md#overview-section).
+- Content: as described [here](overview.md#content-section). 
+- Data: as described [here](overview.md#data-section).
+- History: as described [here](overview.md#history-section).

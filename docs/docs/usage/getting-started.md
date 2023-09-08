@@ -12,6 +12,7 @@ Here are some examples of use cases:
 
 ![Use Cases](assets/use-cases.png)
 
+<a id="dashboard-section"></a>
 ## Welcome dashboard
 
 The welcome gives any visitor on the OpenCTI platform an outlook on the live of the platform. It can be replaced by a [custom dashboard](dashboards.md), created by a user (or the default dashboard in a role, a group or an organization).

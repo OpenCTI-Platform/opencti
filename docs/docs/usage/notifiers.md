@@ -1,8 +1,13 @@
 # Notifiers
+
 ## Sample notifiers
+
 ### Configure Teams webhook
+
 You can check the [Microsoft website](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook?tabs=dotnet)
+
 ### Default teams message for live trigger
+
 The default configuration for a Teams message sent through webhook for a live notification is:
 ```
 {
@@ -32,6 +37,7 @@ The default configuration for a Teams message sent through webhook for a live no
 ```
 
 ### Default teams message for digest
+
 The default configuration for a Teams message sent through webhook for a digest notification is:
 ```
 {

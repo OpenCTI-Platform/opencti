@@ -10,7 +10,7 @@ The global search is always available in the top bar of the platform.
   ![Search bar](assets/search-bar.png)
 </figure>
 
-This search covers all [STIX Domain Objects (SDOs)](data-model.md) and [STIX Cyber Observables (SCOs)](data-model.md) in the platform. The search results are sorted according to the following behaviour:
+This search covers all [STIX Domain Objects (SDOs)](data-model.md#stix-model-section) and [STIX Cyber Observables (SCOs)](data-model.md#stix-model-section) in the platform. The search results are sorted according to the following behaviour:
 
 * Priority 1 for exact matching of the keyword in one attribute of the objects.
 * Priority 2 for partial matching of the keyword in the `name`, the `aliases` and the `description` attributes (full text search).

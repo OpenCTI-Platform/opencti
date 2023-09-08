@@ -8,7 +8,7 @@ When the user connects to the platform, the home page is the `Dashboard`. This `
 
 !!! note "Dashboard"
     
-    To get more information about the components of the default dashboard, you can consult the [Getting started](getting-started.md).
+    To get more information about the components of the default dashboard, you can consult the [Getting started](getting-started.md#dashboard-section).
 
 The left side panel allows the user to navigate through different windows and access different views and categories of knowledge.
 
@@ -16,13 +16,14 @@ The left side panel allows the user to navigate through different windows and ac
   ![Menu](assets/menu.png)
 </figure>
 
+
 ## Structure
 
 ### The "hot knowledge"
 
 The first part of the platform in the left menu is dedicated to what we call the "hot knowledge", which means this is the entities and relationships which are added on a daily basis in the platform and which generally require work / analysis from the users.
 
-* `Analysis`: all containers which convey relevant knowledge such as reports, groupings and malware analysis.
+* `Analyses`: all containers which convey relevant knowledge such as reports, groupings and malware analyses.
 * `Cases`: all types of case like incident responses, requests for information, for takedown, etc.
 * `Events`: all incidents & alerts coming from operational systems as well as sightings.
 * `Observations`: all technical data in the platform such as observables, artifacts and indicators.
@@ -63,6 +64,8 @@ In this part will only be detailed a general outline of a "typical" OpenCTI page
   ![Top menu of an entity](assets/top-menu.png)
 </figure>
 
+
+<a id="overview-section"></a>
 ### Overview
 
 In the `Overview` tab on the entity, you will find all properties of the entity as well as the recent activities.
@@ -78,7 +81,7 @@ Thus, in the `Basic information` section, are displayed all common properties to
 Below these two sections, you will find latest modifications in the Knowledge base related to the Entity:
 
 - `Latest created relationships`: display the latest relationships that have been created <u>from</u> or <u>to</u> this Entity. For example, latest Indicators of Compromise and associated Threat Actor of a Malware.
-- `latest containers about the object`: display all the Cases and Analysis that contains this Entity. For example, the latest Reports about a Malware.
+- `latest containers about the object`: display all the Cases and Analyses that contains this Entity. For example, the latest Reports about a Malware.
 - `External references`: display all the the external sources associated with the Entity. You will often find here links to external reports or webpages from where Entity's information came from.
 - `History`: display the latest chronological modifications of the Entity and its relationships that occured in the platform, in order to traceback any alteration.
 
@@ -87,14 +90,17 @@ Below these two sections, you will find latest modifications in the Knowledge ba
 
 Last, all Notes written by users of the platform about this Entity are displayed in order to access unstructured analysis comments.
 
+
+<a id="knowledge-section"></a>
 ### Knowledge
 
-In the `Knowledge` tab, which is the central part of the entity, you will find all the Knowledge related to the current entity. The `Knowledge` tab is different for Analysis (`Report`, `Groupings`) and Cases (`Incident response`, `Request for Information`, `Request for Takedown`) entities than for all the other entity types.
+In the `Knowledge` tab, which is the central part of the entity, you will find all the Knowledge related to the current entity. The `Knowledge` tab is different for Analyses (`Report`, `Groupings`) and Cases (`Incident response`, `Request for Information`, `Request for Takedown`) entities than for all the other entity types.
 
 - The `Knowledge` tab of those entities (who represents Analyses or Cases that can contains a collection of Objects) is the place to integrate and link together entities. For more information on how to integrate information in OpenCTI using the knowledge tab of a report, please refer to the part [Manual creation](manual-creation.md).
 - `Knowledge` tabs of any other entity (that does not aim to contain a collection of Objects) gather all the entities which have been at some point linked to the entity the user is looking at (for instance, as shown in the following capture, the `Knowledge` tab of Intrusion set APT29) gives access to the list of all entities APT29 is attributed to, all victims the intrusion set has targeted, all its campaigns, TTPs, malwares etc. For entities to appear in theses tabs under `Knowledge`, they need to have been linked to the entity directly or have been computed with the inference engine (to come).
 
 ![The Intrusion Set's Knowledge tab](assets/apt41_knowledge_view.png)
+
 
 #### Focus on Indicators and Observables
 
@@ -105,9 +111,21 @@ The `Indicators` and `Observables` section offers 3 display modes:
 
 ![The Knowledge Focus on Indicators and Observables views](assets/knowledge_focus_indicators_observable_views.png)
 
-### Analysis
 
-The `Analysis` tab contains the list of all Analysis (`Report`, `Groupings`) and Cases (`Incident response`, `Request for Information`, `Request for Takedown`) in which the entity has been identified.
+<a id="content-section"></a>
+### Content
+
+The `Content` tab allows for uploading and creating outcomes documents related to the content of the current entity (in PDF, text, HTML or markdown files). This specific tab enable to previzualize, manage and write deliverable associated with the entity. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc.
+
+The `Content` tab is available for a subset of entities: `Report`, `Incident`, `Incident response`, `Request for Information`, and `Request for Takedown`.
+
+![The Content tab of an Incident](assets/entity-content-tab.png)
+
+
+<a id="analyses-section"></a>
+### Analyses
+
+The `Analyses` tab contains the list of all Analyses (`Report`, `Groupings`) and Cases (`Incident response`, `Request for Information`, `Request for Takedown`) in which the entity has been identified.
 
 ![Example of the list of reports in which the attack pattern "data obfuscation" has been identified.](assets/entity_analysis-tab.png)
 
@@ -116,6 +134,7 @@ By default, this tab display the list, but you can also display the content of a
 ![Graph view of all the Knowledge contained in the listed analyses](assets/analyses-graphview.png)
 
 
+<a id="data-section"></a>
 ### Data
 
 The Data tab contains documents that are associated to the object and were either :
@@ -127,11 +146,13 @@ The Data tab contains documents that are associated to the object and were eithe
 [Analyst Workbench](workbench.md) can also be created from here. They will contain the entity by default.
 ![The Data tab of a Threat Actor](assets/entity-data-tab.png)
 
+
+<a id="history-section"></a>
 ### History
 
 The `History` tab display the history of change of the Entity, update of attributes, creation of relations, ...
 
-Because of the volumes of information the history is written in a specific index by the history connector ([https://www.notion.so/luatix/History-17503579a70c467ba02ec11350c593bf](https://www.notion.so/17503579a70c467ba02ec11350c593bf?pvs=21)) that consume the redis stream to rebuild the history for the UI.
+Because of the volumes of information the history is written in a specific index that consume the redis stream to rebuild the history for the UI.
 ![History tab of a Malware](assets/history.png)
 
 Less frequent tabs are the following:

@@ -18,6 +18,7 @@ These connectors automatically retrieve information from an external organizatio
 
 When a new object is created in the platform or on the user request, it is possible to trigger the internal enrichment connector to lookup and/or search the object in external organizations, applications or services. If the object is found, the connectors will generate a STIX 2.1 bundle which will increase the level of knowledge about the concerned object.
 
+<a id="stream-section"></a>
 ### Stream
 
 These connectors connect to a platform [data stream](../reference/streaming.md) and continously *do* something with the received events. In most cases, they are used to consume OpenCTI data and insert them in third-party platforms such as SIEMs, XDRs, EDRS, etc. In some cases, stream connectors can also query the external system on a regular basis and act as import connector for instance to gather alerts and sightings related to CTI data and push them to OpenCTI (bi-directional).

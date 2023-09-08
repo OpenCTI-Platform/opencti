@@ -1,6 +1,7 @@
 # Reliability and Confidence
 
 ## Generalities
+
 In (Cyber) Threat Intelligence, evaluation of information sources and of information quality is one of the most important aspect of the work. It is of the utter most importance to assess situations by taking into account reliability of the sources and credibility of the information.
 
 This concept is foundational in OpenCTI, and have real impact on:

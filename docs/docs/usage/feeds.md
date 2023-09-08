@@ -4,7 +4,7 @@
 
 ### Introduction
 
-The best way to consume OpenCTI data, whether it is through a [stream connector](../deployment/connectors.md) or within another OpenCTI instance, is to use the live streams. Live streams are like TAXII collection (ie. serving STIX 2.1 bundles) but *under steroids*. This means that live streams are supporting:
+The best way to consume OpenCTI data, whether it is through a [stream connector](../deployment/connectors.md#stream-section) or within another OpenCTI instance, is to use the live streams. Live streams are like TAXII collection (ie. serving STIX 2.1 bundles) but *under steroids*. This means that live streams are supporting:
 
 * create, update and delete events depending on the filters ;
 * caching already created entities in the last 5 minutes ;
@@ -13,7 +13,7 @@ The best way to consume OpenCTI data, whether it is through a [stream connector]
 
 ![Live stream](assets/live-stream.png)
 
-### Schenario
+### Scenario
 
 To better understand how live streams are working, let's take a few examples, from simple to complex.
 

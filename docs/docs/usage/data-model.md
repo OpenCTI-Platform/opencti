@@ -13,6 +13,7 @@ The OpenCTI core design relies on the concept of a [knowledge graph](https://en.
 
 ## Standard
 
+<a id="stix-model-section"></a>
 ### The STIX model
 
 To enable a unified approach in the description of threat intelligence knowledge as well as importing and exporting data, the OpenCTI data model is based on the [STIX 2.1 standard](https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html). Thus we highly recommend to take a look to the [STIX Introductory Walkthrough](https://oasis-open.github.io/cti-documentation/stix/walkthrough) and to the [different kinds of STIX relationships](https://oasis-open.github.io/cti-documentation/examples/visualized-sdo-relationships) to get a better understanding of how OpenCTI works.
