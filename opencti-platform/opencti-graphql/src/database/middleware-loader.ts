@@ -237,6 +237,10 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTyp
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
     nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
+    // If elementId is setup, we need to extract the element from the result side
+    if (elementId && optsElementIds.length > 0) {
+      nestedElementTypes.push({ key: 'internal_id', values: optsElementIds, operator: 'not_eq' });
+    }
   }
   if (nestedElementTypes.length > 0) {
     finalFilters.push({ key: 'connections', nested: nestedElementTypes });
@@ -337,8 +341,9 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   const customFilters = [...(filters ?? [])];
   // region element
   const nestedElement = [];
-  if (elementId) {
-    nestedElement.push({ key: 'internal_id', values: Array.isArray(elementId) ? elementId : [elementId] });
+  const optsElementIds = Array.isArray(elementId) ? elementId : [elementId];
+  if (elementId && optsElementIds.length > 0) {
+    nestedElement.push({ key: 'internal_id', values: optsElementIds });
   }
   if (nestedElement.length > 0) {
     customFilters.push({ key: 'connections', nested: nestedElement });
@@ -346,6 +351,10 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   const nestedElementTypes = [];
   if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
     nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
+    // If elementId is setup, we need to extract the element from the result side
+    if (elementId && optsElementIds.length > 0) {
+      nestedElementTypes.push({ key: 'internal_id', values: optsElementIds, operator: 'not_eq' });
+    }
   }
   if (nestedElementTypes.length > 0) {
     customFilters.push({ key: 'connections', nested: nestedElementTypes });
