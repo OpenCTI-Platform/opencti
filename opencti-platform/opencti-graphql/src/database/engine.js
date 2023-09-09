@@ -1491,8 +1491,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
         script: { source, params },
       };
     }
-  } else { // If not ordering criteria, order by _score and standard_id
-    ordering.push({ _score: 'desc' });
+  } else { // If not ordering criteria, order by standard_id
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
   // Build query
