@@ -1,28 +1,26 @@
 import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import { difference, head, map, pathOr, pipe } from 'ramda';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import AlertTitle from '@mui/material/AlertTitle';
 import Alert from '@mui/material/Alert';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import GroupField from '../../common/form/GroupField';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 0px 20px 60px',
@@ -57,13 +55,10 @@ const styles = (theme) => ({
     width: '100%',
     overflow: 'hidden',
   },
-});
+}));
 
 export const streamCollectionMutationFieldPatch = graphql`
-  mutation StreamCollectionEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation StreamCollectionEditionFieldPatchMutation($id: ID!$input: [EditInput]!) {
     streamCollectionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...StreamCollectionEdition_streamCollection
@@ -76,56 +71,43 @@ const streamCollectionValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   stream_public: Yup.bool().nullable(),
+  authorized_members: Yup.array().nullable(),
 });
 
-const groupMutationRelationAdd = graphql`
-  mutation StreamCollectionEditionGroupAddMutation($id: ID!, $groupId: ID!) {
-    streamCollectionEdit(id: $id) {
-      addGroup(id: $groupId) {
-        ...StreamCollectionEdition_streamCollection
-      }
-    }
-  }
-`;
-
-const groupMutationRelationDelete = graphql`
-  mutation StreamCollectionEditionGroupDeleteMutation($id: ID!, $groupId: ID!) {
-    streamCollectionEdit(id: $id) {
-      deleteGroup(id: $groupId) {
-        ...StreamCollectionEdition_streamCollection
-      }
-    }
-  }
-`;
-
-const StreamCollectionEditionContainer = (props) => {
-  const { t, classes, handleClose, streamCollection } = props;
-  const groups = pipe(
-    pathOr([], ['groups']),
-    map((n) => ({
-      label: n.name,
-      value: n.id,
-    })),
-  )(streamCollection);
-  const initialValues = { ...streamCollection };
-  initialValues.groups = groups;
+const StreamCollectionEditionContainer = ({ handleClose, streamCollection }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const authorizedMembers = streamCollection.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [];
+  const initialValues = { ...streamCollection, authorized_members: authorizedMembers };
   const [filters, setFilters] = useState(
-    JSON.parse(props.streamCollection.filters),
+    JSON.parse(streamCollection.filters),
   );
   const handleSubmitField = (name, value) => {
-    streamCollectionValidation(props.t)
+    streamCollectionValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: streamCollectionMutationFieldPatch,
           variables: {
-            id: props.streamCollection.id,
+            id: streamCollection.id,
             input: { key: name, value: value || '' },
           },
         });
       })
       .catch(() => false);
   };
+  const handleSubmitFieldOptions = (name, value) => streamCollectionValidation(t)
+    .validateAt(name, { [name]: value })
+    .then(() => {
+      commitMutation({
+        mutation: streamCollectionMutationFieldPatch,
+        variables: {
+          id: streamCollection.id,
+          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+        },
+      });
+    })
+    .catch(() => false);
   const handleAddFilter = (key, id, value) => {
     let newFilters;
     if (filters[key] && filters[key].length > 0) {
@@ -142,7 +124,7 @@ const StreamCollectionEditionContainer = (props) => {
     commitMutation({
       mutation: streamCollectionMutationFieldPatch,
       variables: {
-        id: props.streamCollection.id,
+        id: streamCollection.id,
         input: { key: 'filters', value: jsonFilters },
       },
       onCompleted: () => {
@@ -154,7 +136,7 @@ const StreamCollectionEditionContainer = (props) => {
     const newFilters = R.dissoc(key, filters);
     const jsonFilters = JSON.stringify(newFilters);
     const variables = {
-      id: props.streamCollection.id,
+      id: streamCollection.id,
       input: { key: 'filters', value: jsonFilters },
     };
     commitMutation({
@@ -164,38 +146,6 @@ const StreamCollectionEditionContainer = (props) => {
         setFilters(newFilters);
       },
     });
-  };
-  const handleChangeGroups = (name, values) => {
-    const currentGroups = pipe(
-      pathOr([], ['groups']),
-      map((n) => ({
-        label: n.name,
-        value: n.id,
-      })),
-    )(streamCollection);
-
-    const added = difference(values, currentGroups);
-    const removed = difference(currentGroups, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: groupMutationRelationAdd,
-        variables: {
-          id: streamCollection.id,
-          groupId: head(added).value,
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: groupMutationRelationDelete,
-        variables: {
-          id: streamCollection.id,
-          groupId: head(removed).value,
-        },
-      });
-    }
   };
   return (
     <div>
@@ -247,23 +197,22 @@ const StreamCollectionEditionContainer = (props) => {
                   {t('Make this stream public and available to anyone')}
                 </AlertTitle>
                 <FormControlLabel
-                  control={
-                    <Switch defaultChecked={initialValues.stream_public} />
-                  }
+                  control={<Switch defaultChecked={initialValues.stream_public} />}
                   style={{ marginLeft: 1 }}
-                  onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())
-                  }
+                  onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())}
                   label={t('Public stream')}
                 />
+                {!initialValues.stream_public && (
+                    <ObjectMembersField
+                        label={'Accessible for'}
+                        style={fieldSpacingContainerStyle}
+                        onChange={handleSubmitFieldOptions}
+                        multiple={true}
+                        helpertext={t('Let the field empty to grant all authenticated users')}
+                        name="authorized_members"
+                    />
+                )}
               </Alert>
-              {!initialValues.stream_public && (
-                <GroupField
-                  name="groups"
-                  helpertext={t('Let the field empty to grant all users')}
-                  style={fieldSpacingContainerStyle}
-                  onChange={handleChangeGroups}
-                />
-              )}
               <div style={{ marginTop: 35 }}>
                 <Filters
                   variant="text"
@@ -310,14 +259,6 @@ const StreamCollectionEditionContainer = (props) => {
   );
 };
 
-StreamCollectionEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  streamCollection: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
 const StreamCollectionEditionFragment = createFragmentContainer(
   StreamCollectionEditionContainer,
   {
@@ -329,7 +270,7 @@ const StreamCollectionEditionFragment = createFragmentContainer(
         filters
         stream_live
         stream_public
-        groups {
+        authorized_members {
           id
           name
         }
@@ -338,7 +279,4 @@ const StreamCollectionEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(StreamCollectionEditionFragment);
+export default StreamCollectionEditionFragment;

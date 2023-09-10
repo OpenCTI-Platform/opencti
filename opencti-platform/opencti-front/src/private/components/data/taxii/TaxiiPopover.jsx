@@ -58,6 +58,7 @@ const taxiiCollectionEditionQuery = graphql`
       name
       description
       filters
+      ...TaxiiCollectionEdition_taxiiCollection
     }
   }
 `;

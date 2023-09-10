@@ -3,10 +3,9 @@ import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
 import conf, { basePath, logApp } from '../config/conf';
-import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
+import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { streamCollectionGroups } from '../domain/stream';
 import { stixLoadById, stixLoadByIds, storeLoadByIdsWithRefs } from '../database/middleware';
 import { elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import {
@@ -24,7 +23,14 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, executionContext, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  computeUserMemberAccessIds,
+  executionContext,
+  isUserCanAccessStixElement,
+  isUserHasCapability,
+  SYSTEM_USER
+} from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import {
@@ -92,59 +98,46 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-const isUserGlobalCapabilityGranted = (user) => {
-  const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
-  return R.find(capabilityControl, user.capabilities || []) !== undefined;
-};
-
 const computeUserAndCollection = async (res, { context, user, id }) => {
+  // Global live stream only available for bypass
+  if (id === DEFAULT_LIVE_STREAM && !isUserHasCapability(user, BYPASS)) {
+    res.statusMessage = 'You are not authorized, please check your credentials';
+    res.status(401).end();
+    return { error: res.statusMessage };
+  }
   const collections = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
   const collection = collections.find((c) => c.id === id);
-
+  // If collection not found
+  if (!collection) {
+    res.statusMessage = 'You are not authorized, please check your credentials';
+    res.status(401).end();
+    return { error: res.statusMessage };
+  }
+  const streamFilters = JSON.parse(collection.filters);
+  // Check if collection exist and started
   if (collection && !collection.stream_live) {
     res.statusMessage = 'This live stream is stopped';
     res.status(410).end();
     logApp.warn('This live stream is stopped', { streamCollectionId: id });
     return { error: 'This live stream is stopped' };
   }
-
-  // if bypass, let's go
-  if (user.capabilities.findIndex(({ name }) => name === BYPASS) > -1 && collection?.stream_public) {
-    return { streamFilters: JSON.parse(collection.filters ?? ''), collection };
+  // If bypass or public stream
+  if (collection.stream_public) {
+    return { streamFilters, collection };
   }
-
-  // Build filters
-  let streamFilters = {};
-  if (id !== DEFAULT_LIVE_STREAM) {
-    if (!collection) {
-      res.statusMessage = 'This live stream doesnt exists';
-      res.status(404).end();
-      return { error: 'This live stream doesnt exists' };
-    }
-    if (!collection.stream_public) {
-      // We should compare user.groups and stream.groups
-      const userGroups = await batchGroups(context, user, user.id, { batched: false, paginate: false });
-      const collectionGroups = await streamCollectionGroups(context, user, collection);
-      if (collectionGroups.length > 0) {
-        // User must have one of the collection groups
-        const collectionGroupIds = collectionGroups.map((g) => g.id);
-        const userGroupIds = userGroups.map((g) => g.id);
-        if (!collectionGroupIds.some((c) => userGroupIds.includes(c))) {
-          res.statusMessage = 'You need to have access granted for this live stream';
-          res.status(401).end();
-          logApp.warn('You need to have access granted for this live stream', { streamCollectionId: id, userId: user.id });
-          return { error: 'You need to have access granted for this live stream' };
-        }
-      }
-    }
-    streamFilters = JSON.parse(collection.filters);
-  }
-  // Check rights
-  if (!isUserGlobalCapabilityGranted(user)) {
-    // Access to the global live stream
+  // Access is restricted, user must be authenticated
+  if (!user || !isUserHasCapability(user, TAXIIAPI)) {
     res.statusMessage = 'You are not authorized, please check your credentials';
     res.status(401).end();
-    return { error: 'You are not authorized, please check your credentials' };
+    return { error: res.statusMessage };
+  }
+  // Access is restricted, check the current user
+  const userAccessIds = computeUserMemberAccessIds(user);
+  const collectionAccessIds = (collection.authorized_members ?? []).map((a) => a.id);
+  if (!isUserHasCapability(user, BYPASS) && !collectionAccessIds.some((accessId) => userAccessIds.includes(accessId))) {
+    res.statusMessage = 'You are not authorized, please check your credentials';
+    res.status(401).end();
+    return { error: res.statusMessage };
   }
   // If no marking part of filtering are accessible for the user, return
   // It's better to prevent connection instead of having no events accessible
@@ -155,10 +148,9 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
     if (!isUserHaveAccess) {
       res.statusMessage = 'You need to have access to specific markings for this live stream';
       res.status(401).end();
-      return { error: 'You need to have access to specific markings for this live stream' };
+      return { error: res.statusMessage };
     }
   }
-
   return { streamFilters, collection };
 };
 
@@ -304,8 +296,9 @@ const createSseMiddleware = () => {
       const context = executionContext('raw_stream');
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       const startStreamId = convertParameterToStreamId(paramStartFrom);
-      if (!isUserGlobalCapabilityGranted(sessionUser)) {
-        res.statusMessage = 'You are not authorized, please check your credentials';
+      // Generic stream only available for bypass users
+      if (!isUserHasCapability(sessionUser, BYPASS)) {
+        res.statusMessage = 'Consume generic stream is only authorized for bypass user';
         res.status(401).end();
         return;
       }

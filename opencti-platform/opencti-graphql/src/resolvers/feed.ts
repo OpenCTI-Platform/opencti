@@ -1,10 +1,18 @@
 import { createFeed, feedDelete, findAll, editFeed, findById } from '../domain/feed';
 import type { Resolvers } from '../generated/graphql';
+import { getAuthorizedMembers } from '../utils/authorizedMembers';
 
 const feedResolvers: Resolvers = {
   Query: {
     feed: (_, { id }, context) => findById(context, context.user, id),
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     feeds: (_, args, context) => findAll(context, context.user, args),
+  },
+  Feed: {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    authorized_members: (feed, _, context) => getAuthorizedMembers(context, context.user, feed),
   },
   Mutation: {
     feedAdd: (_, { input }, context) => createFeed(context, context.user, input),

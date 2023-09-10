@@ -377,6 +377,7 @@ interface StoreEntityFeed extends StoreEntity {
   entity_type: 'Feed';
   rolling_time: number;
   include_header: boolean;
+  feed_public: boolean;
   feed_types: Array<string>;
   feed_attributes: Array<{
     attribute: string;

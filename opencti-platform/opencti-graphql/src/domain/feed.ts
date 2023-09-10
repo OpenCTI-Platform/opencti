@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { ENTITY_TYPE_FEED } from '../schema/internalObject';
 import { createEntity, deleteElementById } from '../database/middleware';
-import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { listEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { FeedAddInput, QueryFeedsArgs } from '../generated/graphql';
 import type { StoreEntityFeed } from '../types/store';
@@ -12,6 +12,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
+import { SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -39,7 +40,8 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
 
 export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<StoreEntityFeed> => {
   checkFeedIntegrity(input);
-  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_FEED, { complete: true });
+  const feedToCreate = { ...input, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
+  const { element, isCreation } = await createEntity(context, user, feedToCreate, ENTITY_TYPE_FEED, { complete: true });
   if (isCreation) {
     await publishUserAction({
       user,
@@ -73,7 +75,15 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   return findById(context, user, id);
 };
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
-  return listEntitiesPaginated<StoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], opts);
+  if (user) {
+    const options = { ...opts, includeAuthorities: true };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return listEntitiesPaginated<StoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
+  }
+  // No user specify, listing only public csv feeds
+  const publicArgs = { ...(opts ?? {}), filters: [{ key: ['feed_public'], values: ['true'] }] };
+  return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
   const deleted = await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);

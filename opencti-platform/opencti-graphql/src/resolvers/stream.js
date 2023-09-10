@@ -6,10 +6,8 @@ import {
   streamCollectionEditField,
   streamCollectionEditContext,
   streamCollectionCleanContext,
-  streamCollectionGroups,
-  createGroupRelation,
-  deleteGroupRelation,
 } from '../domain/stream';
+import { getAuthorizedMembers } from '../utils/authorizedMembers';
 
 const streamResolvers = {
   Query: {
@@ -17,7 +15,7 @@ const streamResolvers = {
     streamCollections: (_, args, context) => findAll(context, context.user, args),
   },
   StreamCollection: {
-    groups: (collection, _, context) => streamCollectionGroups(context, context.user, collection),
+    authorized_members: (stream, _, context) => getAuthorizedMembers(context, context.user, stream),
   },
   Mutation: {
     streamCollectionAdd: (_, { input }, context) => createStreamCollection(context, context.user, input),
@@ -26,8 +24,6 @@ const streamResolvers = {
       fieldPatch: ({ input }) => streamCollectionEditField(context, context.user, id, input),
       contextPatch: ({ input }) => streamCollectionEditContext(context, context.user, id, input),
       contextClean: () => streamCollectionCleanContext(context, context.user, id),
-      addGroup: ({ id: groupId }) => createGroupRelation(context, context.user, id, groupId),
-      deleteGroup: ({ id: groupId }) => deleteGroupRelation(context, context.user, id, groupId),
     }),
   },
 };

@@ -11,11 +11,12 @@ import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { deleteElementById, updateAttribute, stixLoadByIds } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
-import { FunctionalError, ResourceNotFoundError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
+import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
@@ -27,6 +28,7 @@ export const createTaxiiCollection = async (context, user, input) => {
     internal_id: collectionId,
     standard_id: generateStandardId(ENTITY_TYPE_TAXII_COLLECTION, input),
     entity_type: ENTITY_TYPE_TAXII_COLLECTION,
+    authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
     ...input,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
@@ -44,10 +46,24 @@ export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
 };
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_TAXII_COLLECTION], args);
+  if (user) {
+    const options = { ...args, includeAuthorities: true };
+    return listEntities(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);
+  }
+  // No user specify, listing only public taxii collections
+  const publicFilter = { key: ['taxii_public'], values: ['true'] };
+  const publicArgs = { ...(args ?? {}), filters: [...(args?.filters ?? []), publicFilter] };
+  return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context, user, collectionId, input) => {
-  const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, input);
+  const finalInput = input.map(({ key, value }) => {
+    const item = { key, value };
+    if (key === 'authorized_members') {
+      item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
+    }
+    return item;
+  });
+  const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -93,7 +109,7 @@ const prepareManifestElement = async (data) => {
   };
 };
 
-const collectionQuery = async (context, user, collectionId, args) => {
+const collectionQuery = async (context, user, collection, args) => {
   const { added_after, limit, next, match = {} } = args;
   const { id, spec_version, type, version } = match;
   if (spec_version && spec_version !== '2.1') {
@@ -101,10 +117,6 @@ const collectionQuery = async (context, user, collectionId, args) => {
   }
   if (version && version !== 'last') {
     throw FunctionalError('Invalid version provided, only \'last\' supported', { version });
-  }
-  const collection = await storeLoadById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
-  if (!collection) {
-    throw ResourceNotFoundError({ id: collectionId });
   }
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
   const options = await convertFiltersToQueryOptions(context, user, filters, { after: added_after });
@@ -119,8 +131,8 @@ const collectionQuery = async (context, user, collectionId, args) => {
   if (id) options.ids = id.split(',');
   return elPaginate(context, user, READ_STIX_INDICES, options);
 };
-export const restCollectionStix = async (context, user, id, args) => {
-  const { edges, pageInfo } = await collectionQuery(context, user, id, args);
+export const restCollectionStix = async (context, user, collection, args) => {
+  const { edges, pageInfo } = await collectionQuery(context, user, collection, args);
   const edgeIds = edges.map((e) => e.node.internal_id);
   const instances = await stixLoadByIds(context, user, edgeIds);
   return {
@@ -129,8 +141,8 @@ export const restCollectionStix = async (context, user, id, args) => {
     objects: instances,
   };
 };
-export const restCollectionManifest = async (context, user, id, args) => {
-  const { edges, pageInfo } = await collectionQuery(context, user, id, args);
+export const restCollectionManifest = async (context, user, collection, args) => {
+  const { edges, pageInfo } = await collectionQuery(context, user, collection, args);
   const objects = await Promise.all(edges.map((e) => prepareManifestElement(e.node)));
   return {
     more: pageInfo.hasNextPage,
@@ -138,7 +150,7 @@ export const restCollectionManifest = async (context, user, id, args) => {
     objects,
   };
 };
-const restBuildCollection = async (collection) => {
+export const restBuildCollection = (collection) => {
   return {
     id: collection.id,
     title: collection.name,
@@ -151,7 +163,7 @@ const restBuildCollection = async (collection) => {
 export const restLoadCollectionById = async (context, user, collectionId) => {
   const collection = await storeLoadById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
   if (!collection) {
-    throw ResourceNotFoundError({ id: collectionId });
+    throw ForbiddenAccess();
   }
   return restBuildCollection(collection);
 };
@@ -160,5 +172,5 @@ export const restAllCollections = async (context, user) => {
     types: [ENTITY_TYPE_TAXII_COLLECTION],
     connectionFormat: false,
   });
-  return Promise.all(collections.map(async (c) => restBuildCollection(c)));
+  return collections.map((c) => restBuildCollection(c));
 };

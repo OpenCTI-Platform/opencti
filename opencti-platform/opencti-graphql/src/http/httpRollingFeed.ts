@@ -4,10 +4,10 @@ import type Express from 'express';
 import nconf from 'nconf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
-import { AuthRequired, ForbiddenAccess } from '../config/errors';
-import { BYPASS, executionContext } from '../utils/access';
+import { ForbiddenAccess } from '../config/errors';
+import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
 import { findById as findFeed } from '../domain/feed';
-import type { AuthContext, AuthUser } from '../types/user';
+import type { AuthUser } from '../types/user';
 import { listThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
@@ -30,15 +30,6 @@ const userHaveAccess = (user: AuthUser) => {
   const capabilities = user.capabilities.map((c) => c.name);
   return capabilities.includes(BYPASS) || capabilities.includes(TAXIIAPI);
 };
-const extractUserFromRequest = async (context: AuthContext, req: Express.Request, res: Express.Response) => {
-  const user = await authenticateUserFromRequest(context, req, res);
-  if (!user) {
-    res.setHeader('WWW-Authenticate', 'Basic, Bearer');
-    throw AuthRequired();
-  }
-  if (!userHaveAccess(user)) throw ForbiddenAccess();
-  return user;
-};
 
 const dataFormat = (separator: string, data: string) => {
   if (data.includes(separator) || data.includes('"')) {
@@ -54,8 +45,25 @@ const initHttpRollingFeeds = (app: Express.Application) => {
     res.set({ 'content-type': 'text/plain; charset=utf-8' });
     try {
       const context = executionContext('rolling_feeds');
-      const user = await extractUserFromRequest(context, req, res);
-      const feed = await findFeed(context, user, id);
+      const authUser = await authenticateUserFromRequest(context, req, res);
+      const feed = await findFeed(context, SYSTEM_USER, id);
+      // The feed doesn't exist at all
+      if (!feed) {
+        throw ForbiddenAccess();
+      }
+      // If feed is not public, user must be authenticated
+      if (!feed.feed_public && !authUser) {
+        throw ForbiddenAccess();
+      }
+      // If feed is not public, we need to ensure the user access
+      if (!feed.feed_public) {
+        const userFeed = await findFeed(context, authUser, id);
+        if (!userHaveAccess(authUser) || !userFeed) {
+          throw ForbiddenAccess();
+        }
+      }
+      // User is available or feed is public
+      const user = authUser ?? SYSTEM_USER;
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
       const extraOptions = { defaultTypes: feed.feed_types, field: 'created_at', orderMode: 'desc', after: fromDate };

@@ -5,12 +5,13 @@ import { basePath, getBaseUrl } from '../config/conf';
 import { AuthRequired, ForbiddenAccess, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import {
-  restAllCollections,
+  findById,
+  restAllCollections, restBuildCollection,
   restCollectionManifest,
   restCollectionStix,
   restLoadCollectionById,
 } from '../domain/taxii';
-import { BYPASS, executionContext } from '../utils/access';
+import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
@@ -48,6 +49,20 @@ const rebuildParamsForObject = (id, req) => {
 };
 const getUpdatedAt = (obj) => {
   return obj?.extensions?.[STIX_EXT_OCTI]?.updated_at;
+};
+
+const extractUserAndCollection = async (context, req, res, id) => {
+  const findCollection = await findById(context, SYSTEM_USER, id);
+  if (!findCollection) {
+    throw ForbiddenAccess();
+  }
+  if (findCollection.taxii_public) {
+    const collection = restBuildCollection(findCollection);
+    return { user: SYSTEM_USER, collection };
+  }
+  const authUser = await extractUserFromRequest(context, req, res);
+  const userCollection = await restLoadCollectionById(context, authUser, id);
+  return { user: authUser, collection: userCollection };
 };
 
 const initTaxiiApi = (app) => {
@@ -101,8 +116,7 @@ const initTaxiiApi = (app) => {
     const { id } = req.params;
     try {
       const context = executionContext('taxii');
-      const user = await extractUserFromRequest(context, req, res);
-      const collection = await restLoadCollectionById(context, user, id);
+      const { collection } = await extractUserAndCollection(context, req, res, id);
       res.json(collection);
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -113,8 +127,8 @@ const initTaxiiApi = (app) => {
     const { id } = req.params;
     try {
       const context = executionContext('taxii');
-      const user = await extractUserFromRequest(context, req, res);
-      const manifest = await restCollectionManifest(context, user, id, req.query);
+      const { user, collection } = await extractUserAndCollection(context, req, res, id);
+      const manifest = await restCollectionManifest(context, user, collection, req.query);
       res.set('X-TAXII-Date-Added-First', R.head(manifest.objects)?.version);
       res.set('X-TAXII-Date-Added-Last', R.last(manifest.objects)?.version);
       res.json(manifest);
@@ -127,8 +141,8 @@ const initTaxiiApi = (app) => {
     const { id } = req.params;
     try {
       const context = executionContext('taxii');
-      const user = await extractUserFromRequest(context, req, res);
-      const stix = await restCollectionStix(context, user, id, req.query);
+      const { user, collection } = await extractUserAndCollection(context, req, res, id);
+      const stix = await restCollectionStix(context, user, collection, req.query);
       res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
       res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
       res.json(stix);
@@ -141,9 +155,9 @@ const initTaxiiApi = (app) => {
     const { id, object_id } = req.params;
     try {
       const context = executionContext('taxii');
-      const user = await extractUserFromRequest(context, req, res);
+      const { user, collection } = await extractUserAndCollection(context, req, res, id);
       const args = rebuildParamsForObject(object_id, req);
-      const stix = await restCollectionStix(context, user, id, args);
+      const stix = await restCollectionStix(context, user, collection, args);
       res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
       res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
       res.json(stix);
@@ -156,9 +170,9 @@ const initTaxiiApi = (app) => {
     const { id, object_id } = req.params;
     try {
       const context = executionContext('taxii');
-      const user = await extractUserFromRequest(context, req, res);
+      const { user, collection } = await extractUserAndCollection(context, req, res, id);
       const args = rebuildParamsForObject(object_id, req);
-      const stix = await restCollectionStix(context, user, id, args);
+      const stix = await restCollectionStix(context, user, collection, args);
       const data = R.head(stix.objects);
       const updatedAt = getUpdatedAt(data);
       res.set('X-TAXII-Date-Added-First', updatedAt);

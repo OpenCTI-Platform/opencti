@@ -8,12 +8,18 @@ import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
 
 const styles = (theme) => ({
   header: {
@@ -42,6 +48,14 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
+  alert: {
+    width: '100%',
+    marginTop: 20,
+  },
+  message: {
+    width: '100%',
+    overflow: 'hidden',
+  },
 });
 
 const taxiiCollectionMutationFieldPatch = graphql`
@@ -60,11 +74,19 @@ const taxiiCollectionMutationFieldPatch = graphql`
 const taxiiCollectionValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
+  authorized_members: Yup.array().nullable(),
+  taxii_public: Yup.bool().nullable(),
 });
 
 const TaxiiCollectionEditionContainer = (props) => {
   const { t, classes, handleClose, taxiiCollection } = props;
-  const initialValues = R.pickAll(['name', 'description'], taxiiCollection);
+  const authorizedMembers = taxiiCollection.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [];
+  const initialValues = {
+    name: taxiiCollection.name,
+    description: taxiiCollection.description,
+    taxii_public: taxiiCollection.taxii_public,
+    authorized_members: authorizedMembers,
+  };
   const [filters, setFilters] = useState(
     JSON.parse(props.taxiiCollection.filters),
   );
@@ -82,6 +104,18 @@ const TaxiiCollectionEditionContainer = (props) => {
       })
       .catch(() => false);
   };
+  const handleSubmitFieldOptions = (name, value) => taxiiCollectionValidation(t)
+    .validateAt(name, { [name]: value })
+    .then(() => {
+      commitMutation({
+        mutation: taxiiCollectionMutationFieldPatch,
+        variables: {
+          id: props.taxiiCollection.id,
+          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+        },
+      });
+    })
+    .catch(() => false);
   const handleAddFilter = (key, id, value) => {
     let newFilters;
     if (filters[key] && filters[key].length > 0) {
@@ -161,6 +195,33 @@ const TaxiiCollectionEditionContainer = (props) => {
                 style={{ marginTop: 20 }}
                 onSubmit={handleSubmitField}
               />
+              <Alert
+                  icon={false}
+                  classes={{ root: classes.alert, message: classes.message }}
+                  severity="warning"
+                  variant="outlined"
+                  style={{ position: 'relative' }}
+              >
+                <AlertTitle>
+                  {t('Make this taxii collection public and available to anyone')}
+                </AlertTitle>
+                <FormControlLabel
+                    control={<Switch defaultChecked={initialValues.taxii_public} />}
+                    style={{ marginLeft: 1 }}
+                    onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
+                    label={t('Public taxii collection')}
+                />
+                {!initialValues.taxii_public && (
+                    <ObjectMembersField
+                        label={'Accessible for'}
+                        style={fieldSpacingContainerStyle}
+                        onChange={handleSubmitFieldOptions}
+                        multiple={true}
+                        helpertext={t('Let the field empty to grant all authenticated users')}
+                        name="authorized_members"
+                    />
+                )}
+              </Alert>
               <div style={{ marginTop: 35 }}>
                 <Filters
                   variant="text"
@@ -224,6 +285,11 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
         name
         description
         filters
+        taxii_public
+        authorized_members {
+          id
+          name
+        }
       }
     `,
   },

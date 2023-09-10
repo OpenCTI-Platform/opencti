@@ -45,7 +45,7 @@ const SharingMenu = () => {
           selected={location.pathname.includes('/dashboard/data/sharing/feeds')}
           dense={false}
         >
-          <ListItemText primary={t('Feeds (CSV)')} />
+          <ListItemText primary={t('CSV Feeds')} />
         </MenuItem>
         <MenuItem
           component={Link}

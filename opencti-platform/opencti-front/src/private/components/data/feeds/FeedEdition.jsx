@@ -18,6 +18,8 @@ import MuiTextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -30,6 +32,8 @@ import { ignoredAttributesInFeeds } from '../../../../utils/hooks/useAttributes'
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   header: {
@@ -105,6 +109,14 @@ const styles = (theme) => ({
     width: '100%',
     height: 20,
   },
+  alert: {
+    width: '100%',
+    marginTop: 20,
+  },
+  message: {
+    width: '100%',
+    overflow: 'hidden',
+  },
 });
 
 const feedEditionMutation = graphql`
@@ -117,9 +129,12 @@ const feedEditionMutation = graphql`
 
 const feedValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  description: Yup.string().nullable(),
   separator: Yup.string().required(t('This field is required')),
   rolling_time: Yup.number().required(t('This field is required')),
   feed_types: Yup.array().required(t('This field is required')),
+  feed_public: Yup.bool().nullable(),
+  authorized_members: Yup.array().nullable(),
 });
 
 const FeedEditionContainer = (props) => {
@@ -157,6 +172,10 @@ const FeedEditionContainer = (props) => {
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', JSON.stringify(filters)),
+      R.assoc('authorized_members', values.authorized_members.map(({ value }) => ({
+        id: value,
+        access_right: 'view',
+      }))),
     )(values);
     commitMutation({
       mutation: feedEditionMutation,
@@ -252,10 +271,17 @@ const FeedEditionContainer = (props) => {
     setFilters(R.dissoc(key, filters));
   };
 
-  const initialValues = R.pickAll(
-    ['name', 'separator', 'rolling_time', 'include_header', 'feed_types'],
-    feed,
-  );
+  const initialValues = {
+    name: feed.name,
+    description: feed.description,
+    separator: feed.separator,
+    rolling_time: feed.rolling_time,
+    include_header: feed.include_header,
+    feed_types: feed.feed_types,
+    feed_public: feed.feed_public,
+    authorized_members: feed.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [],
+  };
+
   return (
     <div>
       <div className={classes.header}>
@@ -305,11 +331,12 @@ const FeedEditionContainer = (props) => {
               return (
                 <Formik
                   initialValues={initialValues}
+                  enableReinitialize={true}
                   validationSchema={feedValidation(t)}
                   onSubmit={onSubmit}
                   onReset={onReset}
                 >
-                  {({ submitForm, handleReset, isSubmitting }) => (
+                  {({ values, submitForm, handleReset, isSubmitting }) => (
                     <Form style={{ margin: '20px 0 20px 0' }}>
                       <Field
                         component={TextField}
@@ -318,6 +345,41 @@ const FeedEditionContainer = (props) => {
                         label={t('Name')}
                         fullWidth={true}
                       />
+                      <Field
+                          component={TextField}
+                          variant="standard"
+                          name="description"
+                          label={t('Description')}
+                          fullWidth={true}
+                          style={{ marginTop: 20 }}
+                      />
+                      <Alert
+                          icon={false}
+                          classes={{ root: classes.alert, message: classes.message }}
+                          severity="warning"
+                          variant="outlined"
+                          style={{ position: 'relative' }}
+                      >
+                        <AlertTitle>
+                          {t('Make this feed public and available to anyone')}
+                        </AlertTitle>
+                        <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            name="feed_public"
+                            containerstyle={{ marginLeft: 2, marginTop: 20 }}
+                            label={t('Public feed')}
+                        />
+                        {!values.feed_public && (
+                            <ObjectMembersField
+                                label={'Accessible for'}
+                                style={fieldSpacingContainerStyle}
+                                multiple={true}
+                                helpertext={t('Let the field empty to grant all authenticated users')}
+                                name="authorized_members"
+                            />
+                        )}
+                      </Alert>
                       <Field
                         component={TextField}
                         variant="standard"
@@ -413,10 +475,7 @@ const FeedEditionContainer = (props) => {
                         redirection
                       />
                       {selectedTypes.length > 0 && (
-                        <div
-                          className={classes.container}
-                          style={{ marginTop: 20 }}
-                        >
+                        <div className={classes.container} style={{ marginTop: 20 }}>
                           {Object.keys(feedAttributes).map((i) => (
                             <div key={i} className={classes.step}>
                               <IconButton
@@ -589,6 +648,7 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
     fragment FeedEdition_feed on Feed {
       id
       name
+      description
       filters
       rolling_time
       include_header
@@ -600,6 +660,11 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
           type
           attribute
         }
+      }
+      feed_public
+      authorized_members {
+        id
+        name
       }
     }
   `,

@@ -15,6 +15,8 @@ import {
   LoginRootPublicQuery$data,
 } from './__generated__/LoginRootPublicQuery.graphql';
 import Message from '../components/Message';
+import PublicTaxiiLines from "../private/components/data/taxii/PublicTaxiiLines";
+import PublicFeedLines from "@components/data/feeds/PublicFeedLines";
 
 const useStyles = makeStyles({
   container: {
@@ -49,6 +51,8 @@ const PublicRootWithStyle = ({
           className={classes.logo}
         />
         <PublicStreamLines />
+        <PublicTaxiiLines />
+        <PublicFeedLines />
       </div>
     </>
   );

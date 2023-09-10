@@ -1,26 +1,31 @@
-import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  loadQuery,
+  useFragment,
+  usePreloadedQuery,
+} from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { Stream } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import { IconButton, ListItemSecondaryAction, Tooltip } from '@mui/material';
-import { ContentCopy, OpenInNew } from 'mdi-material-ui';
+import { OpenInNew, ContentCopy, DatabaseExportOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
+import { TaxiiLineDummy } from './TaxiiLine';
+import { PublicTaxiiLinesQuery } from './__generated__/PublicTaxiiLinesQuery.graphql';
+import { PublicTaxiiLines_node$key } from './__generated__/PublicTaxiiLines_node.graphql';
 import { environment } from '../../../../relay/environment';
-import { PublicStreamLinesQuery } from './__generated__/PublicStreamLinesQuery.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { StreamLineDummy } from './StreamLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
-import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
+import { Theme } from '../../../../components/Theme';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles<Theme>((theme) => ({
   bodyItem: {
     height: 20,
     fontSize: 13,
@@ -29,6 +34,19 @@ const useStyles = makeStyles({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
+  },
+  filter: {
+    fontSize: 12,
+    lineHeight: '12px',
+    height: 20,
+    marginRight: 7,
+    borderRadius: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: theme.palette.background.accent,
+    height: 20,
+    marginRight: 10,
   },
   item: {
     paddingLeft: 10,
@@ -40,36 +58,31 @@ const useStyles = makeStyles({
     maxWidth: 120,
     display: 'table-cell',
   },
-});
+}));
 
-const publicStreamLinesFragment = graphql`
-  fragment PublicStreamLines_node on StreamCollection {
+const publicTaxiiLinesFragment = graphql`
+  fragment PublicTaxiiLines_node on TaxiiCollection {
     id
     name
-    stream_live
+    taxii_public
     description
-    stream_public
     filters
   }
 `;
 
-const publicStreamLinesQuery = graphql`
-  query PublicStreamLinesQuery {
-    streamCollections(filters: [{ key: stream_public, values: ["true"] }]) {
+const publicTaxiiLinesQuery = graphql`
+  query PublicTaxiiLinesQuery {
+    taxiiCollections(filters: [{ key: taxii_public, values: ["true"] }]) {
       edges {
         node {
-          ...PublicStreamLines_node
+          ...PublicTaxiiLines_node
         }
       }
     }
   }
 `;
 
-const queryRef = loadQuery<PublicStreamLinesQuery>(
-  environment,
-  publicStreamLinesQuery,
-  {},
-);
+const queryRef = loadQuery<PublicTaxiiLinesQuery>(environment, publicTaxiiLinesQuery, {});
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
@@ -83,16 +96,16 @@ const dataColumns: DataColumns = {
     isSortable: false,
     render: (node) => node.description,
   },
-  stream_live: {
+  taxii_live: {
     label: 'Status',
     width: '20%',
     isSortable: false,
     render: (node, { t, classes }) => (
       <Chip
         classes={{ root: classes.chipInList }}
-        color={node.stream_live ? 'success' : 'error'}
+        color={'success'}
         variant="outlined"
-        label={t(node.stream_live ? 'Started' : 'Stopped')}
+        label={t('Started')}
       />
     ),
   },
@@ -114,20 +127,20 @@ const dataColumns: DataColumns = {
   },
 };
 
-const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
+const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const stream = useFragment(publicStreamLinesFragment, node);
+  const collection = useFragment(publicTaxiiLinesFragment, node);
   const browseClick = () => {
-    window.location.pathname = `/stream/${stream.id}`;
+    window.location.pathname = `/taxii2/root/collections/${collection.id}`;
   };
   const copyClick = () => {
-    copyToClipboard(t, window.location.origin);
+    copyToClipboard(t, `${window.location.origin}/taxii2/root/collections/${collection.id}`);
   };
   return (
     <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
-      <ListItemIcon>
-        <Stream />
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <DatabaseExportOutline />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -138,7 +151,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(stream, { t, classes })}
+                {value.render?.(collection, { t, classes })}
               </div>
             ))}
           </div>
@@ -147,7 +160,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
       <ListItemSecondaryAction>
         <Tooltip
           title={t(
-            'Copy uri to clipboard for your OpenCTI synchronizer configuration',
+            'Copy uri to clipboard for your Taxii client',
           )}
         >
           <span>
@@ -168,29 +181,29 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
   );
 };
 
-const PublicStreamLines = () => {
-  const { streamCollections } = usePreloadedQuery<PublicStreamLinesQuery>(publicStreamLinesQuery, queryRef);
+const PublicTaxiiLines = () => {
+  const { taxiiCollections } = usePreloadedQuery<PublicTaxiiLinesQuery>(publicTaxiiLinesQuery, queryRef);
   const { t } = useFormatter();
-  return streamCollections && streamCollections.edges.length > 0 ? (
+  return taxiiCollections && taxiiCollections.edges.length > 0 ? (
     <>
       <Typography variant="h2" gutterBottom={true}>
-        {t('Public stream collections')}
+        {t('Public Taxii collections')}
       </Typography>
       <ListLines dataColumns={dataColumns} secondaryAction={true}>
         <ListLinesContent
           isLoading={() => {}}
           hasNext={() => {}}
           dataColumns={dataColumns}
-          dataList={streamCollections.edges}
-          LineComponent={PublicStreamLine}
-          DummyLineComponent={<StreamLineDummy />}
+          dataList={taxiiCollections.edges}
+          LineComponent={PublicTaxiiLine}
+          DummyLineComponent={<TaxiiLineDummy />}
         />
       </ListLines>
     </>
   ) : (
     <>
       <Typography variant="h2" gutterBottom={true}>
-        {t('Public stream collections')}
+        {t('Public Taxii collections')}
       </Typography>
       <Typography
         variant="h5"
@@ -198,10 +211,10 @@ const PublicStreamLines = () => {
         color={'error'}
         style={{ marginTop: 20 }}
       >
-        {t('No available public stream on this platform')}
+        {t('No available public taxii collections on this platform')}
       </Typography>
     </>
   );
 };
 
-export default PublicStreamLines;
+export default PublicTaxiiLines;
