@@ -39,12 +39,12 @@ const threatActorIndividualEditionBiographicsFragment = graphql`
     id
     eye_color
     hair_color
-    x_mcas_height {
+    height {
       date_seen
       height_in
       height_cm
     }
-    x_mcas_weight {
+    weight {
       date_seen
       weight_lb
       weight_kg
@@ -59,8 +59,8 @@ const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object
   hair_color: Yup.string()
     .nullable()
     .typeError(t('The value must be a string')),
-  x_mcas_weight: Yup.array(),
-  x_mcas_height: Yup.array(),
+  weight: Yup.array(),
+  height: Yup.array(),
 });
 
 interface ThreatActorIndividualEditionBiographicsComponentProps {
@@ -111,8 +111,8 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
   const initialValues = {
     eye_color: threatActorIndividual.eye_color,
     hair_color: threatActorIndividual.hair_color,
-    x_mcas_height: threatActorIndividual.x_mcas_height ?? [],
-    x_mcas_weight: threatActorIndividual.x_mcas_weight ?? [],
+    height: threatActorIndividual.height ?? [],
+    weight: threatActorIndividual.weight ?? [],
   };
 
   return (
@@ -158,8 +158,8 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
                 editContext={context}
               />
               <HeightField
-                name="x_mcas_height"
-                values={values.x_mcas_height as HeightTupleInputValues[]}
+                name="height"
+                values={values.height as HeightTupleInputValues[]}
                 id={threatActorIndividual.id}
                 label={t('Heights')}
                 containerStyle={fieldSpacingContainerStyle}
@@ -167,8 +167,8 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
                 variant="edit"
               />
               <WeightField
-                name="x_mcas_weight"
-                values={values.x_mcas_weight as WeightTupleInputValues[]}
+                name="weight"
+                values={values.weight as WeightTupleInputValues[]}
                 id={threatActorIndividual.id}
                 label={t('Weights')}
                 containerStyle={fieldSpacingContainerStyle}

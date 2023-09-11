@@ -13,7 +13,7 @@ import { HeightTupleInputValues } from './__generated__/HeightFieldIndividualMut
 export const individualHeightMutation = graphql`
   mutation HeightFieldIndividualMutation($id: ID!, $input: HeightTupleInput!) {
     threatActorIndividualHeightEdit(id: $id, input: $input, sort: false) {
-      x_mcas_height {
+      height {
         height_in
         height_cm
         date_seen

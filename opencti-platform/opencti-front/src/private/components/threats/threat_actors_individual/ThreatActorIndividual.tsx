@@ -86,17 +86,17 @@ export const threatActorIndividualFragment = graphql`
     workflowEnabled
     eye_color
     hair_color
-    x_mcas_height {
+    height {
       date_seen
       height_in
       height_cm
     }
-    x_mcas_weight {
+    weight {
       date_seen
       weight_lb
       weight_kg
     }
-    x_mcas_date_of_birth
+    date_of_birth
     gender
     marital_status
     job_title

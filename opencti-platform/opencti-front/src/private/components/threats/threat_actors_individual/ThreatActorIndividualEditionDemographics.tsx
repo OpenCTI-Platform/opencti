@@ -43,7 +43,7 @@ const threatActorIndividualMutationFieldPatch = graphql`
 const threatActorIndividualEditionDemographicsFragment = graphql`
   fragment ThreatActorIndividualEditionDemographics_ThreatActorIndividual on ThreatActorIndividual {
     id
-    x_mcas_date_of_birth
+    date_of_birth
     gender
     marital_status
     job_title
@@ -60,7 +60,7 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
 `;
 
 const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object().shape({
-  x_mcas_date_of_birth: Yup.date()
+  date_of_birth: Yup.date()
     .nullable()
     .typeError(t('The value must be a date (yyyy-MM-dd)')),
   gender: Yup.string()
@@ -126,7 +126,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
   };
 
   const initialValues = {
-    x_mcas_date_of_birth: buildDate(threatActorIndividual.x_mcas_date_of_birth),
+    date_of_birth: buildDate(threatActorIndividual.date_of_birth),
     gender: threatActorIndividual.gender,
     marital_status: threatActorIndividual.marital_status,
     job_title: threatActorIndividual.job_title,
@@ -191,7 +191,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               />
               <Field
                 component={DatePickerField}
-                name="x_mcas_date_of_birth"
+                name="date_of_birth"
                 id="DateOfBirth"
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
@@ -203,7 +203,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                   helperText: (
                     <SubscriptionFocus
                       context={context}
-                      fieldName="x_mcas_date_of_birth"
+                      fieldName="date_of_birth"
                     />
                   ),
                 }}

@@ -584,7 +584,7 @@ const elCreateIndexTemplate = async (index) => {
                 },
               },
             },
-            x_mcas_height: {
+            height: {
               type: 'object',
               properties: {
                 height_in: {
@@ -598,7 +598,7 @@ const elCreateIndexTemplate = async (index) => {
                 },
               },
             },
-            x_mcas_weight: {
+            weight: {
               type: 'object',
               properties: {
                 weight_lb: {

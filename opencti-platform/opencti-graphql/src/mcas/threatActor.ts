@@ -13,14 +13,14 @@ import type { AuthContext, AuthUser } from '../types/user';
 const type = ABSTRACT_STIX_DOMAIN_OBJECT;
 
 enum HeightOrWeight {
-  HEIGHT = 'x_mcas_height',
-  WEIGHT = 'x_mcas_weight',
+  HEIGHT = 'height',
+  WEIGHT = 'weight',
 }
 
 interface DocParams {
   internal_id: string,
-  x_mcas_height?: any,
-  x_mcas_weight?: any,
+  height?: any,
+  weight?: any,
 }
 
 /**
@@ -71,7 +71,7 @@ const sortByDateSeen = (
   | undefined,
   key: string,
 ): InputMaybe<InputMaybe<HeightTupleInputValues>[]> | undefined => {
-  const finalValues = key === 'x_mcas_height'
+  const finalValues = key === 'height'
     ? removeEmptyHeightTuples(values as HeightTupleInputValues[])
     : removeEmptyWeightTuples(values as WeightTupleInputValues[]);
   return finalValues.sort((leftValue, rightValue) => {
@@ -189,7 +189,7 @@ const _roundAndConvert = (key: HeightOrWeight, values: InputMaybe<InputMaybe<Hei
  * @param user User calling this mutation.
  * @param id Internal ID of the record to mutate.
  * @param input Requested mutation.
- * @param key Either "x_mcas_height" or "x_mcas_weight".
+ * @param key Either "height" or "weight".
  * @param sort Whether to sort the updated values or not. Defaults to true.
  * @returns Updated record or an error.
  */
@@ -243,10 +243,10 @@ const heightWeightEdit = async (context: AuthContext, user: AuthUser, id: string
   // sort values and replace existing list in elasticsearch
   if (sort) finalValues = sortByDateSeen(finalValues, key);
   const source = `ctx._source['${key}'] = params['${key}']`;
-  if (key === 'x_mcas_height') {
-    doc.x_mcas_height = finalValues;
+  if (key === 'height') {
+    doc.height = finalValues;
   } else {
-    doc.x_mcas_weight = finalValues;
+    doc.weight = finalValues;
   }
   return updateRecord(context, user, stixDomainObject._index, id, source, doc);
 };
@@ -262,8 +262,8 @@ const heightWeightEdit = async (context: AuthContext, user: AuthUser, id: string
 export const heightWeightSort = async (context: AuthContext, user: AuthUser, id: string) => {
   const stixDomainObject = await storeLoadById(context, user, id, type);
   const doc: DocParams = { internal_id: id };
-  const height_key = 'x_mcas_height';
-  const weight_key = 'x_mcas_weight';
+  const height_key = 'height';
+  const weight_key = 'weight';
   const initial = await storeLoadByIdWithRefs(context, user, id, { type });
   if (!initial) {
     throw FunctionalError("Can't find element to update", { id, type });

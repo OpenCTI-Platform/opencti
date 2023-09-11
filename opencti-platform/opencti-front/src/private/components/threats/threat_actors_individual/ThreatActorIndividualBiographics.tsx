@@ -260,9 +260,9 @@ const ThreatActorIndividualBiographicsComponent = (
             }
           >
             <List dense={true} disablePadding={true} id={'HeightIDRead'}>
-              { threatActorIndividual?.x_mcas_height
-                && threatActorIndividual?.x_mcas_height?.length > 0
-                ? (threatActorIndividual?.x_mcas_height as Height[] ?? []).map((height, i) => (
+              { threatActorIndividual?.height
+                && threatActorIndividual?.height?.length > 0
+                ? (threatActorIndividual?.height as Height[] ?? []).map((height, i) => (
                   <HeightDisplay
                     key={i}
                     height={heightValue(height)}
@@ -287,9 +287,9 @@ const ThreatActorIndividualBiographicsComponent = (
             }
           >
             <List dense={true} disablePadding={true} id={'WeightIDRead'}>
-              { threatActorIndividual?.x_mcas_weight
-                && threatActorIndividual?.x_mcas_weight?.length > 0
-                ? (threatActorIndividual?.x_mcas_weight as Weight[] ?? []).map((weight, i) => (
+              { threatActorIndividual?.weight
+                && threatActorIndividual?.weight?.length > 0
+                ? (threatActorIndividual?.weight as Weight[] ?? []).map((weight, i) => (
                   <WeightDisplay
                     key={i}
                     weight={weightValue(weight)}

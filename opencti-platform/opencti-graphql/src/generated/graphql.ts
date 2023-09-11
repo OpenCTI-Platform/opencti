@@ -26389,6 +26389,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  date_of_birth?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
@@ -26401,6 +26402,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   goals?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   groupings?: Maybe<GroupingConnection>;
   hair_color?: Maybe<Scalars['String']['output']>;
+  height?: Maybe<Array<Maybe<HeightTuple>>>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
@@ -26441,10 +26443,8 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   threat_actor_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
+  weight?: Maybe<Array<Maybe<WeightTuple>>>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
-  x_mcas_date_of_birth?: Maybe<Scalars['DateTime']['output']>;
-  x_mcas_height?: Maybe<Array<Maybe<HeightTuple>>>;
-  x_mcas_weight?: Maybe<Array<Maybe<WeightTuple>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -26591,6 +26591,7 @@ export type ThreatActorIndividualAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
+  date_of_birth?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   ethnicity?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -26600,6 +26601,7 @@ export type ThreatActorIndividualAddInput = {
   gender?: InputMaybe<Scalars['String']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   hair_color?: InputMaybe<Scalars['String']['input']>;
+  height?: InputMaybe<Array<InputMaybe<HeightTupleInputValues>>>;
   job_title?: InputMaybe<Scalars['String']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
   last_seen?: InputMaybe<Scalars['DateTime']['input']>;
@@ -26621,9 +26623,7 @@ export type ThreatActorIndividualAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
-  x_mcas_date_of_birth?: InputMaybe<Scalars['DateTime']['input']>;
-  x_mcas_height?: InputMaybe<Array<InputMaybe<HeightTupleInputValues>>>;
-  x_mcas_weight?: InputMaybe<Array<InputMaybe<WeightTupleInputValues>>>;
+  weight?: InputMaybe<Array<InputMaybe<WeightTupleInputValues>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
 };
 
@@ -38110,6 +38110,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  date_of_birth?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38122,6 +38123,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualGroupingsArgs>>;
   hair_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  height?: Resolver<Maybe<Array<Maybe<ResolversTypes['HeightTuple']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -38162,10 +38164,8 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  weight?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeightTuple']>>>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_mcas_date_of_birth?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  x_mcas_height?: Resolver<Maybe<Array<Maybe<ResolversTypes['HeightTuple']>>>, ParentType, ContextType>;
-  x_mcas_weight?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeightTuple']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;

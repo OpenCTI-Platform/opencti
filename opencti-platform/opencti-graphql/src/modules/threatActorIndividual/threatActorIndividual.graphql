@@ -112,14 +112,14 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   personal_motivations: [String]
   locations: LocationConnection
   countries: CountryConnection
-  x_mcas_date_of_birth: DateTime
+  date_of_birth: DateTime
   gender: String
   job_title: String
   marital_status: String
   eye_color: String
   hair_color: String
-  x_mcas_height: [HeightTuple]
-  x_mcas_weight: [WeightTuple]
+  height: [HeightTuple]
+  weight: [WeightTuple]
   bornIn: Country
   nationality: Country
   ethnicity: Country
@@ -196,14 +196,14 @@ input ThreatActorIndividualAddInput {
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
-  x_mcas_date_of_birth: DateTime
+  date_of_birth: DateTime
   gender: String
   job_title: String
   marital_status: String
   eye_color: String
   hair_color: String
-  x_mcas_height: [HeightTupleInputValues]
-  x_mcas_weight: [WeightTupleInputValues]
+  height: [HeightTupleInputValues]
+  weight: [WeightTupleInputValues]
   confidence: Int
   revoked: Boolean
   lang: String

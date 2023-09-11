@@ -53,12 +53,12 @@ export const ThreatActorIndividualEditionOverviewFocus = graphql`
     }
     threatActorIndividualHeightWeightSort(id: $id) {
       id
-      x_mcas_height {
+      height {
         height_in
         height_cm
         date_seen
       }
-      x_mcas_weight {
+      weight {
         weight_lb
         weight_kg
         date_seen

@@ -22,14 +22,14 @@ export interface BasicStoreEntityThreatActorIndividual extends BasicStoreEntity 
   primary_motivations: string
   secondary_motivations: string[]
   personal_motivations: string[]
-  x_mcas_date_of_birth: DateTime
+  date_of_birth: DateTime
   gender: string
   job_title: string
   marital_status: MaritalStatus
   eye_color: string
   hair_color: string
-  x_mcas_height: [HeightTupleInputValues]
-  x_mcas_weight: [WeightTupleInputValues]
+  height: [HeightTupleInputValues]
+  weight: [WeightTupleInputValues]
   [RELATION_BORN_IN]: string
   [RELATION_NATIONALITY]: string
   [RELATION_ETHNICITY]: string
@@ -49,14 +49,14 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
   primary_motivations: string
   secondary_motivations: string[]
   personal_motivations: string[]
-  x_mcas_date_of_birth: DateTime
+  date_of_birth: DateTime
   gender: string
   job_title: string
   marital_status: MaritalStatus
   eye_color: string
   hair_color: string
-  x_mcas_height: [HeightTupleInputValues]
-  x_mcas_weight: [WeightTupleInputValues]
+  height: [HeightTupleInputValues]
+  weight: [WeightTupleInputValues]
   bornIn: Country
   nationality: Country
   ethnicity: Country
@@ -80,14 +80,14 @@ export interface StixThreatActorIndividual extends StixContainer {
   primary_motivations: string
   secondary_motivations: string[]
   personal_motivations: string[]
-  x_mcas_date_of_birth: DateTime
+  date_of_birth: DateTime
   gender: string
   job_title: string
   marital_status: MaritalStatus
   eye_color: string
   hair_color: string
-  x_mcas_height: [HeightTupleInputValues]
-  x_mcas_weight: [WeightTupleInputValues]
+  height: [HeightTupleInputValues]
+  weight: [WeightTupleInputValues]
   born_in_ref: string
   nationality_ref: string
   ethnicity_ref: string

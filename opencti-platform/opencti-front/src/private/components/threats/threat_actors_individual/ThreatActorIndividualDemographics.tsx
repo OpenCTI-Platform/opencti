@@ -182,7 +182,7 @@ const ThreatActorIndividualDemographics = (
               {t('Date of Birth')}
             </Typography>
             <div id='date_of_birth'>
-              {threatActorIndividual?.x_mcas_date_of_birth ? fsd(threatActorIndividual?.x_mcas_date_of_birth) : '-'}
+              {threatActorIndividual?.date_of_birth ? fsd(threatActorIndividual?.date_of_birth) : '-'}
             </div>
           </Grid>
           <Grid item={true} spacing={4}>

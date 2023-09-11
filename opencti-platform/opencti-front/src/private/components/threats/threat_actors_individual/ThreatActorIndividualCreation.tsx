@@ -109,14 +109,14 @@ interface ThreatActorIndividualAddInput {
   bornIn: string | null
   nationality: string | null
   ethnicity: string | null
-  x_mcas_date_of_birth: Date | null
+  date_of_birth: Date | null
   gender: string | null
   marital_status: string | null
   job_title: string | undefined
   eye_color: string | null
   hair_color: string | null
-  x_mcas_height: HeightTupleInputValues[]
-  x_mcas_weight: WeightTupleInputValues[]
+  height: HeightTupleInputValues[]
+  weight: WeightTupleInputValues[]
 }
 
 interface ThreatActorIndividualFormProps {
@@ -130,8 +130,8 @@ interface ThreatActorIndividualFormProps {
 }
 
 enum HeightOrWeight {
-  HEIGHT = 'x_mcas_height',
-  WEIGHT = 'x_mcas_weight',
+  HEIGHT = 'height',
+  WEIGHT = 'weight',
 }
 
 /**
@@ -259,7 +259,7 @@ ThreatActorIndividualFormProps
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-    x_mcas_date_of_birth: Yup.date()
+    date_of_birth: Yup.date()
       .nullable()
       .typeError(t('The value must be a date (yyyy-MM-dd)')),
     bornIn: Yup.string().nullable(),
@@ -275,7 +275,7 @@ ThreatActorIndividualFormProps
       .max(250, t('The value is too long')),
     eye_color: Yup.string().nullable(),
     hair_color: Yup.string().nullable(),
-    x_mcas_height: Yup.array().of(
+    height: Yup.array().of(
       Yup.object().shape({
         height_in: Yup.number().min(0).nullable()
           .typeError(t('The value must be a number')),
@@ -285,7 +285,7 @@ ThreatActorIndividualFormProps
           .typeError(t('The value must be a date (yyyy-MM-dd)')),
       }),
     ),
-    x_mcas_weight: Yup.array().of(
+    weight: Yup.array().of(
       Yup.object().shape({
         weight_lb: Yup.number().min(0).nullable()
           .typeError(t('The value must be a number')),
@@ -320,14 +320,14 @@ ThreatActorIndividualFormProps
       bornIn: values?.bornIn,
       nationality: values?.nationality,
       ethnicity: values?.ethnicity,
-      x_mcas_date_of_birth: values?.x_mcas_date_of_birth,
+      date_of_birth: values?.date_of_birth,
       gender: values?.gender,
       marital_status: values?.marital_status,
       job_title: values?.job_title,
       eye_color: values?.eye_color,
       hair_color: values?.hair_color,
-      x_mcas_height: roundAndConvert(HeightOrWeight.HEIGHT, values?.x_mcas_height),
-      x_mcas_weight: roundAndConvert(HeightOrWeight.WEIGHT, values?.x_mcas_weight),
+      height: roundAndConvert(HeightOrWeight.HEIGHT, values?.height),
+      weight: roundAndConvert(HeightOrWeight.WEIGHT, values?.weight),
     };
     commit({
       variables: {
@@ -365,15 +365,14 @@ ThreatActorIndividualFormProps
     bornIn: null,
     nationality: null,
     ethnicity: null,
-    x_mcas_date_of_birth: null,
+    date_of_birth: null,
     gender: null,
     marital_status: null,
-    x_mcas_employer: [],
     job_title: undefined,
     eye_color: null,
     hair_color: null,
-    x_mcas_height: [],
-    x_mcas_weight: [],
+    height: [],
+    weight: [],
   });
 
   return (
@@ -484,7 +483,7 @@ ThreatActorIndividualFormProps
               <Field
                 id="DateOfBirth"
                 component={DatePickerField}
-                name="x_mcas_date_of_birth"
+                name="date_of_birth"
                 onSubmit={setFieldValue}
                 TextFieldProps={{
                   label: t('Date of Birth'),
@@ -550,16 +549,16 @@ ThreatActorIndividualFormProps
               />
               <HeightField
                 id='new_height'
-                name="x_mcas_height"
-                values={values?.x_mcas_height}
+                name="height"
+                values={values?.height}
                 label={t('Heights')}
                 variant="create"
                 containerStyle={fieldSpacingContainerStyle}
               />
               <WeightField
                 id='new_weight'
-                name="x_mcas_weight"
-                values={values?.x_mcas_weight}
+                name="weight"
+                values={values?.weight}
                 label={t('Weights')}
                 variant="create"
                 containerStyle={fieldSpacingContainerStyle}

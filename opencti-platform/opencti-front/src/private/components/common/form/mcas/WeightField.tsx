@@ -13,7 +13,7 @@ import { WeightTupleInputValues } from './__generated__/WeightFieldIndividualMut
 export const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: WeightTupleInput!) {
     threatActorIndividualWeightEdit(id: $id, input: $input, sort: false) {
-      x_mcas_weight {
+      weight {
         weight_lb
         weight_kg
         date_seen
