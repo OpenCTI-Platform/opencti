@@ -116,14 +116,14 @@ const computeUserAndCollection = async (res, { context, user, id }) => {
     res.status(401).end();
     return { error: res.statusMessage };
   }
-  const streamFilters = JSON.parse(collection.filters);
   // Check if collection exist and started
-  if (collection && !collection.stream_live) {
+  if (!collection.stream_live) {
     res.statusMessage = 'This live stream is stopped';
     res.status(410).end();
     logApp.warn('This live stream is stopped', { streamCollectionId: id });
     return { error: 'This live stream is stopped' };
   }
+  const streamFilters = JSON.parse(collection.filters);
   // If bypass or public stream
   if (collection.stream_public) {
     return { streamFilters, collection };
