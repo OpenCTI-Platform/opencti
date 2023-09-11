@@ -21,6 +21,7 @@ import { commitLocalUpdate } from '../../../../relay/environment';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import { HairColors } from '../../common/form/mcas/HairColorField';
 import { EyeColors } from '../../common/form/mcas/EyeColorField';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -29,13 +30,6 @@ const useStyles = makeStyles(() => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
-  },
-  item: {
-    paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
   },
 }));
 
@@ -241,25 +235,19 @@ const ThreatActorIndividualBiographicsComponent = (
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
           <DetailGrid title={t('Eye Color')} tooltip={t('Known observed eye color(s) for the Identity.')}>
-            <div id="Editeye">
-              {/* Parse to verify Safe HTML */}
-              {parse(
-                threatActorIndividual?.x_mcas_eye_color === null
-                  ? '-'
-                  : toVal(threatActorIndividual.x_mcas_eye_color, EyeColors),
-              )}
-            </div>
+            <ItemOpenVocab
+              type="eye-color-ov"
+              value={threatActorIndividual.eye_color}
+              small
+            />
           </DetailGrid>
 
           <DetailGrid title={t('Hair Color')} tooltip={t('Known observed hair color(s) for the Identity.')}>
-            <div id="HairID">
-              {/* Parse to verify Safe HTML */}
-              {parse(
-                threatActorIndividual?.x_mcas_hair_color === null
-                  ? '-'
-                  : toVal(threatActorIndividual.x_mcas_hair_color, HairColors),
-              )}
-            </div>
+            <ItemOpenVocab
+              type="hair-color-ov"
+              value={threatActorIndividual.hair_color}
+              small
+            />
           </DetailGrid>
 
           <DetailGrid

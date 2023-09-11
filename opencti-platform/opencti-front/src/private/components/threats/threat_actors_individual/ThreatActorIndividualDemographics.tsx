@@ -4,17 +4,21 @@ import parse from 'html-react-parser';
 import { useState } from 'react';
 import { graphql } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
-import Origin from '../../common/form/mcas/OriginEnum';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
-import { MaritalStatus } from '../../common/form/mcas/MaritalStatusField';
-import { Genders } from '../../common/form/mcas/GenderField';
 import { fetchQuery } from '../../../../relay/environment';
 import { ThreatActorIndividualDemographicsCountryRelationshipsQuery$data } from './__generated__/ThreatActorIndividualDemographicsCountryRelationshipsQuery.graphql';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 export const getDemographicCountryRelationship = graphql`
   query ThreatActorIndividualDemographicsCountryRelationshipsQuery($id: String!) {
     threatActorIndividual(id:$id) {
       bornIn {
+        name
+      }
+      nationality {
+        name
+      }
+      ethnicity {
         name
       }
       stixCoreRelationships {
@@ -42,19 +46,14 @@ const useStyles = makeStyles(() => ({
     padding: '15px',
     borderRadius: 6,
   },
-  item: {
-    paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-  },
 }));
 
 interface ThreatActorIndividualDemographicsCountryRelationships {
-  x_mcas_country_of_residence: Array<string>,
-  x_mcas_citizenship: Array<string>,
-  x_mcas_place_of_birth: string | undefined,
+  country_of_residence: Array<string>,
+  citizenship: Array<string>,
+  place_of_birth: string | undefined,
+  nationality: string | undefined,
+  ethnicity: string | undefined,
 }
 
 interface ThreatActorIndividualDemographicsProps {
@@ -68,9 +67,11 @@ const ThreatActorIndividualDemographics = (
   const { t, fsd } = useFormatter();
 
   const [countryRelationship, setCountryRelationships] = useState<ThreatActorIndividualDemographicsCountryRelationships>({
-    x_mcas_country_of_residence: [],
-    x_mcas_citizenship: [],
-    x_mcas_place_of_birth: undefined,
+    country_of_residence: [],
+    citizenship: [],
+    place_of_birth: undefined,
+    nationality: undefined,
+    ethnicity: undefined,
   });
 
   fetchQuery(
@@ -85,9 +86,11 @@ const ThreatActorIndividualDemographics = (
     ) => {
       const fetchedCountryRelationships:
       ThreatActorIndividualDemographicsCountryRelationships = {
-        x_mcas_country_of_residence: [],
-        x_mcas_citizenship: [],
-        x_mcas_place_of_birth: data?.threatActorIndividual?.bornIn?.name,
+        country_of_residence: [],
+        citizenship: [],
+        place_of_birth: data?.threatActorIndividual?.bornIn?.name,
+        nationality: data?.threatActorIndividual?.nationality?.name,
+        ethnicity: data?.threatActorIndividual?.ethnicity?.name,
       };
       const edges = data
         ?.threatActorIndividual
@@ -100,10 +103,10 @@ const ThreatActorIndividualDemographics = (
         if (name) {
           switch (relationship_type) {
             case 'resides-in':
-              fetchedCountryRelationships.x_mcas_country_of_residence.push(name);
+              fetchedCountryRelationships.country_of_residence.push(name);
               break;
             case 'citizen-of':
-              fetchedCountryRelationships.x_mcas_citizenship.push(name);
+              fetchedCountryRelationships.citizenship.push(name);
               break;
             default:
           }
@@ -113,10 +116,6 @@ const ThreatActorIndividualDemographics = (
     },
   });
 
-  function toVal(value: string, dict: Record<string, string>) {
-    return t(Object.values(dict)[Object.keys(dict).indexOf(value)]);
-  }
-
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -124,153 +123,126 @@ const ThreatActorIndividualDemographics = (
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
-          {/* Row #1 */}
-          <Grid item={true} xs={3} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Country of Residence')}
             </Typography>
+            <div id='mcas_country_of_residence_list'>
+              {countryRelationship?.country_of_residence && countryRelationship?.country_of_residence.length > 0
+                ? countryRelationship?.country_of_residence.map((place: string, index: number) => (
+                  <Chip
+                    key={index}
+                    label={t(place)}
+                    style={{ margin: 1 }}
+                  />
+                ))
+                : '-'
+              }
+            </div>
           </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Citizenship')}
             </Typography>
+            <div id='mcas_citizenship_list'>
+              {countryRelationship?.citizenship && countryRelationship?.citizenship.length > 0
+                ? countryRelationship?.citizenship.map((place: string, index: number) => (
+                  <Chip
+                    key={index}
+                    label={t(place)}
+                    style={{ margin: 1 }}
+                  />
+                ))
+                : '-'
+              }
+            </div>
           </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Place of Birth')}
             </Typography>
+            <div id='place_of_birth'>
+              {parse(t(countryRelationship?.place_of_birth ?? '-'))}
+            </div>
           </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Date of Birth')}
             </Typography>
-          </Grid>
-
-          {/* Row #2 */}
-          <Grid item={true} xs={3} style={{ marginTop: -20 }}>
-            <div id='mcas_country_of_residence_list'>
-              {countryRelationship?.x_mcas_country_of_residence && countryRelationship?.x_mcas_country_of_residence.length > 0
-                ? countryRelationship?.x_mcas_country_of_residence.map((place: string, index: number) => (
-                  <Chip
-                    key={index}
-                    label={t(place)}
-                    style={{ margin: 1 }}
-                  />
-                ))
-                : '-'
-              }
-            </div>
-          </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -20 }}>
-            <div id='mcas_citizenship_list'>
-              {countryRelationship?.x_mcas_citizenship && countryRelationship?.x_mcas_citizenship.length > 0
-                ? countryRelationship?.x_mcas_citizenship.map((place: string, index: number) => (
-                  <Chip
-                    key={index}
-                    label={t(place)}
-                    style={{ margin: 1 }}
-                  />
-                ))
-                : '-'
-              }
-            </div>
-          </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -20 }}>
-            <div id='mcas_place_of_birth'>
-              {parse(t(countryRelationship?.x_mcas_place_of_birth ?? '-'))}
-            </div>
-          </Grid>
-          <Grid item={true} xs={3} style={{ marginTop: -20 }}>
-            <div id='mcas_date_of_birth'>
+            <div id='date_of_birth'>
               {threatActorIndividual?.x_mcas_date_of_birth ? fsd(threatActorIndividual?.x_mcas_date_of_birth) : '-'}
             </div>
           </Grid>
-          {/* Row #3 */}
-          <Grid item={true} xs={3} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Nationality')}
             </Typography>
+            <div id='nationality'>
+              {parse(t(countryRelationship?.nationality ?? '-'))}
+            </div>
           </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Ethnicity')}
             </Typography>
+            <div id='ethnicity'>
+              {parse(t(countryRelationship?.ethnicity ?? '-'))}
+            </div>
           </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Gender')}
             </Typography>
+            <ItemOpenVocab
+              type="gender-ov"
+              value={threatActorIndividual.gender}
+              small
+            />
           </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Marital Status')}
             </Typography>
+            <ItemOpenVocab
+              type="marital-status-ov"
+              value={threatActorIndividual.marital_status}
+              small
+            />
           </Grid>
-          {/* Row #4 */}
-          <Grid item={true} xs={3} style={{ marginTop: -20 }}>
-            <div id="x_mcas_nationality_list">
-              {/* Parse to verify Safe HTML */}
-              {parse(
-                threatActorIndividual?.x_mcas_nationality === null
-                  ? '-'
-                  : toVal(threatActorIndividual?.x_mcas_nationality, Origin),
-              )}
-            </div>
-          </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -20 }}>
-            <div id="x_mcas_ethnicity_list">
-              {/* Parse to verify Safe HTML */}
-              {parse(
-                threatActorIndividual?.x_mcas_ethnicity === null
-                  ? '-'
-                  : toVal(threatActorIndividual?.x_mcas_ethnicity, Origin),
-              )}
-            </div>
-          </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -20 }}>
-            <div id="x_mcas_gender">
-              {/* Parse to verify Safe HTML */}
-              {parse(
-                threatActorIndividual?.x_mcas_gender === null
-                  ? '-'
-                  : toVal(threatActorIndividual?.x_mcas_gender, Genders),
-              )}
-            </div>
-          </Grid>
-
-          <Grid item={true} xs={3} style={{ marginTop: -20 }}>
-            <div id="x_mcas_marital_status">
-              {/* Parse to verify Safe HTML */}
-              {parse(
-                threatActorIndividual?.x_mcas_marital_status === null
-                  ? '-'
-                  : toVal(threatActorIndividual?.x_mcas_marital_status, MaritalStatus),
-              )}
-            </div>
-          </Grid>
-
-          {/* Row #5 */}
-          <Grid item={true} xs={12} style={{ marginTop: -1 }}>
-            <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          <Grid item={true} spacing={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+            >
               {t('Job Title')}
             </Typography>
-          </Grid>
-
-          {/* Row #6 */}
-          <Grid item={true} xs={12} style={{ marginTop: -20 }}>
-            <div id='x_mcas_job_title'>
+            <div id='job_title'>
               {/* Parse to verify Safe HTML */}
-              {parse(threatActorIndividual?.x_mcas_job_title || '-')}
+              {parse(threatActorIndividual?.job_title || '-')}
             </div>
           </Grid>
         </Grid>

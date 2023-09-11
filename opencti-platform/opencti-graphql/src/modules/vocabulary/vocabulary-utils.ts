@@ -1125,7 +1125,44 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
       description: 'Tools used to scan systems and networks for vulnerabilities, e.g., Nessus'
     },
     { key: 'unknown', description: 'There is not enough information available to determine the type of tool' },
-  ]
+  ],
+  gender_ov: [
+    { key: 'male' },
+    { key: 'female' },
+    { key: 'nonbinary' },
+    { key: 'other' },
+  ],
+  marital_status_ov: [
+    { key: 'annulled' },
+    { key: 'divorced' },
+    { key: 'domestic_partner' },
+    { key: 'legally_separated' },
+    { key: 'separated' },
+    { key: 'married' },
+    { key: 'never_married' },
+    { key: 'polygamous' },
+    { key: 'single' },
+    { key: 'widowed' },
+  ],
+  hair_color_ov: [
+    { key: 'black' },
+    { key: 'brown' },
+    { key: 'blond' },
+    { key: 'red' },
+    { key: 'green' },
+    { key: 'blue' },
+    { key: 'gray' },
+    { key: 'bald' },
+    { key: 'other' },
+  ],
+  eye_color_ov: [
+    { key: 'black' },
+    { key: 'brown' },
+    { key: 'green' },
+    { key: 'blue' },
+    { key: 'hazel' },
+    { key: 'other' },
+  ],
 };
 
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {

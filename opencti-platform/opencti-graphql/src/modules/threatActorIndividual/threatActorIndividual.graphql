@@ -113,16 +113,16 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   locations: LocationConnection
   countries: CountryConnection
   x_mcas_date_of_birth: DateTime
-  x_mcas_ethnicity: Origin
-  x_mcas_gender: Gender
-  x_mcas_job_title: String
-  x_mcas_marital_status: MaritalStatus
-  x_mcas_nationality: Origin
-  x_mcas_eye_color: EyeColor
-  x_mcas_hair_color: HairColor
+  gender: String
+  job_title: String
+  marital_status: String
+  eye_color: String
+  hair_color: String
   x_mcas_height: [HeightTuple]
   x_mcas_weight: [WeightTuple]
   bornIn: Country
+  nationality: Country
+  ethnicity: Country
   # Technical
   creators: [Creator!]
   toStix: String
@@ -154,6 +154,8 @@ enum ThreatActorsIndividualFilter {
   updated_at
   createdBy
   bornIn
+  nationality
+  ethnicity
   markedBy
   assigneeTo
   labelledBy
@@ -195,13 +197,11 @@ input ThreatActorIndividualAddInput {
   secondary_motivations: [String]
   personal_motivations: [String]
   x_mcas_date_of_birth: DateTime
-  x_mcas_ethnicity: Origin
-  x_mcas_gender: Gender
-  x_mcas_job_title: String
-  x_mcas_marital_status: MaritalStatus
-  x_mcas_nationality: Origin
-  x_mcas_eye_color: EyeColor
-  x_mcas_hair_color: HairColor
+  gender: String
+  job_title: String
+  marital_status: String
+  eye_color: String
+  hair_color: String
   x_mcas_height: [HeightTupleInputValues]
   x_mcas_weight: [WeightTupleInputValues]
   confidence: Int
@@ -213,6 +213,8 @@ input ThreatActorIndividualAddInput {
   objectAssignee: [String]
   objectLabel: [String]
   bornIn: String
+  nationality: String
+  ethnicity: String
   externalReferences: [String]
   created: DateTime
   modified: DateTime

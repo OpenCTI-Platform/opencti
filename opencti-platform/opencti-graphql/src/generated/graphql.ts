@@ -26392,20 +26392,27 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   description?: Maybe<Scalars['String']['output']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
+  ethnicity?: Maybe<Country>;
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  eye_color?: Maybe<Scalars['String']['output']>;
   first_seen?: Maybe<Scalars['DateTime']['output']>;
+  gender?: Maybe<Scalars['String']['output']>;
   goals?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   groupings?: Maybe<GroupingConnection>;
+  hair_color?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
+  job_title?: Maybe<Scalars['String']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
+  marital_status?: Maybe<Scalars['String']['output']>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
+  nationality?: Maybe<Country>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectAssignee?: Maybe<AssigneeConnection>;
@@ -26436,14 +26443,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_mcas_date_of_birth?: Maybe<Scalars['DateTime']['output']>;
-  x_mcas_ethnicity?: Maybe<Origin>;
-  x_mcas_eye_color?: Maybe<EyeColor>;
-  x_mcas_gender?: Maybe<Gender>;
-  x_mcas_hair_color?: Maybe<HairColor>;
   x_mcas_height?: Maybe<Array<Maybe<HeightTuple>>>;
-  x_mcas_job_title?: Maybe<Scalars['String']['output']>;
-  x_mcas_marital_status?: Maybe<MaritalStatus>;
-  x_mcas_nationality?: Maybe<Origin>;
   x_mcas_weight?: Maybe<Array<Maybe<WeightTuple>>>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -26592,14 +26592,21 @@ export type ThreatActorIndividualAddInput = {
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  ethnicity?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  eye_color?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
   first_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  gender?: InputMaybe<Scalars['String']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  hair_color?: InputMaybe<Scalars['String']['input']>;
+  job_title?: InputMaybe<Scalars['String']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
   last_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  marital_status?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
+  nationality?: InputMaybe<Scalars['String']['input']>;
   objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -26615,14 +26622,7 @@ export type ThreatActorIndividualAddInput = {
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_mcas_date_of_birth?: InputMaybe<Scalars['DateTime']['input']>;
-  x_mcas_ethnicity?: InputMaybe<Origin>;
-  x_mcas_eye_color?: InputMaybe<EyeColor>;
-  x_mcas_gender?: InputMaybe<Gender>;
-  x_mcas_hair_color?: InputMaybe<HairColor>;
   x_mcas_height?: InputMaybe<Array<InputMaybe<HeightTupleInputValues>>>;
-  x_mcas_job_title?: InputMaybe<Scalars['String']['input']>;
-  x_mcas_marital_status?: InputMaybe<MaritalStatus>;
-  x_mcas_nationality?: InputMaybe<Origin>;
   x_mcas_weight?: InputMaybe<Array<InputMaybe<WeightTupleInputValues>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
 };
@@ -26674,10 +26674,12 @@ export enum ThreatActorsIndividualFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  Ethnicity = 'ethnicity',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Nationality = 'nationality',
   Revoked = 'revoked',
   SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
@@ -27967,7 +27969,10 @@ export enum VocabularyCategory {
   ChannelTypesOv = 'channel_types_ov',
   CollectionLayersOv = 'collection_layers_ov',
   EventTypeOv = 'event_type_ov',
+  EyeColorOv = 'eye_color_ov',
+  GenderOv = 'gender_ov',
   GroupingContextOv = 'grouping_context_ov',
+  HairColorOv = 'hair_color_ov',
   ImplementationLanguageOv = 'implementation_language_ov',
   IncidentResponseTypesOv = 'incident_response_types_ov',
   IncidentSeverityOv = 'incident_severity_ov',
@@ -27978,6 +27983,7 @@ export enum VocabularyCategory {
   MalwareCapabilitiesOv = 'malware_capabilities_ov',
   MalwareResultOv = 'malware_result_ov',
   MalwareTypeOv = 'malware_type_ov',
+  MaritalStatusOv = 'marital_status_ov',
   NoteTypesOv = 'note_types_ov',
   OpinionOv = 'opinion_ov',
   PatternTypeOv = 'pattern_type_ov',
@@ -38107,20 +38113,27 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ethnicity?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualExternalReferencesArgs>>;
+  eye_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  gender?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualGroupingsArgs>>;
+  hair_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  job_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ThreatActorIndividualJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
+  marital_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  nationality?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;
@@ -38151,14 +38164,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_mcas_date_of_birth?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  x_mcas_ethnicity?: Resolver<Maybe<ResolversTypes['Origin']>, ParentType, ContextType>;
-  x_mcas_eye_color?: Resolver<Maybe<ResolversTypes['EyeColor']>, ParentType, ContextType>;
-  x_mcas_gender?: Resolver<Maybe<ResolversTypes['Gender']>, ParentType, ContextType>;
-  x_mcas_hair_color?: Resolver<Maybe<ResolversTypes['HairColor']>, ParentType, ContextType>;
   x_mcas_height?: Resolver<Maybe<Array<Maybe<ResolversTypes['HeightTuple']>>>, ParentType, ContextType>;
-  x_mcas_job_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_mcas_marital_status?: Resolver<Maybe<ResolversTypes['MaritalStatus']>, ParentType, ContextType>;
-  x_mcas_nationality?: Resolver<Maybe<ResolversTypes['Origin']>, ParentType, ContextType>;
   x_mcas_weight?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeightTuple']>>>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;

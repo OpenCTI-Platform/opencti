@@ -6,6 +6,8 @@ import { buildRefRelationKey } from '../../schema/general';
 import {
   RELATION_BORN_IN,
   RELATION_CREATED_BY,
+  RELATION_ETHNICITY,
+  RELATION_NATIONALITY,
   RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from '../../schema/stixRefRelationship';
@@ -19,9 +21,11 @@ import {
 import type { Resolvers } from '../../generated/graphql';
 import { heightEdit, heightWeightSort, weightEdit } from '../../mcas/threatActor';
 import { batchLoader } from '../../database/middleware';
-import { batchBornIn } from '../../domain/stixCoreObject';
+import { batchBornIn, batchEthnicity, batchNationality } from '../../domain/stixCoreObject';
 
 const bornInLoader = batchLoader(batchBornIn);
+const nationalityLoader = batchLoader(batchNationality);
+const ethnicityLoader = batchLoader(batchEthnicity);
 
 const threatActorIndividualResolvers: Resolvers = {
   Query: {
@@ -30,10 +34,14 @@ const threatActorIndividualResolvers: Resolvers = {
   },
   ThreatActorIndividual: {
     bornIn: (threatActorIndividual, _, context) => bornInLoader.load(threatActorIndividual.id, context, context.user),
+    nationality: (threatActorIndividual, _, context) => nationalityLoader.load(threatActorIndividual.id, context, context.user),
+    ethnicity: (threatActorIndividual, _, context) => ethnicityLoader.load(threatActorIndividual.id, context, context.user),
   },
   ThreatActorsIndividualFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     bornIn: buildRefRelationKey(RELATION_BORN_IN),
+    nationality: buildRefRelationKey(RELATION_NATIONALITY),
+    ethnicity: buildRefRelationKey(RELATION_ETHNICITY),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),

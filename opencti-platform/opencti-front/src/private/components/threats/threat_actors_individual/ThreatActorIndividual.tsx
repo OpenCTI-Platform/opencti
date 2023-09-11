@@ -84,8 +84,8 @@ export const threatActorIndividualFragment = graphql`
       }
     }
     workflowEnabled
-    x_mcas_eye_color
-    x_mcas_hair_color
+    eye_color
+    hair_color
     x_mcas_height {
       date_seen
       height_in
@@ -97,11 +97,9 @@ export const threatActorIndividualFragment = graphql`
       weight_kg
     }
     x_mcas_date_of_birth
-    x_mcas_nationality
-    x_mcas_ethnicity
-    x_mcas_gender
-    x_mcas_marital_status
-    x_mcas_job_title
+    gender
+    marital_status
+    job_title
     ...ThreatActorIndividualDetails_ThreatActorIndividual
   }
 `;

@@ -15,6 +15,7 @@ import { buildDate } from '../../../../utils/Time';
 import { ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDemographics_ThreatActorIndividual.graphql';
 import CountryPickerField from '../../common/form/mcas/CountryPickerField';
 import { EditOperation } from './__generated__/ThreatActorIndividualEditionDetailsFieldPatchMutation.graphql';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
   mutation ThreatActorIndividualEditionDemographicsFocusMutation(
@@ -43,12 +44,16 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
   fragment ThreatActorIndividualEditionDemographics_ThreatActorIndividual on ThreatActorIndividual {
     id
     x_mcas_date_of_birth
-    x_mcas_nationality
-    x_mcas_ethnicity
-    x_mcas_gender
-    x_mcas_marital_status
-    x_mcas_job_title
+    gender
+    marital_status
+    job_title
     bornIn {
+      id
+    }
+    nationality {
+      id
+    }
+    ethnicity {
       id
     }
   }
@@ -58,21 +63,18 @@ const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object
   x_mcas_date_of_birth: Yup.date()
     .nullable()
     .typeError(t('The value must be a date (yyyy-MM-dd)')),
-  x_mcas_nationality: Yup.string()
+  gender: Yup.string()
     .nullable()
     .typeError(t('The value must be a string')),
-  x_mcas_ethnicity: Yup.string()
+  marital_status: Yup.string()
     .nullable()
     .typeError(t('The value must be a string')),
-  x_mcas_gender: Yup.string()
+  job_title: Yup.string()
     .nullable()
-    .typeError(t('The value must be a string')),
-  x_mcas_marital_status: Yup.string()
-    .nullable()
-    .typeError(t('The value must be a string')),
-  x_mcas_job_title: Yup.string()
     .max(250, t('The value is too long')),
   bornIn: Yup.string().nullable(),
+  nationality: Yup.string().nullable(),
+  ethnicity: Yup.string().nullable(),
 });
 
 interface ThreatActorIndividualEditionDemographicsComponentProps {
@@ -125,12 +127,12 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
 
   const initialValues = {
     x_mcas_date_of_birth: buildDate(threatActorIndividual.x_mcas_date_of_birth),
-    x_mcas_nationality: threatActorIndividual.x_mcas_nationality,
-    x_mcas_ethnicity: threatActorIndividual.x_mcas_ethnicity,
-    x_mcas_gender: threatActorIndividual.x_mcas_gender,
-    x_mcas_marital_status: threatActorIndividual.x_mcas_marital_status,
-    x_mcas_job_title: threatActorIndividual.x_mcas_job_title,
+    gender: threatActorIndividual.gender,
+    marital_status: threatActorIndividual.marital_status,
+    job_title: threatActorIndividual.job_title,
     bornIn: threatActorIndividual.bornIn?.id,
+    nationality: threatActorIndividual.nationality?.id,
+    ethnicity: threatActorIndividual.ethnicity?.id,
   };
 
   return (
@@ -151,26 +153,36 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <OriginField
-                name="x_mcas_nationality"
-                label={t('Nationality')}
-                initialValue={threatActorIndividual.x_mcas_nationality}
-                style={fieldSpacingContainerStyle}
-                handleChange={handleSubmitField}
-              />
-              <OriginField
-                name="x_mcas_ethnicity"
-                label={t('Ethnicity')}
-                initialValue={threatActorIndividual.x_mcas_ethnicity}
-                style={fieldSpacingContainerStyle}
-                handleChange={handleSubmitField}
-              />
               <CountryPickerField
                 id="PlaceOfBirth"
                 name="bornIn"
                 multi={false}
                 initialValues={values.bornIn}
                 label={t('Place of Birth')}
+                style={fieldSpacingContainerStyle}
+                handleChange={(n, v) => {
+                  setFieldValue(n, Array.isArray(v) ? v[0] : v);
+                  handleSubmitField(n, Array.isArray(v) ? v[0] : v);
+                }}
+              />
+              <CountryPickerField
+                id="Nationality"
+                name="nationality"
+                multi={false}
+                initialValues={values.nationality}
+                label={t('Nationality')}
+                style={fieldSpacingContainerStyle}
+                handleChange={(n, v) => {
+                  setFieldValue(n, Array.isArray(v) ? v[0] : v);
+                  handleSubmitField(n, Array.isArray(v) ? v[0] : v);
+                }}
+              />
+              <CountryPickerField
+                id="Ethnicity"
+                name="ethnicity"
+                multi={false}
+                initialValues={values.ethnicity}
+                label={t('Ethnicity')}
                 style={fieldSpacingContainerStyle}
                 handleChange={(n, v) => {
                   setFieldValue(n, Array.isArray(v) ? v[0] : v);
@@ -196,28 +208,34 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                   ),
                 }}
               />
-              <MaritalStatusField
-                name="x_mcas_marital_status"
+              <OpenVocabField
+                name="marital_status"
                 label={t('Marital Status')}
+                type="marital_status_ov"
+                variant="edit"
+                onChange={(name, value) => setFieldValue(name, value)}
                 onFocus={handleChangeFocus}
-                onChange={handleSubmitField}
+                onSubmit={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
                 editContext={context}
-                variant="edit"
               />
-              <GenderField
-                name="x_mcas_gender"
+              <OpenVocabField
+                name="gender"
                 label={t('Gender')}
+                type="gender_ov"
                 variant="edit"
-                onChange={handleSubmitField}
+                onChange={(name, value) => setFieldValue(name, value)}
                 onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
                 editContext={context}
               />
               <Field
                 component={MarkdownField}
-                name="x_mcas_job_title"
-                id="x_mcas_job_title"
+                name="job_title"
+                id="job_title"
                 label={t('Job Title')}
                 fullWidth={true}
                 multiline={false}

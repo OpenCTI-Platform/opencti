@@ -38,6 +38,10 @@ enum VocabularyCategory {
   threat_actor_individual_sophistication_ov
   tool_types_ov
   note_types_ov
+  gender_ov
+  marital_status_ov
+  hair_color_ov
+  eye_color_ov
 }
 
 type VocabularyFieldDefinition {

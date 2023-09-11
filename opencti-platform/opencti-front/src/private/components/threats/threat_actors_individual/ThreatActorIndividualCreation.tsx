@@ -33,19 +33,11 @@ import {
 } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import {
   HeightTupleInputValues,
-  MaritalStatus,
-  Origin,
   ThreatActorIndividualCreationMutation,
   ThreatActorIndividualCreationMutation$variables,
   WeightTupleInputValues,
 } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
-import OriginEnum from '../../common/form/mcas/OriginEnum';
-import OriginField from '../../common/form/mcas/OriginField';
 import DatePickerField from '../../../../components/DatePickerField';
-import MaritalStatusField, { MaritalStatus as MaritalStatuses } from '../../common/form/mcas/MaritalStatusField';
-import GenderField, { Genders } from '../../common/form/mcas/GenderField';
-import EyeColorField, { EyeColors } from '../../common/form/mcas/EyeColorField';
-import HairColorField, { HairColors } from '../../common/form/mcas/HairColorField';
 import HeightField from '../../common/form/mcas/HeightField';
 import WeightField from '../../common/form/mcas/WeightField';
 import CountryPickerField from '../../common/form/mcas/CountryPickerField';
@@ -115,14 +107,14 @@ interface ThreatActorIndividualAddInput {
   externalReferences: { value: string }[];
   file: File | undefined;
   bornIn: string | null
+  nationality: string | null
+  ethnicity: string | null
   x_mcas_date_of_birth: Date | null
-  x_mcas_nationality: OriginEnum | null
-  x_mcas_ethnicity: OriginEnum | null
-  x_mcas_gender: Genders | null
-  x_mcas_marital_status: MaritalStatuses | null
-  x_mcas_job_title: string | undefined
-  x_mcas_eye_color: EyeColors | null
-  x_mcas_hair_color: HairColors | null
+  gender: string | null
+  marital_status: string | null
+  job_title: string | undefined
+  eye_color: string | null
+  hair_color: string | null
   x_mcas_height: HeightTupleInputValues[]
   x_mcas_weight: WeightTupleInputValues[]
 }
@@ -271,22 +263,18 @@ ThreatActorIndividualFormProps
       .nullable()
       .typeError(t('The value must be a date (yyyy-MM-dd)')),
     bornIn: Yup.string().nullable(),
-    x_mcas_nationality: Yup.string()
+    nationality: Yup.string().nullable(),
+    ethnicity: Yup.string().nullable(),
+    gender: Yup.string()
       .nullable()
       .typeError(t('The value must be a string')),
-    x_mcas_ethnicity: Yup.string()
+    marital_status: Yup.string()
       .nullable()
       .typeError(t('The value must be a string')),
-    x_mcas_gender: Yup.string()
-      .nullable()
-      .typeError(t('The value must be a string')),
-    x_mcas_marital_status: Yup.string()
-      .nullable()
-      .typeError(t('The value must be a string')),
-    x_mcas_job_title: Yup.string()
+    job_title: Yup.string()
       .max(250, t('The value is too long')),
-    x_mcas_eye_color: Yup.string().nullable(),
-    x_mcas_hair_color: Yup.string().nullable(),
+    eye_color: Yup.string().nullable(),
+    hair_color: Yup.string().nullable(),
     x_mcas_height: Yup.array().of(
       Yup.object().shape({
         height_in: Yup.number().min(0).nullable()
@@ -330,14 +318,14 @@ ThreatActorIndividualFormProps
       externalReferences: values?.externalReferences.map(({ value }) => value),
       file: values?.file,
       bornIn: values?.bornIn,
+      nationality: values?.nationality,
+      ethnicity: values?.ethnicity,
       x_mcas_date_of_birth: values?.x_mcas_date_of_birth,
-      x_mcas_nationality: values?.x_mcas_nationality as Origin,
-      x_mcas_ethnicity: values?.x_mcas_ethnicity as Origin,
-      x_mcas_gender: values?.x_mcas_gender,
-      x_mcas_marital_status: values?.x_mcas_marital_status as MaritalStatus,
-      x_mcas_job_title: values?.x_mcas_job_title,
-      x_mcas_eye_color: values?.x_mcas_eye_color,
-      x_mcas_hair_color: values?.x_mcas_hair_color,
+      gender: values?.gender,
+      marital_status: values?.marital_status,
+      job_title: values?.job_title,
+      eye_color: values?.eye_color,
+      hair_color: values?.hair_color,
       x_mcas_height: roundAndConvert(HeightOrWeight.HEIGHT, values?.x_mcas_height),
       x_mcas_weight: roundAndConvert(HeightOrWeight.WEIGHT, values?.x_mcas_weight),
     };
@@ -375,15 +363,15 @@ ThreatActorIndividualFormProps
     externalReferences: [],
     file: undefined,
     bornIn: null,
+    nationality: null,
+    ethnicity: null,
     x_mcas_date_of_birth: null,
-    x_mcas_nationality: null,
-    x_mcas_ethnicity: null,
-    x_mcas_gender: null,
-    x_mcas_marital_status: null,
+    gender: null,
+    marital_status: null,
     x_mcas_employer: [],
-    x_mcas_job_title: undefined,
-    x_mcas_eye_color: null,
-    x_mcas_hair_color: null,
+    job_title: undefined,
+    eye_color: null,
+    hair_color: null,
     x_mcas_height: [],
     x_mcas_weight: [],
   });
@@ -466,26 +454,30 @@ ThreatActorIndividualFormProps
           )}
           {currentTab === 1 && (
             <div>
-              <OriginField
-                name="x_mcas_nationality"
-                label={t('Nationality')}
-                initialValue={values?.x_mcas_nationality}
-                style={fieldSpacingContainerStyle}
-                handleChange={(n: string, value) => setFieldValue(n, value)}
-              />
-              <OriginField
-                name="x_mcas_ethnicity"
-                label={t('Ethnicity')}
-                initialValue={values?.x_mcas_ethnicity}
-                style={fieldSpacingContainerStyle}
-                handleChange={(n: string, value) => setFieldValue(n, value)}
-              />
               <CountryPickerField
                 id="PlaceOfBirth"
                 name="bornIn"
                 multi={false}
                 initialValues={values?.bornIn || undefined}
                 label={t('Place of Birth')}
+                style={fieldSpacingContainerStyle}
+                handleChange={setFieldValue}
+              />
+              <CountryPickerField
+                id="Nationality"
+                name="nationality"
+                multi={false}
+                initialValues={values?.nationality || undefined}
+                label={t('Nationality')}
+                style={fieldSpacingContainerStyle}
+                handleChange={setFieldValue}
+              />
+              <CountryPickerField
+                id="Ethnicity"
+                name="ethnicity"
+                multi={false}
+                initialValues={values?.ethnicity || undefined}
+                label={t('Ethnicity')}
                 style={fieldSpacingContainerStyle}
                 handleChange={setFieldValue}
               />
@@ -501,26 +493,30 @@ ThreatActorIndividualFormProps
                   style: { marginTop: 20 },
                 }}
               />
-              <MaritalStatusField
-                name="x_mcas_marital_status"
+              <OpenVocabField
+                name="marital_status"
                 label={t('Marital Status')}
+                type="marital_status_ov"
+                variant="edit"
                 onChange={setFieldValue}
                 containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
                 editContext={[]}
-                variant="edit"
               />
-              <GenderField
-                name="x_mcas_gender"
+              <OpenVocabField
+                name="gender"
                 label={t('Gender')}
+                type="gender_ov"
+                variant="edit"
                 onChange={setFieldValue}
                 containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
                 editContext={[]}
-                variant="edit"
               />
               <Field
                 component={MarkdownField}
-                name="x_mcas_job_title"
-                id="x_mcas_job_title"
+                name="job_title"
+                id="job_title"
                 label={t('Job Title')}
                 fullWidth={true}
                 multiline={false}
@@ -532,19 +528,25 @@ ThreatActorIndividualFormProps
           )}
           {currentTab === 2 && (
             <div>
-              <EyeColorField
-                name="x_mcas_eye_color"
+              <OpenVocabField
+                name="eye_color"
                 label={t('Eye Color')}
-                variant="create"
+                type="eye_color_ov"
+                variant="edit"
                 onChange={setFieldValue}
                 containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
+                editContext={[]}
               />
-              <HairColorField
-                name="x_mcas_hair_color"
+              <OpenVocabField
+                name="hair_color"
                 label={t('Hair Color')}
-                variant="create"
+                type="hair_color_ov"
+                variant="edit"
                 onChange={setFieldValue}
                 containerStyle={fieldSpacingContainerStyle}
+                multiple={false}
+                editContext={[]}
               />
               <HeightField
                 id='new_height'
