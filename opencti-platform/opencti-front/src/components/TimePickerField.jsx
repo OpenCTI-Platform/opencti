@@ -66,69 +66,25 @@ const TimePickerField = (props) => {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
   }, [setTouched, onSubmit, name]);
-  if (withSeconds) {
-    return (
-      <TimePicker
-        {...fieldToTimePicker(props)}
-        variant="inline"
-        disableToolbar={false}
-        autoOk={true}
-        allowKeyboardControl={true}
-        onAccept={internalOnAccept}
-        onChange={internalOnChange}
-        views={['hours', 'minutes', 'seconds']}
-        inputFormat={timeFormatsMapWithSeconds[intl.locale] || 'hh:mm:ss a'}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            onFocus={internalOnFocus}
-            onBlur={internalOnBlur}
-            error={!R.isNil(meta.error)}
-            helperText={
-              (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
-            }
-          />
-        )}
-      />
-    );
+  const views = ['hours'];
+  if (withSeconds) { // 'hours', 'minutes', 'seconds'
+    views.push('minutes');
+    views.push('seconds');
+  } else if (withMinutes) { // 'hours', 'minutes'
+    views.push('minutes');
   }
-  if (withMinutes) {
-    return (
-      <TimePicker
-        {...fieldToTimePicker(props)}
-        variant="inline"
-        disableToolbar={false}
-        autoOk={true}
-        allowKeyboardControl={true}
-        onAccept={internalOnAccept}
-        onChange={internalOnChange}
-        views={['hours', 'minutes']}
-        inputFormat={timeFormatsMapWithSeconds[intl.locale] || 'hh:mm:ss a'}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            onFocus={internalOnFocus}
-            onBlur={internalOnBlur}
-            error={!R.isNil(meta.error)}
-            helperText={
-              (!R.isNil(meta.error) && meta.error) || TextFieldProps.helperText
-            }
-          />
-        )}
-      />
-    );
-  }
+  const inputFormat = (withMinutes || withSeconds) ? (timeFormatsMapWithSeconds[intl.locale] || 'hh:mm:ss a')
+    : (timeFormatsMap[intl.locale] || 'hh:mm a');
   return (
     <TimePicker
       {...fieldToTimePicker(props)}
-      variant="inline"
       disableToolbar={false}
       autoOk={true}
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
-      views={['hours']}
-      inputFormat={timeFormatsMap[intl.locale] || 'hh:mm a'}
+      views={views}
+      inputFormat={inputFormat}
       renderInput={(params) => (
         <TextField
           {...params}
