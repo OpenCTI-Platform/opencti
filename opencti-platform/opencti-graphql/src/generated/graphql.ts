@@ -6758,6 +6758,7 @@ export enum EventsOrdering {
   ObjectLabel = 'objectLabel',
   ObjectMarking = 'objectMarking',
   StartTime = 'start_time',
+  StopTime = 'stop_time',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
