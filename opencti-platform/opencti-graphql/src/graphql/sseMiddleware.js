@@ -100,10 +100,13 @@ const authenticate = async (req, res, next) => {
 
 const computeUserAndCollection = async (res, { context, user, id }) => {
   // Global live stream only available for bypass
-  if (id === DEFAULT_LIVE_STREAM && !isUserHasCapability(user, BYPASS)) {
-    res.statusMessage = 'You are not authorized, please check your credentials';
-    res.status(401).end();
-    return { error: res.statusMessage };
+  if (id === DEFAULT_LIVE_STREAM) {
+    if (!isUserHasCapability(user, BYPASS)) {
+      res.statusMessage = 'You are not authorized, please check your credentials';
+      res.status(401).end();
+      return { error: res.statusMessage };
+    }
+    return { streamFilters: {}, collection: null };
   }
   const collections = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STREAM_COLLECTION);
   const collection = collections.find((c) => c.id === id);
@@ -169,11 +172,13 @@ const authenticateForPublic = async (req, res, next) => {
     id: req.params.id
   });
   if (error || (!collection?.stream_public && !auth)) {
-    return;
+    res.statusMessage = 'You are not authenticated, please check your credentials';
+    res.status(401).end();
+  } else {
+    req.collection = collection;
+    req.streamFilters = streamFilters;
+    next();
   }
-  req.collection = collection;
-  req.streamFilters = streamFilters;
-  next();
 };
 
 const createSseMiddleware = () => {

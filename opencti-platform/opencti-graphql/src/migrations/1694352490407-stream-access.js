@@ -6,7 +6,7 @@ import { elDeleteElements, elReplace, } from '../database/engine';
 import { storeLoadByIdWithRefs } from '../database/middleware';
 
 export const up = async (next) => {
-  // Stream accesses-to migration
+  // Stream accesses-to migration to use authorized_members and authorized_authorities
   const context = executionContext('migration');
   const streams = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION]);
   for (let index = 0; index < streams.length; index += 1) {
@@ -21,7 +21,7 @@ export const up = async (next) => {
     await elReplace(stream._index, stream.internal_id, { doc: patch });
     await elDeleteElements(context, SYSTEM_USER, relations, storeLoadByIdWithRefs);
   }
-  // MIGRATE STREAMAPI to TAXIIAPI
+  // Migrate capability STREAMAPI to TAXIIAPI
   // TODO
   //   name: TAXIIAPI,
   //   attribute_order: 2500,
