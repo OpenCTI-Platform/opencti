@@ -137,7 +137,7 @@ class Systems extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="User"
+        exportEntityType="System"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
