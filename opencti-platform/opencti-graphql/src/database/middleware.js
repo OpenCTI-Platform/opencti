@@ -287,8 +287,9 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     targetIds = targetIds.filter((id) => elementIds.includes(id));
   }
   const targets = await elFindByIds(context, user, targetIds, opts);
+  // For each target, search if the relation is inferred
   const findAllTargets = targets.map((target) => {
-    const findRelation = relations.find((relation) => relation.toId === target.id);
+    const findRelation = relations.find((relation) => (relation.toId === target.id) || (relation.fromId === target.id));
     return { ...target, is_from_relation_inferred: !!findRelation.x_opencti_inferences };
   });
 

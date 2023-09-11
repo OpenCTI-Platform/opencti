@@ -99,7 +99,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
                 <ListItemSecondaryAction>
-                  { isInferred ? (
+                  {isInferred ? (
                       <></>
                   ) : (
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>

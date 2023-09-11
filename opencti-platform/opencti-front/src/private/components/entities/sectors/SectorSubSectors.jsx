@@ -57,6 +57,7 @@ class SectorSubSectorsComponent extends Component {
         <List style={{ marginTop: -10 }}>
           {sector.subSectors.edges.map((subSectorEdge) => {
             const subSector = subSectorEdge.node;
+            const isInferred = subSector.is_from_relation_inferred;
             return (
               <ListItem
                 key={subSector.id}
@@ -71,13 +72,19 @@ class SectorSubSectorsComponent extends Component {
                 </ListItemIcon>
                 <ListItemText primary={subSector.name} />
                 <ListItemSecondaryAction>
-                  <IconButton
-                    aria-label="Remove"
-                    onClick={this.removeSubSector.bind(this, subSectorEdge)}
-                    size="large"
-                  >
-                    <LinkOff />
-                  </IconButton>
+                  {isInferred ? (
+                    <></>
+                  ) : (
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={this.removeSubSector.bind(this, subSectorEdge)}
+                        size="large"
+                      >
+                        <LinkOff />
+                      </IconButton>
+                    </Security>
+                  )}
                 </ListItemSecondaryAction>
               </ListItem>
             );
@@ -102,6 +109,7 @@ const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
       name
       parent_types
       entity_type
+      isSubSector
       subSectors {
         edges {
           node {
@@ -109,6 +117,7 @@ const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
             name
             description
             parent_types
+            is_from_relation_inferred
           }
         }
       }
