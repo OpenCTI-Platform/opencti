@@ -502,7 +502,7 @@ export const buildTargetEvents = async (
   return targets;
 };
 
-const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
+const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   try {
     if (streamEvents.length === 0) {
       return;
@@ -538,6 +538,45 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
   }
 };
 
+const handleDigestNotifications = async (context: AuthContext) => {
+  const baseDate = utcDate().startOf('minutes');
+  // Get digest that need to be executed
+  const digestNotifications = await getDigestNotifications(context, baseDate);
+  // Iter on each digest and generate the output
+  for (let index = 0; index < digestNotifications.length; index += 1) {
+    const { trigger, users } = digestNotifications[index];
+    const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
+    const fromDate = baseDate.clone().subtract(1, period).toDate();
+    const rangeNotifications = await fetchRangeNotifications<KnowledgeNotificationEvent>(fromDate, baseDate.toDate());
+    const digestContent = rangeNotifications.filter((n) => triggerIds.includes(n.notification_id));
+    if (digestContent.length > 0) {
+      // Range of results must filtered to keep only data related to the digest
+      // And related to the users participating to the digest
+      for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
+        const user = users[userIndex];
+        const userNotifications = digestContent.filter((d) => d.targets
+          .map((t) => t.user.user_id).includes(user.internal_id));
+        if (userNotifications.length > 0) {
+          const version = EVENT_NOTIFICATION_VERSION;
+          const target = convertToNotificationUser(user, notifiers);
+          const dataPromises = userNotifications.map(async (n) => {
+            const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
+            return ({
+              notification_id: n.notification_id,
+              type: userTarget?.type ?? type,
+              instance: n.data,
+              message: await generateNotificationMessageForInstance(context, user, n.data),
+            });
+          });
+          const data = await Promise.all(dataPromises);
+          const digestEvent: DigestEvent = { version, notification_id, type, target, data };
+          await storeNotificationEvent(context, digestEvent);
+        }
+      }
+    }
+  }
+};
+
 const initNotificationManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let streamScheduler: SetIntervalAsyncTimer<[]>;
@@ -550,19 +589,19 @@ const initNotificationManager = () => {
       setTimeout(resolve, ms);
     });
   };
-  const notificationHandler = async () => {
+  const notificationLiveHandler = async () => {
     let lock;
     try {
       // Lock the manager
       lock = await lockResource([NOTIFICATION_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running notification manager (live)');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationStreamHandler);
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationLiveStreamHandler);
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
-      logApp.info('[OPENCTI-MODULE] End of notification manager processing');
+      logApp.info('[OPENCTI-MODULE] End of notification manager processing (live)');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Notification manager already started by another API');
@@ -581,45 +620,12 @@ const initNotificationManager = () => {
     try {
       // Lock the manager
       lock = await lockResource([NOTIFICATION_DIGEST_KEY], { retryCount: 0 });
+      logApp.info('[OPENCTI-MODULE] Running notification manager (digest)');
       while (!shutdown) {
-        const baseDate = utcDate().startOf('minutes');
-        // Get digest that need to be executed
-        const digestNotifications = await getDigestNotifications(context, baseDate);
-        // Iter on each digest and generate the output
-        for (let index = 0; index < digestNotifications.length; index += 1) {
-          const { trigger, users } = digestNotifications[index];
-          const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
-          const fromDate = baseDate.clone().subtract(1, period).toDate();
-          const rangeNotifications = await fetchRangeNotifications<KnowledgeNotificationEvent>(fromDate, baseDate.toDate());
-          const digestContent = rangeNotifications.filter((n) => triggerIds.includes(n.notification_id));
-          if (digestContent.length > 0) {
-            // Range of results must filtered to keep only data related to the digest
-            // And related to the users participating to the digest
-            for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
-              const user = users[userIndex];
-              const userNotifications = digestContent.filter((d) => d.targets
-                .map((t) => t.user.user_id).includes(user.internal_id));
-              if (userNotifications.length > 0) {
-                const version = EVENT_NOTIFICATION_VERSION;
-                const target = convertToNotificationUser(user, notifiers);
-                const dataPromises = userNotifications.map(async (n) => {
-                  const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
-                  return ({
-                    notification_id: n.notification_id,
-                    type: userTarget?.type ?? type,
-                    instance: n.data,
-                    message: await generateNotificationMessageForInstance(context, user, n.data),
-                  });
-                });
-                const data = await Promise.all(dataPromises);
-                const digestEvent: DigestEvent = { version, notification_id, type, target, data };
-                await storeNotificationEvent(context, digestEvent);
-              }
-            }
-          }
-        }
+        await handleDigestNotifications(context);
         await wait(CRON_SCHEDULE_TIME);
       }
+      logApp.info('[OPENCTI-MODULE] End of notification manager processing (digest)');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Notification manager (digest) already started by another API');
@@ -633,7 +639,7 @@ const initNotificationManager = () => {
   return {
     start: async () => {
       streamScheduler = setIntervalAsync(async () => {
-        await notificationHandler();
+        await notificationLiveHandler();
       }, STREAM_SCHEDULE_TIME);
       cronScheduler = setIntervalAsync(async () => {
         await notificationDigestHandler();
