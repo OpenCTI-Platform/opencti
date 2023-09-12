@@ -6,7 +6,6 @@ import React, { useMemo } from 'react';
 import { Route, Redirect, useParams, Switch } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -60,9 +59,7 @@ const infrastructureQuery = graphql`
 `;
 
 const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootInfrastructureSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootInfrastructureSubscription>>(
     () => ({
       subscription,
       variables: { id: infrastructureId },
@@ -163,7 +160,6 @@ const RootInfrastructure = () => {
   const queryRef = useQueryLoading<RootInfrastructureQuery>(infrastructureQuery, { id: infrastructureId });
   return (
     <>
-      <TopBar/>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootInfrastructureComponent queryRef={queryRef} infrastructureId={infrastructureId} />

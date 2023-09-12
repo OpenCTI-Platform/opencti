@@ -3,7 +3,6 @@
 import React, { FunctionComponent } from 'react';
 import { Route, Switch, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -72,14 +71,13 @@ const RootRole = () => {
   const queryRef = useQueryLoading<RootRoleQuery>(roleQuery, { id: roleId });
   return (
     <div>
-      <TopBar />
-      {queryRef ? (
+            {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <RootRoleComponent queryRef={queryRef} roleId={roleId} />
         </React.Suspense>
-      ) : (
+            ) : (
         <Loader variant={LoaderVariant.inElement} />
-      )}
+            )}
     </div>
   );
 };

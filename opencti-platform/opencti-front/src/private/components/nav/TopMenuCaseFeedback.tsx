@@ -1,5 +1,5 @@
-import React, { FunctionComponent } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -30,11 +30,10 @@ const styles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuCaseFeedback: FunctionComponent = () => {
+const TopMenuCaseFeedback = ({ id: caseId }: { id: string }) => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = styles();
-  const { caseId } = useParams() as { caseId: string };
   return (
     <div>
       <Button

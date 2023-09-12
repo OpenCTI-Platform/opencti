@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -83,7 +82,6 @@ class RootChannel extends Component {
     const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/arsenal/channels/:channelId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

@@ -1,17 +1,11 @@
 import React from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import {
-  ArrowForwardIosOutlined,
-  DescriptionOutlined,
-} from '@mui/icons-material';
+import { ArrowForwardIosOutlined, DescriptionOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles((theme) => ({
   buttonHome: {
@@ -36,11 +30,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TopMenuReport = () => {
+const TopMenuReport = ({ id: reportId }) => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = useStyles();
-  const { reportId } = useParams();
   return (
     <div>
       <Button

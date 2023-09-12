@@ -38,9 +38,7 @@ class TopMenuCourseOfAction extends Component {
     const {
       t,
       location,
-      match: {
-        params: { courseOfActionId },
-      },
+      id: courseOfActionId,
       classes,
     } = this.props;
     return (
@@ -133,9 +131,8 @@ class TopMenuCourseOfAction extends Component {
 TopMenuCourseOfAction.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

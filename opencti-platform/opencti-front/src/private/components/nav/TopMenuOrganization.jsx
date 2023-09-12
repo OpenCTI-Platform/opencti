@@ -40,9 +40,7 @@ class TopMenuOrganization extends Component {
     const {
       t,
       location,
-      match: {
-        params: { organizationId },
-      },
+      id: organizationId,
       classes,
     } = this.props;
     return (
@@ -200,9 +198,8 @@ class TopMenuOrganization extends Component {
 TopMenuOrganization.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

@@ -40,9 +40,7 @@ class TopMenuGrouping extends Component {
     const {
       t,
       location,
-      match: {
-        params: { groupingId },
-      },
+      id: groupingId,
       classes,
     } = this.props;
     return (
@@ -177,9 +175,8 @@ class TopMenuGrouping extends Component {
 TopMenuGrouping.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

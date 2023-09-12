@@ -5,7 +5,6 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Route, Switch, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -73,14 +72,13 @@ const RootSettingsOrganization = () => {
   const queryRef = useQueryLoading<RootSettingsOrganizationQuery>(organizationQuery, { id: organizationId });
   return (
     <div>
-      <TopBar />
-      {queryRef ? (
+            {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <RootSettingsOrganizationComponent queryRef={queryRef} organizationId={organizationId}/>
         </React.Suspense>
-      ) : (
+            ) : (
         <Loader variant={LoaderVariant.inElement} />
-      )}
+            )}
     </div>
   );
 };

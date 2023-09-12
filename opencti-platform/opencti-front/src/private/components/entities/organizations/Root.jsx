@@ -7,7 +7,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Organization from './Organization';
 import OrganizationKnowledge from './OrganizationKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -118,7 +117,6 @@ class RootOrganization extends Component {
     const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/entities/organizations/:organizationId/knowledge">
           {viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar

@@ -14,7 +14,6 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
-import TopBar from '../../nav/TopBar';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
 import CaseIncident from './CaseIncident';
 import CaseIncidentPopover from './CaseIncidentPopover';
@@ -62,9 +61,7 @@ const caseIncidentQuery = graphql`
 `;
 
 const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootIncidentSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
     () => ({
       subscription,
       variables: { id: caseId },
@@ -190,7 +187,6 @@ const Root = () => {
   });
   return (
     <>
-      <TopBar/>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootCaseIncidentComponent queryRef={queryRef} caseId={caseId} />

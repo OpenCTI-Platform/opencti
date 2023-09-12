@@ -25,19 +25,16 @@ import Message from '../components/Message';
 import { BoundaryRoute, NoMatch } from './components/Error';
 import StixObjectOrStixRelationship from './components/StixObjectOrStixRelationship';
 import SearchBulk from './components/SearchBulk';
-import TopBar from './components/nav/TopBar';
 import RootCases from './components/cases/Root';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
-import SettingsMessagesBanner, {
-  useSettingsMessagesBannerHeight,
-} from './components/settings/settings_messages/SettingsMessagesBanner';
+import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
+import TopBar from "@components/nav/TopBar";
 
 const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,
 }));
-
 
 const Index = ({ settings }) => {
   const theme = useTheme();

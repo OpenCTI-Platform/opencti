@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import ThreatActorGroup from './ThreatActorGroup';
 import ThreatActorGroupKnowledge from './ThreatActorGroupKnowledge';
 import Loader from '../../../../components/Loader';
@@ -87,7 +86,6 @@ class RootThreatActorGroup extends Component {
     const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/threats/threat_actors_group/:threatActorGroupId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

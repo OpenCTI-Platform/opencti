@@ -1,14 +1,11 @@
-import React, { FunctionComponent } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined, StreamOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import {
-  KNOWLEDGE_KNGETEXPORT,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 import { Theme } from '../../../components/Theme';
 
 const styles = makeStyles<Theme>((theme) => ({
@@ -34,11 +31,10 @@ const styles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuDataSource: FunctionComponent = () => {
+const TopMenuDataSource = ({ id: dataSourceId }: { id: string }) => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = styles();
-  const { dataSourceId } = useParams() as { dataSourceId: string };
   return (
     <div>
       <Button

@@ -38,9 +38,7 @@ class TopMenuCampaign extends Component {
     const {
       t,
       location,
-      match: {
-        params: { campaignId },
-      },
+      id: campaignId,
       classes,
     } = this.props;
     return (
@@ -175,9 +173,8 @@ class TopMenuCampaign extends Component {
 TopMenuCampaign.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Position from './Position';
 import PositionKnowledge from './PositionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -84,7 +83,6 @@ class RootPosition extends Component {
     const link = `/dashboard/locations/positions/${positionId}/knowledge`;
     return (
       <>
-        <TopBar />
         <Route path="/dashboard/locations/positions/:positionId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

@@ -41,9 +41,7 @@ class TopMenuAttackPattern extends Component {
     const {
       t,
       location,
-      match: {
-        params: { attackPatternId },
-      },
+      id: attackPatternId,
       classes,
     } = this.props;
     return (
@@ -180,9 +178,8 @@ class TopMenuAttackPattern extends Component {
 TopMenuAttackPattern.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

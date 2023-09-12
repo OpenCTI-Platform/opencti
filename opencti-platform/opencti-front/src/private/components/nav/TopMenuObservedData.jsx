@@ -40,9 +40,7 @@ class TopMenuObservedData extends Component {
     const {
       t,
       location,
-      match: {
-        params: { observedDataId },
-      },
+      id: observedDataId,
       classes,
     } = this.props;
     return (
@@ -177,7 +175,7 @@ class TopMenuObservedData extends Component {
 TopMenuObservedData.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
+  id: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };

@@ -7,7 +7,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Individual from './Individual';
 import IndividualKnowledge from './IndividualKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -119,7 +118,6 @@ class RootIndividual extends Component {
     const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/entities/individuals/:individualId/knowledge">
           {viewAs === 'knowledge' && (
             <StixCoreObjectKnowledgeBar

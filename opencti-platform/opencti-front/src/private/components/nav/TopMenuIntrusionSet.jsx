@@ -41,9 +41,7 @@ class TopMenuIntrusionSet extends Component {
     const {
       t,
       location,
-      match: {
-        params: { intrusionSetId },
-      },
+      id: intrusionSetId,
       classes,
     } = this.props;
     return (
@@ -177,9 +175,8 @@ class TopMenuIntrusionSet extends Component {
 TopMenuIntrusionSet.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

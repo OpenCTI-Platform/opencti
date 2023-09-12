@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -85,7 +84,6 @@ class RootVulnerability extends Component {
     const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, withRouter } from 'react-router-dom';
+import { Redirect, Route, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
+import { QueryRenderer, requestSubscription, } from '../../../../relay/environment';
 import Report from './Report';
 import ReportPopover from './ReportPopover';
 import ReportKnowledge from './ReportKnowledge';
@@ -85,7 +81,6 @@ class RootReport extends Component {
     } = this.props;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={reportQuery}
           variables={{ id: reportId }}

@@ -1116,7 +1116,6 @@ const DashboardComponent = ({ queryRef }) => {
     // Handle old conf
     defaultDashboard = dashboard;
   }
-
   return (
     <UserContext.Provider value={{ me: { ...currentMe, ...me }, ...context }}>
       <div className={classes.root}>

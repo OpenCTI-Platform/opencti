@@ -37,9 +37,7 @@ class TopMenuNote extends Component {
     const {
       t,
       location,
-      match: {
-        params: { noteId },
-      },
+      id: noteId,
       classes,
     } = this.props;
     return (
@@ -126,9 +124,8 @@ class TopMenuNote extends Component {
 TopMenuNote.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
+  id: PropTypes.string,
   t: PropTypes.func,
-  history: PropTypes.object,
 };
 
 export default compose(inject18n, withRouter, withStyles(styles))(TopMenuNote);

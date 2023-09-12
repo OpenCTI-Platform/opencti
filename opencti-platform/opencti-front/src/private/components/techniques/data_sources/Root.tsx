@@ -6,7 +6,6 @@ import React, { useMemo } from 'react';
 import { Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -143,15 +142,14 @@ const RootDataSource = () => {
   });
   return (
     <>
-      <TopBar />
-      {queryRef && (
+            {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootDataSourceComponent
             queryRef={queryRef}
             dataSourceId={dataSourceId}
           />
         </React.Suspense>
-      )}
+            )}
     </>
   );
 };

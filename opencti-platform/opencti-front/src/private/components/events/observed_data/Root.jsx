@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import ObservedData from './ObservedData';
 import ObservedDataPopover from './ObservedDataPopover';
 import FileManager from '../../common/files/FileManager';
@@ -81,7 +80,6 @@ class RootObservedData extends Component {
     } = this.props;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={observedDataQuery}
           variables={{ id: observedDataId }}

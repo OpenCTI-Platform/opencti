@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Grouping from './Grouping';
 import GroupingPopover from './GroupingPopover';
 import GroupingKnowledge from './GroupingKnowledge';
@@ -83,7 +82,6 @@ class RootGrouping extends Component {
     } = this.props;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={groupingQuery}
           variables={{ id: groupingId }}

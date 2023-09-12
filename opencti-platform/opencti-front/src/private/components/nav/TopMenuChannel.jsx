@@ -43,9 +43,7 @@ class TopMenuChannel extends Component {
     const {
       t,
       location,
-      match: {
-        params: { channelId },
-      },
+      id: channelId,
       classes,
     } = this.props;
     return (
@@ -180,9 +178,8 @@ class TopMenuChannel extends Component {
 TopMenuChannel.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

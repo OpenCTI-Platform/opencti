@@ -40,9 +40,7 @@ class TopMenuAdministrativeArea extends Component {
     const {
       t,
       location,
-      match: {
-        params: { administrativeAreaId },
-      },
+      id: administrativeAreaId,
       classes,
     } = this.props;
     return (
@@ -200,9 +198,8 @@ class TopMenuAdministrativeArea extends Component {
 TopMenuAdministrativeArea.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  id: PropTypes.string,
 };
 
 export default compose(

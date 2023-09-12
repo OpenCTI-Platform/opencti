@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import Sector from './Sector';
 import SectorKnowledge from './SectorKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -86,7 +85,6 @@ class RootSector extends Component {
     const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <Route path="/dashboard/entities/sectors/:sectorId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}

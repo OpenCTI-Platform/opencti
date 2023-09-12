@@ -1,5 +1,5 @@
-import React, { FunctionComponent } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined, TaskAltOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -29,11 +29,10 @@ const styles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuTask: FunctionComponent = () => {
+const TopMenuTask = ({ id: taskId }: { id: string }) => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = styles();
-  const { taskId } = useParams() as { taskId: string };
   return (
     <div>
       <Button

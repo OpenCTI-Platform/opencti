@@ -6,7 +6,6 @@ import React, { useMemo } from 'react';
 import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -64,9 +63,7 @@ const caseRfiQuery = graphql`
 `;
 
 const RootCaseRfiComponent = ({ queryRef, caseId }) => {
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>>(
     () => ({
       subscription,
       variables: { id: caseId },
@@ -210,7 +207,6 @@ const Root = () => {
   });
   return (
     <>
-      <TopBar/>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
           <RootCaseRfiComponent queryRef={queryRef} caseId={caseId} />

@@ -5,7 +5,6 @@ import React, { useMemo } from 'react';
 import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -201,8 +200,7 @@ const RootAdministrativeArea = () => {
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   return (
     <div>
-      <TopBar />
-      <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
+            <Route path="/dashboard/locations/administrative_areas/:administrativeArea/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
           availableSections={[

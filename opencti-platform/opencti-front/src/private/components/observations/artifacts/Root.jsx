@@ -6,7 +6,6 @@ import {
   QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservable from '../stix_cyber_observables/StixCyberObservable';
 import StixCyberObservableKnowledge from '../stix_cyber_observables/StixCyberObservableKnowledge';
@@ -85,7 +84,6 @@ class RootArtifact extends Component {
     const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
     return (
       <div>
-        <TopBar />
         <QueryRenderer
           query={rootArtifactQuery}
           variables={{ id: observableId, relationship_type: 'indicates' }}

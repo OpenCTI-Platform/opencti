@@ -38,9 +38,7 @@ class TopMenuExternalReference extends Component {
     const {
       t,
       location,
-      match: {
-        params: { externalReferenceId },
-      },
+      id: externalReferenceId,
       classes,
     } = this.props;
     return (
@@ -89,7 +87,7 @@ class TopMenuExternalReference extends Component {
 TopMenuExternalReference.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  match: PropTypes.object,
+  id: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };
