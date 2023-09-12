@@ -31,6 +31,10 @@ const inlineStyles = {
     backgroundColor: 'rgba(255, 192, 203, 0.08)',
     color: '#FFC0CB',
   },
+  red: {
+    backgroundColor: 'rgba(255, 192, 203, 0.08)',
+    color: '#f44336',
+  },
 };
 
 interface TaskScopeProps {
@@ -42,6 +46,14 @@ const TaskScope: FunctionComponent<TaskScopeProps> = ({ label, scope }) => {
   const classes = useStyles();
   const style = classes.chip;
   switch (scope) {
+    case 'SETTINGS':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.red}
+          label={label}
+        />
+      );
     case 'USER':
       return (
         <Chip

@@ -15,6 +15,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { publishUserAction } from '../listener/UserActionListener';
 import { storeLoadById } from '../database/middleware-loader';
 import { getParentTypes } from '../schema/schemaUtils';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -30,7 +31,12 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters, ids } = input;
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
-  if (scope === 'KNOWLEDGE') { // 01. Background task of scope Knowledge
+  if (scope === 'SETTINGS') {
+    const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes('SETTINGS');
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+  } else if (scope === 'KNOWLEDGE') { // 01. Background task of scope Knowledge
     // 1.1. The user should have the capability KNOWLEDGE_UPDATE
     const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
     if (!isAuthorized) {
@@ -47,14 +53,15 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // 1.3. Check the modified entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
       const parentTypes = JSON.parse(filters).entity_type?.map((n) => getParentTypes(n.id));
-      const isNotKnowledges = !areParentTypesKnowledge(parentTypes);
+      const isNotKnowledges = !areParentTypesKnowledge(parentTypes) || JSON.parse(filters).entity_type?.some((type) => type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledges) {
         throw ForbiddenAccess(undefined, 'The targeted ids are not knowledges.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
       const objects = await Promise.all(ids.map((id) => storeLoadById(context, user, id, ABSTRACT_STIX_OBJECT)));
       const isNotKnowledges = objects.includes(undefined)
-        || !areParentTypesKnowledge(objects.map((o) => o.parent_types));
+        || !areParentTypesKnowledge(objects.map((o) => o.parent_types))
+        || objects.some(({ entity_type }) => entity_type === ENTITY_TYPE_VOCABULARY);
       if (isNotKnowledges) {
         throw ForbiddenAccess(undefined, 'The targeted ids are not knowledges.');
       }
@@ -92,7 +99,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       throw Error('A background task should be of type query or list.');
     }
   } else { // 03. Background task with an invalid scope
-    throw Error('A background task should be of scope Knowledge or User.');
+    throw Error('A background task should be of scope Settings, Knowledge or User.');
   }
 };
 
@@ -127,6 +134,8 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber, sco
 
 const authorizedAuthoritiesForTask = (scope) => {
   switch (scope) {
+    case 'SETTINGS':
+      return ['SETTINGS'];
     case 'KNOWLEDGE':
       return ['KNOWLEDGE_KNUPDATE'];
     case 'USER':
@@ -138,6 +147,7 @@ const authorizedAuthoritiesForTask = (scope) => {
 
 const authorizedMembersForTask = (user, scope) => {
   switch (scope) {
+    case 'SETTINGS':
     case 'KNOWLEDGE':
     case 'USER':
       return [{ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
@@ -168,5 +178,5 @@ export const createListTask = async (context, user, input) => {
 };
 
 export const isTaskEnabledEntity = (entityType) => {
-  return isStixCoreObject(entityType) || isStixCoreRelationship(entityType) || [ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_CASE_TEMPLATE].includes(entityType);
+  return isStixCoreObject(entityType) || isStixCoreRelationship(entityType) || [ENTITY_TYPE_VOCABULARY, ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_CASE_TEMPLATE].includes(entityType);
 };

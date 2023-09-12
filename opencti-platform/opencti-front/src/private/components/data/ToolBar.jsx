@@ -277,6 +277,7 @@ class ToolBar extends Component {
       displayPromote: false,
       containerCreation: false,
       actions: [],
+      scope: undefined,
       actionsInputs: [{}],
       keptEntityId: null,
       mergingElement: null,
@@ -311,6 +312,7 @@ class ToolBar extends Component {
     this.setState({
       displayTask: false,
       actions: [],
+      scope: undefined,
       keptEntityId: null,
       mergingElement: null,
       processing: false,
@@ -536,13 +538,17 @@ class ToolBar extends Component {
     const filteredStixDomainObjects = keptEntityId
       ? R.filter((n) => n.id !== keptEntityId, selectedElementsList)
       : R.tail(selectedElementsList);
+    let scope = 'KNOWLEDGE';
+    if (selectedElementsList.some(({ entity_type }) => entity_type === 'Vocabulary')) {
+      scope = 'SETTINGS';
+    }
     const actions = [
       {
         type: 'MERGE',
         context: { values: filteredStixDomainObjects },
       },
     ];
-    this.setState({ actions, mergingElement: keptElement }, () => {
+    this.setState({ scope, actions, mergingElement: keptElement }, () => {
       this.handleCloseMerge();
       this.handleOpenTask();
     });
@@ -562,7 +568,7 @@ class ToolBar extends Component {
 
   submitTask() {
     this.setState({ processing: true });
-    const { actions, mergingElement } = this.state;
+    const { actions, mergingElement, scope } = this.state;
     const {
       filters,
       search,
@@ -596,7 +602,7 @@ class ToolBar extends Component {
             search,
             actions: finalActions,
             excluded_ids: Object.keys(deSelectedElements || {}),
-            scope: 'KNOWLEDGE',
+            scope: scope ?? 'KNOWLEDGE',
           },
         },
         onCompleted: () => {
@@ -622,7 +628,7 @@ class ToolBar extends Component {
               ? [mergingElement.id]
               : Object.keys(selectedElements),
             actions: finalActions,
-            scope: 'KNOWLEDGE',
+            scope: scope ?? 'KNOWLEDGE',
           },
         },
         onCompleted: () => {

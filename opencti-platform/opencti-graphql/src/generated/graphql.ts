@@ -1190,6 +1190,7 @@ export type BackgroundTaskError = {
 
 export enum BackgroundTaskScope {
   Knowledge = 'KNOWLEDGE',
+  Settings = 'SETTINGS',
   User = 'USER'
 }
 

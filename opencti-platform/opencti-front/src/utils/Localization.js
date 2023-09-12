@@ -689,6 +689,7 @@ const i18n = {
       'Launch an import': 'Lanzar una importación',
       Data: 'Datos',
       Settings: 'Parámetros',
+      SETTINGS: 'PARÁMETROS',
       'Entity settings': 'Configuración de la entidad',
       'Dashboard settings': 'Cuadro de mando de configuración',
       // Settings Messages
@@ -2792,6 +2793,7 @@ const i18n = {
       'Launch an import': 'Lancer un import',
       Data: 'Données',
       Settings: 'Paramètres',
+      SETTINGS: 'PARAMÈTRES',
       'Entity settings': "Paramètres de l'entité",
       'Dashboard settings': 'Paramètres du tableau de bord',
       // Settings Messages
@@ -4842,6 +4844,7 @@ const i18n = {
       'Launch an import': 'インポート開始',
       Data: 'データ',
       Settings: '設定',
+      SETTINGS: '設定',
       'Entity settings': 'エンティティ設定',
       'Dashboard settings': 'ダッシュボードの設定',
       // Settings Messages
@@ -6791,6 +6794,7 @@ const i18n = {
       'Launch an import': '启动导入',
       Data: '数据',
       Settings: '设置',
+      SETTINGS: '設置',
       'Entity settings': '实体设置',
       'Dashboard settings': '仪表盘设置',
       // Settings Messages
