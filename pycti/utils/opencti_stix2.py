@@ -1609,9 +1609,9 @@ class OpenCTIStix2:
             entity["count"] = entity["attribute_count"]
             del entity["attribute_count"]
             entity["sighting_of_ref"] = entity["from"]["standard_id"]
-            objects_to_get.append(entity["from"]["standard_id"])
+            objects_to_get.append(entity["from"])
             entity["where_sighted_refs"] = [entity["to"]["standard_id"]]
-            objects_to_get.append(entity["to"]["standard_id"])
+            objects_to_get.append(entity["to"])
             del entity["from"]
             del entity["to"]
         # Stix Core Relationship
@@ -1619,13 +1619,11 @@ class OpenCTIStix2:
             entity["type"] = "relationship"
         if "from" in entity:
             entity["source_ref"] = entity["from"]["standard_id"]
-            objects_to_get.append(entity["from"]["standard_id"])
-        if "from" in entity:
+            objects_to_get.append(entity["from"])
             del entity["from"]
         if "to" in entity:
             entity["target_ref"] = entity["to"]["standard_id"]
-            objects_to_get.append(entity["to"]["standard_id"])
-        if "to" in entity:
+            objects_to_get.append(entity["to"])
             del entity["to"]
         # Stix Domain Object
         if "attribute_abstract" in entity:
@@ -2063,7 +2061,6 @@ class OpenCTIStix2:
         fromTypes: [str] = None,
         toTypes: [str] = None,
         relationship_type: [str] = None,
-        element_id: str = None,
     ) -> Dict:
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
@@ -2075,8 +2072,6 @@ class OpenCTIStix2:
             "id": "bundle--" + str(uuid.uuid4()),
             "objects": [],
         }
-        if entity_type == "StixFile":
-            entity_type = "File"
 
         if IdentityTypes.has_value(entity_type):
             if filters is not None:
@@ -2209,9 +2204,7 @@ class OpenCTIStix2:
 
     def export_selected(
         self,
-        entity_type: str,
         entities_list: [str],
-        element_id: str = None,
         mode: str = "simple",
         max_marking_definition: Dict = None,
     ) -> Dict:
@@ -2225,9 +2218,6 @@ class OpenCTIStix2:
             "id": "bundle--" + str(uuid.uuid4()),
             "objects": [],
         }
-        if entity_type == "StixFile":
-            entity_type = "File"
-
         if entities_list is not None:
             uuids = []
             for entity in entities_list:
