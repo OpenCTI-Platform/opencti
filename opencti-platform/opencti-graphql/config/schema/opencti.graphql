@@ -1346,6 +1346,7 @@ type User implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String! @auth(for: [SETTINGS_SETACCESSES])
   account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES])
+  unit_system: String
   # Technical
   editContext: [EditUserContext!]
 }
@@ -1382,6 +1383,7 @@ type MeUser implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
+  unit_system: String
 }
 type SessionDetail {
   id: ID!
@@ -1405,6 +1407,7 @@ input UserAddInput {
   objectOrganization: [ID!]
   account_status: String
   account_lock_after_date: DateTime
+  unit_system: String
 }
 input UserLoginInput {
   email: String!

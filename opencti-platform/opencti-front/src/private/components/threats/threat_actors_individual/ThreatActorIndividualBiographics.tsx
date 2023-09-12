@@ -19,7 +19,7 @@ import { Height, Weight, validateMeasurement } from '../../../../utils/Number';
 import { commitLocalUpdate } from '../../../../relay/environment';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-// import convert from 'convert-units';
+import convert from 'convert';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -183,8 +183,7 @@ const ThreatActorIndividualBiographicsComponent = (
     }
     if (validatedHeight) {
       return usingUSUnits()
-        // ? convert((validatedHeight as Height).height_cm).from('cm').to('in')
-        ? (validatedHeight as Height).height_cm
+        ? convert((validatedHeight as Height).height_cm, 'cm').to('in')
         : (validatedHeight as Height).height_cm;
     }
     return null;
@@ -216,16 +215,11 @@ const ThreatActorIndividualBiographicsComponent = (
     }
     if (validatedWeight) {
       return usingUSUnits()
-        // ? convert((validatedWeight as Weight).weight_kg).from('kg').to('lb')
-        ? (validatedWeight as Weight).weight_kg
+        ? convert((validatedWeight as Weight).weight_kg, 'kg').to('lb')
         : (validatedWeight as Weight).weight_kg;
     }
     return null;
   };
-
-  function toVal(value: string, dict: Record<string, string>) {
-    return t(Object.values(dict)[Object.keys(dict).indexOf(value)]);
-  }
 
   return (
     <div style={{ height: '100%' }}>

@@ -12527,6 +12527,7 @@ export type MeUser = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   theme?: Maybe<Scalars['String']['output']>;
+  unit_system?: Maybe<Scalars['String']['output']>;
   user_email: Scalars['String']['output'];
 };
 
@@ -27127,6 +27128,7 @@ export type User = BasicObject & InternalObject & {
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
   standard_id: Scalars['String']['output'];
   theme?: Maybe<Scalars['String']['output']>;
+  unit_system?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   user_email: Scalars['String']['output'];
 };
@@ -27376,6 +27378,7 @@ export type UserAddInput = {
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
   password: Scalars['String']['input'];
   theme?: InputMaybe<Scalars['String']['input']>;
+  unit_system?: InputMaybe<Scalars['String']['input']>;
   user_email: Scalars['String']['input'];
 };
 
@@ -34405,6 +34408,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unit_system?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -38140,6 +38144,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unit_system?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
