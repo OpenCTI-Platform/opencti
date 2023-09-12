@@ -117,13 +117,13 @@ Here are the configuration keys, for both containers (environment variables) and
 | redis:mode                         | REDIS__MODE                                   | single                        | Connect to redis "single" or "cluster"                                              |
 | redis:namespace                    | REDIS__NAMESPACE                              |                               | Namespace (to use as prefix)                                                        |
 | redis:hostname                     | REDIS__HOSTNAME                               | localhost                     | Hostname of the Redis Server                                                        |
-| redis:hostnames                    | REDIS__HOSTNAMES                              |                               | Hostnames definition for Redis cluster mode: a list of host/port objects.           |
+| redis:hostnames                    | REDIS__HOSTNAMES                              |                               | Hostnames definition for Redis cluster mode: a list of host/port objects.         |
 | redis:port                         | REDIS__PORT                                   | 6379                          | Port of the Redis Server                                                            |
 | redis:use_ssl                      | REDIS__USE_SSL                                | `false`                       | Is the Redis Server has TLS enabled                                                 |
 | redis:username                     | REDIS__USERNAME                               |                               | Username of the Redis Server                                                        |
 | redis:password                     | REDIS__PASSWORD                               |                               | Password of the Redis Server                                                        |
-| redis:ca                           | REDIS__CA                                     |                               | Path of the CA certificate                                                          |
-| redis:trimming                     | REDIS__TRIMMING                               | 2000000                       | Number of elements to maintain in the stream. (0 = unlimited)                       |
+| redis:ca                           | REDIS__CA                                     | [}                            | List of path(s) of the CA certificate(s)                                            |
+| redis:trimming                     | REDIS__TRIMMING                               | 2000000                       | Number of elements to maintain in the stream. (0 = unlimited)                    |
 
 #### RabbitMQ
 
