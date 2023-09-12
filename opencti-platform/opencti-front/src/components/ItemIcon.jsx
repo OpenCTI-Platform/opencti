@@ -98,7 +98,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       };
   }
 
-  switch (type.toLowerCase()) {
+  switch (type?.toLowerCase()) {
     case 'unauthorized':
       return (
         <ReportProblemOutlined style={style} fontSize={fontSize} role="img" />
