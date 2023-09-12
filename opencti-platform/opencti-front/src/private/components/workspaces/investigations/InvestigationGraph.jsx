@@ -448,9 +448,6 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on StixDomainObject {
               created
             }
-              ... on KillChainPhase {
-                  kill_chain_name
-              }
             ... on AttackPattern {
               name
               x_mitre_id
@@ -589,6 +586,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on KillChainPhase {
               kill_chain_name
+              phase_name
             }
             ... on MarkingDefinition {
               definition
@@ -800,6 +798,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on KillChainPhase {
               kill_chain_name
+              phase_name
             }
             ... on MarkingDefinition {
               definition
@@ -2519,14 +2518,11 @@ const InvestigationGraph = createFragmentContainer(
               }
               ... on KillChainPhase {
                 kill_chain_name
+                phase_name
               }
               ... on MarkingDefinition {
                 definition
                 x_opencti_color
-              }
-              ... on KillChainPhase {
-                kill_chain_name
-                phase_name
               }
               ... on ExternalReference {
                 url
