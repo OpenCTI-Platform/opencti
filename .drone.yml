@@ -59,7 +59,7 @@ services:
   - name: redis
     image: redis:7.2.1
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
