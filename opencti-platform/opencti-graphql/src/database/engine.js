@@ -954,7 +954,10 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
       path: 'connections',
       query: {
         bool: {
-          must: [{ match_phrase: { 'connections.internal_id.keyword': fromId } }],
+          must: [
+            { match_phrase: { 'connections.internal_id.keyword': fromId } },
+            { query_string: { fields: ['connections.role'], query: '*_from' } }
+          ],
         },
       },
     },
@@ -964,7 +967,10 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
       path: 'connections',
       query: {
         bool: {
-          must: [{ match_phrase: { 'connections.internal_id.keyword': toId } }],
+          must: [
+            { match_phrase: { 'connections.internal_id.keyword': toId } },
+            { query_string: { fields: ['connections.role'], query: '*_to' } }
+          ],
         },
       },
     },

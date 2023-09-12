@@ -1029,11 +1029,19 @@ export const hashMergeValidation = (instances) => {
 // region mutation update
 const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
 const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
-const filterTargetByExisting = (targetEntity, sources, targets) => {
+const filterTargetByExisting = (targetEntity, redirectSide, sourcesDependencies, targetDependencies) => {
   const filtered = [];
   const cache = [];
+  const sources = sourcesDependencies[`i_relations_${redirectSide}`];
+  const targets = targetDependencies[`i_relations_${redirectSide}`];
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
+    // If the relation source is already in target = filtered
+    const finder = (t) => {
+      const sameTarget = t.internal_id === source.internal_id;
+      const sameRelationType = t.i_relation.entity_type === source.i_relation.entity_type;
+      return sameRelationType && sameTarget && noDate(t.i_relation);
+    };
     // In case of single meta to move, check if the target have not already this relation.
     // If yes, we keep it, if not we rewrite it
     const isSingleMeta = isSingleRelationsRef(source.i_relation.fromType, source.i_relation.entity_type);
@@ -1041,14 +1049,11 @@ const filterTargetByExisting = (targetEntity, sources, targets) => {
     const existingSingleMeta = isSingleMeta && isNotEmptyField(targetEntity[relationInputName]);
     // For single meta only rely on entity type to prevent relation duplications
     const id = isSingleMeta ? source.i_relation.entity_type : `${source.i_relation.entity_type}-${source.internal_id}`;
-    // If the relation source is already in target = filtered
-    const finder = (t) => {
-      const sameTarget = t.internal_id === source.internal_id;
-      const sameRelationType = t.i_relation.entity_type === source.i_relation.entity_type;
-      return sameRelationType && sameTarget && noDate(t.i_relation);
-    };
+    // Self ref relationships is not allowed, need to compare the side that will be kept with the target
+    const relationSideToKeep = redirectSide === 'from' ? 'toId' : 'fromId';
+    const isSelfMeta = isStixRefRelationship(source.i_relation.entity_type) && (targetEntity.internal_id === source.i_relation[relationSideToKeep]);
     // Check and add the relation in the processing list if needed
-    if (!existingSingleMeta && !R.find(finder, targets) && !cache.includes(id)) {
+    if (!existingSingleMeta && !isSelfMeta && !R.find(finder, targets) && !cache.includes(id)) {
       filtered.push(source);
       cache.push(id);
     }
@@ -1102,9 +1107,9 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
   // region CHANGING FROM
-  const relationsToRedirectFrom = filterTargetByExisting(targetEntity, sourcesDependencies[INTERNAL_FROM_FIELD], targetDependencies[INTERNAL_FROM_FIELD]);
+  const relationsToRedirectFrom = filterTargetByExisting(targetEntity, 'from', sourcesDependencies, targetDependencies);
   // region CHANGING TO
-  const relationsFromRedirectTo = filterTargetByExisting(targetEntity, sourcesDependencies[INTERNAL_TO_FIELD], targetDependencies[INTERNAL_TO_FIELD]);
+  const relationsFromRedirectTo = filterTargetByExisting(targetEntity, 'to', sourcesDependencies, targetDependencies);
   const updateConnections = [];
   const updateEntities = [];
   // FROM (x -> MERGED TARGET) --- (from) relation (to) ---- RELATED_ELEMENT
