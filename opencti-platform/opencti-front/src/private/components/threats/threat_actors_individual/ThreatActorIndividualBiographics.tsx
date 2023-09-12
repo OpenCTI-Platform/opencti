@@ -2,7 +2,6 @@ import { Box, Grid, IconButton, Paper, Tooltip, Typography } from '@mui/material
 import { InformationOutline } from 'mdi-material-ui';
 import ScaleRoundedIcon from '@mui/icons-material/ScaleRounded';
 import StraightenIcon from '@mui/icons-material/Straighten';
-import parse from 'html-react-parser';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -19,9 +18,8 @@ import {
 import { Height, Weight, validateMeasurement } from '../../../../utils/Number';
 import { commitLocalUpdate } from '../../../../relay/environment';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
-import { HairColors } from '../../common/form/mcas/HairColorField';
-import { EyeColors } from '../../common/form/mcas/EyeColorField';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+// import convert from 'convert-units';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -185,7 +183,8 @@ const ThreatActorIndividualBiographicsComponent = (
     }
     if (validatedHeight) {
       return usingUSUnits()
-        ? (validatedHeight as Height).height_in
+        // ? convert((validatedHeight as Height).height_cm).from('cm').to('in')
+        ? (validatedHeight as Height).height_cm
         : (validatedHeight as Height).height_cm;
     }
     return null;
@@ -217,7 +216,8 @@ const ThreatActorIndividualBiographicsComponent = (
     }
     if (validatedWeight) {
       return usingUSUnits()
-        ? (validatedWeight as Weight).weight_lb
+        // ? convert((validatedWeight as Weight).weight_kg).from('kg').to('lb')
+        ? (validatedWeight as Weight).weight_kg
         : (validatedWeight as Weight).weight_kg;
     }
     return null;

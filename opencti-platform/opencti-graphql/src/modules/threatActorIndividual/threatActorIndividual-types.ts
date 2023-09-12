@@ -3,7 +3,7 @@ import type { StixDate, StixOpenctiExtension } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixContainer } from '../../types/stix-sdo';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { Country, HeightTupleInputValues, MaritalStatus, Origin, WeightTupleInputValues } from '../../generated/graphql';
+import type { Country, HeightTupleInputValues, WeightTupleInputValues } from '../../generated/graphql';
 import type { RELATION_BORN_IN, RELATION_ETHNICITY, RELATION_NATIONALITY } from '../../schema/stixRefRelationship';
 
 export const ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL = 'Threat-Actor-Individual';
@@ -25,7 +25,7 @@ export interface BasicStoreEntityThreatActorIndividual extends BasicStoreEntity 
   date_of_birth: DateTime
   gender: string
   job_title: string
-  marital_status: MaritalStatus
+  marital_status: string
   eye_color: string
   hair_color: string
   height: [HeightTupleInputValues]
@@ -52,7 +52,7 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
   date_of_birth: DateTime
   gender: string
   job_title: string
-  marital_status: MaritalStatus
+  marital_status: string
   eye_color: string
   hair_color: string
   height: [HeightTupleInputValues]
@@ -83,7 +83,7 @@ export interface StixThreatActorIndividual extends StixContainer {
   date_of_birth: DateTime
   gender: string
   job_title: string
-  marital_status: MaritalStatus
+  marital_status: string
   eye_color: string
   hair_color: string
   height: [HeightTupleInputValues]

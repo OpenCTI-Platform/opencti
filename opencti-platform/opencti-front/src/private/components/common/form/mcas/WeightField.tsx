@@ -14,7 +14,6 @@ export const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: WeightTupleInput!) {
     threatActorIndividualWeightEdit(id: $id, input: $input, sort: false) {
       weight {
-        weight_lb
         weight_kg
         date_seen
       }
@@ -63,35 +62,8 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
           name={name}
           render={(arrayHelpers) => (
             <div>
-              {values.map(({ weight_lb, weight_kg, date_seen }: WeightTupleInputValues, index) => (
+              {values.map(({weight_kg, date_seen }: WeightTupleInputValues, index) => (
                 <div key={date_seen}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    id={`weight_${index}`}
-                    name={`${name}.${index}.weight_lb`}
-                    label={t('Weight (Pounds)')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    onChange={(_: string, v: string) => {
-                      commitMutation({
-                        ...defaultCommitMutation,
-                        mutation: individualWeightMutation,
-                        variables: {
-                          id,
-                          input: {
-                            values: [{
-                              weight_lb: Number(v) || 0,
-                              date_seen,
-                            }],
-                            index,
-                            operation: 'replace',
-                          },
-                        },
-                      });
-                    }}
-                  />
                   <Field
                     component={TextField}
                     variant="standard"
@@ -117,7 +89,7 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
                         },
                       });
                     }}
-                    style={{ marginLeft: 20, marginRight: 20 }}
+                    style={{ marginRight: 20 }}
                   />
                   <Field
                     component={DatePickerField}
@@ -131,7 +103,6 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
                           id,
                           input: {
                             values: [{
-                              weight_lb,
                               weight_kg,
                               date_seen: v,
                             }],
@@ -219,19 +190,9 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
                   <Field
                     component={TextField}
                     variant="standard"
-                    name={`${name}.${index}.weight_lb`}
-                    label={t('Weight (Pounds)')}
-                    type='number'
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
                     name={`${name}.${index}.weight_kg`}
                     label={t('Weight (Kilograms)')}
-                    style={{ marginLeft: 20, marginRight: 20 }}
+                    style={{ marginRight: 20 }}
                     type='number'
                     InputLabelProps={{
                       shrink: true,

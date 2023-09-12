@@ -41,12 +41,10 @@ const threatActorIndividualEditionBiographicsFragment = graphql`
     hair_color
     height {
       date_seen
-      height_in
       height_cm
     }
     weight {
       date_seen
-      weight_lb
       weight_kg
     }
   }

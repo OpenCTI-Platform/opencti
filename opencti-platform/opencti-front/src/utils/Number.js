@@ -184,14 +184,12 @@ export const convertWeight = (weight, toUnit = getWeightUnit(UnitSystems.Metric)
 /**
  * @typedef Weight
  * @type {object}
- * @property {number} weight_lb
  * @property {number} weight_kg
  * @property {Date|string|null} date_seen
  */
 /**
  * @typedef Height
  * @type {object}
- * @property {number} height_in
  * @property {number} height_cm
  * @property {Date|string|null} date_seen
  */
@@ -204,7 +202,7 @@ export const convertWeight = (weight, toUnit = getWeightUnit(UnitSystems.Metric)
  */
 /** @typedef Measurement @type {Height | Weight} */
 /**
- * Takes any string or object and ensures that a measurement object is returned.
+ * Takes any string or object and attempts to return a measurement object.
  * Parses a string with a numeric value and supported unit into a measurement object.
  * If either the object or string are invalid, returns a string with an error message.
  * @param {Measurement | string} data
@@ -228,11 +226,9 @@ export const validateMeasurement = (data, { validKeys, measureType, defaultUnit 
     return measureType === 'weight'
       ? {
         weight_kg: convertWeight(value, getWeightUnit(UnitSystems.Metric), unit),
-        weight_lb: convertWeight(value, getWeightUnit(UnitSystems.US), unit),
       }
       : {
         height_cm: convertLength(value, getLengthUnit(UnitSystems.Metric), unit),
-        height_in: convertLength(value, getLengthUnit(UnitSystems.US), unit),
       };
   }
   // Validate measurement object

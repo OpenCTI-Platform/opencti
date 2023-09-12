@@ -36,6 +36,7 @@ interface DocParams {
  */
 const updateRecord = async (context: AuthContext, user: AuthUser, index: string, id: string, source: string, params: DocParams) => {
   try {
+    // TODO: Change this updateAttribute
     await elUpdate(index, id, {
       script: { source, params },
     });
@@ -48,12 +49,12 @@ const updateRecord = async (context: AuthContext, user: AuthUser, index: string,
 
 const removeEmptyHeightTuples = (values: HeightTupleInputValues[]) => {
   if (!Array.isArray(values) || values.length < 1) return [];
-  return values.filter(({ height_in, height_cm }) => height_in || height_cm);
+  return values.filter(({ height_cm }) => height_cm);
 };
 
 const removeEmptyWeightTuples = (values: WeightTupleInputValues[]) => {
   if (!Array.isArray(values) || values.length < 1) return [];
-  return values.filter(({ weight_lb, weight_kg }) => weight_lb || weight_kg);
+  return values.filter(({ weight_kg }) => weight_kg);
 };
 
 /**
@@ -84,105 +85,6 @@ const sortByDateSeen = (
 };
 
 /**
- * Helper function for _roundAndConvert with height tuples.
- *
- * @param values List of height tuples to be rounded and converted.
- * @returns Rounded and converted height tuples.
- */
-const _roundAndConvertHeight = (values: HeightTupleInputValues[]) => {
-  const inToCm = (inches: number) => inches * 2.54;
-  const cmToIn = (cm: number) => cm / 2.54;
-  const convertedValues: HeightTupleInputValues[] = [];
-
-  values.forEach(({ height_in, height_cm, date_seen }) => {
-    if (
-      height_in
-      && Math.round(height_cm ?? -1) !== Math.round(inToCm(height_in))
-    ) {
-      convertedValues.push({
-        height_in,
-        height_cm: inToCm(height_in),
-        date_seen,
-      });
-    } else if (
-      height_cm
-      && Math.round(height_in ?? -1) !== Math.round(cmToIn(height_cm))
-    ) {
-      convertedValues.push({
-        height_cm,
-        height_in: cmToIn(height_cm),
-        date_seen,
-      });
-    } else {
-      convertedValues.push({ height_in, height_cm, date_seen });
-    }
-  });
-
-  return convertedValues;
-};
-
-/**
- * Helper function for _roundAndConvert with weight tuples.
- *
- * @param values List of weight tuples to be rounded and converted.
- * @returns Rounded and converted weight tuples.
- */
-const _roundAndConvertWeight = (values: WeightTupleInputValues[]) => {
-  const lbToKg = (lb: number) => lb * 0.453592;
-  const kgToLb = (kg: number) => kg / 0.453592;
-  const convertedValues: WeightTupleInputValues[] = [];
-
-  values.forEach(({ weight_lb, weight_kg, date_seen }) => {
-    if (
-      weight_lb
-      && Math.round(weight_kg ?? -1) !== Math.round(lbToKg(weight_lb))
-    ) {
-      convertedValues.push({
-        weight_lb,
-        weight_kg: lbToKg(weight_lb),
-        date_seen,
-      });
-    } else if (
-      weight_kg
-      && Math.round(weight_lb ?? -1) !== Math.round(kgToLb(weight_kg))
-    ) {
-      convertedValues.push({
-        weight_kg,
-        weight_lb: kgToLb(weight_kg),
-        date_seen,
-      });
-    } else {
-      convertedValues.push({ weight_lb, weight_kg, date_seen });
-    }
-  });
-
-  return convertedValues;
-};
-
-/**
- * Given an incomplete or incorrect pair of units, converts and corrects
- * the units.
- * e.g. Given height_in and no height_cm, this will return the appropriate
- *  values for both.
- * e.g. Given weight_lb and incorrect weight_kg conversion, this will
- *  convert weight_lb to the correct weight_kg.
- * This function favors imperial measurements over metric. This means that
- * if it is given two values that do not convert to one another, this
- * function uses the imperial measurement to override the metric one.
- *
- * @param key
- * @param values
- * @returns List of values to add.
- */
-const _roundAndConvert = (key: HeightOrWeight, values: InputMaybe<InputMaybe<HeightTupleInputValues>[]> | InputMaybe<InputMaybe<WeightTupleInputValues>[]> | undefined) => {
-  if (values && Array.isArray(values)) {
-    return key === HeightOrWeight.HEIGHT
-      ? _roundAndConvertHeight(values as HeightTupleInputValues[])
-      : _roundAndConvertWeight(values as WeightTupleInputValues[]);
-  } return [];
-};
-
-/**
  * Common helper code for height and weight mutations.
  *
  * @param context System context.
@@ -207,7 +109,8 @@ const heightWeightEdit = async (context: AuthContext, user: AuthUser, id: string
   // Push new value(s)
   const { operation = 'add', values } = { ...input };
   const index = input?.index as number ?? -1;
-  const convertedValues = _roundAndConvert(key, values);
+  // const convertedValues = _roundAndConvert(key, values);
+  const convertedValues = [values];
 
   // Create the final values to send to the DB
   let finalValues;

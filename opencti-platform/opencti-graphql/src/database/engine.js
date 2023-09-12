@@ -587,9 +587,6 @@ const elCreateIndexTemplate = async (index) => {
             height: {
               type: 'object',
               properties: {
-                height_in: {
-                  type: 'float',
-                },
                 height_cm: {
                   type: 'float',
                 },
@@ -601,9 +598,6 @@ const elCreateIndexTemplate = async (index) => {
             weight: {
               type: 'object',
               properties: {
-                weight_lb: {
-                  type: 'float',
-                },
                 weight_kg: {
                   type: 'float',
                 },

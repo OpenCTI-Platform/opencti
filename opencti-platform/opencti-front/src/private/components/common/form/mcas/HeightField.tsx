@@ -14,7 +14,6 @@ export const individualHeightMutation = graphql`
   mutation HeightFieldIndividualMutation($id: ID!, $input: HeightTupleInput!) {
     threatActorIndividualHeightEdit(id: $id, input: $input, sort: false) {
       height {
-        height_in
         height_cm
         date_seen
       }
@@ -65,40 +64,12 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
             <div id={'total_height_read'}>
               {values.map((
                 {
-                  height_in,
                   height_cm,
                   date_seen,
                 }: HeightTupleInputValues,
                 index,
               ) => (
                 <div key={index}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    id={`height_${index}`}
-                    name={`${name}.${index}.height_in`}
-                    label={t('Height (Inches)')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    onChange={(_: string, v: string) => {
-                      commitMutation({
-                        ...defaultCommitMutation,
-                        mutation: individualHeightMutation,
-                        variables: {
-                          id,
-                          input: {
-                            values: [{
-                              height_in: Number(v) || 0,
-                              date_seen,
-                            }],
-                            index,
-                            operation: 'replace',
-                          },
-                        },
-                      });
-                    }}
-                  />
                   <Field
                     component={TextField}
                     variant="standard"
@@ -124,7 +95,7 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
                         },
                       });
                     }}
-                    style={{ marginLeft: 20, marginRight: 20 }}
+                    style={{ marginRight: 20 }}
                   />
                   <Field
                     component={DatePickerField}
@@ -138,7 +109,6 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
                           id,
                           input: {
                             values: [{
-                              height_in,
                               height_cm,
                               date_seen: v,
                             }],
@@ -227,19 +197,9 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
                   <Field
                     component={TextField}
                     variant="standard"
-                    name={`${name}.${index}.height_in`}
-                    label={t('Height (Inches)')}
-                    type='number'
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
                     name={`${name}.${index}.height_cm`}
                     label={t('Height (Centimeters)')}
-                    style={{ marginLeft: 20, marginRight: 20 }}
+                    style={{ marginRight: 20 }}
                     type='number'
                     InputLabelProps={{
                       shrink: true,

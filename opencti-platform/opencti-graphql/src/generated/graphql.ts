@@ -7137,15 +7137,6 @@ export enum ExternalReferencesOrdering {
   Url = 'url'
 }
 
-export enum EyeColor {
-  Black = 'Black',
-  Blue = 'Blue',
-  Brown = 'Brown',
-  Green = 'Green',
-  Other = 'Other',
-  Unknown = 'Unknown'
-}
-
 export type Feed = {
   __typename?: 'Feed';
   authorized_members?: Maybe<Array<MemberAccess>>;
@@ -7572,14 +7563,6 @@ export enum FilterMode {
   Or = 'or'
 }
 
-export enum Gender {
-  Female = 'Female',
-  Male = 'Male',
-  Nonbinary = 'Nonbinary',
-  Other = 'Other',
-  Unknown = 'Unknown'
-}
-
 export type GetMetrics = {
   __typename?: 'GetMetrics';
   total?: Maybe<Scalars['String']['output']>;
@@ -7979,18 +7962,6 @@ export enum GroupsOrdering {
   UpdatedAt = 'updated_at'
 }
 
-export enum HairColor {
-  Black = 'Black',
-  Blond = 'Blond',
-  Blue = 'Blue',
-  Brown = 'Brown',
-  Green = 'Green',
-  Other = 'Other',
-  Red = 'Red',
-  Unknown = 'Unknown',
-  Yellow = 'Yellow'
-}
-
 export type Hash = {
   __typename?: 'Hash';
   algorithm: Scalars['String']['output'];
@@ -8188,7 +8159,6 @@ export type HeightTuple = {
   __typename?: 'HeightTuple';
   date_seen?: Maybe<Scalars['DateTime']['output']>;
   height_cm?: Maybe<Scalars['Float']['output']>;
-  height_in?: Maybe<Scalars['Float']['output']>;
 };
 
 export type HeightTupleInput = {
@@ -8200,7 +8170,6 @@ export type HeightTupleInput = {
 export type HeightTupleInputValues = {
   date_seen?: InputMaybe<Scalars['DateTime']['input']>;
   height_cm?: InputMaybe<Scalars['Float']['input']>;
-  height_in?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -12418,20 +12387,6 @@ export enum MalwaresOrdering {
   ObjectMarking = 'objectMarking',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
-}
-
-export enum MaritalStatus {
-  Annulled = 'Annulled',
-  Divorced = 'Divorced',
-  DomesticPartner = 'DomesticPartner',
-  LegallySeparated = 'LegallySeparated',
-  Married = 'Married',
-  NeverMarried = 'NeverMarried',
-  Polygamous = 'Polygamous',
-  Separated = 'Separated',
-  Single = 'Single',
-  Unknown = 'Unknown',
-  Widowed = 'Widowed'
 }
 
 export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
@@ -16936,207 +16891,6 @@ export enum OrganizationsOrdering {
   UpdatedAt = 'updated_at',
   XOpenctiOrganizationType = 'x_opencti_organization_type',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
-}
-
-export enum Origin {
-  Afghan = 'Afghan',
-  Albanian = 'Albanian',
-  Algerian = 'Algerian',
-  American = 'American',
-  Andorran = 'Andorran',
-  Angolan = 'Angolan',
-  Antiguans = 'Antiguans',
-  Argentinean = 'Argentinean',
-  Armenian = 'Armenian',
-  Australian = 'Australian',
-  Austrian = 'Austrian',
-  Azerbaijani = 'Azerbaijani',
-  Bahamian = 'Bahamian',
-  Bahraini = 'Bahraini',
-  Bangladeshi = 'Bangladeshi',
-  Barbadian = 'Barbadian',
-  Barbudans = 'Barbudans',
-  Batswana = 'Batswana',
-  Belarusian = 'Belarusian',
-  Belgian = 'Belgian',
-  Belizean = 'Belizean',
-  Beninese = 'Beninese',
-  Bhutanese = 'Bhutanese',
-  Bolivian = 'Bolivian',
-  Bosnian = 'Bosnian',
-  Brazilian = 'Brazilian',
-  British = 'British',
-  Bruneian = 'Bruneian',
-  Bulgarian = 'Bulgarian',
-  Burkinabe = 'Burkinabe',
-  Burmese = 'Burmese',
-  Burundian = 'Burundian',
-  Cambodian = 'Cambodian',
-  Cameroonian = 'Cameroonian',
-  Canadian = 'Canadian',
-  CapeVerdean = 'Cape_Verdean',
-  CentralAfrican = 'Central_African',
-  Chadian = 'Chadian',
-  Chilean = 'Chilean',
-  Chinese = 'Chinese',
-  Colombian = 'Colombian',
-  Comoran = 'Comoran',
-  Congolese = 'Congolese',
-  CostaRican = 'Costa_Rican',
-  Croatian = 'Croatian',
-  Cuban = 'Cuban',
-  Cypriot = 'Cypriot',
-  Czech = 'Czech',
-  Danish = 'Danish',
-  Djibouti = 'Djibouti',
-  Dominican = 'Dominican',
-  Dutch = 'Dutch',
-  Dutchman = 'Dutchman',
-  Dutchwoman = 'Dutchwoman',
-  EastTimorese = 'East_Timorese',
-  Ecuadorean = 'Ecuadorean',
-  Egyptian = 'Egyptian',
-  Emirian = 'Emirian',
-  EquatorialGuinean = 'Equatorial_Guinean',
-  Eritrean = 'Eritrean',
-  Estonian = 'Estonian',
-  Ethiopian = 'Ethiopian',
-  Fijian = 'Fijian',
-  Filipino = 'Filipino',
-  Finnish = 'Finnish',
-  French = 'French',
-  Gabonese = 'Gabonese',
-  Gambian = 'Gambian',
-  Georgian = 'Georgian',
-  German = 'German',
-  Ghanaian = 'Ghanaian',
-  Greek = 'Greek',
-  Grenadian = 'Grenadian',
-  Guatemalan = 'Guatemalan',
-  GuineaBissauan = 'Guinea_Bissauan',
-  Guinean = 'Guinean',
-  Guyanese = 'Guyanese',
-  Haitian = 'Haitian',
-  Herzegovinian = 'Herzegovinian',
-  Honduran = 'Honduran',
-  Hungarian = 'Hungarian',
-  IKiribati = 'I_Kiribati',
-  Icelander = 'Icelander',
-  Indian = 'Indian',
-  Indonesian = 'Indonesian',
-  Iranian = 'Iranian',
-  Iraqi = 'Iraqi',
-  Irish = 'Irish',
-  Israeli = 'Israeli',
-  Italian = 'Italian',
-  Ivorian = 'Ivorian',
-  Jamaican = 'Jamaican',
-  Japanese = 'Japanese',
-  Jordanian = 'Jordanian',
-  Kazakhstani = 'Kazakhstani',
-  Kenyan = 'Kenyan',
-  KittianAndNevisian = 'Kittian_And_Nevisian',
-  Kuwaiti = 'Kuwaiti',
-  Kyrgyz = 'Kyrgyz',
-  Laotian = 'Laotian',
-  Latvian = 'Latvian',
-  Lebanese = 'Lebanese',
-  Liberian = 'Liberian',
-  Libyan = 'Libyan',
-  Liechtensteiner = 'Liechtensteiner',
-  Lithuanian = 'Lithuanian',
-  Luxembourger = 'Luxembourger',
-  Macedonian = 'Macedonian',
-  Malagasy = 'Malagasy',
-  Malawian = 'Malawian',
-  Malaysian = 'Malaysian',
-  Maldivan = 'Maldivan',
-  Malian = 'Malian',
-  Maltese = 'Maltese',
-  Marshallese = 'Marshallese',
-  Mauritanian = 'Mauritanian',
-  Mauritian = 'Mauritian',
-  Mexican = 'Mexican',
-  Micronesian = 'Micronesian',
-  Moldovan = 'Moldovan',
-  Monacan = 'Monacan',
-  Mongolian = 'Mongolian',
-  Moroccan = 'Moroccan',
-  Mosotho = 'Mosotho',
-  Motswana = 'Motswana',
-  Mozambican = 'Mozambican',
-  Namibian = 'Namibian',
-  Nauruan = 'Nauruan',
-  Nepalese = 'Nepalese',
-  Netherlander = 'Netherlander',
-  NewZealander = 'New_Zealander',
-  NiVanuatu = 'Ni_Vanuatu',
-  Nicaraguan = 'Nicaraguan',
-  Nigerian = 'Nigerian',
-  Nigerien = 'Nigerien',
-  NorthKorean = 'North_Korean',
-  NorthernIrish = 'Northern_Irish',
-  Norwegian = 'Norwegian',
-  Omani = 'Omani',
-  Pakistani = 'Pakistani',
-  Palauan = 'Palauan',
-  Panamanian = 'Panamanian',
-  PapuaNewGuinean = 'Papua_New_Guinean',
-  Paraguayan = 'Paraguayan',
-  Peruvian = 'Peruvian',
-  Polish = 'Polish',
-  Portuguese = 'Portuguese',
-  Qatari = 'Qatari',
-  Romanian = 'Romanian',
-  Russian = 'Russian',
-  Rwandan = 'Rwandan',
-  SaintLucian = 'Saint_Lucian',
-  Salvadoran = 'Salvadoran',
-  Samoan = 'Samoan',
-  SanMarinese = 'San_Marinese',
-  SaoTomean = 'Sao_Tomean',
-  Saudi = 'Saudi',
-  Scottish = 'Scottish',
-  Senegalese = 'Senegalese',
-  Serbian = 'Serbian',
-  Seychellois = 'Seychellois',
-  SierraLeonean = 'Sierra_Leonean',
-  Singaporean = 'Singaporean',
-  Slovakian = 'Slovakian',
-  Slovenian = 'Slovenian',
-  SolomonIslander = 'Solomon_Islander',
-  Somali = 'Somali',
-  SouthAfrican = 'South_African',
-  SouthKorean = 'South_Korean',
-  Spanish = 'Spanish',
-  SriLankan = 'Sri_Lankan',
-  Sudanese = 'Sudanese',
-  Surinamer = 'Surinamer',
-  Swazi = 'Swazi',
-  Swedish = 'Swedish',
-  Swiss = 'Swiss',
-  Syrian = 'Syrian',
-  Taiwanese = 'Taiwanese',
-  Tajik = 'Tajik',
-  Tanzanian = 'Tanzanian',
-  Thai = 'Thai',
-  Togolese = 'Togolese',
-  Tongan = 'Tongan',
-  TrinidadianOrTobagonian = 'Trinidadian_Or_Tobagonian',
-  Tunisian = 'Tunisian',
-  Turkish = 'Turkish',
-  Tuvaluan = 'Tuvaluan',
-  Ugandan = 'Ugandan',
-  Ukrainian = 'Ukrainian',
-  Unknown = 'Unknown',
-  Uruguayan = 'Uruguayan',
-  Uzbekistani = 'Uzbekistani',
-  Venezuelan = 'Venezuelan',
-  Vietnamese = 'Vietnamese',
-  Welsh = 'Welsh',
-  Yemenite = 'Yemenite',
-  Zambian = 'Zambian',
-  Zimbabwean = 'Zimbabwean'
 }
 
 export type OtpElement = {
@@ -28365,7 +28119,6 @@ export type WeightTuple = {
   __typename?: 'WeightTuple';
   date_seen?: Maybe<Scalars['DateTime']['output']>;
   weight_kg?: Maybe<Scalars['Float']['output']>;
-  weight_lb?: Maybe<Scalars['Float']['output']>;
 };
 
 export type WeightTupleInput = {
@@ -28377,7 +28130,6 @@ export type WeightTupleInput = {
 export type WeightTupleInputValues = {
   date_seen?: InputMaybe<Scalars['DateTime']['input']>;
   weight_kg?: InputMaybe<Scalars['Float']['input']>;
-  weight_lb?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -29526,7 +29278,6 @@ export type ResolversTypes = ResolversObject<{
   ExternalReferencesFilter: ExternalReferencesFilter;
   ExternalReferencesFiltering: ExternalReferencesFiltering;
   ExternalReferencesOrdering: ExternalReferencesOrdering;
-  EyeColor: EyeColor;
   Feed: ResolverTypeWrapper<BasicStoreEntityFeed>;
   FeedAddInput: FeedAddInput;
   FeedAttribute: ResolverTypeWrapper<FeedAttribute>;
@@ -29551,7 +29302,6 @@ export type ResolversTypes = ResolversObject<{
   FileMetadata: ResolverTypeWrapper<FileMetadata>;
   FilterMode: FilterMode;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
-  Gender: Gender;
   GetMetrics: ResolverTypeWrapper<GetMetrics>;
   Group: ResolverTypeWrapper<Omit<Group, 'default_dashboard' | 'members'> & { default_dashboard?: Maybe<ResolversTypes['Workspace']>, members?: Maybe<ResolversTypes['UserConnection']> }>;
   GroupAddInput: GroupAddInput;
@@ -29566,7 +29316,6 @@ export type ResolversTypes = ResolversObject<{
   GroupingsFiltering: GroupingsFiltering;
   GroupingsOrdering: GroupingsOrdering;
   GroupsOrdering: GroupsOrdering;
-  HairColor: HairColor;
   Hash: ResolverTypeWrapper<Hash>;
   HashInput: HashInput;
   HashedObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['HashedObservable']>;
@@ -29708,7 +29457,6 @@ export type ResolversTypes = ResolversObject<{
   MalwaresFilter: MalwaresFilter;
   MalwaresFiltering: MalwaresFiltering;
   MalwaresOrdering: MalwaresOrdering;
-  MaritalStatus: MaritalStatus;
   MarkingDefinition: ResolverTypeWrapper<MarkingDefinition>;
   MarkingDefinitionAddInput: MarkingDefinitionAddInput;
   MarkingDefinitionConnection: ResolverTypeWrapper<MarkingDefinitionConnection>;
@@ -29803,7 +29551,6 @@ export type ResolversTypes = ResolversObject<{
   OrganizationsFilter: OrganizationsFilter;
   OrganizationsFiltering: OrganizationsFiltering;
   OrganizationsOrdering: OrganizationsOrdering;
-  Origin: Origin;
   OtpElement: ResolverTypeWrapper<OtpElement>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
@@ -33341,7 +33088,6 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
 export type HeightTupleResolvers<ContextType = any, ParentType extends ResolversParentTypes['HeightTuple'] = ResolversParentTypes['HeightTuple']> = ResolversObject<{
   date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   height_cm?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  height_in?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -38677,7 +38423,6 @@ export type VulnerabilityEditMutationsResolvers<ContextType = any, ParentType ex
 export type WeightTupleResolvers<ContextType = any, ParentType extends ResolversParentTypes['WeightTuple'] = ResolversParentTypes['WeightTuple']> = ResolversObject<{
   date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   weight_kg?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  weight_lb?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
