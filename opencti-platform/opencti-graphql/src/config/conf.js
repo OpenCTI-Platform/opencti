@@ -370,6 +370,7 @@ export const loadCert = (cert) => {
   return readFileSync(cert);
 };
 export const PORT = nconf.get('app:port');
+
 class ExtendedHttpsProxyAgent extends HttpsProxyAgent {
   constructor(basicOpts, extendedOpts) {
     super(basicOpts);
@@ -380,6 +381,7 @@ class ExtendedHttpsProxyAgent extends HttpsProxyAgent {
     return super.callback(req, { ...opts, ...this.extendedOpts });
   }
 }
+
 const escapeRegex = (string) => {
   return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
 };
@@ -446,7 +448,17 @@ export const getPlatformHttpProxyAgent = (uri) => {
       return undefined;
     }
     // If not generate the agent accordingly
-    return targetProxy.build();
+    const httpAgent = targetProxy.build();
+
+    return {
+      ...httpAgent,
+      secureProxy: httpAgent.proxy.protocol === 'https:',
+      proxy: {
+        ...httpAgent.proxy,
+        host: httpAgent.proxy.hostname,
+        port: Number(httpAgent.proxy.port),
+      }
+    };
   }
   return undefined;
 };
