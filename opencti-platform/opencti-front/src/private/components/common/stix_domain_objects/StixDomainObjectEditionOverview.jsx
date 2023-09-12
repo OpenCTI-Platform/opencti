@@ -309,7 +309,7 @@ const StixDomainObjectEditionContainer = (props) => {
   let initialValues = R.pipe(
     R.assoc('createdBy', createdBy),
     R.assoc('objectMarking', objectMarking),
-    R.pick(['name', 'result_name', 'description', 'product', 'createdBy', 'objectMarking', 'confidence']),
+    R.pick(['name', 'result_name', 'description', 'createdBy', 'objectMarking', 'confidence']),
   )(stixDomainObject);
   if ('aliases' in stixDomainObject && stixDomainObject.aliases !== undefined) {
     initialValues = R.assoc(
@@ -590,7 +590,6 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         }
         ... on MalwareAnalysis {
           result_name
-          product
         }
         ... on ThreatActor {
           name

@@ -231,7 +231,6 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                               content={
                                 stixCoreObject.description
                                 || fd(stixCoreObject.created_at)
-                                || stixCoreObject.product
                               }
                               limit={200}
                               remarkGfmPlugin={true}
@@ -433,7 +432,6 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               }
               ... on MalwareAnalysis {
                 result_name
-                product
               }
               ... on ThreatActor {
                 name
