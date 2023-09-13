@@ -219,6 +219,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                             stixCoreObject.name
                             || stixCoreObject.observable_value
                             || stixCoreObject.attribute_abstract
+                            || stixCoreObject.result_name
                             || truncate(stixCoreObject.content, 30)
                             || stixCoreObject.opinion
                             || `${fd(stixCoreObject.first_observed)} - ${fd(
@@ -347,6 +348,9 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 first_seen
                 last_seen
               }
+              ... on Channel {
+                name
+              }
               ... on Note {
                 attribute_abstract
                 content
@@ -429,6 +433,9 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 first_seen
                 last_seen
               }
+              ... on MalwareAnalysis {
+                result_name
+              }
               ... on ThreatActor {
                 name
                 description
@@ -439,9 +446,18 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 name
                 description
               }
+              ... on Task {
+                name
+              }
+              ... on Narrative {
+                name
+              }
               ... on Vulnerability {
                 name
                 description
+              }
+              ... on Event {
+                name
               }
               ... on Incident {
                 name

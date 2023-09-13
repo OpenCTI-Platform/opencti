@@ -237,7 +237,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>
-          {t('Related cases')}
+          {t('Correlated cases')}
         </Typography>
         <List classes={{ root: classes.relatedContainers }}>
           {expandable

@@ -228,6 +228,9 @@ const entityDetailsQuery = graphql`
         last_seen
         description
       }
+      ... on MalwareAnalysis {
+        result_name
+      }
       ... on ThreatActor {
         name
         first_seen

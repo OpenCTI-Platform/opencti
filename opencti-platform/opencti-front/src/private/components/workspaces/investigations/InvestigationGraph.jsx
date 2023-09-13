@@ -166,6 +166,9 @@ const investigationGraphStixCoreObjectQuery = graphql`
         first_seen
         last_seen
       }
+      ... on MalwareAnalysis {
+        result_name
+      }
       ... on ThreatActor {
         name
         first_seen
@@ -526,6 +529,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
               first_seen
               last_seen
             }
+            ... on MalwareAnalysis {
+              result_name
+            }
             ... on ThreatActor {
               name
               first_seen
@@ -565,6 +571,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Case {
               name
             }
+            ... on Task {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -577,6 +586,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Label {
               value
               color
+            }
+            ... on KillChainPhase {
+              kill_chain_name
+              phase_name
             }
             ... on MarkingDefinition {
               definition
@@ -754,6 +767,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
               first_seen
               last_seen
             }
+            ... on MalwareAnalysis {
+              result_name
+            }
             ... on ThreatActor {
               name
               first_seen
@@ -782,6 +798,10 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Label {
               value
               color
+            }
+            ... on KillChainPhase {
+              kill_chain_name
+              phase_name
             }
             ... on MarkingDefinition {
               definition
@@ -2441,6 +2461,9 @@ const InvestigationGraph = createFragmentContainer(
                 first_seen
                 last_seen
               }
+              ... on MalwareAnalysis {
+                result_name
+              }
               ... on ThreatActor {
                 name
                 first_seen
@@ -2496,13 +2519,13 @@ const InvestigationGraph = createFragmentContainer(
                 value
                 color
               }
-              ... on MarkingDefinition {
-                definition
-                x_opencti_color
-              }
               ... on KillChainPhase {
                 kill_chain_name
                 phase_name
+              }
+              ... on MarkingDefinition {
+                definition
+                x_opencti_color
               }
               ... on ExternalReference {
                 url
