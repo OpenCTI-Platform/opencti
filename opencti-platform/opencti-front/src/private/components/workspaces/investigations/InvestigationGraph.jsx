@@ -426,6 +426,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on StixCoreObject {
               created_at
               updated_at
+              numberOfConnectedElement
               createdBy {
                 ... on Identity {
                   id
@@ -670,6 +671,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on StixCoreObject {
               created_at
               updated_at
+              numberOfConnectedElement
               createdBy {
                 ... on Identity {
                   id
@@ -1949,6 +1951,7 @@ class InvestigationGraphComponent extends Component {
       this.graphObjects,
     );
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
+
     return (
       <UserContext.Consumer>
         {({ bannerSettings }) => {
@@ -2366,6 +2369,7 @@ const InvestigationGraph = createFragmentContainer(
               }
               ... on StixCoreObject {
                 created_at
+                numberOfConnectedElement
                 createdBy {
                   ... on Identity {
                     id
