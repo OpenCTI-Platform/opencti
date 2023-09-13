@@ -64,7 +64,8 @@ export const objects = async (context, user, containerId, args) => {
     const relData = relationsMap.get(relation.toId);
     const isInferred = isInferredIndex(relation._index);
     if (relData) {
-      relationsMap.set(relation.toId, relData.push(isInferred ? INFERRED_OBJECT : MANUAL_OBJECT));
+      relData.push(isInferred ? INFERRED_OBJECT : MANUAL_OBJECT);
+      relationsMap.set(relation.toId, relData);
     } else {
       relationsMap.set(relation.toId, [isInferred ? INFERRED_OBJECT : MANUAL_OBJECT]);
     }
