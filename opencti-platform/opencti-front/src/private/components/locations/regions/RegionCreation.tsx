@@ -11,7 +11,6 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -27,6 +26,8 @@ import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { SimpleFileUpload } from "formik-mui";
+import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -94,7 +95,7 @@ const regionMutation = graphql`
   }
 `;
 
-interface RegionAddInput {
+export interface RegionAddInput {
   name: string;
   description: string;
   createdBy: Option | undefined;
@@ -113,7 +114,7 @@ interface RegionFormProps {
   inputValue?: string;
 }
 
-const REGION_TYPE = 'Region';
+export const REGION_TYPE = 'Region';
 
 export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   updater,
@@ -172,6 +173,9 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     externalReferences: [],
     file: undefined,
   });
+
+
+
   return (
     <Formik<RegionAddInput>
       initialValues={initialValues}
@@ -225,6 +229,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
+          <CustomFileUpload setFieldValue={setFieldValue} />
           <Field
             component={SimpleFileUpload}
             name="file"
