@@ -14,6 +14,18 @@ jobs:
           command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl
       - checkout
       - run:
+          command: apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
+      - run:
+          command: npm install -g node-gyp
+      - attach_workspace:
+          at: ~/
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
+          command: yarn install
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
+          command: yarn build:schema
+      - run:
           working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn install
       - run:
@@ -59,7 +71,7 @@ jobs:
           template: basic_fail_1
       - ms-teams/report:
           only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL          
+          webhook_url: $MS_TEAMS_WEBHOOK_URL
       - persist_to_workspace:
           root: ~/
           paths:
@@ -74,7 +86,7 @@ jobs:
       - run:
           command: apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
       - run:
-          command: npm install -g node-gyp          
+          command: npm install -g node-gyp
       - attach_workspace:
           at: ~/
       - run:
@@ -102,7 +114,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl
+      -  run: sudo apt-get update -qq && sudo apt install curl
+
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
@@ -130,7 +143,8 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl         
+      -  run: sudo apt-get update -qq && sudo apt install curl
+
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
@@ -260,7 +274,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl       
+      - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Install buildx
           command: |
@@ -300,7 +314,7 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
-      - run: sudo apt-get update -qq && sudo apt install curl        
+      - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Install buildx
           command: |
@@ -382,7 +396,7 @@ jobs:
     docker:
       - image: "cimg/base:stable"
     steps:
-      - run: sudo apt-get update -qq && sudo apt install curl      
+      - run: sudo apt-get update -qq && sudo apt install curl
       - slack/notify:
           event: pass
           template: basic_success_1
@@ -393,7 +407,7 @@ jobs:
     docker:
       - image: "cimg/base:stable"
     steps:
-      - run: sudo apt-get update -qq && sudo apt install curl   
+      - run: sudo apt-get update -qq && sudo apt install curl
       - slack/notify:
           event: pass
           template: basic_success_1
@@ -483,7 +497,7 @@ workflows:
       - deploy_testing:
           requires:
             - docker_build_platform_rolling
-            - docker_build_worker_rolling              
+            - docker_build_worker_rolling
       - notify_rolling:
           requires:
             - deploy_testing
