@@ -21,7 +21,7 @@ import {
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
-  INPUT_EXTERNAL_REFS,
+  INPUT_EXTERNAL_REFS, REL_INDEX_PREFIX,
 } from '../schema/general';
 import {
   RELATION_CREATED_BY,
@@ -298,6 +298,14 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
       total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...{ ...R.omit(['elementId', 'relationship_type'], numberParameter), filters } }))
     };
   }));
+};
+
+export const stixCoreObjectsConnectedNumber = (stixCoreObject) => {
+  const nbElements = Object.entries(stixCoreObject)
+    .filter(([key]) => key.startsWith(REL_INDEX_PREFIX))
+    .map(([, value]) => value.length)
+    .reduce((a, b) => a + b, 0);
+  return nbElements;
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {

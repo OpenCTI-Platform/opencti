@@ -13,6 +13,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   x_opencti_inferences: [Inference]
   # StixCoreObject
   createdBy: Identity
+  numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection

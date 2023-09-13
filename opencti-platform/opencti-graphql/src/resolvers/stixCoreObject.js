@@ -21,7 +21,7 @@ import {
   stixCoreObjectEditContext,
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
-  stixCoreObjectImportPush,
+  stixCoreObjectImportPush, stixCoreObjectsConnectedNumber,
   stixCoreObjectsDistribution,
   stixCoreObjectsDistributionByEntity,
   stixCoreObjectsExportAsk,
@@ -39,7 +39,7 @@ import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../da
 import { worksForSource } from '../domain/work';
 import { filesListing } from '../database/file-storage';
 import { BUS_TOPICS } from '../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
@@ -115,6 +115,7 @@ const stixCoreObjectResolvers = {
     importFiles: (stixCoreObject, { first, prefixMimeType }, context) => filesListing(context, context.user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject, prefixMimeType),
     pendingFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, 'import/pending/', stixCoreObject),
     exportFiles: (stixCoreObject, { first }, context) => filesListing(context, context.user, first, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}/`, stixCoreObject),
+    numberOfConnectedElement: (stixCoreObject) => stixCoreObjectsConnectedNumber(stixCoreObject),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, context) => ({

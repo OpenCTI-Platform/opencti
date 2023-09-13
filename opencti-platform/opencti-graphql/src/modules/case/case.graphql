@@ -14,6 +14,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_inferences: [Inference]
   # Stix Core Object
   createdBy: Identity
+  numberOfConnectedElement: Int!
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
