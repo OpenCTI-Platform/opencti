@@ -14,7 +14,7 @@ services:
       - 8001:8001
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
     environment:
       - discovery.type=single-node
       - xpack.ml.enabled=false
