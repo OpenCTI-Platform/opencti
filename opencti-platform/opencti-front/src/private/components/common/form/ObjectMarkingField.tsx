@@ -71,9 +71,9 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
 
   const optionSorted = allowedMarkingDefinitions.sort((a, b) => {
-    if (a.entity.definition_type === b.entity.definition_type) {
-      return (a.entity.x_opencti_order < b.entity.x_opencti_order ? -1 : 1);
-    } return (a.entity.definition_type < b.entity.definition_type ? -1 : 1);
+    if (a.definition_type === b.definition_type) {
+      return (a.x_opencti_order < b.x_opencti_order ? -1 : 1);
+    } return (a.definition_type < b.definition_type ? -1 : 1);
   });
   const handleClose = () => {
     setNewMarking(undefined);

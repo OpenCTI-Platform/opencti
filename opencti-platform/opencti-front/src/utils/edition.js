@@ -16,7 +16,6 @@ export const convertMarking = (element) => ({
   color: element.x_opencti_color,
   definition_type: element.definition_type,
   x_opencti_order: element.x_opencti_order,
-  entity: element,
 });
 
 export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []).map((n) => convertMarking(n.node));

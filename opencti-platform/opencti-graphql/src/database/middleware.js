@@ -1983,8 +1983,8 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
 
         let { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
 
-        const currentMarkings = initial.objectMarking;
-        if (relType === RELATION_OBJECT_MARKING && currentMarkings) {
+        if (relType === RELATION_OBJECT_MARKING && initial.objectMarking) {
+          const currentMarkings = initial.objectMarking;
           const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
           const markingAdded = markingsMap.get(R.head(refs));
 

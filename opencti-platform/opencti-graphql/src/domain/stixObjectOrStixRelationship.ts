@@ -25,7 +25,8 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   input: StixRefRelationshipAddInput,
   type: string
 ) => {
-  const stixObjectOrRelationship = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
+  const [stixObjectOrRelationship, to] = await Promise.all([storeLoadById(context, user, stixObjectOrRelationshipId, type), findById(context, user, input.toId)]);
+
   if (!stixObjectOrRelationship) {
     throw FunctionalError('Cannot add the relation, Stix-Object or Stix-Relationship cannot be found.');
   }
@@ -34,7 +35,6 @@ export const stixObjectOrRelationshipAddRefRelation = async (
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
   }
   // Create relation
-  const to : StoreMarkingDefinition = await findById(context, user, input.toId);
   const fromRole = `${type}_from`;
   const fromType = stixObjectOrRelationship.entity_type;
   const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromType, input.relationship_type);
@@ -63,6 +63,7 @@ export const stixObjectOrRelationshipAddRefRelations = async (
   const finalInput = input.toIds?.map(
     (n) => ({ fromId: stixObjectOrRelationshipId, toId: n, relationship_type: input.relationship_type })
   ) ?? [];
+  // TODO replace createRelations, check stixObjectOrRelationshipAddRefRelation
   await createRelations(context, user, finalInput, opts);
   const entity = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, entity, user);
