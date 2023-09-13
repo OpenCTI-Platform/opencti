@@ -348,6 +348,9 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 first_seen
                 last_seen
               }
+              ... on Channel {
+                name
+              }
               ... on Note {
                 attribute_abstract
                 content
@@ -443,9 +446,18 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 name
                 description
               }
+              ... on Task {
+                name
+              }
+              ... on Narrative {
+                name
+              }
               ... on Vulnerability {
                 name
                 description
+              }
+              ... on Event {
+                name
               }
               ... on Incident {
                 name

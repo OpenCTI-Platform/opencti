@@ -571,6 +571,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on Case {
               name
             }
+            ... on Task {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }
