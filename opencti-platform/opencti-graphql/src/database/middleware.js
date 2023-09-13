@@ -1466,7 +1466,7 @@ const prepareAttributes = (instance, elements) => {
       return {
         key: input.key,
         value: R.map((value) => {
-          const parsedValue = parseInt(value, 10);
+          const parsedValue = Number(value);
           return Number.isNaN(parsedValue) ? null : parsedValue;
         }, input.value),
       };
