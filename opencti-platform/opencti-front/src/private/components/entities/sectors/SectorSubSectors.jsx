@@ -109,7 +109,6 @@ const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
       name
       parent_types
       entity_type
-      isSubSector
       subSectors {
         edges {
           node {
