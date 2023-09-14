@@ -388,13 +388,14 @@ const escapeRegex = (string) => {
 const http = nconf.get('http_proxy');
 const https = nconf.get('https_proxy');
 const exclusions = (nconf.get('no_proxy') ?? '').split(',');
+const proxyCA = nconf.get('https_proxy_ca').map((caPath) => loadCert(caPath));
 // To prevent any configuration clash with node, we reset the proxy env variables
 process.env.HTTP_PROXY = '';
 process.env.HTTPS_PROXY = '';
 process.env.NO_PROXY = '';
-export const isUriProxyExcluded = (hostname) => {
-  for (let index = 0; index < exclusions.length; index += 1) {
-    const exclusion = exclusions[index];
+export const isUriProxyExcluded = (hostname, excludes) => {
+  for (let index = 0; index < excludes.length; index += 1) {
+    const exclusion = excludes[index];
     if (exclusion.includes('*')) { // Test regexp
       const pattern = escapeRegex(exclusion).replaceAll('\\*', '.*');
       const regexp = new RegExp(pattern, 'g');
@@ -425,19 +426,18 @@ export const isUriProxyExcluded = (hostname) => {
 export const getPlatformHttpProxies = () => {
   const proxies = {};
   if (https) {
-    const proxyCA = nconf.get('https_proxy_ca').map((caPath) => loadCert(caPath));
     proxies['https:'] = {
       build: () => new ExtendedHttpsProxyAgent(https, {
         rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
         ...configureCA(proxyCA)
       }),
-      isExcluded: (hostname) => isUriProxyExcluded(hostname),
+      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
   }
   if (http) {
     proxies['http:'] = {
       build: () => new HttpProxyAgent(http),
-      isExcluded: (hostname) => isUriProxyExcluded(hostname),
+      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
   }
   return proxies;
