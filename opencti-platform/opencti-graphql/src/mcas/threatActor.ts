@@ -1,12 +1,10 @@
 /**
  * Mutation resolvers for threat actors.
  */
-import { logApp } from '../config/conf';
 import { FunctionalError } from '../config/errors';
-import { elUpdate } from '../database/engine';
 import { storeLoadByIdWithRefs } from '../database/middleware';
-import { storeLoadById } from '../database/middleware-loader';
-import type { HeightTupleInput, HeightTupleInputValues, InputMaybe, WeightTupleInputValues } from '../generated/graphql';
+import { stixDomainObjectEditField } from '../domain/stixDomainObject';
+import { EditOperation, type HeightTupleInput, type HeightTupleInputValues, type InputMaybe, type WeightTupleInputValues } from '../generated/graphql';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 
@@ -16,36 +14,6 @@ enum HeightOrWeight {
   HEIGHT = 'height',
   WEIGHT = 'weight',
 }
-
-interface DocParams {
-  internal_id: string,
-  height?: any,
-  weight?: any,
-}
-
-/**
- * Attempts to update a record.
- *
- * @param context System context.
- * @param user User calling this mutation.
- * @param index Which index the record is in.
- * @param id Internal ID of the record to mutate.
- * @param source Mutation script source.
- * @param params Parameters passed to the mutation.
- * @returns Updated record or error.
- */
-const updateRecord = async (context: AuthContext, user: AuthUser, index: string, id: string, source: string, params: DocParams) => {
-  try {
-    // TODO: Change this updateAttribute
-    await elUpdate(index, id, {
-      script: { source, params },
-    });
-    return await storeLoadByIdWithRefs(context, user, id, { type });
-  } catch (error) {
-    logApp.error('Failed to update threatActor record', { error });
-    return { error: 'Failed to update record.', id };
-  }
-};
 
 const removeEmptyHeightTuples = (values: HeightTupleInputValues[]) => {
   if (!Array.isArray(values) || values.length < 1) return [];
@@ -72,7 +40,7 @@ const sortByDateSeen = (
   | undefined,
   key: string,
 ): InputMaybe<InputMaybe<HeightTupleInputValues>[]> | undefined => {
-  const finalValues = key === 'height'
+  const finalValues = key === HeightOrWeight['HEIGHT']
     ? removeEmptyHeightTuples(values as HeightTupleInputValues[])
     : removeEmptyWeightTuples(values as WeightTupleInputValues[]);
   return finalValues.sort((leftValue, rightValue) => {
@@ -96,8 +64,6 @@ const sortByDateSeen = (
  * @returns Updated record or an error.
  */
 const heightWeightEdit = async (context: AuthContext, user: AuthUser, id: string, input: HeightTupleInput, key: HeightOrWeight, sort: boolean = true) => {
-  const stixDomainObject = await storeLoadById(context, user, id, type);
-  const doc: DocParams = { internal_id: id };
   const initial = await storeLoadByIdWithRefs(context, user, id, { type });
   if (!initial) {
     throw FunctionalError("Can't find element to update", { id, type });
@@ -109,8 +75,7 @@ const heightWeightEdit = async (context: AuthContext, user: AuthUser, id: string
   // Push new value(s)
   const { operation = 'add', values } = { ...input };
   const index = input?.index as number ?? -1;
-  // const convertedValues = _roundAndConvert(key, values);
-  const convertedValues = [values];
+  const convertedValues = values as HeightTupleInputValues[];
 
   // Create the final values to send to the DB
   let finalValues;
@@ -143,15 +108,15 @@ const heightWeightEdit = async (context: AuthContext, user: AuthUser, id: string
       finalValues = initialValues.concat(convertedValues);
   }
 
-  // sort values and replace existing list in elasticsearch
+  // sort values and replace existing list
   if (sort) finalValues = sortByDateSeen(finalValues, key);
-  const source = `ctx._source['${key}'] = params['${key}']`;
-  if (key === 'height') {
-    doc.height = finalValues;
-  } else {
-    doc.weight = finalValues;
-  }
-  return updateRecord(context, user, stixDomainObject._index, id, source, doc);
+
+  const updatedInput = [{
+    key,
+    operation: EditOperation.Replace,
+    value: finalValues,
+  }];
+  return stixDomainObjectEditField(context, user, id, updatedInput);
 };
 
 /**
@@ -163,10 +128,8 @@ const heightWeightEdit = async (context: AuthContext, user: AuthUser, id: string
  * @returns Updated record.
  */
 export const heightWeightSort = async (context: AuthContext, user: AuthUser, id: string) => {
-  const stixDomainObject = await storeLoadById(context, user, id, type);
-  const doc: DocParams = { internal_id: id };
-  const height_key = 'height';
-  const weight_key = 'weight';
+  const height_key = HeightOrWeight['HEIGHT'];
+  const weight_key = HeightOrWeight['WEIGHT'];
   const initial = await storeLoadByIdWithRefs(context, user, id, { type });
   if (!initial) {
     throw FunctionalError("Can't find element to update", { id, type });
@@ -177,12 +140,19 @@ export const heightWeightSort = async (context: AuthContext, user: AuthUser, id:
   const weights = weight_key in initial && Array.isArray(initial[weight_key])
     ? sortByDateSeen(initial[weight_key], weight_key)
     : [];
-  doc[height_key] = heights;
-  doc[weight_key] = weights;
-  const source = `
-    ctx._source['${height_key}'] = params['${height_key}'];
-    ctx._source['${weight_key}'] = params['${weight_key}']`;
-  return updateRecord(context, user, stixDomainObject._index, id, source, doc);
+  const updatedInputs = [
+    {
+      key: height_key,
+      operation: EditOperation.Replace,
+      value: heights,
+    },
+    {
+      key: weight_key,
+      operation: EditOperation.Replace,
+      value: weights,
+    },
+  ];
+  return stixDomainObjectEditField(context, user, id, updatedInputs);
 };
 
 /**

@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
-import { bytesFormat, convertLength, convertWeight, numberFormat } from '../utils/Number';
+import { bytesFormat, numberFormat } from '../utils/Number';
 import { getLengthUnitForLocale, getWeightUnitForLocale } from '../utils/UnitSystems';
+import convert from 'convert';
 
 export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
@@ -183,13 +184,18 @@ export const useFormatter = () => {
    */
   const formatLength = (number, toUnit = null, fromUnit = null, unitDisplay = 'long', precision = 0) => {
     const localeUnit = getLengthUnitForLocale(intl.locale);
-    const converted = convertLength(number, toUnit || localeUnit, fromUnit || localeUnit) || {};
-    const formatOpts = { style: 'unit', maximumFractionDigits: precision, unitDisplay };
-    const formatted = [];
-    Object.entries(converted).forEach(([ unit, unitValue ]) => {
-      return formatted.push(intl.formatNumber(Number(unitValue), { unit, ...formatOpts }))
-    });
-    return formatted.join(' ');
+    const converted = convert(number, fromUnit || localeUnit).to(toUnit || localeUnit);
+    const formatOpts = { maximumFractionDigits: precision, unitDisplay };
+    if (toUnit) {
+      formatOpts['style'] = 'unit';
+      formatOpts['unit'] = toUnit;
+    }
+    if (toUnit === 'foot' && unitDisplay === 'narrow') {
+      const feet = Math.floor(converted);
+      const inches = Math.round((converted - feet) * 12)
+      return `${feet}'${inches}"`
+    }
+    return intl.formatNumber(Number(converted), formatOpts);
   };
 
   /**
@@ -203,13 +209,13 @@ export const useFormatter = () => {
    */
   const formatWeight = (number, toUnit = null, fromUnit = null, unitDisplay = 'long', precision = 2) => {
     const localeUnit = getWeightUnitForLocale(intl.locale);
-    const converted = convertWeight(number, toUnit || localeUnit, fromUnit || localeUnit);
-    const formatOpts = { style: 'unit', maximumFractionDigits: precision, unitDisplay };
-    const formatted = [];
-    Object.entries(converted).forEach(([ unit, unitValue ]) => formatted.push(
-      intl.formatNumber(Number(unitValue), { unit, ...formatOpts }),
-    ));
-    return formatted.join(' ');
+    const converted = convert(number, fromUnit || localeUnit).to(toUnit || localeUnit);
+    const formatOpts = { maximumFractionDigits: precision, unitDisplay };
+    if (toUnit) {
+      formatOpts['style'] = 'unit';
+      formatOpts['unit'] = toUnit;
+    }
+    return intl.formatNumber(Number(converted), formatOpts);
   };
 
   const longDate = (date) => {

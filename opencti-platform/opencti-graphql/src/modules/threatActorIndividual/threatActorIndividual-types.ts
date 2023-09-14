@@ -63,7 +63,17 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
 }
 
 export interface StixThreatActorIndividualExtension extends StixOpenctiExtension {
+  date_of_birth: DateTime
+  gender: string
+  job_title: string
+  marital_status: string
   eye_color: string
+  hair_color: string
+  height: [HeightTupleInputValues]
+  weight: [WeightTupleInputValues]
+  born_in_ref: string
+  nationality_ref: string
+  ethnicity_ref: string
 }
 
 export interface StixThreatActorIndividual extends StixContainer {
@@ -80,17 +90,6 @@ export interface StixThreatActorIndividual extends StixContainer {
   primary_motivations: string
   secondary_motivations: string[]
   personal_motivations: string[]
-  date_of_birth: DateTime
-  gender: string
-  job_title: string
-  marital_status: string
-  eye_color: string
-  hair_color: string
-  height: [HeightTupleInputValues]
-  weight: [WeightTupleInputValues]
-  born_in_ref: string
-  nationality_ref: string
-  ethnicity_ref: string
   extensions: {
     [STIX_EXT_OCTI]: StixThreatActorIndividualExtension
   }

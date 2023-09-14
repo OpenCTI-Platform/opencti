@@ -27,6 +27,7 @@ scalar ConstraintNumber
 scalar Upload
 scalar StixId
 scalar StixRef
+scalar Any
 scalar JSON
 enum State {
   wait
@@ -95,7 +96,7 @@ enum SimpleEditOperation {
 }
 input EditInput {
   key: String! # Field name to change
-  value: [String]! # Values to apply
+  value: [Any]! # Values to apply
   operation: EditOperation # Undefined = REPLACE
 }
 input EditContext {

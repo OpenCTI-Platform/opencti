@@ -20,6 +20,9 @@ scalar StixId
 """STIX Reference Scalar Type"""
 scalar StixRef
 
+"""Arbitrary object"""
+scalar Any
+
 scalar JSON
 
 enum State {
@@ -91,7 +94,7 @@ enum SimpleEditOperation {
 
 input EditInput {
   key: String!
-  value: [String]!
+  value: [Any]!
   operation: EditOperation
 }
 

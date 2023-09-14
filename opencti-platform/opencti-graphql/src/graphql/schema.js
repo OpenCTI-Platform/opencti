@@ -71,6 +71,7 @@ import stixResolvers from '../resolvers/stix';
 import { isSupportedStixType } from '../schema/identifier';
 import stixRefRelationshipResolvers from '../resolvers/stixRefRelationship';
 import stixMetaObjectResolvers from '../resolvers/stixMetaObject';
+import { logApp } from '../config/conf';
 
 const schemaTypeDefs = [globalTypeDefs, mcasTypeDefs];
 
@@ -100,6 +101,39 @@ const validateStixRef = (stixRef) => {
   }
   throw new UserInputError('Provided value is not a valid STIX Reference');
 };
+
+const toObject = (value) => {
+  if (typeof value === 'object') return value;
+  else if (typeof value === 'string' && value.charAt(0) === '{')
+    return JSON.parse(value);
+  else return value;
+};
+
+const parseObject = (ast) => {
+  const value = Object.create(null);
+  ast.fields.forEach(field => {
+    value[field.name.value] = parseAst(field.value);
+  });
+  return value;
+};
+
+const parseAst = (ast) => {
+  switch (ast.kind) {
+    case Kind.STRING:
+    case Kind.BOOLEAN:
+      return ast.value;
+    case Kind.INT:
+      return parseInt(ast.value);
+    case Kind.FLOAT:
+      return parseFloat(ast.value);
+    case Kind.OBJECT: 
+      return parseObject(ast);
+    case Kind.LIST:
+      return ast.values.map(parseAst);
+    default:
+      return null;
+  }
+}
 
 const globalResolvers = {
   DateTime: GraphQLDateTime,
@@ -135,6 +169,19 @@ const globalResolvers = {
       }
       throw new UserInputError('Provided value is not a valid STIX ID');
     },
+  }),
+  Any: new GraphQLScalarType({
+    name: 'Any',
+    description: 'Arbitrary object',
+    parseValue: toObject,
+    serialize: toObject,
+    parseLiteral: (ast) => {
+      switch (ast.kind) {
+        case Kind.STRING: return JSON.parse(ast.value)
+        case Kind.OBJECT: return parseObject(ast);
+        default: return null
+      }
+    }
   }),
 };
 const schemaResolvers = [

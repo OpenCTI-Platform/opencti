@@ -42,6 +42,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  Any: { input: any; output: any; }
   ConstraintNumber: { input: any; output: any; }
   ConstraintString: { input: any; output: any; }
   DateTime: { input: any; output: any; }
@@ -6058,7 +6059,7 @@ export type EditContext = {
 export type EditInput = {
   key: Scalars['String']['input'];
   operation?: InputMaybe<EditOperation>;
-  value: Array<InputMaybe<Scalars['String']['input']>>;
+  value: Array<InputMaybe<Scalars['Any']['input']>>;
 };
 
 export enum EditOperation {
@@ -29050,6 +29051,7 @@ export type ResolversTypes = ResolversObject<{
   AdministrativeAreasFilter: AdministrativeAreasFilter;
   AdministrativeAreasFiltering: AdministrativeAreasFiltering;
   AdministrativeAreasOrdering: AdministrativeAreasOrdering;
+  Any: ResolverTypeWrapper<Scalars['Any']['output']>;
   AppDebugDistribution: ResolverTypeWrapper<AppDebugDistribution>;
   AppDebugStatistics: ResolverTypeWrapper<AppDebugStatistics>;
   AppInfo: ResolverTypeWrapper<AppInfo>;
@@ -29926,6 +29928,7 @@ export type ResolversParentTypes = ResolversObject<{
   AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['AdministrativeAreaEdge']>> };
   AdministrativeAreaEdge: Omit<AdministrativeAreaEdge, 'node'> & { node: ResolversParentTypes['AdministrativeArea'] };
   AdministrativeAreasFiltering: AdministrativeAreasFiltering;
+  Any: Scalars['Any']['output'];
   AppDebugDistribution: AppDebugDistribution;
   AppDebugStatistics: AppDebugStatistics;
   AppInfo: AppInfo;
@@ -30714,6 +30717,10 @@ export type AdministrativeAreaEdgeResolvers<ContextType = any, ParentType extend
   node?: Resolver<ResolversTypes['AdministrativeArea'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
+
+export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Any'], any> {
+  name: 'Any';
+}
 
 export type AppDebugDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppDebugDistribution'] = ResolversParentTypes['AppDebugDistribution']> = ResolversObject<{
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38692,6 +38699,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AdministrativeArea?: AdministrativeAreaResolvers<ContextType>;
   AdministrativeAreaConnection?: AdministrativeAreaConnectionResolvers<ContextType>;
   AdministrativeAreaEdge?: AdministrativeAreaEdgeResolvers<ContextType>;
+  Any?: GraphQLScalarType;
   AppDebugDistribution?: AppDebugDistributionResolvers<ContextType>;
   AppDebugStatistics?: AppDebugStatisticsResolvers<ContextType>;
   AppInfo?: AppInfoResolvers<ContextType>;
