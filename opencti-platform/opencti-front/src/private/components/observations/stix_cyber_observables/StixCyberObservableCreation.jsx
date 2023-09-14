@@ -28,9 +28,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import {
   commitMutation,
   handleErrorInForm,
@@ -396,15 +396,14 @@ const StixCyberObservableCreation = ({
             return (
               <List>
                 {translatedOrderedList.map((subType) => (
-                  <ListItem
+                  <ListItemButton
                     key={subType.label}
                     divider={true}
-                    button={true}
                     dense={true}
                     onClick={() => selectType(subType.label)}
                   >
                     <ListItemText primary={subType.tlabel} />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             );
