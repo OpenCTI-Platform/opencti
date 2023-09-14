@@ -272,7 +272,7 @@ const StixDomainPanel = ({
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose}
+          onClose={onClose}
           updater={creationUpdater}
         />
       );
@@ -284,7 +284,7 @@ const StixDomainPanel = ({
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose}
+          onClose={onClose}
           updater={creationUpdater}
         />
       );
@@ -296,7 +296,7 @@ const StixDomainPanel = ({
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose}
+          onClose={onClose}
           updater={creationUpdater}
         />
       );
@@ -393,7 +393,7 @@ const StixDomainPanel = ({
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose}
+          onClose={onClose}
           updater={creationUpdater}
         />
       );
@@ -580,7 +580,7 @@ const StixDomainPanel = ({
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose}
+          onClose={onClose}
           updater={creationUpdater}
         />
       );
