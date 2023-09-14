@@ -9,7 +9,6 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
@@ -31,6 +30,7 @@ import {
 } from './__generated__/PositionCreationMutation.graphql';
 import { PositionsLinesPaginationQuery$variables } from './__generated__/PositionsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -273,7 +273,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-                    <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUpload setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

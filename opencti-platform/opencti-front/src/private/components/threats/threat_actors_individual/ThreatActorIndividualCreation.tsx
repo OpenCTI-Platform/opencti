@@ -9,7 +9,6 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
@@ -35,6 +34,7 @@ import {
 import {
   ThreatActorsIndividualCardsPaginationQuery$variables,
 } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
+import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -255,7 +255,7 @@ ThreatActorIndividualFormProps
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-                    <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUpload setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

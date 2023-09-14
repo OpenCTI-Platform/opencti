@@ -11,7 +11,6 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -30,6 +29,7 @@ import {
   CountryCreationMutation$variables,
 } from './__generated__/CountryCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -229,7 +229,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-                    <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUpload setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

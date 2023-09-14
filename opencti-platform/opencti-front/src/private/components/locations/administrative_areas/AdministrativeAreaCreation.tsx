@@ -11,7 +11,6 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -27,6 +26,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -247,7 +247,7 @@ AdministrativeAreaFormProps
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-                    <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUpload setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

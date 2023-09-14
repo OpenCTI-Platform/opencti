@@ -26,7 +26,6 @@ import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { SimpleFileUpload } from "formik-mui";
 import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -230,7 +229,6 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUpload setFieldValue={setFieldValue} />
-                    <CustomFileUpload setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

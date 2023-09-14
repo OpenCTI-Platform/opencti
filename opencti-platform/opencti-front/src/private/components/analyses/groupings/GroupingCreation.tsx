@@ -5,7 +5,6 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useHistory } from 'react-router-dom';
@@ -28,6 +27,7 @@ import { GroupingsLinesPaginationQuery$variables } from './__generated__/Groupin
 import { Theme } from '../../../../components/Theme';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
+import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -229,7 +229,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-                    <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUpload setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"
