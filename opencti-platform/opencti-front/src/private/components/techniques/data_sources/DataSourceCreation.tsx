@@ -268,26 +268,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{
-              style: {
-                marginTop: 20,
-                width: '100%',
-              },
-            }}
-            InputLabelProps={{
-              fullWidth: true,
-              variant: 'standard',
-            }}
-            InputProps={{
-              fullWidth: true,
-              variant: 'standard',
-            }}
-            fullWidth={true}
-          />
+                    <CustomFileUpload setFieldValue={setFieldValue} />
           <OpenVocabField
             label={t('Platforms')}
             type="platforms_ov"

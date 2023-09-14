@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { SimpleFileUpload } from 'formik-mui';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -19,6 +18,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -196,18 +196,7 @@ const ArtifactCreation = ({
               values,
             }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={SimpleFileUpload}
-                  name="file"
-                  label={t('File')}
-                  FormControlProps={{ style: { width: '100%' } }}
-                  InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                  InputProps={{
-                    fullWidth: true,
-                    variant: 'standard',
-                  }}
-                  fullWidth={true}
-                />
+                <CustomFileUpload setFieldValue={setFieldValue} />
                 <Field
                   component={MarkdownField}
                   name="x_opencti_description"

@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { SimpleFileUpload } from 'formik-mui';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -25,6 +24,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -210,15 +210,7 @@ const FeedbackCreation: FunctionComponent<{
                   setFieldValue={setFieldValue}
                   values={values.objects}
                 />
-                <Field
-                  component={SimpleFileUpload}
-                  name="file"
-                  label={t('Associated file')}
-                  FormControlProps={{ style: fieldSpacingContainerStyle }}
-                  InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                  InputProps={{ fullWidth: true, variant: 'standard' }}
-                  fullWidth={true}
-                />
+                <CustomFileUpload setFieldValue={setFieldValue} />
                 <ObjectLabelField
                   name="objectLabel"
                   style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
