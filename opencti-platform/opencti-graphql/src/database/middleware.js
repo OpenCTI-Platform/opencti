@@ -235,7 +235,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { extractSchemaDefFromPath, validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
-import { cleanMarkings } from '../utils/markingDefinition-utils';
+import { cleanMarkings, markingsToReplaceFiltered } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
 import { confidence } from '../schema/attribute-definition';
 
@@ -1984,16 +1984,8 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         let { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
 
         if (relType === RELATION_OBJECT_MARKING && initial.objectMarking) {
-          const currentMarkings = initial.objectMarking;
-          const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-          const markingAdded = markingsMap.get(R.head(refs));
-
-          const markingsHasSameType = currentMarkings.filter((currentMarking) => currentMarking.definition_type === markingAdded.definition_type);
-          const markingsToReplace = markingsHasSameType.filter((currentMarking) => currentMarking.x_opencti_order !== markingAdded.x_opencti_order);
-          if (markingsToReplace.length !== 0) {
-            // filter every value that has not the same type
-            const existingMarkings = currentMarkings.filter((marking) => !marking.definition_type.includes(markingAdded.definition_type)).map((m) => m.id);
-            const newMarkings = existingMarkings.concat(markingAdded.id);
+          const newMarkings = await markingsToReplaceFiltered(initial.objectMarking, context, refs);
+          if(newMarkings) {
             ({ operation, refs } = { operation: UPDATE_OPERATION_REPLACE, refs: newMarkings });
           }
         }
