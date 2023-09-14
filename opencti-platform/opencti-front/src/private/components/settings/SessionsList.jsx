@@ -117,6 +117,9 @@ class SessionsListComponent extends Component {
         this.setState({ killing: false });
         this.handleCloseKillSession();
       },
+      onError: () => {
+        this.setState({ killing: false });
+      },
     });
   }
 

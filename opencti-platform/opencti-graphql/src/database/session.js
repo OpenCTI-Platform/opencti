@@ -49,7 +49,7 @@ export const findSessions = () => {
       const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
         const userSessions = v.map((s) => {
           return {
-            id: s.redis_key_id,
+            id: s.redis_key_id.split(store.prefix)[1],
             created: s.user.session_creation,
             ttl: s.redis_key_ttl,
             originalMaxAge: Math.round(s.cookie.originalMaxAge / 1000)
