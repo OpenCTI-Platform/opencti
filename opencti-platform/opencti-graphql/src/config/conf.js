@@ -385,7 +385,14 @@ class ExtendedHttpsProxyAgent extends HttpsProxyAgent {
 const escapeRegex = (string) => {
   return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
 };
-export const isUriProxyExcluded = (hostname, exclusions) => {
+const http = nconf.get('http_proxy');
+const https = nconf.get('https_proxy');
+const exclusions = (nconf.get('no_proxy') ?? '').split(',');
+// To prevent any configuration clash with node, we reset the proxy env variables
+process.env.HTTP_PROXY = '';
+process.env.HTTPS_PROXY = '';
+process.env.NO_PROXY = '';
+export const isUriProxyExcluded = (hostname) => {
   for (let index = 0; index < exclusions.length; index += 1) {
     const exclusion = exclusions[index];
     if (exclusion.includes('*')) { // Test regexp
@@ -417,8 +424,6 @@ export const isUriProxyExcluded = (hostname, exclusions) => {
 };
 export const getPlatformHttpProxies = () => {
   const proxies = {};
-  const exclusions = (nconf.get('no_proxy') ?? '').split(',');
-  const https = nconf.get('https_proxy');
   if (https) {
     const proxyCA = nconf.get('https_proxy_ca').map((caPath) => loadCert(caPath));
     proxies['https:'] = {
@@ -426,14 +431,13 @@ export const getPlatformHttpProxies = () => {
         rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
         ...configureCA(proxyCA)
       }),
-      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
+      isExcluded: (hostname) => isUriProxyExcluded(hostname),
     };
   }
-  const http = nconf.get('http_proxy');
   if (http) {
     proxies['http:'] = {
       build: () => new HttpProxyAgent(http),
-      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
+      isExcluded: (hostname) => isUriProxyExcluded(hostname),
     };
   }
   return proxies;
