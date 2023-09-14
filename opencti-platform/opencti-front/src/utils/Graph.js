@@ -896,7 +896,6 @@ export const buildCaseCorrelationData = (
 };
 
 export const buildGraphData = (objects, graphData, t) => {
-  console.log('objects', objects);
   const relationshipsIdsInNestedRelationship = R.pipe(
     R.filter(
       (n) => n.from && n.to && (n.from.relationship_type || n.to.relationship_type),
@@ -1128,7 +1127,6 @@ export const nodePaint = (
   selected = false,
   inferred = false,
 ) => {
-  console.log('node', node);
   const { img, x, y, label } = node;
   ctx.beginPath();
   ctx.fillStyle = color;
