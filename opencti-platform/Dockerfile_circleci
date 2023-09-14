@@ -28,6 +28,7 @@ RUN yarn build:prod
 
 FROM base AS app
 
+RUN sed -ri 's/\[openssl_init\]/&\nssl_conf = ssl_sect\n[ssl_sect]\nsystem_default = system_default_sect\n[system_default_sect]\nCipherString = DEFAULT:@SECLEVEL=0/' /etc/ssl/openssl.cnf
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre; \
     python3 -m ensurepip; \
