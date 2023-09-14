@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { SYSTEM_USER } from './access';
-import {UPDATE_OPERATION_REPLACE} from "../database/utils";
 
 export const cleanMarkings = async (context, values) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
@@ -26,4 +25,5 @@ export const markingsToReplaceFiltered = async (currentMarkings, context, refs) 
     const existingMarkings = currentMarkings.filter((marking) => !marking.definition_type.includes(markingAdded.definition_type)).map((m) => m.id);
     return existingMarkings.concat(markingAdded.id);
   }
-}
+  return null;
+};

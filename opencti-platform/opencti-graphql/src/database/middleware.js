@@ -1985,7 +1985,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
 
         if (relType === RELATION_OBJECT_MARKING && initial.objectMarking) {
           const newMarkings = await markingsToReplaceFiltered(initial.objectMarking, context, refs);
-          if(newMarkings) {
+          if (newMarkings) {
             ({ operation, refs } = { operation: UPDATE_OPERATION_REPLACE, refs: newMarkings });
           }
         }
