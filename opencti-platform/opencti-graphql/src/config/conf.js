@@ -452,16 +452,7 @@ export const getPlatformHttpProxyAgent = (uri) => {
       return undefined;
     }
     // If not generate the agent accordingly
-    const httpAgent = targetProxy.build();
-    return {
-      ...httpAgent,
-      secureProxy: httpAgent.proxy.protocol === 'https:',
-      proxy: {
-        ...httpAgent.proxy,
-        host: httpAgent.proxy.hostname,
-        port: Number(httpAgent.proxy.port),
-      }
-    };
+    return targetProxy.build();
   }
   return undefined;
 };
