@@ -1,3 +1,4 @@
+import type { convertableToString } from 'xml2js';
 import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
 import * as R from 'ramda';
@@ -5,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { AxiosHeaders } from 'axios';
+import type { Moment } from 'moment';
 import { lockResource } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -18,10 +20,7 @@ import { pushToSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
 import type { AuthContext } from '../types/user';
-import type {
-  BasicStoreEntityIngestionRss,
-  BasicStoreEntityIngestionTaxii
-} from '../modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import type { Filter } from '../database/middleware-loader';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
@@ -50,32 +49,57 @@ const asArray = (data: unknown) => {
 type Getter = (uri: string) => Promise<object>;
 
 interface RssElement {
-  pubDate: string
-  lastBuildDate: string
+  pubDate: { _: string }
+  lastBuildDate: { _: string }
+  updated: { _: string }
 }
 
 interface RssItem {
-  title: string
-  description: string
-  link: string
-  content: string
-  'content:encoded': string
-  category: string | string[]
-  pubDate: string
-  lastBuildDate: string
+  title: { _: string }
+  summary: { _: string }
+  description: { _: string }
+  link: { _: string, href?: string }
+  content: { _: string }
+  'content:encoded': { _: string }
+  category: { _: string } | { _: string }[]
+  pubDate: { _: string }
+  lastBuildDate: { _: string }
+  updated: { _: string }
 }
 
-const rssItemConvert = (turndownService: TurndownService, channel: RssElement, item: RssItem) => {
-  const { pubDate } = channel;
+interface DataItem {
+  title: string
+  description: string
+  link: string | undefined
+  content: string
+  labels: string[]
+  pubDate: Moment
+}
+
+const rssItemV1Convert = (turndownService: TurndownService, feed: RssElement, entry: RssItem): DataItem => {
+  const { updated } = feed;
   return {
-    title: turndownService.turndown(item.title),
-    description: turndownService.turndown(item.description),
-    link: item.link,
-    content: turndownService.turndown(item['content:encoded'] ?? item.content ?? ''),
-    labels: R.uniq(asArray(item.category).map((c) => c.trim())),
-    pubDate: utcDate(item.pubDate ?? pubDate),
+    title: turndownService.turndown(entry.title._),
+    description: turndownService.turndown(entry.summary?._ ?? ''),
+    link: isNotEmptyField(entry.link) ? entry.link.href?.trim() : '',
+    content: turndownService.turndown(entry.content?._ ?? ''),
+    labels: [],
+    pubDate: utcDate(entry.updated?._ ?? updated?._),
   };
 };
+
+const rssItemV2Convert = (turndownService: TurndownService, channel: RssElement, item: RssItem): DataItem => {
+  const { pubDate } = channel;
+  return {
+    title: turndownService.turndown(item.title._),
+    description: turndownService.turndown(item.description?._ ?? ''),
+    link: isNotEmptyField(item.link) ? (item.link._ ?? '').trim() : '',
+    content: turndownService.turndown(item['content:encoded']?._ ?? item.content?._ ?? ''),
+    labels: R.uniq(asArray(item.category).filter((c) => isNotEmptyField(c)).map((c) => c._.trim())),
+    pubDate: utcDate(item.pubDate?._ ?? pubDate?._),
+  };
+};
+
 const rssHttpGetter = (): Getter => {
   const httpClient = getHttpClient({ responseType: 'text' });
   return async (uri: string) => {
@@ -83,17 +107,32 @@ const rssHttpGetter = (): Getter => {
     return data;
   };
 };
+
+export const rssDataParser = async (turndownService: TurndownService, data: convertableToString, current_state_date: Date | undefined): Promise<DataItem[]> => {
+  const xmlData = await xmlParse(data, { explicitArray: false, trim: true, explicitCharkey: true, mergeAttrs: true });
+  if (xmlData?.feed) { // Atom V1
+    const entries = asArray(xmlData.feed.entry);
+    return entries.map((entry) => rssItemV1Convert(turndownService, xmlData.feed, entry))
+      .filter((e) => isNotEmptyField(e.title)) // Title is mandatory
+      .filter((e) => isNotEmptyField(e.pubDate) && e.pubDate.isValid()) // A valid date is also mandatory
+      .filter((e) => isEmptyField(current_state_date) || e.pubDate.isAfter(current_state_date))
+      .sort((a, b) => a.pubDate.diff(b.pubDate));
+  }
+  if (xmlData?.rss) { // Atom V2
+    const channels = asArray(xmlData?.rss?.channel);
+    return channels
+      .map((channel) => asArray(channel.item).map((item) => rssItemV2Convert(turndownService, channel, item))).flat()
+      .filter((e) => isNotEmptyField(e.title)) // Title is mandatory
+      .filter((e) => isNotEmptyField(e.pubDate) && e.pubDate.isValid()) // A valid date is also mandatory
+      .filter((e) => isEmptyField(current_state_date) || e.pubDate.isAfter(current_state_date))
+      .sort((a, b) => a.pubDate.diff(b.pubDate));
+  }
+  return [];
+};
+
 const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndownService: TurndownService, ingestion: BasicStoreEntityIngestionRss) => {
   const data = await httpRssGet(ingestion.uri);
-  // Build items from XML
-  const xmlData = await xmlParse(data, { explicitArray: false });
-  const channels = asArray(xmlData?.rss?.channel);
-  const items = channels
-    .map((channel) => asArray(channel.item).map((item) => rssItemConvert(turndownService, channel, item)))
-    .flat()
-    // TODO lastBuildDate Not always here
-    .filter((e) => isNotEmptyField(e.pubDate) && (isEmptyField(ingestion.current_state_date) || e.pubDate.isAfter(ingestion.current_state_date)))
-    .sort((a, b) => a.pubDate.diff(b.pubDate));
+  const items = await rssDataParser(turndownService, data, ingestion.current_state_date);
   // Build Stix bundle from items
   if (items.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Rss ingestion execution for ${items.length} items`);
@@ -129,6 +168,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate });
   }
 };
+
 const rssExecutor = async (context: AuthContext, turndownService: TurndownService) => {
   const httpGet = rssHttpGetter();
   const filters: Array<Filter> = [{ key: 'ingestion_running', values: [true] }];
@@ -138,7 +178,7 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
     const ingestion = ingestions[i];
     const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
       .catch((e) => {
-        logApp.error(`[OPENCTI-MODULE] Rss ingestion execution error for ${ingestion}`, { error: e });
+        logApp.error(`[OPENCTI-MODULE] Rss ingestion execution error for ${ingestion.name}`, { error: e });
       });
     ingestionPromises.push(ingestionPromise);
   }
