@@ -1031,7 +1031,6 @@ export const buildGraphData = (objects, graphData, t) => {
     R.flatten,
   )(objects);
   const links = R.concat(normalLinks, nestedLinks);
-  console.log('links', links);
 
   // Map to know how many links are displayed for each node
   const nodesLinksCounter = new Map();
@@ -1049,8 +1048,6 @@ export const buildGraphData = (objects, graphData, t) => {
       nodesLinksCounter.set(to, 1);
     }
   });
-
-  console.log(nodesLinksCounter);
 
   const nodes = R.pipe(
     R.filter(
@@ -1135,8 +1132,6 @@ export const buildGraphData = (objects, graphData, t) => {
       fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
     })),
   )(objects);
-
-  console.log('nodes', nodes);
 
   return {
     nodes,
