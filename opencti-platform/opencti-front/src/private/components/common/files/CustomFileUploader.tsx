@@ -47,42 +47,58 @@ function CustomFileUpload<T>(
       }
     }
 
-    return (
-        <div
-            style={{
-                marginTop: 30,
-                width: '100%',
+  return (
+    <div
+      style={{
+          marginTop: 30,
+          width: '100%',
+      }}
+    >
+      <label
+        htmlFor="label"
+        data-shrink="true"
+        style={{
+          color: theme.palette.grey["400"],
+        }}
+      >
+        {t('Associated file')}
+      </label>
+      <br/>
+      <Box
+        sx={{
+          width: '100%',
+          paddingBottom: '0.2rem',
+          borderBottom: `0.05rem solid ${theme.palette.grey["400"]}`,
+          cursor: 'default',
+          '&:hover': {
+            paddingBottom: '0.15rem',
+            borderBottom: '0.1rem solid white',
+          },
+          '&:active': {
+            paddingBottom: '0.15rem',
+            borderBottom: `0.1rem solid ${theme.palette.primary.main}`,
+          },
+        }}
+      >
+        <Button
+          component="label"
+          variant="contained"
+          onChange={onChange}
+        >
+          {t('Select your file')}
+          <VisuallyHiddenInput type="file" />
+        </Button>
+        <span
+          title={fileName || t('No file selected.')}
+          style={{
+                marginLeft: 5,
             }}
         >
-            <label
-                htmlFor="label"
-                data-shrink="true"
-                style={{
-                    color: theme.palette.grey["400"]
-                }}
-            >
-                {t('Associated file')}
-            </label>
-            <br/>
-            <Box>
-                <Button
-                    component="label"
-                    variant="contained"
-                    onChange={onChange}
-                >
-                    {t('Select your file')}
-                    <VisuallyHiddenInput type="file" />
-                </Button>
-                <span
-                    style={{
-                        marginLeft: 5,
-                    }}
-                >
-            {fileName || t('No file selected.')}
-          </span>
-            </Box>
-        </div>
-    )
+          {fileName || t('No file selected.')}
+        </span>
+      </Box>
+    </div>
+  )
 }
 
 export default CustomFileUpload;
