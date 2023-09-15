@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, includes, filter, append } from 'ramda';
+import { compose, includes, append } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
