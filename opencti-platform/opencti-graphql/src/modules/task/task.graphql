@@ -4,6 +4,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -11,7 +12,6 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   updated_at: DateTime!
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])

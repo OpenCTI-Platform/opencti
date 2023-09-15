@@ -4,6 +4,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   entity_type: String!
   parent_types: [String]!
   # StixObject
+  representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
@@ -12,7 +13,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
-  representative: Representative!
   createdBy: Identity
   objectMarking: MarkingDefinitionConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])

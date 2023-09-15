@@ -97,6 +97,8 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   x_opencti_stix_ids?: Array<StixId>;
   x_opencti_workflow_id?: string;
   creator_id?: string | string[];
+  // representative
+  representative: Representative
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {
@@ -161,8 +163,6 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
-  // representative
-  representative: Representative
 }
 
 interface StoreCommon {

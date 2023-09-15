@@ -71,7 +71,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
         references(types: ["Stix-Core-Object", "Stix-Core-Relationship", "Stix-Sighting-Relationship"]) {
           edges {
             node {
-              ... on StixCoreObject {
+              ... on StixObject {
                 id
                 entity_type
                 representative {
@@ -79,7 +79,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                   secondary
                 }
               }
-              ... on StixCoreRelationship {
+              ... on StixRelationship {
                 id
                 entity_type
                 relationship_type
@@ -88,22 +88,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
                   secondary
                 }
                 from {
-                  ... on StixCoreObject {
-                    id
-                    entity_type
-                  }
-                }
-              }
-              ... on StixSightingRelationship {
-                id
-                entity_type
-                relationship_type
-                representative {
-                  main
-                  secondary
-                }
-                from {
-                  ... on StixCoreObject {
+                  ... on StixObject {
                     id
                     entity_type
                   }
