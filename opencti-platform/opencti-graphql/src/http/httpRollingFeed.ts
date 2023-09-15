@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import type Express from 'express';
+import nconf from 'nconf';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
@@ -12,6 +13,8 @@ import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
 import { isDictionaryAttribute, isMultipleAttribute } from '../schema/schema-attributes';
+
+const SIZE_LIMIT = nconf.get('data_sharing:max_csv_feed_result') || 5000;
 
 const errorConverter = (e: any) => {
   const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'))(e.data);
@@ -56,7 +59,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       const fromDate = minutesAgo(feed.rolling_time);
       const extraOptions = { defaultTypes: feed.feed_types, field: 'created_at', orderMode: 'desc', after: fromDate };
       const options = await convertFiltersToQueryOptions(context, user, filters, extraOptions);
-      const args = { connectionFormat: false, first: 5000, ...options };
+      const args = { connectionFormat: false, first: SIZE_LIMIT, ...options };
       const elements = await listThings(context, user, feed.feed_types, args);
       if (feed.include_header) {
         res.write(`${feed.feed_attributes.map((a) => a.attribute).join(',')}\r\n`);
