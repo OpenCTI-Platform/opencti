@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, includes, filter, append } from 'ramda';
+import { compose, includes, append } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
@@ -95,6 +95,11 @@ class IndicatorObservablesComponent extends Component {
 
   render() {
     const { t, fd, classes, indicator } = this.props;
+
+    const observables = indicator.observables.edges.filter((e) => !includes(e.node.id, this.state.deleted))
+      .map((e) => e.node);
+    const observablesGlobalCount = indicator.observables.pageInfo.globalCount;
+
     return (
       <div style={{ marginTop: 20 }}>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -108,24 +113,21 @@ class IndicatorObservablesComponent extends Component {
         </Security>
         <div className="clearfix" />
         <List style={{ marginTop: -15 }}>
-          {filter(
-            (n) => !includes(n.node.id, this.state.deleted),
-            indicator.observables.edges,
-          ).map((observableEdge) => (
+          {observables.map((observable) => (
             <ListItem
-              key={observableEdge.node.id}
+              key={observable.id}
               classes={{ root: classes.item }}
               divider={true}
               button={true}
               component={Link}
               to={`/dashboard/observations/${
-                observableEdge.node.entity_type === 'Artifact'
+                observable.entity_type === 'Artifact'
                   ? 'artifacts'
                   : 'observables'
-              }/${observableEdge.node.id}`}
+              }/${observable.id}`}
             >
               <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <ItemIcon type={observableEdge.node.entity_type} />
+                <ItemIcon type={observable.entity_type} />
               </ListItemIcon>
               <ListItemText
                 primary={
@@ -138,28 +140,28 @@ class IndicatorObservablesComponent extends Component {
                         classes={{ root: classes.chipInList }}
                         style={{
                           backgroundColor: hexToRGB(
-                            itemColor(observableEdge.node.entity_type),
+                            itemColor(observable.entity_type),
                             0.08,
                           ),
-                          color: itemColor(observableEdge.node.entity_type),
+                          color: itemColor(observable.entity_type),
                           border: `1px solid ${itemColor(
-                            observableEdge.node.entity_type,
+                            observable.entity_type,
                           )}`,
                         }}
-                        label={t(`entity_${observableEdge.node.entity_type}`)}
+                        label={t(`entity_${observable.entity_type}`)}
                       />
                     </div>
                     <div
                       className={classes.bodyItem}
                       style={inlineStyles.observable_value}
                     >
-                      {observableEdge.node.observable_value}
+                      {observable.observable_value}
                     </div>
                     <div
                       className={classes.bodyItem}
                       style={inlineStyles.created_at}
                     >
-                      {fd(observableEdge.node.created_at)}
+                      {fd(observable.created_at)}
                     </div>
                   </div>
                 }
@@ -167,13 +169,19 @@ class IndicatorObservablesComponent extends Component {
               <ListItemSecondaryAction>
                 <IndicatorObservablePopover
                   indicatorId={indicator.id}
-                  observableId={observableEdge.node.id}
-                  onDelete={this.onDelete.bind(this, observableEdge.node.id)}
+                  observableId={observable.id}
+                  onDelete={this.onDelete.bind(this, observable.id)}
                 />
               </ListItemSecondaryAction>
             </ListItem>
           ))}
         </List>
+        {
+          observablesGlobalCount > 25
+          && <Link to={`/dashboard/observations/indicators/${indicator.id}/knowledge`}>
+              {'See more...'}
+            </Link>
+        }
       </div>
     );
   }
@@ -196,7 +204,7 @@ const IndicatorObservables = createFragmentContainer(
         name
         parent_types
         entity_type
-        observables(first: 200) {
+        observables(first: 25) {
           edges {
             node {
               id
@@ -206,6 +214,9 @@ const IndicatorObservables = createFragmentContainer(
               created_at
               updated_at
             }
+          }
+          pageInfo {
+            globalCount
           }
         }
       }
