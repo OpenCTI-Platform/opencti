@@ -160,6 +160,7 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
                 values={values.height as HeightTupleInputValues[]}
                 id={threatActorIndividual.id}
                 label={t('Heights')}
+                setFieldValue={setFieldValue}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
                 variant="edit"

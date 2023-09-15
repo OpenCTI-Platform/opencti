@@ -10,8 +10,9 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { FormikConfig } from 'formik/dist/types';
+import { FormikConfig, FormikErrors } from 'formik/dist/types';
 import { Box, Tab, Tabs } from '@mui/material';
+import Badge, { BadgeProps } from '@mui/material/Badge';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -42,6 +43,7 @@ import HeightField from '../../common/form/mcas/HeightField';
 import WeightField from '../../common/form/mcas/WeightField';
 import CountryPickerField from '../../common/form/mcas/CountryPickerField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import { styled } from '@mui/material/styles';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -78,6 +80,20 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
+  },
+}));
+
+interface ErrorBadgeProps extends BadgeProps {
+  errors?: FormikErrors<ThreatActorIndividualAddInput>;
+  width?: number,
+}
+
+const ErrorBadge = styled(Badge)<ErrorBadgeProps>(({ errors = {}, width = 80 }) => ({
+  color: Object.keys(errors).length > 0 ? 'red' : 'inherit',
+  width: Object.keys(errors).length > 0 ? width : 'auto',
+  '& .MuiBadge-badge': {
+    color: 'white',
+    backgroundColor: 'red',
   },
 }));
 
@@ -268,11 +284,17 @@ ThreatActorIndividualFormProps
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, errors }) => (
         <Form>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={currentTab} onChange={handleChangeTab}>
-              <Tab id='create-overview' label={t('Overview')} />
+              <Tab id='create-overview' label={
+                <ErrorBadge badgeContent={Object.keys(errors).length}
+                  errors={errors}
+                >
+                  {t('Overview')}
+                </ErrorBadge>}
+              />
               <Tab id='threat-demographics' label={t('Demographics')} />
               <Tab id='threat-bio' label={t('Biographics')} />
             </Tabs>

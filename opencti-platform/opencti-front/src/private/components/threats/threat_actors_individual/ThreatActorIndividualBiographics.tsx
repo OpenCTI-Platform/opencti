@@ -181,7 +181,7 @@ const ThreatActorIndividualBiographicsComponent = (
     if (typeof validatedHeight === 'string') {
       return validatedHeight;
     }
-    if (validatedHeight) {
+    if ((validatedHeight as Height)?.height_cm) {
       return usingUSUnits()
         ? convert((validatedHeight as Height).height_cm, 'cm').to('in')
         : (validatedHeight as Height).height_cm;
@@ -213,7 +213,7 @@ const ThreatActorIndividualBiographicsComponent = (
     if (typeof validatedWeight === 'string') {
       return validatedWeight;
     }
-    if (validatedWeight) {
+    if ((validatedWeight as Weight)?.weight_kg) {
       return usingUSUnits()
         ? convert((validatedWeight as Weight).weight_kg, 'kg').to('lb')
         : (validatedWeight as Weight).weight_kg;

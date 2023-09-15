@@ -123,7 +123,7 @@ const ThreatActorIndividualDemographics = (
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -143,7 +143,7 @@ const ThreatActorIndividualDemographics = (
               }
             </div>
           </Grid>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -163,7 +163,7 @@ const ThreatActorIndividualDemographics = (
               }
             </div>
           </Grid>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -174,7 +174,7 @@ const ThreatActorIndividualDemographics = (
               {parse(t(countryRelationship?.place_of_birth ?? '-'))}
             </div>
           </Grid>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -185,7 +185,7 @@ const ThreatActorIndividualDemographics = (
               {threatActorIndividual?.date_of_birth ? fsd(threatActorIndividual?.date_of_birth) : '-'}
             </div>
           </Grid>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -196,7 +196,7 @@ const ThreatActorIndividualDemographics = (
               {parse(t(countryRelationship?.nationality ?? '-'))}
             </div>
           </Grid>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -207,7 +207,7 @@ const ThreatActorIndividualDemographics = (
               {parse(t(countryRelationship?.ethnicity ?? '-'))}
             </div>
           </Grid>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -220,7 +220,7 @@ const ThreatActorIndividualDemographics = (
               small
             />
           </Grid>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -233,7 +233,7 @@ const ThreatActorIndividualDemographics = (
               small
             />
           </Grid>
-          <Grid item={true} spacing={4}>
+          <Grid item={true} xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
