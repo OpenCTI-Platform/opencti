@@ -18,6 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemStatus from '../../../../components/ItemStatus';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -59,12 +60,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface NoteLineComponentProps {
   node: NoteLine_node$data;
   dataColumns: DataColumns;
-  onLabelClick: (
-    key: string,
-    id: string,
-    value: string,
-    event: React.SyntheticEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
   selectedElements: Record<string, NoteLine_node$data>;
   deSelectedElements: Record<string, NoteLine_node$data>;
   onToggleEntity: (

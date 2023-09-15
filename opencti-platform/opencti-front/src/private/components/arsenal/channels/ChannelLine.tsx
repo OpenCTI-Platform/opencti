@@ -13,6 +13,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
 import { ChannelLine_node$key } from './__generated__/ChannelLine_node.graphql';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -48,12 +49,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface ChannelLineProps {
   node: ChannelLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 const channelLineFragment = graphql`

@@ -3755,6 +3755,7 @@ enum CoursesOfActionFilter {
   x_mitre_id
   source_reliability
   creator
+  revoked
 }
 input CoursesOfActionFiltering {
   key: [CoursesOfActionFilter!]!
@@ -6193,6 +6194,7 @@ enum MalwaresFilter {
   x_opencti_workflow_id
   confidence
   source_reliability
+  revoked
 }
 input MalwaresFiltering {
   key: [MalwaresFilter!]!

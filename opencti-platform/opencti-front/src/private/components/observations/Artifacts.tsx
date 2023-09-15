@@ -33,7 +33,7 @@ const Artifacts: FunctionComponent = () => {
       sortBy: 'created_at',
       orderAsc: false,
       openExports: false,
-      types: [] as string[],
+      types: ['Artifact'],
     },
   );
   const {
@@ -155,7 +155,7 @@ const Artifacts: FunctionComponent = () => {
                       }
                   >
                   <ArtifactsLines
-                      queryRef={queryRef}
+                    queryRef={queryRef}
                     paginationOptions={paginationOptions}
                     dataColumns={dataColumns}
                     onLabelClick={helpers.handleAddFilter}
@@ -165,15 +165,15 @@ const Artifacts: FunctionComponent = () => {
                     selectAll={selectAll}
                     setNumberOfElements={helpers.handleSetNumberOfElements}
                   />
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              selectAll={selectAll}
-              filters={renderFilters}
-              search={searchTerm}
-              handleClearSelectedElements={handleClearSelectedElements}
-            />
+                  <ToolBar
+                    selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
+                    numberOfSelectedElements={numberOfSelectedElements}
+                    selectAll={selectAll}
+                    filters={renderFilters}
+                    search={searchTerm}
+                    handleClearSelectedElements={handleClearSelectedElements}
+                  />
                   </React.Suspense>
               )}
             </ListLines>
@@ -187,9 +187,7 @@ const Artifacts: FunctionComponent = () => {
           {renderLines()}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <ArtifactCreation
-              paginationKey="Pagination_stixCyberObservables"
               paginationOptions={paginationOptions}
-              openExports={openExports}
             />
           </Security>
         </div>
