@@ -32,6 +32,7 @@ import {
   ExternalReferenceCreationMutation$data,
 } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import CustomFileUpload from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -232,6 +233,7 @@ ExternalReferenceCreationProps
     }
   };
 
+  const isEmbeddedInExternalReferenceCreation = true
   const renderClassic = () => {
     return (
       <div>
@@ -302,25 +304,31 @@ ExternalReferenceCreationProps
                     style={{ marginTop: 20 }}
                   />
                   {!dryrun && (
-                    <Field
-                      component={SimpleFileUpload}
-                      name="file"
-                      label={t('Associated file')}
-                      FormControlProps={{ style: fieldSpacingContainerStyle }}
-                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                      InputProps={{
-                        classes: { fullWidth: true, variant: 'standard' },
-                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-                          const fileName = event.target.value.split('\\').pop();
-                          setFieldValue('file', event.currentTarget.files?.[0]);
-                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
-                          if (!externalIdValue) {
-                            setFieldValue('external_id', fileName);
-                          }
-                        },
-                      }}
-                      fullWidth={true}
-                    />
+                    <>
+                      <CustomFileUpload
+                        setFieldValue={setFieldValue}
+                        isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
+                      />
+                      <Field
+                        component={SimpleFileUpload}
+                        name="file"
+                        label={t('Associated file')}
+                        FormControlProps={{ style: fieldSpacingContainerStyle }}
+                        InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                        InputProps={{
+                          classes: { fullWidth: true, variant: 'standard' },
+                          onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+                            const fileName = event.target.value.split('\\').pop();
+                            setFieldValue('file', event.currentTarget.files?.[0]);
+                            const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
+                            if (!externalIdValue) {
+                              setFieldValue('external_id', fileName);
+                            }
+                          },
+                        }}
+                        fullWidth={true}
+                      />
+                    </>
                   )}
                   <Field
                     component={MarkdownField}

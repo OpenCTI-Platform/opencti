@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useState} from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import { FormikErrors } from 'formik';
 import Box from '@mui/material/Box';
@@ -17,17 +17,35 @@ const VisuallyHiddenInput = styled('input')`
   width: 1rem;
 `;
 
-function CustomFileUpload<T>(
-  {setFieldValue}
-  : {
-      setFieldValue: (field: string, value: any, shouldValidate?: boolean) =>
+interface CustomFileUploadProps<T> {
+  setFieldValue:
+    (field: string, value: any, shouldValidate?: boolean) =>
       Promise<void |
-      FormikErrors<T>>
-  }
+        FormikErrors<T>>
+  ,
+  isEmbeddedInExternalReferenceCreation?: boolean
+}
+
+function CustomFileUpload<T>(
+  {setFieldValue, isEmbeddedInExternalReferenceCreation}
+  : CustomFileUploadProps<T>
 ){
     const { t } = useFormatter();
     const theme = useTheme();
     const [fileName, setFileName] = useState('')
+
+    async function onChange(event: FormEvent) {
+      const eventTargetValue = (event.target as HTMLInputElement).value as string;
+      const newFileName = eventTargetValue.substring(eventTargetValue.lastIndexOf('\\') + 1);
+      setFileName(newFileName)
+      await setFieldValue('file', (event.target as HTMLInputElement).files?.[0])
+      if(isEmbeddedInExternalReferenceCreation){
+        const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
+        if (!externalIdValue) {
+          await setFieldValue('external_id', newFileName);
+        }
+      }
+    }
 
     return (
         <div
@@ -50,12 +68,7 @@ function CustomFileUpload<T>(
                 <Button
                     component="label"
                     variant="contained"
-                    onChange={async (event: FormEvent) => {
-                        const eventTargetValue = (event.target as HTMLInputElement).value as string;
-                        const newFileName = eventTargetValue.substring(eventTargetValue.lastIndexOf('\\') + 1);
-                        setFileName(newFileName)
-                        await setFieldValue('file', (event.target as HTMLInputElement).files?.[0])
-                    }}
+                    onChange={onChange}
                 >
                     {t('Select your file')}
                     <VisuallyHiddenInput type="file" />
