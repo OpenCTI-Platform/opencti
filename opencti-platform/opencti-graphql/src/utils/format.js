@@ -95,7 +95,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_PROCESS:
       return stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown';
     case ENTITY_SOFTWARE:
-      return stixCyberObservable.name || 'Unknown';
+      return stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown';
     case ENTITY_USER_ACCOUNT:
       return stixCyberObservable.account_login || stixCyberObservable.user_id || 'Unknown';
     case ENTITY_BANK_ACCOUNT:
