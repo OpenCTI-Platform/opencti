@@ -287,11 +287,13 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     targetIds = targetIds.filter((id) => elementIds.includes(id));
   }
   const targets = await elFindByIds(context, user, targetIds, opts);
-  // For each target, search if the relation is inferred
-  const findAllTargets = targets.map((target) => {
-    const findRelation = relations.find((relation) => (relation.toId === target.id) || (relation.fromId === target.id));
-    return { ...target, is_from_relation_inferred: !!findRelation.x_opencti_inferences };
+  const relationWithTargets = {};
+  relations.forEach((relation) => {
+    const tempTarget = targets.find((target) => target[`${opposite}Id`] === relation.id);
+    relationWithTargets[relation.id] = { ...tempTarget, is_from_relation_inferred: !!relation.x_opencti_inferences };
   });
+
+  // Need to adapt the code up to the paginate and elements below
 
   // Group and rebuild the result
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
@@ -312,7 +314,7 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     const values = elGrouped[id];
     const data = first ? R.take(first, values) : values;
     const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
-    return findAllTargets.filter((t) => filterIds.includes(t.internal_id));
+    return targets.filter((t) => filterIds.includes(t.internal_id));
   });
   if (batched) {
     return elements;
