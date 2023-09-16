@@ -11,7 +11,6 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
@@ -25,7 +24,6 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import {
   CourseOfActionCreationMutation,
@@ -34,58 +32,7 @@ import {
 import { CoursesOfActionLinesPaginationQuery$variables } from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUpload from "../../common/files/CustomFileUploader";
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
+import {useCommonStyles} from "@components/common/style/commonStyle";
 
 const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
@@ -137,7 +84,7 @@ CourseOfActionFormProps
   defaultCreatedBy,
   defaultMarkingDefinitions,
 }) => {
-  const classes = useStyles();
+  const classes = useCommonStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string()
@@ -294,7 +241,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   display,
   inputValue,
 }) => {
-  const classes = useStyles();
+  const classes = useCommonStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
 
