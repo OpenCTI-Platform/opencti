@@ -4,7 +4,6 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import makeStyles from '@mui/styles/makeStyles';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
@@ -17,7 +16,6 @@ import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
-import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { RegionsLinesPaginationQuery$variables } from './__generated__/RegionsLinesPaginationQuery.graphql';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
@@ -27,58 +25,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
+import useCommonStyles from '@components/common/style/commonStyle';
 
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
@@ -94,7 +41,7 @@ const regionMutation = graphql`
   }
 `;
 
-interface RegionAddInput {
+export interface RegionAddInput {
   name: string;
   description: string;
   createdBy: Option | undefined;
@@ -113,7 +60,7 @@ interface RegionFormProps {
   inputValue?: string;
 }
 
-const REGION_TYPE = 'Region';
+export const REGION_TYPE = 'Region';
 
 export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   updater,
@@ -123,7 +70,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   defaultMarkingDefinitions,
   inputValue,
 }) => {
-  const classes = useStyles();
+  const classes = useCommonStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
@@ -276,7 +223,7 @@ const RegionCreation = ({
   paginationOptions: RegionsLinesPaginationQuery$variables;
 }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
+  const classes = useCommonStyles();
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
