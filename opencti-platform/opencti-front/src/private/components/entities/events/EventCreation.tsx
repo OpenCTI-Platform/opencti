@@ -33,7 +33,7 @@ import {
 } from './__generated__/EventCreationMutation.graphql';
 import { EventsLinesPaginationQuery$variables } from './__generated__/EventsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

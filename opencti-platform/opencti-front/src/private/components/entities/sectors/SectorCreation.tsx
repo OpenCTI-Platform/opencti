@@ -30,7 +30,7 @@ import {
 } from './__generated__/SectorCreationMutation.graphql';
 import { SectorsLinesPaginationQuery$variables } from './__generated__/SectorsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

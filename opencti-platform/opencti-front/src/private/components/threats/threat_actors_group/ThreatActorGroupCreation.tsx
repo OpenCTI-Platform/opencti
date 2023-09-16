@@ -34,7 +34,7 @@ import {
   ThreatActorGroupCreationMutation,
   ThreatActorGroupCreationMutation$variables,
 } from './__generated__/ThreatActorGroupCreationMutation.graphql';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

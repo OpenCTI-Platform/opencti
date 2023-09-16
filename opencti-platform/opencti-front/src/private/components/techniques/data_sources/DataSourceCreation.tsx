@@ -13,6 +13,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import useCommonStyles from '@components/common/style/commonStyle';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -30,8 +31,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
-import {useCommonStyles} from "@components/common/style/commonStyle";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {

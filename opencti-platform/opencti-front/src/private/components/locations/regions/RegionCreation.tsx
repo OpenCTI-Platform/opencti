@@ -10,6 +10,7 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import useCommonStyles from '@components/common/style/commonStyle';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -24,8 +25,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
-import { useCommonStyles } from '@components/common/style/commonStyle';
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
@@ -119,8 +119,6 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     externalReferences: [],
     file: undefined,
   });
-
-
 
   return (
     <Formik<RegionAddInput>

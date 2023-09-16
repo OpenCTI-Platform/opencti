@@ -31,7 +31,7 @@ import {
 } from './__generated__/AttackPatternCreationMutation.graphql';
 import { AttackPatternsLinesPaginationQuery$variables } from './__generated__/AttackPatternsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

@@ -31,7 +31,7 @@ import {
   CampaignCreationMutation$variables,
 } from './__generated__/CampaignCreationMutation.graphql';
 import { CampaignsCardsPaginationQuery$variables } from './__generated__/CampaignsCardsPaginationQuery.graphql';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

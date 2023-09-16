@@ -32,7 +32,7 @@ import {
   ExternalReferenceCreationMutation$data,
 } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -233,7 +233,7 @@ ExternalReferenceCreationProps
     }
   };
 
-  const isEmbeddedInExternalReferenceCreation = true
+  const isEmbeddedInExternalReferenceCreation = true;
   const renderClassic = () => {
     return (
       <div>

@@ -10,6 +10,7 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import useCommonStyles from '@components/common/style/commonStyle';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -27,8 +28,7 @@ import {
   CountryCreationMutation$variables,
 } from './__generated__/CountryCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
-import {useCommonStyles} from "@components/common/style/commonStyle";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {

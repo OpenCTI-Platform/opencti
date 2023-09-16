@@ -34,7 +34,7 @@ import {
 import {
   ThreatActorsIndividualCardsPaginationQuery$variables,
 } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

@@ -12,6 +12,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Dialog, DialogContent } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DialogTitle from '@mui/material/DialogTitle';
+import useCommonStyles from '@components/common/style/commonStyle';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -30,8 +31,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
-import {useCommonStyles} from "@components/common/style/commonStyle";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const dataComponentMutation = graphql`
   mutation DataComponentCreationMutation($input: DataComponentAddInput!) {

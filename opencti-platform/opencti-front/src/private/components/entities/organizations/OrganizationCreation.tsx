@@ -33,7 +33,7 @@ import { OrganizationsLinesPaginationQuery$variables } from './__generated__/Org
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

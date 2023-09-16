@@ -33,7 +33,7 @@ import {
 import { ChannelsLinesPaginationQuery$variables } from './__generated__/ChannelsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

@@ -30,7 +30,7 @@ import { CaseRftLinesCasesPaginationQuery$variables } from './__generated__/Case
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {

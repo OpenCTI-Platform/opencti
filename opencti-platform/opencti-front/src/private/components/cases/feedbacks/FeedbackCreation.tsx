@@ -24,7 +24,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUpload from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
