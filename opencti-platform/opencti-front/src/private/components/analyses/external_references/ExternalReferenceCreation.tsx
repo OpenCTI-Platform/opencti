@@ -309,25 +309,6 @@ ExternalReferenceCreationProps
                         setFieldValue={setFieldValue}
                         isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
                       />
-                      <Field
-                        component={SimpleFileUpload}
-                        name="file"
-                        label={t('Associated file')}
-                        FormControlProps={{ style: fieldSpacingContainerStyle }}
-                        InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                        InputProps={{
-                          classes: { fullWidth: true, variant: 'standard' },
-                          onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-                            const fileName = event.target.value.split('\\').pop();
-                            setFieldValue('file', event.currentTarget.files?.[0]);
-                            const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
-                            if (!externalIdValue) {
-                              setFieldValue('external_id', fileName);
-                            }
-                          },
-                        }}
-                        fullWidth={true}
-                      />
                     </>
                   )}
                   <Field
