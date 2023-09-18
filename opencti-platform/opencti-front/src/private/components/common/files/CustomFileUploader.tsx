@@ -56,7 +56,6 @@ function CustomFileUpload<T>(
     >
       <label
         htmlFor="label"
-        data-shrink="true"
         style={{
           color: theme.palette.grey['400'],
         }}
