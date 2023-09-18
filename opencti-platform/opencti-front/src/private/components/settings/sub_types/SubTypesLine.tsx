@@ -112,6 +112,15 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
     }
     return <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
   };
+  const renderWorkflowStatus = () => {
+    if (!nodeSubType.settings?.availableSettings?.includes('workflow_configuration')) {
+      return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'} />;
+    }
+    if (nodeSubType.workflowEnabled) {
+      return <CheckCircleOutlined fontSize="small" color="success" />;
+    }
+    return <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
+  };
   return (
     <ListItemButton
       key={nodeSubType.id}
@@ -153,7 +162,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.workflow_status.width }}
             >
-              {renderOptionIcon('workflow_configuration')}
+              {renderWorkflowStatus()}
             </div>
             <div
               className={classes.bodyItem}
