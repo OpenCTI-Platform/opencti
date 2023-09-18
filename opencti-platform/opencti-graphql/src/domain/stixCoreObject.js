@@ -17,11 +17,13 @@ import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
-  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
-  INPUT_EXTERNAL_REFS, REL_INDEX_PREFIX,
+  INPUT_EXTERNAL_REFS,
+  REL_INDEX_PREFIX,
 } from '../schema/general';
 import {
   RELATION_CREATED_BY,

@@ -1141,17 +1141,23 @@ export const buildGraphData = (objects, graphData, t) => {
 
 export const nodePaint = (
   colors,
-  node,
+  {
+    label,
+    img,
+    x,
+    y,
+    numberOfConnectedElement,
+  },
   color,
   ctx,
   selected = false,
   inferred = false,
 ) => {
-  const { img, x, y, label } = node;
   ctx.beginPath();
   ctx.fillStyle = color;
   ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
   ctx.fill();
+
   if (selected) {
     ctx.lineWidth = 0.8;
     ctx.strokeStyle = colors.selected;
@@ -1161,19 +1167,21 @@ export const nodePaint = (
     ctx.strokeStyle = colors.inferred;
     ctx.stroke();
   }
+
   const size = 8;
   ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
   ctx.font = '4px Roboto';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(label, x, y + 10);
-  if (node.numberOfConnectedElement > 0) {
+
+  if (numberOfConnectedElement > 0) {
     ctx.beginPath();
     ctx.fillStyle = itemColor('numberOfConnectedElement');
     ctx.arc(x + 4, y - 5, 3, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.fillStyle = '#000';
-    ctx.fillText(node.numberOfConnectedElement, x + 4, y - 4.5);
+    ctx.fillText(numberOfConnectedElement, x + 4, y - 4.5);
   }
 };
 
