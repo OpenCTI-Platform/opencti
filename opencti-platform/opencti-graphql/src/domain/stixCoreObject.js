@@ -301,11 +301,10 @@ export const stixCoreObjectsMultiNumber = (context, user, args) => {
 };
 
 export const stixCoreObjectsConnectedNumber = (stixCoreObject) => {
-  const nbElements = Object.entries(stixCoreObject)
+  return Object.entries(stixCoreObject)
     .filter(([key]) => key.startsWith(REL_INDEX_PREFIX))
     .map(([, value]) => value.length)
     .reduce((a, b) => a + b, 0);
-  return nbElements;
 };
 
 export const stixCoreObjectsDistribution = async (context, user, args) => {

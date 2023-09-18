@@ -39,7 +39,7 @@ import { batchLoader, distributionRelations, stixLoadByIdStringify } from '../da
 import { worksForSource } from '../domain/work';
 import { filesListing } from '../database/file-storage';
 import { BUS_TOPICS } from '../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import withCancel from '../graphql/subscriptionWrapper';
 import { connectorsForEnrichment } from '../database/repository';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
