@@ -6,7 +6,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
-import Search from './components/Search';
+import Search from '@components/Search';
 import RootImport from './components/import/Root';
 import RootAnalyses from './components/analyses/Root';
 import RootEvents from './components/events/Root';

@@ -4443,6 +4443,7 @@ export enum CoursesOfActionFilter {
   MitigatedBy = 'mitigatedBy',
   Modified = 'modified',
   Name = 'name',
+  Revoked = 'revoked',
   SourceReliability = 'source_reliability',
   XMitreId = 'x_mitre_id',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
@@ -12090,6 +12091,7 @@ export enum MalwaresFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  Revoked = 'revoked',
   SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
