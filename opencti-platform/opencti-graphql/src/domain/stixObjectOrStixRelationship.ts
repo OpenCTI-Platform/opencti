@@ -9,7 +9,7 @@ import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixRefRelationshipAddInput, StixRefRelationshipsAddInput } from '../generated/graphql';
-import type { BasicStoreObject, StoreMarkingDefinition } from '../types/store';
+import type { BasicStoreObject } from '../types/store';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
