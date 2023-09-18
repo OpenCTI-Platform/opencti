@@ -1,17 +1,17 @@
-import { FunctionComponent, ReactElement, useEffect, useState } from 'react';
+import { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
 import { IconButton, Typography } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { graphql } from 'react-relay';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import convert from 'convert';
 import { useFormatter } from '../../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
 import DatePickerField from '../../../../../components/DatePickerField';
 import TextField from '../../../../../components/TextField';
-import { commitLocalUpdate, commitMutation, defaultCommitMutation } from '../../../../../relay/environment';
+import { commitMutation, defaultCommitMutation } from '../../../../../relay/environment';
 import { HeightTupleInputValues } from './__generated__/HeightFieldIndividualMutation.graphql';
-import { UnitSystems, validateUnitSystem } from '../../../../../utils/UnitSystems';
+import { UnitSystems } from '../../../../../utils/UnitSystems';
+import useAuth from '../../../../../utils/hooks/useAuth';
 
 export const individualHeightMutation = graphql`
   mutation HeightFieldIndividualMutation($id: ID!, $input: HeightTupleInput!) {
@@ -30,11 +30,11 @@ interface HeightFieldProps {
   variant: string,
   id: string,
   values: HeightTupleInputValues[],
-  setFieldValue: (name: string, value: any) => void,
   containerStyle: {
     marginTop: number;
     width: string;
   },
+  setFieldValue?: (name: string, value: unknown) => void,
   editContext?: readonly {
     readonly focusOn: string | null;
     readonly name: string;
@@ -47,42 +47,27 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
   variant,
   id,
   values,
-  setFieldValue,
   containerStyle,
+  setFieldValue,
   editContext = [],
 }): ReactElement => {
   const { t } = useFormatter();
-  const [unitSystem, setUnitSystem] = useState<UnitSystems>();
-
-  // Fetch default unit system
-  useEffect(() => {
-    if (!unitSystem) {
-      commitLocalUpdate((store: RecordSourceSelectorProxy) => {
-        const me = store.getRoot().getLinkedRecord('me');
-        let selectedSystem;
-        switch (me?.getValue('unit_system') as string) {
-          case 'US': selectedSystem = UnitSystems.US;
-            break;
-          case 'Metric': selectedSystem = UnitSystems.Metric;
-            break;
-          default: selectedSystem = UnitSystems.Auto;
-        }
-        const language = me?.getValue('language') as string;
-        const defaultUnitSystem = validateUnitSystem(
-          selectedSystem,
-          language,
-        );
-        setUnitSystem(defaultUnitSystem);
-      });
-    }
-  }, []);
+  const { me } = useAuth();
+  let unitSystem = UnitSystems.Auto;
+  switch (me?.unit_system) {
+    case 'US': unitSystem = UnitSystems.US;
+      break;
+    case 'Metric': unitSystem = UnitSystems.Metric;
+      break;
+    default:
+  }
 
   const usingMetric = () => (unitSystem === UnitSystems.Metric);
 
-  const valueInCm = (value: number) => {
+  const valueInCm = (value: number | string) => {
     return usingMetric()
-      ? value
-      : convert(value, 'inch').to('centimeter');
+      ? Number(value)
+      : convert(Number(value), 'inch').to('centimeter');
   };
 
   return variant === 'edit'
@@ -106,23 +91,19 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
                 }: HeightTupleInputValues,
                 index,
               ) => {
+                const fieldName = `${name}.${index}.height_${usingMetric() ? 'cm' : 'in'}`;
                 return (<div key={index}>
                   <Field
                     component={TextField}
                     variant="standard"
-                    name={`${name}.${index}.height_cm`}
-                    // name={`${index}.height_cm`}
+                    type="number"
+                    InputProps={{ inputProps: { min: 0 } }}
+                    name={fieldName}
                     label={usingMetric()
                       ? t('Height (Centimeters)')
                       : t('Height (Inches)')}
-                    enableReinitialize={true}
-                    // value={usingMetric()
-                    //   ? values[index].height_cm
-                    //   : convert(Number(values[index].height_cm), 'centimeter').to('inch')
-                    // }
                     onSubmit={(_: string, v: string) => {
-                      const value = valueInCm(Number(v)) || 0;
-                      console.log(`setting to ${value}`);
+                      const value = valueInCm(v);
                       commitMutation({
                         ...defaultCommitMutation,
                         mutation: individualHeightMutation,
@@ -242,12 +223,17 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
                   <Field
                     component={TextField}
                     variant="standard"
-                    name={`${name}.${index}.height_cm`}
-                    label={t('Height (Centimeters)')}
+                    name={`${name}.${index}.height_${usingMetric() ? 'cm' : 'in'}`}
+                    label={usingMetric()
+                      ? t('Height (Centimeters)')
+                      : t('Height (Inches)')
+                    }
                     style={{ marginRight: 20 }}
                     type='number'
-                    InputLabelProps={{
-                      shrink: true,
+                    InputProps={{ inputProps: { min: 0 } }}
+                    onSubmit={(__: string, v: string) => {
+                      const value = valueInCm(v);
+                      if (setFieldValue) setFieldValue(`${name}.${index}.height_cm`, value);
                     }}
                   />
                   <Field

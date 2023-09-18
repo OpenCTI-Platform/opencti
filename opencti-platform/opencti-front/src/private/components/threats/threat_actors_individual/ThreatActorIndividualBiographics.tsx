@@ -7,7 +7,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
 import { useEffect, useState } from 'react';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import convert from 'convert';
 import { useFormatter } from '../../../../components/i18n';
 import {
@@ -20,6 +19,7 @@ import { Height, Weight, validateMeasurement } from '../../../../utils/Number';
 import { commitLocalUpdate } from '../../../../relay/environment';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -125,23 +125,22 @@ const ThreatActorIndividualBiographicsComponent = (
 ) => {
   const classes = useStyles();
   const { t, fsd, len, wgt } = useFormatter();
-
+  const { me } = useAuth();
   const [unitSystem, setUnitSystem] = useState<UnitSystems>();
 
   // Fetch default unit system
   useEffect(() => {
     if (!unitSystem) {
-      commitLocalUpdate((store: RecordSourceSelectorProxy) => {
-        const me = store.getRoot().getLinkedRecord('me');
+      commitLocalUpdate(() => {
         let selectedSystem;
-        switch (me?.getValue('unit_system') as string) {
+        switch (me?.unit_system) {
           case 'US': selectedSystem = UnitSystems.US;
             break;
           case 'Metric': selectedSystem = UnitSystems.Metric;
             break;
           default: selectedSystem = UnitSystems.Auto;
         }
-        const language = me?.getValue('language') as string;
+        const language = me?.language as string;
         const defaultUnitSystem = validateUnitSystem(
           selectedSystem,
           language,
@@ -175,7 +174,6 @@ const ThreatActorIndividualBiographicsComponent = (
       {
         validKeys: ['height_cm', 'height_in'],
         measureType: 'length',
-        defaultUnit: heightUnit(),
       },
     );
     if (typeof validatedHeight === 'string') {
@@ -207,7 +205,6 @@ const ThreatActorIndividualBiographicsComponent = (
       {
         validKeys: ['weight_kg', 'weight_lb'],
         measureType: 'weight',
-        defaultUnit: weightUnit(),
       },
     );
     if (typeof validatedWeight === 'string') {

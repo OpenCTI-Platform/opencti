@@ -1,13 +1,13 @@
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
+import convert from 'convert';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import HeightField from '../../common/form/mcas/HeightField';
 import WeightField from '../../common/form/mcas/WeightField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CommitMessage from '../../common/form/CommitMessage';
-import { HeightTupleInputValues, WeightTupleInputValues } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
 import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import OpenVocabField from '../../common/form/OpenVocabField';
 
@@ -106,11 +106,23 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
       .catch(() => false);
   };
 
+  const fullHeights = threatActorIndividual?.height?.map((height) => ({
+    height_in: Math.round(convert(Number(height?.height_cm), 'centimeter').to('inch')),
+    height_cm: height?.height_cm as number,
+    date_seen: height?.date_seen as Date,
+  }));
+
+  const fullWeights = threatActorIndividual?.weight?.map((weight) => ({
+    weight_lb: Math.round(convert(Number(weight?.weight_kg), 'kilogram').to('pound')),
+    weight_kg: weight?.weight_kg as number,
+    date_seen: weight?.date_seen as Date,
+  }));
+
   const initialValues = {
     eye_color: threatActorIndividual.eye_color,
     hair_color: threatActorIndividual.hair_color,
-    height: threatActorIndividual.height ?? [],
-    weight: threatActorIndividual.weight ?? [],
+    height: fullHeights ?? [],
+    weight: fullWeights ?? [],
   };
 
   return (
@@ -157,17 +169,16 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
               />
               <HeightField
                 name="height"
-                values={values.height as HeightTupleInputValues[]}
+                values={values.height}
                 id={threatActorIndividual.id}
                 label={t('Heights')}
-                setFieldValue={setFieldValue}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
                 variant="edit"
               />
               <WeightField
                 name="weight"
-                values={values.weight as WeightTupleInputValues[]}
+                values={values.weight}
                 id={threatActorIndividual.id}
                 label={t('Weights')}
                 containerStyle={fieldSpacingContainerStyle}

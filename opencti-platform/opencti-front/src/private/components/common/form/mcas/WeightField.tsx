@@ -3,12 +3,15 @@ import { Field, FieldArray } from 'formik';
 import { IconButton, Typography } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { graphql } from 'react-relay';
+import convert from 'convert';
 import { useFormatter } from '../../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
 import DatePickerField from '../../../../../components/DatePickerField';
 import TextField from '../../../../../components/TextField';
 import { commitMutation, defaultCommitMutation } from '../../../../../relay/environment';
 import { WeightTupleInputValues } from './__generated__/WeightFieldIndividualMutation.graphql';
+import { UnitSystems } from '../../../../../utils/UnitSystems';
+import useAuth from '../../../../../utils/hooks/useAuth';
 
 export const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: WeightTupleInput!) {
@@ -31,6 +34,7 @@ interface WeightFieldProps {
     marginTop: number;
     width: string;
   },
+  setFieldValue?: (name: string, value: unknown) => void,
   editContext?: readonly {
     readonly focusOn: string | null;
     readonly name: string;
@@ -44,9 +48,27 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
   id,
   values,
   containerStyle,
+  setFieldValue,
   editContext = [],
 }): ReactElement => {
   const { t } = useFormatter();
+  const { me } = useAuth();
+  let unitSystem = UnitSystems.Auto;
+  switch (me?.unit_system) {
+    case 'US': unitSystem = UnitSystems.US;
+      break;
+    case 'Metric': unitSystem = UnitSystems.Metric;
+      break;
+    default:
+  }
+
+  const usingMetric = () => (unitSystem === UnitSystems.Metric);
+
+  const valueInKg = (value: number | string) => {
+    return usingMetric()
+      ? Number(value)
+      : convert(Number(value), 'pound').to('kilogram');
+  };
 
   return variant === 'edit'
     ? <div style={containerStyle}>
@@ -62,17 +84,21 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
           name={name}
           render={(arrayHelpers) => (
             <div>
-              {values.map(({ weight_kg, date_seen }: WeightTupleInputValues, index) => (
-                <div key={date_seen}>
+              {values.map(({ weight_kg, date_seen }: WeightTupleInputValues, index) => {
+                const fieldName = `${name}.${index}.weight_${usingMetric() ? 'kg' : 'lb'}`;
+                return (<div key={date_seen}>
                   <Field
                     component={TextField}
                     variant="standard"
-                    name={`${name}.${index}.weight_kg`}
-                    label={t('Weight (Kilograms)')}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    onChange={(_: string, v: string) => {
+                    type="number"
+                    InputProps={{ inputProps: { min: 0 } }}
+                    name={fieldName}
+                    label={usingMetric()
+                      ? t('Weight (Kilograms)')
+                      : t('Weight (Pounds)')
+                    }
+                    onSubmit={(_: string, v: string) => {
+                      const value = valueInKg(v);
                       commitMutation({
                         ...defaultCommitMutation,
                         mutation: individualWeightMutation,
@@ -80,7 +106,7 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
                           id,
                           input: {
                             values: [{
-                              weight_kg: Number(v) || 0,
+                              weight_kg: value,
                               date_seen,
                             }],
                             index,
@@ -146,7 +172,8 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
                     <Delete />
                   </IconButton>
                 </div>
-              ))}
+                );
+              })}
               <IconButton
                 aria-label="Add"
                 id="addWeight"
@@ -190,12 +217,17 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
                   <Field
                     component={TextField}
                     variant="standard"
-                    name={`${name}.${index}.weight_kg`}
-                    label={t('Weight (Kilograms)')}
+                    name={`${name}.${index}.weight_${usingMetric() ? 'kg' : 'lb'}`}
+                    label={usingMetric()
+                      ? t('Weight (Kilograms)')
+                      : t('Weight (Pounds)')
+                    }
                     style={{ marginRight: 20 }}
                     type='number'
-                    InputLabelProps={{
-                      shrink: true,
+                    InputProps={{ inputProps: { min: 0 } }}
+                    onSubmit={(_: string, v: string) => {
+                      const value = valueInKg(v);
+                      if (setFieldValue) setFieldValue(`${name}.${index}.weight_kg`, value);
                     }}
                   />
                   <Field

@@ -226,8 +226,14 @@ ThreatActorIndividualFormProps
       job_title: values?.job_title,
       eye_color: values?.eye_color,
       hair_color: values?.hair_color,
-      height: values?.height,
-      weight: values?.weight,
+      height: values?.height?.map(({ height_cm, date_seen }) => ({
+        height_cm,
+        date_seen,
+      })),
+      weight: values?.weight?.map(({ weight_kg, date_seen }) => ({
+        weight_kg,
+        date_seen,
+      })),
     };
     commit({
       variables: {
@@ -450,6 +456,7 @@ ThreatActorIndividualFormProps
                 label={t('Heights')}
                 variant="create"
                 containerStyle={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
               />
               <WeightField
                 id='new_weight'
@@ -458,6 +465,7 @@ ThreatActorIndividualFormProps
                 label={t('Weights')}
                 variant="create"
                 containerStyle={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
               />
             </div>
           )}
