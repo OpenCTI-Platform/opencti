@@ -28,7 +28,7 @@ import {
   CountryCreationMutation$variables,
 } from './__generated__/CountryCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {
@@ -176,7 +176,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

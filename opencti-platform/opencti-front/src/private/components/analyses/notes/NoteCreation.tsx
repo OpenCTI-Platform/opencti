@@ -34,7 +34,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   createButtonContextual: {
@@ -272,7 +272,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

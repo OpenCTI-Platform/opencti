@@ -33,7 +33,7 @@ import {
   ToolCreationMutation$variables,
 } from './__generated__/ToolCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -256,7 +256,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

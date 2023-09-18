@@ -27,7 +27,7 @@ import { GroupingsLinesPaginationQuery$variables } from './__generated__/Groupin
 import { Theme } from '../../../../components/Theme';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -229,7 +229,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

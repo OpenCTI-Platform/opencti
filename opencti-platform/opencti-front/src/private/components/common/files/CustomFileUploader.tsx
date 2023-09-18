@@ -26,7 +26,7 @@ interface CustomFileUploadProps<T> {
   isEmbeddedInExternalReferenceCreation?: boolean
 }
 
-function CustomFileUpload<T>(
+function CustomFileUploader<T>(
   { setFieldValue, isEmbeddedInExternalReferenceCreation }
   : CustomFileUploadProps<T>,
 ) {
@@ -100,4 +100,4 @@ function CustomFileUpload<T>(
   );
 }
 
-export default CustomFileUpload;
+export default CustomFileUploader;

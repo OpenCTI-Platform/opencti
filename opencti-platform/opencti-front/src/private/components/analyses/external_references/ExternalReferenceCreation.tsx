@@ -32,7 +32,7 @@ import {
   ExternalReferenceCreationMutation$data,
 } from './__generated__/ExternalReferenceCreationMutation.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -304,7 +304,7 @@ ExternalReferenceCreationProps
                     style={{ marginTop: 20 }}
                   />
                   {!dryrun && (
-                    <CustomFileUpload
+                    <CustomFileUploader
                       setFieldValue={setFieldValue}
                       isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
                     />
@@ -403,7 +403,7 @@ ExternalReferenceCreationProps
                     style={{ marginTop: 20 }}
                   />
                   {!dryrun && (
-                    <CustomFileUpload
+                    <CustomFileUploader
                       setFieldValue={setFieldValue}
                       isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
                     />

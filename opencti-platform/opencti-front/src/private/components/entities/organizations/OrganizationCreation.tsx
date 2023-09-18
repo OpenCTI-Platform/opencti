@@ -33,7 +33,7 @@ import { OrganizationsLinesPaginationQuery$variables } from './__generated__/Org
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -267,7 +267,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           setFieldValue={setFieldValue}
           values={values.externalReferences}
         />
-        <CustomFileUpload setFieldValue={setFieldValue} />
+        <CustomFileUploader setFieldValue={setFieldValue} />
         <div className={classes.buttons}>
           <Button
             variant="contained"

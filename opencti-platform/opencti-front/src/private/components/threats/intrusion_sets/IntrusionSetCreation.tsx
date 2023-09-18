@@ -31,7 +31,7 @@ import {
 } from './__generated__/IntrusionSetCreationMutation.graphql';
 import { IntrusionSetsCardsPaginationQuery$variables } from './__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -238,7 +238,7 @@ IntrusionSetFormProps
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

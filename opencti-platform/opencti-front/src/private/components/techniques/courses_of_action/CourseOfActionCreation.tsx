@@ -32,7 +32,7 @@ import {
 } from './__generated__/CourseOfActionCreationMutation.graphql';
 import { CoursesOfActionLinesPaginationQuery$variables } from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
@@ -209,7 +209,7 @@ CourseOfActionFormProps
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

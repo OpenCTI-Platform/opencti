@@ -34,7 +34,7 @@ import {
   ThreatActorGroupCreationMutation,
   ThreatActorGroupCreationMutation$variables,
 } from './__generated__/ThreatActorGroupCreationMutation.graphql';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -254,7 +254,7 @@ ThreatActorGroupFormProps
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

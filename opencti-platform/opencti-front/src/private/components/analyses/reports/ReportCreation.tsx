@@ -30,7 +30,7 @@ import { ReportCreationMutation, ReportCreationMutation$variables } from './__ge
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -269,7 +269,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

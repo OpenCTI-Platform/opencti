@@ -31,7 +31,7 @@ import {
   CampaignCreationMutation$variables,
 } from './__generated__/CampaignCreationMutation.graphql';
 import { CampaignsCardsPaginationQuery$variables } from './__generated__/CampaignsCardsPaginationQuery.graphql';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -239,7 +239,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

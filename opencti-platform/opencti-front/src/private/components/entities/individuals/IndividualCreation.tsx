@@ -31,7 +31,7 @@ import {
 import { IndividualsLinesPaginationQuery$variables } from './__generated__/IndividualsLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -245,7 +245,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
           setFieldValue={setFieldValue}
           values={values.externalReferences}
         />
-        <CustomFileUpload setFieldValue={setFieldValue} />
+        <CustomFileUploader setFieldValue={setFieldValue} />
         <div className={classes.buttons}>
           <Button
             variant="contained"

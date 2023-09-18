@@ -29,7 +29,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -258,7 +258,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"
@@ -405,7 +405,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

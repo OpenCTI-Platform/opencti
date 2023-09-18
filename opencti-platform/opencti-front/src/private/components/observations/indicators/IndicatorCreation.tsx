@@ -40,7 +40,7 @@ import { parse } from '../../../../utils/Time';
 import { IndicatorsLinesPaginationQuery$variables } from './__generated__/IndicatorsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -381,7 +381,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <Field
             component={SwitchField}
             type="checkbox"

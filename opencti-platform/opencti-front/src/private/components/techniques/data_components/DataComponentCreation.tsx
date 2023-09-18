@@ -31,7 +31,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const dataComponentMutation = graphql`
   mutation DataComponentCreationMutation($input: DataComponentAddInput!) {
@@ -219,7 +219,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

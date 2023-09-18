@@ -32,7 +32,7 @@ import { IncidentsLinesPaginationQuery$variables } from './__generated__/Inciden
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -284,7 +284,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

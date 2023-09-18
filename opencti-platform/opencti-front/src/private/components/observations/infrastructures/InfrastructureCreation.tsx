@@ -37,7 +37,7 @@ import {
   InfrastructuresLinesPaginationQuery$variables,
 } from './__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -299,7 +299,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

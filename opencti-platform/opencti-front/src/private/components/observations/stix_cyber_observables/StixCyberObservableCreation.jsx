@@ -63,7 +63,7 @@ import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import { convertMarking } from '../../../../utils/edition';
-import CustomFileUpload from "../../common/files/CustomFileUploader";
+import CustomFileUploader from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -639,7 +639,7 @@ const StixCyberObservableCreation = ({
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <CustomFileUpload setFieldValue={setFieldValue} />
+                    <CustomFileUploader setFieldValue={setFieldValue} />
                     <Field
                       component={SwitchField}
                       type="checkbox"

@@ -30,7 +30,7 @@ import {
 } from './__generated__/PositionCreationMutation.graphql';
 import { PositionsLinesPaginationQuery$variables } from './__generated__/PositionsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUpload from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -273,7 +273,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <CustomFileUpload setFieldValue={setFieldValue} />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"
