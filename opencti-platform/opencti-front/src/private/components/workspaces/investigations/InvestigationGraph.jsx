@@ -341,6 +341,22 @@ const investigationGraphStixSightingRelationshipQuery = graphql`
     }
 `;
 
+// To count the number of relationships for MetaObjects
+const investigationGraphStixMetaRelCountQuery = graphql`
+  query InvestigationGraphStixMetaRelCountQuery($metaObjectIds: [String!]!) {
+    stixRelationshipsDistribution(
+      field: "internal_id"
+      isTo: true
+      operation: count
+      toId: $metaObjectIds
+      relationship_type: "stix-relationship"
+    ) {
+      label
+      value
+    }
+  }
+`;
+
 const investigationGraphStixRelationshipsQuery = graphql`
   query InvestigationGraphStixRelationshipsQuery(
     $elementId: String!
@@ -956,6 +972,9 @@ class InvestigationGraphComponent extends Component {
       params,
     );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
+
+    this.fetchMetaObjectRelCounts();
+
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       selectRectangleModeFree: R.propOr(
@@ -1092,6 +1111,48 @@ class InvestigationGraphComponent extends Component {
         },
       },
     });
+  }
+
+  async fetchMetaObjectRelCounts() {
+    const metaObjectIds = this.graphObjects
+      .filter((object) => object.parent_types.includes('Stix-Meta-Object'))
+      .map((object) => object.id);
+
+    if (metaObjectIds.length > 0) {
+      const { stixRelationshipsDistribution: metaRelCounts } = await fetchQuery(
+        investigationGraphStixMetaRelCountQuery,
+        { metaObjectIds },
+      ).toPromise();
+
+      metaRelCounts.forEach(({ label, value }) => {
+        const object = this.graphObjects.find((obj) => obj.id === label);
+        if (object) {
+          this.graphObjects = [
+            ...this.graphObjects.filter((obj) => obj.id !== label),
+            {
+              ...object,
+              numberOfConnectedElement: value,
+            },
+          ];
+        }
+      });
+
+      this.graphData = buildGraphData(
+        this.graphObjects,
+        decodeGraphData(this.props.workspace.graph_data),
+        this.props.t,
+      );
+      this.setState({
+        graphData: applyFilters(
+          this.graphData,
+          this.state.stixCoreObjectsTypes,
+          this.state.markedBy,
+          this.state.createdBy,
+          [],
+          this.state.selectedTimeRangeInterval,
+        ),
+      });
+    }
   }
 
   handleToggle3DMode() {

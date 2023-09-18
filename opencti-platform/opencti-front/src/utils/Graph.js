@@ -1108,7 +1108,10 @@ export const buildGraphData = (objects, graphData, t) => {
       toId: n.to?.id,
       toType: n.to?.entity_type,
       isObservable: !!n.observable_value,
-      numberOfConnectedElement: n.numberOfConnectedElement - (nodesLinksCounter.get(n.id) ?? 0),
+      numberOfConnectedElement: (n.numberOfConnectedElement !== undefined
+        ? n.numberOfConnectedElement - (nodesLinksCounter.get(n.id) ?? 0)
+        : undefined
+      ),
       isNestedInferred:
         (n.types?.includes('inferred') && !n.types.includes('manual')) || false,
       markedBy:
@@ -1175,13 +1178,13 @@ export const nodePaint = (
   ctx.textBaseline = 'middle';
   ctx.fillText(label, x, y + 10);
 
-  if (numberOfConnectedElement > 0) {
+  if (numberOfConnectedElement > 0 || numberOfConnectedElement === undefined) {
     ctx.beginPath();
     ctx.fillStyle = itemColor('numberOfConnectedElement');
     ctx.arc(x + 4, y - 5, 3, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.fillStyle = '#000';
-    ctx.fillText(numberOfConnectedElement, x + 4, y - 4.5);
+    ctx.fillText(numberOfConnectedElement ?? '?', x + 4, y - 4.5);
   }
 };
 
