@@ -9,7 +9,6 @@ import {
   head,
   includes,
   map,
-  pathOr,
   pick,
   pipe,
 } from 'ramda';
@@ -38,6 +37,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import { adaptFieldValue } from '../../../../utils/String';
+import { convertMarkings } from '../../../../utils/edition';
 
 const stixCyberObservableMutationFieldPatch = graphql`
   mutation StixCyberObservableEditionOverviewFieldPatchMutation(
@@ -211,13 +211,7 @@ const StixCyberObservableEditionOverviewComponent = ({
   };
   const handleChangeObjectMarking = (name, values) => {
     if (!enableReferences) {
-      const currentMarkingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
-        map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(stixCyberObservable);
+      const currentMarkingDefinitions = convertMarkings(stixCyberObservable);
       const added = difference(values, currentMarkingDefinitions);
       const removed = difference(currentMarkingDefinitions, values);
       if (added.length > 0) {
@@ -256,13 +250,7 @@ const StixCyberObservableEditionOverviewComponent = ({
               label: stixCyberObservable?.createdBy?.name ?? null,
               value: stixCyberObservable?.createdBy?.id ?? null,
             };
-          const objectMarking = pipe(
-            pathOr([], ['objectMarking', 'edges']),
-            map((n) => ({
-              label: n.node.definition,
-              value: n.node.id,
-            })),
-          )(stixCyberObservable);
+          const objectMarking = convertMarkings(stixCyberObservable);
           const initialValues = pipe(
             assoc('createdBy', createdBy),
             assoc('objectMarking', objectMarking),
