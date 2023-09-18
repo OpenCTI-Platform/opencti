@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Oracle Security Alerts</title>
+        <link>http://www.oracle.com/technetwork/topics/security/alerts-086861.html</link>
+        <description>Security Alerts Issued by Oracle</description>
+        <generator>Feeder 2.3.2(1632); Mac OS X Version 10.7.4 (Build 11E53) http://reinventedsoftware.com/feeder/
+        </generator>
+        <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+        <language>en</language>
+        <copyright>Copyright 2023 Oracle. All Rights Reserved.</copyright>
+        <managingEditor>otnfeedback_us@oracle.com</managingEditor>
+        <pubDate>Tue, 18 Jul 2023 12:30:54 -0700</pubDate>
+        <lastBuildDate>Tue, 18 Jul 2023 12:30:54 -0700</lastBuildDate>
+        <item>
+            <title>Oracle Critical Patch Update Advisory - July 2023</title>
+            <link rel="test">https://www.oracle.com/security-alerts/cpujul2023.html</link>
+            <pubDate>Tue, 18 Jul 2023 12:30:54 -0700</pubDate>
+            <guid isPermaLink="false">CPUJul2023</guid>
+        </item>
+    </channel>
+</rss>

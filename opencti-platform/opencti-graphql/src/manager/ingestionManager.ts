@@ -108,24 +108,26 @@ const rssHttpGetter = (): Getter => {
   };
 };
 
+// RSS Title is mandatory
+// A valid date is required, and after the current_state_date
+const rssDataFilter = (items: DataItem[], current_state_date: Date | undefined): DataItem[] => {
+  return items.filter((e) => isNotEmptyField(e.title))
+    .filter((e) => isNotEmptyField(e.pubDate) && e.pubDate.isValid())
+    .filter((e) => isEmptyField(current_state_date) || e.pubDate.isAfter(current_state_date))
+    .sort((a, b) => a.pubDate.diff(b.pubDate));
+};
+
 export const rssDataParser = async (turndownService: TurndownService, data: convertableToString, current_state_date: Date | undefined): Promise<DataItem[]> => {
   const xmlData = await xmlParse(data, { explicitArray: false, trim: true, explicitCharkey: true, mergeAttrs: true });
   if (xmlData?.feed) { // Atom V1
     const entries = asArray(xmlData.feed.entry);
-    return entries.map((entry) => rssItemV1Convert(turndownService, xmlData.feed, entry))
-      .filter((e) => isNotEmptyField(e.title)) // Title is mandatory
-      .filter((e) => isNotEmptyField(e.pubDate) && e.pubDate.isValid()) // A valid date is also mandatory
-      .filter((e) => isEmptyField(current_state_date) || e.pubDate.isAfter(current_state_date))
-      .sort((a, b) => a.pubDate.diff(b.pubDate));
+    const rssItems = entries.map((entry) => rssItemV1Convert(turndownService, xmlData.feed, entry));
+    return rssDataFilter(rssItems, current_state_date);
   }
   if (xmlData?.rss) { // Atom V2
     const channels = asArray(xmlData?.rss?.channel);
-    return channels
-      .map((channel) => asArray(channel.item).map((item) => rssItemV2Convert(turndownService, channel, item))).flat()
-      .filter((e) => isNotEmptyField(e.title)) // Title is mandatory
-      .filter((e) => isNotEmptyField(e.pubDate) && e.pubDate.isValid()) // A valid date is also mandatory
-      .filter((e) => isEmptyField(current_state_date) || e.pubDate.isAfter(current_state_date))
-      .sort((a, b) => a.pubDate.diff(b.pubDate));
+    const rssItems = channels.map((channel) => asArray(channel.item).map((item) => rssItemV2Convert(turndownService, channel, item))).flat();
+    return rssDataFilter(rssItems, current_state_date);
   }
   return [];
 };
