@@ -1565,7 +1565,7 @@ class InvestigationGraphComponent extends Component {
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
     const toIds = R.filter(
       (n) => n !== undefined,
-      R.map((n) => n.id, this.selectedLinks),
+      R.map((n) => n.id, selectedLinks),
     );
     commitMutation({
       mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
