@@ -8,6 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { makeStyles } from '@mui/styles';
 import { useEffect, useState } from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import convert from 'convert';
 import { useFormatter } from '../../../../components/i18n';
 import {
   UnitSystems,
@@ -19,7 +20,6 @@ import { Height, Weight, validateMeasurement } from '../../../../utils/Number';
 import { commitLocalUpdate } from '../../../../relay/environment';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import convert from 'convert';
 
 const useStyles = makeStyles(() => ({
   paper: {

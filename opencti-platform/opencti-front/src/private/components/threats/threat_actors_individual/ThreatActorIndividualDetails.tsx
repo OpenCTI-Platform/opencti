@@ -118,7 +118,7 @@ ThreatActorIndividualDetailsProps
                         classes={{ root: classes.chip }}
                         label={threatActorIndividualType}
                       />
-                    ))}
+                  ))}
                 </FieldOrEmpty>
                 <Typography
                   variant="h3"

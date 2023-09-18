@@ -15,9 +15,6 @@ export const getDemographicCountryRelationship = graphql`
       bornIn {
         name
       }
-      nationality {
-        name
-      }
       ethnicity {
         name
       }
@@ -51,8 +48,8 @@ const useStyles = makeStyles(() => ({
 interface ThreatActorIndividualDemographicsCountryRelationships {
   country_of_residence: Array<string>,
   citizenship: Array<string>,
+  nationality: Array<string>,
   place_of_birth: string | undefined,
-  nationality: string | undefined,
   ethnicity: string | undefined,
 }
 
@@ -69,8 +66,8 @@ const ThreatActorIndividualDemographics = (
   const [countryRelationship, setCountryRelationships] = useState<ThreatActorIndividualDemographicsCountryRelationships>({
     country_of_residence: [],
     citizenship: [],
+    nationality: [],
     place_of_birth: undefined,
-    nationality: undefined,
     ethnicity: undefined,
   });
 
@@ -88,8 +85,8 @@ const ThreatActorIndividualDemographics = (
       ThreatActorIndividualDemographicsCountryRelationships = {
         country_of_residence: [],
         citizenship: [],
+        nationality: [],
         place_of_birth: data?.threatActorIndividual?.bornIn?.name,
-        nationality: data?.threatActorIndividual?.nationality?.name,
         ethnicity: data?.threatActorIndividual?.ethnicity?.name,
       };
       const edges = data
@@ -107,6 +104,9 @@ const ThreatActorIndividualDemographics = (
               break;
             case 'citizen-of':
               fetchedCountryRelationships.citizenship.push(name);
+              break;
+            case 'national-of':
+              fetchedCountryRelationships.nationality.push(name);
               break;
             default:
           }
@@ -193,7 +193,16 @@ const ThreatActorIndividualDemographics = (
               {t('Nationality')}
             </Typography>
             <div id='nationality'>
-              {parse(t(countryRelationship?.nationality ?? '-'))}
+              {countryRelationship?.nationality && countryRelationship?.nationality.length > 0
+                ? countryRelationship?.nationality.map((place: string, index: number) => (
+                  <Chip
+                    key={index}
+                    label={t(place)}
+                    style={{ margin: 1 }}
+                  />
+                ))
+                : '-'
+              }
             </div>
           </Grid>
           <Grid item={true} xs={4}>

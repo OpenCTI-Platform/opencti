@@ -1,5 +1,5 @@
 import type { Checker, RelationRefDefinition } from './relationRef-definition';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, INPUT_ASSIGNEE, INPUT_BORN_IN, INPUT_CREATED_BY, INPUT_ETHNICITY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_NATIONALITY, INPUT_OBJECTS, INPUT_PARTICIPANT } from './general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_REF_RELATIONSHIP, INPUT_ASSIGNEE, INPUT_BORN_IN, INPUT_CREATED_BY, INPUT_ETHNICITY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS, INPUT_PARTICIPANT } from './general';
 import { ENTITY_TYPE_LOCATION_COUNTRY, isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from './stixMetaObject';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
@@ -354,7 +354,6 @@ export const RELATION_GRANTED_TO = 'granted'; // granted_refs (OpenCTI)
 export const RELATION_OBJECT_ASSIGNEE = 'object-assignee';
 export const RELATION_OBJECT_PARTICIPANT = 'object-participant';
 export const RELATION_BORN_IN = 'born-in'; // Extension (TIM)
-export const RELATION_NATIONALITY = 'of-nationality'; // Extension (TIM)
 export const RELATION_ETHNICITY = 'of-ethnicity'; // Extension (TIM)
 
 // EXTERNAL
@@ -436,18 +435,6 @@ export const bornIn: RelationRefDefinition = {
   datable: false,
 };
 
-export const nationality: RelationRefDefinition = {
-  inputName: INPUT_NATIONALITY,
-  databaseName: RELATION_NATIONALITY,
-  stixName: 'nationality_ref',
-  mandatoryType: 'no',
-  multiple: false,
-  checker: (fromType, toType) => ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === fromType
-    && ENTITY_TYPE_LOCATION_COUNTRY === toType,
-  label: 'Of Nationality',
-  datable: false,
-};
-
 export const ethnicity: RelationRefDefinition = {
   inputName: INPUT_ETHNICITY,
   databaseName: RELATION_ETHNICITY,
@@ -500,7 +487,6 @@ export const META_RELATIONS: RelationRefDefinition[] = [
   killChainPhases,
   createdBy,
   bornIn,
-  nationality,
   ethnicity,
   objectMarking,
   objects,

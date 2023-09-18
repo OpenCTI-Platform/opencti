@@ -31,7 +31,6 @@ import {
   RELATION_ETHNICITY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
-  RELATION_NATIONALITY,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
@@ -121,13 +120,9 @@ export const batchBornIn = async (context, user, stixCoreObjectIds) => {
   return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_BORN_IN, ENTITY_TYPE_LOCATION_COUNTRY);
 };
 
-export const batchNationality = async (context, user, stixCoreObjectIds) => {
-  return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_NATIONALITY, ENTITY_TYPE_LOCATION_COUNTRY);
-}
-
 export const batchEthnicity = async (context, user, stixCoreObjectIds) => {
   return batchLoadThroughGetTo(context, user, stixCoreObjectIds, RELATION_ETHNICITY, ENTITY_TYPE_LOCATION_COUNTRY);
-}
+};
 
 export const batchContainers = async (context, user, stixCoreObjectIds, args = {}) => {
   const { entityTypes } = args;

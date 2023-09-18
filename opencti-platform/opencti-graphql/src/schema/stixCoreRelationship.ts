@@ -53,6 +53,7 @@ export const RELATION_DETECTS = 'detects'; // Extension (MITRE)
 export const RELATION_EMPLOYED_BY = 'employed-by'; // Extension (TIM)
 export const RELATION_RESIDES_IN = 'resides-in'; // Extension (TIM)
 export const RELATION_CITIZEN_OF = 'citizen-of'; // Extension (TIM)
+export const RELATION_NATIONAL_OF = 'national-of'; // Extension (TIM)
 // endregion
 
 export const STIX_CORE_RELATIONSHIPS = [
@@ -103,6 +104,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_EMPLOYED_BY,
   RELATION_RESIDES_IN,
   RELATION_CITIZEN_OF,
+  RELATION_NATIONAL_OF
 ];
 
 schemaTypesDefinition.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);

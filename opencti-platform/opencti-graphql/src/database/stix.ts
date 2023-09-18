@@ -57,6 +57,7 @@ import {
   RELATION_EMPLOYED_BY,
   RELATION_RESIDES_IN,
   RELATION_CITIZEN_OF,
+  RELATION_NATIONAL_OF,
   RELATION_EXFILTRATES_TO,
   RELATION_EXPLOITS,
   RELATION_HAS,
@@ -867,6 +868,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [
     { name: RELATION_RESIDES_IN, type: REL_NEW },
     { name: RELATION_CITIZEN_OF, type: REL_NEW },
+    { name: RELATION_NATIONAL_OF, type: REL_NEW },
   ],
   // endregion
   // region TOOL

@@ -2,13 +2,10 @@ import { Field, Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
-import OriginField from '../../common/form/mcas/OriginField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import MaritalStatusField from '../../common/form/mcas/MaritalStatusField';
-import GenderField from '../../common/form/mcas/GenderField';
 import MarkdownField from '../../../../components/MarkdownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { buildDate } from '../../../../utils/Time';
@@ -50,9 +47,6 @@ const threatActorIndividualEditionDemographicsFragment = graphql`
     bornIn {
       id
     }
-    nationality {
-      id
-    }
     ethnicity {
       id
     }
@@ -73,7 +67,6 @@ const threatActorIndividualValidation = (t: (s: string) => string) => Yup.object
     .nullable()
     .max(250, t('The value is too long')),
   bornIn: Yup.string().nullable(),
-  nationality: Yup.string().nullable(),
   ethnicity: Yup.string().nullable(),
 });
 
@@ -131,7 +124,6 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     marital_status: threatActorIndividual.marital_status,
     job_title: threatActorIndividual.job_title,
     bornIn: threatActorIndividual.bornIn?.id,
-    nationality: threatActorIndividual.nationality?.id,
     ethnicity: threatActorIndividual.ethnicity?.id,
   };
 
@@ -159,18 +151,6 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
                 multi={false}
                 initialValues={values.bornIn}
                 label={t('Place of Birth')}
-                style={fieldSpacingContainerStyle}
-                handleChange={(n, v) => {
-                  setFieldValue(n, Array.isArray(v) ? v[0] : v);
-                  handleSubmitField(n, Array.isArray(v) ? v[0] : v);
-                }}
-              />
-              <CountryPickerField
-                id="Nationality"
-                name="nationality"
-                multi={false}
-                initialValues={values.nationality}
-                label={t('Nationality')}
                 style={fieldSpacingContainerStyle}
                 handleChange={(n, v) => {
                   setFieldValue(n, Array.isArray(v) ? v[0] : v);

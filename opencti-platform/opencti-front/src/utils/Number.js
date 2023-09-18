@@ -1,6 +1,4 @@
 import { pathOr } from 'ramda';
-import { UnitSystems, getLengthUnit, getUnitForSymbol, getWeightUnit } from './UnitSystems';
-import convert from 'convert';
 
 export const random = (min, max) => Math.random() * (max - min) + min;
 
@@ -71,7 +69,6 @@ export const bytesFormat = (number, digits = 2) => {
  * @type {object}
  * @property {string[]} validKeys
  * @property {'weight'|'length'} measureType
- * @property {string} defaultUnit
  */
 /** @typedef Measurement @type {Height | Weight} */
 /**
@@ -82,7 +79,7 @@ export const bytesFormat = (number, digits = 2) => {
  * @param {UnitValidationOptions} options
  * @returns {Measurement | string | null}
  */
-export const validateMeasurement = (data, { validKeys, measureType, defaultUnit }) => {
+export const validateMeasurement = (data, { validKeys, measureType }) => {
   if (data === undefined || data == null) return null;
   if (typeof data === 'string') {
     // Handle case where data is 'Unknown' if unset in database
@@ -95,7 +92,6 @@ export const validateMeasurement = (data, { validKeys, measureType, defaultUnit 
       // Measurement value is not a valid numeric value
       return data;
     }
-    const unit = getUnitForSymbol(unitParts.unit, defaultUnit);
     return measureType === 'weight'
       ? {
         weight_kg: Number(value),

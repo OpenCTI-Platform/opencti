@@ -4,7 +4,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixContainer } from '../../types/stix-sdo';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { Country, HeightTupleInputValues, WeightTupleInputValues } from '../../generated/graphql';
-import type { RELATION_BORN_IN, RELATION_ETHNICITY, RELATION_NATIONALITY } from '../../schema/stixRefRelationship';
+import type { RELATION_BORN_IN, RELATION_ETHNICITY } from '../../schema/stixRefRelationship';
 
 export const ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL = 'Threat-Actor-Individual';
 
@@ -31,7 +31,6 @@ export interface BasicStoreEntityThreatActorIndividual extends BasicStoreEntity 
   height: [HeightTupleInputValues]
   weight: [WeightTupleInputValues]
   [RELATION_BORN_IN]: string
-  [RELATION_NATIONALITY]: string
   [RELATION_ETHNICITY]: string
 }
 
@@ -58,7 +57,6 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
   height: [HeightTupleInputValues]
   weight: [WeightTupleInputValues]
   bornIn: Country
-  nationality: Country
   ethnicity: Country
 }
 
@@ -72,7 +70,6 @@ export interface StixThreatActorIndividualExtension extends StixOpenctiExtension
   height: [HeightTupleInputValues]
   weight: [WeightTupleInputValues]
   born_in_ref: string
-  nationality_ref: string
   ethnicity_ref: string
 }
 

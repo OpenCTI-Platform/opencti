@@ -261,7 +261,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
           render={(routeProps: any) => (
             <EntityStixCoreRelationships
               entityId={threatActorIndividual.id}
-              relationshipTypes={['resides-in', 'citizen-of']}
+              relationshipTypes={['resides-in', 'citizen-of', 'national-of']}
               stixCoreObjectTypes={['Country']}
               entityLink={link}
               defaultStartTime={threatActorIndividual.first_seen}

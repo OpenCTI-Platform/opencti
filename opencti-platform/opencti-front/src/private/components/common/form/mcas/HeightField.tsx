@@ -3,6 +3,8 @@ import { Field, FieldArray } from 'formik';
 import { IconButton, Typography } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import convert from 'convert';
 import { useFormatter } from '../../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
 import DatePickerField from '../../../../../components/DatePickerField';
@@ -10,8 +12,6 @@ import TextField from '../../../../../components/TextField';
 import { commitLocalUpdate, commitMutation, defaultCommitMutation } from '../../../../../relay/environment';
 import { HeightTupleInputValues } from './__generated__/HeightFieldIndividualMutation.graphql';
 import { UnitSystems, validateUnitSystem } from '../../../../../utils/UnitSystems';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import convert from 'convert';
 
 export const individualHeightMutation = graphql`
   mutation HeightFieldIndividualMutation($id: ID!, $input: HeightTupleInput!) {
@@ -82,8 +82,8 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
   const valueInCm = (value: number) => {
     return usingMetric()
       ? value
-      : convert(value, 'inch').to('centimeter')
-  }
+      : convert(value, 'inch').to('centimeter');
+  };
 
   return variant === 'edit'
     ? <div style={containerStyle}>
@@ -121,8 +121,8 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
                     //   : convert(Number(values[index].height_cm), 'centimeter').to('inch')
                     // }
                     onSubmit={(_: string, v: string) => {
-                      const value = valueInCm(Number(v)) || 0
-                      console.log(`setting to ${value}`)
+                      const value = valueInCm(Number(v)) || 0;
+                      console.log(`setting to ${value}`);
                       commitMutation({
                         ...defaultCommitMutation,
                         mutation: individualHeightMutation,
@@ -196,7 +196,8 @@ const HeightField: FunctionComponent<HeightFieldProps> = ({
                     <Delete />
                   </IconButton>
                 </div>
-              )})}
+                );
+              })}
               <IconButton
                 aria-label="Add"
                 id="addHeight"

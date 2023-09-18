@@ -62,7 +62,7 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
           name={name}
           render={(arrayHelpers) => (
             <div>
-              {values.map(({weight_kg, date_seen }: WeightTupleInputValues, index) => (
+              {values.map(({ weight_kg, date_seen }: WeightTupleInputValues, index) => (
                 <div key={date_seen}>
                   <Field
                     component={TextField}

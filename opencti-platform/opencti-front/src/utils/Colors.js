@@ -288,6 +288,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
     case 'employed-by':
     case 'resides-in':
     case 'citizen-of':
+    case 'national-of':
     case 'drops':
     case 'delivers':
     case 'compromises':

@@ -121,7 +121,6 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   height: [HeightTuple]
   weight: [WeightTuple]
   bornIn: Country
-  nationality: Country
   ethnicity: Country
   # Technical
   creators: [Creator!]
@@ -154,7 +153,6 @@ enum ThreatActorsIndividualFilter {
   updated_at
   createdBy
   bornIn
-  nationality
   ethnicity
   markedBy
   assigneeTo
@@ -213,7 +211,6 @@ input ThreatActorIndividualAddInput {
   objectAssignee: [String]
   objectLabel: [String]
   bornIn: String
-  nationality: String
   ethnicity: String
   externalReferences: [String]
   created: DateTime

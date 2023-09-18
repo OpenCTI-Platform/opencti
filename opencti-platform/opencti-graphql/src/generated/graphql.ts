@@ -26170,7 +26170,6 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   marital_status?: Maybe<Scalars['String']['output']>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
-  nationality?: Maybe<Country>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectAssignee?: Maybe<AssigneeConnection>;
@@ -26364,7 +26363,6 @@ export type ThreatActorIndividualAddInput = {
   marital_status?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
-  nationality?: InputMaybe<Scalars['String']['input']>;
   objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -26435,7 +26433,6 @@ export enum ThreatActorsIndividualFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  Nationality = 'nationality',
   Revoked = 'revoked',
   SourceReliability = 'source_reliability',
   UpdatedAt = 'updated_at',
@@ -37892,7 +37889,6 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   marital_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  nationality?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectAssignee?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType>;

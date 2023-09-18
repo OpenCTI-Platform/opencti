@@ -40,7 +40,7 @@ const sortByDateSeen = (
   | undefined,
   key: string,
 ): InputMaybe<InputMaybe<HeightTupleInputValues>[]> | undefined => {
-  const finalValues = key === HeightOrWeight['HEIGHT']
+  const finalValues = key === HeightOrWeight.HEIGHT
     ? removeEmptyHeightTuples(values as HeightTupleInputValues[])
     : removeEmptyWeightTuples(values as WeightTupleInputValues[]);
   return finalValues.sort((leftValue, rightValue) => {
@@ -128,8 +128,8 @@ const heightWeightEdit = async (context: AuthContext, user: AuthUser, id: string
  * @returns Updated record.
  */
 export const heightWeightSort = async (context: AuthContext, user: AuthUser, id: string) => {
-  const height_key = HeightOrWeight['HEIGHT'];
-  const weight_key = HeightOrWeight['WEIGHT'];
+  const height_key = HeightOrWeight.HEIGHT;
+  const weight_key = HeightOrWeight.WEIGHT;
   const initial = await storeLoadByIdWithRefs(context, user, id, { type });
   if (!initial) {
     throw FunctionalError("Can't find element to update", { id, type });

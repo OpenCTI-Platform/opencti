@@ -13,6 +13,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig, FormikErrors } from 'formik/dist/types';
 import { Box, Tab, Tabs } from '@mui/material';
 import Badge, { BadgeProps } from '@mui/material/Badge';
+import { styled } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -123,7 +124,6 @@ interface ThreatActorIndividualAddInput {
   externalReferences: { value: string }[];
   file: File | undefined;
   bornIn: string | null
-  nationality: string | null
   ethnicity: string | null
   date_of_birth: Date | null
   gender: string | null
@@ -169,7 +169,6 @@ ThreatActorIndividualFormProps
       .nullable()
       .typeError(t('The value must be a date (yyyy-MM-dd)')),
     bornIn: Yup.string().nullable(),
-    nationality: Yup.string().nullable(),
     ethnicity: Yup.string().nullable(),
     gender: Yup.string()
       .nullable()
@@ -220,7 +219,6 @@ ThreatActorIndividualFormProps
       externalReferences: values?.externalReferences.map(({ value }) => value),
       file: values?.file,
       bornIn: values?.bornIn,
-      nationality: values?.nationality,
       ethnicity: values?.ethnicity,
       date_of_birth: values?.date_of_birth,
       gender: values?.gender,
@@ -265,7 +263,6 @@ ThreatActorIndividualFormProps
     externalReferences: [],
     file: undefined,
     bornIn: null,
-    nationality: null,
     ethnicity: null,
     date_of_birth: null,
     gender: null,
@@ -367,15 +364,6 @@ ThreatActorIndividualFormProps
                 multi={false}
                 initialValues={values?.bornIn || undefined}
                 label={t('Place of Birth')}
-                style={fieldSpacingContainerStyle}
-                handleChange={setFieldValue}
-              />
-              <CountryPickerField
-                id="Nationality"
-                name="nationality"
-                multi={false}
-                initialValues={values?.nationality || undefined}
-                label={t('Nationality')}
                 style={fieldSpacingContainerStyle}
                 handleChange={setFieldValue}
               />

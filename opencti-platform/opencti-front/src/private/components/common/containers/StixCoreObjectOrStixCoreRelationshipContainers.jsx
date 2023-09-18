@@ -261,6 +261,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
                   'employed-by',
               'resides-in',
               'citizen-of',
+              'national-of',
               'belongs-to',
                   'related-to',
                 ],

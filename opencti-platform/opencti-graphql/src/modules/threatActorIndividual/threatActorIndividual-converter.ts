@@ -5,7 +5,7 @@ import {
   convertToStixDate
 } from '../../database/stix-converter';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
-import { INPUT_BORN_IN, INPUT_CREATED_BY, INPUT_ETHNICITY, INPUT_NATIONALITY, INPUT_OBJECTS } from '../../schema/general';
+import { INPUT_BORN_IN, INPUT_CREATED_BY, INPUT_ETHNICITY, INPUT_OBJECTS } from '../../schema/general';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 const convertThreatActorIndividualToStix = (instance: StoreEntityThreatActorIndividual): StixThreatActorIndividual => {
@@ -41,7 +41,6 @@ const convertThreatActorIndividualToStix = (instance: StoreEntityThreatActorIndi
         weight: instance.weight,
         created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
         born_in_ref: instance[INPUT_BORN_IN]?.standard_id,
-        nationality_ref: instance[INPUT_NATIONALITY]?.standard_id,
         ethnicity_ref: instance[INPUT_ETHNICITY]?.standard_id,
       })
     }
