@@ -37,29 +37,32 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
     const timeoutData = JSON.parse(timeoutJSON);
     startDate = timeoutData.startDate;
     startDateEpoch = timeoutData.startDateEpoch;
-
     idleCount = sessionLimit - (Date.now() - timeoutData.startDateEpoch) / 1000;
   } else {
+    // If timeout start not yet initialize, setup the local storage
+    const newTimeItem = { startDate: new Date(), startDateEpoch: Date.now() };
+    localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
     idleCount -= 1;
   }
-
-  switch (action.type) {
-    case 'count down':
-      if (idleCount) {
-        return { idleLimit, sessionLimit, idleCount, startDate, startDateEpoch };
-      }
-      return state;
-    case 'reset timeout':
-      return {
-        idleLimit,
-        sessionLimit,
-        idleCount: sessionLimit,
-        startDate: new Date(),
-        startDateEpoch: Date.now(),
-      };
-    default:
-      return state;
+  // Handle actions
+  if (action.type === 'count down') {
+    if (idleCount) {
+      return { idleLimit, sessionLimit, idleCount, startDate, startDateEpoch };
+    }
+    return state;
   }
+  if (action.type === 'reset timeout') {
+    const newTimeItem = { startDate: new Date(), startDateEpoch: Date.now() };
+    localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
+    return {
+      idleLimit,
+      sessionLimit,
+      idleCount: sessionLimit,
+      startDate: newTimeItem.startDate,
+      startDateEpoch: newTimeItem.startDateEpoch,
+    };
+  }
+  return state;
 };
 
 /**
@@ -89,20 +92,6 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
   });
   const [resetCounter, triggerReset] = useState(false);
   const interval = useRef<NodeJS.Timeout | null>(null);
-
-  /**
-   * Set some stateful data to share between browser tabs
-   */
-  const [lockoutTracker] = useState([]);
-  useEffect(() => {
-    const uniqueTime = Date.now();
-    const newTimeItem = {
-      id: uniqueTime,
-      startDate: state.startDate,
-      startDateEpoch: state.startDateEpoch,
-    };
-    localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
-  }, [lockoutTracker]);
 
   /**
    * Decrements the idle timeout counter by one until it is zero.
@@ -153,12 +142,7 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
    */
   const unlockScreen = () => {
     setDialogOpen(false);
-    const uniqueTime = Date.now();
-    const newTimeItem = {
-      id: uniqueTime,
-      startDate: new Date(),
-      startDateEpoch: uniqueTime,
-    };
+    const newTimeItem = { startDate: new Date(), startDateEpoch: Date.now() };
     localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
   };
 
@@ -230,12 +214,10 @@ const TimeoutLock: React.FunctionComponent<TimeoutLockProps> = () => {
       redirectToDashboard();
     }
     // Lock the screen for the remaining session time
-    if (
-      !dialogOpen
-      && secondsBetween >= state.idleLimit
-      && secondsBetween < state.sessionLimit
-    ) {
+    if (secondsBetween >= state.idleLimit && secondsBetween < state.sessionLimit) {
       lockScreen();
+    } else { // To handle close on different tab
+      setDialogOpen(false);
     }
   }, [state.idleCount]);
 
