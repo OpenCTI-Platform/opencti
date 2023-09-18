@@ -4,6 +4,7 @@ import { FormikErrors } from 'formik';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
+import { truncate } from "../../../../utils/String";
 
 const VisuallyHiddenInput = styled('input')`
   clip: rect(0 0 0 0);
@@ -32,17 +33,17 @@ function CustomFileUploader<T>(
 ) {
   const { t } = useFormatter();
   const theme = useTheme();
-  const [fileName, setFileName] = useState('');
+  const [fileNameForDisplay, setFileNameForDisplay] = useState('');
 
   async function onChange(event: FormEvent) {
     const eventTargetValue = (event.target as HTMLInputElement).value as string;
     const newFileName = eventTargetValue.substring(eventTargetValue.lastIndexOf('\\') + 1);
-    setFileName(newFileName);
+    setFileNameForDisplay(truncate(newFileName, 60));
     await setFieldValue('file', (event.target as HTMLInputElement).files?.[0]);
     if (isEmbeddedInExternalReferenceCreation) {
       const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
       if (!externalIdValue) {
-        await setFieldValue('external_id', newFileName);
+        await setFieldValue('external_id', truncate(newFileName, 60));
       }
     }
   }
@@ -88,12 +89,12 @@ function CustomFileUploader<T>(
           <VisuallyHiddenInput type="file" />
         </Button>
         <span
-          title={fileName || t('No file selected.')}
+          title={fileNameForDisplay || t('No file selected.')}
           style={{
             marginLeft: 5,
           }}
         >
-          {fileName || t('No file selected.')}
+          {fileNameForDisplay || t('No file selected.')}
         </span>
       </Box>
     </div>
