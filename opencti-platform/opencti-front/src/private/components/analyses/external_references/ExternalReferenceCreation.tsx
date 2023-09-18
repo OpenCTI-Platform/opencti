@@ -304,12 +304,10 @@ ExternalReferenceCreationProps
                     style={{ marginTop: 20 }}
                   />
                   {!dryrun && (
-                    <>
-                      <CustomFileUpload
-                        setFieldValue={setFieldValue}
-                        isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
-                      />
-                    </>
+                    <CustomFileUpload
+                      setFieldValue={setFieldValue}
+                      isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
+                    />
                   )}
                   <Field
                     component={MarkdownField}
@@ -405,23 +403,9 @@ ExternalReferenceCreationProps
                     style={{ marginTop: 20 }}
                   />
                   {!dryrun && (
-                    <Field
-                      component={SimpleFileUpload}
-                      name="file"
-                      label={t('Associated file')}
-                      FormControlProps={{ style: fieldSpacingContainerStyle }}
-                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                      InputProps={{ classes: { fullWidth: true, variant: 'standard' },
-                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-                          const fileName = event.target.value.split('\\').pop();
-                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
-                          setFieldValue('file', event.currentTarget.files?.[0]);
-                          if (!externalIdValue && fileName) {
-                            setFieldValue('external_id', fileName);
-                          }
-                        },
-                      }}
-                      fullWidth={true}
+                    <CustomFileUpload
+                      setFieldValue={setFieldValue}
+                      isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
                     />
                   )}
                   <Field
