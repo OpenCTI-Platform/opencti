@@ -19,6 +19,7 @@ const ItemCreators = (props) => {
       {creators.map((creator) => {
         return (
           <Security
+            key={creator.id}
             needs={[SETTINGS_SETACCESSES]}
             placeholder={
               <Button

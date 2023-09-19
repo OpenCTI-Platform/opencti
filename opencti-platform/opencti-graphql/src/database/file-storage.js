@@ -309,7 +309,7 @@ export const filesListing = async (context, user, first, path, entity = null, pr
     let files = await rawFilesListing(context, user, path);
     if (entity) {
       files = files.filter((file) => file.metaData.entity_id === entity.internal_id);
-      files = await resolveImageFiles(context, user, files, entity);
+      files = await resolveImageFiles(files, entity);
     }
     if (prefixMimeType) {
       files = files.filter((file) => file.metaData.mimetype.includes(prefixMimeType));
@@ -334,7 +334,7 @@ export const deleteAllFiles = async (context, user, path) => {
   return deleteFiles(context, user, ids);
 };
 
-const resolveImageFiles = async (context, user, files, resolveEntity) => {
+const resolveImageFiles = async (files, resolveEntity) => {
   const elasticFiles = resolveEntity.x_opencti_files;
   return files.map((file) => {
     const elasticFile = (elasticFiles ?? []).find((e) => e.id === file.id);
