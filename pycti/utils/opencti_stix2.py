@@ -1465,14 +1465,24 @@ class OpenCTIStix2:
             and entity["createdBy"] is not None
         ):
             created_by = self.generate_export(entity["createdBy"])
-            entity["created_by_ref"] = created_by["id"]
+            if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
+                entity["x_opencti_created_by_ref"] = created_by["id"]
+            else:
+                entity["created_by_ref"] = created_by["id"]
             result.append(created_by)
+        # Labels
+        if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING and "labels" in entity:
+            entity["x_opencti_labels"] = entity["labels"]
+            del entity["labels"]
+
         if "createdBy" in entity:
             del entity["createdBy"]
             del entity["createdById"]
         if "observables" in entity:
             del entity["observables"]
             del entity["observablesIds"]
+        if "creators" in entity:
+            del entity["creators"]
 
         # DataSource
         if (
