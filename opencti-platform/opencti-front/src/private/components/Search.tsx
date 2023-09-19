@@ -8,6 +8,7 @@ import {
   SearchStixCoreObjectsLinesPaginationQuery,
   SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/search/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
+import { useParams } from 'react-router-dom';
 import TopBar from './nav/TopBar';
 import ListLines from '../../components/list_lines/ListLines';
 import ToolBar from './data/ToolBar';
@@ -27,10 +28,16 @@ const Search = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const { t } = useFormatter();
+  const { keyword } = useParams() as { keyword: string };
+  let searchTerm = '';
+  try {
+    searchTerm = decodeURIComponent(keyword || '');
+  } catch (e) {
+    // Do nothing
+  }
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      searchTerm: '',
       sortBy: '_score',
       orderAsc: true,
       openExports: false,
@@ -40,7 +47,6 @@ const Search = () => {
   const {
     numberOfElements,
     filters,
-    searchTerm,
     sortBy,
     orderAsc,
     openExports,
@@ -54,9 +60,10 @@ const Search = () => {
     onToggleEntity,
     numberOfSelectedElements,
   } = useEntityToggle<SearchStixCoreObjectLine_node$data>(LOCAL_STORAGE_KEY);
+
   const queryRef = useQueryLoading<SearchStixCoreObjectsLinesPaginationQuery>(
     searchStixCoreObjectsLinesQuery,
-    paginationOptions,
+    { ...paginationOptions, search: searchTerm },
   );
 
   const renderLines = () => {
