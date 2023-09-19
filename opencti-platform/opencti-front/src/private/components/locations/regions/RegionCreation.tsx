@@ -4,18 +4,19 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import makeStyles from '@mui/styles/makeStyles';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import useCommonStyles from '@components/common/style/commonStyle';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/MarkdownField';
+import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { RegionsLinesPaginationQuery$variables } from './__generated__/RegionsLinesPaginationQuery.graphql';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
@@ -26,6 +27,58 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
+  },
+  dialogActions: {
+    padding: '0 17px 20px 0',
+  },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
+  createButtonContextual: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
+  },
+  buttons: {
+    marginTop: 20,
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
+  header: {
+    backgroundColor: theme.palette.background.nav,
+    padding: '20px 20px 20px 60px',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    left: 5,
+    color: 'inherit',
+  },
+  importButton: {
+    position: 'absolute',
+    top: 15,
+    right: 20,
+  },
+  container: {
+    padding: '10px 20px 20px 20px',
+  },
+}));
 
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
@@ -70,7 +123,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   defaultMarkingDefinitions,
   inputValue,
 }) => {
-  const classes = useCommonStyles();
+  const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
@@ -205,7 +258,7 @@ const RegionCreation = ({
   paginationOptions: RegionsLinesPaginationQuery$variables;
 }) => {
   const { t } = useFormatter();
-  const classes = useCommonStyles();
+  const classes = useStyles();
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

@@ -11,9 +11,9 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import useCommonStyles from '@components/common/style/commonStyle';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -25,6 +25,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import {
   CourseOfActionCreationMutation,
@@ -32,7 +33,59 @@ import {
 } from './__generated__/CourseOfActionCreationMutation.graphql';
 import { CoursesOfActionLinesPaginationQuery$variables } from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    padding: 0,
+  },
+  dialogActions: {
+    padding: '0 17px 20px 0',
+  },
+  createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+  },
+  createButtonContextual: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
+  },
+  buttons: {
+    marginTop: 20,
+    textAlign: 'right',
+  },
+  button: {
+    marginLeft: theme.spacing(2),
+  },
+  header: {
+    backgroundColor: theme.palette.background.nav,
+    padding: '20px 20px 20px 60px',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    left: 5,
+    color: 'inherit',
+  },
+  importButton: {
+    position: 'absolute',
+    top: 15,
+    right: 20,
+  },
+  container: {
+    padding: '10px 20px 20px 20px',
+  },
+}));
 
 const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
@@ -84,7 +137,7 @@ CourseOfActionFormProps
   defaultCreatedBy,
   defaultMarkingDefinitions,
 }) => {
-  const classes = useCommonStyles();
+  const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string()
@@ -241,7 +294,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   display,
   inputValue,
 }) => {
-  const classes = useCommonStyles();
+  const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
 
