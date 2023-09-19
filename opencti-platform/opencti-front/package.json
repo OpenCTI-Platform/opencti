@@ -68,7 +68,7 @@
     "recharts": "2.8.0",
     "relay-runtime": "15.0.0",
     "remark-flexible-markers": "1.0.3",
-    "remark-gfm": "4.0.0",
+    "remark-gfm": "3.0.1",
     "remark-parse": "11.0.0",
     "rxjs": "7.8.1",
     "subscriptions-transport-ws": "0.11.0",
