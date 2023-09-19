@@ -5124,6 +5124,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"apollo-server-errors@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "apollo-server-errors@npm:3.3.1"
+  peerDependencies:
+    graphql: ^15.3.0 || ^16.0.0
+  checksum: d09b66e7ac3e2cbc60774280d30118ac4d98f945b5cc1013bb81b9970aae49c0717a550e161fe978d69d7039ec053aeba495890f6eebf452532a2c5e94071a80
+  languageName: node
+  linkType: hard
+
 "apollo-upload-client@npm:^13.0.0":
   version: 13.0.0
   resolution: "apollo-upload-client@npm:13.0.0"
@@ -10439,6 +10448,7 @@ __metadata:
     amqplib: 0.10.3
     antlr4: 4.13.1
     apollo-errors: 1.9.0
+    apollo-server-errors: ^3.3.1
     async-lock: 1.4.0
     axios: 1.5.0
     axios-cookiejar-support: 4.0.7

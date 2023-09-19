@@ -160,6 +160,7 @@
     "@typescript-eslint/eslint-plugin": "6.7.2",
     "@typescript-eslint/parser": "6.7.2",
     "@vitest/coverage-istanbul": "0.34.3",
+    "apollo-server-errors": "^3.3.1",
     "cross-env": "7.0.3",
     "esbuild": "0.19.3",
     "esbuild-plugin-import-glob": "0.1.1",
