@@ -145,7 +145,7 @@
     "@graphql-codegen/typescript-resolvers": "4.0.1",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.3",
-    "@types/bcryptjs": "2.4.3",
+    "@types/bcryptjs": "2.4.4",
     "@types/bluebird": "3.5.39",
     "@types/dot-object": "2.1.2",
     "@types/ejs": "3.1.2",
