@@ -14653,7 +14653,7 @@ __metadata:
     react-test-renderer: 18.2.0
     react-timeline-range-slider: 1.4.1
     react-virtualized: 9.22.5
-    reactflow: ^11.8.3
+    reactflow: 11.8.3
     recharts: 2.8.0
     relay-compiler: 15.0.0
     relay-runtime: 15.0.0
@@ -16471,7 +16471,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reactflow@npm:^11.8.3":
+"reactflow@npm:11.8.3":
   version: 11.8.3
   resolution: "reactflow@npm:11.8.3"
   dependencies:

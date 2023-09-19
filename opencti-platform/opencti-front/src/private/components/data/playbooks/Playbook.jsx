@@ -16,6 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import 'reactflow/dist/style.css';
+import ReactFlow, { useNodesState, useEdgesState } from 'reactflow';
 import { useFormatter } from '../../../../components/i18n';
 import PlaybookHeader from './PlaybookHeader';
 
@@ -28,13 +30,34 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const initialNodes = [
+  { id: '1', data: { label: 'Node 1' }, position: { x: 100, y: 100 } },
+  { id: '2', data: { label: 'Node 2' }, position: { x: 100, y: 200 } },
+];
+const initialEdges = [{ id: 'e1-2', source: '1', target: '2' }];
+
+const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
+
 const PlaybookComponent = ({ playbook }) => {
   const classes = useStyles();
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { t } = useFormatter();
+  const width = window.innerWidth - 70;
+  const height = window.innerHeight - 180;
   return (
-    <div className={classes.container}>
+    <div className={classes.container} style={{ width, height }}>
       <PlaybookHeader playbook={playbook} />
-      My super playbook!
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        defaultViewport={defaultViewport}
+        minZoom={0.2}
+        maxZoom={4}
+        attributionPosition="bottom-left"
+      />
     </div>
   );
 };
