@@ -17,7 +17,7 @@ import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import { dayStartDate, parse } from '../../../../utils/Time';
+import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import { Option } from '../../common/form/ReferenceField';
 import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
@@ -282,7 +282,7 @@ TriggerEditionOverviewProps
     trigger_ids: convertTriggers(trigger),
     period: trigger.period,
     day: currentTime.length > 1 ? currentTime[0] : '1',
-    time: currentTime.length > 1 ? `2000-01-01T${currentTime[1]}` : `2000-01-01T${currentTime[0]}`,
+    time: currentTime.length > 1 ? formatTimeForToday(currentTime[1]) : formatTimeForToday(currentTime[0]),
   };
   return (
     <Formik

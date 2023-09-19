@@ -19,7 +19,7 @@ import { TriggerLine_node$key } from './__generated__/TriggerLine_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import TriggerPopover from './TriggerPopover';
-import { dayStartDate } from '../../../../utils/Time';
+import { dayStartDate, formatTimeForToday } from '../../../../utils/Time';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -127,8 +127,8 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   ];
   const day = currentTime.length > 1 ? currentTime[0] : '1';
   const time = currentTime.length > 1
-    ? new Date(`2000-01-01T${currentTime[1]}`)
-    : new Date(`2000-01-01T${currentTime[0]}`);
+    ? formatTimeForToday(currentTime[1])
+    : formatTimeForToday(currentTime[0]);
 
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

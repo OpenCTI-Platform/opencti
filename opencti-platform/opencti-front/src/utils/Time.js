@@ -80,6 +80,11 @@ export const dateFormat = (data, specificFormat = null) => {
     : '';
 };
 
+export const formatTimeForToday = (time) => {
+  const today = dateFormat(new Date(), 'YYYY-MM-DD');
+  return `${today}T${time}`;
+};
+
 export const timestamp = (date) => parse(date).unix();
 
 export const jsDate = (date) => parse(date).toDate();
