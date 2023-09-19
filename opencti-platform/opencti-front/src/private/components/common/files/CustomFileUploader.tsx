@@ -67,15 +67,14 @@ function CustomFileUploader<T>(
       <Box
         sx={{
           width: '100%',
-          paddingBottom: '0.2rem',
-          borderBottom: `0.05rem solid ${theme.palette.grey['400']}`,
+          marginTop: '0.2rem',
+          paddingBottom: '0.35rem',
+          borderBottom: `0.1rem solid ${theme.palette.grey['400']}`,
           cursor: 'default',
           '&:hover': {
-            paddingBottom: '0.15rem',
             borderBottom: '0.1rem solid white',
           },
           '&:active': {
-            paddingBottom: '0.15rem',
             borderBottom: `0.1rem solid ${theme.palette.primary.main}`,
           },
         }}
@@ -84,6 +83,9 @@ function CustomFileUploader<T>(
           component="label"
           variant="contained"
           onChange={onChange}
+          style={{
+            lineHeight: '0.65rem'
+          }}
         >
           {t('Select your file')}
           <VisuallyHiddenInput type="file" />
@@ -92,6 +94,7 @@ function CustomFileUploader<T>(
           title={fileNameForDisplay || t('No file selected.')}
           style={{
             marginLeft: 5,
+            verticalAlign: 'bottom',
           }}
         >
           {fileNameForDisplay || t('No file selected.')}
