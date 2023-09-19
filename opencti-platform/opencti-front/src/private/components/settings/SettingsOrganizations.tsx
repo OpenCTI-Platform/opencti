@@ -24,6 +24,7 @@ const SettingsOrganizations = () => {
     searchTerm: '',
     sortBy: 'name',
     orderAsc: false,
+    // TODO Add includeAuthorities
   });
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
   const { fd, t } = useFormatter();

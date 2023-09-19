@@ -1,4 +1,4 @@
-import { batchListThroughGetFrom, batchListThroughGetTo, createEntity } from '../../database/middleware';
+import { batchListThroughGetFrom, batchListThroughGetTo, createEntity, patchAttribute } from '../../database/middleware';
 import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { notify } from '../../database/redis';
@@ -17,6 +17,7 @@ export const findById = (context: AuthContext, user: AuthUser, organizationId: s
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityOrganization>) => {
+  // TODO add include_authorized_authorities to filter
   return listEntitiesPaginated<BasicStoreEntityOrganization>(context, user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], args);
 };
 
@@ -25,6 +26,11 @@ export const addOrganization = async (context: AuthContext, user: AuthUser, orga
   const created = await createEntity(context, user, organizationWithClass, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
+export const editAuthorizedAuthorities = async (context: AuthContext, user: AuthUser, organizationId: string, input: string[]) => {
+  const patch = { authorized_authorities: input };
+  const { element } = await patchAttribute(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION, patch);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
+};
 // endregion
 
 // region BATCH
@@ -32,6 +38,7 @@ export const batchSectors = (context: AuthContext, user: AuthUser, organizationI
   return batchListThroughGetTo(context, user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 export const batchMembers = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {
+  // TODO Add restriction in case we remove the @auth
   return batchListThroughGetFrom(context, user, organizationIds, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER, opts);
 };
 export const batchSubOrganizations = async (context: AuthContext, user: AuthUser, organizationIds: string[], opts = {}) => {

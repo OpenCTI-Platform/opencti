@@ -12951,6 +12951,7 @@ export type Mutation = {
   organizationContextClean?: Maybe<Organization>;
   organizationContextPatch?: Maybe<Organization>;
   organizationDelete?: Maybe<Scalars['ID']['output']>;
+  organizationEditAuthorizedAuthorities?: Maybe<Organization>;
   organizationFieldPatch?: Maybe<Organization>;
   organizationRelationAdd?: Maybe<StixRefRelationship>;
   organizationRelationDelete?: Maybe<Organization>;
@@ -13943,6 +13944,12 @@ export type MutationOrganizationContextPatchArgs = {
 
 export type MutationOrganizationDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationOrganizationEditAuthorizedAuthoritiesArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<InputMaybe<Scalars['String']['input']>>;
 };
 
 
@@ -16588,6 +16595,7 @@ export enum OrderingMode {
 
 export type Organization = BasicObject & Identity & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Organization';
+  authorized_authorities?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -34625,6 +34633,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   organizationContextClean?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationContextCleanArgs, 'id'>>;
   organizationContextPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationContextPatchArgs, 'id' | 'input'>>;
   organizationDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationOrganizationDeleteArgs, 'id'>>;
+  organizationEditAuthorizedAuthorities?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationEditAuthorizedAuthoritiesArgs, 'id' | 'input'>>;
   organizationFieldPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationFieldPatchArgs, 'id' | 'input'>>;
   organizationRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationOrganizationRelationAddArgs, 'id' | 'input'>>;
   organizationRelationDelete?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
@@ -35275,6 +35284,7 @@ export type OpinionEditMutationsResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = ResolversObject<{
+  authorized_authorities?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<OrganizationCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

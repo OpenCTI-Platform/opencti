@@ -9152,6 +9152,7 @@ type Mutation {
   csvMapperAdd(input: CsvMapperAddInput!): CsvMapper
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  organizationEditAuthorizedAuthorities(id: ID!, input: [String]!): Organization
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12153,6 +12154,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_organization_type: String
   sectors: SectorConnection
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
+  authorized_authorities: [String]
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace
@@ -12255,6 +12257,7 @@ type MeOrganizationConnection {
   pageInfo: PageInfo!
   edges: [MeOrganizationEdge!]!
 }
+
 
 type AttributeColumnConfiguration {
   separator: String

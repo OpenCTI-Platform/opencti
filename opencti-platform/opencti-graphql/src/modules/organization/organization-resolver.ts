@@ -1,10 +1,11 @@
 import { elBatchIds } from '../../database/engine';
 import { batchLoader } from '../../database/middleware';
-import { addOrganization,
+import {
+  addOrganization,
   batchMembers,
   batchParentOrganizations,
   batchSectors,
-  batchSubOrganizations,
+  batchSubOrganizations, editAuthorizedAuthorities,
   findAll,
   findById
 } from './organization-domain';
@@ -51,6 +52,9 @@ const organizationResolvers: Resolvers = {
     organizationRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
     organizationRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+    },
+    organizationEditAuthorizedAuthorities: (_, { id, input }, context) => {
+      return editAuthorizedAuthorities(context, context.user, id, input);
     },
   },
 };
