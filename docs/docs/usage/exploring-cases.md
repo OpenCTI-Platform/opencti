@@ -47,6 +47,7 @@ Exploring and modifying the structured Knowledge contained in a Case can be done
 
 In Graph view, STIX SDO are displayed as graph nodes and relationships as graph links. Nodes are colored depending of their type. Direct relationship are displayed as plain link and inferred relationships in dotted link.
 At the top right, you will find a serie of icons. From there you can change the current type of view. Here you can also perform global action on the Knowledge of the Case. Let's highlight 2 of them:
+
 - Suggestions: This tool suggests you some logical relationships to add between your contained Object to give more consistency to your Knowledge.
 - Share with an Organization: if you have designated a main Organization in the platform settings, you can here share your Case and its content with users of an other Organization.
 At the bottom, you have many option to manipulate the graph:
