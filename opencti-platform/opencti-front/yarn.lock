@@ -4366,12 +4366,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/ramda@npm:0.29.3":
-  version: 0.29.3
-  resolution: "@types/ramda@npm:0.29.3"
+"@types/ramda@npm:0.29.4":
+  version: 0.29.4
+  resolution: "@types/ramda@npm:0.29.4"
   dependencies:
     types-ramda: ^0.29.4
-  checksum: 172b18d62473d4bffb1e4e92fa293e56fa4f85fcf91b1b2c9178955f775e34065cc408e93f1171436b52e240599ecb1be51955dab07ca389bf2da98f85f820a9
+  checksum: ff373b32ed83f2b2287c05a1357224a0ee62e99b569b35f03059eb6657bb1190f0fc81e7c49c3f0c8897fbe8b7619848288096a91cf94ed574df971b91c71de3
   languageName: node
   linkType: hard
 
@@ -13701,7 +13701,7 @@ __metadata:
     "@testing-library/react": 14.0.0
     "@types/node": 20.6.2
     "@types/qrcode": 1.5.2
-    "@types/ramda": 0.29.3
+    "@types/ramda": 0.29.4
     "@types/react": 18.2.22
     "@types/react-dom": 18.2.7
     "@types/react-relay": 14.1.5
