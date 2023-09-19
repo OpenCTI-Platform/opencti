@@ -544,6 +544,7 @@ class OpenCTIStix2:
                             file_name=file["name"],
                             data=base64.b64decode(file["data"]),
                             mime_type=file["mime_type"],
+                            no_trigger_import=file.get("no_trigger_import", False),
                         )
                 if (
                     self.opencti.get_attribute_in_extension("files", external_reference)
@@ -557,6 +558,7 @@ class OpenCTIStix2:
                             file_name=file["name"],
                             data=base64.b64decode(file["data"]),
                             mime_type=file["mime_type"],
+                            no_trigger_import=file.get("no_trigger_import", False),
                         )
                 self.mapping_cache[generated_ref_id] = generated_ref_id
                 external_references_ids.append(external_reference_id)
@@ -683,6 +685,7 @@ class OpenCTIStix2:
                             file_name=file["name"],
                             data=base64.b64decode(file["data"]),
                             mime_type=file["mime_type"],
+                            no_trigger_import=file.get("no_trigger_import", False),
                         )
                 if (
                     self.opencti.get_attribute_in_extension("files", external_reference)
@@ -696,6 +699,7 @@ class OpenCTIStix2:
                             file_name=file["name"],
                             data=base64.b64decode(file["data"]),
                             mime_type=file["mime_type"],
+                            no_trigger_import=file.get("no_trigger_import", False),
                         )
                 self.mapping_cache[generated_ref_id] = generated_ref_id
                 external_references_ids.append(external_reference_id)
@@ -851,6 +855,7 @@ class OpenCTIStix2:
                         file_name=file["name"],
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
+                        no_trigger_import=file.get("no_trigger_import", False),
                     )
             if (
                 self.opencti.get_attribute_in_extension("files", stix_object)
@@ -864,6 +869,7 @@ class OpenCTIStix2:
                         file_name=file["name"],
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
+                        no_trigger_import=file.get("no_trigger_import", False),
                     )
         return stix_object_results
 
@@ -956,6 +962,7 @@ class OpenCTIStix2:
                         file_name=file["name"],
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
+                        no_trigger_import=file.get("no_trigger_import", False),
                     )
             if (
                 self.opencti.get_attribute_in_extension("files", stix_object)
@@ -969,6 +976,7 @@ class OpenCTIStix2:
                         file_name=file["name"],
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
+                        no_trigger_import=file.get("no_trigger_import", False),
                     )
             if "id" in stix_object:
                 self.mapping_cache[stix_object["id"]] = {

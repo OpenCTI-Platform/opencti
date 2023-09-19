@@ -245,12 +245,13 @@ class ExternalReference:
         file_name = kwargs.get("file_name", None)
         data = kwargs.get("data", None)
         mime_type = kwargs.get("mime_type", "text/plain")
+        no_trigger_import = kwargs.get("no_trigger_import", False)
         if id is not None and file_name is not None:
             final_file_name = os.path.basename(file_name)
             query = """
-                mutation ExternalReferenceEdit($id: ID!, $file: Upload!) {
+                mutation ExternalReferenceEdit($id: ID!, $file: Upload!, $noTriggerImport: Boolean) {
                     externalReferenceEdit(id: $id) {
-                        importPush(file: $file) {
+                        importPush(file: $file, noTriggerImport: $noTriggerImport) {
                             id
                             name
                         }
@@ -268,7 +269,11 @@ class ExternalReference:
             )
             return self.opencti.query(
                 query,
-                {"id": id, "file": (self.file(final_file_name, data, mime_type))},
+                {
+                    "id": id,
+                    "file": (self.file(final_file_name, data, mime_type)),
+                    "noTriggerImport": no_trigger_import,
+                },
             )
         else:
             LOGGER.error(
