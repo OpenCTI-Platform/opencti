@@ -160,7 +160,7 @@
     "@typescript-eslint/parser": "6.7.2",
     "@vitest/coverage-istanbul": "0.34.3",
     "cross-env": "7.0.3",
-    "esbuild": "0.19.2",
+    "esbuild": "0.19.3",
     "esbuild-plugin-import-glob": "0.1.1",
     "eslint": "8.49.0",
     "eslint-config-airbnb": "19.0.4",
