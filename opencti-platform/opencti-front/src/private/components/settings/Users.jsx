@@ -41,7 +41,7 @@ class Users extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Users-view',
+      'view-users',
       this.state,
     );
   }
