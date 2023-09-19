@@ -315,6 +315,7 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               id
               entity_type
               parent_types
+              numberOfConnectedElement
               created_at
               createdBy {
                 ... on Identity {

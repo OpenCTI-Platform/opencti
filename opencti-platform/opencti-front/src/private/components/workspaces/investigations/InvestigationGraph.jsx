@@ -973,7 +973,7 @@ class InvestigationGraphComponent extends Component {
     );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
 
-    this.fetchMetaObjectRelCounts();
+    this.fetchMetaObjectRelCounts(this.graphObjects);
 
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
@@ -1113,46 +1113,53 @@ class InvestigationGraphComponent extends Component {
     });
   }
 
-  async fetchMetaObjectRelCounts() {
-    const metaObjectIds = this.graphObjects
+  /**
+   * Fetch the number of relations each meta-object has in the list of objects.
+   *
+   * @param objects The list of objects.
+   */
+  async fetchMetaObjectRelCounts(objects) {
+    // Keep only meta-objects.
+    const metaObjectIds = (objects ?? [])
       .filter((object) => object.parent_types.includes('Stix-Meta-Object'))
       .map((object) => object.id);
 
-    if (metaObjectIds.length > 0) {
-      const { stixRelationshipsDistribution: metaRelCounts } = await fetchQuery(
-        investigationGraphStixMetaRelCountQuery,
-        { metaObjectIds },
-      ).toPromise();
+    if (metaObjectIds.length === 0) return;
 
-      metaRelCounts.forEach(({ label, value }) => {
-        const object = this.graphObjects.find((obj) => obj.id === label);
-        if (object) {
-          this.graphObjects = [
-            ...this.graphObjects.filter((obj) => obj.id !== label),
-            {
-              ...object,
-              numberOfConnectedElement: value,
-            },
-          ];
-        }
-      });
+    const { stixRelationshipsDistribution: metaRelCounts } = await fetchQuery(
+      investigationGraphStixMetaRelCountQuery,
+      { metaObjectIds },
+    ).toPromise();
 
-      this.graphData = buildGraphData(
-        this.graphObjects,
-        decodeGraphData(this.props.workspace.graph_data),
-        this.props.t,
-      );
-      this.setState({
-        graphData: applyFilters(
-          this.graphData,
-          this.state.stixCoreObjectsTypes,
-          this.state.markedBy,
-          this.state.createdBy,
-          [],
-          this.state.selectedTimeRangeInterval,
-        ),
-      });
-    }
+    // For each meta-object, add the number of relations it has in our objects data.
+    metaRelCounts.forEach(({ label, value }) => {
+      const object = this.graphObjects.find((obj) => obj.id === label);
+      if (object) {
+        this.graphObjects = [
+          ...this.graphObjects.filter((obj) => obj.id !== label),
+          {
+            ...object,
+            numberOfConnectedElement: value,
+          },
+        ];
+      }
+    });
+
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.workspace.graph_data),
+      this.props.t,
+    );
+    this.setState({
+      graphData: applyFilters(
+        this.graphData,
+        this.state.stixCoreObjectsTypes,
+        this.state.markedBy,
+        this.state.createdBy,
+        [],
+        this.state.selectedTimeRangeInterval,
+      ),
+    });
   }
 
   handleToggle3DMode() {
@@ -1560,40 +1567,38 @@ class InvestigationGraphComponent extends Component {
   }
 
   async handleDeleteSelected() {
-    // Remove selected links
+    let idsToRemove = [];
+
+    // Retrieve selected links
     const selectedLinks = Array.from(this.selectedLinks);
-    const selectedLinksIds = R.map((n) => n.id, selectedLinks);
-    const toIds = R.filter(
+    const selectedLinksIds = R.filter(
       (n) => n !== undefined,
       R.map((n) => n.id, selectedLinks),
     );
-    commitMutation({
-      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
-      variables: {
-        id: this.props.workspace.id,
-        input: {
-          key: 'investigated_entities_ids',
-          value: toIds,
-          operation: 'remove',
-        },
-      },
-    });
     this.graphObjects = R.filter(
       (n) => !R.includes(n.id, selectedLinksIds),
       this.graphObjects,
     );
+    idsToRemove = [...idsToRemove, ...selectedLinksIds];
     this.selectedLinks.clear();
 
-    // Remove selected nodes
+    // Retrieve selected nodes
     const selectedNodes = Array.from(this.selectedNodes);
     const selectedNodesIds = R.filter(
       (n) => n !== undefined,
       R.map((n) => n.id, selectedNodes),
     );
+    idsToRemove = [...idsToRemove, ...selectedNodesIds];
+
+    // Retrieve links of selected nodes
     const relationshipsToRemove = R.filter(
       (n) => R.includes(n.from?.id, selectedNodesIds)
         || R.includes(n.to?.id, selectedNodesIds),
       this.graphObjects,
+    );
+    const relationshipsToIds = R.filter(
+      (n) => n !== undefined,
+      R.map((n) => n.id, relationshipsToRemove),
     );
     this.graphObjects = R.filter(
       (n) => !R.includes(n.id, selectedNodesIds)
@@ -1601,37 +1606,21 @@ class InvestigationGraphComponent extends Component {
         && !R.includes(n.to?.id, selectedNodesIds),
       this.graphObjects,
     );
-    const relationshipsToIds = R.filter(
-      (n) => n !== undefined,
-      R.map((n) => n.id, relationshipsToRemove),
-    );
-    commitMutation({
-      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
-      variables: {
-        id: this.props.workspace.id,
-        input: {
-          key: 'investigated_entities_ids',
-          value: relationshipsToIds,
-          operation: 'remove',
-        },
-      },
-    });
-    const nodesToIds = R.filter(
-      (n) => n !== undefined,
-      R.map((n) => n.id, selectedNodes),
-    );
-    commitMutation({
-      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
-      variables: {
-        id: this.props.workspace.id,
-        input: {
-          key: 'investigated_entities_ids',
-          value: nodesToIds,
-          operation: 'remove',
-        },
-      },
-    });
+    idsToRemove = [...idsToRemove, ...relationshipsToIds];
     this.selectedNodes.clear();
+
+    commitMutation({
+      mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
+      variables: {
+        id: this.props.workspace.id,
+        input: {
+          key: 'investigated_entities_ids',
+          value: idsToRemove,
+          operation: 'remove',
+        },
+      },
+    });
+
     this.graphData = buildGraphData(
       this.graphObjects,
       decodeGraphData(this.props.workspace.graph_data),
@@ -1864,6 +1853,7 @@ class InvestigationGraphComponent extends Component {
         });
       newElementsIds = [...R.map((k) => k.id, newElements), ...newElementsIds];
       this.graphObjects = [...newElements, ...this.graphObjects];
+      this.fetchMetaObjectRelCounts(newElements);
     }
     if (newElementsIds.length > 0) {
       this.graphData = buildGraphData(
