@@ -110,7 +110,7 @@ const Artifacts: FunctionComponent = () => {
     let renderFilters = filters;
     renderFilters = {
       ...renderFilters,
-      entity_type: [{ id: 'Report', value: 'Report' }],
+      entity_type: [{ id: 'Artifact', value: 'Artifact' }],
     };
 
     return (
