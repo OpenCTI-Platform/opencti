@@ -17,44 +17,42 @@ class OpenCTIMetricHandler:
             Port for prometheus server.
         """
         self.activated = activated
-
         if self.activated:
             logging.info(f"Exposing metrics on port {port}")
             start_http_server(port)
-
-        self._metrics = {
-            "bundle_send": Counter(
-                "bundle_send",
-                "Number of bundle send",
-            ),
-            "record_send": Counter(
-                "record_send",
-                "Number of record (objects per bundle) send",
-            ),
-            "run_count": Counter(
-                "run_count",
-                "Number of run",
-            ),
-            "ping_api_count": Counter(
-                "ping_api_count",
-                "Number of ping to the api",
-            ),
-            "ping_api_error": Counter(
-                "ping_api_error",
-                "Number of error when pinging the api",
-            ),
-            "error_count": Counter(
-                "error_count",
-                "Number of error",
-            ),
-            "client_error_count": Counter(
-                "client_error_count",
-                "Number of client error",
-            ),
-            "state": Enum(
-                "state", "State of connector", states=["idle", "running", "stopped"]
-            ),
-        }
+            self._metrics = {
+                "bundle_send": Counter(
+                    "bundle_send",
+                    "Number of bundle send",
+                ),
+                "record_send": Counter(
+                    "record_send",
+                    "Number of record (objects per bundle) send",
+                ),
+                "run_count": Counter(
+                    "run_count",
+                    "Number of run",
+                ),
+                "ping_api_count": Counter(
+                    "ping_api_count",
+                    "Number of ping to the api",
+                ),
+                "ping_api_error": Counter(
+                    "ping_api_error",
+                    "Number of error when pinging the api",
+                ),
+                "error_count": Counter(
+                    "error_count",
+                    "Number of error",
+                ),
+                "client_error_count": Counter(
+                    "client_error_count",
+                    "Number of client error",
+                ),
+                "state": Enum(
+                    "state", "State of connector", states=["idle", "running", "stopped"]
+                ),
+            }
 
     def _metric_exists(
         self, name: str, expected_type: Union[Type[Counter], Type[Enum]]
