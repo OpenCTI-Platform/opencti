@@ -4878,10 +4878,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/turndown@npm:5.0.1":
-  version: 5.0.1
-  resolution: "@types/turndown@npm:5.0.1"
-  checksum: 137c02fb863f96a2f032292fbfaf958fb784b62d97acb6a4968c012d365fa092997443584bd50205f89ad9128c729119efdf5db67cdda586f1cdd43049b26d6b
+"@types/turndown@npm:5.0.2":
+  version: 5.0.2
+  resolution: "@types/turndown@npm:5.0.2"
+  checksum: 70f40f2f048413640c5570a58d8bb76f1f8bc0c69a58aefe57b60b21138335762ec3eb11b0d25a114681aef28364c889bef0b74c03f452f9148c6c926264018b
   languageName: node
   linkType: hard
 
@@ -10841,7 +10841,7 @@ __metadata:
     "@types/nconf": 0.10.3
     "@types/ramda": 0.29.3
     "@types/tough-cookie": 4.0.2
-    "@types/turndown": 5.0.1
+    "@types/turndown": 5.0.2
     "@types/uuid": 9.0.3
     "@types/xml2js": 0.4.12
     "@typescript-eslint/eslint-plugin": 6.7.2

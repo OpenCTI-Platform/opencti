@@ -153,7 +153,7 @@
     "@types/nconf": "0.10.3",
     "@types/ramda": "0.29.3",
     "@types/tough-cookie": "4.0.2",
-    "@types/turndown": "5.0.1",
+    "@types/turndown": "5.0.2",
     "@types/uuid": "9.0.3",
     "@types/xml2js": "0.4.12",
     "@typescript-eslint/eslint-plugin": "6.7.2",
