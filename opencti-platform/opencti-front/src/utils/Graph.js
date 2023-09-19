@@ -1189,10 +1189,12 @@ export const nodePaint = (
   if (Number.isInteger(numberOfConnectedElement) && numberOfConnectedElement !== 0) {
     ctx.beginPath();
     ctx.fillStyle = itemColor('numberOfConnectedElement');
-    ctx.arc(x + 4, y - 5, 3, 0, 2 * Math.PI, false);
+    ctx.arc(x + 4, y - 5, 3.5, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.fillStyle = '#000';
-    const numberLabel = numberOfConnectedElement === -1 ? '?' : numberOfConnectedElement;
+    let numberLabel = '?';
+    if (numberOfConnectedElement !== -1) numberLabel = numberOfConnectedElement;
+    if (numberOfConnectedElement > 99) numberLabel = '99+';
     ctx.fillText(numberLabel, x + 4, y - 4.5);
   }
 };
