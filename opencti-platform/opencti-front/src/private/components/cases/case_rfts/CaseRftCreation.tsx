@@ -1,9 +1,5 @@
-import { Add, Close } from '@mui/icons-material';
 import Button from '@mui/material/Button';
-import Drawer from '@mui/material/Drawer';
-import Fab from '@mui/material/Fab';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { SimpleFileUpload } from 'formik-mui';
@@ -30,55 +26,19 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  CaseRftAddInput,
-  CaseRftCreationCaseMutation,
-} from './__generated__/CaseRftCreationCaseMutation.graphql';
+import { CaseRftAddInput, CaseRftCreationCaseMutation } from './__generated__/CaseRftCreationCaseMutation.graphql';
 import { CaseRftLinesCasesPaginationQuery$variables } from './__generated__/CaseRftLinesCasesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -121,8 +81,7 @@ interface CaseRftFormProps {
     key: string,
     response: { id: string; name: string } | null
   ) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
+  onClose?: () => void;
   defaultConfidence?: number;
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
@@ -132,8 +91,7 @@ const CASE_RFT_TYPE = 'Case-Rft';
 
 export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   updater,
-  onReset,
-  onCompleted,
+  onClose,
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
@@ -187,8 +145,8 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        if (onCompleted) {
-          onCompleted();
+        if (onClose) {
+          onClose();
         }
         if (mapAfter) {
           history.push(
@@ -223,7 +181,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       initialValues={initialValues}
       validationSchema={caseRftValidator}
       onSubmit={onSubmit}
-      onReset={onReset}
+      onReset={onClose}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -377,12 +335,7 @@ const CaseRftCreation = ({
 }: {
   paginationOptions: CaseRftLinesCasesPaginationQuery$variables;
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState<boolean>(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_case_caseRfts',
@@ -390,47 +343,12 @@ const CaseRftCreation = ({
     'caseRftAdd',
   );
   return (
-    <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-        disableEnforceFocus={true}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">
-            {t('Create a request for takedown')}
-          </Typography>
-        </div>
-        <div className={classes.container}>
-          <CaseRftCreationForm
-            updater={updater}
-            onCompleted={() => handleClose()}
-            onReset={onReset}
-          />
-        </div>
-      </Drawer>
-    </div>
+    <Drawer
+      title={t('Create a request for takedown')}
+      variant={DrawerVariant.create}
+    >
+      <CaseRftCreationForm updater={updater} />
+    </Drawer>
   );
 };
 
