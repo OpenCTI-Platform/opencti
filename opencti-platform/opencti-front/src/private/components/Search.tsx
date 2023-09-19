@@ -28,10 +28,16 @@ const Search = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const { t } = useFormatter();
-  const { viewStorage, helpers: storageHelpers, paginationOptions: rawPaginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
+  const { keyword } = useParams() as { keyword: string };
+  let searchTerm = '';
+  try {
+    searchTerm = decodeURIComponent(keyword || '');
+  } catch (e) {
+    // Do nothing
+  }
+  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      searchTerm: '',
       sortBy: '_score',
       orderAsc: true,
       openExports: false,
@@ -41,7 +47,6 @@ const Search = () => {
   const {
     numberOfElements,
     filters,
-    searchTerm,
     sortBy,
     orderAsc,
     openExports,
@@ -56,15 +61,9 @@ const Search = () => {
     numberOfSelectedElements,
   } = useEntityToggle<SearchStixCoreObjectLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const { keyword } = useParams() as { keyword: string };
-  const paginationOptions = {
-    ...rawPaginationOptions,
-    search: keyword,
-  };
-
   const queryRef = useQueryLoading<SearchStixCoreObjectsLinesPaginationQuery>(
     searchStixCoreObjectsLinesQuery,
-    paginationOptions,
+    { ...paginationOptions, search: searchTerm },
   );
 
   const renderLines = () => {
