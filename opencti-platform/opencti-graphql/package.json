@@ -106,7 +106,7 @@
     "nconf": "0.12.0",
     "node-calls-python": "1.7.7",
     "node-fetch": "3.3.2",
-    "nodemailer": "6.9.4",
+    "nodemailer": "6.9.5",
     "openid-client": "5.5.0",
     "opentelemetry-node-metrics": "3.0.0",
     "otplib": "12.0.1",
