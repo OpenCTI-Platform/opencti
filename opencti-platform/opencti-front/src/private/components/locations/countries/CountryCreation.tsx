@@ -28,7 +28,7 @@ import {
   CountryCreationMutation$variables,
 } from './__generated__/CountryCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
 
 const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {

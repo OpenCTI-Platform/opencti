@@ -25,7 +25,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
 
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {

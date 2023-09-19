@@ -31,7 +31,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUploader from '../../common/files/CustomFileUploader';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
 
 const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {
