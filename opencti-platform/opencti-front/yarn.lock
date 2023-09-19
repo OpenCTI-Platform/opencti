@@ -4262,10 +4262,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.5.9":
-  version: 20.5.9
-  resolution: "@types/node@npm:20.5.9"
-  checksum: 717490e94131722144878b4ca1a963ede1673bb8f2ef78c2f5b50b918df6dc9b35e7f8283e5c2a7a9f137730f7c08dc6228e53d4494a94c9ee16881e6ce6caed
+"@types/node@npm:20.6.2":
+  version: 20.6.2
+  resolution: "@types/node@npm:20.6.2"
+  checksum: 96fe5303872640a173f3fd43e289a451776ed5b8f0090094447c6790b43f23fb607eea8268af0829cef4d132e5afa0bfa4cd871aa7412e9042a414a698e9e971
   languageName: node
   linkType: hard
 
@@ -13634,7 +13634,7 @@ __metadata:
     "@rjsf/utils": 5.12.1
     "@rollup/plugin-graphql": 2.0.3
     "@testing-library/react": 14.0.0
-    "@types/node": 20.5.9
+    "@types/node": 20.6.2
     "@types/qrcode": 1.5.2
     "@types/ramda": 0.29.3
     "@types/react": 18.2.21
