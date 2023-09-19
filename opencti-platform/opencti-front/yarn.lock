@@ -4424,12 +4424,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-test-renderer@npm:18.0.1":
-  version: 18.0.1
-  resolution: "@types/react-test-renderer@npm:18.0.1"
+"@types/react-test-renderer@npm:18.0.2":
+  version: 18.0.2
+  resolution: "@types/react-test-renderer@npm:18.0.2"
   dependencies:
     "@types/react": "*"
-  checksum: ec149c2ab4d76c7286ef5d8ca9546765632e0c7a0788e5850081af38526f7fcb6413641e083520ee4b2fc57755f475990fbfabcbcdda8d954aa708708c866a96
+  checksum: 2845b05adcb28180e530b63c47495b2c0beb1a669a0ce962dcfa6ed5b88d37c8438de1f29cb2e599b5f229307a4479e424677407111a571bbcab06bd538ea1df
   languageName: node
   linkType: hard
 
@@ -13706,7 +13706,7 @@ __metadata:
     "@types/react-dom": 18.2.7
     "@types/react-relay": 14.1.5
     "@types/react-router-dom": 5.3.3
-    "@types/react-test-renderer": 18.0.1
+    "@types/react-test-renderer": 18.0.2
     "@types/relay-test-utils": 14.1.0
     "@types/uuid": 9.0.3
     "@vitejs/plugin-react": 4.0.4
