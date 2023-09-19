@@ -1,0 +1,31 @@
+<?xmlversion="1.0" encoding="UTF-8"?>
+<rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
+    <channel>
+        <title>Citrix Knowledge Center : Security Bulletins</title>
+        <link>https://support.citrix.com</link>
+        <description>feed for articles related to knowledge center</description>
+        <language>en_US</language>
+        <copyright>1999-2023 Citrix Systems, Inc. All Rights Reserved</copyright>
+        <dc:language>en_US</dc:language>
+        <dc:rights>1999-2023 Citrix Systems, Inc. All Rights Reserved</dc:rights>
+        <item>
+            <title>ShareFile StorageZones Controller Security Update for CVE-2023-24489</title>
+            <link>
+                https://support.citrix.com/article/CTX559517/sharefile-storagezones-controller-security-update-for-cve202324489
+            </link>
+            <description>&lt;p &gt;&lt;span &gt;&lt;b &gt;CTX559517 &lt;/b &gt;&lt;/span &gt;&amp;emsp;&lt;span
+                style=\'padding:10px 10px; background-color:#52DF9D; color:#447f74;\'&gt;New &lt;/span &gt;&lt;/p &gt;&lt;p
+                &gt;ShareFile StorageZones Controller Security Update for CVE-2023-24489 &lt;/p &gt;&lt;p &gt;&lt;span
+                &gt;&lt;i &gt;Applicable Products : &lt;/i &gt;&lt;/span &gt;&amp;emsp;&lt;span &gt;Citrix Content
+                Collaboration &lt;/span &gt;&lt;span &gt;ShareFile &lt;/span &gt;&lt;/p &gt;&lt;/p &gt;
+            </description>
+            <category domain="https://support.citrix.com/feed/products">ShareFile</category>
+            <category domain="https://support.citrix.com/feed/products">Citrix Content Collaboration</category>
+            <pubDate>Thu, 17 Aug 2023 20:40:08 GMT</pubDate>
+            <guid isPermaLink="false">
+                https://support.citrix.com/article/CTX559517/sharefile-storagezones-controller-security-update-for-cve202324489
+            </guid>
+            <dc:date>2023-08-17T20:40:08Z</dc:date>
+        </item>
+    </channel>
+</rss>

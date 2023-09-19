@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+     xmlns:slash="http://purl.org/rss/1.0/modules/slash/">
+    <channel>
+        <title>APT reports &#8211; Securelist</title>
+        <atom:link href="https://securelist.com/category/apt-reports/feed/" rel="self" type="application/rss+xml"/>
+        <link>https://securelist.com</link>
+        <description></description>
+        <lastBuildDate>Thu, 10 Aug 2023 08:57:25 +0000</lastBuildDate>
+        <language>en-US</language>
+        <sy:updatePeriod>
+            hourly\t
+        </sy:updatePeriod>
+        <sy:updateFrequency>
+            1\t
+        </sy:updateFrequency>
+        <generator>https://wordpress.org/?v=6.2.2</generator>
+
+        <image>
+            <url>https://securelist.com/wp-content/themes/securelist2020/assets/images/content/site-icon.png</url>
+            <title>APT reports &#8211; Securelist</title>
+            <link>https://securelist.com</link>
+            <width>32</width>
+            <height>32</height>
+        </image>
+        <item>
+            <title>Focus on DroxiDat/SystemBC</title>
+            <link>https://securelist.com/focus-on-droxidat-systembc/110302/</link>
+            <comments>https://securelist.com/focus-on-droxidat-systembc/110302/#respond</comments>
+
+            <dc:creator><![CDATA[Kurt Baumgartner]]></dc:creator>
+            <pubDate>Thu, 10 Aug 2023 10:00:22 +0000</pubDate>
+            <category><![CDATA[APT reports]]></category>
+            <category><![CDATA[Backdoor]]></category>
+            <category><![CDATA[Malware Descriptions]]></category>
+            <category><![CDATA[Malware-as-a-Service]]></category>
+            <category><![CDATA[Ransomware]]></category>
+            <category><![CDATA[Targeted attacks]]></category>
+            <category><![CDATA[APT (Targeted attacks)]]></category>
+            <category><![CDATA[Industrial threats]]></category>
+            <guid isPermaLink="false">https://kasperskycontenthub.com/securelist/?p=110302</guid>
+
+            <description>
+                <![CDATA[An unknown actor targeted an electric utility in southern Africa with Cobalt Strike beacons and DroxiDat, a new variant of the SystemBC payload. We speculate that this incident was in the initial stages of a ransomware attack. ]]></description>
+            <content:encoded><![CDATA[<p><img width="990" height="400" src="https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2022/07/28105711/abstract_dangerous_box-990x400.jpg" class="attachment-securelist-huge-promo size-securelist-huge-promo wp-post-image" alt="" decoding="async" /></p><p>Recently we pushed a report to our customers about an interesting and common component of the cybercrime malware set &#8211; SystemBC. And, in much the same vein as the 2021 Darkside Colonial Pipeline incident, we found a new SystemBC variant deployed to a critical infrastructure target. This time, the proxy-capable backdoor was deployed alongside Cobalt Strike beacons in a south African nation&#8217;s critical infrastructure.</p>
+        <p>Kim Zetter closely reviewed the preceding Colonial Pipeline incident in her <a href="https://www.youtube.com/watch?v=noNx1Dmo3K0" target="_blank" rel="noopener">BlackHat 2022 keynote</a> &#8220;Pre-Stuxnet, Post-Stuxnet: Everything Has Changed, Nothing Has Changed&#8221;, calling it a &#8220;watershed moment&#8221;. We are now seeing targeting and tactical similarities elsewhere in the world.</p>
+        <p>A lot of abstract content and interesting <a href="https://www.dragos.com/blog/ransomware-attack-analysis-q1-2023/" target="_blank" rel="noopener">trend</a> <a href="https://www.dragos.com/blog/dragos-industrial-ransomware-attack-analysis-q2-2023/" target="_blank" rel="noopener">analysis</a> has been published about industrial ransomware attacks &#8220;The second quarter of 2023 proved to be an exceptionally active period for ransomware groups, posing significant threats to industrial organizations and infrastructure&#8221;, but very little technical detail in the way of particular electric utility ransomware incidents has been publicly reported. We know that surveyed utilities, on a global basis, are <a href="https://assets.siemens-energy.com/siemens/assets/api/uuid:c723efb9-847f-4a33-9afa-8a097d81ae19/siemens-cybersecurity.pdf" target="_blank" rel="noopener">reporting more and more in the way of targeted activity</a> and higher risk: &#8220;56% [of respondents] report at least one attack involving a loss of private information or an outage in the OT environment in the past 12 months&#8221;. While not all of the activity is attributed to ransomware actors, perhaps the relevant ransomware attackers are avoiding retaliation by strong government agencies and alliances, while continuing to act on a game plan that demonstrated previous successes. Regardless, this increased utilities targeting is a real world problem with serious potential consequences, especially in areas where network outages may affect customers on a country-wide basis.</p>
+        <p>Notably, an unknown actor targeted an electric utility in southern Africa with Cobalt Strike beacons and DroxiDat, a new variant of the SystemBC payload. We speculate that this incident was in the initial stages of a ransomware attack. This attack occurred in the third and fourth week of March 2023, as a part of a small wave of attacks involving both DroxiDat and CobaltStrike beacons across the world. DroxiDat, a lean ~8kb variant of SystemBC serving as a system profiler and simple SOCKS5-capable bot, was detected in the electric utility. The C2 infrastructure for this electric utility incident involved an energy-related domain &#8220;powersupportplan[.]com&#8221; that resolved to an already suspicious IP host. This host was previously used several years prior as a part of an APT activity, raising the potential for an APT-related targeted attack. While our interest was piqued, a link to that previous APT was never established, and was likely unrelated. Ransomware was not delivered to the organization, and we do not have enough information to precisely attribute this activity. However, in a healthcare related incident involving DroxiDat around the same timeframe, Nokoyawa ransomware was delivered, along with several other incidents involving CobaltStrike sharing the same license_id and staging directories, and/or C2.</p>
+        <h2 id="droxidat-systembc-technical-details">DroxiDat/SystemBC Technical Details</h2>
+        <p>The DroxiDat/SystemBC payload component is interesting in its own right as a changing, malicious backdoor, often used as a part of ransomware incidents. Multiple &#8220;types&#8221; of SystemBC have been <a href="https://asec.ahnlab.com/en/33600/" target="_blank" rel="noopener">publicly catalogued</a>. The SystemBC platform has been offered for sale on various underground forums at least since 2018 as a &#8220;malware as a service,&#8221; or <a href="https://securelist.com/malware-as-a-service-market/109980/" target="_blank" rel="noopener">MaaS</a>. This platform is made up of three separate parts: on the server side, a C2 web server with admin panel and a C2 proxy listener; on the target side is a backdoor payload. Regarding an earlier SystemBC variant, other researchers have stated that &#8220;<a href="https://news.sophos.com/en-us/2020/12/16/systembc/" target="_blank" rel="noopener">SystemBC is an attractive tool</a> in these types of operations because it allows for multiple targets to be worked at the same time with automated tasks, allowing for hands-off deployment of ransomware using Windows built-in tools if the attackers gain the proper credentials.&#8221;</p>
+        <p>This DroxiDat variant is very compact compared to previous and common 15-30kb+ SystemBC variants. Detected SystemBC objects going back to at least 2018 (a SystemBC executable compiled in July 2017 was observed) have numbered in the thousands and were used by a long list of ransomware affiliates. In fact, it appears that most of the functionality provided in previous SystemBC payloads was stripped from its codebase, and the purpose of this DroxiDat malware variant is a simple system profiler &#8211; its file name suggests its use case as &#8220;syscheck.exe&#8221;. It provides no download-and-execute capabilities, but can connect with remote listeners and pass data back and forth, and modify the system registry. Also interesting, within this power generator network, DroxiDat/systemBC was detected exclusively on system assets similar to past DarkSide targets. And, a <a href="https://threatpost.com/ransomware-attacks-major-utilities/163687/" target="_blank" rel="noopener">Darkside affiliate</a> hit Electrobras and Copel energy companies in Brazil in 2021. The combination of C:\\perflogs for storage with DroxiDat/SystemBC and CobaltStrike executable objects was used in past <a href="https://news.sophos.com/en-us/2020/12/08/egregor-ransomware-mazes-heir-apparent/" target="_blank" rel="noopener">Egregor</a> and <a href="https://news.sophos.com/en-us/2020/10/14/inside-a-new-ryuk-ransomware-attack/" target="_blank" rel="noopener">Ryuk</a> incidents as well.</p>
+        <table>
+          <tr>
+            <td><strong>MD5</strong></td>
+            <td>8d582a14279920af10d37eae3ff2b705</td>
+          </tr>
+          <tr>
+            <td><strong>SHA1</strong></td>
+            <td>f98b32755cbfa063a868c64bd761486f7d5240cc</td>
+          </tr>
+          <tr>
+            <td><strong>SHA256</strong></td>
+            <td>a00ca18431363b32ca20bf2da33a2e2704ca40b0c56064656432afd18a62824e</td>
+          </tr>
+          <tr>
+            <td><strong>Link time</strong></td>
+            <td>Thu, 15 Dec 2022 06:34:16 UTC</td>
+          </tr>
+          <tr>
+            <td><strong>File type</strong></td>
+            <td>PE32 executable (GUI) Intel 80386, for MS Windows</td>
+          </tr>
+          <tr>
+            <td><strong>File size</strong></td>
+            <td>8192 bytes</td>
+          </tr>
+          <tr>
+            <td><strong>File path</strong></td>
+            <td>C:\\<strong>perflogs\\syscheck.exe</strong></td>
+          </tr>
+        </table>
+        <p>Two instances of this DroxiDat malware appeared in C:\\<strong>perflogs</strong> alongside two Cobalt Strike beacons on multiple systems.<br />
+          Essentially, this variant provides several functions:</p>
+        <ul>
+          <li>Retrieves active machine name/username, local IP and volume serial information.</li>
+          <li>Instead of creating an exclusive-use mutex, it checks and then creates a new thread and registers a window, class &#8220;Microsoft&#8221; and text &#8220;win32app&#8221; (included in all variants of systemBC).</li>
+          <li>Simple xor decrypts its C2 (IP:port) settings and creates a session to the remote host.</li>
+          <li>Encrypts and sends collected system information to the C2.</li>
+          <li>May create and delete registry keys and values.</li>
+        </ul>
+        <p>Missing from this Windows variant that is common to past variants:</p>
+        <ul>
+          <li>File creation capability.</li>
+          <li>File-execution switch statement, parsing for hardcoded file extensions (vbs, cmd, bat, exe, ps1) and code execution functionality.</li>
+          <li>Mini-TOR client capabilities.</li>
+          <li>Emisoft anti-malware scan.</li>
+        </ul>
+        <p>The object contains xor-encoded configuration settings:<br />
+          <code>XOR KEY: 0xB6108A9DB511264DB3FAFDB74F3D7F22ECCFC2683755966371A3974A1EA15A074404D96B6510CEE6<br />
+            HOST1: 93.115.25.41<br />
+            HOST2: 192.168.1.28<br />
+            PORT1: 443</code></p>
+        <p>So in this case, its immediate C2 destination is 93.115.25.41:443<br />
+          Up until November 2022, this IP host provided bitcoin services. Ownership likely changed in December 2022, as the above backdoor was compiled mid-December.<br />
+          A second DroxiDat executable was sent down to the same systems with capabilities to add executable entries to the &#8220;Software\\Microsoft\\Windows\\CurrentVersion\\Run&#8221; registry key with a &#8220;socks5&#8221; entry, i.e.:</p><pre class="crayon-plain-tag">powershell.exe -windowstyle hidden -Command "c:\\perflogs\\hos.exe"</pre><p> </p>
+        <p>A third DroxiDat object, this time a dll, was sent down to a server.</p>
+        <table>
+          <tr>
+            <td><strong>MD5</strong></td>
+            <td>1957deed26c7f157cedcbdae3c565cff</td>
+          </tr>
+          <tr>
+            <td><strong>SHA1</strong></td>
+            <td>be9e23e56c4a25a8ea453c093714eed5e36c66d0</td>
+          </tr>
+          <tr>
+            <td><strong>SHA256</strong></td>
+            <td>926fcb9483faa39dd93c8442e43af9285844a1fbbe493f3e4731bbbaecffb732</td>
+          </tr>
+          <tr>
+            <td><strong>Link time</strong></td>
+            <td>Thu, 15 Dec 2022 06:07:31 UTC</td>
+          </tr>
+          <tr>
+            <td><strong>File type</strong></td>
+            <td>PE32 executable (DLL) (GUI) Intel 80386, for MS Windows</td>
+          </tr>
+          <tr>
+            <td><strong>File size</strong></td>
+            <td>7168 bytes</td>
+          </tr>
+          <tr>
+            <td></strong>File path</strong></td>
+        <td>c:\\<strong>perflogs</strong>\\svch.dll</td>
+      </tr>
+    </table>
+    <p>It implements essentially the same functionality as &#8220;syscheck.exe&#8221; above without the ability to modify the registry. It also maintains the same HOST and PORT values, and 40-byte key.</p>
+    <h2 id="cobalt-strike-beacons-and-related-infrastructure">Cobalt Strike beacons and related infrastructure</h2>
+    <p>Cobalt Strike beacons were detected on these systems as well, located in the same directory and similar infrastructure. In a couple of instances, the beacons arrived and were detected on the same day as DroxiDat. In several instances, a couple of the beacons first arrived and were detected in the same perflogs directory two days later, and several more six days later. It&#8217;s highly likely that the same attackers maintained access via stolen credentials or another unknown method.</p>
+    <p>The beacons&#8217; infrastructure was power-utility themed:<br />
+      <code>powersupportplan[.]com, 179.60.146.6<br />
+        URL: /rs.css, /skin</code></p>
+    <p>Several beacons calling back to this C2 included the same license_id value:<br />
+      <code>"license_id": "0x282d4156"</code></p>
+    <p>We identified one other Cobalt Strike C2 server and beacon cluster, possibly spoofing a power-utility theme as well, along with other related data points: <code>epowersoftware[.]com, 194.165.16.63.</code></p>
+    <p>The ssh server on this epowersoftware host shares the same ssh version and RSA key(s) with the one at powersupportplan[.]com. Additionally, the CS beacon calling back to this domain maintains the same license_id, as seen above: &#8220;license_id&#8221;: &#8220;0x282d4156&#8221;.</p>
+    <h2 id="attribution">Attribution</h2>
+    <p>We have a consistent set of data points across multiple incidents mentioned in our private report, helping suggest an assessment may be made with low confidence. Several of these suggest this activity may be attributed to Russian-speaking RaaS cybercrime. In this case, we may be looking at an activity from a group known as Pistachio Tempest or FIN12, a group HHS <a href="https://www.hhs.gov/sites/default/files/ransomware-trends-q1-2022.pdf" target="_blank" rel="noopener">reported</a> &#8220;has specifically targeted the healthcare industry&#8221; in 2022, frequently deploying SystemBC alongside CS Beacon to deploy ransomware:</p>
+    <ul>
+      <li>Consistent use of the same perflogs staging directory across this intrusion set within an early 2023 timeframe.</li>
+      <li>SystemBC consistently paired alongside Cobalt Strike.</li>
+      <li>Shared profile data across Cobalt Strike hosts.</li>
+      <li>Nokoyawa ransomware deployment alongside DroxiDat within a health care organization early 2023.</li>
+    </ul>
+    <p>More details can be found in our private crimeware intelligence report &#8220;Focus on DroxiDat/SystemBC &#8211; Unknown Actor Targets Power Generator with DroxiDat and CobaltStrike&#8221; released in June 2023.</p>
+    <h2 id="reference-ioc">Reference IoC</h2>
+    <h3 id="domains-and-ip">Domains and IP</h3>
+    <p>93.115.25.41<br />
+      powersupportplan[.]com, 179.60.146.6</p>
+    <p><strong>Likely related</strong><br />
+      epowersoftware[.]com, 194.165.16.63</p>
+    <h3 id="file-hash">File hash</h3>
+    <p><strong>Droxidat</strong><br />
+      8d582a14279920af10d37eae3ff2b705<br />
+      f98b32755cbfa063a868c64bd761486f7d5240cc<br />
+      a00ca18431363b32ca20bf2da33a2e2704ca40b0c56064656432afd18a62824e</p>
+    <p><strong>CobaltStrike beacon</strong><br />
+      19567b140ae6f266bac6d1ba70459fbd<br />
+      fd9016c64aea037465ce045d998c1eead3971d35<br />
+      a002668f47ff6eb7dd1b327a23bafc3a04bf5208f71610960366dfc28e280fe4</p>
+    <h3 id="file-paths-related-objects">File paths, related objects</h3>
+    <p>C:\\perflogs\\syscheck.exe<br />
+      C:\\perflogs\\a.dll<br />
+      C:\\perflogs\\hos.exe<br />
+      C:\\perflogs\\host.exe<br />
+      C:\\perflogs\\hostt.exe<br />
+      C:\\perflogs\\svch.dll<br />
+      C:\\perflogs\\svchoct.dll<br />
+      C:\\perflogs\\admin\\svcpost.dll<br />
+      C:\\perflogs\\admin\\syscheck.exe<br />
+      C:\\perflogs\\sk64.dll<br />
+      C:\\perflogs\\clinic.exe</p>
+    <p><a href="https://www.proofpoint.com/us/threat-insight/post/systembc-christmas-july-socks5-malware-and-exploit-kits" target="_blank" rel="noopener">SystemBC is like Christmas in July for SOCKS5 Malware and Exploit Kits</a><br />
+      <a href="https://news.sophos.com/en-us/2020/10/14/inside-a-new-ryuk-ransomware-attack/" target="_blank" rel="noopener">They&#8217;re back: inside a new Ryuk ransomware attack</a></p>
+    ]]></content:encoded>
+
+            <wfw:commentRss>https://securelist.com/focus-on-droxidat-systembc/110302/feed/</wfw:commentRss>
+            <slash:comments>0</slash:comments>
+
+
+            <media:content xmlns:media="http://search.yahoo.com/mrss/"
+                           url="https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2022/07/28105711/abstract_dangerous_box.jpg"
+                           width="1200" height="675">
+                <media:keywords>full</media:keywords>
+            </media:content>
+            <media:content xmlns:media="http://search.yahoo.com/mrss/"
+                           url="https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2022/07/28105711/abstract_dangerous_box-1024x576.jpg"
+                           width="1024" height="576">
+                <media:keywords>large</media:keywords>
+            </media:content>
+            <media:content xmlns:media="http://search.yahoo.com/mrss/"
+                           url="https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2022/07/28105711/abstract_dangerous_box-300x169.jpg"
+                           width="300" height="169">
+                <media:keywords>medium</media:keywords>
+            </media:content>
+            <media:content xmlns:media="http://search.yahoo.com/mrss/"
+                           url="https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2022/07/28105711/abstract_dangerous_box-150x150.jpg"
+                           width="150" height="150">
+                <media:keywords>thumbnail</media:keywords>
+            </media:content>
+        </item>
+    </channel>
+</rss>

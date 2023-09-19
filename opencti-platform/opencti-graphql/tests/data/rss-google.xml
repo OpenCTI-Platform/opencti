@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>tag:google.com,2016:google-cloud-security-bulletins</id>
+    <title>Google Cloud - Security Bulletins</title>
+    <link rel="self" href="https://cloud.google.com/feeds/google-cloud-security-bulletins.xml"/>
+    <author>
+        <name>Google Cloud</name>
+    </author>
+    <updated>2023-09-11T14:59:07.818162+00:00</updated>
+    <entry>
+        <title>GCP-2023-026</title>
+        <id>tag:google.com,2016:google-cloud-security-bulletins#gcp-2023-026</id>
+        <updated>2023-09-11T14:59:07.818162+00:00</updated>
+        <link rel="alternate" href="https://cloud.google.com/support/bulletins/index#gcp-2023-026"/>
+        <content type="html"><![CDATA[<p><strong>Published:</strong> 2023-09-06</p><h3 class="hide-from-toc" data-text="Description" id="description">Description</h3><table>
+            <thead>
+            <tr>
+              <th width="70%">Description</th>
+              <th>Severity</th>
+              <th>Notes</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><p></p><p>Three vulnerabilities (CVE-2023-3676, CVE-2023-3955, CVE-2023-3893) have been discovered in Kubernetes where a user that can create Pods on Windows nodes may be able to escalate to admin privileges on those nodes. These vulnerabilities affect the Windows versions of Kubelet and the Kubernetes CSI proxy.</p> <p>For instructions and more details, see the following bulletins:</p> <ul><li><a href="https://cloud.google.com/anthos/clusters/docs/security-bulletins#gcp-2023-026-gke">GKE security bulletin</a></li>
+                <li><a href="https://cloud.google.com/anthos/clusters/docs/security-bulletins#gcp-2023-026-anthosvmware">Anthos clusters on VMware security bulletin</a></li>
+                <li><a href="https://cloud.google.com/anthos/clusters/docs/security-bulletins#gcp-2023-026-anthosaws">Anthos clusters on AWS security bulletin</a></li>
+                <li><a href="https://cloud.google.com/anthos/clusters/docs/security-bulletins#gcp-2023-026-anthosazure">Anthos on Azure security bulletin</a></li>
+                <li><a href="https://cloud.google.com/anthos/clusters/docs/security-bulletins#gcp-2023-026-anthosbm">Anthos on bare metal security bulletin</a></li></ul></td>
+              <td>High</td>
+              <td><a class="external" href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-3676">CVE-2023-3676</a>, <a class="external" href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-3955">CVE-2023-3955</a>, <a class="external" href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-3893"> CVE-2023-3893</a></td>
+            </tr>
+            </tbody>
+          </table>]]>
+        </content>
+    </entry>
+</feed>
