@@ -711,15 +711,17 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
           const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
           fetchingIds.push(...elements);
           expectedIds.push(...elements.map((e) => e.id));
-        } else if (!expectedIds.includes(id)) {
-          // If resolution is due to embedded ref, the from must be fully resolved
-          // This will be used to generated a correct stream message
+        } else { // Single
           if (dst === INPUT_FROM && isStixRefRelationship(type)) {
+            // If resolution is due to embedded ref, the from must be fully resolved
+            // This will be used to generated a correct stream message
             embeddedFromResolution = id;
           } else {
             fetchingIds.push({ id, destKey, multiple: false });
           }
-          expectedIds.push(id);
+          if (!expectedIds.includes(id)) {
+            expectedIds.push(id);
+          }
         }
         cleanedInput[src] = null;
       }
