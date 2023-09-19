@@ -158,7 +158,7 @@
     "@types/xml2js": "0.4.12",
     "@typescript-eslint/eslint-plugin": "6.7.2",
     "@typescript-eslint/parser": "6.7.2",
-    "@vitest/coverage-istanbul": "0.34.4",
+    "@vitest/coverage-istanbul": "0.34.3",
     "cross-env": "7.0.3",
     "esbuild": "0.19.3",
     "esbuild-plugin-import-glob": "0.1.1",
@@ -174,7 +174,7 @@
     "graphql-tag": "2.12.6",
     "ts-loader": "9.4.4",
     "typescript": "5.2.2",
-    "vitest": "0.34.4"
+    "vitest": "0.34.3"
   },
   "resolutions": {
     "json5": "2.2.3",
