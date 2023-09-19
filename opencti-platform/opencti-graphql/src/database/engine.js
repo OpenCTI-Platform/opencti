@@ -811,6 +811,31 @@ export const RUNTIME_ATTRIBUTES = {
       return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
     },
   },
+  ethnicity: {
+    field: 'ethnicity.keyword',
+    type: 'keyword',
+    getSource: async () => `
+      if (doc.containsKey('rel_of-ethnicity.internal_id)) {
+        def countryId = doc['rel_of-ethnicity.internal_id.keyword'];
+        if (countryId.size() == 1) {
+          def countryName = params[countryId[0]];
+          emit(countryName != null ? creatorName : 'Unknown')
+        } else {
+          emit('Unknown')
+        }
+      } else {
+        emit('Unknown')
+      }
+    `,
+    getParams: async (context, user) => {
+      const countries = await elPaginate(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+        types: [ENTITY_TYPE_LOCATION_COUNTRY],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(countries.map((country) => ({ [country.internal_id]: country.name })));
+    },
+  },
   creator: {
     field: 'creator.keyword',
     type: 'keyword',

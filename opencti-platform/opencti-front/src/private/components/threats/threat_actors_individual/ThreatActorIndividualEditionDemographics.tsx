@@ -111,7 +111,11 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
           mutation: threatActorIndividualMutationFieldPatch,
           variables: {
             id: threatActorIndividual.id,
-            input: { key: name, value: [value], operation },
+            input: {
+              key: name,
+              value: Array.isArray(value) ? value : [value],
+              operation,
+            },
           },
         });
       })
