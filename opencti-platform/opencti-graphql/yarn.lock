@@ -4587,10 +4587,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bluebird@npm:3.5.38":
-  version: 3.5.38
-  resolution: "@types/bluebird@npm:3.5.38"
-  checksum: 8d1b04261e8e58816ec84ffa616c9e641c9416d0ab10c915ddb9cd8a0e7070af16df4f2eec243a3809cbed8ecee2fb3f45600ae43b3ab0ceea563aa18ceb6ab1
+"@types/bluebird@npm:3.5.39":
+  version: 3.5.39
+  resolution: "@types/bluebird@npm:3.5.39"
+  checksum: a6218268987571e1ea782ecff8ac89ce06dcff4819e1beb64692d005e59967a35b4be78a3e72ae7524f1d4e0e58c2d4b7701c1cc9fc7b115742c44575bde3395
   languageName: node
   linkType: hard
 
@@ -10834,7 +10834,7 @@ __metadata:
     "@opentelemetry/semantic-conventions": 1.17.0
     "@rollup/plugin-graphql": 2.0.3
     "@types/bcryptjs": 2.4.3
-    "@types/bluebird": 3.5.38
+    "@types/bluebird": 3.5.39
     "@types/dot-object": 2.1.2
     "@types/ejs": 3.1.2
     "@types/express": 4.17.17
