@@ -69,7 +69,7 @@
     "relay-runtime": "15.0.0",
     "remark-flexible-markers": "1.0.3",
     "remark-gfm": "3.0.1",
-    "remark-parse": "10.0.2",
+    "remark-parse": "11.0.0",
     "rxjs": "7.8.1",
     "subscriptions-transport-ws": "0.11.0",
     "three-spritetext": "1.8.1",
