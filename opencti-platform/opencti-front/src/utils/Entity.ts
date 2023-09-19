@@ -248,7 +248,7 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
         stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown'
       );
     case 'Software'.toLowerCase():
-      return stixCyberObservable.name || 'Unknown';
+      return stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown';
     case 'User-Account'.toLowerCase():
       return (
         stixCyberObservable.account_login
