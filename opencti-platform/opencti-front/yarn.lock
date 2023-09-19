@@ -1729,11 +1729,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-dev-utils@npm:^38.4.1":
-  version: 38.4.1
-  resolution: "@ckeditor/ckeditor5-dev-utils@npm:38.4.1"
+"@ckeditor/ckeditor5-dev-translations@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-dev-translations@npm:39.0.0"
   dependencies:
-    "@ckeditor/ckeditor5-dev-translations": ^38.4.1
+    "@babel/parser": ^7.18.9
+    "@babel/traverse": ^7.18.9
+    chalk: ^4.0.0
+    pofile: ^1.0.9
+    rimraf: ^3.0.2
+    webpack-sources: ^2.0.1
+  checksum: 00ec42617f449f02145d09f382d9fc43c4b89e3112a39defb285a00c99d6b388fe170a7092d3c5da98ddea4f8a4b8f5b234d4e511692f8e72d743130ca39ab8f
+  languageName: node
+  linkType: hard
+
+"@ckeditor/ckeditor5-dev-utils@npm:^39.0.0":
+  version: 39.0.0
+  resolution: "@ckeditor/ckeditor5-dev-utils@npm:39.0.0"
+  dependencies:
+    "@ckeditor/ckeditor5-dev-translations": ^39.0.0
     chalk: ^3.0.0
     cli-cursor: ^3.1.0
     cli-spinners: ^2.6.1
@@ -1755,7 +1769,7 @@ __metadata:
     style-loader: ^2.0.0
     terser-webpack-plugin: ^4.2.3
     through2: ^3.0.1
-  checksum: e2bcadeb25779a1ec740689dc620cb78b84bd989ca645d52a3a440432cd0eeeae94b1426ce6557178a3c440f4f90d106327eb3a80bd0240429ad3802ee677e50
+  checksum: 1601e12664cdcfc5566d17cc95cf3bfde13b20c27778377d6503d14a6d19a166367d3fe937d302a0439a8170e79400666d6b61923e5fa15cf4609d708f6c547a
   languageName: node
   linkType: hard
 
@@ -6344,7 +6358,7 @@ __metadata:
     "@ckeditor/ckeditor5-block-quote": ^39.0.2
     "@ckeditor/ckeditor5-code-block": ^39.0.2
     "@ckeditor/ckeditor5-dev-translations": ^38.4.1
-    "@ckeditor/ckeditor5-dev-utils": ^38.4.1
+    "@ckeditor/ckeditor5-dev-utils": ^39.0.0
     "@ckeditor/ckeditor5-editor-classic": ^39.0.2
     "@ckeditor/ckeditor5-essentials": ^39.0.2
     "@ckeditor/ckeditor5-font": ^39.0.2
