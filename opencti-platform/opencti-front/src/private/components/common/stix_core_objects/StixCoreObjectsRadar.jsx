@@ -176,6 +176,9 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
         ... on StixCyberObservable {
           observable_value
         }
+        ... on Label {
+          value
+        }
       }
     }
   }

@@ -52,6 +52,7 @@ export const ignoredAttributesInDashboards = [
   'x_opencti_graph_data',
   'x_opencti_workflow_id',
   'x_opencti_stix_ids',
+  'x_opencti_files',
   'creator',
   'created',
   'created_at',
@@ -60,6 +61,8 @@ export const ignoredAttributesInDashboards = [
   'internal_id',
   'standard_id',
   'published',
+  'content',
+  'content_mapping',
 ];
 
 export const dateAttributes = [

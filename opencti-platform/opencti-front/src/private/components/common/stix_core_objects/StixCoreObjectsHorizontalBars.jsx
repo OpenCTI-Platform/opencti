@@ -187,17 +187,21 @@ const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
           name
         }
         ... on Report {
-            name
+          name
         }
         ... on Grouping {
-            name
+          name
         }
         ... on Note {
-            attribute_abstract
-            content
+          attribute_abstract
+          content
         }
         ... on Opinion {
-            opinion
+          opinion
+        }
+        ... on Label {
+          value
+          color
         }
       }
     }
@@ -266,10 +270,9 @@ const StixCoreObjectsHorizontalBars = ({
                     ? t(`entity_${n.label}`)
                     : n.label,
               y: n.value,
-              fillColor:
-                selection.attribute.endsWith('_id')
-                  ? itemColor(n.entity.entity_type)
-                  : itemColor(n.label),
+              fillColor: selection.attribute.endsWith('_id')
+                ? n.entity.color ?? itemColor(n.entity.entity_type)
+                : itemColor(n.label),
             }));
             const chartData = [
               {
@@ -277,12 +280,12 @@ const StixCoreObjectsHorizontalBars = ({
                 data,
               },
             ];
-            const redirectionUtils = (selection.attribute === 'name') ? props.stixCoreObjectsDistribution.map(
-              (n) => ({
+            const redirectionUtils = selection.attribute === 'name'
+              ? props.stixCoreObjectsDistribution.map((n) => ({
                 id: n.entity.id,
                 entity_type: n.entity.entity_type,
-              }),
-            ) : null;
+              }))
+              : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(

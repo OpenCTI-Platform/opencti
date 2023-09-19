@@ -231,6 +231,9 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
               ... on Opinion {
                   opinion
               }
+              ... on Label {
+                value
+              }
             }
           }
         }
@@ -363,6 +366,9 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         }
         ... on Opinion {
             opinion
+        }
+        ... on Label {
+          value
         }
       }
     }

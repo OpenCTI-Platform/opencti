@@ -1142,10 +1142,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           }
         />
         {getCurrentCategory() === 'timeseries' && (
-          <FormControl
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-          >
+          <FormControl fullWidth={true} style={{ marginTop: 20 }}>
             <InputLabel id="relative">{t('Interval')}</InputLabel>
             <Select
               labelId="relative"
@@ -1193,10 +1190,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       }}
                     >
                       <FormControl fullWidth={true} style={{ flex: 1 }}>
-                        <InputLabel
-                          id="relative"
-                          size="small"
-                        >
+                        <InputLabel id="relative" size="small">
                           {isNotEmptyField(dataSelection[i].label)
                             ? dataSelection[i].label
                             : t('Date attribute')}
@@ -1312,9 +1306,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             marginRight: 20,
                           }}
                         >
-                          <InputLabel>
-                            {t('Attribute')}
-                          </InputLabel>
+                          <InputLabel>{t('Attribute')}</InputLabel>
                           <Select
                             fullWidth={true}
                             value={dataSelection[i].attribute}
@@ -1343,9 +1335,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                               flex: 1,
                             }}
                           >
-                            <InputLabel>
-                              {t('Attribute')}
-                            </InputLabel>
+                            <InputLabel>{t('Attribute')}</InputLabel>
                             <QueryRenderer
                               query={stixCyberObservablesLinesAttributesQuery}
                               variables={{
@@ -1395,6 +1385,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                       {[
                                         ...attributes,
                                         { value: 'created-by.internal_id' },
+                                        { value: 'object-label.internal_id' },
                                         {
                                           value: 'object-assignee.internal_id',
                                         },
@@ -1452,9 +1443,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             flex: 1,
                           }}
                         >
-                          <InputLabel>
-                            {t('Attribute')}
-                          </InputLabel>
+                          <InputLabel>{t('Attribute')}</InputLabel>
                           <Select
                             fullWidth={true}
                             value={dataSelection[i].attribute ?? 'entity_type'}
