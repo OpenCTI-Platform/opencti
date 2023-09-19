@@ -250,23 +250,23 @@ const StixCoreObjectsTimeline = ({
       }
     }
     const filters = convertFilters(R.dissoc('entity_type', selection.filters));
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
     if (startDate) {
       filters.push({
-        key: 'created',
+        key: dateAttribute,
         values: [startDate],
         operator: 'gt',
       });
     }
     if (endDate) {
       filters.push({
-        key: 'created',
+        key: dateAttribute,
         values: [endDate],
         operator: 'lt',
       });
     }
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
     return (
       <QueryRenderer
         query={stixCoreObjectsTimelineQuery}
