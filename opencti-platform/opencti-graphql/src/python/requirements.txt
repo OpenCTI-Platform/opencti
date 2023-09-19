@@ -1,4 +1,4 @@
-pycti==5.10.2
+git+https://github.com/OpenCTI-Platform/client-python@master
 parsuricata==0.4.1
 plyara==2.1.1
 sigmatools==0.23.1
