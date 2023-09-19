@@ -76,7 +76,7 @@
     "typeface-ibm-plex-sans": "1.1.13",
     "typeface-roboto": "1.1.13",
     "unified": "11.0.3",
-    "uuid": "9.0.0",
+    "uuid": "9.0.1",
     "yup": "1.2.0"
   },
   "devDependencies": {
@@ -91,7 +91,7 @@
     "@types/react-router-dom": "5.3.3",
     "@types/react-test-renderer": "18.0.2",
     "@types/relay-test-utils": "14.1.0",
-    "@types/uuid": "9.0.3",
+    "@types/uuid": "9.0.4",
     "@vitejs/plugin-react": "4.0.4",
     "babel-plugin-relay": "15.0.0",
     "chokidar": "3.5.3",

@@ -4521,10 +4521,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:9.0.3":
-  version: 9.0.3
-  resolution: "@types/uuid@npm:9.0.3"
-  checksum: 3dde198defd71c067dd14b3050a8fe6d1ead5fe94ec318472e2c30a399d13f18941fe66cffabdcac7267177c9de2f975fdee6f0cc87cde610a2578e1ce4cc3af
+"@types/uuid@npm:9.0.4":
+  version: 9.0.4
+  resolution: "@types/uuid@npm:9.0.4"
+  checksum: 356e2504456eaebbc43a5af5ca6c07d71f5ae5520b5767cb1c62cd0ec55475fc4ee3d16a2874f4a5fce78e40e8583025afd3a7d9ba41f82939de310665f53f0e
   languageName: node
   linkType: hard
 
@@ -13708,7 +13708,7 @@ __metadata:
     "@types/react-router-dom": 5.3.3
     "@types/react-test-renderer": 18.0.2
     "@types/relay-test-utils": 14.1.0
-    "@types/uuid": 9.0.3
+    "@types/uuid": 9.0.4
     "@vitejs/plugin-react": 4.0.4
     apexcharts: 3.42.0
     axios: 1.5.0
@@ -13794,7 +13794,7 @@ __metadata:
     typeface-roboto: 1.1.13
     typescript: 5.2.2
     unified: 11.0.3
-    uuid: 9.0.0
+    uuid: 9.0.1
     vite-plugin-relay: 2.0.0
     vitest: 0.34.3
     yup: 1.2.0
@@ -18461,12 +18461,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:9.0.0":
-  version: 9.0.0
-  resolution: "uuid@npm:9.0.0"
+"uuid@npm:9.0.1":
+  version: 9.0.1
+  resolution: "uuid@npm:9.0.1"
   bin:
     uuid: dist/bin/uuid
-  checksum: 8dd2c83c43ddc7e1c71e36b60aea40030a6505139af6bee0f382ebcd1a56f6cd3028f7f06ffb07f8cf6ced320b76aea275284b224b002b289f89fe89c389b028
+  checksum: 39931f6da74e307f51c0fb463dc2462807531dc80760a9bff1e35af4316131b4fc3203d16da60ae33f07fdca5b56f3f1dd662da0c99fea9aaeab2004780cc5f4
   languageName: node
   linkType: hard
 
