@@ -71,14 +71,7 @@ export const StixCoreObjectsExportCreationMutation = graphql`
       elementId: $elementId
       selectedIds: $selectedIds
     ) {
-      edges {
-        node {
-          id
-          name
-          uploadStatus
-          lastModifiedSinceMin
-        }
-      }
+      id
     }
   }
 `;

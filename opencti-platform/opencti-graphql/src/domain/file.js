@@ -44,6 +44,7 @@ export const uploadImport = async (context, user, file) => {
     event_scope: 'create',
     context_data: contextData
   });
+  return up;
 };
 
 export const uploadPending = async (context, user, file, entityId = null, labels = null, errorOnExisting = false) => {
