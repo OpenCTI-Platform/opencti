@@ -27,7 +27,7 @@
     "formik": "2.4.5",
     "formik-mui": "5.0.0-alpha.0",
     "formik-mui-lab": "1.0.0",
-    "graphql": "16.8.0",
+    "graphql": "16.8.1",
     "graphql-ws": "5.14.0",
     "html-to-image": "1.11.11",
     "html-to-pdfmake": "2.4.25",

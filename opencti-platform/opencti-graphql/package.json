@@ -33,7 +33,7 @@
     "node": ">= 16.*"
   },
   "dependencies": {
-    "@apollo/server": "4.0.0",
+    "@apollo/server": "4.9.3",
     "@apollo/server-plugin-landing-page-graphql-playground": "4.0.1",
     "@aws-sdk/client-s3": "3.414.0",
     "@aws-sdk/credential-provider-node": "3.414.0",
@@ -81,7 +81,7 @@
     "express-session": "1.17.3",
     "fast-json-patch": "3.1.1",
     "github-api": "3.4.0",
-    "graphql": "16.8.0",
+    "graphql": "16.8.1",
     "graphql-constraint-directive": "5.2.0",
     "graphql-import": "1.0.2",
     "graphql-redis-subscriptions": "2.6.0",
@@ -135,7 +135,7 @@
     "validator": "13.11.0",
     "winston": "3.10.0",
     "winston-daily-rotate-file": "4.7.1",
-    "ws": "8.13.0",
+    "ws": "8.14.2",
     "xml2js": "0.6.2"
   },
   "devDependencies": {
