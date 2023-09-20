@@ -3061,7 +3061,9 @@ enum ReportsFilter {
   published
   published_day
   created
+  modified
   created_at
+  updated_at
   report_types
   confidence
   objectLabel

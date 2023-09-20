@@ -20708,6 +20708,7 @@ export enum ReportsFilter {
   Creator = 'creator',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
+  Modified = 'modified',
   Name = 'name',
   ObjectContains = 'objectContains',
   ObjectLabel = 'objectLabel',
@@ -20716,6 +20717,7 @@ export enum ReportsFilter {
   PublishedDay = 'published_day',
   ReportTypes = 'report_types',
   Revoked = 'revoked',
+  UpdatedAt = 'updated_at',
   XOpenctiReliability = 'x_opencti_reliability',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
