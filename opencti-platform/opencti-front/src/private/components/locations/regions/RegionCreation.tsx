@@ -94,7 +94,7 @@ const regionMutation = graphql`
   }
 `;
 
-export interface RegionAddInput {
+interface RegionAddInput {
   name: string;
   description: string;
   createdBy: Option | undefined;
@@ -113,7 +113,7 @@ interface RegionFormProps {
   inputValue?: string;
 }
 
-export const REGION_TYPE = 'Region';
+const REGION_TYPE = 'Region';
 
 export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   updater,
