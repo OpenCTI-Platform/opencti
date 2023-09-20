@@ -21,19 +21,22 @@ export const findAll = (context, user, args) => {
 export const addMarkingDefinition = async (context, user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
   const markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
-  const element = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION);
-  const filters = [{ key: 'auto_new_marking', values: [true] }];
-  // Bypass current right to read group
-  const groups = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
-  if (groups && groups.length > 0) {
-    await Promise.all(
-      groups.map((group) => {
-        return groupAddRelation(context, SYSTEM_USER, group.id, {
-          relationship_type: RELATION_ACCESSES_TO,
-          toId: element.id,
-        });
-      })
-    );
+  const result = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
+  const { element } = result;
+  if (result.isCreation) {
+    const filters = [{ key: 'auto_new_marking', values: [true] }];
+    // Bypass current right to read group
+    const groups = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
+    if (groups && groups.length > 0) {
+      await Promise.all(
+        groups.map((group) => {
+          return groupAddRelation(context, SYSTEM_USER, group.id, {
+            relationship_type: RELATION_ACCESSES_TO,
+            toId: element.id,
+          });
+        })
+      );
+    }
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, element, user);
 };
