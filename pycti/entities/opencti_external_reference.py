@@ -272,7 +272,9 @@ class ExternalReference:
                 {
                     "id": id,
                     "file": (self.file(final_file_name, data, mime_type)),
-                    "noTriggerImport": no_trigger_import,
+                    "noTriggerImport": no_trigger_import
+                    if isinstance(no_trigger_import, bool)
+                    else no_trigger_import == "True",
                 },
             )
         else:
