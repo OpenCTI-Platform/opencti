@@ -1,10 +1,12 @@
 import React, { FormEvent, useState } from 'react';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import { FormikErrors } from 'formik';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from "../../../../utils/String";
+import {Theme} from "@mui/material/styles/createTheme";
+import makeStyles from "@mui/styles/makeStyles";
 
 const VisuallyHiddenInput = styled('input')`
   clip: rect(0 0 0 0);
@@ -27,13 +29,43 @@ interface CustomFileUploadProps<T> {
   isEmbeddedInExternalReferenceCreation?: boolean
 }
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  box: {
+    width: '100%',
+    marginTop: '0.2rem',
+    paddingBottom: '0.35rem',
+    borderBottom: `0.1rem solid ${theme.palette.grey['400']}`,
+    cursor: 'default',
+    '&:hover': {
+      borderBottom: '0.1rem solid white',
+    },
+    '&:active': {
+      borderBottom: `0.1rem solid ${theme.palette.primary.main}`,
+    },
+  },
+  button: {
+    lineHeight: '0.65rem'
+  },
+  div: {
+    marginTop: 30,
+    width: '100%',
+  },
+  label: {
+    color: theme.palette.grey['400'],
+  },
+  span: {
+    marginLeft: 5,
+    verticalAlign: 'bottom',
+  }
+}));
+
 function CustomFileUploader<T>(
   { setFieldValue, isEmbeddedInExternalReferenceCreation }
   : CustomFileUploadProps<T>,
 ) {
   const { t } = useFormatter();
-  const theme = useTheme();
-  const [fileNameForDisplay, setFileNameForDisplay] = useState('');
+  const classes = useStyles();
+  const [fileNameForDisplay, setFileNameForDisplay] = useState('')
 
   async function onChange(event: FormEvent) {
     const eventTargetValue = (event.target as HTMLInputElement).value as string;
@@ -50,52 +82,30 @@ function CustomFileUploader<T>(
 
   return (
     <div
-      style={{
-        marginTop: 30,
-        width: '100%',
-      }}
+      className={classes.div}
     >
       <label
         htmlFor="label"
-        style={{
-          color: theme.palette.grey['400'],
-        }}
+        className={classes.label}
       >
         {t('Associated file')}
       </label>
       <br/>
       <Box
-        sx={{
-          width: '100%',
-          marginTop: '0.2rem',
-          paddingBottom: '0.35rem',
-          borderBottom: `0.1rem solid ${theme.palette.grey['400']}`,
-          cursor: 'default',
-          '&:hover': {
-            borderBottom: '0.1rem solid white',
-          },
-          '&:active': {
-            borderBottom: `0.1rem solid ${theme.palette.primary.main}`,
-          },
-        }}
+        className={classes.box}
       >
         <Button
           component="label"
           variant="contained"
           onChange={onChange}
-          style={{
-            lineHeight: '0.65rem'
-          }}
+          className={classes.button}
         >
           {t('Select your file')}
           <VisuallyHiddenInput type="file" />
         </Button>
         <span
           title={fileNameForDisplay || t('No file selected.')}
-          style={{
-            marginLeft: 5,
-            verticalAlign: 'bottom',
-          }}
+          className={classes.span}
         >
           {fileNameForDisplay || t('No file selected.')}
         </span>
