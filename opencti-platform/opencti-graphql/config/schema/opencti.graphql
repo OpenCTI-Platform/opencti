@@ -6195,6 +6195,7 @@ enum MalwaresFilter {
   confidence
   source_reliability
   revoked
+  targets
 }
 input MalwaresFiltering {
   key: [MalwaresFilter!]!
@@ -7106,6 +7107,7 @@ enum IncidentsFilter {
   confidence
   source_reliability
   creator
+  targets
 }
 input IncidentsFiltering {
   key: [IncidentsFilter!]!

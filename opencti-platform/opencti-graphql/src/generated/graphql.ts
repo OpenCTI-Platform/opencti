@@ -9072,6 +9072,7 @@ export enum IncidentsFilter {
   Severity = 'severity',
   Source = 'source',
   SourceReliability = 'source_reliability',
+  Targets = 'targets',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -12093,6 +12094,7 @@ export enum MalwaresFilter {
   Name = 'name',
   Revoked = 'revoked',
   SourceReliability = 'source_reliability',
+  Targets = 'targets',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }

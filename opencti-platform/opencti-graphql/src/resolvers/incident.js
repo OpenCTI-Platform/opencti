@@ -15,6 +15,7 @@ import {
 } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
+import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 
 const participantLoader = batchLoader(batchParticipants);
 
@@ -38,6 +39,7 @@ const incidentResolvers = {
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     participant: buildRefRelationKey(RELATION_OBJECT_PARTICIPANT),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    targets: buildRefRelationKey(RELATION_TARGETS),
     creator: 'creator_id',
   },
   IncidentsOrdering: {
