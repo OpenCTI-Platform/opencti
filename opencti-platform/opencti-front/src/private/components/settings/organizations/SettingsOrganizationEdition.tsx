@@ -49,13 +49,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
-  buttons: {
-    marginTop: theme.spacing(2),
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
   container: {
     padding: '10px 20px 20px 20px',
   },

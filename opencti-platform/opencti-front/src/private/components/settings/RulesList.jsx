@@ -57,22 +57,6 @@ const useStyles = makeStyles((theme) => ({
     top: 35,
     right: 20,
   },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
-  },
-  cardContent: {
-    marginTop: -10,
-    paddingTop: 0,
-    height: 80,
-    overflow: 'hidden',
-    lineHeight: 2.5,
-  },
-  cardActions: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    padding: '0 10px 20px 10px',
-  },
   progress: {
     width: '100%',
     borderRadius: 5,

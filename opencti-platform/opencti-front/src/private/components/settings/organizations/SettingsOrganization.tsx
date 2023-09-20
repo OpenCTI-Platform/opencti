@@ -14,7 +14,6 @@ import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import AccessesMenu from '../AccessesMenu';
 import SettingsOrganizationDetails from './SettingsOrganizationDetails';
@@ -26,7 +25,7 @@ import { SettingsOrganization_organization$key } from './__generated__/SettingsO
 import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 import SettingsOrganizationHiddenTypesChipList from './SettingsOrganizationHiddenTypesChipList';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -41,19 +40,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: '15px',
     borderRadius: 6,
   },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    color: theme.palette.text?.primary,
-    textTransform: 'uppercase',
-    borderRadius: '0',
-    margin: '0 5px 5px 0',
-  },
   title: {
     float: 'left',
   },
-}));
+});
 const settingsOrganizationFragment = graphql`
   fragment SettingsOrganization_organization on Organization {
     id

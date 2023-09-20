@@ -21,11 +21,6 @@ const useStyles = makeStyles(() => ({
     padding: '0 0 10px 0',
     borderRadius: 6,
   },
-  chip: {
-    fontSize: 10,
-    height: 20,
-    marginLeft: 10,
-  },
 }));
 
 const darkColors = [

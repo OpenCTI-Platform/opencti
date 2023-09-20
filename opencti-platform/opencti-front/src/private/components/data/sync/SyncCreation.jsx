@@ -68,16 +68,8 @@ const useStyles = makeStyles((theme) => ({
     left: 5,
     color: 'inherit',
   },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
   },
   alert: {
     width: '100%',

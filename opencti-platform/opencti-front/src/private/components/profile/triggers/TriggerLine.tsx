@@ -46,11 +46,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
   chipInList: {
     fontSize: 12,
     height: 20,

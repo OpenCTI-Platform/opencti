@@ -28,7 +28,7 @@ import { dayAgo } from '../../../../utils/Time';
 import useGranted, { SETTINGS } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   paper: {
     minHeight: 280,
     height: '100%',
@@ -36,29 +36,11 @@ const useStyles = makeStyles((theme) => ({
     padding: '0 0 10px 0',
     borderRadius: 6,
   },
-  chip: {
-    fontSize: 10,
-    height: 20,
-    marginLeft: 10,
-  },
   number: {
     float: 'left',
     fontSize: 40,
   },
-  title: {
-    marginTop: 5,
-    textTransform: 'uppercase',
-    fontSize: 12,
-    fontWeight: 500,
-    color: theme.palette.text.secondary,
-  },
-  icon: {
-    position: 'absolute',
-    color: theme.palette.primary.main,
-    top: 30,
-    right: 20,
-  },
-}));
+});
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(

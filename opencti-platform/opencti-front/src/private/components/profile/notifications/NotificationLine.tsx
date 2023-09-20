@@ -63,10 +63,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
   },
@@ -84,11 +80,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: 150,
     textTransform: 'uppercase',
     borderRadius: '0',
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
   },
 }));
 

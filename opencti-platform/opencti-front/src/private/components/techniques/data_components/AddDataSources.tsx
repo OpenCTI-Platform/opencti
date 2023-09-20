@@ -50,15 +50,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     padding: 0,
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-  },
 }));
 
 const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({

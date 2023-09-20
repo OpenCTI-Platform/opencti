@@ -53,9 +53,6 @@ const useStyles = makeStyles((theme) => ({
   title: {
     float: 'left',
   },
-  search: {
-    float: 'right',
-  },
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
@@ -71,23 +68,11 @@ const useStyles = makeStyles((theme) => ({
     height: '100%',
     width: '100%',
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-  },
   speedDial: {
     position: 'fixed',
     bottom: 30,
     right: 30,
     zIndex: 2000,
-  },
-  info: {
-    paddingTop: 10,
   },
   speedDialButton: {
     backgroundColor: theme.palette.secondary.main,

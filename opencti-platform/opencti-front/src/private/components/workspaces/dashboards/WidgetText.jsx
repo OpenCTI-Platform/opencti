@@ -4,13 +4,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles(() => ({
-  container: {
-    width: '100%',
-    height: '100%',
-    overflow: 'auto',
-    paddingBottom: 10,
-    marginBottom: 10,
-  },
   paper: {
     height: '100%',
     margin: '10px 0 0 0',

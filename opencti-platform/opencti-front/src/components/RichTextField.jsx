@@ -49,8 +49,6 @@ const RichTextField = (props) => {
   const { t } = useFormatter();
   const [field, meta] = useField(name);
   const [fullScreen, setFullScreen] = useState(false);
-  const [externalLink, setExternalLink] = useState(false);
-  const [displayExternalLink, setDisplayExternalLink] = useState(undefined);
   const internalOnFocus = () => {
     if (typeof onFocus === 'function') {
       onFocus(name);

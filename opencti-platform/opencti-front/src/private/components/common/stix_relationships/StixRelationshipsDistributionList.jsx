@@ -20,7 +20,7 @@ import useGranted, {
   SETTINGS_SETACCESSES,
 } from '../../../../utils/hooks/useGranted';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   container: {
     width: '100%',
     height: '100%',
@@ -46,11 +46,7 @@ const useStyles = makeStyles((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
-  },
-}));
+});
 
 const inlineStyles = {
   itemNumber: {

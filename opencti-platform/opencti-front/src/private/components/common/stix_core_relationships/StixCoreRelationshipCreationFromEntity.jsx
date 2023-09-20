@@ -53,9 +53,6 @@ const useStyles = makeStyles((theme) => ({
   title: {
     float: 'left',
   },
-  search: {
-    float: 'right',
-  },
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',

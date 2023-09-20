@@ -8856,6 +8856,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-custom-rules@0.0.1, eslint-plugin-custom-rules@workspace:eslint-plugin-custom-rules":
+  version: 0.0.0-use.local
+  resolution: "eslint-plugin-custom-rules@workspace:eslint-plugin-custom-rules"
+  dependencies:
+    requireindex: 1.2.0
+  peerDependencies:
+    eslint: ">=7"
+  languageName: unknown
+  linkType: soft
+
 "eslint-plugin-flowtype@npm:^8.0.3":
   version: 8.0.3
   resolution: "eslint-plugin-flowtype@npm:8.0.3"
@@ -14277,6 +14287,7 @@ __metadata:
     eslint-config-airbnb-typescript: 17.1.0
     eslint-config-prettier: 9.0.0
     eslint-config-react-app: 7.0.1
+    eslint-plugin-custom-rules: "link:eslint-plugin-custom-rules"
     eslint-plugin-import: 2.28.1
     eslint-plugin-prettier: 5.0.0
     eslint-plugin-react: 7.33.2
@@ -16523,6 +16534,13 @@ __metadata:
   version: 2.0.0
   resolution: "require-main-filename@npm:2.0.0"
   checksum: e9e294695fea08b076457e9ddff854e81bffbe248ed34c1eec348b7abbd22a0d02e8d75506559e2265e96978f3c4720bd77a6dad84755de8162b357eb6c778c7
+  languageName: node
+  linkType: hard
+
+"requireindex@npm:1.2.0":
+  version: 1.2.0
+  resolution: "requireindex@npm:1.2.0"
+  checksum: 50d8b10a1ff1fdf6aea7a1870bc7bd238b0fb1917d8d7ca17fd03afc38a65dcd7a8a4eddd031f89128b5f0065833d5c92c4fef67f2c04e8624057fe626c9cf94
   languageName: node
   linkType: hard
 

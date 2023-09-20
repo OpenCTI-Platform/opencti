@@ -35,22 +35,8 @@ const useStyles = makeStyles((theme) => ({
     height: 70,
     borderRadius: 6,
   },
-  cardDummy: {
-    width: '100%',
-    height: 70,
-    color: theme.palette.grey[700],
-    borderRadius: 6,
-  },
   avatar: {
     backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    backgroundColor: theme.palette.grey[600],
-  },
-  icon: {
-    margin: '10px 20px 0 0',
-    fontSize: 40,
-    color: '#242d30',
   },
   area: {
     width: '100%',
@@ -60,42 +46,6 @@ const useStyles = makeStyles((theme) => ({
     height: 55,
     paddingBottom: 0,
     marginBottom: 0,
-  },
-  content: {
-    width: '100%',
-    paddingTop: 0,
-  },
-  description: {
-    height: 61,
-    display: '-webkit-box',
-    '-webkit-box-orient': 'vertical',
-    '-webkit-line-clamp': 2,
-    overflow: 'hidden',
-  },
-  objectLabel: {
-    height: 45,
-    paddingTop: 15,
-  },
-  contentDummy: {
-    width: '100%',
-    height: 120,
-    overflow: 'hidden',
-    marginTop: 15,
-  },
-  placeholderHeader: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  placeholderHeaderDark: {
-    display: 'inline-block',
-    height: '.8em',
-    backgroundColor: theme.palette.grey[800],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
   },
 }));
 

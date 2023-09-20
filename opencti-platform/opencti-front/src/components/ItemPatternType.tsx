@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
 
-const styles = makeStyles(() => ({
+const useStyles = makeStyles(() => ({
   chip: {
     fontSize: 15,
     lineHeight: '18px',
@@ -92,7 +92,7 @@ const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
   variant,
   label,
 }) => {
-  const classes = styles();
+  const classes = useStyles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   const hasPredefinedStyle = Object.keys(inlineStyles).includes(label);
   return (

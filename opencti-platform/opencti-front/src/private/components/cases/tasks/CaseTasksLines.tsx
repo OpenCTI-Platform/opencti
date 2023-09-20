@@ -75,13 +75,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   title: {
     float: 'left',
   },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
   container: {
     padding: '10px 20px 20px 20px',
   },

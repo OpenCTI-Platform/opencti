@@ -105,6 +105,7 @@
     "eslint-config-airbnb-typescript": "17.1.0",
     "eslint-config-prettier": "9.0.0",
     "eslint-config-react-app": "7.0.1",
+    "eslint-plugin-custom-rules": "link:eslint-plugin-custom-rules",
     "eslint-plugin-import": "2.28.1",
     "eslint-plugin-prettier": "5.0.0",
     "eslint-plugin-react": "7.33.2",
@@ -136,6 +137,7 @@
     "check-ts": "tsc --noEmit"
   },
   "resolutions": {
+    "eslint-plugin-custom-rules": "0.0.1",
     "json5": "2.2.3",
     "glob-parent": "6.0.2",
     "webpack": "5.88.2",
@@ -146,7 +148,8 @@
     "react-virtualized": "patch:react-virtualized@9.22.5#./patch/react-virtualized-9.22.5.patch"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "eslint-plugin-custom-rules"
   ],
   "packageManager": "yarn@3.6.3"
 }

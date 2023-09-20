@@ -8,7 +8,7 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
 import { Theme } from '../../../components/Theme';
 
-const styles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '0 5px 0 5px',
@@ -34,7 +34,7 @@ const styles = makeStyles<Theme>((theme) => ({
 const TopMenuCountry = ({ id: countryId }: { id: string }) => {
   const location = useLocation();
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
   return (
     <div>
       <Button

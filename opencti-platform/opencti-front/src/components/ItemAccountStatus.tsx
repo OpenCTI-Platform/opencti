@@ -11,14 +11,6 @@ const useStyles = makeStyles(() => ({
     borderRadius: '0',
     width: 150,
   },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    textTransform: 'uppercase',
-    borderRadius: '0',
-    width: 150,
-  },
 }));
 
 const inlineStyles = {

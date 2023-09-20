@@ -17,7 +17,7 @@ import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSo
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
 
-const styles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -51,22 +51,13 @@ const styles = makeStyles<Theme>((theme) => ({
   container: {
     padding: 0,
   },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-  },
 }));
 
 const AddDataComponents: FunctionComponent<{
   dataSource: DataSourceDataComponents_dataSource$data;
 }> = ({ dataSource }) => {
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');

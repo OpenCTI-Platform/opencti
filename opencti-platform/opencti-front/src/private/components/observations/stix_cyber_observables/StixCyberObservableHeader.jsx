@@ -16,10 +16,6 @@ const useStyles = makeStyles(() => ({
     float: 'left',
     marginTop: '-13px',
   },
-  marking: {
-    float: 'right',
-    overflowX: 'hidden',
-  },
   actions: {
     margin: '-6px 0 0 0',
     float: 'right',

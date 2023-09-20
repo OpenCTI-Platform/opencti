@@ -503,16 +503,16 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         <UserContext.Consumer>
           {({ schema }) => {
             const relationshipTypes = R.filter(
-                (n) => R.isNil(allowedRelationshipTypes)
+              (n) => R.isNil(allowedRelationshipTypes)
                     || allowedRelationshipTypes.length === 0
                     || allowedRelationshipTypes.includes(n),
-                resolveRelationsTypes(
-                    R.includes('Stix-Cyber-Observable', fromEntity.parent_types)
-                        ? 'observable'
-                        : fromEntity.entity_type,
-                    toEntity.entity_type,
-                    schema.schemaRelationsTypesMapping
-                ),
+              resolveRelationsTypes(
+                R.includes('Stix-Cyber-Observable', fromEntity.parent_types)
+                  ? 'observable'
+                  : fromEntity.entity_type,
+                toEntity.entity_type,
+                schema.schemaRelationsTypesMapping,
+              ),
             );
             return (
                 <>
@@ -535,7 +535,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                       onSubmit={this.onSubmit.bind(this)}
                       handleClose={this.handleClose.bind(this)} />
                 </>
-            )
+            );
           }}
         </UserContext.Consumer>
     );

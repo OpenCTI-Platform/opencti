@@ -15,7 +15,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
 import { MarkingDefinitionsLinesSearchQuery$data } from '../marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
-import { Theme } from '../../../../components/Theme';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -23,15 +22,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertMarking } from '../../../../utils/edition';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  list: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-  },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
-  },
+const useStyles = makeStyles({
   icon: {
     paddingTop: 4,
     display: 'inline-block',
@@ -41,7 +32,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     flexGrow: 1,
     marginLeft: 10,
   },
-}));
+});
 
 const groupMutationRelationAdd = graphql`
   mutation GroupEditionMarkingsMarkingDefinitionsRelationAddMutation(
@@ -202,7 +193,7 @@ const GroupEditionMarkingsComponent = ({
             );
             return (
               <>
-                <List className={classes.root}>
+                <List>
                   {markingDefinitions.map((markingDefinition) => {
                     const groupMarkingDefinition = groupMarkingDefinitions.find(
                       (g) => markingDefinition.id === g.id,

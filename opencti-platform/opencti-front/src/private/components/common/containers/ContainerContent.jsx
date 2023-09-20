@@ -63,12 +63,6 @@ const useStyles = makeStyles(() => ({
   gridContainer: {
     marginBottom: 20,
   },
-  editorContainer: {
-    height: '100%',
-    minHeight: '100%',
-    margin: 0,
-    padding: 0,
-  },
   paper: {
     height: '100%',
     minHeight: '100%',

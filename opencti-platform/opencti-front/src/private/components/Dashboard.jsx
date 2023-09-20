@@ -75,10 +75,6 @@ const useStyles = makeStyles((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 24,
   },
-  itemIconSecondary: {
-    marginRight: 0,
-    color: theme.palette.secondary.main,
-  },
   number: {
     marginTop: 10,
     float: 'left',

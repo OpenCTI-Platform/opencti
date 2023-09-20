@@ -8,21 +8,8 @@ import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import { Security } from '@mui/icons-material';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
-import makeStyles from '@mui/styles/makeStyles';
 import { GroupEditionRoles_group$data } from './__generated__/GroupEditionRoles_group.graphql';
 import { GroupEditionRolesLinesSearchQuery } from './__generated__/GroupEditionRolesLinesSearchQuery.graphql';
-import { Theme } from '../../../../components/Theme';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  list: {
-    width: '100%',
-    maxWidth: 360,
-    backgroundColor: theme.palette.background.paper,
-  },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
-  },
-}));
 
 const groupEditionAddRoles = graphql`
     mutation GroupEditionRolesRelationAddMutation(
@@ -77,7 +64,6 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
     queryRef,
   },
 ) => {
-  const classes = useStyles();
   const { roles } = usePreloadedQuery<GroupEditionRolesLinesSearchQuery>(
     groupEditionRolesLinesSearchQuery,
     queryRef,
@@ -110,7 +96,7 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
   };
 
   return (
-    <List className={classes.root}>
+    <List>
       {rolesData.sort((roleA, roleB) => roleA.name.localeCompare(roleB.name)).map((role) => {
         const groupRole = groupRoles.find((g) => g.id === role.id);
         return (

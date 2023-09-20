@@ -56,9 +56,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-  dialog: {
-    overflow: 'hidden',
-  },
 }));
 
 const caseTemplateMutation = graphql`

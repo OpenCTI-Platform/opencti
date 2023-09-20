@@ -89,15 +89,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: '15px',
     borderRadius: 6,
   },
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    backgroundColor: theme.palette.background.accent,
-    borderRadius: 5,
-    color: theme.palette.text?.primary,
-    textTransform: 'uppercase',
-    margin: '0 5px 5px 0',
-  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',

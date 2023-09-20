@@ -34,14 +34,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     position: 'absolute',
     right: -10,
   },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
 }));
 
 interface EventLineProps {

@@ -34,14 +34,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.grey?.[700],
     borderRadius: 6,
   },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
-  },
-  icon: {
-    margin: '10px 20px 0 0',
-    fontSize: 40,
-    color: '#242d30',
-  },
   area: {
     width: '100%',
     height: '100%',

@@ -12,7 +12,7 @@ import {
 } from './__generated__/FeedbackDetails_case.graphql';
 import RatingField from '../../../../components/RatingField';
 
-const styles = makeStyles(() => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -62,7 +62,7 @@ const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
   feedbackData,
 }) => {
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
   const data: FeedbackDetails_case$data = useFragment(
     FeedbackDetailsFragment,
     feedbackData,

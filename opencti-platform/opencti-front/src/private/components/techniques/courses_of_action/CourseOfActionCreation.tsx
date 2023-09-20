@@ -46,9 +46,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     }),
     padding: 0,
   },
-  dialogActions: {
-    padding: '0 17px 20px 0',
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -76,11 +73,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     top: 12,
     left: 5,
     color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
   },
   container: {
     padding: '10px 20px 20px 20px',

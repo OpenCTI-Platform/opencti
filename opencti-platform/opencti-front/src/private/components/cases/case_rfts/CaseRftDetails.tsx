@@ -41,14 +41,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
-  },
-  itemIconDisabled: {
-    marginRight: 0,
-    color: theme.palette.grey ? theme.palette.grey[700] : undefined,
-  },
   buttonExpand: {
     position: 'absolute',
     left: 0,

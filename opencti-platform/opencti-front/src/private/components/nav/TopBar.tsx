@@ -96,9 +96,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.background.nav,
     paddingTop: theme.spacing(0.2),
   },
-  flex: {
-    flexGrow: 1,
-  },
   logoContainer: {
     margin: '2px 0 0 -10px',
   },

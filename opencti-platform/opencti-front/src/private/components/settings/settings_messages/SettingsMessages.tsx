@@ -17,22 +17,12 @@ import SettingsMessagesLines from './SettingsMessagesLines';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    display: 'flex',
-    alignItems: 'center',
-  },
   paper: {
     height: '100%',
     minHeight: '100%',
     marginTop: theme.spacing(1.5),
     padding: theme.spacing(2),
     borderRadius: 6,
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
   },
   drawerPaper: {
     minHeight: '100vh',

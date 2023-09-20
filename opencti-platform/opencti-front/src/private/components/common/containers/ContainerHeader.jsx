@@ -48,18 +48,13 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles({
   title: {
     float: 'left',
   },
   popover: {
     float: 'left',
     marginTop: '-13px',
-  },
-  marking: {
-    float: 'left',
-    overflowX: 'hidden',
-    margin: '3px 0 0 15px',
   },
   modes: {
     margin: '-6px 20px 0 20px',
@@ -69,22 +64,11 @@ const useStyles = makeStyles(() => ({
     margin: '-6px 0 0 0',
     float: 'right',
   },
-  organizations: {
-    float: 'left',
-    marginRight: 15,
-    paddingTop: 2,
-  },
-  organization: {
-    marginRight: 7,
-  },
-  button: {
-    marginRight: 20,
-  },
   export: {
     margin: '-6px 0 0 0',
     float: 'right',
   },
-}));
+});
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -569,6 +553,7 @@ const ContainerHeader = (props) => {
       setSelectedEntity({ ...selectedEntity, [type]: event.target.value });
     }
   };
+  // eslint-disable-next-line consistent-return
   const applySuggestion = async (type, objects) => {
     if (type === 'threats-indicators' && selectedEntity) {
       // create all indicates relationships

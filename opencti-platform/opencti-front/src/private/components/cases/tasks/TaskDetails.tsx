@@ -13,7 +13,7 @@ import {
 } from './__generated__/TaskDetails_task.graphql';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
-const styles = makeStyles(() => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -86,7 +86,7 @@ interface TasksDetailsProps {
 
 const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
   const { t, fldt } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
   const data: TaskDetails_task$data = useFragment(
     TaskDetailsFragment,
     tasksData,

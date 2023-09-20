@@ -107,9 +107,9 @@ const RootUser = () => {
             refetch={refetch}
           />
         </React.Suspense>
-      ) : (
+            ) : (
         <Loader variant={LoaderVariant.container} />
-      )}
+            )}
     </>
   );
 };

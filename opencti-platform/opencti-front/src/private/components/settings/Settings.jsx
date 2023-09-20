@@ -13,7 +13,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { RocketLaunchOutlined } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
-import { deepPurple } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -37,7 +36,7 @@ import { isNotEmptyField } from '../../../utils/utils';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import ItemBoolean from '../../../components/ItemBoolean';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   container: {
     margin: '0 0 60px 0',
   },
@@ -48,39 +47,11 @@ const useStyles = makeStyles((theme) => ({
     padding: 20,
     borderRadius: 6,
   },
-  purple: {
-    color: theme.palette.getContrastText(deepPurple[500]),
-    backgroundColor: deepPurple[500],
-  },
   button: {
     float: 'right',
     marginTop: -30,
   },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-  alert: {
-    width: '100%',
-    marginTop: 20,
-  },
-  message: {
-    width: '100%',
-    overflow: 'hidden',
-  },
-}));
+});
 
 const settingsQuery = graphql`
   query SettingsQuery {

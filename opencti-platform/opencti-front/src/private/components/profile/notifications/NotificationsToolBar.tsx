@@ -44,12 +44,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 50,
     overflow: 'hidden',
   },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
   title: {
     flex: '1 1 100%',
     fontSize: '12px',

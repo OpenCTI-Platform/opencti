@@ -5,7 +5,7 @@ import { useFormatter } from './i18n';
 import { copyToClipboard } from '../utils/utils';
 import { Theme } from './Theme';
 
-const styles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   containerInline: {
     position: 'relative',
     padding: '2px 12px 2px 5px',
@@ -48,7 +48,7 @@ interface ItemCopyProps {
 
 const ItemCopy: FunctionComponent<ItemCopyProps> = ({ content, variant }) => {
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
   return (
     <div
       className={

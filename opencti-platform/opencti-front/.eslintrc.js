@@ -15,6 +15,11 @@ module.exports = {
     browser: true,
     jest: true
   },
+  overrides: [
+    {
+      "files": ["*.jsx", "*.js","*.ts", "*.tsx"]
+    }
+  ],
   ignorePatterns: [
     '**/builder/**',
     '**/coverage/**', 
@@ -29,7 +34,9 @@ module.exports = {
     'jest.file.transform.js',
     'jest.relay.transform.js'
   ],
+  plugins: ["custom-rules"],
   rules: {
+    'custom-rules/classes-rule': 1,
     'no-restricted-syntax': 0,
     'react/no-unused-prop-types': 0,
     'react/prop-types': 0,

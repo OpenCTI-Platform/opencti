@@ -28,11 +28,6 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: 10,
     height: 50,
   },
-  itemDisabled: {
-    paddingLeft: 10,
-    height: 50,
-    color: theme.palette.grey[700],
-  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
@@ -47,11 +42,6 @@ const useStyles = makeStyles((theme) => ({
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
   },
   chip: {
     fontSize: 13,

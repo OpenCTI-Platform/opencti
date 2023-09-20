@@ -74,16 +74,6 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
     right: -10,
   },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
   chip: {
     fontSize: 13,
     lineHeight: '12px',

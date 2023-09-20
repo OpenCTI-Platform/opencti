@@ -48,33 +48,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.secondary.main,
     color: '#ffffff',
   },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
 }));
 
 const ToolBar: FunctionComponent<{

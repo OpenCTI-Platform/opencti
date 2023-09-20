@@ -13,7 +13,7 @@ import {
 import DataComponentDataSource from './DataComponentDataSource';
 import DataComponentAttackPatterns from './DataComponentAttackPatterns';
 
-const styles = makeStyles(() => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -49,7 +49,7 @@ const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({
   dataComponent,
 }) => {
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
 
   const data: DataComponentDetails_dataComponent$data = useFragment(
     DataComponentDetailsFragment,

@@ -41,9 +41,6 @@ const useStyles = makeStyles((theme) => ({
   list: {
     width: '100%',
   },
-  listItem: {
-    width: '100M',
-  },
   icon: {
     color: theme.palette.primary.main,
   },
