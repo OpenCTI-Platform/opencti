@@ -30,7 +30,7 @@ OpenCTI not only allows [imports](https://docs.opencti.io/latest/usage/import-ex
 
 ## Editions of the platform
 
-OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features]((https://filigran.io/offering/opencti-enterprise-edition) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
+OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features](https://filigran.io/offering/opencti-enterprise-edition) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
 
 * OpenCTI Community Edition, licensed under the [Apache 2, Version 2.0 license](LICENSE).
 * OpenCTI Enterprise Edition, licensed under the [Non-Commercial license](LICENSE).
