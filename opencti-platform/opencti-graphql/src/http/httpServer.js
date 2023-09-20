@@ -88,7 +88,7 @@ const createHttpServer = async () => {
     async serverWillStart() {
       return {
         async drainServer() {
-          serverCleanup.close();
+          serverCleanup.dispose();
         },
       };
     },
