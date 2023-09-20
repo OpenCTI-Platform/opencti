@@ -19075,7 +19075,7 @@ export type QueryStixCoreObjectRawArgs = {
 
 export type QueryStixCoreObjectsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
-  elementId?: InputMaybe<Scalars['String']['input']>;
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -19517,6 +19517,8 @@ export type QueryStixRelationshipArgs = {
 export type QueryStixRelationshipsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   elementId?: InputMaybe<Scalars['String']['input']>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
@@ -21913,6 +21915,7 @@ export enum StixCoreObjectsFilter {
   Modified = 'modified',
   Name = 'name',
   ObjectContains = 'objectContains',
+  ObjectId = 'objectId',
   Participant = 'participant',
   PatternType = 'pattern_type',
   Published = 'published',

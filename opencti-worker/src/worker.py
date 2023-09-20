@@ -348,7 +348,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 # Platform does not know what to do and raises an error:
                 # fail and acknowledge the message.
                 self.api.log("error", error_msg)
-                self.api.log("debug", content)
+                self.api.log("info", "ERROR content:" + content)
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)

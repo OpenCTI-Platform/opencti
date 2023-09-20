@@ -89,6 +89,8 @@ export const stixRelationshipsListSearchQuery = graphql`
     $relationship_type: [String]
     $count: Int!
     $filters: [StixRelationshipsFiltering]
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
   ) {
     stixRelationships(
       search: $search
@@ -97,6 +99,8 @@ export const stixRelationshipsListSearchQuery = graphql`
       relationship_type: $relationship_type
       first: $count
       filters: $filters
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       edges {
         node {
@@ -122,6 +126,8 @@ const stixRelationshipsListQuery = graphql`
     $orderBy: StixRelationshipsOrdering
     $orderMode: OrderingMode
     $filters: [StixRelationshipsFiltering]
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
     $search: String
   ) {
     stixRelationships(
@@ -134,6 +140,8 @@ const stixRelationshipsListQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
       search: $search
     ) {
       edges {
@@ -4371,6 +4379,8 @@ const StixRelationshipsList = ({
           orderBy: dateAttribute,
           orderMode: 'desc',
           filters: finalFilters,
+          dynamicFrom: convertFilters(selection.dynamicFrom),
+          dynamicTo: convertFilters(selection.dynamicTo),
         }}
         render={({ props }) => {
           if (

@@ -2420,6 +2420,35 @@ const buildRelationTimeFilter = (input) => {
   }
   return args;
 };
+export const buildDynamicFilterArgs = (filters) => {
+  // Currently, filters are not supported the way we handle elementId and relationship_type in domain/stixCoreObject/findAll
+  // We need to rebuild the filters
+
+  // Extract elementId and relationship_type
+  const elementId = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'rel_*.internal_id' : n.key === 'rel_*.internal_id')))?.values || null;
+  const relationship_type = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'relationship_type' : n.key === 'relationship_type')))?.values || null;
+  // Build filter without it
+  let dynamicFilters = filters.filter((n) => !['rel_*.internal_id', 'relationship_type'].includes(Array.isArray(n.key) ? R.head(n.key) : n.key));
+  if (isNotEmptyField(elementId)) {
+    // In case of element id, we look for a specific entity used by relationships independent of the direction
+    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
+    // that are denormalized at relation creation.
+    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+    if (isNotEmptyField(relationship_type)) {
+      const relationshipFilterKeys = relationship_type.map((n) => buildRefRelationKey(n));
+      dynamicFilters = [...dynamicFilters, {
+        key: relationshipFilterKeys,
+        values: Array.isArray(elementId) ? elementId : [elementId]
+      }];
+    } else {
+      dynamicFilters = [...dynamicFilters, {
+        key: buildRefRelationKey('*'),
+        values: Array.isArray(elementId) ? elementId : [elementId]
+      }];
+    }
+  }
+  return { connectionFormat: false, first: 500, filters: dynamicFilters };
+};
 
 const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   // Upsert relation

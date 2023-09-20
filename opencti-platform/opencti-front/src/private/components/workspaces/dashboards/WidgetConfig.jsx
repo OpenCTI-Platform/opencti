@@ -25,6 +25,7 @@ import {
   CancelOutlined,
   MapOutlined,
   LibraryBooksOutlined,
+  FormatShapesOutlined,
 } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
@@ -53,6 +54,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
+import ReactMde from 'react-mde';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
@@ -62,6 +64,7 @@ import { capitalizeFirstLetter, truncate } from '../../../../utils/String';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isNotEmptyField } from '../../../../utils/utils';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles((theme) => ({
   createButton: {
@@ -209,6 +212,15 @@ const auditsFilters = [
 
 const visualizationTypes = [
   {
+    key: 'text',
+    name: 'Text',
+    category: 'text',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
     key: 'number',
     name: 'Number',
     dataSelectionLimit: 1,
@@ -222,7 +234,7 @@ const visualizationTypes = [
     key: 'list',
     name: 'List',
     dataSelectionLimit: 1,
-    category: 'timeseries',
+    category: 'list',
     availableParameters: [],
     isRelationships: true,
     isEntities: true,
@@ -272,7 +284,7 @@ const visualizationTypes = [
     key: 'timeline',
     name: 'Timeline',
     dataSelectionLimit: 1,
-    category: 'timeline',
+    category: 'list',
     availableParameters: [],
     isRelationships: true,
     isEntities: true,
@@ -352,10 +364,17 @@ const visualizationTypes = [
 const indexedVisualizationTypes = R.indexBy(R.prop('key'), visualizationTypes);
 
 const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
+  let initialStep = 0;
+  if (widget?.type === 'text') {
+    initialStep = 3;
+  } else if (widget?.dataSelection) {
+    initialStep = 2;
+  }
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [stepIndex, setStepIndex] = useState(widget?.dataSelection ? 2 : 0);
+  const [selectedTab, setSelectedTab] = useState('write');
+  const [stepIndex, setStepIndex] = useState(initialStep);
   const [type, setType] = useState(widget?.type ?? null);
   const [perspective, setPerspective] = useState(widget?.perspective ?? null);
   const initialSelection = {
@@ -379,6 +398,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
       setPerspective(null);
       setDataSelection([initialSelection]);
       setParameters({});
+    } else if (widget.type === 'text') {
+      setStepIndex(3);
     } else {
       setStepIndex(2);
     }
@@ -427,7 +448,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
   };
   const handleSelectType = (selectedType) => {
     setType(selectedType);
-    setStepIndex(1);
+    if (selectedType === 'text') {
+      setStepIndex(3);
+    } else {
+      setStepIndex(1);
+    }
   };
   const handleSelectPerspective = (selectedPerspective) => {
     const newDataSelection = dataSelection.map((n) => ({
@@ -659,6 +684,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         return <FormatListNumberedRtl fontSize="large" color="primary" />;
       case 'number':
         return <Counter fontSize="large" color="primary" />;
+      case 'text':
+        return <FormatShapesOutlined fontSize="large" color="primary" />;
       case 'heatmap':
         return <ChartBubble fontSize="large" color="primary" />;
       case 'line':
@@ -1141,6 +1168,33 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
           onChange={(event) => handleChangeParameter('title', event.target.value)
           }
         />
+        {getCurrentCategory() === 'text' && (
+          <div style={{ marginTop: 20 }}>
+            <InputLabel shrink={true}>{t('Content')}</InputLabel>
+            <ReactMde
+              value={parameters.content}
+              onChange={(value) => handleChangeParameter('content', value)}
+              selectedTab={selectedTab}
+              onTabChange={(tab) => setSelectedTab(tab)}
+              generateMarkdownPreview={(markdown) => Promise.resolve(
+                  <MarkdownDisplay
+                    content={markdown}
+                    remarkGfmPlugin={true}
+                    commonmark={true}
+                  />,
+              )
+              }
+              l18n={{
+                write: t('Write'),
+                preview: t('Preview'),
+                uploadingImage: t('Uploading image'),
+                pasteDropSelect: t('Paste'),
+              }}
+              minEditorHeight={100}
+              maxEditorHeight={100}
+            />
+          </div>
+        )}
         {getCurrentCategory() === 'timeseries' && (
           <FormControl fullWidth={true} style={{ marginTop: 20 }}>
             <InputLabel id="relative">{t('Interval')}</InputLabel>
@@ -1165,7 +1219,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             .map((_, i) => {
               return (
                 <div key={i}>
-                  {getCurrentCategory() === 'distribution' && (
+                  {(getCurrentCategory() === 'distribution'
+                    || getCurrentCategory() === 'list') && (
                     <TextField
                       label={t('Number of results')}
                       fullWidth={true}
@@ -1607,7 +1662,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             <Step>
               <StepButton
                 onClick={() => setStepIndex(1)}
-                disabled={stepIndex <= 1}
+                disabled={stepIndex <= 1 || getCurrentCategory() === 'text'}
               >
                 <StepLabel>{t('Perspective')}</StepLabel>
               </StepButton>
@@ -1615,7 +1670,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
             <Step>
               <StepButton
                 onClick={() => setStepIndex(2)}
-                disabled={stepIndex <= 2}
+                disabled={stepIndex <= 2 || getCurrentCategory() === 'text'}
               >
                 <StepLabel>{t('Filters')}</StepLabel>
               </StepButton>

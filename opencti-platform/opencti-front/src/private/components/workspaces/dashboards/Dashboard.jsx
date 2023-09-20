@@ -22,6 +22,7 @@ import useGranted, {
 import WidgetPopover from './WidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
 import WidgetConfig from './WidgetConfig';
+import WidgetText from './WidgetText';
 import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
@@ -682,6 +683,28 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         return 'Not implemented yet';
     }
   };
+  const renderRawVisualization = (widget, config) => {
+    const { relativeDate } = config;
+    const startDate = relativeDate
+      ? computerRelativeDate(relativeDate)
+      : config.startDate;
+    const endDate = relativeDate ? getDayStartDate() : config.endDate;
+    switch (widget.type) {
+      case 'text':
+        return (
+          <WidgetText
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+            withExportPopover={isExploreEditor}
+          />
+        );
+      default:
+        return 'Not implemented yet';
+    }
+  };
   return (
     <div
       className={classes.container}
@@ -712,29 +735,33 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             isDraggable={false}
             isResizable={false}
           >
-            {R.values(manifest.widgets).map((widget) => (
-              <Paper
-                key={widget.id}
-                data-grid={widget.layout}
-                classes={{ root: classes.paper }}
-                variant="outlined"
-              >
-                <ErrorBoundary
-                  display={
-                    <div style={{ paddingTop: 28 }}>
-                      <SimpleError />
-                    </div>
-                  }
+            {R.values(manifest.widgets).map((widget) => {
+              return (
+                <Paper
+                  key={widget.id}
+                  data-grid={widget.layout}
+                  classes={{ root: classes.paper }}
+                  variant="outlined"
                 >
-                  {widget.perspective === 'entities'
-                    && renderEntitiesVisualization(widget, manifest.config)}
-                  {widget.perspective === 'relationships'
-                    && renderRelationshipsVisualization(widget, manifest.config)}
-                  {widget.perspective === 'audits'
-                    && renderAuditsVisualization(widget, manifest.config)}
-                </ErrorBoundary>
-              </Paper>
-            ))}
+                  <ErrorBoundary
+                    display={
+                      <div style={{ paddingTop: 28 }}>
+                        <SimpleError />
+                      </div>
+                    }
+                  >
+                    {widget.perspective === 'entities'
+                      && renderEntitiesVisualization(widget, manifest.config)}
+                    {widget.perspective === 'relationships'
+                      && renderRelationshipsVisualization(widget, manifest.config)}
+                    {widget.perspective === 'audits'
+                      && renderAuditsVisualization(widget, manifest.config)}
+                    {widget.perspective === null
+                      && renderRawVisualization(widget, manifest.config)}
+                  </ErrorBoundary>
+                </Paper>
+              );
+            })}
           </ResponsiveGridLayout>
         }
       >
@@ -777,6 +804,8 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                   && renderRelationshipsVisualization(widget, manifest.config)}
                 {widget.perspective === 'audits'
                   && renderAuditsVisualization(widget, manifest.config)}
+                {widget.perspective === null
+                  && renderRawVisualization(widget, manifest.config)}
               </ErrorBoundary>
             </Paper>
           ))}

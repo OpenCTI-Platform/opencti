@@ -1911,6 +1911,7 @@ enum StixCoreObjectsFilter {
   revoked
   relationship_type
   elementId
+  objectId
   aliases
   x_opencti_aliases
   x_mitre_id
@@ -12070,7 +12071,7 @@ type Query {
     filterMode: FilterMode
     search: String
     relationship_type: [String]
-    elementId: String
+    elementId: [String]
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   globalSearch(
     first: Int
@@ -12703,6 +12704,8 @@ type Query {
     search: String
     filters: [StixRelationshipsFiltering]
     filterMode: FilterMode
+    dynamicFrom: [StixCoreObjectsFiltering]
+    dynamicTo: [StixCoreObjectsFiltering]
     stix: Boolean
   ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
   stixRelationshipsTimeSeries(

@@ -108,7 +108,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
+            <>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.relationship_type.width }}
@@ -213,7 +213,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                   limit={1}
                 />
               </div>
-            </div>
+            </>
           }
         />
         <ListItemSecondaryAction>

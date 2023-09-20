@@ -87,9 +87,9 @@ export const findAll = async (context, user, args) => {
     // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
     if (isNotEmptyField(args.relationship_type)) {
       const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = [...filters, { key: relationshipFilterKeys, values: [args.elementId] }];
+      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
     } else {
-      filters = [...filters, { key: buildRefRelationKey('*'), values: [args.elementId] }];
+      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
     }
   }
   if (args.globalSearch) {

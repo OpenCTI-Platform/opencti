@@ -3,6 +3,7 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   batchListThroughGetFrom,
   batchListThroughGetTo,
+  buildDynamicFilterArgs,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -72,16 +73,14 @@ export const stixCoreRelationshipsDistribution = async (context, user, args) => 
   const { dynamicFrom, dynamicTo } = args;
   let finalArgs = args;
   if (isNotEmptyField(dynamicFrom)) {
-    const fromArgs = { connectionFormat: false, first: 500, filters: dynamicFrom };
-    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], fromArgs)
+    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
     }
   }
   if (isNotEmptyField(dynamicTo)) {
-    const toArgs = { connectionFormat: false, first: 500, filters: dynamicTo };
-    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], toArgs)
+    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
@@ -93,16 +92,14 @@ export const stixCoreRelationshipsNumber = async (context, user, args) => {
   const { relationship_type = [ABSTRACT_STIX_CORE_RELATIONSHIP], dynamicFrom, dynamicTo } = args;
   let finalArgs = args;
   if (isNotEmptyField(dynamicFrom)) {
-    const fromArgs = { connectionFormat: false, first: 500, filters: dynamicFrom };
-    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], fromArgs)
+    const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
       .then((result) => result.map((n) => n.id));
     if (fromIds.length > 0) {
       finalArgs = { ...finalArgs, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
     }
   }
   if (isNotEmptyField(dynamicTo)) {
-    const toArgs = { connectionFormat: false, first: 500, filters: dynamicTo };
-    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], toArgs)
+    const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
       .then((result) => result.map((n) => n.id));
     if (toIds.length > 0) {
       finalArgs = { ...finalArgs, toId: args.toId ? [...toIds, args.toId] : toIds };
@@ -120,16 +117,14 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
     const { dynamicFrom, dynamicTo } = timeSeriesParameter;
     let finalTimeSeriesParameter = timeSeriesParameter;
     if (isNotEmptyField(dynamicFrom)) {
-      const fromArgs = { connectionFormat: false, first: 500, filters: dynamicFrom };
-      const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], fromArgs)
+      const fromIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicFrom))
         .then((result) => result.map((n) => n.id));
       if (fromIds.length > 0) {
         finalTimeSeriesParameter = { ...finalTimeSeriesParameter, fromId: args.fromId ? [...fromIds, args.fromId] : fromIds };
       }
     }
     if (isNotEmptyField(dynamicTo)) {
-      const toArgs = { connectionFormat: false, first: 500, filters: dynamicTo };
-      const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], toArgs)
+      const toIds = await listEntities(context, user, [ABSTRACT_STIX_CORE_OBJECT], buildDynamicFilterArgs(dynamicTo))
         .then((result) => result.map((n) => n.id));
       if (toIds.length > 0) {
         finalTimeSeriesParameter = { ...finalTimeSeriesParameter, toId: args.toId ? [...toIds, args.toId] : toIds };

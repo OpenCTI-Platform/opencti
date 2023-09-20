@@ -46,6 +46,8 @@ const stixCoreObjectsTimelineQuery = graphql`
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
     $filters: [StixCoreObjectsFiltering]
+    $relationship_type: [String]
+    $elementId: [String]
   ) {
     stixCoreObjects(
       types: $types
@@ -53,6 +55,8 @@ const stixCoreObjectsTimelineQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      relationship_type: $relationship_type
+      elementId: $elementId
     ) {
       edges {
         node {
@@ -238,30 +242,28 @@ const StixCoreObjectsTimeline = ({
   const { t, fldt } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let types = ['Stix-Core-Object'];
-    if (
-      selection.filters.entity_type
-      && selection.filters.entity_type.length > 0
-    ) {
-      if (
-        selection.filters.entity_type.filter((o) => o.id === 'all').length === 0
-      ) {
-        types = selection.filters.entity_type.map((o) => o.id);
-      }
-    }
-    const filters = convertFilters(R.dissoc('entity_type', selection.filters));
+    let finalFilters = convertFilters(selection.filters);
+    const dataSelectionTypes = R.head(
+      finalFilters.filter((n) => n.key === 'entity_type'),
+    )?.values || ['Stix-Core-Object'];
+    const dataSelectionElementId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
+    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+      ?.values || null;
+    finalFilters = finalFilters.filter(
+      (n) => !['entity_type', 'elementId', 'relationship_type'].includes(n.key),
+    );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
     if (startDate) {
-      filters.push({
+      finalFilters.push({
         key: dateAttribute,
         values: [startDate],
         operator: 'gt',
       });
     }
     if (endDate) {
-      filters.push({
+      finalFilters.push({
         key: dateAttribute,
         values: [endDate],
         operator: 'lt',
@@ -271,11 +273,13 @@ const StixCoreObjectsTimeline = ({
       <QueryRenderer
         query={stixCoreObjectsTimelineQuery}
         variables={{
-          types,
-          first: 50,
+          types: dataSelectionTypes,
+          first: selection.number ?? 10,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters,
+          filters: finalFilters,
+          elementId: dataSelectionElementId,
+          relationship_type: dataSelectionRelationshipType,
         }}
         render={({ props }) => {
           if (

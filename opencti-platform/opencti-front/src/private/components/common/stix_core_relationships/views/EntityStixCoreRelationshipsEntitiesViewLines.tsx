@@ -39,7 +39,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     filters: { type: "[StixCoreObjectsFiltering]" }
     types: { type: "[String]" }
     relationship_type: { type: "[String]" }
-    elementId: { type: "String" }
+    elementId: { type: "[String]" }
   )
   @refetchable(queryName: "EntityStixCoreRelationshipsEntities_refetch") {
     stixCoreObjects(
@@ -78,7 +78,7 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
     $filters: [StixCoreObjectsFiltering]
     $types: [String]
     $relationship_type: [String]
-    $elementId: String
+    $elementId: [String]
   ) {
     ...EntityStixCoreRelationshipsEntitiesViewLines_data
       @arguments(

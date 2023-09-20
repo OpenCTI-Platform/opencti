@@ -10,6 +10,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import makeStyles from '@mui/styles/makeStyles';
+import StixCoreObjectLabels from './StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -33,12 +34,13 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 6,
   },
   item: {
+    paddingLeft: 10,
     height: 50,
-    minHeight: 50,
-    maxHeight: 50,
-    paddingRight: 0,
   },
-  itemText: {
+  bodyItem: {
+    height: 20,
+    fontSize: 13,
+    float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -78,28 +80,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const inlineStyles = {
-  itemAuthor: {
-    width: 120,
-    minWidth: 120,
-    maxWidth: 120,
-    marginRight: 24,
-    marginLeft: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemDate: {
-    width: 120,
-    minWidth: 120,
-    maxWidth: 120,
-    marginRight: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
-
 const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
     $types: [String]
@@ -107,6 +87,8 @@ const stixCoreObjectsListQuery = graphql`
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
     $filters: [StixCoreObjectsFiltering]
+    $relationship_type: [String]
+    $elementId: [String]
   ) {
     stixCoreObjects(
       types: $types
@@ -114,6 +96,8 @@ const stixCoreObjectsListQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
+      relationship_type: $relationship_type
+      elementId: $elementId
     ) {
       edges {
         node {
@@ -264,6 +248,15 @@ const stixCoreObjectsListQuery = graphql`
               entity_type
             }
           }
+          objectLabel {
+            edges {
+              node {
+                id
+                value
+                color
+              }
+            }
+          }
           objectMarking {
             edges {
               node {
@@ -293,36 +286,44 @@ const StixCoreObjectsList = ({
   const { t, fsd } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let types = ['Stix-Core-Object'];
-    if (
-      selection.filters.entity_type
-      && selection.filters.entity_type.length > 0
-    ) {
-      if (
-        selection.filters.entity_type.filter((o) => o.id === 'all').length === 0
-      ) {
-        types = selection.filters.entity_type.map((o) => o.id);
-      }
-    }
-    const filters = convertFilters(R.dissoc('entity_type', selection.filters));
+    let finalFilters = convertFilters(selection.filters);
+    const dataSelectionTypes = R.head(
+      finalFilters.filter((n) => n.key === 'entity_type'),
+    )?.values || ['Stix-Core-Object'];
+    const dataSelectionElementId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
+    const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
+      ?.values || null;
+    finalFilters = finalFilters.filter(
+      (n) => !['entity_type', 'elementId', 'relationship_type'].includes(n.key),
+    );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
     if (startDate) {
-      filters.push({ key: dateAttribute, values: [startDate], operator: 'gt' });
+      finalFilters.push({
+        key: dateAttribute,
+        values: [startDate],
+        operator: 'gt',
+      });
     }
     if (endDate) {
-      filters.push({ key: dateAttribute, values: [endDate], operator: 'lt' });
+      finalFilters.push({
+        key: dateAttribute,
+        values: [endDate],
+        operator: 'lt',
+      });
     }
     return (
       <QueryRenderer
         query={stixCoreObjectsListQuery}
         variables={{
-          types,
-          first: 50,
+          types: dataSelectionTypes,
+          first: selection.number ?? 10,
           orderBy: dateAttribute,
           orderMode: 'desc',
-          filters,
+          filters: finalFilters,
+          elementId: dataSelectionElementId,
+          relationship_type: dataSelectionRelationshipType,
         }}
         render={({ props }) => {
           if (
@@ -339,10 +340,9 @@ const StixCoreObjectsList = ({
                     return (
                       <ListItem
                         key={stixCoreObject.id}
-                        dense={true}
-                        button={true}
                         classes={{ root: classes.item }}
                         divider={true}
+                        button={true}
                         component={Link}
                         to={`${resolveLink(stixCoreObject.entity_type)}/${
                           stixCoreObject.id
@@ -353,26 +353,53 @@ const StixCoreObjectsList = ({
                         </ListItemIcon>
                         <ListItemText
                           primary={
-                            <div className={classes.itemText}>
-                              {defaultValue(stixCoreObject)}
-                            </div>
+                            <>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '30%' }}
+                              >
+                                {defaultValue(stixCoreObject)}
+                              </div>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '15%' }}
+                              >
+                                {fsd(stixCoreObject[dateAttribute])}
+                              </div>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '15%' }}
+                              >
+                                {R.pathOr(
+                                  '',
+                                  ['createdBy', 'name'],
+                                  stixCoreObject,
+                                )}
+                              </div>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '15%' }}
+                              >
+                                <StixCoreObjectLabels
+                                  variant="inList"
+                                  labels={stixCoreObject.objectLabel}
+                                />
+                              </div>
+                              <div
+                                className={classes.bodyItem}
+                                style={{ width: '15%' }}
+                              >
+                                <ItemMarkings
+                                  variant="inList"
+                                  markingDefinitionsEdges={
+                                    stixCoreObject.objectMarking.edges
+                                  }
+                                  limit={1}
+                                />
+                              </div>
+                            </>
                           }
                         />
-                        <div style={inlineStyles.itemAuthor}>
-                          {R.pathOr('', ['createdBy', 'name'], stixCoreObject)}
-                        </div>
-                        <div style={inlineStyles.itemDate}>
-                          {fsd(stixCoreObject[dateAttribute])}
-                        </div>
-                        <div style={{ width: 110, paddingRight: 20 }}>
-                          <ItemMarkings
-                            variant="inList"
-                            markingDefinitionsEdges={
-                              stixCoreObject.objectMarking.edges
-                            }
-                            limit={1}
-                          />
-                        </div>
                       </ListItem>
                     );
                   })}
