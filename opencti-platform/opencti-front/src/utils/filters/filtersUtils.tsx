@@ -56,6 +56,7 @@ export const EqFilters = [
   'source',
   'objectContains',
   'indicates',
+  'targets',
 ];
 const uniqFilters = [
   'revoked',
@@ -85,6 +86,8 @@ export const entityFilters = [
   'objectContains_not_eq',
   'indicates',
   'indicates_not_eq',
+  'targets',
+  'targets_not_eq',
 ];
 
 export const isUniqFilter = (key: string) => uniqFilters.includes(key)
