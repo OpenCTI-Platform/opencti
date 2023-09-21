@@ -238,16 +238,64 @@ export const stixCoreObjectsMultiTimeSeries = (context, user, args) => {
   }));
 };
 
-export const stixCoreObjectsNumber = (context, user, args) => ({
-  count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, args),
-  total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', args)),
-});
+export const stixCoreObjectsNumber = (context, user, args) => {
+  let types = [];
+  if (isNotEmptyField(args.types)) {
+    types = R.filter((type) => isStixCoreObject(type), args.types);
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CORE_OBJECT);
+  }
+  if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
+    throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
+  }
+  let filters = args.filters ?? [];
+  if (isNotEmptyField(args.elementId)) {
+    // In case of element id, we look for a specific entity used by relationships independent of the direction
+    // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
+    // that are denormalized at relation creation.
+    // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+    if (isNotEmptyField(args.relationship_type)) {
+      const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
+      filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+    } else {
+      filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(args.elementId) ? args.elementId : [args.elementId] }];
+    }
+  }
+  return {
+    count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...R.omit(['elementId', 'relationship_type'], args), filters }),
+    total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...R.omit(['elementId', 'relationship_type', 'endDate'], args), filters }),
+  };
+};
 
 export const stixCoreObjectsMultiNumber = (context, user, args) => {
   return Promise.all(args.numberParameters.map((numberParameter) => {
+    let types = [];
+    if (isNotEmptyField(numberParameter.types)) {
+      types = R.filter((type) => isStixCoreObject(type), args.types);
+    }
+    if (types.length === 0) {
+      types.push(ABSTRACT_STIX_CORE_OBJECT);
+    }
+    if (isNotEmptyField(args.relationship_type) && isEmptyField(args.elementId)) {
+      throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
+    }
+    let filters = numberParameter.filters ?? [];
+    if (isNotEmptyField(numberParameter.elementId)) {
+      // In case of element id, we look for a specific entity used by relationships independent of the direction
+      // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
+      // that are denormalized at relation creation.
+      // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
+      if (isNotEmptyField(numberParameter.relationship_type)) {
+        const relationshipFilterKeys = numberParameter.relationship_type.map((n) => buildRefRelationKey(n));
+        filters = [...filters, { key: relationshipFilterKeys, values: Array.isArray(numberParameter.elementId) ? numberParameter.elementId : [numberParameter.elementId] }];
+      } else {
+        filters = [...filters, { key: buildRefRelationKey('*'), values: Array.isArray(numberParameter.elementId) ? numberParameter.elementId : [numberParameter.elementId] }];
+      }
+    }
     return {
-      count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...args, ...numberParameter }),
-      total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...numberParameter }))
+      count: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, { ...args, ...{ ...R.omit(['elementId', 'relationship_type'], numberParameter), filters } }),
+      total: elCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_ENTITIES : READ_ENTITIES_INDICES, R.dissoc('endDate', { ...args, ...{ ...R.omit(['elementId', 'relationship_type'], numberParameter), filters } }))
     };
   }));
 };

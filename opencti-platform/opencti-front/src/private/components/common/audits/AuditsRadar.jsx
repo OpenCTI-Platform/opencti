@@ -324,6 +324,9 @@ const AuditsRadar = ({
         gutterBottom={true}
         style={{
           margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
       >
         {parameters.title || t('Distribution of entities')}

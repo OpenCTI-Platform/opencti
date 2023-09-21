@@ -52,6 +52,8 @@ const stixCoreObjectsNumberNumberQuery = graphql`
     $filters: [StixCoreObjectsFiltering]
     $filterMode: FilterMode
     $search: String
+    $relationship_type: [String]
+    $elementId: [String]
   ) {
     stixCoreObjectsNumber(
       types: $types
@@ -61,6 +63,8 @@ const stixCoreObjectsNumberNumberQuery = graphql`
       filters: $filters
       filterMode: $filterMode
       search: $search
+      relationship_type: $relationship_type
+      elementId: $elementId
     ) {
       total
       count
@@ -80,31 +84,47 @@ const StixCoreObjectsNumber = ({
   const { t, n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
-    let types = ['Stix-Core-Object'];
-    if (
-      selection.filters.entity_type
-      && selection.filters.entity_type.length > 0
-    ) {
-      if (
-        selection.filters.entity_type.filter((o) => o.id === 'all').length === 0
-      ) {
-        types = selection.filters.entity_type.map((o) => o.id);
-      }
-    }
-    const filters = convertFilters(R.dissoc('entity_type', selection.filters));
+    let finalFilters = convertFilters(selection.filters);
+    const dataSelectionTypes = R.head(
+      finalFilters.filter((o) => o.key === 'entity_type'),
+    )?.values || ['Stix-Core-Object'];
+    const dataSelectionElementId = R.head(finalFilters.filter((o) => o.key === 'elementId'))?.values || null;
+    const dataSelectionRelationshipType = R.head(finalFilters.filter((o) => o.key === 'relationship_type'))
+      ?.values || null;
+    finalFilters = finalFilters.filter(
+      (o) => !['entity_type', 'elementId', 'relationship_type'].includes(o.key),
+    );
     const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
     if (startDate) {
-      filters.push({ key: dateAttribute, values: [startDate], operator: 'gt' });
+      finalFilters.push({
+        key: dateAttribute,
+        values: [startDate],
+        operator: 'gt',
+      });
     }
     if (endDate) {
-      filters.push({ key: dateAttribute, values: [endDate], operator: 'lt' });
+      finalFilters.push({
+        key: dateAttribute,
+        values: [endDate],
+        operator: 'lt',
+      });
     }
     return (
       <QueryRenderer
         query={stixCoreObjectsNumberNumberQuery}
-        variables={{ types, filters, startDate, endDate: dayAgo() }}
+        variables={{
+          types: dataSelectionTypes,
+          first: selection.number ?? 10,
+          orderBy: dateAttribute,
+          orderMode: 'desc',
+          filters: finalFilters,
+          elementId: dataSelectionElementId,
+          relationship_type: dataSelectionRelationshipType,
+          startDate,
+          endDate: dayAgo(),
+        }}
         render={({ props }) => {
           if (props && props.stixCoreObjectsNumber) {
             const { total } = props.stixCoreObjectsNumber;
@@ -158,6 +178,9 @@ const StixCoreObjectsNumber = ({
         gutterBottom={true}
         style={{
           margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
       >
         {parameters.title ?? t('Entities number')}

@@ -98,27 +98,27 @@ const stixCoreObjectsDistributionListDistributionQuery = graphql`
       label
       value
       entity {
-          ... on StixObject {
-              id
-              entity_type
-              representative {
-                  main
-              }
+        ... on StixObject {
+          id
+          entity_type
+          representative {
+            main
           }
-          ... on StixRelationship {
-              id
-              entity_type
-              representative {
-                  main
-              }
+        }
+        ... on StixRelationship {
+          id
+          entity_type
+          representative {
+            main
           }
-          ... on Creator {
-              id
-              entity_type
-              representative {
-                  main
-              }
+        }
+        ... on Creator {
+          id
+          entity_type
+          representative {
+            main
           }
+        }
       }
     }
   }
@@ -153,7 +153,8 @@ const StixCoreObjectsDistributionList = ({
 
     const computeLink = (entry) => {
       const resolution = resolveLink(entry.type);
-      if (resolution) { // Handle type with no link
+      if (resolution) {
+        // Handle type with no link
         return `${resolution}/${entry.id}`;
       }
       return null;
@@ -276,6 +277,9 @@ const StixCoreObjectsDistributionList = ({
         gutterBottom={true}
         style={{
           margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
       >
         {parameters.title || t('Distribution of entities')}

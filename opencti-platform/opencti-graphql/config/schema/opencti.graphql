@@ -259,6 +259,8 @@ input StixCoreObjectsTimeSeriesParameters {
   filters: [StixCoreObjectsFiltering]
   filterMode: FilterMode
   search: String
+  relationship_type: [String]
+  elementId: [String]
 }
 input StixRelationshipsTimeSeriesParameters {
   field: String!
@@ -338,6 +340,8 @@ input StixCoreObjectsNumberParameters {
   filters: [StixCoreObjectsFiltering]
   filterMode: FilterMode
   search: String
+  relationship_type: [String]
+  elementId: [String]
 }
 
 ### INTERFACES & TYPES
@@ -12098,6 +12102,8 @@ type Query {
     filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
+    relationship_type: [String]
+    elementId: [String]
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiTimeSeries(
     operation: StatsOperation!
@@ -12115,6 +12121,8 @@ type Query {
     filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
+    relationship_type: [String]
+    elementId: [String]
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsMultiNumber(
     startDate: DateTime

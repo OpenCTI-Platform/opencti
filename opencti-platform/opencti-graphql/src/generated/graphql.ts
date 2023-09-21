@@ -19143,10 +19143,12 @@ export type QueryStixCoreObjectsMultiTimeSeriesArgs = {
 
 
 export type QueryStixCoreObjectsNumberArgs = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -19155,6 +19157,7 @@ export type QueryStixCoreObjectsNumberArgs = {
 
 export type QueryStixCoreObjectsTimeSeriesArgs = {
   authorId?: InputMaybe<Scalars['String']['input']>;
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
   field: Scalars['String']['input'];
   filterMode?: InputMaybe<FilterMode>;
@@ -19162,6 +19165,7 @@ export type QueryStixCoreObjectsTimeSeriesArgs = {
   interval: Scalars['String']['input'];
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
   operation: StatsOperation;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -21952,8 +21956,10 @@ export type StixCoreObjectsFiltering = {
 };
 
 export type StixCoreObjectsNumberParameters = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
@@ -21982,9 +21988,11 @@ export enum StixCoreObjectsOrdering {
 }
 
 export type StixCoreObjectsTimeSeriesParameters = {
+  elementId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   field: Scalars['String']['input'];
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
