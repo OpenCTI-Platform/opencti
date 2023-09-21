@@ -30,6 +30,7 @@ import {
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
+  ORGA_ADMIN,
   KNOWLEDGE,
   MODULES,
   SETTINGS,
@@ -443,7 +444,7 @@ const LeftBar = () => {
               </MenuItem>
             </StyledTooltip>
           </Security>
-          <Security needs={[SETTINGS]}>
+          <Security needs={[SETTINGS, ORGA_ADMIN]}>
             <StyledTooltip title={!navOpen && t('Settings')} placement="right">
               <MenuItem
                 component={Link}

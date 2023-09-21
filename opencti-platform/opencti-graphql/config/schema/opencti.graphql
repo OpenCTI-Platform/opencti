@@ -1386,6 +1386,7 @@ type MeUser implements BasicObject & InternalObject {
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
+  administrated_organizations: [Organization]!
   unit_system: UnitSystem
 }
 type SessionDetail {
