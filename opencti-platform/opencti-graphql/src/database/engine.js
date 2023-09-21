@@ -1657,7 +1657,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
   body.size = 0;
-  if (field === 'internal_id' || field === 'entity_type') {
+  if (field === 'internal_id' || field === 'entity_type' || field === null) {
     body.aggs = {
       connections: {
         nested: {
@@ -1711,10 +1711,10 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   }
   const query = { index: indexName, ignore_throttled: ES_IGNORE_THROTTLED, body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
-  const isIdFields = field.endsWith('internal_id');
+  const isIdFields = field?.endsWith('internal_id');
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
-      if (field === 'internal_id' || field === 'entity_type') {
+      if (field === 'internal_id' || field === 'entity_type' || field === null) {
         const { buckets } = data.aggregations.connections.filtered.genres;
         if (field === 'internal_id') {
           return buckets.map((b) => ({ label: b.key, value: b.parent.weight.value }));
