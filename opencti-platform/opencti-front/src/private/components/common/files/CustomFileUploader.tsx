@@ -3,10 +3,10 @@ import { styled } from '@mui/material/styles';
 import { FormikErrors } from 'formik';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { Theme } from '@mui/material/styles/createTheme';
+import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from "../../../../utils/String";
-import {Theme} from "@mui/material/styles/createTheme";
-import makeStyles from "@mui/styles/makeStyles";
+import { truncate } from '../../../../utils/String';
 
 const VisuallyHiddenInput = styled('input')`
   clip: rect(0 0 0 0);
@@ -44,7 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
   },
   button: {
-    lineHeight: '0.65rem'
+    lineHeight: '0.65rem',
   },
   div: {
     marginTop: 30,
@@ -56,18 +56,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
   span: {
     marginLeft: 5,
     verticalAlign: 'bottom',
-  }
+  },
 }));
 
-function CustomFileUploader<T>(
+const CustomFileUploader = <T extends unknown>(
   { setFieldValue, isEmbeddedInExternalReferenceCreation }
   : CustomFileUploadProps<T>,
-) {
+) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [fileNameForDisplay, setFileNameForDisplay] = useState('')
+  const [fileNameForDisplay, setFileNameForDisplay] = useState('');
 
-  async function onChange(event: FormEvent) {
+  const onChange = async (event: FormEvent) => {
     const eventTargetValue = (event.target as HTMLInputElement).value as string;
     const newFileName = eventTargetValue.substring(eventTargetValue.lastIndexOf('\\') + 1);
     setFileNameForDisplay(truncate(newFileName, 60));
@@ -78,7 +78,7 @@ function CustomFileUploader<T>(
         await setFieldValue('external_id', truncate(newFileName, 60));
       }
     }
-  }
+  };
 
   return (
     <div
@@ -112,6 +112,6 @@ function CustomFileUploader<T>(
       </Box>
     </div>
   );
-}
+};
 
 export default CustomFileUploader;

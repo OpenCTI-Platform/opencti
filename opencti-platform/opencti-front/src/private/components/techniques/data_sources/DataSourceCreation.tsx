@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -32,7 +33,6 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import CustomFileUploader from '@components/common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
