@@ -41,7 +41,8 @@ import {
 import {
   elAggregationCount,
   elAggregationRelationsCount,
-  elDeleteElements, elFindByFromAndTo,
+  elDeleteElements,
+  elFindByFromAndTo,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
@@ -105,7 +106,8 @@ import {
   buildRefRelationKey,
   ID_INTERNAL,
   ID_STANDARD,
-  IDS_STIX, INPUT_EXTERNAL_REFS,
+  IDS_STIX,
+  INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -127,12 +129,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import {
-  ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_USER,
-  isDatedInternalObject,
-  isInternalObject,
-} from '../schema/internalObject';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject, isInternalObject, } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import {
@@ -1532,6 +1529,7 @@ const updateDateRangeValidation = (instance, inputs, from, to) => {
   }
 };
 const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) => {
+  const today = now();
   // Upsert option is only useful to force aliases to be kept when upserting the entity
   const { impactStandardId = true, upsert = false } = opts;
   const elements = Array.isArray(inputs) ? inputs : [inputs];
@@ -1660,7 +1658,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     }
   }
   // endregion
-
   // If is valid_until modification, update also revoked if needed
   const validUntilInput = R.find((e) => e.key === VALID_UNTIL, preparedElements);
   if (validUntilInput) {
@@ -1677,7 +1674,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
       preparedElements.push({ key: X_DETECTION, value: [false] });
     }
   }
-
   // Update all needed attributes with inner elements if needed
   const updatedInputs = [];
   const impactedInputs = [];
@@ -1741,14 +1737,13 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
       impactedInputs.push(...ins);
     }
   }
-  // Update updated_at
-  const today = now();
   // Impact the updated_at only if stix data is impacted
-  if (updatedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
+  // In case of upsert, this addition will be supported by the parent function
+  if (!upsert && updatedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
-  if (updatedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
+  if (!upsert && updatedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
   }
@@ -2439,11 +2434,11 @@ export const buildDynamicFilterArgs = (filters) => {
 };
 
 const upsertElementRaw = async (context, user, element, type, updatePatch, opts = {}) => {
-  // Upsert relation
+  const today = now();
   // If confidence is passed at creation, just compare confidence
   // Else check if update is explicitly true
   const forceUpdate = isNotEmptyField(updatePatch.confidence) ? updatePatch.confidence >= element.confidence : updatePatch.update === true;
-  const impactedInputs = []; // All inputs impacted by modifications (+inner)
+  const inputs = []; // All inputs impacted by modifications (+inner)
   // Handle attributes updates
   if (isNotEmptyField(updatePatch.stix_id) || isNotEmptyField(updatePatch.x_opencti_stix_ids)) {
     const ids = [...(updatePatch.x_opencti_stix_ids || [])];
@@ -2454,7 +2449,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
       const patch = { x_opencti_stix_ids: ids };
       const operations = { x_opencti_stix_ids: UPDATE_OPERATION_ADD };
       const patched = await patchAttributeRaw(context, user, element, patch, { operations, upsert: true });
-      impactedInputs.push(...patched.impactedInputs);
+      inputs.push(...patched.impactedInputs);
     }
   }
   const creatorIds = [];
@@ -2467,7 +2462,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
     const patch = { creator_id: [...creatorIds, user.id] };
     const operations = { creator_id: UPDATE_OPERATION_ADD };
     const patched = await patchAttributeRaw(context, user, element, patch, { operations, upsert: true });
-    impactedInputs.push(...patched.impactedInputs);
+    inputs.push(...patched.impactedInputs);
   }
   // Upsert observed data
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
@@ -2477,7 +2472,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
       const basePatch = { number_observed: element.number_observed + updatePatch.number_observed };
       const patch = { ...basePatch, ...timePatch };
       const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      impactedInputs.push(...patched.impactedInputs);
+      inputs.push(...patched.impactedInputs);
     }
   }
   // Upsert relations
@@ -2493,7 +2488,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
     const patch = { ...basePatch, ...timePatch };
     if (isNotEmptyField(patch)) {
       const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      impactedInputs.push(...patched.impactedInputs);
+      inputs.push(...patched.impactedInputs);
     }
   }
   if (isStixSightingRelationship(type)) {
@@ -2509,27 +2504,27 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
     const patch = { ...basePatch, ...countPatch };
     if (isNotEmptyField(patch)) {
       const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      impactedInputs.push(...patched.impactedInputs);
+      inputs.push(...patched.impactedInputs);
     }
   }
   // Upsert entities
   const upsertAttributes = schemaAttributesDefinition.getUpsertAttributeNames(type);
   if (isInternalObject(type) && forceUpdate) {
     const { upsertImpacted } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    impactedInputs.push(...upsertImpacted);
+    inputs.push(...upsertImpacted);
   }
   if (isStixDomainObject(type) && forceUpdate) {
     const { upsertImpacted } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    impactedInputs.push(...upsertImpacted);
+    inputs.push(...upsertImpacted);
   }
   if (isStixMetaObject(type) && forceUpdate) {
     const { upsertImpacted } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    impactedInputs.push(...upsertImpacted);
+    inputs.push(...upsertImpacted);
   }
   // Upsert SCOs
   if (isStixCyberObservable(type) && forceUpdate) {
     const { upsertImpacted } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    impactedInputs.push(...upsertImpacted);
+    inputs.push(...upsertImpacted);
   }
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
@@ -2538,7 +2533,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
     const convertedFile = storeFileConverter(user, file);
     // The impact in the database is the completion of the files
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
-    impactedInputs.push(fileImpact);
+    inputs.push(fileImpact);
   }
   // -- Upsert multiple refs for other stix elements
   const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.inputName);
@@ -2554,16 +2549,25 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
         // Case of full synchro or specific input fields
         if (isUpsertSynchro || instanceIds.length > 0) {
           const operation = isUpsertSynchro ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
-          impactedInputs.push({ key: inputField, value: instanceIds, operation });
+          inputs.push({ key: inputField, value: instanceIds, operation });
         }
       } else if (patchInputData && (isUpsertSynchro || isEmptyField(element[relDef.databaseName]))) {
         // If current instance has no value, try to patch it
-        impactedInputs.push({ key: inputField, value: [patchInputData.internal_id] });
+        inputs.push({ key: inputField, value: [patchInputData.internal_id] });
       }
     }
   }
+  // -- If modifications need to be done, add updated_at and modified
+  if (inputs.length > 0) {
+    if (isUpdatedAtObject(element.entity_type)) {
+      inputs.push({ key: 'updated_at', value: [today] });
+    }
+    if (isModifiedObject(element.entity_type)) {
+      inputs.push({ key: 'modified', value: [today] });
+    }
+  }
   // TODO JRI refactor/upsert => Check if update attribute support file upload.
-  return updateAttribute(context, user, element.internal_id, element.entity_type, impactedInputs, opts);
+  return updateAttribute(context, user, element.internal_id, element.entity_type, inputs, opts);
 };
 
 const buildRelationData = async (context, user, input, opts = {}) => {
