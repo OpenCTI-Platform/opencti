@@ -656,9 +656,6 @@ export const distributionRelations = async (context, user, args) => {
 // endregion
 
 // region mutation common
-const TRX_CREATION = 'creation';
-const TRX_UPDATE = 'update';
-const TRX_IDLE = 'idle';
 const depsKeys = (type) => ([
   ...depsKeysRegister.get(),
   ...[
@@ -823,7 +820,7 @@ const isRelationTargetGrants = (elementGrants, relation, type) => {
   if (isUnrestricted) return false;
   return type === ACTION_TYPE_UNSHARE || !elementGrants.every((v) => (relation.to[RELATION_GRANTED_TO] ?? []).includes(v));
 };
-const createContainerSharingTask = (context, type, element, relations) => {
+const createContainerSharingTask = (context, type, element, relations = []) => {
   // If object_refs relations are newly created
   // One side is a container, the other side must inherit from the granted_refs
   const targetGrantIds = [];
@@ -857,13 +854,10 @@ const createContainerSharingTask = (context, type, element, relations) => {
   }
   return taskPromise;
 };
-const indexCreatedElement = async (context, user, { type, element, relations }) => {
+const indexCreatedElement = async (context, user, { element, relations }) => {
   // Continue the creation of the element and the connected relations
+  const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
   const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
-  let indexPromise = Promise.resolve();
-  if (type === TRX_CREATION) {
-    indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
-  }
   await Promise.all([taskPromise, indexPromise]);
 };
 export const updatedInputsToData = (instance, inputs) => {
@@ -2019,7 +2013,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
       const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit });
-      return { element: updatedInstance, event, type: TRX_UPDATE };
+      return { element: updatedInstance, event, isCreation: false };
     }
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
@@ -2040,7 +2034,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       }
     }
     // Return updated element after waiting for it.
-    return { element: updatedInstance, type: TRX_IDLE };
+    return { element: updatedInstance, event: null, isCreation: false };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -2433,7 +2427,7 @@ export const buildDynamicFilterArgs = (filters) => {
   return { connectionFormat: false, first: 500, filters: dynamicFilters };
 };
 
-const upsertElementRaw = async (context, user, element, type, updatePatch, opts = {}) => {
+const upsertElement = async (context, user, element, type, updatePatch, opts = {}) => {
   const today = now();
   // If confidence is passed at creation, just compare confidence
   // Else check if update is explicitly true
@@ -2576,9 +2570,13 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
     if (isModifiedObject(element.entity_type)) {
       inputs.push({ key: 'modified', value: [today] });
     }
+    // Update the attribute and return the result
+    const update = await updateAttribute(context, user, element.internal_id, element.entity_type, inputs, opts);
+    await createContainerSharingTask(context, ACTION_TYPE_SHARE, update.element);
+    return update;
   }
-  // TODO JRI refactor/upsert => Check if update attribute support file upload.
-  return updateAttribute(context, user, element.internal_id, element.entity_type, inputs, opts);
+  // -- No modification applied
+  return { element, event: null, isCreation: false };
 };
 
 const buildRelationData = async (context, user, input, opts = {}) => {
@@ -2725,8 +2723,8 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   )(data);
   // 06. Return result if no need to reverse the relations from and to
   return {
-    type: TRX_CREATION,
     element: created,
+    isCreation: true,
     previous: null,
     relations: relToCreate
   };
@@ -2742,7 +2740,6 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
-
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
   const filledInput = fillDefaultValues(user, input, entitySetting);
   await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
@@ -2822,73 +2819,69 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       existingRelationship.to = to;
     }
     // endregion
-    let dataRel;
     if (existingRelationship) {
       // If upsert come from a rule, do a specific upsert.
       if (fromRule) {
         return await upsertRelationRule(context, existingRelationship, input, { ...opts, locks: participantIds });
       }
       // If not upsert the element
-      dataRel = await upsertElementRaw(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds });
-    } else {
-      // Check cyclic reference consistency for embedded relationships before creation
-      if (isStixRefRelationship(relationshipType)) {
-        const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
-        // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
-        // Checking the direction of the relation to allow relationships
-        const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
-        if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
-          throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
-        }
-      }
-      // Just build a standard relationship
-      dataRel = await buildRelationData(context, user, resolvedInput, opts);
+      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds });
     }
+    // Check cyclic reference consistency for embedded relationships before creation
+    if (isStixRefRelationship(relationshipType)) {
+      const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
+      // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
+      // Checking the direction of the relation to allow relationships
+      const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
+      if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
+        throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
+      }
+    }
+    // Just build a standard relationship
+    const dataRel = await buildRelationData(context, user, resolvedInput, opts);
     // Index the created element
     await indexCreatedElement(context, user, dataRel);
     // Push the input in the stream
     let event;
-    if (dataRel.type === TRX_CREATION) {
-      // In case on embedded relationship creation, we need to dispatch
-      // an update of the from entity that host this embedded ref.
-      if (isStixRefRelationship(relationshipType)) {
-        const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
-        const references = await Promise.all(referencesPromises);
-        if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
-          throw FunctionalError('Cant find element references for commit', {
-            id: input.fromId,
-            references: opts.references
-          });
-        }
-        const previous = resolvedInput.from; // Complete resolution done by the input resolver
-        const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
-        const instance = R.clone(previous);
-        const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationshipType);
-        let inputs;
-        if (isSingleRelationsRef(instance.entity_type, relationshipType)) {
-          inputs = [{ key, value: [targetElement] }];
-          // Generate the new version of the from
-          instance[key] = targetElement;
-        } else {
-          inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_ADD }];
-          // Generate the new version of the from
-          instance[key] = [...(instance[key] ?? []), targetElement];
-        }
-        const message = generateUpdateMessage(instance.entity_type, inputs);
-        const isContainCommitReferences = opts.references && opts.references.length > 0;
-        const commit = isContainCommitReferences ? {
-          message: opts.commitMessage,
-          external_references: references.map((ref) => convertExternalReferenceToStix(ref))
-        } : undefined;
-        event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
-        dataRel.element.from = instance; // dynamically update the from to have an up to date relation
-      } else {
-        const createdRelation = { ...resolvedInput, ...dataRel.element };
-        event = await storeCreateRelationEvent(context, user, createdRelation, opts);
+    // In case on embedded relationship creation, we need to dispatch
+    // an update of the from entity that host this embedded ref.
+    if (isStixRefRelationship(relationshipType)) {
+      const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
+      const references = await Promise.all(referencesPromises);
+      if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
+        throw FunctionalError('Cant find element references for commit', {
+          id: input.fromId,
+          references: opts.references
+        });
       }
+      const previous = resolvedInput.from; // Complete resolution done by the input resolver
+      const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
+      const instance = R.clone(previous);
+      const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationshipType);
+      let inputs;
+      if (isSingleRelationsRef(instance.entity_type, relationshipType)) {
+        inputs = [{ key, value: [targetElement] }];
+        // Generate the new version of the from
+        instance[key] = targetElement;
+      } else {
+        inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_ADD }];
+        // Generate the new version of the from
+        instance[key] = [...(instance[key] ?? []), targetElement];
+      }
+      const message = generateUpdateMessage(instance.entity_type, inputs);
+      const isContainCommitReferences = opts.references && opts.references.length > 0;
+      const commit = isContainCommitReferences ? {
+        message: opts.commitMessage,
+        external_references: references.map((ref) => convertExternalReferenceToStix(ref))
+      } : undefined;
+      event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+      dataRel.element.from = instance; // dynamically update the from to have an up to date relation
+    } else {
+      const createdRelation = { ...resolvedInput, ...dataRel.element };
+      event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
-    return { element: dataRel.element, event, isCreation: dataRel.type === TRX_CREATION };
+    return { element: dataRel.element, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -3070,7 +3063,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
 
   // Simply return the data
   return {
-    type: TRX_CREATION,
+    isCreation: true,
     element: entity,
     message: generateCreateMessage(entity),
     previous: null,
@@ -3136,56 +3129,54 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
-        dataEntity = await upsertElementRaw(context, user, R.head(filteredEntities), type, resolvedInput, upsertEntityOpts);
-      } else {
-        // If creation is not by a reference
-        // We can in best effort try to merge a common stix_id
-        const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
-        if (resolvedInput.update === true) {
-          // The new one is new reference, merge all found entities
-          // Target entity is existingByStandard by default or any other
-          const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
-          const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
-          hashMergeValidation([target, ...sources]);
-          await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
-          dataEntity = await upsertElementRaw(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
-        } else if (existingByStandard) {
-          // Sometimes multiple entities can match
-          // Looking for aliasA, aliasB, find in different entities for example
-          // In this case, we try to find if one match the standard id
-          // If a STIX ID has been passed in the creation
-          if (resolvedInput.stix_id) {
-            // Find the entity corresponding to this STIX ID
-            const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
-            const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
-            // If the entity exists by the stix id and not the same as the previously founded.
-            if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
-              // Deciding the target
-              let mergeTarget = existingByStandard.internal_id;
-              let mergeSource = existingByGivenStixId.internal_id;
-              // If confidence level is bigger, pickup as the target
-              if (existingByGivenStixId.confidence > existingByStandard.confidence) {
-                mergeTarget = existingByGivenStixId.internal_id;
-                mergeSource = existingByStandard.internal_id;
-              }
-              logApp.info('[OPENCTI] Merge during creation detected');
-              await mergeEntities(context, user, mergeTarget, [mergeSource], { locks: participantIds });
-            }
-          }
-          // In this mode we can safely consider this entity like the existing one.
-          // We can upsert element except the aliases that are part of other entities
-          const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
-          const key = resolveAliasesField(type).name;
-          const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
-          const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
-          const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
-          const inputAliases = { ...resolvedInput, [key]: filteredAliases };
-          dataEntity = await upsertElementRaw(context, user, existingByStandard, type, inputAliases, { ...opts, locks: participantIds });
-        } else {
-          // If not we dont know what to do, just throw an exception.
-          throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
-        }
+        return upsertElement(context, user, R.head(filteredEntities), type, resolvedInput, upsertEntityOpts);
       }
+      // If creation is not by a reference
+      // We can in best effort try to merge a common stix_id
+      const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
+      if (resolvedInput.update === true) {
+        // The new one is new reference, merge all found entities
+        // Target entity is existingByStandard by default or any other
+        const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
+        const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
+        hashMergeValidation([target, ...sources]);
+        await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
+        return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
+      } if (existingByStandard) {
+        // Sometimes multiple entities can match
+        // Looking for aliasA, aliasB, find in different entities for example
+        // In this case, we try to find if one match the standard id
+        // If a STIX ID has been passed in the creation
+        if (resolvedInput.stix_id) {
+          // Find the entity corresponding to this STIX ID
+          const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
+          const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
+          // If the entity exists by the stix id and not the same as the previously founded.
+          if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
+            // Deciding the target
+            let mergeTarget = existingByStandard.internal_id;
+            let mergeSource = existingByGivenStixId.internal_id;
+            // If confidence level is bigger, pickup as the target
+            if (existingByGivenStixId.confidence > existingByStandard.confidence) {
+              mergeTarget = existingByGivenStixId.internal_id;
+              mergeSource = existingByStandard.internal_id;
+            }
+            logApp.info('[OPENCTI] Merge during creation detected');
+            await mergeEntities(context, user, mergeTarget, [mergeSource], { locks: participantIds });
+          }
+        }
+        // In this mode we can safely consider this entity like the existing one.
+        // We can upsert element except the aliases that are part of other entities
+        const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
+        const key = resolveAliasesField(type).name;
+        const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
+        const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
+        const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
+        const inputAliases = { ...resolvedInput, [key]: filteredAliases };
+        return upsertElement(context, user, existingByStandard, type, inputAliases, { ...opts, locks: participantIds });
+      }
+      // If not we dont know what to do, just throw an exception.
+      throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
     } else {
       // Create the object
       dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
@@ -3193,13 +3184,10 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
     // Index the created element
     await indexCreatedElement(context, user, dataEntity);
     // Push the input in the stream
-    let event;
-    if (dataEntity.type === TRX_CREATION) {
-      const createdElement = { ...resolvedInput, ...dataEntity.element };
-      event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
-    }
+    const createdElement = { ...resolvedInput, ...dataEntity.element };
+    const event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
     // Return created element after waiting for it.
-    return { element: dataEntity.element, event, isCreation: dataEntity.type === TRX_CREATION };
+    return { element: dataEntity.element, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
