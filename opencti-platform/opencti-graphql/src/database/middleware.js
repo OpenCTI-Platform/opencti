@@ -2540,10 +2540,10 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
       const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS);
       if (relDef.multiple) {
         const currentData = element[relDef.databaseName] ?? [];
-        const targetData = patchInputData ?? [];
+        const targetData = (patchInputData ?? []).map((i) => i.internal_id);
         // If expected data is different from current data
-        if (R.difference(currentData, targetData).length > 0) {
-          const diffInstanceIds = targetData.map((i) => i.internal_id).filter((id) => !currentData.includes(id));
+        if (R.symmetricDifference(currentData, targetData).length > 0) {
+          const diffInstanceIds = targetData.filter((id) => !currentData.includes(id));
           if (isUpsertSynchro) {
             inputs.push({ key: inputField, value: targetData, operation: UPDATE_OPERATION_REPLACE });
           } else if (diffInstanceIds.length > 0) {
