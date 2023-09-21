@@ -193,6 +193,10 @@ const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
           definition_type
           definition
         }
+        ... on KillChainPhase {
+          kill_chain_name
+          phase_name
+        }
         ... on Creator {
           name
         }
@@ -295,15 +299,18 @@ const StixRelationshipsHorizontalBars = ({
             && props.stixRelationshipsDistribution.length > 0
           ) {
             const data = props.stixRelationshipsDistribution.map((n) => ({
-              x:
-                finalField === 'internal_id' ? defaultValue(n.entity) : n.label,
+              x: finalField.endsWith('_id')
+                ? defaultValue(n.entity)
+                : n.label,
               y: n.value,
               fillColor: itemColor(
-                finalField === 'internal_id' ? n.entity.entity_type : n.label,
+                finalField.endsWith('_id')
+                  ? n.entity.entity_type
+                  : n.label,
               ),
-            }));
+            }));²
             const chartData = [{ name: t('Number of relationships'), data }];
-            const redirectionUtils = finalField === 'internal_id'
+            const redirectionUtils = finalField.endsWith('_id')
               ? props.stixRelationshipsDistribution.map((n) => ({
                 id: n.label,
                 entity_type: n.entity.entity_type,

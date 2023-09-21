@@ -1378,6 +1378,18 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             <MenuItem key="entity_type" value="entity_type">
                               {t('Entity type')}
                             </MenuItem>
+                            <MenuItem key="created-by.internal_id" value="created-by.internal_id">
+                              {t('Author')}
+                            </MenuItem>
+                            <MenuItem key="object-marking.internal_id" value="object-marking.internal_id">
+                              {t('Marking definition')}
+                            </MenuItem>
+                            <MenuItem key="kill-chain-phase.internal_id" value="kill-chain-phase.internal_id">
+                              {t('Kill chain phase')}
+                            </MenuItem>
+                            <MenuItem key="creator_id" value="creator_id">
+                              {t('Creator')}
+                            </MenuItem>
                           </Select>
                         </FormControl>
                       )}

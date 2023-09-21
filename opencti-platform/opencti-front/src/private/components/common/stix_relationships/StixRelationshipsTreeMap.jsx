@@ -183,6 +183,30 @@ const stixRelationshipsTreeMapsDistributionQuery = graphql`
         ... on StixCyberObservable {
           observable_value
         }
+        ... on MarkingDefinition {
+          definition_type
+          definition
+        }
+        ... on KillChainPhase {
+          kill_chain_name
+          phase_name
+        }
+        ... on Creator {
+          name
+        }
+        ... on Report {
+          name
+        }
+        ... on Grouping {
+          name
+        }
+        ... on Note {
+          attribute_abstract
+          content
+        }
+        ... on Opinion {
+          opinion
+        }
       }
     }
   }
@@ -263,7 +287,7 @@ const StixRelationshipsTreeMap = ({
             && props.stixRelationshipsDistribution.length > 0
           ) {
             let data = props.stixRelationshipsDistribution;
-            if (finalField === 'internal_id') {
+            if (finalField.endsWith('_id')) {
               data = R.map(
                 (n) => R.assoc(
                   'label',

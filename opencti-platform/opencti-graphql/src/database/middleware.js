@@ -643,13 +643,17 @@ export const distributionRelations = async (context, user, args) => {
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
   const types = relationshipTypes || [ABSTRACT_STIX_CORE_RELATIONSHIP];
   const distributionDateAttribute = dateAttribute || 'created_at';
+  let finalField = field;
+  if (field.includes('.')) {
+    finalField = REL_INDEX_PREFIX + field;
+  }
   // Using elastic can only be done if the distribution is a count on types
-  const opts = { ...args, dateAttribute: distributionDateAttribute };
+  const opts = { ...args, dateAttribute: distributionDateAttribute, field: finalField };
   const distributionArgs = buildAggregationRelationFilter(types, opts);
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field === ID_INTERNAL || field === 'creator_id') {
+  if (field.includes(ID_INTERNAL) || field === 'creator_id') {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));

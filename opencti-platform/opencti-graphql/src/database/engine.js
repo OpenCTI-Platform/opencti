@@ -1651,34 +1651,36 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
 };
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
   const { types = [], field = null, limit = MAX_AGGREGATION_SIZE, searchOptions, aggregationOptions } = options;
-  if (!R.includes(field, ['entity_type', 'internal_id', null])) {
+  if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
   const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
   body.size = 0;
-  body.aggs = {
-    connections: {
-      nested: {
-        path: 'connections',
-      },
-      aggs: {
-        filtered: {
-          filter: aggregationFilters,
-          aggs: {
-            genres: {
-              terms: {
-                size: limit,
-                field: field === 'internal_id' ? 'connections.internal_id.keyword' : 'connections.types.keyword',
-              },
-              aggs: {
-                parent: {
-                  reverse_nested: {},
-                  aggs: {
-                    weight: {
-                      sum: {
-                        field: 'i_inference_weight',
-                        missing: 1,
+  if (field === 'internal_id' || field === 'entity_type') {
+    body.aggs = {
+      connections: {
+        nested: {
+          path: 'connections',
+        },
+        aggs: {
+          filtered: {
+            filter: aggregationFilters,
+            aggs: {
+              genres: {
+                terms: {
+                  size: limit,
+                  field: field === 'internal_id' ? 'connections.internal_id.keyword' : 'connections.types.keyword',
+                },
+                aggs: {
+                  parent: {
+                    reverse_nested: {},
+                    aggs: {
+                      weight: {
+                        sum: {
+                          field: 'i_inference_weight',
+                          missing: 1,
+                        },
                       },
                     },
                   },
@@ -1688,19 +1690,49 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
           },
         },
       },
-    },
-  };
+    };
+  } else {
+    body.aggs = {
+      genres: {
+        terms: {
+          field: isBooleanAttribute(field) ? field : `${field}.keyword`,
+          size: MAX_AGGREGATION_SIZE,
+        },
+        aggs: {
+          weight: {
+            sum: {
+              field: 'i_inference_weight',
+              missing: 1,
+            },
+          },
+        },
+      },
+    };
+  }
   const query = { index: indexName, ignore_throttled: ES_IGNORE_THROTTLED, body };
   logApp.debug('[SEARCH] aggregationRelationsCount', { query });
+  const isIdFields = field.endsWith('internal_id');
   return elRawSearch(context, user, types, query)
     .then(async (data) => {
-      const { buckets } = data.aggregations.connections.filtered.genres;
-      if (field === 'internal_id') {
-        return buckets.map((b) => ({ label: b.key, value: b.parent.weight.value }));
+      if (field === 'internal_id' || field === 'entity_type') {
+        const { buckets } = data.aggregations.connections.filtered.genres;
+        if (field === 'internal_id') {
+          return buckets.map((b) => ({ label: b.key, value: b.parent.weight.value }));
+        }
+        // entity_type
+        const filteredBuckets = buckets.filter((b) => !(isAbstract(pascalize(b.key)) || isAbstract(b.key)));
+        return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
       }
-      // entity_type
-      const filteredBuckets = buckets.filter((b) => !(isAbstract(pascalize(b.key)) || isAbstract(b.key)));
-      return R.map((b) => ({ label: pascalize(b.key), value: b.parent.weight.value }), filteredBuckets);
+      const { buckets } = data.aggregations.genres;
+      return buckets.map((b) => {
+        let label = b.key;
+        if (typeof label === 'number') {
+          label = b.key_as_string;
+        } else if (!isIdFields) {
+          label = pascalize(b.key);
+        }
+        return { label, value: b.weight.value };
+      });
     })
     .catch((e) => {
       throw DatabaseError('[SEARCH] Fail processing AggregationRelationsCount', { error: e });

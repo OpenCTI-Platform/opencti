@@ -233,6 +233,10 @@ const stixRelationshipsDistributionListDistributionQuery = graphql`
           definition_type
           definition
         }
+        ... on KillChainPhase {
+          kill_chain_name
+          phase_name
+        }
         ... on Creator {
           name
         }
@@ -329,12 +333,12 @@ const StixRelationshipsDistributionList = ({
             && props.stixRelationshipsDistribution.length > 0
           ) {
             const data = props.stixRelationshipsDistribution.map((o) => ({
-              label:
-                finalField === 'internal_id' ? defaultValue(o.entity) : o.label,
+              label: finalField.endsWith('_id')
+                ? defaultValue(o.entity)
+                : o.label,
               value: o.value,
-              id: finalField === 'internal_id' ? o.entity.id : null,
-              type:
-                finalField === 'internal_id' ? o.entity.entity_type : o.label,
+              id: finalField.endsWith('_id') ? o.entity.id : null,
+              type: finalField.endsWith('_id') ? o.entity.entity_type : o.label,
             }));
             return (
               <div id="container" className={classes.container}>
