@@ -9,7 +9,8 @@ import {
   stixRelationshipsDistribution,
   stixRelationshipsMultiTimeSeries,
   stixRelationshipsNumber,
-  schemaRelationsTypesMapping
+  schemaRelationsTypesMapping,
+  stixRelationshipOptions,
 } from '../domain/stixRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -33,6 +34,8 @@ const stixRelationshipResolvers = {
     stixRelationshipsNumber: (_, args, context) => stixRelationshipsNumber(context, context.user, args),
     schemaRelationsTypesMapping: () => schemaRelationsTypesMapping(),
   },
+  StixRelationshipsFilter: stixRelationshipOptions.StixRelationshipsFilter,
+  StixRelationshipsOrdering: stixRelationshipOptions.StixRelationshipsOrdering,
   StixRelationship: {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
     to: (rel, _, context) => loadByIdLoader.load(rel.toId, context, context.user),

@@ -308,7 +308,7 @@ const StixRelationshipsHorizontalBars = ({
                   ? n.entity.entity_type
                   : n.label,
               ),
-            }));²
+            }));
             const chartData = [{ name: t('Number of relationships'), data }];
             const redirectionUtils = finalField.endsWith('_id')
               ? props.stixRelationshipsDistribution.map((n) => ({
