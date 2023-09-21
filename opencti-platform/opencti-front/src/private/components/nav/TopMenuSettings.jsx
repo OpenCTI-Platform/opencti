@@ -5,6 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import {
+  ORGA_ADMIN, SETTINGS,
   SETTINGS_SETACCESSES,
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
@@ -27,27 +28,29 @@ const TopMenuSettings = () => {
 
   return (
     <div>
-      <Button
-        component={Link}
-        size="small"
-        to="/dashboard/settings"
-        variant={
-          location.pathname === '/dashboard/settings'
-          || location.pathname === '/dashboard/settings/about'
-            ? 'contained'
-            : 'text'
-        }
-        color={
-          location.pathname === '/dashboard/settings'
-          || location.pathname === '/dashboard/settings/about'
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        {t('Parameters')}
-      </Button>
-      <Security needs={[SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]}>
+      <Security needs={[SETTINGS]}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/settings"
+          variant={
+            location.pathname === '/dashboard/settings'
+            || location.pathname === '/dashboard/settings/about'
+              ? 'contained'
+              : 'text'
+          }
+          color={
+            location.pathname === '/dashboard/settings'
+            || location.pathname === '/dashboard/settings/about'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Parameters')}
+        </Button>
+      </Security>
+      <Security needs={[SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, ORGA_ADMIN]}>
         <Button
           component={Link}
           size="small"
@@ -67,24 +70,26 @@ const TopMenuSettings = () => {
           {t('Security')}
         </Button>
       </Security>
-      <Button
-        component={Link}
-        size="small"
-        to="/dashboard/settings/customization"
-        variant={
-          location.pathname.includes('/dashboard/settings/customization')
-            ? 'contained'
-            : 'text'
-        }
-        color={
-          location.pathname.includes('/dashboard/settings/customization')
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        {t('Customization')}
-      </Button>
+      <Security needs={[SETTINGS]}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/settings/customization"
+          variant={
+            location.pathname.includes('/dashboard/settings/customization')
+              ? 'contained'
+              : 'text'
+          }
+          color={
+            location.pathname.includes('/dashboard/settings/customization')
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Customization')}
+        </Button>
+      </Security>
       <Security needs={[SETTINGS_SETLABELS]}>
         <Button
           component={Link}
@@ -105,24 +110,26 @@ const TopMenuSettings = () => {
           {t('Taxonomies')}
         </Button>
       </Security>
-      <Button
-        component={Link}
-        size="small"
-        to="/dashboard/settings/activity"
-        variant={
-          location.pathname.includes('/dashboard/settings/activity')
-            ? 'contained'
-            : 'text'
-        }
-        color={
-          location.pathname.includes('/dashboard/settings/activity')
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        {t('Activity')}
-      </Button>
+      <Security needs={[SETTINGS]}>
+        <Button
+          component={Link}
+          size="small"
+          to="/dashboard/settings/activity"
+          variant={
+            location.pathname.includes('/dashboard/settings/activity')
+              ? 'contained'
+              : 'text'
+          }
+          color={
+            location.pathname.includes('/dashboard/settings/activity')
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Activity')}
+        </Button>
+      </Security>
     </div>
   );
 };

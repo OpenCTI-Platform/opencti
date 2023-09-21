@@ -5,7 +5,7 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Route, Switch, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { ORGA_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -50,7 +50,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
   const data = usePreloadedQuery(organizationQuery, queryRef);
   const { organization } = data;
   return (
-    <Security needs={[SETTINGS_SETACCESSES]}>
+    <Security needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}>
       {organization ? (
         <Switch>
           <Route

@@ -113,7 +113,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: UsersOrdering
     orderMode: OrderingMode
     search: String
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  ): UserConnection @auth
+  #TODO put back the right capa and find a solution
   authorized_authorities: [String]
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection

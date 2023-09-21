@@ -106,6 +106,8 @@ const LeftBar = () => {
   const { t } = useFormatter();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToModules = useGranted([MODULES]);
+  const isGrantedToSettings = useGranted([SETTINGS]);
+  const isOrganizationAdmin = useGranted([ORGA_ADMIN]);
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
@@ -445,26 +447,33 @@ const LeftBar = () => {
             </StyledTooltip>
           </Security>
           <Security needs={[SETTINGS, ORGA_ADMIN]}>
-            <StyledTooltip title={!navOpen && t('Settings')} placement="right">
-              <MenuItem
-                component={Link}
-                to="/dashboard/settings"
-                selected={location.pathname.includes('/dashboard/settings')}
-                dense={true}
-                classes={{ root: classes.menuItem }}
-                style={{ marginBottom: 50 }}
-              >
-                <ListItemIcon style={{ minWidth: 20 }}>
-                  <CogOutline />
-                </ListItemIcon>
-                {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t('Settings')}
-                  />
-                )}
-              </MenuItem>
-            </StyledTooltip>
+              {
+                (isOrganizationAdmin && !isGrantedToSettings) ? (
+                  <StyledTooltip title={!navOpen && t('Organizations')} placement="right">
+                    <MenuItem
+                      component={Link}
+                      to="/dashboard/settings/accesses/organizations"
+                      dense={true}
+                      classes={{ root: classes.menuItem }}
+                      style={{ marginBottom: 50 }}
+                    >
+                    </MenuItem>
+                  </StyledTooltip>
+                )
+                  : (
+                    <StyledTooltip title={!navOpen && t('Settings')} placement="right">
+                      <MenuItem
+                        component={Link}
+                        to="/dashboard/settings"
+                        selected={location.pathname.includes('/dashboard/settings')}
+                        dense={true}
+                        classes={{ root: classes.menuItem }}
+                        style={{ marginBottom: 50 }}
+                      >
+                      </MenuItem>
+                </StyledTooltip>
+                  )
+              }
           </Security>
         </MenuList>
       </Security>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
 import {
+  ORGA_ADMIN,
   SETTINGS,
   SETTINGS_SETACCESSES,
   SETTINGS_SETLABELS,
@@ -36,14 +37,14 @@ import VocabularyCategories from './VocabularyCategories';
 
 const Root = () => (
   <Switch>
-    <Security needs={[SETTINGS]} placeholder={<Redirect to="/dashboard" />}>
+    <Security needs={[SETTINGS, ORGA_ADMIN]} placeholder={<Redirect to="/dashboard" />}>
       <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
       <BoundaryRoute
         exact
         path="/dashboard/settings/accesses"
         render={() => (
           <Security
-            needs={[SETTINGS_SETACCESSES]}
+            needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
             placeholder={
               <BoundaryRoute
                 exact
@@ -91,7 +92,7 @@ const Root = () => (
         path="/dashboard/settings/accesses/organizations"
         render={() => (
           <Security
-            needs={[SETTINGS_SETACCESSES]}
+            needs={[SETTINGS_SETACCESSES, ORGA_ADMIN]}
             placeholder={<Redirect to={'/dashboard/settings'} />}
           >
             <SettingsOrganizations />

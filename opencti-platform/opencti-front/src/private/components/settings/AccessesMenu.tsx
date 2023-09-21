@@ -10,6 +10,7 @@ import {
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, {
+  ORGA_ADMIN,
   SETTINGS_SETACCESSES,
   SETTINGS_SETMARKINGS,
 } from '../../../utils/hooks/useGranted';
@@ -57,19 +58,42 @@ const AccessesMenu: FunctionComponent = () => {
   ];
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const setMarkings = useGranted([SETTINGS_SETMARKINGS]);
+  const isOrgaAdmin = useGranted([ORGA_ADMIN]);
   if (setAccess) {
     return (
       <Security needs={[SETTINGS_SETACCESSES]}>
         <NavToolbarMenu
+          entries={[...entries, policiesEntry]
+          }
+        />
+      </Security>
+    );
+  } if (setMarkings) {
+    return (
+      <Security needs={[SETTINGS_SETACCESSES]}>
+        <NavToolbarMenu
           entries={
-            setMarkings
-              ? [...entries, ...markingEntries, policiesEntry]
-              : [...entries, policiesEntry]
+            [...entries, ...markingEntries, policiesEntry]
+          }
+        />
+      </Security>
+    );
+  } if (isOrgaAdmin) {
+    return (
+      <Security needs={[ORGA_ADMIN]}>
+        <NavToolbarMenu
+          entries={
+            [{
+              path: '/dashboard/settings/accesses/organizations',
+              label: 'Organizations',
+              icon: <AccountBalanceOutlined fontSize="medium" />,
+            }]
           }
         />
       </Security>
     );
   }
+
   return <NavToolbarMenu entries={markingEntries} />;
 };
 
