@@ -2545,15 +2545,26 @@ const upsertElementRaw = async (context, user, element, type, updatePatch, opts 
       const patchInputData = updatePatch[inputField];
       const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS);
       if (relDef.multiple) {
-        const instanceIds = (patchInputData ?? []).map((i) => i.internal_id);
-        // Case of full synchro or specific input fields
-        if (isUpsertSynchro || instanceIds.length > 0) {
-          const operation = isUpsertSynchro ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
-          inputs.push({ key: inputField, value: instanceIds, operation });
+        const currentData = element[relDef.databaseName] ?? [];
+        const targetData = patchInputData ?? [];
+        // If expected data is different from current data
+        if (R.difference(currentData, targetData).length > 0) {
+          const diffInstanceIds = targetData.map((i) => i.internal_id).filter((id) => !currentData.includes(id));
+          if (isUpsertSynchro) {
+            inputs.push({ key: inputField, value: targetData, operation: UPDATE_OPERATION_REPLACE });
+          } else if (diffInstanceIds.length > 0) {
+            inputs.push({ key: inputField, value: diffInstanceIds, operation: UPDATE_OPERATION_ADD });
+          }
         }
-      } else if (patchInputData && (isUpsertSynchro || isEmptyField(element[relDef.databaseName]))) {
-        // If current instance has no value, try to patch it
-        inputs.push({ key: inputField, value: [patchInputData.internal_id] });
+      } else {
+        const currentData = element[relDef.databaseName];
+        const targetData = patchInputData?.internal_id;
+        const updatable = isUpsertSynchro || isEmptyField(currentData);
+        // If expected data is different from current data
+        // And data can be updated (complete a null value or forced through synchro upsert option
+        if (!R.equals(currentData, targetData) && updatable) {
+          inputs.push({ key: inputField, value: [targetData] });
+        }
       }
     }
   }
