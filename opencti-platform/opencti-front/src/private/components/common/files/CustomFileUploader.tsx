@@ -59,7 +59,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const CustomFileUploader = <T extends unknown>(
+const CustomFileUploader = <T extends NonNullable<unknown>> (
   { setFieldValue, isEmbeddedInExternalReferenceCreation }
   : CustomFileUploadProps<T>,
 ) => {
