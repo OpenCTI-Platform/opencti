@@ -1652,7 +1652,7 @@ const i18n = {
       '24h': '24 h',
       // Types
       'All types of relationship': 'Todos los tipos de relación',
-      'All types of entity': 'Todo los tipos de entidad',
+      'All types of target': 'Todo los tipos de objetivo',
       entity_All: 'Todas las entidades',
       'entity_Stix-Domain-Object': 'Entidad',
       'entity_Stix-Domain-Objects': 'Entidades',
@@ -3768,7 +3768,7 @@ const i18n = {
       '24h': '24h',
       // Types
       'All types of relationship': 'Tous les types de relation',
-      'All types of entity': "Tous les types d'entité",
+      'All types of target': 'Tous les types de cible',
       entity_All: 'Toutes les entités',
       'entity_Stix-Domain-Object': 'Entité',
       'entity_Stix-Domain-Objects': 'Entités',
@@ -5815,7 +5815,7 @@ const i18n = {
       '24h': '24時間',
       // Types
       'All types of relationship': '全てのリレーションシップの種別',
-      'All types of entity': 'すべての種類のエンティティ',
+      'All types of target': 'あらゆる種類のターゲット',
       entity_All: '全てのエンティティ',
       'entity_Stix-Domain-Object': 'エンティティ',
       'entity_Stix-Domain-Objects': 'エンティティ(複数)',
@@ -7742,7 +7742,7 @@ const i18n = {
       '24h': '24小时',
       // Types
       'All types of relationship': '关系的所有类型',
-      'All types of entity': '所有类型的实体',
+      'All types of target': '所有類型的目標',
       entity_All: '所有实体',
       'entity_Stix-Domain-Object': 'STIX域对象',
       'entity_Stix-Domain-Objects': 'STIX域对象',

@@ -1,10 +1,5 @@
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import withTheme from '@mui/styles/withTheme';
-import { Field, Form, Formik } from 'formik';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
@@ -16,16 +11,14 @@ import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
+import InvestigationExpandForm from './InvestigationExpandForm';
 import inject18n from '../../../../components/i18n';
-import SwitchField from '../../../../components/SwitchField';
-import TextField from '../../../../components/TextField';
 import {
   commitMutation,
   fetchQuery,
   MESSAGING$,
 } from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   applyFilters,
   buildGraphData,
@@ -44,7 +37,6 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
-import TypesField from '../../common/form/TypesField';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import WorkspaceHeader from '../WorkspaceHeader';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
@@ -1988,7 +1980,7 @@ class InvestigationGraphComponent extends Component {
   }
 
   render() {
-    const { workspace, theme, t } = this.props;
+    const { workspace, theme } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -2039,74 +2031,12 @@ class InvestigationGraphComponent extends Component {
                 fullWidth={true}
                 maxWidth="md"
               >
-                <Formik
-                  enableReinitialize={true}
-                  initialValues={{
-                    entity_types: [],
-                    relationship_types: [],
-                    limit: 100,
-                    reset_filters: true,
-                  }}
+                <InvestigationExpandForm
+                  links={this.graphData.links}
+                  selectedNodes={Array.from(this.selectedNodes).map((node) => node.id)}
                   onSubmit={this.onSubmitExpandElements.bind(this)}
                   onReset={this.onResetExpandElements.bind(this)}
-                >
-                  {({ submitForm, handleReset, isSubmitting }) => (
-                    <Form>
-                      <DialogTitle>{t('Expand elements')}</DialogTitle>
-                      <DialogContent>
-                        <TypesField
-                          types={[
-                            'Stix-Domain-Object',
-                            'Stix-Cyber-Observable',
-                          ]}
-                          name="entity_types"
-                          label={t('All types of entity')}
-                          fullWidth={true}
-                          multiple={true}
-                          style={{ width: '100%' }}
-                        />
-                        <TypesField
-                          types={[
-                            'stix-core-relationship',
-                            'stix-nested-ref-relationship',
-                          ]}
-                          name="relationship_types"
-                          label={t('All types of relationship')}
-                          fullWidth={true}
-                          multiple={true}
-                          style={fieldSpacingContainerStyle}
-                        />
-                        <Field
-                          component={TextField}
-                          name="limit"
-                          label={t('Limit')}
-                          type="number"
-                          fullWidth={true}
-                          style={{ marginTop: 20 }}
-                        />
-                        <Field
-                          component={SwitchField}
-                          type="checkbox"
-                          name="reset_filters"
-                          label={t('Reset filters')}
-                          containerstyle={{ marginTop: 20 }}
-                        />
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={handleReset} disabled={isSubmitting}>
-                          {t('Cancel')}
-                        </Button>
-                        <Button
-                          color="secondary"
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                        >
-                          {t('Expand')}
-                        </Button>
-                      </DialogActions>
-                    </Form>
-                  )}
-                </Formik>
+                />
               </Dialog>
               <InvestigationGraphBar
                 displayProgress={displayProgress}

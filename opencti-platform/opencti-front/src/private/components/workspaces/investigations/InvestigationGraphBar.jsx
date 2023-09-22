@@ -319,7 +319,7 @@ class InvestigationGraphBar extends Component {
         && numberOfSelectedLinks === 1
         && selectedLinks.length === 1
         && !selectedLinks[0].parent_types.includes('stix-ref-relationship'));
-    const expandEnabled = numberOfSelectedNodes > 0 || numberOfSelectedLinks > 0;
+    const expandEnabled = numberOfSelectedNodes > 0;
     const fromSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];
