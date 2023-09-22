@@ -16,7 +16,7 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import { Add, Close, LockPersonOutlined } from '@mui/icons-material';
+import { Add, Close, Input, LockPersonOutlined } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
@@ -50,6 +50,10 @@ const useStyles = makeStyles(() => ({
     marginTop: '-13px',
   },
   manageAccess: {
+    margin: '-8px 4px 0 0',
+    float: 'right',
+  },
+  turnToReportOrCase: {
     margin: '-8px 4px 0 0',
     float: 'right',
   },
@@ -309,6 +313,20 @@ const WorkspaceHeader = ({
           adjust={adjust}
           handleDownloadAsStixReport={handleDownloadAsStixReport}
         />
+      </div>
+      <div className={classes.turnToReportOrCase}>
+        <Tooltip title={t('Turn into a new Report or Case')}>
+          <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+            <ToggleButton
+                aria-label="Label"
+                onClick={handleOpenAddInContainer}
+                size="small"
+                value="turn-to-report-or-case"
+            >
+              <Input color="primary" fontSize="small" />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Tooltip>
       </div>
       <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
         <div className={classes.manageAccess}>
