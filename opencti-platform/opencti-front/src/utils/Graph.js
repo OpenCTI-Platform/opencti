@@ -1059,12 +1059,13 @@ export const buildGraphData = (objects, graphData, t) => {
     R.uniqBy(R.prop('id')),
     R.map((n) => {
       let numberOfConnectedElement;
-      if (n.numberOfConnectedElement) {
+      if (n.numberOfConnectedElement !== undefined) {
         // The diff between all connections less the ones displayed in the graph.
         numberOfConnectedElement = n.numberOfConnectedElement - (nodesLinksCounter.get(n.id) ?? 0);
-      } else if (n.parent_types.includes('Stix-Meta-Object')) {
-        // -1 is used to determine where to draw a '?' instead of nothing.
-        numberOfConnectedElement = -1;
+      } else if (!n.parent_types.includes('Stix-Meta-Object') && !n.parent_types.includes('Identity')) {
+        // Keep undefined for Meta and Identity objects to display a '?' while the query
+        // to fetch real count is loading.
+        numberOfConnectedElement = 0;
       }
 
       return {
@@ -1186,14 +1187,14 @@ export const nodePaint = (
   ctx.textBaseline = 'middle';
   ctx.fillText(label, x, y + 10);
 
-  if (Number.isInteger(numberOfConnectedElement) && numberOfConnectedElement !== 0) {
+  if (numberOfConnectedElement !== 0) {
     ctx.beginPath();
     ctx.fillStyle = itemColor('numberOfConnectedElement');
     ctx.arc(x + 4, y - 5, 3.5, 0, 2 * Math.PI, false);
     ctx.fill();
     ctx.fillStyle = '#000';
     let numberLabel = '?';
-    if (numberOfConnectedElement !== -1) numberLabel = numberOfConnectedElement;
+    if (numberOfConnectedElement !== undefined) numberLabel = numberOfConnectedElement;
     if (numberOfConnectedElement > 99) numberLabel = '99+';
     ctx.fillText(numberLabel, x + 4, y - 4.5);
   }

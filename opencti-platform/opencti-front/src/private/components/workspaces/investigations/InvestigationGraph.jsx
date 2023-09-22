@@ -341,14 +341,14 @@ const investigationGraphStixSightingRelationshipQuery = graphql`
     }
 `;
 
-// To count the number of relationships for MetaObjects
+// To count the number of relationships for MetaObjects and Identities
 const investigationGraphStixMetaRelCountQuery = graphql`
-  query InvestigationGraphStixMetaRelCountQuery($metaObjectIds: [String!]!) {
+  query InvestigationGraphStixMetaRelCountQuery($objectIds: [String!]!) {
     stixRelationshipsDistribution(
       field: "internal_id"
       isTo: true
       operation: count
-      toId: $metaObjectIds
+      toId: $objectIds
       relationship_type: "stix-relationship"
     ) {
       label
@@ -1119,16 +1119,19 @@ class InvestigationGraphComponent extends Component {
    * @param objects The list of objects.
    */
   async fetchMetaObjectRelCounts(objects) {
-    // Keep only meta-objects.
-    const metaObjectIds = (objects ?? [])
-      .filter((object) => object.parent_types.includes('Stix-Meta-Object'))
+    // Keep only meta-objects and identities.
+    const objectIds = (objects ?? [])
+      .filter((object) => (
+        object.parent_types.includes('Stix-Meta-Object')
+        || object.parent_types.includes('Identity')
+      ))
       .map((object) => object.id);
 
-    if (metaObjectIds.length === 0) return;
+    if (objectIds.length === 0) return;
 
     const { stixRelationshipsDistribution: metaRelCounts } = await fetchQuery(
       investigationGraphStixMetaRelCountQuery,
-      { metaObjectIds },
+      { objectIds },
     ).toPromise();
 
     // For each meta-object, add the number of relations it has in our objects data.
