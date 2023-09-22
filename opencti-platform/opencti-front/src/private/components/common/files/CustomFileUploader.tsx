@@ -1,4 +1,4 @@
-import React, {FormEvent, useState} from 'react';
+import React, { FormEvent, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -21,11 +21,11 @@ const VisuallyHiddenInput = styled('input')`
 
 interface CustomFileUploadProps {
   setFieldValue:
-    (
-      field: string,
-      value: File | string | undefined,
-      shouldValidate?: boolean | undefined
-    ) => void
+  (
+    field: string,
+    value: File | string | undefined,
+    shouldValidate?: boolean | undefined
+  ) => void
   ,
   isEmbeddedInExternalReferenceCreation?: boolean
 }
