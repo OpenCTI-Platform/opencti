@@ -63,7 +63,7 @@ import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import { convertMarking } from '../../../../utils/edition';
-import CustomFileUploader from "../../common/files/CustomFileUploader";
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -412,7 +412,9 @@ const StixCyberObservableCreation = ({
             const baseCreatedBy = defaultCreatedBy
               ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
               : undefined;
-            const baseMarkingDefinitions = (defaultMarkingDefinitions ?? []).map((n) => convertMarking(n));
+            const baseMarkingDefinitions = (
+              defaultMarkingDefinitions ?? []
+            ).map((n) => convertMarking(n));
             const initialValues = {
               x_opencti_description: '',
               x_opencti_score: 50,

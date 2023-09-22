@@ -59,7 +59,7 @@ steps:
     - name: cache-python
       path: /usr/lib/python3.11
     commands:
-      - apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
+      - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
       - npm install -g node-gyp
       - cd opencti-platform/opencti-front
       - yarn install
