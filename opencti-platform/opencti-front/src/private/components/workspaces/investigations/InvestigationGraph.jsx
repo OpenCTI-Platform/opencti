@@ -1864,7 +1864,7 @@ class InvestigationGraphComponent extends Component {
         });
       newElementsIds = [...R.map((k) => k.id, newElements), ...newElementsIds];
       this.graphObjects = [...newElements, ...this.graphObjects];
-      this.fetchMetaObjectRelCounts(newElements);
+      this.fetchObjectRelCounts(newElements);
     }
     if (newElementsIds.length > 0) {
       this.graphData = buildGraphData(
