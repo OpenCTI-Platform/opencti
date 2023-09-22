@@ -973,7 +973,7 @@ class InvestigationGraphComponent extends Component {
     );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
 
-    this.fetchMetaObjectRelCounts(this.graphObjects);
+    this.fetchObjectRelCounts(this.graphObjects);
 
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
@@ -1114,11 +1114,18 @@ class InvestigationGraphComponent extends Component {
   }
 
   /**
-   * Fetch the number of relations each meta-object has in the list of objects.
+   * Fetch the number of relations each meta-object and identities have
+   * in the list of objects.
+   *
+   * (i) Why are we fetching counts only for those entities ?
+   * - Fetching everything will have a cost as some entities may have
+   *   a (very) lot of relationships.
+   * - For other entities we use a trick by counting the number of properties
+   *   starting with 'rel_' they have (data we got when retrieving objects so it's free).
    *
    * @param objects The list of objects.
    */
-  async fetchMetaObjectRelCounts(objects) {
+  async fetchObjectRelCounts(objects) {
     // Keep only meta-objects and identities.
     const objectIds = (objects ?? [])
       .filter((object) => (
@@ -1129,13 +1136,13 @@ class InvestigationGraphComponent extends Component {
 
     if (objectIds.length === 0) return;
 
-    const { stixRelationshipsDistribution: metaRelCounts } = await fetchQuery(
+    const { stixRelationshipsDistribution: relCounts } = await fetchQuery(
       investigationGraphStixMetaRelCountQuery,
       { objectIds },
     ).toPromise();
 
-    // For each meta-object, add the number of relations it has in our objects data.
-    metaRelCounts.forEach(({ label, value }) => {
+    // For each object, add the number of relations it has in our objects data.
+    relCounts.forEach(({ label, value }) => {
       const object = this.graphObjects.find((obj) => obj.id === label);
       if (object) {
         this.graphObjects = [
@@ -1583,7 +1590,6 @@ class InvestigationGraphComponent extends Component {
       this.graphObjects,
     );
     idsToRemove = [...idsToRemove, ...selectedLinksIds];
-    this.selectedLinks.clear();
 
     // Retrieve selected nodes
     const selectedNodes = Array.from(this.selectedNodes);
@@ -1610,7 +1616,6 @@ class InvestigationGraphComponent extends Component {
       this.graphObjects,
     );
     idsToRemove = [...idsToRemove, ...relationshipsToIds];
-    this.selectedNodes.clear();
 
     commitMutation({
       mutation: investigationAddStixCoreObjectsLinesRelationsDeleteMutation,
@@ -1623,6 +1628,9 @@ class InvestigationGraphComponent extends Component {
         },
       },
     });
+
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
 
     this.graphData = buildGraphData(
       this.graphObjects,
