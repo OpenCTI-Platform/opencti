@@ -1650,7 +1650,7 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
   };
 };
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, limit = MAX_AGGREGATION_SIZE, searchOptions, aggregationOptions } = options;
+  const { types = [], field = null, searchOptions, aggregationOptions } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
