@@ -11,7 +11,7 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { SimpleFileUpload } from 'formik-mui';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -215,26 +215,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{
-              style: {
-                marginTop: 20,
-                width: '100%',
-              },
-            }}
-            InputLabelProps={{
-              fullWidth: true,
-              variant: 'standard',
-            }}
-            InputProps={{
-              fullWidth: true,
-              variant: 'standard',
-            }}
-            fullWidth={true}
-          />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

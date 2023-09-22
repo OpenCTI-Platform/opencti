@@ -9,7 +9,6 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -34,6 +33,7 @@ import {
 } from './__generated__/ObservedDataCreationMutation.graphql';
 import { ObservedDatasLinesPaginationQuery$variables } from './__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -263,15 +263,7 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

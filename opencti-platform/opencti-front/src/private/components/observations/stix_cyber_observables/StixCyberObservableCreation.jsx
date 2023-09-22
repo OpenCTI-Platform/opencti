@@ -28,10 +28,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
-import { SimpleFileUpload } from 'formik-mui';
+import { ListItemButton } from '@mui/material';
 import {
   commitMutation,
   handleErrorInForm,
@@ -64,6 +63,7 @@ import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import { convertMarking } from '../../../../utils/edition';
+import CustomFileUploader from "../../common/files/CustomFileUploader";
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -384,15 +384,14 @@ const StixCyberObservableCreation = ({
             return (
               <List>
                 {translatedOrderedList.map((subType) => (
-                  <ListItem
+                  <ListItemButton
                     key={subType.label}
                     divider={true}
-                    button={true}
                     dense={true}
                     onClick={() => selectType(subType.label)}
                   >
                     <ListItemText primary={subType.tlabel} />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             );
@@ -628,17 +627,7 @@ const StixCyberObservableCreation = ({
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <Field
-                      component={SimpleFileUpload}
-                      name="file"
-                      label={t('Associated file')}
-                      FormControlProps={{
-                        style: { marginTop: 20, width: '100%' },
-                      }}
-                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                      InputProps={{ fullWidth: true, variant: 'standard' }}
-                      fullWidth={true}
-                    />
+                    <CustomFileUploader setFieldValue={setFieldValue} />
                     <Field
                       component={SwitchField}
                       type="checkbox"

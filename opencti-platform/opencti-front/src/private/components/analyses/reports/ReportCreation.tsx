@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { SimpleFileUpload } from 'formik-mui';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useHistory } from 'react-router-dom';
@@ -31,6 +30,7 @@ import { ReportCreationMutation, ReportCreationMutation$variables } from './__ge
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -269,15 +269,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

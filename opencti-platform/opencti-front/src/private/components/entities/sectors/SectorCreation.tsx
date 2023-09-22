@@ -9,7 +9,6 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
@@ -31,6 +30,7 @@ import {
 } from './__generated__/SectorCreationMutation.graphql';
 import { SectorsLinesPaginationQuery$variables } from './__generated__/SectorsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -260,26 +260,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{
-              style: {
-                marginTop: 20,
-                width: '100%',
-              },
-            }}
-            InputLabelProps={{
-              fullWidth: true,
-              variant: 'standard',
-            }}
-            InputProps={{
-              fullWidth: true,
-              variant: 'standard',
-            }}
-            fullWidth={true}
-          />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

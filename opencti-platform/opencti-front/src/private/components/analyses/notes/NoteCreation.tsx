@@ -12,7 +12,6 @@ import { Add } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -35,6 +34,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   createButtonContextual: {
@@ -272,15 +272,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <div className={classes.buttons}>
             <Button
               variant="contained"

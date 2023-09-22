@@ -12,7 +12,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
-import { SimpleFileUpload } from 'formik-mui';
 import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -31,7 +30,7 @@ import {
   ExternalReferenceAddInput,
   ExternalReferenceCreationMutation$data,
 } from './__generated__/ExternalReferenceCreationMutation.graphql';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -227,6 +226,7 @@ ExternalReferenceCreationProps
     }
   };
 
+  const isEmbeddedInExternalReferenceCreation = true;
   const renderClassic = () => {
     return (
       <div>
@@ -297,24 +297,9 @@ ExternalReferenceCreationProps
                     style={{ marginTop: 20 }}
                   />
                   {!dryrun && (
-                    <Field
-                      component={SimpleFileUpload}
-                      name="file"
-                      label={t('Associated file')}
-                      FormControlProps={{ style: fieldSpacingContainerStyle }}
-                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                      InputProps={{
-                        classes: { fullWidth: true, variant: 'standard' },
-                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-                          const fileName = event.target.value.split('\\').pop();
-                          setFieldValue('file', event.currentTarget.files?.[0]);
-                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
-                          if (!externalIdValue) {
-                            setFieldValue('external_id', fileName);
-                          }
-                        },
-                      }}
-                      fullWidth={true}
+                    <CustomFileUploader
+                      setFieldValue={setFieldValue}
+                      isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
                     />
                   )}
                   <Field
@@ -411,23 +396,9 @@ ExternalReferenceCreationProps
                     style={{ marginTop: 20 }}
                   />
                   {!dryrun && (
-                    <Field
-                      component={SimpleFileUpload}
-                      name="file"
-                      label={t('Associated file')}
-                      FormControlProps={{ style: fieldSpacingContainerStyle }}
-                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                      InputProps={{ classes: { fullWidth: true, variant: 'standard' },
-                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-                          const fileName = event.target.value.split('\\').pop();
-                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
-                          setFieldValue('file', event.currentTarget.files?.[0]);
-                          if (!externalIdValue && fileName) {
-                            setFieldValue('external_id', fileName);
-                          }
-                        },
-                      }}
-                      fullWidth={true}
+                    <CustomFileUploader
+                      setFieldValue={setFieldValue}
+                      isEmbeddedInExternalReferenceCreation={isEmbeddedInExternalReferenceCreation}
                     />
                   )}
                   <Field

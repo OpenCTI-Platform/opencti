@@ -14,7 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { SimpleFileUpload } from 'formik-mui';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -260,26 +260,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{
-              style: {
-                marginTop: 20,
-                width: '100%',
-              },
-            }}
-            InputLabelProps={{
-              fullWidth: true,
-              variant: 'standard',
-            }}
-            InputProps={{
-              fullWidth: true,
-              variant: 'standard',
-            }}
-            fullWidth={true}
-          />
+          <CustomFileUploader setFieldValue={setFieldValue} />
           <OpenVocabField
             label={t('Platforms')}
             type="platforms_ov"
