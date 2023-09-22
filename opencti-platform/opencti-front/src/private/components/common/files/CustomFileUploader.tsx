@@ -1,6 +1,5 @@
-import React, { FormEvent, useState } from 'react';
+import React, {FormEvent, useState} from 'react';
 import { styled } from '@mui/material/styles';
-import { FormikErrors } from 'formik';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -20,11 +19,13 @@ const VisuallyHiddenInput = styled('input')`
   width: 1rem;
 `;
 
-interface CustomFileUploadProps<T> {
+interface CustomFileUploadProps {
   setFieldValue:
-  (field: string, value: File | string | undefined, shouldValidate?: boolean) =>
-  Promise<void |
-  FormikErrors<T>>
+    (
+      field: string,
+      value: File | string | undefined,
+      shouldValidate?: boolean | undefined
+    ) => void
   ,
   isEmbeddedInExternalReferenceCreation?: boolean
 }
@@ -59,9 +60,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const CustomFileUploader = <T extends NonNullable<unknown>> (
+const CustomFileUploader = (
   { setFieldValue, isEmbeddedInExternalReferenceCreation }
-  : CustomFileUploadProps<T>,
+  : CustomFileUploadProps,
 ) => {
   const { t } = useFormatter();
   const classes = useStyles();
