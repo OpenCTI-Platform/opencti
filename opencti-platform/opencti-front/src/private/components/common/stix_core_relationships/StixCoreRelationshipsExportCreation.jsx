@@ -74,14 +74,7 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
       filters: $filters
       selectedIds: $selectedIds
     ) {
-      edges {
-        node {
-          id
-          name
-          uploadStatus
-          lastModifiedSinceMin
-        }
-      }
+      id
     }
   }
 `;

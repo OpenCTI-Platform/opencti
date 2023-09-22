@@ -13191,7 +13191,7 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
@@ -13216,7 +13216,7 @@ type StixDomainObjectEditMutations {
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
   stixDomainObjectFileEdit(input: StixDomainObjectFileEditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13453,7 +13453,7 @@ type StixCyberObservableEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   promote: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File!]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
@@ -13608,7 +13608,7 @@ type Mutation {
     filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     selectedIds: [String]
-  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
@@ -13628,7 +13628,7 @@ type Mutation {
     filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     selectedIds: [String]
-  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -13745,7 +13745,7 @@ type Mutation {
     relationship_type: [String]
     elementId: String
     selectedIds: [String]
-  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
   artifactImport(
     file: Upload!
@@ -13774,7 +13774,7 @@ type Mutation {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
     selectedIds: [String]
-  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  ): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
