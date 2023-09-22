@@ -1669,7 +1669,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
             aggs: {
               genres: {
                 terms: {
-                  size: limit,
+                  size: MAX_AGGREGATION_SIZE,
                   field: field === 'internal_id' ? 'connections.internal_id.keyword' : 'connections.types.keyword',
                 },
                 aggs: {

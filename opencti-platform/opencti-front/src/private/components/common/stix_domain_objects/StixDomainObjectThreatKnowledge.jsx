@@ -474,7 +474,7 @@ class StixDomainObjectThreatKnowledge extends Component {
           <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
             <StixCoreObjectStixCoreRelationshipsCloud
               stixCoreObjectId={stixDomainObjectId}
-              stixCoreObjectType="Stix-Domain-Object"
+              stixCoreObjectType="Stix-Core-Object"
               relationshipType="stix-core-relationship"
               title={t('Distribution of relations')}
               field="entity_type"

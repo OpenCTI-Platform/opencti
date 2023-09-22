@@ -73,12 +73,16 @@ const stixDomainObjectKnowledgeReportsNumberQuery = graphql`
 
 const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   query StixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery(
+    $elementId: [String]
+    $elementWithTargetTypes: [String]
     $relationship_type: [String]
     $fromId: [String]
     $toTypes: [String]
     $endDate: DateTime
   ) {
     stixCoreRelationshipsNumber(
+      elementId: $elementId
+      elementWithTargetTypes: $elementWithTargetTypes
       relationship_type: $relationship_type
       fromId: $fromId
       toTypes: $toTypes
@@ -148,8 +152,8 @@ class StixDomainObjectKnowledge extends Component {
                   stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
                 }
                 variables={{
-                  fromId: stixDomainObjectId,
-                  toTypes: ['Stix-Cyber-Observable'],
+                  elementId: stixDomainObjectId,
+                  elementWithTargetTypes: ['Stix-Cyber-Observable'],
                   endDate: monthsAgo(1),
                 }}
                 render={({ props }) => {
@@ -192,7 +196,7 @@ class StixDomainObjectKnowledge extends Component {
                   stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
                 }
                 variables={{
-                  fromId: stixDomainObjectId,
+                  elementId: stixDomainObjectId,
                   endDate: monthsAgo(1),
                 }}
                 render={({ props }) => {
@@ -233,7 +237,7 @@ class StixDomainObjectKnowledge extends Component {
           <Grid item={true} xs={6}>
             <StixCoreObjectStixCoreRelationshipsCloud
               stixCoreObjectId={stixDomainObjectId}
-              stixCoreObjectType="Stix-Domain-Object"
+              stixCoreObjectType="Stix-Core-Object"
               relationshipType="stix-core-relationship"
               title={t('Distribution of relations')}
               field="entity_type"
