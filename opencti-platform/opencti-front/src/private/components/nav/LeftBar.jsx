@@ -57,7 +57,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.nav,
     overflowX: 'hidden',
   },
-  toolbar: theme.mixins.toolbar,
   menuItem: {
     height: 35,
     fontWeight: 500,

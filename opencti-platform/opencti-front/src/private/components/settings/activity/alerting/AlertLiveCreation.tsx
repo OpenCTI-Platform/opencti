@@ -65,9 +65,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-  filters: {
-    marginTop: 20,
-  },
 }));
 
 export const triggerLiveActivityCreationMutation = graphql`

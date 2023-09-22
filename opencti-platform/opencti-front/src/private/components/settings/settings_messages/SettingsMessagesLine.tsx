@@ -30,23 +30,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: theme.spacing(1),
   },
-  goIcon: {
-    position: 'absolute',
-    right: theme.spacing(-1.5),
-  },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 

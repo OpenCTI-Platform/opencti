@@ -78,61 +78,13 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.paperLight,
     textAlign: 'center',
   },
-  card2: {
-    height: 100,
-    backgroundColor: theme.palette.background.paperLight,
-  },
   card3: {
     height: 100,
     backgroundColor: theme.palette.background.paperLight,
     textAlign: 'center',
   },
-  dialog: {
-    height: 600,
-  },
-  step_entity: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.secondary.main}`,
-    borderRadius: 5,
-  },
-  step_relationship: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.primary.main}`,
-    borderRadius: 5,
-  },
-  step_audit: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.secondary.main}`,
-    borderRadius: 5,
-  },
   formControl: {
     width: '100%',
-  },
-  stepType: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepField: {
-    margin: 0,
-    paddingRight: 20,
-    width: '30%',
-  },
-  stepValues: {
-    paddingRight: 20,
-    margin: 0,
   },
   stepCloseButton: {
     position: 'absolute',

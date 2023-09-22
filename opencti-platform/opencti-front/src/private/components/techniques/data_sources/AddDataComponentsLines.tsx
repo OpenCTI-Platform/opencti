@@ -14,11 +14,7 @@ import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSo
 import { AddDataComponentsLinesToDataSourceQuery } from './__generated__/AddDataComponentsLinesToDataSourceQuery.graphql';
 import { AddDataComponentsLinesToDataSource_data$key } from './__generated__/AddDataComponentsLinesToDataSource_data.graphql';
 
-const styles = makeStyles<Theme>((theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-  },
+const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     color: theme.palette.primary.main,
   },
@@ -86,7 +82,7 @@ interface AddDataComponentsLinesContainerProps {
 const AddDataComponentsLines: FunctionComponent<
 AddDataComponentsLinesContainerProps
 > = ({ dataSource, queryRef }) => {
-  const classes = styles();
+  const classes = useStyles();
   const { data } = usePreloadedPaginationFragment<
   AddDataComponentsLinesToDataSourceQuery,
   AddDataComponentsLinesToDataSource_data$key

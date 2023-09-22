@@ -41,14 +41,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
       duration: theme.transitions.duration.leavingScreen,
     }),
   },
-  listIcon: {
-    marginRight: 0,
-  },
   item: {
     padding: '0 0 0 6px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
   },
   toolbar: theme.mixins.toolbar,
 }));

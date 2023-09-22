@@ -7,7 +7,7 @@ import { BriefcaseRemoveOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
 
-const styles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '0 5px 0 5px',
@@ -33,7 +33,7 @@ const styles = makeStyles<Theme>((theme) => ({
 const TopMenuCaseRft = ({ id: caseId }: { id: string }) => {
   const location = useLocation();
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
   return (
     <div>
       <Button

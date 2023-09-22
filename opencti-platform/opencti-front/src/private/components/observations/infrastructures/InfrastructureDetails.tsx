@@ -24,13 +24,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: '15px',
     borderRadius: 6,
   },
-  item: {
-    paddingLeft: 10,
-    transition: 'background-color 0.1s ease',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-  },
   chip: {
     fontSize: 12,
     lineHeight: '12px',

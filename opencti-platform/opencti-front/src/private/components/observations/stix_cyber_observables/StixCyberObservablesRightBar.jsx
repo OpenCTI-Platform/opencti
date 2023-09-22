@@ -25,14 +25,8 @@ const useStyles = makeStyles((theme) => ({
     position: 'fixed',
     zIndex: 1100,
   },
-  listIcon: {
-    marginRight: 0,
-  },
   item: {
     padding: '0 0 0 6px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
   },
   toolbar: theme.mixins.toolbar,
 }));

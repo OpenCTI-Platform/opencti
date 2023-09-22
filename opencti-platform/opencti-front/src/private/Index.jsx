@@ -4,9 +4,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
+import Search from './components/Search';
+import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
-import Search from '@components/Search';
 import RootImport from './components/import/Root';
 import RootAnalyses from './components/analyses/Root';
 import RootEvents from './components/events/Root';
@@ -30,7 +31,6 @@ import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
-import TopBar from "@components/nav/TopBar";
 
 const useStyles = makeStyles((theme) => ({
   toolbar: theme.mixins.toolbar,

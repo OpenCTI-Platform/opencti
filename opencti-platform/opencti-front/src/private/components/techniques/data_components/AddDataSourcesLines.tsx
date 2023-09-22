@@ -4,24 +4,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
 import { StreamOutlined } from '@mui/icons-material';
 import { truncate } from '../../../../utils/String';
-import { Theme } from '../../../../components/Theme';
 import { AddDataSourcesLines_data$key } from './__generated__/AddDataSourcesLines_data.graphql';
 import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQuery.graphql';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-}));
 
 export const addDataSourcesLinesMutationAdd = graphql`
   mutation AddDataSourcesLinesAddMutation($id: ID!, $input: [EditInput]!) {
@@ -67,8 +55,6 @@ interface AddDataSourcesLinesContainerProps {
 const AddDataSourcesLines: FunctionComponent<
 AddDataSourcesLinesContainerProps
 > = ({ dataComponentId, queryRef }) => {
-  const classes = useStyles();
-
   const { data } = usePreloadedPaginationFragment<
   AddDataSourcesLinesQuery,
   AddDataSourcesLines_data$key
@@ -117,7 +103,6 @@ AddDataSourcesLinesContainerProps
           return (
             <ListItem
               key={dataSource.id}
-              classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
               onClick={() => addDataSource(dataSource)}

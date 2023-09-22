@@ -69,15 +69,6 @@ const useStyles = makeStyles(() => ({
     margin: '4px 15px 0 10px',
     float: 'right',
   },
-  viewAsField: {
-    marginTop: -5,
-    float: 'left',
-  },
-  viewAsFieldTag: {
-    margin: '5px 15px 0 0',
-    fontSize: 14,
-    float: 'left',
-  },
 }));
 
 const workspaceMutation = graphql`

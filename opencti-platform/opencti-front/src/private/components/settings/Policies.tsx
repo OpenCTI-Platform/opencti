@@ -45,14 +45,6 @@ const useStyles = makeStyles(() => ({
     padding: 20,
     borderRadius: 6,
   },
-  alert: {
-    width: '100%',
-    marginTop: 20,
-  },
-  message: {
-    width: '100%',
-    overflow: 'hidden',
-  },
 }));
 
 const PoliciesFragment = graphql`

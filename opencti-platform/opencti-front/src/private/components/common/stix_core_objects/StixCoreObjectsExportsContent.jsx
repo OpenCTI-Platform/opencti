@@ -26,15 +26,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
 }));
 
 const StixCoreObjectsExportsContentComponent = ({

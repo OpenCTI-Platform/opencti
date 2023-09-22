@@ -97,9 +97,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     }),
     padding: 0,
   },
-  title: {
-    float: 'left',
-  },
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',

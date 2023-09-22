@@ -37,11 +37,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     }),
     padding: 0,
   },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -58,11 +53,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     top: 12,
     left: 5,
     color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
   },
   container: {
     padding: '10px 20px 20px 20px',

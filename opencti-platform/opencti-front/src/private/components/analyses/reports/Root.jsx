@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Redirect, Route, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import { QueryRenderer, requestSubscription, } from '../../../../relay/environment';
+import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Report from './Report';
 import ReportPopover from './ReportPopover';
 import ReportKnowledge from './ReportKnowledge';

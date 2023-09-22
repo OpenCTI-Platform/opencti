@@ -10,7 +10,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import DataSourcePopover from './DataSourcePopover';
 import { DataSourceKnowledge_dataSource$key } from './__generated__/DataSourceKnowledge_dataSource.graphql';
 
-const styles = makeStyles(() => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
   },
@@ -32,7 +32,7 @@ interface DataSourceKnowledgeComponentProps {
 const DataSourceKnowledgeComponent: FunctionComponent<
 DataSourceKnowledgeComponentProps
 > = ({ data }) => {
-  const classes = styles();
+  const classes = useStyles();
 
   const dataSource = useFragment(DataSourceKnowledgeFragment, data);
 

@@ -9,8 +9,8 @@ import { Close } from '@mui/icons-material';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import StixCyberObservableAddIndicatorsLines, { stixCyberObservableAddIndicatorsLinesQuery, } from './StixCyberObservableAddIndicatorsLines';
-import IndicatorCreation from "../indicators/IndicatorCreation";
+import StixCyberObservableAddIndicatorsLines, { stixCyberObservableAddIndicatorsLinesQuery } from './StixCyberObservableAddIndicatorsLines';
+import IndicatorCreation from '../indicators/IndicatorCreation';
 
 const styles = (theme) => ({
   drawerPaper: {

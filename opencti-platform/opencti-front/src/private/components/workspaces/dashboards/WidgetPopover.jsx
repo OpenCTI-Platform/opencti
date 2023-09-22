@@ -15,25 +15,14 @@ import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WidgetConfig from './WidgetConfig';
 import Transition from '../../../../components/Transition';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   container: {
     margin: 0,
     position: 'absolute',
     top: 0,
     right: 0,
   },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
+});
 
 const StixCyberObservablePopover = ({
   onUpdate,

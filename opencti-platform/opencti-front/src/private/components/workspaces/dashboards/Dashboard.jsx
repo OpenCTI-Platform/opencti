@@ -70,13 +70,6 @@ const useStyles = makeStyles(() => ({
   container: {
     margin: '0 -20px 0 -20px',
   },
-  bottomNav: {
-    zIndex: 1000,
-    padding: '7px 0 0 205px',
-    display: 'flex',
-    height: 64,
-    overflow: 'hidden',
-  },
   paper: {
     height: '100%',
     margin: 0,

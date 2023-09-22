@@ -10,7 +10,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 
-const styles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -39,7 +39,7 @@ const SettingsOrganizationDetails: FunctionComponent<
 SettingsOrganizationDetailsProps
 > = ({ settingsOrganization }) => {
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
   const organization = settingsOrganization;
 
   return (

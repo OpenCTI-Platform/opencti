@@ -19,7 +19,7 @@ import { defaultValue } from '../../../../utils/Graph';
 import { convertFilters } from '../../../../utils/ListParameters';
 import ItemMarkings from '../../../../components/ItemMarkings';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   container: {
     width: '100%',
     height: '100%',
@@ -46,39 +46,7 @@ const useStyles = makeStyles((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
-  },
-  itemIconDisabled: {
-    marginRight: 0,
-    color: theme.palette.grey[700],
-  },
-  parameters: {
-    margin: '0 0 20px 0',
-    padding: 0,
-  },
-  filters: {
-    float: 'left',
-    margin: '-4px 0 0 15px',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '0 10px 0 10px',
-  },
-  export: {
-    float: 'right',
-    margin: '0 0 0 20px',
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: theme.spacing(1) / 4,
-  },
-}));
+});
 
 const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(

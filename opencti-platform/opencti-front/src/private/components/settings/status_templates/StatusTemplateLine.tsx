@@ -7,10 +7,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { graphql, useFragment } from 'react-relay';
 import StatusTemplatePopover from './StatusTemplatePopover';
-import { Theme } from '../../../../components/Theme';
 import { StatusTemplateLine_node$key } from './__generated__/StatusTemplateLine_node.graphql';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -25,19 +24,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
-}));
+});
 
 export type DataColumnsType = {
   name: {

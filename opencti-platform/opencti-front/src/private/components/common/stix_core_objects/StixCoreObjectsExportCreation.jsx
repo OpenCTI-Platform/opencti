@@ -31,15 +31,6 @@ const useStyles = makeStyles(() => ({
     right: 30,
     zIndex: 2000,
   },
-  listIcon: {
-    marginRight: 0,
-  },
-  item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
-  },
 }));
 
 export const StixCoreObjectsExportCreationMutation = graphql`

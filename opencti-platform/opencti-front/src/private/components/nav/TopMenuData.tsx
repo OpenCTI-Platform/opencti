@@ -17,9 +17,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     minWidth: 20,
     textTransform: 'none',
   },
-  icon: {
-    marginRight: theme.spacing(1),
-  },
 }));
 
 const TopMenuData = () => {

@@ -1,9 +1,4 @@
-import {
-  graphql,
-  loadQuery,
-  useFragment,
-  usePreloadedQuery,
-} from 'react-relay';
+import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -12,7 +7,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { Stream } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import { IconButton, ListItemSecondaryAction, Tooltip } from '@mui/material';
-import { OpenInNew, ContentCopy } from 'mdi-material-ui';
+import { ContentCopy, OpenInNew } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { environment } from '../../../../relay/environment';
 import { PublicStreamLinesQuery } from './__generated__/PublicStreamLinesQuery.graphql';
@@ -21,12 +16,11 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { StreamLineDummy } from './StreamLine';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
 import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles({
   bodyItem: {
     height: 20,
     fontSize: 13,
@@ -35,19 +29,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
-  },
-  filter: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    marginRight: 7,
-    borderRadius: 10,
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    height: 20,
-    marginRight: 10,
   },
   item: {
     paddingLeft: 10,
@@ -59,7 +40,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     maxWidth: 120,
     display: 'table-cell',
   },
-}));
+});
 
 const publicStreamLinesFragment = graphql`
   fragment PublicStreamLines_node on StreamCollection {
@@ -145,7 +126,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
   };
   return (
     <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon>
         <Stream />
       </ListItemIcon>
       <ListItemText

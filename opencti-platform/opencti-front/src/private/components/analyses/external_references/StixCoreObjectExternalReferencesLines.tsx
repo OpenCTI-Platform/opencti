@@ -68,20 +68,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 6,
     position: 'relative',
   },
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey?.[700],
-  },
   buttonExpand: {
     position: 'absolute',
     left: 0,

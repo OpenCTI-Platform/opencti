@@ -13,7 +13,7 @@ import {
 import DataSourceDataComponents from './DataSourceDataComponents';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
-const styles = makeStyles(() => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -51,7 +51,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
   dataSource,
 }) => {
   const { t } = useFormatter();
-  const classes = styles();
+  const classes = useStyles();
 
   const data: DataSourceDetails_dataSource$data = useFragment(
     DataSourceDetailsFragment,

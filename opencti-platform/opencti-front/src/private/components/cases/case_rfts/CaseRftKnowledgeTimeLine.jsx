@@ -40,7 +40,7 @@ export const caseRftKnowledgeTimeLineQuery = graphql`
   }
 `;
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   container: {
     width: '100%',
     height: '100%',
@@ -50,13 +50,7 @@ const useStyles = makeStyles((theme) => ({
   paper: {
     padding: 15,
   },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-}));
+});
 
 const CaseRftKnowledgeTimeLineComponent = ({
   caseData,

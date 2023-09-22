@@ -6,22 +6,11 @@ import { hexToRGB, itemColor } from '../Colors';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
 import ItemMarkings from '../../components/ItemMarkings';
 import { useFormatter } from '../../components/i18n';
-import { Theme } from '../../components/Theme';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles({
   label: {
     marginTop: '20px',
-  },
-  bodyItem: {
-    width: '100%',
-    height: 20,
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
   },
   chipInList: {
     fontSize: 12,
@@ -30,13 +19,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textTransform: 'uppercase',
     borderRadius: '0',
   },
-  external: {
-    position: 'fixed',
-    bottom: 5,
-    right: 5,
-    color: theme.palette.text?.secondary,
-  },
-}));
+});
 interface BasicRelationshipDetailsProps {
   relation: SelectedEntity,
 }

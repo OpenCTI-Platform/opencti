@@ -42,32 +42,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: 0,
     position: 'relative',
   },
-  avatar: {
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    backgroundColor: theme.palette.grey?.[600],
-  },
-  icon: {
-    margin: '10px 20px 0 0',
-    fontSize: 40,
-    color: '#242d30',
-  },
-  area: {
-    width: '100%',
-    height: '100%',
-  },
-  description: {
-    height: 61,
-    display: '-webkit-box',
-    '-webkit-box-orient': 'vertical',
-    '-webkit-line-clamp': 2,
-    overflow: 'hidden',
-  },
-  objectLabel: {
-    height: 45,
-    paddingTop: 15,
-  },
   chipInList: {
     fontSize: 12,
     height: 20,

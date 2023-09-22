@@ -68,12 +68,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textTransform: 'uppercase',
     borderRadius: '0',
   },
-  external: {
-    position: 'fixed',
-    bottom: 5,
-    right: 5,
-    color: theme.palette.text?.secondary,
-  },
 }));
 
 const relationshipDetailsQuery = graphql`

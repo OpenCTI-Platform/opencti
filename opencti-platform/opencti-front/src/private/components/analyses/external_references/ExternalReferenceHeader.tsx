@@ -15,24 +15,6 @@ const useStyles = makeStyles(() => ({
     float: 'left',
     marginTop: '-13px',
   },
-  aliases: {
-    marginRight: 7,
-  },
-  aliasesInput: {
-    margin: '4px 0 0 10px',
-    float: 'right',
-  },
-  modes: {
-    margin: '-10px 0 0 0',
-    float: 'right',
-  },
-  button: {
-    marginRight: 20,
-  },
-  export: {
-    margin: '-10px 0 0 0',
-    float: 'right',
-  },
 }));
 
 interface ExternalReferenceHeaderComponentProps {

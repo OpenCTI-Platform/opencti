@@ -51,34 +51,6 @@ const useStyles = makeStyles((theme) => ({
     marginRight: 0,
     color: theme.palette.primary.main,
   },
-  itemIconDisabled: {
-    marginRight: 0,
-    color: theme.palette.grey[700],
-  },
-  parameters: {
-    margin: '0 0 20px 0',
-    padding: 0,
-  },
-  filters: {
-    float: 'left',
-    margin: '-4px 0 0 15px',
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    margin: '0 10px 0 10px',
-  },
-  export: {
-    float: 'right',
-    margin: '0 0 0 20px',
-  },
-  chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-  chip: {
-    margin: theme.spacing(1) / 4,
-  },
 }));
 
 export const stixRelationshipsListSearchQuery = graphql`
