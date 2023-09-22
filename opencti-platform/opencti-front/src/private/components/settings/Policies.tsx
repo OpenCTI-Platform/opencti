@@ -93,7 +93,7 @@ export const policiesFieldPatch = graphql`
 `;
 
 const policiesValidation = () => Yup.object().shape({
-  platform_organization: Yup.string().nullable(),
+  platform_organization: Yup.object().nullable(),
   otp_mandatory: Yup.boolean(),
   password_policy_min_length: Yup.number(),
   password_policy_max_length: Yup.number(),
@@ -120,14 +120,14 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
   const [commitField] = useMutation(policiesFieldPatch);
   const classes = useStyles();
   const { t } = useFormatter();
-  const handleSubmitField = (name: string, value: unknown) => {
+  const handleSubmitField = (name: string, value: string | Option) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
         commitField({
           variables: {
             id: settings.id,
-            input: { key: name, value: value || '' },
+            input: { key: name, value: ((value as Option)?.value ?? value) || '' },
           },
         });
       })
@@ -182,8 +182,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({ queryRef
                       <ObjectOrganizationField
                         name="platform_organization"
                         label={'Platform organization'}
-                        onChange={(name: string, value: Option) => handleSubmitField(name, value.value)
-                        }
+                        onChange={(name: string, value: Option) => handleSubmitField(name, value)}
                         style={{ width: '100%', marginTop: 20 }}
                         multiple={false}
                         outlined={false}

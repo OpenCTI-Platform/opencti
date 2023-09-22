@@ -4,8 +4,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '../../common/drawer/Drawer';
@@ -14,31 +13,19 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, { addExternalReferencesLinesQuery } from './AddExternalReferencesLines';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles({
   createButton: {
     float: 'left',
     marginTop: -15,
   },
-  title: {
-    float: 'left',
-  },
   search: {
-    float: 'right',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
+    marginLeft: 'auto',
+    marginRight: ' 20px',
   },
   container: {
     padding: 0,
   },
-}));
+});
 
 const AddExternalReferences = ({
   stixCoreObjectOrStixCoreRelationshipId,
@@ -75,22 +62,10 @@ const AddExternalReferences = ({
         <Add fontSize="small" />
       </IconButton>
       <Drawer
+        title="Add external references"
         open={open}
         onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Add external references')}
-          </Typography>
+        header={(
           <div className={classes.search}>
             <SearchInput
               variant="inDrawer"
@@ -98,7 +73,8 @@ const AddExternalReferences = ({
               onSubmit={handleSearch}
             />
           </div>
-        </div>
+        )}
+      >
         <div className={classes.container}>
           <QueryRenderer
             query={addExternalReferencesLinesQuery}
