@@ -51,6 +51,7 @@ const dataFormat = (separator: string, data: string) => {
 const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
     const { id } = req.params;
+    res.set({ 'content-type': 'text/plain; charset=utf-8' });
     try {
       const context = executionContext('rolling_feeds');
       const user = await extractUserFromRequest(context, req, res);
