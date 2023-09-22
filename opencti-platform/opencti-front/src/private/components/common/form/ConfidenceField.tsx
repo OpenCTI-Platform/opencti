@@ -13,7 +13,7 @@ const useStyles = makeStyles(() => ({
   },
   message: {
     width: '100%',
-    overflow: 'hidden',
+    overflow: 'visible',
     paddingBottom: 0,
   },
 }));

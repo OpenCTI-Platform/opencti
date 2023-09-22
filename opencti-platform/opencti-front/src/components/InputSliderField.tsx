@@ -102,7 +102,7 @@ InputSliderFieldProps & FieldProps
           onChangeCommitted={(_, v) => onSubmit?.(name, v.toString())}
           sx={sliderStyle}
           style={{ margin: '5px 0 0 0' }}
-          valueLabelDisplay="auto"
+          valueLabelDisplay="off"
           size="small"
           valueLabelFormat={() => currentLevel.level.label}
         />
