@@ -6,6 +6,7 @@ import { Add, Close, Edit } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
 import classNames from 'classnames';
+import { createStyles } from '@mui/styles';
 import { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
@@ -17,43 +18,38 @@ export enum DrawerVariant {
   updateWithPanel = 'updateWithPanel',
 }
 
-const useStyles = makeStyles<Theme>((theme) => {
-  const {
-    bannerSettings: { bannerHeightNumber },
-  } = useAuth();
-  return ({
-    drawerPaper: {
-      minHeight: '100vh',
-      width: '50%',
-      position: 'fixed',
-      overflow: 'auto',
-      transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen,
-      }),
-      paddingTop: `${bannerHeightNumber}px`,
-      paddingBottom: `${bannerHeightNumber}px`,
-    },
-    header: {
-      backgroundColor: theme.palette.background.nav,
-      padding: '10px 0',
-      display: 'inline-flex',
-      alignItems: 'center',
-    },
-    container: {
-      padding: '10px 20px 20px 20px',
-    },
-    mainButton: {
-      position: 'fixed',
-      bottom: `${bannerHeightNumber + 30}px`,
-    },
-    withPanel: {
-      right: 230,
-    },
-    noPanel: {
-      right: 30,
-    },
-  });
-});
+const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
+  drawerPaper: {
+    minHeight: '100vh',
+    width: '50%',
+    position: 'fixed',
+    overflow: 'auto',
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingTop: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
+    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
+  },
+  header: {
+    backgroundColor: theme.palette.background.nav,
+    padding: '10px 0',
+    display: 'inline-flex',
+    alignItems: 'center',
+  },
+  container: {
+    padding: '10px 20px 20px 20px',
+  },
+  mainButton: ({ bannerHeightNumber }) => ({
+    position: 'fixed',
+    bottom: `${bannerHeightNumber + 30}px`,
+  }),
+  withPanel: {
+    right: 230,
+  },
+  noPanel: {
+    right: 30,
+  },
+}));
 
 interface DrawerProps {
   title: string
@@ -65,6 +61,7 @@ interface DrawerProps {
     readonly focusOn: string | null
     readonly name: string
   }> | null
+  header?: React.ReactElement
 }
 
 const Drawer: FunctionComponent<DrawerProps> = ({
@@ -74,8 +71,12 @@ const Drawer: FunctionComponent<DrawerProps> = ({
   onClose,
   variant,
   context,
+  header,
 }) => {
-  const classes = useStyles();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
+  const classes = useStyles({ bannerHeightNumber });
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
     if (open !== defaultOpen) {
@@ -124,6 +125,7 @@ const Drawer: FunctionComponent<DrawerProps> = ({
           </IconButton>
           <Typography variant="h6">{title}</Typography>
           {context && <SubscriptionAvatars context={context} />}
+          {header}
         </div>
         <div className={classes.container}>
           {children && React.cloneElement(children, { onClose: handleClose })}

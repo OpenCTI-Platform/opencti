@@ -37,7 +37,7 @@ module.exports = {
       ArrowFunctionExpression(node) {
         if (node.parent.callee && node.parent.callee.name === "makeStyles") {
           if (!node.body.properties) {
-            if (!node.body.body) {
+            if (!node.body.body && !node.body.callee) {
               context.report({
                 node: node,
                 message: "MakeStyles is used with no class declared",

@@ -145,7 +145,8 @@
     "loader-utils": "3.2.1",
     "scss-tokenizer": "0.4.3",
     "node-sass": "9.0.0",
-    "react-virtualized": "patch:react-virtualized@9.22.5#./patch/react-virtualized-9.22.5.patch"
+    "react-virtualized": "patch:react-virtualized@9.22.5#./patch/react-virtualized-9.22.5.patch",
+    "@typescript-eslint/typescript-estree": "6.6.0"
   },
   "workspaces": [
     "packages/*",

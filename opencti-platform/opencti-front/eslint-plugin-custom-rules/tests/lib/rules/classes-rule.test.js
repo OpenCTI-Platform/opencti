@@ -3,9 +3,9 @@ const rule = require("../../../lib/rules/classes-rule"),
 
 
 const ruleTester = new RuleTester({
+  parser: require.resolve('@typescript-eslint/parser'),
   parserOptions: {
     ecmaVersion: 2020,
-    project: '../tsconfig.json',
   }
 });
 ruleTester.run("classes-rule", rule, {
@@ -27,11 +27,7 @@ ruleTester.run("classes-rule", rule, {
       `,
     }, {
       code: `
-      const useStyles = makeStyles((theme) => {
-        const {
-          bannerSettings: { bannerHeightNumber },
-        } = useAuth();
-        return ({
+        const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
           drawerPaper: {
             minHeight: '100vh',
             width: '50%',
@@ -40,8 +36,8 @@ ruleTester.run("classes-rule", rule, {
             transition: theme.transitions.create('width', {
               easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.enteringScreen,
             }),
-            paddingTop: \`${0}px\`,
-            paddingBottom: \`${0}px\`,
+            paddingTop: ({ bannerHeightNumber }) => \`${0}px\`,
+            paddingBottom: ({ bannerHeightNumber }) => \`${0}px\`,
           },
           header: {
             backgroundColor: theme.palette.background.nav,
@@ -52,18 +48,17 @@ ruleTester.run("classes-rule", rule, {
           container: {
             padding: '10px 20px 20px 20px',
           },
-          mainButton: {
+          mainButton: ({ bannerHeightNumber }) => ({
             position: 'fixed',
             bottom: \`${0 + 30}px\`,
-          },
+          }),
           withPanel: {
             right: 230,
           },
           noPanel: {
             right: 30,
           },
-        });
-      });
+        }));
       `
     }
   ],
