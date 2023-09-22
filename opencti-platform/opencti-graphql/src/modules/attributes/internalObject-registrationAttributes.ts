@@ -75,7 +75,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_GROUP]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'default_assignation', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'auto_new_marking', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_marking', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
@@ -131,12 +131,12 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_STREAM_COLLECTION]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'stream_public', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'stream_live', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },

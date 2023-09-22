@@ -129,7 +129,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject, isInternalObject, } from '../schema/internalObject';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import {
@@ -232,6 +232,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
+import { confidence } from '../schema/attribute-definition';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -923,7 +924,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   } else if (isMultiple) {
     const currentValues = (Array.isArray(instance[key]) ? instance[key] : [instance[key]]) ?? [];
     if (operation === UPDATE_OPERATION_ADD) {
-      finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
+      finalVal = R.uniq([...currentValues ?? [], value].flat().filter((v) => isNotEmptyField(v)));
     } else if (operation === UPDATE_OPERATION_REMOVE) {
       finalVal = R.filter((n) => !R.includes(n, value), currentValues);
     } else {
@@ -1443,7 +1444,7 @@ const innerUpdateAttribute = (instance, rawInput) => {
   }
   return updatedInputs;
 };
-const prepareAttributes = (instance, elements) => {
+const prepareAttributesForUpdate = (instance, elements) => {
   const instanceType = instance.entity_type;
   return elements.map((input) => {
     // Check integer
@@ -1451,7 +1452,9 @@ const prepareAttributes = (instance, elements) => {
       return {
         key: input.key,
         value: R.map((value) => {
-          const parsedValue = Number(value);
+          // Like at creation, we need to be sure that confidence is default to 0
+          const baseValue = (input.key === confidence.name && isEmptyField(value)) ? 0 : value;
+          const parsedValue = baseValue ? Number(baseValue) : baseValue;
           return Number.isNaN(parsedValue) ? null : parsedValue;
         }, input.value),
       };
@@ -1529,7 +1532,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const instanceType = instance.entity_type;
   // Prepare attributes
-  const preparedElements = prepareAttributes(instance, elements);
+  const preparedElements = prepareAttributesForUpdate(instance, elements);
   // region Check date range
   const inputKeys = inputs.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
@@ -1555,7 +1558,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
       const name = nameInput ? R.head(nameInput.value) : undefined;
       // Cleanup the alias input
       if (aliasesInput) {
-        aliasesInput.value = R.uniq(aliasesInput.value.map((a) => a.trim()).filter((a) => isNotEmptyField(a)));
+        aliasesInput.value = R.uniq(aliasesInput.value.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
       }
       // In case of upsert name change, old name must be pushed in aliases
       // If aliases are also ask for modification, we need to change the input
@@ -1586,8 +1589,8 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         }
         // Internal ids alias must be generated again
         const aliasesId = generateAliasesId(R.uniq([instance.name, ...aliasesInput.value]), instance);
-        const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-        preparedElements.push(aliasInput);
+        const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+        preparedElements.push(aliasIdsInput);
       }
     }
   }
@@ -1733,11 +1736,11 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   }
   // Impact the updated_at only if stix data is impacted
   // In case of upsert, this addition will be supported by the parent function
-  if (!upsert && updatedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
+  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
-  if (!upsert && updatedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
+  if (impactedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
   }
@@ -1810,9 +1813,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     const isInputAliases = (input) => input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI;
     const aliasedInputs = R.filter((input) => isInputAliases(input), attributes);
     if (aliasedInputs.length > 0) {
-      const aliases = R.uniq(aliasedInputs.map((a) => a.value).flat()
-        .map((a) => a.trim())
-        .filter((a) => isNotEmptyField(a)));
+      const aliases = R.uniq(aliasedInputs.map((a) => a.value).flat().filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
       const aliasesIds = generateAliasesId(aliases, initial);
       const existingEntities = await internalFindByIds(context, user, aliasesIds, { type: initial.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== initial.id, existingEntities);
@@ -2043,10 +2044,6 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   } finally {
     if (lock) await lock.unlock();
   }
-};
-export const patchAttributeRaw = async (context, user, instance, patch, opts = {}) => {
-  const inputs = transformPatchToInput(patch, opts.operations);
-  return updateAttributeRaw(context, user, instance, inputs, opts);
 };
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
@@ -2294,32 +2291,6 @@ const buildInnerRelation = (from, to, type) => {
   }
   return relations;
 };
-const upsertIdentifiedFields = async (context, user, element, input, fields) => {
-  const upsertUpdated = [];
-  const upsertImpacted = [];
-  if (fields) {
-    const patch = {};
-    for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex += 1) {
-      const fieldKey = fields[fieldIndex];
-      const inputData = input[fieldKey];
-      if (isNotEmptyField(inputData)) {
-        if (isDictionaryAttribute(fieldKey)) {
-          Object.entries(inputData).forEach(([k, v]) => {
-            patch[`${fieldKey}.${k}`] = v;
-          });
-        } else {
-          patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
-        }
-      }
-    }
-    if (!R.isEmpty(patch)) {
-      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      upsertImpacted.push(...patched.impactedInputs);
-      upsertUpdated.push(...patched.updatedInputs);
-    }
-  }
-  return { upsertImpacted, upsertUpdated };
-};
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -2347,22 +2318,40 @@ const computeExtendedDateValues = (newValue, currentValue, mode) => {
   }
   return null;
 };
-const handleRelationTimeUpdate = (input, instance, startField, stopField) => {
-  const patch = {};
+const buildAttributeUpdate = (isFullSync, attribute, data) => {
+  const inputs = [];
+  const fieldKey = attribute.name;
+  if (isDictionaryAttribute(fieldKey)) {
+    Object.entries(data).forEach(([k, v]) => {
+      inputs.push({ key: `${fieldKey}.${k}`, value: [v] });
+    });
+  } else if (attribute.multiple) {
+    const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
+    // Only add input in case of replace or when we really need to add something
+    if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(data))) {
+      inputs.push({ key: fieldKey, value: data, operation });
+    }
+  } else {
+    inputs.push({ key: fieldKey, value: [data] });
+  }
+  return inputs;
+};
+const buildTimeUpdate = (input, instance, startField, stopField) => {
+  const inputs = [];
   // If not coming from a rule, compute extended time.
   if (input[startField]) {
     const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
     if (extendedStart) {
-      patch[startField] = extendedStart;
+      inputs.push({ key: startField, value: [extendedStart] });
     }
   }
   if (input[stopField]) {
     const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
     if (extendedStop) {
-      patch[stopField] = extendedStop;
+      inputs.push({ key: stopField, value: [extendedStop] });
     }
   }
-  return patch;
+  return inputs;
 };
 const buildRelationTimeFilter = (input) => {
   const args = {};
@@ -2400,7 +2389,6 @@ const buildRelationTimeFilter = (input) => {
 export const buildDynamicFilterArgs = (filters) => {
   // Currently, filters are not supported the way we handle elementId and relationship_type in domain/stixCoreObject/findAll
   // We need to rebuild the filters
-
   // Extract elementId and relationship_type
   const elementId = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'rel_*.internal_id' : n.key === 'rel_*.internal_id')))?.values || null;
   const relationship_type = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'relationship_type' : n.key === 'relationship_type')))?.values || null;
@@ -2428,11 +2416,8 @@ export const buildDynamicFilterArgs = (filters) => {
 };
 
 const upsertElement = async (context, user, element, type, updatePatch, opts = {}) => {
-  const today = now();
-  // If confidence is passed at creation, just compare confidence
-  // Else check if update is explicitly true
-  const forceUpdate = isNotEmptyField(updatePatch.confidence) ? updatePatch.confidence >= element.confidence : updatePatch.update === true;
   const inputs = []; // All inputs impacted by modifications (+inner)
+  // -- Independent update
   // Handle attributes updates
   if (isNotEmptyField(updatePatch.stix_id) || isNotEmptyField(updatePatch.x_opencti_stix_ids)) {
     const ids = [...(updatePatch.x_opencti_stix_ids || [])];
@@ -2440,85 +2425,27 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
       ids.push(updatePatch.stix_id);
     }
     if (ids.length > 0) {
-      const patch = { x_opencti_stix_ids: ids };
-      const operations = { x_opencti_stix_ids: UPDATE_OPERATION_ADD };
-      const patched = await patchAttributeRaw(context, user, element, patch, { operations, upsert: true });
-      inputs.push(...patched.impactedInputs);
+      inputs.push({ key: 'x_opencti_stix_ids', value: ids, operation: UPDATE_OPERATION_ADD });
     }
   }
-  const creatorIds = [];
   // Add support for existing creator_id that can be a simple string except of an array
+  const creatorIds = [];
   if (isNotEmptyField(element.creator_id)) {
     const idCreators = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
     creatorIds.push(...idCreators);
   }
+  // Cumulate creator id
   if (!creatorIds.includes(user.id)) {
-    const patch = { creator_id: [...creatorIds, user.id] };
-    const operations = { creator_id: UPDATE_OPERATION_ADD };
-    const patched = await patchAttributeRaw(context, user, element, patch, { operations, upsert: true });
-    inputs.push(...patched.impactedInputs);
+    inputs.push({ key: 'creator_id', value: [...creatorIds, user.id], operation: UPDATE_OPERATION_ADD });
   }
-  // Upsert observed data
+  // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-    const timePatch = handleRelationTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
     // Upsert the count only if a time patch is applied.
-    if (isNotEmptyField(timePatch)) {
-      const basePatch = { number_observed: element.number_observed + updatePatch.number_observed };
-      const patch = { ...basePatch, ...timePatch };
-      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      inputs.push(...patched.impactedInputs);
+    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
+    if (timePatchInputs.length > 0) {
+      inputs.push(...timePatchInputs);
+      inputs.push({ key: 'number_observed', value: [element.number_observed + updatePatch.number_observed] });
     }
-  }
-  // Upsert relations
-  if (isStixCoreRelationship(type)) {
-    const basePatch = {};
-    if (updatePatch.confidence && forceUpdate) {
-      basePatch.confidence = updatePatch.confidence;
-    }
-    if (updatePatch.description && forceUpdate) {
-      basePatch.description = updatePatch.description;
-    }
-    const timePatch = handleRelationTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
-    const patch = { ...basePatch, ...timePatch };
-    if (isNotEmptyField(patch)) {
-      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      inputs.push(...patched.impactedInputs);
-    }
-  }
-  if (isStixSightingRelationship(type)) {
-    const basePatch = {};
-    if (updatePatch.confidence && forceUpdate) {
-      basePatch.confidence = updatePatch.confidence;
-    }
-    if (updatePatch.description && forceUpdate) {
-      basePatch.description = updatePatch.description;
-    }
-    const timePatch = handleRelationTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
-    const countPatch = isNotEmptyField(timePatch) ? { attribute_count: element.attribute_count + updatePatch.attribute_count, ...timePatch } : {};
-    const patch = { ...basePatch, ...countPatch };
-    if (isNotEmptyField(patch)) {
-      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      inputs.push(...patched.impactedInputs);
-    }
-  }
-  // Upsert entities
-  const upsertAttributes = schemaAttributesDefinition.getUpsertAttributeNames(type);
-  if (isInternalObject(type) && forceUpdate) {
-    const { upsertImpacted } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    inputs.push(...upsertImpacted);
-  }
-  if (isStixDomainObject(type) && forceUpdate) {
-    const { upsertImpacted } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    inputs.push(...upsertImpacted);
-  }
-  if (isStixMetaObject(type) && forceUpdate) {
-    const { upsertImpacted } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    inputs.push(...upsertImpacted);
-  }
-  // Upsert SCOs
-  if (isStixCyberObservable(type) && forceUpdate) {
-    const { upsertImpacted } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    inputs.push(...upsertImpacted);
   }
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
@@ -2529,7 +2456,38 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
   }
-  // -- Upsert multiple refs for other stix elements
+  // Upsert relations with times extensions
+  if (isStixCoreRelationship(type)) {
+    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
+    inputs.push(...timePatchInputs);
+  }
+  if (isStixSightingRelationship(type)) {
+    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
+    if (timePatchInputs.length > 0) {
+      inputs.push(...timePatchInputs);
+      inputs.push({ key: 'attribute_count', value: [element.attribute_count + updatePatch.attribute_count] });
+    }
+  }
+  // If confidence is passed at creation, just compare confidence
+  const isPatchUpdateOption = updatePatch.update === true;
+  const applyUpdate = isNotEmptyField(updatePatch.confidence) ? (updatePatch.confidence >= element.confidence) : isPatchUpdateOption;
+  // -- Upsert attributes
+  const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
+  for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
+    const attribute = attributes[attrIndex];
+    const attributeKey = attribute.name;
+    const isInputAvailable = attributeKey in updatePatch;
+    if (isInputAvailable) { // The attribute is explicitly available in the patch
+      const inputData = updatePatch[attributeKey];
+      const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
+      const canBeUpsert = applyUpdate && attribute.upsert; // If field can be upsert
+      const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isNotEmptyField(inputData); // If the element current data is empty, we always expect to put the value
+      if (isFullSync || canBeUpsert || isCurrentlyEmpty) {
+        inputs.push(...buildAttributeUpdate(isFullSync, attribute, inputData));
+      }
+    }
+  }
+  // -- Upsert refs
   const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.inputName);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
@@ -2537,7 +2495,7 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
     const isInputAvailable = inputField in updatePatch;
     if (isInputAvailable) {
       const patchInputData = updatePatch[inputField];
-      const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS);
+      const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS); // Granted Refs are always fully sync
       if (relDef.multiple) {
         const currentData = element[relDef.databaseName] ?? [];
         const targetData = (patchInputData ?? []).map((i) => i.internal_id);
@@ -2564,14 +2522,9 @@ const upsertElement = async (context, user, element, type, updatePatch, opts = {
   }
   // -- If modifications need to be done, add updated_at and modified
   if (inputs.length > 0) {
-    if (isUpdatedAtObject(element.entity_type)) {
-      inputs.push({ key: 'updated_at', value: [today] });
-    }
-    if (isModifiedObject(element.entity_type)) {
-      inputs.push({ key: 'modified', value: [today] });
-    }
     // Update the attribute and return the result
-    const update = await updateAttribute(context, user, element.internal_id, element.entity_type, inputs, opts);
+    const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
+    const update = await updateAttribute(context, user, element.internal_id, element.entity_type, inputs, updateOpts);
     await createContainerSharingTask(context, ACTION_TYPE_SHARE, update.element);
     return update;
   }
@@ -3006,10 +2959,10 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // -- Aliased entities
   if (isStixObjectAliased(type)) {
     if (input.aliases) {
-      data.aliases = R.uniq(input.aliases.map((a) => a.trim()).filter((a) => isNotEmptyField(a)));
+      data.aliases = R.uniq(input.aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
     }
     if (input.x_opencti_aliases) {
-      data.x_opencti_aliases = R.uniq(input.x_opencti_aliases.map((a) => a.trim()).filter((a) => isNotEmptyField(a)));
+      data.x_opencti_aliases = R.uniq(input.x_opencti_aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
   }

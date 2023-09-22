@@ -28,7 +28,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.tool.length).toBe(2);
       expect(createEventsByTypes.vocabulary.length).toBe(301); // 299 created at init + 2 created in tests
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(653);
+      expect(createEvents.length).toBe(654);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
@@ -36,7 +36,7 @@ describe('Raw streams tests', () => {
       }
       // 02 - CHECK UPDATE EVENTS
       const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      expect(updateEvents.length).toBe(114);
+      expect(updateEvents.length).toBe(116);
       const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
       expect(updateEventsByTypes.report.length).toBe(3);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
@@ -51,7 +51,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(68);
+      expect(deleteEvents.length).toBe(69);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
