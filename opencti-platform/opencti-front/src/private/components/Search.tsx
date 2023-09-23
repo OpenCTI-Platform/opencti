@@ -39,7 +39,7 @@ const Search = () => {
     LOCAL_STORAGE_KEY,
     {
       sortBy: '_score',
-      orderAsc: true,
+      orderAsc: false,
       openExports: false,
       filters: {} as Filters,
     },
