@@ -14330,7 +14330,7 @@ __metadata:
     react-dom: 18.2.0
     react-force-graph-2d: 1.25.1
     react-force-graph-3d: 1.23.1
-    react-grid-layout: 1.4.1
+    react-grid-layout: 1.4.2
     react-intl: 6.4.7
     react-leaflet: 4.2.1
     react-markdown: 8.0.7
@@ -15688,9 +15688,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:1.4.1":
-  version: 1.4.1
-  resolution: "react-grid-layout@npm:1.4.1"
+"react-grid-layout@npm:1.4.2":
+  version: 1.4.2
+  resolution: "react-grid-layout@npm:1.4.2"
   dependencies:
     clsx: ^2.0.0
     fast-equals: ^4.0.3
@@ -15701,7 +15701,7 @@ __metadata:
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: 327a98f651c737959c6eabbeac0194f86cc571057ddc7a25b20d1e4036376045ac5e05231327929a9b64831b1a18c8c08ba4caa4bd17f8fa257e695974bfec1b
+  checksum: a052d38c290b18e1c513a3b939757c239887009b7f175814b472d007708962870960d3b20d4a15dbdeb955ac55434ce6c5e5e5f8c850cfbdcc90f75c318f1d58
   languageName: node
   linkType: hard
 
