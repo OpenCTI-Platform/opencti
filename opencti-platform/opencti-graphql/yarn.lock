@@ -4348,10 +4348,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/dot-object@npm:2.1.2":
-  version: 2.1.2
-  resolution: "@types/dot-object@npm:2.1.2"
-  checksum: 467e8c15c901524f226f1834fb74a28f44f6fcee320302f0ad47fd3c18f41c77bbbc196be2580dc73633cd9a433ff6ed672f691fd1f567c065d851a7b8f0056b
+"@types/dot-object@npm:2.1.3":
+  version: 2.1.3
+  resolution: "@types/dot-object@npm:2.1.3"
+  checksum: a8b6dac71267f7154b8c4a4d0a53aeb79c2a2161eeece977af06cab8cfd0475900aba0ab15eb37130f1e295d637318e06cf08be1ea622a15a2fc27a7c03c435a
   languageName: node
   linkType: hard
 
@@ -10558,7 +10558,7 @@ __metadata:
     "@rollup/plugin-graphql": 2.0.3
     "@types/bcryptjs": 2.4.4
     "@types/bluebird": 3.5.39
-    "@types/dot-object": 2.1.2
+    "@types/dot-object": 2.1.3
     "@types/ejs": 3.1.2
     "@types/express": 4.17.17
     "@types/nconf": 0.10.3
