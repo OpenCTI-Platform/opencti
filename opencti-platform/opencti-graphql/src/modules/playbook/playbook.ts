@@ -15,10 +15,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import entityPlaybookResolvers from './playbook-resolvers';
 import entityPlaybookTypeDefs from './playbook.graphql';
-import { ENTITY_TYPE_PLAYBOOK, PlayComponentDefinition, StixPlaybook, StoreEntityPlaybook } from './playbook-types';
+import { ENTITY_TYPE_PLAYBOOK, PlayComponentDefinition, type StixPlaybook, type StoreEntityPlaybook } from './playbook-types';
 import convertEntityPlaybookToStix from './playbook-converter';
 
 const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlaybook> = {
