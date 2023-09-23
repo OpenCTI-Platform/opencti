@@ -162,7 +162,7 @@
     "cross-env": "7.0.3",
     "esbuild": "0.19.3",
     "esbuild-plugin-import-glob": "0.1.1",
-    "eslint": "8.49.0",
+    "eslint": "8.50.0",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "17.1.0",
