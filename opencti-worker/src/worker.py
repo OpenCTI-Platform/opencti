@@ -205,6 +205,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         applicant_id = data["applicant_id"]
         self.api.set_applicant_id_header(applicant_id)
         work_id = data["work_id"] if "work_id" in data else None
+        synchronized = data["synchronized"] if "synchronized" in data else False
+        self.api.set_synchronized_upsert_header(synchronized)
         # Execute the import
         self.processing_count += 1
         content = "Unparseable"

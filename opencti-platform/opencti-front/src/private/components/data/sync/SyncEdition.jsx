@@ -83,6 +83,7 @@ const syncValidation = (t) => Yup.object().shape({
   listen_deletion: Yup.bool(),
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
+  synchronized: Yup.bool(),
   user_id: Yup.object().nullable(),
 });
 
@@ -106,6 +107,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
       'no_dependencies',
       'current_state_date',
       'ssl_verify',
+      'synchronized',
     ]),
   )(synchronizer);
   const isStreamAccessible = isNotEmptyField(
@@ -299,6 +301,33 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
                 label={t('Verify SSL certificate')}
                 onChange={handleSubmitField}
               />
+              <Alert
+                  icon={false}
+                  classes={{ root: classes.alert, message: classes.message }}
+                  severity="warning"
+                  variant="outlined"
+                  style={{ position: 'relative' }}
+              >
+                <AlertTitle>
+                  {' '}{t('Perfect synchronization, synchronizer as source of truth')}{' '}
+                </AlertTitle>
+                <Tooltip title={t('Be careful, this option will use the remote feed as only source of truth')}>
+                  <WarningOutlined
+                      fontSize="small"
+                      color="primary"
+                      style={{ position: 'absolute', top: 10, right: 18 }}
+                  />
+                </Tooltip>
+                <div>{t('Use this option only in case of platform to platform replication')}</div>
+                <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    containerstyle={{ marginLeft: 2 }}
+                    name="synchronized"
+                    label={t('Use perfect synchronization')}
+                    onChange={handleSubmitField}
+                />
+              </Alert>
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
@@ -329,6 +358,7 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       no_dependencies
       current_state_date
       ssl_verify
+      synchronized
       user {
         id
         name

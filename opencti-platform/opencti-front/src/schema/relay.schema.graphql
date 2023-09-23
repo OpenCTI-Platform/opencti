@@ -701,6 +701,7 @@ type Synchronizer {
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
+  synchronized: Boolean
 }
 
 type SynchronizerEdge {
@@ -724,6 +725,7 @@ input SynchronizerAddInput {
   listen_deletion: Boolean!
   no_dependencies: Boolean!
   ssl_verify: Boolean
+  synchronized: Boolean
 }
 
 scalar name_String_NotNull_minLength_2

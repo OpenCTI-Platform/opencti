@@ -169,6 +169,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'uri', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'ssl_verify', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'synchronized', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'token', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'stream_id', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
