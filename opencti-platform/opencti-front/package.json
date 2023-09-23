@@ -120,7 +120,7 @@
     "tap": "18.0.4",
     "typescript": "5.2.2",
     "vite-plugin-relay": "2.0.0",
-    "vitest": "0.34.4"
+    "vitest": "0.34.5"
   },
   "engines": {
     "node": ">= 16.*"
