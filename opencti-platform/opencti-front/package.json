@@ -82,7 +82,7 @@
   "devDependencies": {
     "@rollup/plugin-graphql": "2.0.3",
     "@testing-library/react": "14.0.0",
-    "@types/node": "20.6.2",
+    "@types/node": "20.6.3",
     "@types/qrcode": "1.5.2",
     "@types/ramda": "0.29.4",
     "@types/react": "18.2.22",
