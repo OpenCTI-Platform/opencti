@@ -82,7 +82,7 @@
     "fast-json-patch": "3.1.1",
     "github-api": "3.4.0",
     "graphql": "16.8.1",
-    "graphql-constraint-directive": "5.2.0",
+    "graphql-constraint-directive": "5.3.0",
     "graphql-import": "1.0.2",
     "graphql-redis-subscriptions": "2.6.0",
     "graphql-relay": "0.10.0",
