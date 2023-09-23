@@ -221,6 +221,11 @@ class OpenCTIApiClient:
     def set_applicant_id_header(self, applicant_id):
         self.request_headers["opencti-applicant-id"] = applicant_id
 
+    def set_synchronized_upsert_header(self, synchronized):
+        self.request_headers["synchronized-upsert"] = (
+            "true" if synchronized is True else "false"
+        )
+
     def set_retry_number(self, retry_number):
         self.request_headers["opencti-retry-number"] = (
             "" if retry_number is None else str(retry_number)
