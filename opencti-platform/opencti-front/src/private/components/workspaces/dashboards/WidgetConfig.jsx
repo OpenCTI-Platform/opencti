@@ -1,3 +1,4 @@
+/* eslint-disable custom-rules/classes-rule */
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import * as R from 'ramda';
@@ -113,6 +114,33 @@ const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,
     textAlign: 'center',
+  },
+  step_entity: {
+    position: 'relative',
+    width: '100%',
+    margin: '0 0 20px 0',
+    padding: 15,
+    verticalAlign: 'middle',
+    border: `1px solid ${theme.palette.secondary.main}`,
+    borderRadius: 5,
+  },
+  step_relationship: {
+    position: 'relative',
+    width: '100%',
+    margin: '0 0 20px 0',
+    padding: 15,
+    verticalAlign: 'middle',
+    border: `1px solid ${theme.palette.primary.main}`,
+    borderRadius: 5,
+  },
+  step_audit: {
+    position: 'relative',
+    width: '100%',
+    margin: '0 0 20px 0',
+    padding: 15,
+    verticalAlign: 'middle',
+    border: `1px solid ${theme.palette.secondary.main}`,
+    borderRadius: 5,
   },
 }));
 
@@ -1330,13 +1358,22 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             <MenuItem key="entity_type" value="entity_type">
                               {t('Entity type')}
                             </MenuItem>
-                            <MenuItem key="created-by.internal_id" value="created-by.internal_id">
+                            <MenuItem
+                              key="created-by.internal_id"
+                              value="created-by.internal_id"
+                            >
                               {t('Author')}
                             </MenuItem>
-                            <MenuItem key="object-marking.internal_id" value="object-marking.internal_id">
+                            <MenuItem
+                              key="object-marking.internal_id"
+                              value="object-marking.internal_id"
+                            >
                               {t('Marking definition')}
                             </MenuItem>
-                            <MenuItem key="kill-chain-phase.internal_id" value="kill-chain-phase.internal_id">
+                            <MenuItem
+                              key="kill-chain-phase.internal_id"
+                              value="kill-chain-phase.internal_id"
+                            >
                               {t('Kill chain phase')}
                             </MenuItem>
                             <MenuItem key="creator_id" value="creator_id">

@@ -181,8 +181,15 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
           definition_type
           definition
         }
+        ... on KillChainPhase {
+          kill_chain_name
+          phase_name
+        }
         ... on Creator {
           name
+        }
+        ... on Label {
+          value
         }
       }
     }

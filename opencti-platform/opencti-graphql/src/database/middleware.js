@@ -96,8 +96,8 @@ import {
 } from './redis';
 import { cleanStixIds, STIX_SPEC_VERSION, } from './stix';
 import {
+  ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
@@ -641,7 +641,7 @@ export const distributionRelations = async (context, user, args) => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
-  const types = relationshipTypes || [ABSTRACT_STIX_CORE_RELATIONSHIP];
+  const types = relationshipTypes || [ABSTRACT_BASIC_RELATIONSHIP];
   const distributionDateAttribute = dateAttribute || 'created_at';
   let finalField = field;
   if (field.includes('.')) {
