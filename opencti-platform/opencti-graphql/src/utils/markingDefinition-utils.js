@@ -14,10 +14,9 @@ export const cleanMarkings = async (context, values) => {
   }).flat();
 };
 
-export const markingsToReplaceFiltered = async (currentMarkings, context, refs) => {
+export const markingsToReplaceFiltered = async (context, currentMarkings, refs) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const markingAdded = markingsMap.get(R.head(refs));
-
+  const markingAdded = markingsMap.get(R.head(refs)); // TODO Julien, Helene R.head must be discuss
   const markingsHasSameType = currentMarkings.filter((currentMarking) => currentMarking.definition_type === markingAdded.definition_type);
   const markingsToReplace = markingsHasSameType.filter((currentMarking) => currentMarking.x_opencti_order !== markingAdded.x_opencti_order);
   if (markingsToReplace.length !== 0) {

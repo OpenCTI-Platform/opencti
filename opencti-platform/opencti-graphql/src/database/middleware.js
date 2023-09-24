@@ -1045,11 +1045,17 @@ export const hashMergeValidation = (instances) => {
 // region mutation update
 const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
 const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
-const filterTargetByExisting = (targetEntity, redirectSide, sourcesDependencies, targetDependencies) => {
-  const filtered = [];
+const filterTargetByExisting = async (context, targetEntity, redirectSide, sourcesDependencies, targetDependencies) => {
   const cache = [];
+  const filtered = [];
   const sources = sourcesDependencies[`i_relations_${redirectSide}`];
   const targets = targetDependencies[`i_relations_${redirectSide}`];
+  const markingSources = sources.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
+  const markingTargets = targets.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
+  const markings = [...markingSources, ...markingTargets];
+  const filteredMarkings = await cleanMarkings(context, markings.map((m) => m.internal_id));
+  const filteredMarkingIds = filteredMarkings.map((m) => m.internal_id);
+  const markingTargetDeletions = markingTargets.filter((m) => !filteredMarkingIds.includes(m.internal_id)).map((m) => m.i_relation);
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
     // If the relation source is already in target = filtered
@@ -1068,13 +1074,15 @@ const filterTargetByExisting = (targetEntity, redirectSide, sourcesDependencies,
     // Self ref relationships is not allowed, need to compare the side that will be kept with the target
     const relationSideToKeep = redirectSide === 'from' ? 'toId' : 'fromId';
     const isSelfMeta = isStixRefRelationship(source.i_relation.entity_type) && (targetEntity.internal_id === source.i_relation[relationSideToKeep]);
+    // Markings duplication definition group
+    const isMarkingToKeep = source.i_relation.entity_type === RELATION_OBJECT_MARKING ? filteredMarkingIds.includes(source.internal_id) : true;
     // Check and add the relation in the processing list if needed
-    if (!existingSingleMeta && !isSelfMeta && !R.find(finder, targets) && !cache.includes(id)) {
+    if (!existingSingleMeta && !isSelfMeta && isMarkingToKeep && !R.find(finder, targets) && !cache.includes(id)) {
       filtered.push(source);
       cache.push(id);
     }
   }
-  return filtered;
+  return { deletions: markingTargetDeletions, redirects: filtered };
 };
 
 const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, targetDependencies, sourcesDependencies, opts = {}) => {
@@ -1123,9 +1131,9 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
   // region CHANGING FROM
-  const relationsToRedirectFrom = filterTargetByExisting(targetEntity, 'from', sourcesDependencies, targetDependencies);
+  const { deletions: fromDeletions, redirects: relationsToRedirectFrom } = await filterTargetByExisting(context, targetEntity, 'from', sourcesDependencies, targetDependencies);
   // region CHANGING TO
-  const relationsFromRedirectTo = filterTargetByExisting(targetEntity, 'to', sourcesDependencies, targetDependencies);
+  const { deletions: toDeletions, redirects: relationsFromRedirectTo } = await filterTargetByExisting(context, targetEntity, 'to', sourcesDependencies, targetDependencies);
   const updateConnections = [];
   const updateEntities = [];
   // FROM (x -> MERGED TARGET) --- (from) relation (to) ---- RELATED_ELEMENT
@@ -1223,18 +1231,13 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  const updatedRelations = updateConnections
-    .filter((u) => isStixRelationshipExceptRef(u.entity_type))
-    .map((c) => c.standard_id);
+  const updatedRelations = updateConnections.filter((u) => isStixRelationshipExceptRef(u.entity_type)).map((c) => c.standard_id);
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
   const entries = Object.entries(updatesByEntity);
   let currentEntUpdateCount = 0;
-  const updateBulkEntities = entries
-    .filter(([, values]) => values.length === 1)
-    .map(([, values]) => values)
-    .flat();
+  const updateBulkEntities = entries.filter(([, values]) => values.length === 1).map(([, values]) => values).flat();
   const groupsOfEntityUpdate = R.splitEvery(MAX_BULK_OPERATIONS, updateBulkEntities);
   const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
     await elUpdateEntityConnections(entitiesToUpdate);
@@ -1269,8 +1272,10 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     },
     { concurrency: ES_MAX_CONCURRENCY }
   );
+  // Take care of relations deletions to prevent duplicate marking definitions.
+  const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  const dependencyDeletions = await elDeleteElements(context, user, sourceEntities, storeLoadByIdWithRefs);
+  const dependencyDeletions = await elDeleteElements(context, user, elementToRemoves, storeLoadByIdWithRefs);
   // Everything if fine update remaining attributes
   const updateAttributes = [];
   // 1. Update all possible attributes
@@ -1984,7 +1989,8 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         let { value: refs, operation = UPDATE_OPERATION_REPLACE } = meta[metaIndex];
 
         if (relType === RELATION_OBJECT_MARKING && initial.objectMarking) {
-          const newMarkings = await markingsToReplaceFiltered(initial.objectMarking, context, refs);
+          const newMarkings = await markingsToReplaceFiltered(context, initial.objectMarking, refs);
+          // TODO Julien, Helene Always use a replace can be improved depending of the situation
           if (newMarkings) {
             ({ operation, refs } = { operation: UPDATE_OPERATION_REPLACE, refs: newMarkings });
           }

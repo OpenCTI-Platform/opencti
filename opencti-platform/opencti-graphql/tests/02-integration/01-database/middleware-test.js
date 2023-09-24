@@ -732,9 +732,10 @@ const SHA1 = '4e6441ffd23006dc3be69e28ddc1978c3da2e7cd';
 const SHA256 = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad';
 
 describe('Upsert and merge entities', () => {
-  const testMarking = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
+  const amberMarking = 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82';
+  const testMarking = 'marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c';
   const clearMarking = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
-  const mitreMarking = 'marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168';
+  const mitreMarking = 'marking-definition--e8afcdc4-be08-5e57-a3b6-c24d2396d3de';
   it('should entity upserted', async () => {
     // Most simple entity
     const malware = {
@@ -857,14 +858,14 @@ describe('Upsert and merge entities', () => {
       name: 'THREAT_SOURCE_01',
       goals: ['MY GOAL'],
       createdBy: organizationThreatSource.id,
-      objectMarking: [clearMarking, mitreMarking],
+      objectMarking: [clearMarking /* TLP:1 */, mitreMarking],
       objectLabel: ['report', 'opinion', 'malware'],
     };
     const source01 = await createThreat(sourceInput01);
     // source 02
     const sourceInput02 = {
       name: 'THREAT_SOURCE_02',
-      objectMarking: [testMarking, clearMarking, mitreMarking],
+      objectMarking: [testMarking /* TLP:3 */, mitreMarking],
       objectLabel: ['report', 'note', 'malware'],
     };
     let source02 = await createThreat(sourceInput02);
@@ -877,7 +878,7 @@ describe('Upsert and merge entities', () => {
     });
     source02 = await storeLoadById(testContext, ADMIN_USER, source02.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     // source 03
-    const sourceInput03 = { name: 'THREAT_SOURCE_03', objectMarking: [testMarking], objectLabel: ['note', 'malware'] };
+    const sourceInput03 = { name: 'THREAT_SOURCE_03', objectMarking: [amberMarking] /* TLP:3 */, objectLabel: ['note', 'malware'] };
     let source03 = await createThreat(sourceInput03);
     await createRelation(testContext, ADMIN_USER, {
       fromId: source03.internal_id,
@@ -890,7 +891,7 @@ describe('Upsert and merge entities', () => {
     // source 04
     const sourceInput04 = {
       name: 'THREAT_SOURCE_04',
-      objectMarking: [clearMarking],
+      objectMarking: [clearMarking], /* TLP:1 */
       objectLabel: ['report', 'opinion', 'note', 'malware', 'identity'],
     };
     const source04 = await createThreat(sourceInput04);
@@ -898,7 +899,7 @@ describe('Upsert and merge entities', () => {
     const sourceInput05 = { name: 'THREAT_SOURCE_05' };
     const source05 = await createThreat(sourceInput05);
     // source 06
-    const sourceInput06 = { name: 'THREAT_SOURCE_06', objectMarking: [testMarking, clearMarking, mitreMarking] };
+    const sourceInput06 = { name: 'THREAT_SOURCE_06', objectMarking: [clearMarking, mitreMarking] };
     let source06 = await createThreat(sourceInput06);
     await createRelation(testContext, ADMIN_USER, {
       fromId: source06.internal_id,
@@ -934,7 +935,11 @@ describe('Upsert and merge entities', () => {
     expect(loadedThreat.goals).toEqual(['MY GOAL']);
     expect(loadedThreat.createdBy).not.toBeUndefined(); // [organizationThreatTarget]
     expect(loadedThreat.createdBy.name).toEqual('organizationThreatTarget'); // [organizationThreatTarget]
-    expect(loadedThreat.objectMarking.length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
+    expect(loadedThreat.objectMarking.length).toEqual(3); // [testMarking (TLP:3), amberMarking (TLP:3), mitreMarking (STATEMENT)] clearMarking must be auto removed
+    const markingIds = loadedThreat.objectMarking.map((o) => o.standard_id);
+    expect(markingIds.includes(testMarking)).toBeTruthy();
+    expect(markingIds.includes(amberMarking)).toBeTruthy();
+    expect(markingIds.includes(mitreMarking)).toBeTruthy();
     expect(loadedThreat.objectLabel.length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
     // expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
     const froms = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { fromId: loadedThreat.internal_id });
@@ -1024,34 +1029,38 @@ describe('Upsert and merge entities', () => {
   });
   it('should observable merged by update', async () => {
     // Merged 3 Stix File into one
-    const md5 = await createFile({ hashes: { MD5 }, objectMarking: [clearMarking] });
+    const md5 = await createFile({
+      hashes: { MD5 },
+      objectMarking: [clearMarking] /* TLP:1 */
+    });
     const sha1 = await createFile({
       hashes: { 'SHA-1': SHA1 },
-      objectMarking: [testMarking, clearMarking, mitreMarking],
+      objectMarking: [clearMarking /* TLP:1 */, mitreMarking] /* S:0 */,
     });
     const sha256 = await createFile({
       hashes: { 'SHA-256': SHA256 },
-      objectMarking: [testMarking, clearMarking, mitreMarking],
+      objectMarking: [testMarking /* TLP:3 */, mitreMarking] /* S:0 */,
     });
     // merge by update
     const sha1Input = { key: 'hashes.SHA-1', value: [SHA1] };
     const sha256Input = { key: 'hashes.SHA-256', value: [SHA256] };
     const patchSha1 = updateAttribute(testContext, SYSTEM_USER, md5.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [sha1Input]);
-    const patchSha256 = updateAttribute(testContext, SYSTEM_USER, md5.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [
-      sha256Input,
-    ]);
+    const patchSha256 = updateAttribute(testContext, SYSTEM_USER, md5.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [sha256Input]);
     await Promise.all([patchSha1, patchSha256]);
     // Check
     const idsThatShouldNotExists = [sha1.internal_id, sha256.internal_id];
     const isExist = await isOneOfThisIdsExists(idsThatShouldNotExists);
     expect(isExist).toBeFalsy();
-    const reloadMd5 = await storeLoadById(testContext, ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
+    const reloadMd5 = await storeLoadByIdWithRefs(testContext, ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
     expect(reloadMd5).not.toBeNull();
     expect(reloadMd5.hashes).not.toBeNull();
     expect(reloadMd5.hashes.MD5).toEqual(MD5);
     expect(reloadMd5.hashes['SHA-1']).toEqual(SHA1);
     expect(reloadMd5.hashes['SHA-256']).toEqual(SHA256);
-    expect(reloadMd5['object-marking'].length).toEqual(2); // [testMarking, clearMarking, mitreMarking]
+    expect(reloadMd5.objectMarking.length).toEqual(2); // [testMarking, mitreMarking]
+    const markingIds = reloadMd5.objectMarking.map((o) => o.standard_id);
+    expect(markingIds.includes(testMarking)).toBeTruthy();
+    expect(markingIds.includes(mitreMarking)).toBeTruthy();
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, reloadMd5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   });
