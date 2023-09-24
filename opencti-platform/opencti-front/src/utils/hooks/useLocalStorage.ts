@@ -62,8 +62,6 @@ export interface UseLocalStorageHelpers {
   handleClearTypes: () => void;
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
-  handleToggleTypes: (type: string) => void;
-  handleClearTypes: () => void;
 }
 
 const localStorageToPaginationOptions = (
