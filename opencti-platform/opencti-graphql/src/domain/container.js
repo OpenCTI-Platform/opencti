@@ -53,9 +53,9 @@ export const objects = async (context, user, containerId, args) => {
   const objectRelationsPromise = listAllRelations(context, user, RELATION_OBJECT, relationArgs);
   const key = buildRefRelationKey(RELATION_OBJECT, '*');
   const filters = [{ key, values: [containerId], operator: 'wildcard' }, ...(args.filters || [])];
-  const queryFilters = { ...args, filters, connectionFormat: false };
+  const queryFilters = { ...args, filters, connectionFormat: true };
   const elementsPromise = args.all ? listAllThings(context, user, types, queryFilters) : listThings(context, user, types, queryFilters);
-  const [relations, elements] = await Promise.all([objectRelationsPromise, elementsPromise]);
+  const [relations, { edges, pageInfo }] = await Promise.all([objectRelationsPromise, elementsPromise]);
   const relationsMap = new Map();
   // Container objects can be manual and/or inferred
   // This type must be specified to inform the UI what's need to be done.
@@ -72,7 +72,8 @@ export const objects = async (context, user, containerId, args) => {
   }
   // Rebuild the final result
   const resultNodes = [];
-  for (let index = 0; index < elements.length; index += 1) {
+  const elements = edges?.map((n) => n.node);
+  for (let index = 0; index < elements?.length; index += 1) {
     const element = elements[index];
     const relationTypes = relationsMap.get(element.id);
     if (relationTypes) {
@@ -80,7 +81,7 @@ export const objects = async (context, user, containerId, args) => {
       resultNodes.push(edge);
     }
   }
-  return buildPagination(args.first, args.after, resultNodes, resultNodes.length);
+  return buildPagination(args.first, args.after, resultNodes, pageInfo?.globalCount);
 };
 
 export const relatedContainers = async (context, user, containerId, args) => {

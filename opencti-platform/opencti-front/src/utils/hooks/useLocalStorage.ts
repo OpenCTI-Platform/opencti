@@ -58,10 +58,10 @@ export interface UseLocalStorageHelpers {
     symbol?: string;
     original?: number;
   }) => void;
-  handleAddProperty: (field: string, value: unknown) => void;
-  handleChangeView: (value: string) => void;
   handleToggleTypes: (type: string) => void;
   handleClearTypes: () => void;
+  handleAddProperty: (field: string, value: unknown) => void;
+  handleChangeView: (value: string) => void;
 }
 
 const localStorageToPaginationOptions = (
