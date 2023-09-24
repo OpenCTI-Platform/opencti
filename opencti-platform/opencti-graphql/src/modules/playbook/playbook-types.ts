@@ -99,6 +99,13 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
         properties: {
           id: { type: 'string' },
           name: { type: 'string' },
+          position: {
+            type: 'object',
+            properties: {
+              x: { type: 'number' },
+              y: { type: 'number' }
+            },
+          },
           component_id: { type: 'string' },
           configuration: { type: 'string' },
         },

@@ -21,6 +21,8 @@
     "axios": "1.5.0",
     "ckeditor5-custom-build": "0.0.1",
     "classnames": "2.3.2",
+    "d3-hierarchy": "3.1.2",
+    "d3-timer": "3.0.1",
     "dagre": "0.8.5",
     "date-fns": "2.30.0",
     "extract-files": "13.0.0",

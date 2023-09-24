@@ -25,8 +25,9 @@ type PlaybookComponent {
 }
 
 # Ordering
-enum PlaybookOrdering {
+enum PlaybooksOrdering {
     name
+    playbook_running
 }
 
 # Filtering
@@ -34,7 +35,7 @@ enum PlaybookFilter {
     name
 }
 
-input PlaybookFiltering {
+input PlaybooksFiltering {
     key: [PlaybookFilter!]!
     values: [String]
     operator: String
@@ -57,9 +58,9 @@ type Query {
     playbooks(
         first: Int
         after: ID
-        orderBy: PlaybookOrdering
+        orderBy: PlaybooksOrdering
         orderMode: OrderingMode
-        filters: [PlaybookFiltering!]
+        filters: [PlaybooksFiltering!]
         filterMode: FilterMode
         search: String
     ): PlaybookConnection @auth

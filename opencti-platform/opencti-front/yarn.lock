@@ -6981,7 +6981,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"classnames@npm:2.3.2, classnames@npm:^2.2.5":
+"classnames@npm:^2.2.5, classnames@npm:^2.3.2":
   version: 2.3.2
   resolution: "classnames@npm:2.3.2"
   checksum: 2c62199789618d95545c872787137262e741f9db13328e216b093eea91c85ef2bfb152c1f9e63027204e2559a006a92eb74147d46c800a9f96297ae1d9f96f4e
@@ -7755,6 +7755,13 @@ __metadata:
   version: 3.1.0
   resolution: "d3-format@npm:3.1.0"
   checksum: f345ec3b8ad3cab19bff5dead395bd9f5590628eb97a389b1dd89f0b204c7c4fc1d9520f13231c2c7cf14b7c9a8cf10f8ef15bde2befbab41454a569bd706ca2
+  languageName: node
+  linkType: hard
+
+"d3-hierarchy@npm:^3.1.2":
+  version: 3.1.2
+  resolution: "d3-hierarchy@npm:3.1.2"
+  checksum: 0fd946a8c5fd4686d43d3e11bbfc2037a145fda29d2261ccd0e36f70b66af6d7638e2c0c7112124d63fc3d3127197a00a6aecf676bd5bd392a94d7235a214263
   languageName: node
   linkType: hard
 
@@ -14588,9 +14595,11 @@ __metadata:
     babel-plugin-relay: 15.0.0
     chokidar: 3.5.3
     ckeditor5-custom-build: 0.0.1
-    classnames: 2.3.2
+    classnames: ^2.3.2
     compression: 1.7.4
     cross-env: 7.0.3
+    d3-hierarchy: ^3.1.2
+    d3-timer: ^3.0.1
     dagre: 0.8.5
     date-fns: 2.30.0
     esbuild: 0.19.3

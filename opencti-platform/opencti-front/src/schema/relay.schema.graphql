@@ -8304,7 +8304,7 @@ type Query {
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: [ThreatActorsIndividualFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
   threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   playbook(id: String!): Playbook
-  playbooks(first: Int, after: ID, orderBy: PlaybookOrdering, orderMode: OrderingMode, filters: [PlaybookFiltering!], filterMode: FilterMode, search: String): PlaybookConnection
+  playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: [PlaybooksFiltering!], filterMode: FilterMode, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: [IngestionRssFiltering!], filterMode: FilterMode, includeAuthorities: Boolean, search: String): IngestionRssConnection
@@ -11728,15 +11728,16 @@ type PlaybookComponent {
   ports: [PlaybookComponentPort!]!
 }
 
-enum PlaybookOrdering {
+enum PlaybooksOrdering {
   name
+  playbook_running
 }
 
 enum PlaybookFilter {
   name
 }
 
-input PlaybookFiltering {
+input PlaybooksFiltering {
   key: [PlaybookFilter!]!
   values: [String]
   operator: String

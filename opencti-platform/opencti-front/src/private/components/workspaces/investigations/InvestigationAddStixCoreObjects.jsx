@@ -25,7 +25,6 @@ const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-
     padding: 0,
   },
   createButton: {

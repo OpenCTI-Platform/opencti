@@ -87,7 +87,6 @@ DataSourceLineProps
   const classes = useStyles();
   const data = useFragment(dataSourceLineFragment, node);
   const { fd } = useFormatter();
-
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -101,7 +100,7 @@ DataSourceLineProps
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.name.width }}
@@ -130,7 +129,7 @@ DataSourceLineProps
             >
               {fd(data.modified)}
             </div>
-          </div>
+          </>
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>

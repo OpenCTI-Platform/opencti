@@ -14,9 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -25,13 +23,13 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
+import { useFormatter } from '../../../../components/i18n';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -64,18 +62,10 @@ const styles = (theme) => ({
     left: 5,
     color: 'inherit',
   },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
   container: {
     padding: '10px 20px 20px 20px',
   },
-  title: {
-    float: 'left',
-  },
-});
+}));
 
 const PlaybookCreationMutation = graphql`
   mutation PlaybookCreationMutation($input: PlaybookAddInput!) {
@@ -90,15 +80,10 @@ const playbookCreationValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
-const PlaybookCreation = (props) => {
-  const { t, classes, paginationOptions } = props;
+const PlaybookCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-  const handleOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: PlaybookCreationMutation,
@@ -117,17 +102,17 @@ const PlaybookCreation = (props) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        setOpen(false);
       },
     });
   };
   const onReset = () => {
-    handleClose();
+    setOpen(false);
   };
   return (
     <>
       <Fab
-        onClick={handleOpen}
+        onClick={() => setOpen(true)}
         color="secondary"
         aria-label="Add"
         className={classes.createButton}
@@ -140,13 +125,13 @@ const PlaybookCreation = (props) => {
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
+        onClose={() => setOpen(false)}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose}
+            onClick={() => setOpen(false)}
             size="large"
             color="primary"
           >
@@ -209,14 +194,4 @@ const PlaybookCreation = (props) => {
   );
 };
 
-PlaybookCreation.propTypes = {
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(PlaybookCreation);
+export default PlaybookCreation;

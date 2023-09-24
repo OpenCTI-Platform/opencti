@@ -83,9 +83,8 @@ const RootThreatActorIndividualComponent = ({
     queryRef,
   );
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
-
   return (
-    <div>
+    <>
       <Route path="/dashboard/threats/threat_actors_individual/:threatActorIndividualId/knowledge">
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
@@ -201,7 +200,7 @@ const RootThreatActorIndividualComponent = ({
           <ErrorNotFound />
         )}
       </>
-    </div>
+    </>
   );
 };
 

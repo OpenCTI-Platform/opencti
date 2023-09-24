@@ -13,27 +13,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import React from 'react';
+import { Route, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import {
-  QueryRenderer,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import Playbook from './Playbook';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-
-const subscription = graphql`
-  subscription RootPlaybookSubscription($id: ID!) {
-    internalObject(id: $id) {
-      ... on Playbook {
-        ...Playbook_playbook
-      }
-    }
-  }
-`;
 
 const playbookQuery = graphql`
   query RootPlaybookQuery($id: String!) {
@@ -41,64 +27,52 @@ const playbookQuery = graphql`
       id
       ...Playbook_playbook
     }
+    playbookComponents {
+      id
+      name
+      description
+      is_entry_point
+      is_internal
+      configuration_schema
+      ports {
+        id
+        type
+      }
+    }
   }
 `;
 
-class RootPlaybook extends Component {
-  constructor(props) {
-    super(props);
-    const {
-      match: {
-        params: { playbookId },
-      },
-    } = props;
-    this.sub = requestSubscription({
-      subscription,
-      variables: { id: playbookId },
-    });
-  }
-
-  componentWillUnmount() {
-    this.sub.dispose();
-  }
-
-  render() {
-    const {
-      match: {
-        params: { playbookId },
-      },
-    } = this.props;
-    return (
-      <QueryRenderer
-        query={playbookQuery}
-        variables={{ id: playbookId }}
-        render={({ props }) => {
-          if (props) {
-            if (props.playbook) {
-              return (
-                <>
-                  <Route
-                    exact
-                    path="/dashboard/data/processing/automation/:playbookId"
-                    render={(routeProps) => (
-                      <Playbook {...routeProps} playbook={props.playbook} />
-                    )}
-                  />
-                </>
-              );
-            }
-            return <ErrorNotFound />;
+const RootPlaybook = () => {
+  const { playbookId } = useParams();
+  return (
+    <QueryRenderer
+      query={playbookQuery}
+      variables={{ id: playbookId }}
+      render={({ props }) => {
+        if (props) {
+          if (props.playbook && props.playbookComponents) {
+            return (
+              <>
+                <Route
+                  exact
+                  path="/dashboard/data/processing/automation/:playbookId"
+                  render={(routeProps) => (
+                    <Playbook
+                      {...routeProps}
+                      playbook={props.playbook}
+                      playbookComponents={props.playbookComponents}
+                    />
+                  )}
+                />
+              </>
+            );
           }
-          return <Loader />;
-        }}
-      />
-    );
-  }
-}
-
-RootPlaybook.propTypes = {
-  children: PropTypes.node,
-  match: PropTypes.object,
+          return <ErrorNotFound />;
+        }
+        return <Loader />;
+      }}
+    />
+  );
 };
 
-export default withRouter(RootPlaybook);
+export default RootPlaybook;

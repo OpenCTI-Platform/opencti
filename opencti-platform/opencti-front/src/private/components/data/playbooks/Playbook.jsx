@@ -13,13 +13,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import 'reactflow/dist/style.css';
-import ReactFlow, { useNodesState, useEdgesState } from 'reactflow';
-import { useFormatter } from '../../../../components/i18n';
+import ReactFlow, { ReactFlowProvider, useReactFlow } from 'reactflow';
+import { v4 as uuid } from 'uuid';
 import PlaybookHeader from './PlaybookHeader';
+import useLayout from './hooks/useLayout';
+import nodeTypes from './types/nodes';
+import edgeTypes from './types/edges';
+import PlaybookAddComponents from './PlaybookAddComponents';
+import { addPlaceholders, computeNodes, computeEdges } from './utils/playbook';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -28,35 +33,112 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const initialNodes = [
-  { id: '1', data: { label: 'Node 1' }, position: { x: '50%', y: 100 } },
-  { id: '2', data: { label: 'Node 2' }, position: { x: 100, y: 200 } },
-];
-const initialEdges = [{ id: 'e1-2', source: '1', target: '2' }];
-
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
+const proOptions = { account: 'paid-pro', hideAttribution: true };
 
-const PlaybookComponent = ({ playbook }) => {
+const PlaybookComponent = ({ playbook, playbookComponents }) => {
   const classes = useStyles();
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const { t } = useFormatter();
+  const definition = JSON.parse(playbook.playbook_definition);
+  const [selectedNode, setSelectedNode] = useState(null);
   const width = window.innerWidth - 80;
   const height = window.innerHeight - 160;
+  const Flow = () => {
+    useLayout();
+    const { setNodes, setEdges } = useReactFlow();
+    const initialNodes = computeNodes(definition.nodes, playbookComponents);
+    const initialEdges = computeEdges(definition.links);
+    const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
+      initialNodes,
+      initialEdges,
+    );
+    const onConfig = (component, config) => {
+      console.log(component, config);
+
+      // This is a new node
+      if (selectedNode.type === 'placeholder') {
+        const childPlaceholderId = uuid();
+        const childPlaceholderNode = {
+          id: childPlaceholderId,
+          position: { x: selectedNode.position.x, y: selectedNode.position.y },
+          type: 'placeholder',
+          data: {
+            id: 'PLACEHOLDER',
+            name: '+',
+          },
+        };
+        const childPlaceholderEdge = {
+          id: `${selectedNode.id}=>${childPlaceholderId}`,
+          source: selectedNode.id,
+          target: childPlaceholderId,
+          type: 'placeholder',
+        };
+        setNodes((nodes) => nodes
+          .map((node) => {
+            if (node.id === selectedNode.id) {
+              return {
+                ...node,
+                type: 'workflow',
+                data: {
+                  is_entry_point: node.data.is_entry_point,
+                  id: component.id + uuid(),
+                  name: component.name,
+                  component_id: component.id,
+                },
+              };
+            }
+            return node;
+          })
+        // add the new placeholder node
+          .concat([childPlaceholderNode]));
+        setEdges((edges) => edges
+          .map((edge) => {
+            // here we are changing the type of the connecting edge from placeholder to workflow
+            if (edge.target === selectedNode) {
+              return {
+                ...edge,
+                type: 'workflow',
+              };
+            }
+            return edge;
+          })
+        // add the new placeholder edge
+          .concat([childPlaceholderEdge]));
+      }
+    };
+    return (
+      <>
+        <ReactFlow
+          defaultNodes={flowNodes}
+          defaultEdges={flowEdges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          onNodeClick={(_, node) => setSelectedNode(node)}
+          defaultViewport={defaultViewport}
+          minZoom={0.2}
+          maxZoom={4}
+          fitView={true}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          zoomOnDoubleClick={false}
+          proOptions={proOptions}
+        />
+        <PlaybookAddComponents
+          open={selectedNode !== null}
+          handleClose={() => setSelectedNode(null)}
+          selectedNode={selectedNode}
+          onConfig={onConfig}
+          playbookComponents={playbookComponents}
+        />
+      </>
+    );
+  };
   return (
     <>
       <PlaybookHeader playbook={playbook} />
       <div className={classes.container} style={{ width, height }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          defaultViewport={defaultViewport}
-          minZoom={0.2}
-          maxZoom={4}
-          proOptions={{ hideAttribution: true }}
-        />
+        <ReactFlowProvider>
+          <Flow />
+        </ReactFlowProvider>
       </div>
     </>
   );

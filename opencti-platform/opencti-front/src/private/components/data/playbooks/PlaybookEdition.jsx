@@ -17,17 +17,17 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: theme.palette.background.nav,
     padding: '20px 0px 20px 60px',
@@ -38,23 +38,10 @@ const styles = (theme) => ({
     left: 5,
     color: 'inherit',
   },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
   container: {
     padding: '10px 20px 20px 20px',
   },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    borderBottom: '1px solid #5c5c5c',
-  },
-  title: {
-    float: 'left',
-  },
-});
+}));
 
 export const playbookMutationFieldPatch = graphql`
   mutation PlaybookEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -69,17 +56,18 @@ const playbookValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
-const PlaybookEditionContainer = (props) => {
-  const { t, classes, handleClose, playbook } = props;
+const PlaybookEditionContainer = ({ handleClose, playbook }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
   const initialValues = R.pickAll(['name', 'description'], playbook);
   const handleSubmitField = (name, value) => {
-    playbookValidation(props.t)
+    playbookValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: playbookMutationFieldPatch,
           variables: {
-            id: props.playbook.id,
+            id: playbook.id,
             input: { key: name, value: value || '' },
           },
         });
@@ -155,7 +143,4 @@ const PlaybookEditionFragment = createFragmentContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(PlaybookEditionFragment);
+export default PlaybookEditionFragment;

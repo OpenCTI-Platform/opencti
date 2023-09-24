@@ -17039,15 +17039,16 @@ export enum PlaybookFilter {
   Name = 'name'
 }
 
-export type PlaybookFiltering = {
+export type PlaybooksFiltering = {
   filterMode?: InputMaybe<FilterMode>;
   key: Array<PlaybookFilter>;
   operator?: InputMaybe<Scalars['String']['input']>;
   values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
-export enum PlaybookOrdering {
-  Name = 'name'
+export enum PlaybooksOrdering {
+  Name = 'name',
+  PlaybookRunning = 'playbook_running'
 }
 
 export type Position = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
@@ -19014,9 +19015,9 @@ export type QueryPlaybookArgs = {
 export type QueryPlaybooksArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<PlaybookFiltering>>;
+  filters?: InputMaybe<Array<PlaybooksFiltering>>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<PlaybookOrdering>;
+  orderBy?: InputMaybe<PlaybooksOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -29049,8 +29050,8 @@ export type ResolversTypes = ResolversObject<{
   PlaybookConnection: ResolverTypeWrapper<Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversTypes['PlaybookEdge']> }>;
   PlaybookEdge: ResolverTypeWrapper<Omit<PlaybookEdge, 'node'> & { node: ResolversTypes['Playbook'] }>;
   PlaybookFilter: PlaybookFilter;
-  PlaybookFiltering: PlaybookFiltering;
-  PlaybookOrdering: PlaybookOrdering;
+  PlaybooksFiltering: PlaybooksFiltering;
+  PlaybooksOrdering: PlaybooksOrdering;
   Position: ResolverTypeWrapper<Omit<Position, 'cases' | 'city' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, city?: Maybe<ResolversTypes['City']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   PositionAddInput: PositionAddInput;
   PositionConnection: ResolverTypeWrapper<Omit<PositionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['PositionEdge']>>> }>;
@@ -29784,7 +29785,7 @@ export type ResolversParentTypes = ResolversObject<{
   PlaybookComponentPort: PlaybookComponentPort;
   PlaybookConnection: Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversParentTypes['PlaybookEdge']> };
   PlaybookEdge: Omit<PlaybookEdge, 'node'> & { node: ResolversParentTypes['Playbook'] };
-  PlaybookFiltering: PlaybookFiltering;
+  PlaybooksFiltering: PlaybooksFiltering;
   Position: Omit<Position, 'cases' | 'city' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, city?: Maybe<ResolversParentTypes['City']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PositionAddInput: PositionAddInput;
   PositionConnection: Omit<PositionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['PositionEdge']>>> };

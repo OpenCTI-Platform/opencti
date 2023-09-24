@@ -13,11 +13,8 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -27,16 +24,17 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { withRouter } from 'react-router-dom';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import PlaybookEdition, { playbookMutationFieldPatch } from './PlaybookEdition';
 import { deleteNode } from '../../../../utils/store';
+import { useFormatter } from '../../../../components/i18n';
+import Transition from '../../../../components/Transition';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     margin: 0,
   },
@@ -51,12 +49,7 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-});
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
+}));
 
 const playbookPopoverDeletionMutation = graphql`
   mutation PlaybookPopoverDeletionMutation($id: ID!) {
@@ -75,281 +68,200 @@ const playbookEditionQuery = graphql`
   }
 `;
 
-class PlaybookPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
-      displayStart: false,
-      starting: false,
-      displayStop: false,
-      stopping: false,
-    };
-  }
-
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
-
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
-  }
-
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  handleOpenStart() {
-    this.setState({ displayStart: true });
-    this.handleClose();
-  }
-
-  handleCloseStart() {
-    this.setState({ displayStart: false });
-  }
-
-  handleOpenStop() {
-    this.setState({ displayStop: true });
-    this.handleClose();
-  }
-
-  handleCloseStop() {
-    this.setState({ displayStop: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
+const PlaybookPopover = ({ playbookId, running, paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [displayStart, setDisplayStart] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [displayStop, setDisplayStop] = useState(false);
+  const [stopping, setStopping] = useState(false);
+  const handleOpenUpdate = () => {
+    setAnchorEl(null);
+    setDisplayUpdate(true);
+  };
+  const handleOpenDelete = () => {
+    setAnchorEl(null);
+    setDisplayDelete(true);
+  };
+  const handleOpenStart = () => {
+    setAnchorEl(null);
+    setDisplayStart(true);
+  };
+  const handleOpenStop = () => {
+    setAnchorEl(null);
+    setDisplayStop(true);
+  };
+  const submitDelete = () => {
+    setDeleting(true);
     commitMutation({
       mutation: playbookPopoverDeletionMutation,
       variables: {
-        id: this.props.playbookId,
+        id: playbookId,
       },
       updater: (store) => {
-        if (this.props.paginationOptions) {
+        if (paginationOptions) {
           deleteNode(
             store,
             'Pagination_playbooks',
-            this.props.paginationOptions,
-            this.props.playbookId,
+            paginationOptions,
+            playbookId,
           );
         }
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        if (this.props.paginationOptions) {
-          this.handleCloseDelete();
-        } else {
-          this.props.history.push('/dashboard/data/processing/automation');
+        setDeleting(false);
+        if (!paginationOptions) {
+          navigate('/dashboard/data/processing/automation');
         }
-        this.handleCloseDelete();
+        setDisplayDelete(true);
       },
     });
-  }
-
-  submitStart() {
-    this.setState({ starting: true });
+  };
+  const submitStart = () => {
+    setStarting(true);
     commitMutation({
       mutation: playbookMutationFieldPatch,
       variables: {
-        id: this.props.playbookId,
+        id: playbookId,
         input: { key: 'playbook_running', value: ['true'] },
       },
       onCompleted: () => {
-        this.setState({ starting: false });
-        this.handleCloseStart();
+        setStarting(false);
+        setDisplayStart(false);
       },
     });
-  }
-
-  submitStop() {
-    this.setState({ stopping: true });
+  };
+  const submitStop = () => {
+    setStopping(true);
     commitMutation({
       mutation: playbookMutationFieldPatch,
       variables: {
-        id: this.props.playbookId,
+        id: playbookId,
         input: { key: 'playbook_running', value: ['false'] },
       },
       onCompleted: () => {
-        this.setState({ stopping: false });
-        this.handleCloseStop();
+        setStopping(false);
+        setDisplayStop(false);
       },
     });
-  }
-
-  render() {
-    const { classes, t, playbookId, running } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          {!running && (
-            <MenuItem onClick={this.handleOpenStart.bind(this)}>
-              {t('Start')}
-            </MenuItem>
-          )}
-          {running && (
-            <MenuItem onClick={this.handleOpenStop.bind(this)}>
-              {t('Stop')}
-            </MenuItem>
-          )}
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+  };
+  return (
+    <div className={classes.container}>
+      <IconButton
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        size="large"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
+        {running ? (
+          <MenuItem onClick={handleOpenStop}>{t('Stop')}</MenuItem>
+        ) : (
+          <MenuItem onClick={handleOpenStart}>{t('Start')}</MenuItem>
+        )}
+        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+      </Menu>
+      <Drawer
+        open={displayUpdate}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={() => setDisplayUpdate(false)}
+      >
+        <QueryRenderer
+          query={playbookEditionQuery}
+          variables={{ id: playbookId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <PlaybookEdition
+                  playbook={props.playbook}
+                  handleClose={() => setDisplayUpdate(false)}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
+      </Drawer>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayDelete}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={() => setDisplayDelete(false)}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this playbook?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDisplayDelete(false)} disabled={deleting}>
+            {t('Cancel')}
+          </Button>
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
-          </MenuItem>
-        </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
-          <QueryRenderer
-            query={playbookEditionQuery}
-            variables={{ id: playbookId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <PlaybookEdition
-                    playbook={props.playbook}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={this.state.displayDelete}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this playbook?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={this.state.displayStart}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseStart.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to start this playbook?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseStart.bind(this)}
-              disabled={this.state.starting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitStart.bind(this)}
-              color="secondary"
-              disabled={this.state.starting}
-            >
-              {t('Start')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={this.state.displayStop}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseStop.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to stop this playbook?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseStop.bind(this)}
-              disabled={this.state.stopping}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              onClick={this.submitStop.bind(this)}
-              color="secondary"
-              disabled={this.state.stopping}
-            >
-              {t('Stop')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
-
-PlaybookPopover.propTypes = {
-  playbookId: PropTypes.string,
-  running: PropTypes.bool,
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayStart}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={() => setDisplayStart(false)}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to start this playbook?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDisplayStart(false)} disabled={starting}>
+            {t('Cancel')}
+          </Button>
+          <Button onClick={submitStart} color="secondary" disabled={starting}>
+            {t('Start')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayStop}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={() => setDisplayStop(false)}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to stop this playbook?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDisplayStop(false)} disabled={stopping}>
+            {t('Cancel')}
+          </Button>
+          <Button onClick={submitStop} color="secondary" disabled={stopping}>
+            {t('Stop')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(PlaybookPopover);
+export default PlaybookPopover;
