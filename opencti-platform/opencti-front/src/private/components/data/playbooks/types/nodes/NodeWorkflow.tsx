@@ -1,23 +1,16 @@
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   node: {
     border:
       theme.palette.mode === 'dark'
-        ? '1px dashed rgba(255, 255, 255, 0.05)'
-        : '1px dashed rgba(0, 0, 0, 0.05)',
+        ? '1px solid rgba(255, 255, 255, 0.12)'
+        : '1px solid rgba(0, 0, 0, 0.12)',
     borderRadius: 4,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.05)'
-        : 'rgba(0, 0, 0, 0.05)',
-    color:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.05)'
-        : 'rgba(0, 0, 0, 0.05)',
+    backgroundColor: theme.palette.background.paper,
     padding: 12,
     width: 160,
     textAlign: 'center',
@@ -25,28 +18,26 @@ const useStyles = makeStyles<Theme>((theme) => ({
     '&:hover': {
       border:
         theme.palette.mode === 'dark'
-          ? '1px dashed rgba(255, 255, 255, 0.2)'
-          : '1px dashed rgba(0, 0, 0, 0.2)',
+          ? '1px solid rgba(255, 255, 255, 0.2)'
+          : '1px solid rgba(0, 0, 0, 0.2)',
     },
   },
-  handle: {
-    visibility: 'hidden',
+  name: {
+    fontSize: 12,
   },
 }));
 
-const PlaceholderNode = ({ id, data }: NodeProps) => {
+const NodeWorkflow = ({ data }: NodeProps) => {
   const classes = useStyles();
   return (
     <div className={classes.node}>
-      {data.name}
+      <span className={classes.name}>{data.name}</span>
       <Handle
-        className={classes.handle}
         type="target"
         position={Position.Top}
         isConnectable={false}
       />
       <Handle
-        className={classes.handle}
         type="source"
         position={Position.Bottom}
         isConnectable={false}
@@ -55,4 +46,4 @@ const PlaceholderNode = ({ id, data }: NodeProps) => {
   );
 };
 
-export default memo(PlaceholderNode);
+export default memo(NodeWorkflow);

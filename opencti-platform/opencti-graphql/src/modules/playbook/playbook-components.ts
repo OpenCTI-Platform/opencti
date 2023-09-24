@@ -81,8 +81,8 @@ const PLAYBOOK_IP_EXTERNAL_CONNECTOR: PlaybookComponent<ConnectorConfiguration> 
 interface StreamConfiguration extends PlaybookComponentConfiguration {}
 const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   id: 'PLAYBOOK_INTERNAL_DATA_STREAM',
-  name: 'Internal stream listener',
-  description: 'Listen platform data events',
+  name: 'Listen knowledge events',
+  description: 'Listen for all platform knowledge events',
   is_entry_point: true,
   is_internal: true,
   ports: [{ id: 'out', type: 'out' }],
@@ -96,7 +96,7 @@ interface FilterConfiguration extends PlaybookComponentConfiguration {
 }
 const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   id: 'PLAYBOOK_FILTERING_COMPONENT',
-  name: 'Stix filtering component',
+  name: 'Filter knowledge',
   description: 'Filter stix data',
   is_entry_point: false,
   is_internal: true,

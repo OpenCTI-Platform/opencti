@@ -108,16 +108,13 @@ const StreamCollectionCreation = (props) => {
   const { t, classes } = props;
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState({});
-
   const handleOpen = () => {
     setOpen(true);
   };
-
   const handleClose = () => {
     setFilters({});
     setOpen(false);
   };
-
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = JSON.stringify(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -148,11 +145,9 @@ const StreamCollectionCreation = (props) => {
       },
     });
   };
-
   const onReset = () => {
     handleClose();
   };
-
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters({
@@ -165,13 +160,11 @@ const StreamCollectionCreation = (props) => {
       setFilters({ ...filters, [key]: [{ id, value }] });
     }
   };
-
   const handleRemoveFilter = (key) => {
     setFilters(R.dissoc(key, filters));
   };
-
   return (
-    <div>
+    <>
       <Fab
         onClick={handleOpen}
         color="secondary"
@@ -325,7 +318,7 @@ const StreamCollectionCreation = (props) => {
           </Formik>
         </div>
       </Drawer>
-    </div>
+    </>
   );
 };
 

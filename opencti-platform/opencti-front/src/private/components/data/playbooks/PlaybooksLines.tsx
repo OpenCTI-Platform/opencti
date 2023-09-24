@@ -18,12 +18,6 @@ interface PlaybookLinesProps {
   dataColumns: DataColumns;
   paginationOptions?: PlaybooksLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent,
-  ) => void;
 }
 
 export const playbooksLinesQuery = graphql`
@@ -88,7 +82,6 @@ const PlaybooksLines: FunctionComponent<PlaybookLinesProps> = ({
   queryRef,
   dataColumns,
   paginationOptions,
-  onLabelClick,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   PlaybooksLinesPaginationQuery,
@@ -114,7 +107,6 @@ const PlaybooksLines: FunctionComponent<PlaybookLinesProps> = ({
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
-      onLabelClick={onLabelClick}
     />
   );
 };

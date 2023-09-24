@@ -17004,6 +17004,7 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   playbook_id: Scalars['ID']['input'];
+  position: PositionInput;
 };
 
 export type PlaybookComponent = {
@@ -17311,6 +17312,11 @@ export type PositionEditMutationsRelationAddArgs = {
 export type PositionEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+export type PositionInput = {
+  x: Scalars['Int']['input'];
+  y: Scalars['Int']['input'];
 };
 
 export enum PositionsFilter {
@@ -29057,6 +29063,7 @@ export type ResolversTypes = ResolversObject<{
   PositionConnection: ResolverTypeWrapper<Omit<PositionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['PositionEdge']>>> }>;
   PositionEdge: ResolverTypeWrapper<Omit<PositionEdge, 'node'> & { node: ResolversTypes['Position'] }>;
   PositionEditMutations: ResolverTypeWrapper<Omit<PositionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Position']>, contextPatch?: Maybe<ResolversTypes['Position']>, fieldPatch?: Maybe<ResolversTypes['Position']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Position']> }>;
+  PositionInput: PositionInput;
   PositionsFilter: PositionsFilter;
   PositionsFiltering: PositionsFiltering;
   PositionsOrdering: PositionsOrdering;
@@ -29791,6 +29798,7 @@ export type ResolversParentTypes = ResolversObject<{
   PositionConnection: Omit<PositionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['PositionEdge']>>> };
   PositionEdge: Omit<PositionEdge, 'node'> & { node: ResolversParentTypes['Position'] };
   PositionEditMutations: Omit<PositionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Position']>, contextPatch?: Maybe<ResolversParentTypes['Position']>, fieldPatch?: Maybe<ResolversParentTypes['Position']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Position']> };
+  PositionInput: PositionInput;
   PositionsFiltering: PositionsFiltering;
   Process: Omit<Process, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'serviceDlls' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversParentTypes['StixFileConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   ProcessAddInput: ProcessAddInput;

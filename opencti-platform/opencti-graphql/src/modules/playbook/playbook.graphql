@@ -72,10 +72,16 @@ input PlaybookAddInput {
     description: String
 }
 
+input PositionInput {
+    x: Int!
+    y: Int!
+}
+
 input PlaybookAddNodeInput {
     playbook_id: ID!
     name: String!
     component_id: String!
+    position: PositionInput!
     configuration: String
 }
 

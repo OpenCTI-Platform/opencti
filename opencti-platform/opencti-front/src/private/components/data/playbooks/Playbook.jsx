@@ -18,13 +18,19 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import 'reactflow/dist/style.css';
 import ReactFlow, { ReactFlowProvider, useReactFlow } from 'reactflow';
-import { v4 as uuid } from 'uuid';
+import { ErrorBoundary, SimpleError } from '@components/Error';
 import PlaybookHeader from './PlaybookHeader';
 import useLayout from './hooks/useLayout';
 import nodeTypes from './types/nodes';
 import edgeTypes from './types/edges';
 import PlaybookAddComponents from './PlaybookAddComponents';
-import { addPlaceholders, computeNodes, computeEdges } from './utils/playbook';
+import {
+  addPlaceholders,
+  computeNodes,
+  computeEdges,
+  addNode,
+} from './utils/playbook';
+import { commitMutation } from '../../../../relay/environment';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -35,6 +41,39 @@ const useStyles = makeStyles(() => ({
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
+const fitViewOptions = { padding: 0.95 };
+
+export const playbookAddNodeMutation = graphql`
+  mutation PlaybookAddNodeMutation($input: PlaybookAddNodeInput!) {
+    playbookAddNode(input: $input) {
+      id
+    }
+  }
+`;
+
+export const playbookAddLinkMutation = graphql`
+  mutation PlaybookAddLinkMutation($input: PlaybookAddLinkInput!) {
+    playbookAddLink(input: $input) {
+      id
+    }
+  }
+`;
+
+export const playbookDeleteNodeMutation = graphql`
+  mutation PlaybookDeleteNodeMutation($id: ID!, $nodeId: ID!) {
+    playbookDeleteNode(id: $id, nodeId: $nodeId) {
+      id
+    }
+  }
+`;
+
+export const playbookDeleteLinkMutation = graphql`
+  mutation PlaybookDeleteLinkMutation($id: ID!, $linkId: ID!) {
+    playbookDeleteLink(id: $id, linkId: $linkId) {
+      id
+    }
+  }
+`;
 
 const PlaybookComponent = ({ playbook, playbookComponents }) => {
   const classes = useStyles();
@@ -44,66 +83,73 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
   const height = window.innerHeight - 160;
   const Flow = () => {
     useLayout();
-    const { setNodes, setEdges } = useReactFlow();
+    const { getNodes, setNodes, getEdges, setEdges } = useReactFlow();
     const initialNodes = computeNodes(definition.nodes, playbookComponents);
     const initialEdges = computeEdges(definition.links);
+    const add = (originId) => {
+      const originNode = getNodes()
+        .filter((n) => n.id === originId)
+        .at(0);
+      setSelectedNode(originNode);
+    };
     const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
       initialNodes,
       initialEdges,
+      add,
     );
     const onConfig = (component, config) => {
-      console.log(component, config);
-
-      // This is a new node
-      if (selectedNode.type === 'placeholder') {
-        const childPlaceholderId = uuid();
-        const childPlaceholderNode = {
-          id: childPlaceholderId,
-          position: { x: selectedNode.position.x, y: selectedNode.position.y },
-          type: 'placeholder',
-          data: {
-            id: 'PLACEHOLDER',
-            name: '+',
+      const position = {
+        x: selectedNode.position.x,
+        y: selectedNode.position.y,
+      };
+      commitMutation({
+        mutation: playbookAddNodeMutation,
+        variables: {
+          input: {
+            playbook_id: playbook.id,
+            name: config?.name ?? component.name,
+            component_id: component.id,
+            position,
+            configuration: config ? JSON.stringify(config) : null,
           },
-        };
-        const childPlaceholderEdge = {
-          id: `${selectedNode.id}=>${childPlaceholderId}`,
-          source: selectedNode.id,
-          target: childPlaceholderId,
-          type: 'placeholder',
-        };
-        setNodes((nodes) => nodes
-          .map((node) => {
-            if (node.id === selectedNode.id) {
-              return {
-                ...node,
-                type: 'workflow',
-                data: {
-                  is_entry_point: node.data.is_entry_point,
-                  id: component.id + uuid(),
-                  name: component.name,
-                  component_id: component.id,
-                },
-              };
-            }
-            return node;
-          })
-        // add the new placeholder node
-          .concat([childPlaceholderNode]));
-        setEdges((edges) => edges
-          .map((edge) => {
-            // here we are changing the type of the connecting edge from placeholder to workflow
-            if (edge.target === selectedNode) {
-              return {
-                ...edge,
-                type: 'workflow',
-              };
-            }
-            return edge;
-          })
-        // add the new placeholder edge
-          .concat([childPlaceholderEdge]));
-      }
+        },
+        onCompleted: () => {
+          const parentNode = selectedNode.type === 'placeholder'
+            ? selectedNode
+            : getNodes()
+              .filter(
+                (n) => n.id
+                      === getEdges()
+                        .filter((o) => o.target === selectedNode.id)
+                        .at(0).target,
+              )
+              .at(0);
+          console.log(parentNode);
+          commitMutation({
+            mutation: playbookAddLinkMutation,
+            variables: {
+              input: {
+                playbook_id: playbook.id,
+                component_id: component.id,
+                position,
+                configuration: config ? JSON.stringify(config) : null,
+              },
+            },
+            onCompleted: () => {
+              const { nodes: newNodes, edges: newEdges } = addNode(
+                selectedNode,
+                add,
+                component,
+                config,
+                getNodes(),
+                getEdges(),
+              );
+              setNodes(newNodes);
+              setEdges(newEdges);
+            },
+          });
+        },
+      });
     };
     return (
       <>
@@ -112,11 +158,10 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
           defaultEdges={flowEdges}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          onNodeClick={(_, node) => setSelectedNode(node)}
           defaultViewport={defaultViewport}
           minZoom={0.2}
-          maxZoom={4}
           fitView={true}
+          fitViewOptions={fitViewOptions}
           nodesDraggable={false}
           nodesConnectable={false}
           zoomOnDoubleClick={false}
@@ -135,11 +180,19 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
   return (
     <>
       <PlaybookHeader playbook={playbook} />
-      <div className={classes.container} style={{ width, height }}>
-        <ReactFlowProvider>
-          <Flow />
-        </ReactFlowProvider>
-      </div>
+      <ErrorBoundary
+        display={
+          <div style={{ paddingTop: 28 }}>
+            <SimpleError />
+          </div>
+        }
+      >
+        <div className={classes.container} style={{ width, height }}>
+          <ReactFlowProvider>
+            <Flow />
+          </ReactFlowProvider>
+        </div>
+      </ErrorBoundary>
     </>
   );
 };

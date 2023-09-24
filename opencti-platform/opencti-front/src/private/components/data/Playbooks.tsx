@@ -16,8 +16,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent } from 'react';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import makeStyles from '@mui/styles/makeStyles';
+import EnterpriseEdition from '@components/common/EnterpriseEdition';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import type { Filters } from '../../../components/list_lines';
 import ListLines from '../../../components/list_lines/ListLines';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -32,6 +32,7 @@ import {
 } from './playbooks/__generated__/PlaybooksLinesPaginationQuery.graphql';
 import { PlaybookLineDummy } from './playbooks/PlaybookLine';
 import { Theme } from '../../../components/Theme';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 export const LOCAL_STORAGE_KEY_PLAYBOOKS = 'view-playbooks';
 
@@ -44,14 +45,13 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const Playbooks: FunctionComponent = () => {
   const classes = useStyles();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PlaybooksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_PLAYBOOKS,
     {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-      openExports: false,
-      filters: {} as Filters,
       numberOfElements: {
         number: 0,
         symbol: '',
@@ -59,14 +59,7 @@ const Playbooks: FunctionComponent = () => {
     },
   );
   const renderLines = () => {
-    const {
-      searchTerm,
-      sortBy,
-      orderAsc,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { searchTerm, sortBy, orderAsc, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -95,26 +88,9 @@ const Playbooks: FunctionComponent = () => {
         dataColumns={dataColumns}
         handleSort={helpers.handleSort}
         handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportEntityType="Data-Source"
         keyword={searchTerm}
-        filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'x_opencti_workflow_id',
-          'labelledBy',
-          'markedBy',
-          'createdBy',
-          'source_reliability',
-          'confidence',
-          'created_start_date',
-          'created_end_date',
-          'revoked',
-        ]}
       >
         {queryRef && (
           <React.Suspense
@@ -132,7 +108,6 @@ const Playbooks: FunctionComponent = () => {
               queryRef={queryRef}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
-              onLabelClick={helpers.handleAddFilter}
               setNumberOfElements={helpers.handleSetNumberOfElements}
             />
           </React.Suspense>
@@ -143,10 +118,16 @@ const Playbooks: FunctionComponent = () => {
   return (
     <div className={classes.container}>
       <ProcessingMenu />
-      {renderLines()}
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <PlaybookCreation paginationOptions={paginationOptions} />
-      </Security>
+      {isEnterpriseEdition ? (
+        <>
+          {renderLines()}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <PlaybookCreation paginationOptions={paginationOptions} />
+          </Security>
+        </>
+      ) : (
+        <EnterpriseEdition />
+      )}
     </div>
   );
 };

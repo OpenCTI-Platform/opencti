@@ -74,6 +74,7 @@ export interface ComponentDefinition {
   nodes: {
     id: string,
     name: string,
+    position: { x: number, y: number },
     component_id: string,
     configuration: string // json
   }[]
@@ -105,11 +106,12 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
               x: { type: 'number' },
               y: { type: 'number' }
             },
+            required: ['x', 'y']
           },
           component_id: { type: 'string' },
           configuration: { type: 'string' },
         },
-        required: ['id', 'name', 'component_id', 'configuration'],
+        required: ['id', 'name', 'position', 'component_id', 'configuration'],
       },
     },
     links: {

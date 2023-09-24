@@ -1,11 +1,11 @@
 import { NodeTypes } from 'reactflow';
 
-import PlaceholderNode from './PlaceholderNode';
-import WorkflowNode from './WorkflowNode';
+import NodePlaceholder from './NodePlaceholder';
+import NodeWorkflow from './NodeWorkflow';
 
 const nodeTypes: NodeTypes = {
-  placeholder: PlaceholderNode,
-  workflow: WorkflowNode,
+  placeholder: NodePlaceholder,
+  workflow: NodeWorkflow,
 };
 
 export default nodeTypes;

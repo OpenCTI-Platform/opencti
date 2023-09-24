@@ -58,6 +58,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, inpu
   definition.nodes.push({
     id: nodeId,
     name: input.name,
+    position: input.position,
     component_id: input.component_id,
     configuration: input.configuration ?? '{}' // TODO Check valid json
   });
