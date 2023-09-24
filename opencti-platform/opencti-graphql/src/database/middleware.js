@@ -924,7 +924,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   } else if (isMultiple) {
     const currentValues = (Array.isArray(instance[key]) ? instance[key] : [instance[key]]) ?? [];
     if (operation === UPDATE_OPERATION_ADD) {
-      finalVal = R.uniq([...currentValues ?? [], value].flat().filter((v) => isNotEmptyField(v)));
+      finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
     } else if (operation === UPDATE_OPERATION_REMOVE) {
       finalVal = R.filter((n) => !R.includes(n, value), currentValues);
     } else {
@@ -1813,7 +1813,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     const isInputAliases = (input) => input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI;
     const aliasedInputs = R.filter((input) => isInputAliases(input), attributes);
     if (aliasedInputs.length > 0) {
-      const aliases = R.uniq((aliasedInputs ?? []).map((a) => a.value).flat().filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+      const aliases = R.uniq(aliasedInputs.map((a) => a.value).flat().filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
       const aliasesIds = generateAliasesId(aliases, initial);
       const existingEntities = await internalFindByIds(context, user, aliasesIds, { type: initial.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== initial.id, existingEntities);
@@ -2959,10 +2959,10 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // -- Aliased entities
   if (isStixObjectAliased(type)) {
     if (input.aliases) {
-      data.aliases = R.uniq((input.aliases ?? []).filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+      data.aliases = R.uniq(input.aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
     }
     if (input.x_opencti_aliases) {
-      data.x_opencti_aliases = R.uniq((input.x_opencti_aliases ?? []).filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
+      data.x_opencti_aliases = R.uniq(input.x_opencti_aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
   }

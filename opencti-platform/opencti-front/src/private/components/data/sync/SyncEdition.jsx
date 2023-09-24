@@ -112,7 +112,6 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
       'synchronized',
     ]),
   )(synchronizer);
-  const openAdvancedOptions = initialValues.no_dependencies || initialValues.synchronized;
   const isStreamAccessible = isNotEmptyField(
     streams.find((s) => s.id === initialValues.stream_id),
   );
