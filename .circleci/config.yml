@@ -415,6 +415,24 @@ jobs:
       - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-front
       - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-ingest
       - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-worker
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-alienvault
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-common-vulnerabilities-and-exposures
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-exportfilecsv
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-exportfilestix2
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-exportfiletxt
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-exportreportpdf
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-google-dns
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-hybrid-analysis-sandbox-windows-10-64bit
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-hygiene
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-importdocument
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-importexternalreference
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-importfilestix
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-ipinfo
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-malpedia
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-misp-feed-cert-fr-cert-fr
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-misp-feed-circl-circl
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-opencti-datasets
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment/opencti-connector-virustotal
 
   notify_rolling:
     docker:
