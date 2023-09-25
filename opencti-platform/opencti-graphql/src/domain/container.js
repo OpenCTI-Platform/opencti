@@ -53,9 +53,18 @@ export const objects = async (context, user, containerId, args) => {
   const objectRelationsPromise = listAllRelations(context, user, RELATION_OBJECT, relationArgs);
   const key = buildRefRelationKey(RELATION_OBJECT, '*');
   const filters = [{ key, values: [containerId], operator: 'wildcard' }, ...(args.filters || [])];
-  const queryFilters = { ...args, filters, connectionFormat: true };
-  const elementsPromise = args.all ? listAllThings(context, user, types, queryFilters) : listThings(context, user, types, queryFilters);
-  const [relations, { edges, pageInfo }] = await Promise.all([objectRelationsPromise, elementsPromise]);
+  const queryFilters = { ...args, filters };
+  let relations = [];
+  let elements = [];
+  let edges = [];
+  let pageInfo = {};
+  if (args.all) {
+    const elementsPromise = listAllThings(context, user, types, queryFilters);
+    [relations, elements] = await Promise.all([objectRelationsPromise, elementsPromise]);
+  } else {
+    const elementsPromise = listThings(context, user, types, { ...queryFilters, connectionFormat: true });
+    [relations, { edges, pageInfo }] = await Promise.all([objectRelationsPromise, elementsPromise]);
+  }
   const relationsMap = new Map();
   // Container objects can be manual and/or inferred
   // This type must be specified to inform the UI what's need to be done.
@@ -72,16 +81,16 @@ export const objects = async (context, user, containerId, args) => {
   }
   // Rebuild the final result
   const resultNodes = [];
-  const elements = edges?.map((n) => n.node);
-  for (let index = 0; index < elements?.length; index += 1) {
-    const element = elements[index];
+  const finalElements = args.all ? elements : edges?.map((n) => n.node);
+  for (let index = 0; index < finalElements?.length; index += 1) {
+    const element = finalElements[index];
     const relationTypes = relationsMap.get(element.id);
     if (relationTypes) {
       const edge = { types: relationTypes, node: element, sort: element.sort };
       resultNodes.push(edge);
     }
   }
-  return buildPagination(args.first, args.after, resultNodes, pageInfo?.globalCount);
+  return buildPagination(args.first, args.after, resultNodes, args.all ? resultNodes.length : pageInfo?.globalCount);
 };
 
 export const relatedContainers = async (context, user, containerId, args) => {

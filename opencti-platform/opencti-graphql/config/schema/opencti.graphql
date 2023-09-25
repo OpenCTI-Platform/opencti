@@ -3276,7 +3276,7 @@ input ObservedDataAddInput {
   x_opencti_stix_ids: [StixId]
   first_observed: DateTime!
   last_observed: DateTime!
-  number_observed: Int
+  number_observed: Int!
   revoked: Boolean
   lang: String
   confidence: Int

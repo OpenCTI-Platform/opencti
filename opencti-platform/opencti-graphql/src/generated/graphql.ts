@@ -15749,7 +15749,7 @@ export type ObservedDataAddInput = {
   lang?: InputMaybe<Scalars['String']['input']>;
   last_observed: Scalars['DateTime']['input'];
   modified?: InputMaybe<Scalars['DateTime']['input']>;
-  number_observed?: InputMaybe<Scalars['Int']['input']>;
+  number_observed: Scalars['Int']['input'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;

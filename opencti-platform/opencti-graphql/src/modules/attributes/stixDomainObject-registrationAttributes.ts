@@ -148,7 +148,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       type: 'numeric',
       mandatoryType: 'external',
       multiple: false,
-      upsert: false,
+      upsert: true,
       label: 'Number observed'
     },
     { name: 'content', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },

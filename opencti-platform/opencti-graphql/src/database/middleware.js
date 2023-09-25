@@ -2458,7 +2458,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   // Upsert relation
   // If confidence is passed at creation, just compare confidence
   // Else check if update is explicitly true
-  const forceUpdate = updatePatch.confidence ? updatePatch.confidence >= element.confidence : updatePatch.update === true;
+  const forceUpdate = isNotEmptyField(updatePatch.confidence) ? updatePatch.confidence >= element.confidence : updatePatch.update === true;
   const patchInputs = []; // Sourced inputs for event stream
   const impactedInputs = []; // All inputs impacted by modifications (+inner)
   const rawRelations = [];
