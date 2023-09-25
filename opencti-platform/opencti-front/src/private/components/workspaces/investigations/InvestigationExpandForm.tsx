@@ -3,7 +3,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -19,6 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import {
   InvestigationExpandFormTargetsDistributionQuery$data,
 } from './__generated__/InvestigationExpandFormTargetsDistributionQuery.graphql';
+import CheckboxesField from '../../../../components/CheckboxesField';
 
 // The number of elements targeted by or targeting the given
 // entities ids, sorted by type of entity.
@@ -73,8 +74,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 type FormData = {
-  entity_types: string[],
-  relationship_types: string[],
+  entity_types: SelectOption[],
+  relationship_types: SelectOption[],
   reset_filters: boolean,
 };
 
@@ -97,7 +98,10 @@ type Props = {
     }
     [key:string]: unknown
   }[]
-  selectedNodes: string[]
+  selectedNodes: {
+    id: string
+    [key:string]: unknown
+  }[]
   onSubmit: (data: FormData, helpers: FormikHelpers<FormData>) => void
   onReset: () => void
 };
@@ -153,42 +157,53 @@ export default function InvestigationExpandForm({
     return countTargets;
   }, [links]);
 
-  async function fetchTargets() {
-    const { stixRelationshipsDistribution } = await fetchQuery(
-      investigationExpandFormTargetsDistributionQuery,
-      { ids: selectedNodes },
-    ).toPromise() as InvestigationExpandFormTargetsDistributionQuery$data;
+  // Fetch all possible targets connected to the node to expand.
+  useEffect(() => {
+    async function fetchTargets() {
+      if (selectedNodes.length === 0) return;
+      const nodeIds = Array.from(selectedNodes).map((node) => node.id);
 
-    const existingTargetsSelected = new Map<string, number>();
-    selectedNodes.forEach((node) => {
-      const nodeTargets = existingTargets.get(node);
-      if (nodeTargets) {
-        nodeTargets.forEach((value, key) => {
-          const current = existingTargetsSelected.get(key);
-          if (current !== undefined) {
-            existingTargetsSelected.set(key, current + value);
-          } else {
-            existingTargetsSelected.set(key, value);
-          }
-        });
-      }
-    });
+      const { stixRelationshipsDistribution } = await fetchQuery(
+        investigationExpandFormTargetsDistributionQuery,
+        { ids: nodeIds },
+      ).toPromise() as InvestigationExpandFormTargetsDistributionQuery$data;
 
-    const nonNullDistribution = (stixRelationshipsDistribution ?? [])
-      // Use of flatMap() instead of filter() to remove null as TypeScript
-      // does not understand null have been removed using filter().
-      .flatMap((target) => (target ? [target] : []))
-      // Remove from the list if nothing to add.
-      .filter(({ label, value }) => (value ?? 0) - (existingTargetsSelected.get(label) ?? 0) > 0)
-      .sort((a, b) => (a.value ?? 0) - (b.value ?? 0));
+      const existingTargetsSelected = new Map<string, number>();
+      nodeIds.forEach((node) => {
+        const nodeTargets = existingTargets.get(node);
+        if (nodeTargets) {
+          nodeTargets.forEach((value, key) => {
+            const current = existingTargetsSelected.get(key);
+            if (current !== undefined) {
+              existingTargetsSelected.set(key, current + value);
+            } else {
+              existingTargetsSelected.set(key, value);
+            }
+          });
+        }
+      });
 
-    setTargets(
-      nonNullDistribution.map(({ label, value }) => ({
-        label: `${label} (${(value ?? 0) - (existingTargetsSelected.get(label) ?? 0) ?? 0})`,
-        value: label,
-      })),
-    );
-  }
+      const nonNullDistribution = (stixRelationshipsDistribution ?? [])
+        // Use of flatMap() to do both filter() and map() in one step.
+        .flatMap((target) => (target ? [{
+          label: target.label,
+          // Decrease from the count of already displayed elements.
+          value: (target.value ?? 0) - (existingTargetsSelected.get(target.label) ?? 0),
+        }] : []))
+        // Remove from the list entities with nothing to add.
+        .filter(({ value }) => value > 0)
+        .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+
+      setTargets(
+        nonNullDistribution
+          .map(({ label, value }) => ({
+            label: `${label} (${value})`,
+            value: label,
+          })),
+      );
+    }
+    fetchTargets();
+  }, [selectedNodes, existingTargets, setTargets]);
 
   async function searchTypes() {
     const {
@@ -240,16 +255,9 @@ export default function InvestigationExpandForm({
           <DialogContent>
             <Field
               name="entity_types"
-              component={AutocompleteField}
-              multiple={true}
-              options={targets}
-              renderOption={renderSelectOption}
-              noOptionsText={t('No available options')}
-              textfieldprops={{
-                variant: 'standard',
-                label: t('All types of target'),
-                onFocus: fetchTargets,
-              }}
+              component={CheckboxesField}
+              label={t('All types of target')}
+              items={targets}
             />
             <Field
               name="relationship_types"

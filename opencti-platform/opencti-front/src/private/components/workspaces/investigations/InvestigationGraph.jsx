@@ -2033,7 +2033,7 @@ class InvestigationGraphComponent extends Component {
               >
                 <InvestigationExpandForm
                   links={this.graphData.links}
-                  selectedNodes={Array.from(this.selectedNodes).map((node) => node.id)}
+                  selectedNodes={this.selectedNodes}
                   onSubmit={this.onSubmitExpandElements.bind(this)}
                   onReset={this.onResetExpandElements.bind(this)}
                 />
