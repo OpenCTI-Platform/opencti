@@ -6,10 +6,10 @@ steps:
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-node-backend
-      path: /drone/src/opencti-platform/opencti-graphql/node_modules
-    - name: cache-python
-      path: /usr/lib/python3.11
+      - name: cache-node-backend
+        path: /drone/src/opencti-platform/opencti-graphql/node_modules
+      - name: cache-python
+        path: /usr/lib/python3.11
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -54,18 +54,19 @@ steps:
   - name: frontend-tests
     image: node:20-alpine
     volumes:
-    - name: cache-node-frontend
-      path: /drone/src/opencti-platform/opencti-front/node_modules
-    - name: cache-python
-      path: /usr/lib/python3.11
+      - name: cache-node-frontend
+        path: /drone/src/opencti-platform/opencti-front/node_modules
+      - name: cache-python
+        path: /usr/lib/python3.11
     commands:
       - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
       - npm install -g node-gyp
       - apk add build-base git libffi-dev python3 python3-dev
       - ln -sf python3 /usr/bin/python
       - python3 -m ensurepip
-      - pip3 install --no-cache --upgrade pip setuptools
+      - python3 -m pip install --no-cache --upgrade pip setuptools
       - cd opencti-platform/opencti-graphql
+      - python3 -m pip install -r src/python/requirements.txt
       - yarn install
       - yarn build:schema
       - cd ../opencti-front
@@ -109,7 +110,7 @@ steps:
       username: drone
       channel: notifications
     when:
-      status: [success, failure]
+      status: [ success, failure ]
 
 services:
   - name: redis
@@ -125,16 +126,16 @@ services:
     environment:
       MINIO_ROOT_USER: ChangeMe
       MINIO_ROOT_PASSWORD: ChangeMe
-    command: [server, /data]
+    command: [ server, /data ]
   - name: rabbitmq
     image: rabbitmq:3.12-management
   - name: opencti-raw-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-node-raw-start-backend
-      path: /tmp/raw-start-platform/opencti-graphql/node_modules
-    - name: cache-python
-      path: /usr/lib/python3.11
+      - name: cache-node-raw-start-backend
+        path: /tmp/raw-start-platform/opencti-graphql/node_modules
+      - name: cache-python
+        path: /usr/lib/python3.11
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
@@ -161,10 +162,10 @@ services:
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-node-live-start-backend
-      path: /tmp/live-start-platform/opencti-graphql/node_modules
-    - name: cache-python
-      path: /usr/lib/python3.11
+      - name: cache-node-live-start-backend
+        path: /tmp/live-start-platform/opencti-graphql/node_modules
+      - name: cache-python
+        path: /usr/lib/python3.11
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
@@ -191,10 +192,10 @@ services:
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-node-direct-start-backend
-      path: //tmp/direct-start-platform/opencti-graphql/node_modules
-    - name: cache-python
-      path: /usr/lib/python3.11
+      - name: cache-node-direct-start-backend
+        path: //tmp/direct-start-platform/opencti-graphql/node_modules
+      - name: cache-python
+        path: /usr/lib/python3.11
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
@@ -221,8 +222,8 @@ services:
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-python
-      path: /usr/lib/python3.11
+      - name: cache-python
+        path: /usr/lib/python3.11
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -240,10 +241,10 @@ services:
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
-    - name: cache-node-raw-start-backend
-      path: /tmp/restore-start-platform/node_modules
-    - name: cache-python
-      path: /usr/lib/python3.11
+      - name: cache-node-raw-start-backend
+        path: /tmp/restore-start-platform/node_modules
+      - name: cache-python
+        path: /usr/lib/python3.11
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
