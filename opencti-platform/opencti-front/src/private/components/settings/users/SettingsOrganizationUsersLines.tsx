@@ -9,6 +9,7 @@ import {
   SettingsOrganizationUsersLinesQuery$variables,
 } from './__generated__/SettingsOrganizationUsersLinesQuery.graphql';
 import { SettingsOrganizationUsersLines_data$key } from './__generated__/SettingsOrganizationUsersLines_data.graphql';
+import { SettingsOrganizationUserLine, SettingsOrganizationUserLineDummy } from '@components/settings/users/SettingsOrganizationUserLine';
 
 export const settingsOrganizationUsersLinesQuery = graphql`
   query SettingsOrganizationUsersLinesQuery(
@@ -55,12 +56,7 @@ const settingsOrganizationUsersLinesFragment = graphql`
         edges {
           node {
             id
-            user_email
-            name
-            firstname
-            lastname
-            external
-            created_at
+            ...SettingsOrganizationUserLine_node
           }
         }
         pageInfo {
@@ -77,13 +73,14 @@ interface SettingsOrganizationUsersLinesProps {
   dataColumns: DataColumns;
   queryRef: PreloadedQuery<SettingsOrganizationUsersLinesQuery>;
   paginationOptions: SettingsOrganizationUsersLinesQuery$variables;
+  isOrganizationAdmin: boolean;
 }
 
 const nbOfRowsToLoad = 50;
 
 const SettingsOrganizationUsersLines: FunctionComponent<
 SettingsOrganizationUsersLinesProps
-> = ({ dataColumns, queryRef, paginationOptions }) => {
+> = ({ dataColumns, queryRef, paginationOptions, isOrganizationAdmin }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   SettingsOrganizationUsersLinesQuery,
   SettingsOrganizationUsersLines_data$key
@@ -101,11 +98,12 @@ SettingsOrganizationUsersLinesProps
       hasMore={hasMore}
       dataList={membersData?.edges ?? []}
       globalCount={membersData?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-      LineComponent={UserLine}
-      DummyLineComponent={UserLineDummy}
+      LineComponent={SettingsOrganizationUserLine}
+      DummyLineComponent={SettingsOrganizationUserLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
+      isOrganizationAdmin={isOrganizationAdmin}
     />
   );
 };

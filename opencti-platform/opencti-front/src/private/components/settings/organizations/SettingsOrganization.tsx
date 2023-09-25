@@ -108,14 +108,18 @@ const SettingsOrganization = ({
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', organization.id].includes(id));
+  // TODO put the right value
+  const isOrganizationAdmin = true;
   return (
     <div className={classes.container}>
       <AccessesMenu />
-      <SettingsOrganizationEdition
+      {!isOrganizationAdmin &&
+        <SettingsOrganizationEdition
         organization={organization}
         enableReferences={useIsEnforceReference('Organization')}
         context={organization.editContext}
       />
+      }
       <>
         <Typography variant="h1" gutterBottom={true} className={classes.title}>
           {organization.name}
@@ -232,7 +236,7 @@ const SettingsOrganization = ({
           </div>
         </Grid>
         <Triggers recipientId={organization.id} filter="organization_ids" />
-        <SettingsOrganizationUsers organizationId={organization.id} />
+        <SettingsOrganizationUsers organizationId={organization.id}  isOrganizationAdmin={isOrganizationAdmin}/>
       </Grid>
     </div>
   );

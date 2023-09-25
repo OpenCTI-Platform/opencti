@@ -31,11 +31,12 @@ const useStyles = makeStyles<Theme>(() => ({
 
 interface MembersListContainerProps {
   organizationId: string;
+  isOrganizationAdmin: boolean;
 }
 
 const SettingsOrganizationUsers: FunctionComponent<
 MembersListContainerProps
-> = ({ organizationId }) => {
+> = ({ organizationId, isOrganizationAdmin = false }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const {
@@ -141,6 +142,7 @@ MembersListContainerProps
                 queryRef as PreloadedQuery<SettingsOrganizationUsersLinesQuery>
               }
               paginationOptions={paginationOptions}
+              isOrganizationAdmin={isOrganizationAdmin}
             />
           </React.Suspense>
         )}
