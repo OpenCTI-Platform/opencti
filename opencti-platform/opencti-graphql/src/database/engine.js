@@ -1650,7 +1650,7 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
   };
 };
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null, limit = MAX_AGGREGATION_SIZE, searchOptions, aggregationOptions } = options;
+  const { types = [], field = null, searchOptions, aggregationOptions } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', 'rel_object-marking.internal_id', 'rel_kill-chain-phase.internal_id', 'creator_id', 'rel_created-by.internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
@@ -1669,7 +1669,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
             aggs: {
               genres: {
                 terms: {
-                  size: limit,
+                  size: MAX_AGGREGATION_SIZE,
                   field: field === 'internal_id' ? 'connections.internal_id.keyword' : 'connections.types.keyword',
                 },
                 aggs: {
