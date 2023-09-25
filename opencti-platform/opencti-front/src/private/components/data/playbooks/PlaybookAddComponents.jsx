@@ -93,7 +93,7 @@ const PlaybookAddComponents = ({
     if (!isEmptyField(JSON.parse(component.configuration_schema))) {
       setComponentId(component.id);
     } else {
-      onConfig(selectedNode.isChild, component);
+      onConfig(component);
     }
   };
   const onSubmit = (values, { resetForm }) => {
@@ -109,7 +109,7 @@ const PlaybookAddComponents = ({
       config = { ...config, filters: jsonFilters };
     }
     resetForm();
-    onConfig(selectedNode.isChild, selectedComponent, config);
+    onConfig(selectedComponent, config);
   };
   const renderLines = () => {
     const filterByKeyword = (n) => searchTerm === ''
