@@ -242,8 +242,8 @@ DataSourceEditionOverviewProps
     objectMarking: convertMarkings(dataSource),
     x_opencti_workflow_id: convertStatus(t, dataSource) as Option,
     confidence: dataSource.confidence,
-    x_mitre_platforms: dataSource.x_mitre_platforms,
-    collection_layers: dataSource.collection_layers,
+    x_mitre_platforms: dataSource.x_mitre_platforms || [],
+    collection_layers: dataSource.collection_layers || [],
     references: [],
   };
 
