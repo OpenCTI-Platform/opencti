@@ -120,7 +120,7 @@ const StixSightingRelationshipCreationForm = ({
   const isMultipleFrom = fromEntities.length > 1;
   const isMultipleTo = toEntities.length > 1;
 
-  const defaultName = (entity) => truncate(
+  const defaultName = (entity) => (entity ? truncate(
     // eslint-disable-next-line no-nested-ternary
     (entity.parent_types.includes('Stix-Cyber-Observable')
       ? entity.observable_value
@@ -128,6 +128,8 @@ const StixSightingRelationshipCreationForm = ({
         ? `${entity.from.name} ${String.fromCharCode(8594)} ${entity.to.name}`
         : entity.name),
     20,
+  )
+    : undefined
   );
 
   const initialValues = useDefaultValues(
@@ -210,7 +212,7 @@ const StixSightingRelationshipCreationForm = ({
               <div
                 className={classes.item}
                 style={{
-                  border: `2px solid ${itemColor(toEntity.entity_type)}`,
+                  border: `2px solid ${itemColor(toEntity?.entity_type)}`,
                   top: 10,
                   right: 0,
                 }}
@@ -218,20 +220,20 @@ const StixSightingRelationshipCreationForm = ({
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(toEntity.entity_type)}`,
+                    borderBottom: `1px solid ${itemColor(toEntity?.entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
                     <ItemIcon
-                      type={toEntity.entity_type}
-                      color={itemColor(toEntity.entity_type)}
+                      type={toEntity?.entity_type}
+                      color={itemColor(toEntity?.entity_type)}
                       size="small"
                     />
                   </div>
                   <div className={classes.type}>
-                    {toEntity.relationship_type
-                      ? t(`relationship_${toEntity.entity_type}`)
-                      : t(`entity_${toEntity.entity_type}`)}
+                    {toEntity?.relationship_type
+                      ? t(`relationship_${toEntity?.entity_type}`)
+                      : t(`entity_${toEntity?.entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>

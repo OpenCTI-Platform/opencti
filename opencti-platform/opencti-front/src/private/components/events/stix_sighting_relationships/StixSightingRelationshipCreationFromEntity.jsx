@@ -1,9 +1,7 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import { assoc, compose, pipe, pluck } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { assoc, pipe, pluck } from 'ramda';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -14,11 +12,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
-import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
+import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import { dayStartDate, formatDate } from '../../../../utils/Time';
 import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
   stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
@@ -29,8 +26,10 @@ import StixSightingRelationshipCreationFromEntityStixCyberObservablesLines, {
 import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
+import { useFormatter } from '../../../../components/i18n';
+import { insertNode } from '../../../../utils/store';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -68,7 +67,7 @@ const styles = (theme) => ({
     height: '100%',
     width: '100%',
   },
-});
+}));
 
 const stixSightingRelationshipCreationFromEntityQuery = graphql`
   query StixSightingRelationshipCreationFromEntityQuery($id: String!) {
@@ -153,38 +152,35 @@ const stixSightingRelationshipCreationFromEntityMutation = graphql`
   }
 `;
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_stixSightingRelationships',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
+const StixSightingRelationshipCreationFromEntity = ({
+  isTo,
+  entityId,
+  onCreate,
+  paginationOptions,
+  stixCoreObjectTypes,
+  variant,
+  targetStixCyberObservableTypes,
+  paddingRight,
+  stixCoreObject,
+}) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [targetEntity, setTargetEntity] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(0);
+  const [search, setSearch] = useState('');
 
-class StixSightingRelationshipCreationFromEntity extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-      step: 0,
-      targetEntity: null,
-      search: '',
-    };
-  }
+  const handleOpen = () => {
+    setOpen(true);
+  };
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleClose = () => {
+    setStep(0);
+    setTargetEntity(null);
+    setOpen(false);
+  };
 
-  handleClose() {
-    this.setState({ step: 0, targetEntity: null, open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const { isTo, entityId } = this.props;
-    const { targetEntity } = this.state;
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
     const fromEntityId = isTo ? targetEntity.id : entityId;
     const toEntityId = isTo ? entityId : targetEntity.id;
     const finalValues = pipe(
@@ -205,44 +201,38 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       mutation: stixSightingRelationshipCreationFromEntityMutation,
       variables: { input: finalValues },
       updater: (store) => {
-        if (typeof this.props.onCreate !== 'function') {
-          const payload = store.getRootField('stixSightingRelationshipAdd');
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          const container = store.getRoot();
-          sharedUpdater(
-            store,
-            container.getDataID(),
-            this.props.paginationOptions,
-            newEdge,
-          );
+        if (typeof onCreate !== 'function') {
+          insertNode(store, 'Pagination_stixSightingRelationships', paginationOptions, 'stixSightingRelationshipAdd');
         }
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
-        if (typeof this.props.onCreate === 'function') {
-          this.props.onCreate();
+        handleClose();
+        if (typeof onCreate === 'function') {
+          onCreate();
         }
       },
     });
-  }
+  };
 
-  handleResetSelection() {
-    this.setState({ step: 0, targetEntity: null });
-  }
+  const handleResetSelection = () => {
+    setStep(0);
+    setTargetEntity(null);
+  };
 
-  handleSearch(keyword) {
-    this.setState({ search: keyword });
-  }
+  const handleSearch = (keyword) => {
+    setSearch(keyword);
+  };
 
-  handleSelectEntity(stixDomainObject) {
-    this.setState({ step: 1, targetEntity: stixDomainObject });
-  }
+  const handleSelectEntity = (stixDomainObject) => {
+    setStep(1);
+    setTargetEntity(stixDomainObject);
+  };
 
   // eslint-disable-next-line class-methods-use-this
-  renderFakeList() {
+  const renderFakeList = () => {
     return (
       <List>
         {Array.from(Array(20), (e, i) => (
@@ -278,16 +268,12 @@ class StixSightingRelationshipCreationFromEntity extends Component {
         ))}
       </List>
     );
-  }
+  };
 
-  renderDomainObjectSearchResults() {
-    const { stixCoreObjectTypes } = this.props;
-
+  const renderDomainObjectSearchResults = () => {
     if (!stixCoreObjectTypes || stixCoreObjectTypes.length === 0) {
       return null;
     }
-
-    const { search, open } = this.state;
 
     const stixDomainObjectsPaginationOptions = {
       search,
@@ -310,12 +296,12 @@ class StixSightingRelationshipCreationFromEntity extends Component {
             if (props) {
               return (
                 <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
-                  handleSelect={this.handleSelectEntity.bind(this)}
+                  handleSelect={handleSelectEntity}
                   data={props}
                 />
               );
             }
-            return this.renderFakeList();
+            return renderFakeList();
           }}
         />
         <StixDomainObjectCreation
@@ -326,19 +312,15 @@ class StixSightingRelationshipCreationFromEntity extends Component {
         />
       </div>
     );
-  }
+  };
 
-  renderObservableSearchResults() {
-    const { stixCoreObjectTypes, targetStixCyberObservableTypes } = this.props;
-
+  const renderObservableSearchResults = () => {
     if (
       !targetStixCyberObservableTypes
       || targetStixCyberObservableTypes.length === 0
     ) {
       return null;
     }
-
-    const { search } = this.state;
 
     return (
       <QueryRenderer
@@ -356,41 +338,38 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           if (props) {
             return (
               <StixSightingRelationshipCreationFromEntityStixCyberObservablesLines
-                handleSelect={this.handleSelectEntity.bind(this)}
+                handleSelect={handleSelectEntity}
                 data={props}
               />
             );
           }
           return stixCoreObjectTypes.length === 0 ? (
-            this.renderFakeList()
+            renderFakeList()
           ) : (
             <div> &nbsp; </div>
           );
         }}
       />
     );
-  }
+  };
 
-  renderSearchResults() {
+  const renderSearchResults = () => {
     return (
       <div>
-        {this.renderDomainObjectSearchResults()}
-        {this.renderObservableSearchResults()}
+        {renderDomainObjectSearchResults()}
+        {renderObservableSearchResults()}
       </div>
     );
-  }
+  };
 
-  renderSelectEntity() {
-    const { classes, t } = this.props;
-    const { search } = this.state;
-
+  const renderSelectEntity = () => {
     return (
       <div style={{ height: '100%' }}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={this.handleClose.bind(this)}
+            onClick={handleClose}
             size="large"
           >
             <Close fontSize="small" color="primary" />
@@ -403,7 +382,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
               variant="inDrawer"
               placeholder={`${t('Search')}...`}
               keyword={search}
-              onSubmit={this.handleSearch.bind(this)}
+              onSubmit={handleSearch}
             />
           </div>
           <div className="clearfix" />
@@ -421,15 +400,13 @@ class StixSightingRelationshipCreationFromEntity extends Component {
               )}
             </Alert>
           )}
-          {this.renderSearchResults()}
+          {renderSearchResults()}
         </div>
       </div>
     );
-  }
+  };
 
-  renderForm(sourceEntity) {
-    const { t, classes, isTo } = this.props;
-    const { targetEntity } = this.state;
+  const renderForm = (sourceEntity) => {
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
     if (isTo) {
@@ -442,7 +419,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={this.handleClose.bind(this)}
+            onClick={handleClose}
             size="large"
           >
             <Close fontSize="small" color="primary" />
@@ -452,17 +429,17 @@ class StixSightingRelationshipCreationFromEntity extends Component {
         <StixSightingRelationshipCreationForm
           fromEntities={[fromEntity]}
           toEntities={[toEntity]}
-          handleResetSelection={this.handleResetSelection.bind(this)}
-          onSubmit={this.onSubmit.bind(this)}
-          handleClose={this.handleClose.bind(this)}
+          handleResetSelection={handleResetSelection}
+          onSubmit={onSubmit}
+          handleClose={handleClose}
           defaultFirstSeen={dayStartDate()}
           defaultLastSeen={dayStartDate()} />
       </>
     );
-  }
+  };
 
   // eslint-disable-next-line
-  renderLoader() {
+  const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>
         <span
@@ -476,20 +453,14 @@ class StixSightingRelationshipCreationFromEntity extends Component {
         </span>
       </div>
     );
-  }
-
-  render() {
-    const { classes, entityId, variant, paddingRight } = this.props;
-
-    const { open, step } = this.state;
-
-    return (
+  };
+  return (
       <div>
         {variant === 'inLine' ? (
           <IconButton
             color="secondary"
             aria-label="Label"
-            onClick={this.handleOpen.bind(this)}
+            onClick={handleOpen}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
             size="large"
           >
@@ -497,7 +468,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           </IconButton>
         ) : (
           <Fab
-            onClick={this.handleOpen.bind(this)}
+            onClick={handleOpen}
             color="secondary"
             aria-label="Add"
             className={classes.createButton}
@@ -511,8 +482,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
-          classes={{ paper: this.props.classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={handleClose}
         >
           <QueryRenderer
             query={stixSightingRelationshipCreationFromEntityQuery}
@@ -521,35 +492,17 @@ class StixSightingRelationshipCreationFromEntity extends Component {
               if (props && props.stixCoreObject) {
                 return (
                   <div style={{ height: '100%' }}>
-                    {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1 ? this.renderForm(props.stixCoreObject) : ''}
+                    {step === 0 ? renderSelectEntity() : ''}
+                    {step === 1 ? renderForm(stixCoreObject) : ''}
                   </div>
                 );
               }
-              return this.renderLoader();
+              return renderLoader();
             }}
           />
         </Drawer>
       </div>
-    );
-  }
-}
-
-StixSightingRelationshipCreationFromEntity.propTypes = {
-  entityId: PropTypes.string,
-  stixCoreObjectTypes: PropTypes.array,
-  targetStixCyberObservableTypes: PropTypes.array,
-  paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fsd: PropTypes.func,
-  variant: PropTypes.string,
-  onCreate: PropTypes.func,
-  paddingRight: PropTypes.number,
-  isTo: PropTypes.bool,
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipCreationFromEntity);
+export default StixSightingRelationshipCreationFromEntity;
