@@ -116,6 +116,11 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
       caseIncidentsLinesQuery,
       paginationOptions,
     );
+    let toolBarFilters = filters;
+    toolBarFilters = {
+      ...toolBarFilters,
+      entity_type: [{ id: 'Case-Incident', value: 'Case-Incident' }],
+    };
     return (
       <ListLines
         sortBy={sortBy}
@@ -182,9 +187,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={{
-                entity_type: [{ id: 'Case-Incident', value: 'Case-Incident' }],
-              }}
+              filters={toolBarFilters}
               type="Case-Incident"
             />
           </React.Suspense>

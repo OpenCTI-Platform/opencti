@@ -112,6 +112,11 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
       caseRftsLinesQuery,
       paginationOptions,
     );
+    let toolBarFilters = filters;
+    toolBarFilters = {
+      ...toolBarFilters,
+      entity_type: [{ id: 'Case-Rft', value: 'Case-Rft' }],
+    };
     return (
       <ListLines
         sortBy={sortBy}
@@ -175,9 +180,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={{
-                entity_type: [{ id: 'Case-Rft', value: 'Case-Rft' }],
-              }}
+              filters={toolBarFilters}
               type="Case-Rft"
             />
           </React.Suspense>
