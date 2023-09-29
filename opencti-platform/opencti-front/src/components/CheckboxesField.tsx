@@ -23,7 +23,7 @@ export default function CheckboxesField({
   field,
   label,
   items,
-  maxHeight = '400px',
+  maxHeight = '300px',
 }: Props) {
   const { t } = useFormatter();
 

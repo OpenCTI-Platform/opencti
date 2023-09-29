@@ -1826,6 +1826,14 @@ class InvestigationGraphComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   async handleExpandElements(filters) {
+    // Do not expand if nothing has been checked.
+    if (
+      (!filters.relationship_types || filters.relationship_types.length === 0)
+      && (!filters.entity_types || filters.entity_types.length === 0)
+    ) {
+      return;
+    }
+
     this.handleToggleDisplayProgress();
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     const selectedEntitiesIds = R.map((n) => n.id, selectedEntities);
@@ -1836,14 +1844,8 @@ class InvestigationGraphComponent extends Component {
         investigationGraphStixRelationshipsQuery,
         {
           elementId: n,
-          relationship_type:
-            filters.relationship_types.length === 0
-              ? null
-              : filters.relationship_types.map((o) => o.value),
-          elementWithTargetTypes:
-            filters.entity_types.length === 0
-              ? null
-              : filters.entity_types.map((o) => o.value),
+          relationship_type: filters.relationship_types.map((o) => o.value),
+          elementWithTargetTypes: filters.entity_types.map((o) => o.value),
           count: parseInt(filters.limit, 10),
         },
       )
@@ -2032,7 +2034,7 @@ class InvestigationGraphComponent extends Component {
                 maxWidth="md"
               >
                 <InvestigationExpandForm
-                  links={this.graphData.links}
+                  links={graphData.links}
                   selectedNodes={this.selectedNodes}
                   onSubmit={this.onSubmitExpandElements.bind(this)}
                   onReset={this.onResetExpandElements.bind(this)}
