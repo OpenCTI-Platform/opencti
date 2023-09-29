@@ -1767,9 +1767,9 @@ class InvestigationGraphComponent extends Component {
   async handleExpandElements(filters) {
     this.handleToggleDisplayProgress();
     const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
-    const selectedNodesIds = R.map((n) => n.id, selectedEntities);
+    const selectedEntitiesIds = R.map((n) => n.id, selectedEntities);
     let newElementsIds = [];
-    for (const n of selectedNodesIds) {
+    for (const n of selectedEntitiesIds) {
       // eslint-disable-next-line no-await-in-loop
       const newElements = await fetchQuery(
         investigationGraphStixRelationshipsQuery,
