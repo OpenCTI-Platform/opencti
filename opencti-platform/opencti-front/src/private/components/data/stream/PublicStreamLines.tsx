@@ -196,7 +196,7 @@ const PublicStreamLines = () => {
         variant="h5"
         gutterBottom={true}
         color={'error'}
-        style={{ marginTop: 20 }}
+        style={{ marginTop: 20, marginBottom: 40 }}
       >
         {t('No available public stream on this platform')}
       </Typography>

@@ -19,6 +19,7 @@ import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { convertAuthorizedMembers } from '../../../../utils/edition';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -31,21 +32,8 @@ const useStyles = makeStyles((theme) => ({
     left: 5,
     color: 'inherit',
   },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    borderBottom: '1px solid #5c5c5c',
-  },
-  title: {
-    float: 'left',
   },
   alert: {
     width: '100%',
@@ -77,8 +65,7 @@ const streamCollectionValidation = (t) => Yup.object().shape({
 const StreamCollectionEditionContainer = ({ handleClose, streamCollection }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const authorizedMembers = streamCollection.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [];
-  const initialValues = { ...streamCollection, authorized_members: authorizedMembers };
+  const initialValues = { ...streamCollection, authorized_members: convertAuthorizedMembers(streamCollection) };
   const [filters, setFilters] = useState(
     JSON.parse(streamCollection.filters),
   );

@@ -54,6 +54,7 @@ import type { StixId } from './stix-common';
 import type { EditOperation, PageInfo } from '../generated/graphql';
 import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-sco';
 import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { AuthorizedMember } from '../utils/access';
 
 interface Representative {
   main: string
@@ -369,7 +370,7 @@ interface StoreEntityReport extends StoreCommon {
   [INPUT_OBJECTS]: Array<StoreEntity>
 }
 
-interface StoreEntityFeed extends StoreEntity {
+interface BasicStoreEntityFeed extends BasicStoreEntity {
   id: string;
   name: string;
   filters: string;
@@ -386,6 +387,7 @@ interface StoreEntityFeed extends StoreEntity {
       attribute: string;
     }];
   }>;
+  authorized_members: Array<AuthorizedMember>;
 }
 
 interface BasicStoreCyberObservable extends BasicStoreCommon {

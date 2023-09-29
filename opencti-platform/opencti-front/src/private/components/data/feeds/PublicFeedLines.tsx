@@ -25,7 +25,7 @@ import { Theme } from '../../../../components/Theme';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   bodyItem: {
     height: 20,
     fontSize: 13,
@@ -34,19 +34,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 10,
-  },
-  filter: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 20,
-    marginRight: 7,
-    borderRadius: 10,
-  },
-  operator: {
-    fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.accent,
-    height: 20,
-    marginRight: 10,
   },
   item: {
     paddingLeft: 10,

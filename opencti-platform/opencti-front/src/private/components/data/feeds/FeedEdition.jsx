@@ -34,6 +34,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { convertAuthorizedMembers } from '../../../../utils/edition';
 
 const styles = (theme) => ({
   header: {
@@ -279,7 +280,7 @@ const FeedEditionContainer = (props) => {
     include_header: feed.include_header,
     feed_types: feed.feed_types,
     feed_public: feed.feed_public,
-    authorized_members: feed.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [],
+    authorized_members: convertAuthorizedMembers(feed),
   };
 
   return (

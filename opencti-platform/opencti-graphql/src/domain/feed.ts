@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import { ENTITY_TYPE_FEED } from '../schema/internalObject';
 import { createEntity, deleteElementById } from '../database/middleware';
-import { listEntities, listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
+import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { FeedAddInput, QueryFeedsArgs } from '../generated/graphql';
-import type { StoreEntityFeed } from '../types/store';
+import type { BasicStoreEntityFeed } from '../types/store';
 import { elReplace } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
@@ -38,7 +38,7 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
   }
 };
 
-export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<StoreEntityFeed> => {
+export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
   const feedToCreate = { ...input, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
   const { element, isCreation } = await createEntity(context, user, feedToCreate, ENTITY_TYPE_FEED, { complete: true });
@@ -54,10 +54,10 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
   }
   return element;
 };
-export const findById: DomainFindById<StoreEntityFeed> = async (context: AuthContext, user: AuthUser, feedId: string) => {
-  return storeLoadById<StoreEntityFeed>(context, user, feedId, ENTITY_TYPE_FEED);
+export const findById: DomainFindById<BasicStoreEntityFeed> = async (context: AuthContext, user: AuthUser, feedId: string) => {
+  return storeLoadById<BasicStoreEntityFeed>(context, user, feedId, ENTITY_TYPE_FEED);
 };
-export const editFeed = async (context: AuthContext, user: AuthUser, id: string, input: FeedAddInput): Promise<StoreEntityFeed> => {
+export const editFeed = async (context: AuthContext, user: AuthUser, id: string, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
   const feed = await findById(context, user, id);
   if (!feed) {
@@ -77,13 +77,11 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
   if (user) {
     const options = { ...opts, includeAuthorities: true };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return listEntitiesPaginated<StoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
+    return listEntitiesPaginated<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
   }
   // No user specify, listing only public csv feeds
   const publicArgs = { ...(opts ?? {}), filters: [{ key: ['feed_public'], values: ['true'] }] };
-  return listEntities(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
+  return listEntitiesPaginated<BasicStoreEntityFeed>(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
   const deleted = await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);

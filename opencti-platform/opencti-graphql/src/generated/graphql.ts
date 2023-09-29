@@ -1,4 +1,5 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
+import type { BasicStoreEntityFeed } from '../types/store.d';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
@@ -18212,7 +18213,7 @@ export type QueryFeedbacksArgs = {
 
 export type QueryFeedsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
-  filters?: InputMaybe<Array<InputMaybe<FeedFiltering>>>;
+  filters?: InputMaybe<Array<FeedFiltering>>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FeedOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -28610,12 +28611,12 @@ export type ResolversTypes = ResolversObject<{
   ExternalReferencesFilter: ExternalReferencesFilter;
   ExternalReferencesFiltering: ExternalReferencesFiltering;
   ExternalReferencesOrdering: ExternalReferencesOrdering;
-  Feed: ResolverTypeWrapper<Feed>;
+  Feed: ResolverTypeWrapper<BasicStoreEntityFeed>;
   FeedAddInput: FeedAddInput;
   FeedAttribute: ResolverTypeWrapper<FeedAttribute>;
   FeedAttributeMappingInput: FeedAttributeMappingInput;
-  FeedConnection: ResolverTypeWrapper<FeedConnection>;
-  FeedEdge: ResolverTypeWrapper<FeedEdge>;
+  FeedConnection: ResolverTypeWrapper<Omit<FeedConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['FeedEdge']>> }>;
+  FeedEdge: ResolverTypeWrapper<Omit<FeedEdge, 'node'> & { node: ResolversTypes['Feed'] }>;
   FeedFilter: FeedFilter;
   FeedFiltering: FeedFiltering;
   FeedMapping: ResolverTypeWrapper<FeedMapping>;
@@ -29392,12 +29393,12 @@ export type ResolversParentTypes = ResolversObject<{
   ExternalReferenceEdge: ExternalReferenceEdge;
   ExternalReferenceEditMutations: Omit<ExternalReferenceEditMutations, 'relationAdd'> & { relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']> };
   ExternalReferencesFiltering: ExternalReferencesFiltering;
-  Feed: Feed;
+  Feed: BasicStoreEntityFeed;
   FeedAddInput: FeedAddInput;
   FeedAttribute: FeedAttribute;
   FeedAttributeMappingInput: FeedAttributeMappingInput;
-  FeedConnection: FeedConnection;
-  FeedEdge: FeedEdge;
+  FeedConnection: Omit<FeedConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['FeedEdge']>> };
+  FeedEdge: Omit<FeedEdge, 'node'> & { node: ResolversParentTypes['Feed'] };
   FeedFiltering: FeedFiltering;
   FeedMapping: FeedMapping;
   FeedMappingInput: FeedMappingInput;

@@ -15,6 +15,7 @@ generates:
       maybeValue: T | null | undefined
       inputMaybeValue: T | null
       mappers:
+        Feed: ../types/store.d#BasicStoreEntityFeed
         Channel: ../modules/channel/channel-types#BasicStoreEntityChannel
         Language: ../modules/language/language-types#BasicStoreEntityLanguage
         Event: ../modules/event/event-types#BasicStoreEntityEvent

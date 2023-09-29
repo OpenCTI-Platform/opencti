@@ -8084,7 +8084,7 @@ type Query {
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: [TaxiiCollectionFiltering]): TaxiiCollectionConnection
   streamCollection(id: String!): StreamCollection
   feed(id: String!): Feed
-  feeds(first: Int, after: ID, orderBy: FeedOrdering, orderMode: OrderingMode, search: String, filters: [FeedFiltering]): FeedConnection
+  feeds(first: Int, after: ID, orderBy: FeedOrdering, orderMode: OrderingMode, search: String, filters: [FeedFiltering!]): FeedConnection
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: [StreamCollectionFiltering]): StreamCollectionConnection!
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection

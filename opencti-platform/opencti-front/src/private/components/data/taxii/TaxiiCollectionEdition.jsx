@@ -8,6 +8,10 @@ import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -16,10 +20,7 @@ import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import Alert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
+import { convertAuthorizedMembers } from '../../../../utils/edition';
 
 const styles = (theme) => ({
   header: {
@@ -80,12 +81,11 @@ const taxiiCollectionValidation = (t) => Yup.object().shape({
 
 const TaxiiCollectionEditionContainer = (props) => {
   const { t, classes, handleClose, taxiiCollection } = props;
-  const authorizedMembers = taxiiCollection.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [];
   const initialValues = {
     name: taxiiCollection.name,
     description: taxiiCollection.description,
     taxii_public: taxiiCollection.taxii_public,
-    authorized_members: authorizedMembers,
+    authorized_members: convertAuthorizedMembers(taxiiCollection),
   };
   const [filters, setFilters] = useState(
     JSON.parse(props.taxiiCollection.filters),

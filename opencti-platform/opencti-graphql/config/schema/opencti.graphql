@@ -11994,7 +11994,7 @@ type Query {
     orderBy: FeedOrdering
     orderMode: OrderingMode
     search: String
-    filters: [FeedFiltering]
+    filters: [FeedFiltering!]
   ): FeedConnection
   streamCollections(
     first: Int
