@@ -1766,8 +1766,8 @@ class InvestigationGraphComponent extends Component {
   // eslint-disable-next-line class-methods-use-this
   async handleExpandElements(filters) {
     this.handleToggleDisplayProgress();
-    const selectedNodes = Array.from(this.selectedNodes);
-    const selectedNodesIds = R.map((n) => n.id, selectedNodes);
+    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
+    const selectedNodesIds = R.map((n) => n.id, selectedEntities);
     let newElementsIds = [];
     for (const n of selectedNodesIds) {
       // eslint-disable-next-line no-await-in-loop
