@@ -1503,7 +1503,7 @@ const useSearchEntities = ({
       case 'x_opencti_negative':
         // eslint-disable-next-line no-case-declarations
         const negativeValue = [true, false].map((n) => ({
-          label: t(n ? 'False positive' : 'Malicious'),
+          label: t(n ? 'False positive' : 'True positive'),
           value: n.toString(),
           type: 'Vocabulary',
         }));
