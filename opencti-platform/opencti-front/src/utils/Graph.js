@@ -1195,7 +1195,8 @@ export const nodePaint = (
     ctx.fillStyle = '#000';
     let numberLabel = '?';
     if (numberOfConnectedElement !== undefined) numberLabel = numberOfConnectedElement;
-    if (numberOfConnectedElement > 99) numberLabel = '99+';
+    if (numberOfConnectedElement > 99) numberLabel = 99;
+    if (numberOfConnectedElement !== '?') numberLabel = `${numberLabel}+`;
     ctx.fillText(numberLabel, x + 4, y - 4.5);
   }
 };
