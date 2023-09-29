@@ -698,10 +698,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ssl-tls" class="md-nav__link">
+  <a href="#network-and-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SSL / TLS
+        Network and security
       
     </span>
   </a>
@@ -4080,10 +4080,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#ssl-tls" class="md-nav__link">
+  <a href="#network-and-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SSL / TLS
+        Network and security
       
     </span>
   </a>
@@ -4456,14 +4456,14 @@
 <tr>
 <td style="text-align: left;">app:session_timeout</td>
 <td style="text-align: left;">APP__SESSION_TIMEOUT</td>
-<td style="text-align: left;">1200000</td>
-<td style="text-align: left;">Idle timeout, in ms (default 20 minutes)</td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">Session timeout, in ms (default 0 minute - disabled)</td>
 </tr>
 <tr>
 <td style="text-align: left;">app:session_idle_timeout</td>
 <td style="text-align: left;">APP__SESSION_IDLE_TIMEOUT</td>
-<td style="text-align: left;">0</td>
-<td style="text-align: left;">Session timeout, in ms (default 0 minute - disabled)</td>
+<td style="text-align: left;">1200000</td>
+<td style="text-align: left;">Idle timeout, in ms (default 20 minutes)</td>
 </tr>
 <tr>
 <td style="text-align: left;">app:admin:email</td>
@@ -4485,7 +4485,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="ssl-tls">SSL / TLS</h4>
+<h4 id="network-and-security">Network and security</h4>
 <table>
 <thead>
 <tr>
@@ -4496,6 +4496,24 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align: left;">http_proxy</td>
+<td style="text-align: left;">HTTP_PROXY</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Proxy URL for HTTP connection (example: http://proxy:8O080)</td>
+</tr>
+<tr>
+<td style="text-align: left;">https_proxy</td>
+<td style="text-align: left;">HTTPS_PROXY</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Proxy URL for HTTPS connection (example: http://proxy:8O080)</td>
+</tr>
+<tr>
+<td style="text-align: left;">no_proxy</td>
+<td style="text-align: left;">NO_PROXY</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io)</td>
+</tr>
 <tr>
 <td style="text-align: left;">app:https_cert:ca</td>
 <td style="text-align: left;">APP__HTTPS_CERT__CA</td>
@@ -4813,8 +4831,8 @@
 <tr>
 <td style="text-align: left;">redis:ca</td>
 <td style="text-align: left;">REDIS__CA</td>
-<td style="text-align: left;"></td>
-<td style="text-align: left;">Path of the CA certificate</td>
+<td style="text-align: left;">[}</td>
+<td style="text-align: left;">List of path(s) of the CA certificate(s)</td>
 </tr>
 <tr>
 <td style="text-align: left;">redis:trimming</td>
@@ -5047,12 +5065,6 @@
 <td style="text-align: left;"></td>
 <td style="text-align: left;">SMTP Password if authentication is needed</td>
 </tr>
-<tr>
-<td style="text-align: left;">smtp:from_email</td>
-<td style="text-align: left;">SMTP__FROM_EMAIL</td>
-<td style="text-align: left;">notifications@opencti.io</td>
-<td style="text-align: left;">Sender email address</td>
-</tr>
 </tbody>
 </table>
 <h3 id="schedules-engines">Schedules &amp; Engines</h3>
@@ -5166,7 +5178,7 @@
 <td style="text-align: left;">expiration_scheduler:interval</td>
 <td style="text-align: left;">EXPIRATION_SCHEDULER__INTERVAL</td>
 <td style="text-align: left;">300000</td>
-<td style="text-align: left;">Interval to check expired indicators</td>
+<td style="text-align: left;">Interval to check expired indicators (in ms)</td>
 </tr>
 <tr>
 <td style="text-align: left;">-</td>
@@ -5178,7 +5190,7 @@
 <td style="text-align: left;">retention_manager:enabled</td>
 <td style="text-align: left;">RETENTION_MANAGER__ENABLED</td>
 <td style="text-align: left;"><code>true</code></td>
-<td style="text-align: left;">Enable/disable the manager</td>
+<td style="text-align: left;">Enable/disable the retention manager</td>
 </tr>
 <tr>
 <td style="text-align: left;">retention_manager:lock_key</td>
@@ -5190,7 +5202,7 @@
 <td style="text-align: left;">retention_manager:interval</td>
 <td style="text-align: left;">RETENTION_MANAGER__INTERVAL</td>
 <td style="text-align: left;">60000</td>
-<td style="text-align: left;">Interval to check items to be deleted</td>
+<td style="text-align: left;">Interval to check items to be deleted (in ms)</td>
 </tr>
 <tr>
 <td style="text-align: left;">-</td>
@@ -5214,7 +5226,7 @@
 <td style="text-align: left;">notification_manager:interval</td>
 <td style="text-align: left;">NOTIFICATION_MANAGER__INTERVAL</td>
 <td style="text-align: left;">10000</td>
-<td style="text-align: left;">Sender email address</td>
+<td style="text-align: left;">Interval to push notifications</td>
 </tr>
 <tr>
 <td style="text-align: left;">-</td>
@@ -5232,13 +5244,61 @@
 <td style="text-align: left;">publisher_manager:lock_key</td>
 <td style="text-align: left;">PUBLISHER_MANAGER__LOCK_KEY</td>
 <td style="text-align: left;">publisher_manager_lock</td>
-<td style="text-align: left;">Sender email address</td>
+<td style="text-align: left;">Lock key for the manager in Redis</td>
 </tr>
 <tr>
 <td style="text-align: left;">publisher_manager:interval</td>
 <td style="text-align: left;">PUBLISHER_MANAGER__INTERVAL</td>
 <td style="text-align: left;">10000</td>
-<td style="text-align: left;">Sender email address</td>
+<td style="text-align: left;">Interval to send notifications / digests (in ms)</td>
+</tr>
+<tr>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+</tr>
+<tr>
+<td style="text-align: left;">ingestion_manager:enabled</td>
+<td style="text-align: left;">INGESTION_MANAGER__ENABLED</td>
+<td style="text-align: left;"><code>true</code></td>
+<td style="text-align: left;">Enable/disable the ingestion manager</td>
+</tr>
+<tr>
+<td style="text-align: left;">ingestion_manager:lock_key</td>
+<td style="text-align: left;">INGESTION_MANAGER__LOCK_KEY</td>
+<td style="text-align: left;">ingestion_manager_lock</td>
+<td style="text-align: left;">Lock key for the manager in Redis</td>
+</tr>
+<tr>
+<td style="text-align: left;">ingestion_manager:interval</td>
+<td style="text-align: left;">INGESTION_MANAGER__INTERVAL</td>
+<td style="text-align: left;">300000</td>
+<td style="text-align: left;">Interval to check for new data in remote feeds</td>
+</tr>
+<tr>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+</tr>
+<tr>
+<td style="text-align: left;">playbook_manager:enabled</td>
+<td style="text-align: left;">PLAYBOOK_MANAGER__ENABLED</td>
+<td style="text-align: left;"><code>true</code></td>
+<td style="text-align: left;">Enable/disable the playbook manager</td>
+</tr>
+<tr>
+<td style="text-align: left;">playbook_manager:lock_key</td>
+<td style="text-align: left;">PLAYBOOK_MANAGER__LOCK_KEY</td>
+<td style="text-align: left;">publisher_manager_lock</td>
+<td style="text-align: left;">Lock key for the manager in Redis</td>
+</tr>
+<tr>
+<td style="text-align: left;">playbook_manager:interval</td>
+<td style="text-align: left;">PLAYBOOK_MANAGER__INTERVAL</td>
+<td style="text-align: left;">60000</td>
+<td style="text-align: left;">Interval to check new playbooks</td>
 </tr>
 </tbody>
 </table>
@@ -5356,7 +5416,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-08-29T07:03:13+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-08-29</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-09-29T11:13:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-09-29</span>
       </span>
     
     
@@ -5381,6 +5441,11 @@
               <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
             </a>
           
+            <a href="https://github.com/sbocahu" class="md-author" title="@sbocahu">
+              
+              <img src="https://avatars.githubusercontent.com/u/929169?size=72" alt="sbocahu">
+            </a>
+          
             <a href="https://github.com/RomuDeuxfois" class="md-author" title="@RomuDeuxfois">
               
               <img src="https://avatars.githubusercontent.com/u/53513584?size=72" alt="RomuDeuxfois">
@@ -5392,6 +5457,12 @@
             </a>
           
           
+          
+            
+              <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/deployment/configuration.md" class="md-author md-author--more">
+                +1
+              </a>
+            
           
         </nav>
       </span>
