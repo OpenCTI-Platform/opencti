@@ -36,6 +36,7 @@ const rootPrivateQuery = graphql`
       default_dashboard {
         id
       }
+      default_time_field
       default_hidden_types
       default_marking {
         entity_type
