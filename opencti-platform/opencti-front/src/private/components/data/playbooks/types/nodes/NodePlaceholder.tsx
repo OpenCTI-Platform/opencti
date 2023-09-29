@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../../../components/Theme';
+import usePlaceholderClick from '../../hooks/usePlaceholderClick';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   node: {
@@ -34,10 +35,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const NodePlaceholder = ({ id, data }: NodeProps) => {
+const NodePlaceholder = ({ data }: NodeProps) => {
   const classes = useStyles();
   return (
-    <div className={classes.node} onClick={() => data.onClick(id, true)}>
+    <div className={classes.node}>
       {data.name}
       <Handle
         className={classes.handle}

@@ -48,6 +48,7 @@ import {
   TravelExploreOutlined,
   ReceiptOutlined,
   UpcomingOutlined,
+  PrecisionManufacturingOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -311,6 +312,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       );
     case 'session':
       return <ReceiptOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'playbook':
+      return <PrecisionManufacturingOutlined style={style} fontSize={fontSize} role="img" />;
     case 'stix-cyber-observable':
     case 'autonomous-system':
     case 'directory':

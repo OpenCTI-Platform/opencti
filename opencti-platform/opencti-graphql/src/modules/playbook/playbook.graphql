@@ -95,8 +95,8 @@ input PlaybookAddLinkInput {
 # Mutations
 type Mutation {
     playbookAdd(input: PlaybookAddInput!): Playbook @auth
-    playbookAddNode(input: PlaybookAddNodeInput!): Playbook @auth
-    playbookAddLink(input: PlaybookAddLinkInput!): Playbook @auth
+    playbookAddNode(input: PlaybookAddNodeInput!): String! @auth
+    playbookAddLink(input: PlaybookAddLinkInput!): String! @auth
     playbookDelete(id: ID!): ID @auth
     playbookDeleteNode(id: ID!, nodeId: ID!): Playbook @auth
     playbookDeleteLink(id: ID!, linkId: ID!): Playbook @auth

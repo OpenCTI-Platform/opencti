@@ -66,8 +66,8 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, inpu
   if (relatedComponent.is_entry_point) {
     patch.playbook_start = nodeId;
   }
-  const { element: updatedElem } = await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
+  await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
+  return nodeId;
 };
 
 export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {
@@ -102,8 +102,9 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, inpu
     throw UnsupportedError('Playbook link node from not found');
   }
   // Build the link
+  const linkId = uuidv4();
   definition.links.push({
-    id: uuidv4(),
+    id: linkId,
     from: {
       id: input.from_node,
       port: input.from_port
@@ -113,8 +114,8 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, inpu
     }
   });
   const patch = { playbook_definition: JSON.stringify(definition) };
-  const { element: updatedElem } = await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
+  await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
+  return linkId;
 };
 
 export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, id: string, linkId: string) => {

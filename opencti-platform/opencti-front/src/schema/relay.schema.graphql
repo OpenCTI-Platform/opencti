@@ -9022,8 +9022,8 @@ type Mutation {
   threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual
   playbookAdd(input: PlaybookAddInput!): Playbook
-  playbookAddNode(input: PlaybookAddNodeInput!): Playbook
-  playbookAddLink(input: PlaybookAddLinkInput!): Playbook
+  playbookAddNode(input: PlaybookAddNodeInput!): String!
+  playbookAddLink(input: PlaybookAddLinkInput!): String!
   playbookDelete(id: ID!): ID
   playbookDeleteNode(id: ID!, nodeId: ID!): Playbook
   playbookDeleteLink(id: ID!, linkId: ID!): Playbook

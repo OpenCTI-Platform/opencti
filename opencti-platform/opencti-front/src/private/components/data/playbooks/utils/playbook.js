@@ -1,5 +1,3 @@
-import { v4 as uuid } from 'uuid';
-
 export const computeNodes = (playbookNodes, playbookComponents) => {
   return playbookNodes.map((n) => {
     const component = playbookComponents
@@ -35,7 +33,7 @@ export const addPlaceholders = (nodes, edges, add) => {
     return {
       nodes: [
         {
-          id: uuid(),
+          id: 'PLACEHOLDER-ORIGIN',
           type: 'placeholder',
           position: { x: 0, y: 0 },
           data: {
@@ -56,7 +54,7 @@ export const addPlaceholders = (nodes, edges, add) => {
       && edges.filter((o) => o.source === n.id).length === 0,
   );
   const placeholders = notConnectedNodes.map((n) => {
-    const childPlaceholderId = uuid();
+    const childPlaceholderId = `${n.id}-PLACEHOLDER`;
     const childPlaceholderNode = {
       id: childPlaceholderId,
       position: { x: n.position.x, y: n.position.y },
@@ -81,69 +79,5 @@ export const addPlaceholders = (nodes, edges, add) => {
   return {
     nodes: [...nodes, ...placeholderNodes],
     edges: [...edges, ...placeholderEdges],
-  };
-};
-
-export const addNode = (
-  originNode,
-  component,
-  configuration,
-  nodes,
-  edges,
-  add,
-) => {
-  const childPlaceholderId = uuid();
-  const childPlaceholderNode = {
-    id: childPlaceholderId,
-    position: {
-      x: originNode.position.x,
-      y: originNode.type === 'placeholder' ? originNode.position.y : originNode.position.y + 150,
-    },
-    type: 'placeholder',
-    data: {
-      name: '+',
-      configuration: null,
-      component: null,
-      onClick: add,
-    },
-  };
-  const childPlaceholderEdge = {
-    id: `${originNode.id}-${childPlaceholderId}`,
-    type: 'placeholder',
-    source: originNode.id,
-    target: childPlaceholderId,
-  };
-  let newNodes = nodes;
-  let newEdges = edges;
-  if (originNode.type === 'placeholder') {
-    newNodes = nodes.map((node) => {
-      if (node.id === originNode.id) {
-        return {
-          ...node,
-          type: 'workflow',
-          data: {
-            name: component.name,
-            configuration,
-            component,
-            onClick: add,
-          },
-        };
-      }
-      return node;
-    });
-    newEdges = edges.map((edge) => {
-      if (edge.target === originNode.id) {
-        return {
-          ...edge,
-          type: 'workflow',
-          onClick: add,
-        };
-      }
-      return edge;
-    });
-  }
-  return {
-    nodes: [...newNodes, childPlaceholderNode],
-    edges: [...newEdges, childPlaceholderEdge],
   };
 };
