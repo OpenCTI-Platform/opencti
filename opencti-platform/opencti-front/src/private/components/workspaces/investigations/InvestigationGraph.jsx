@@ -341,9 +341,11 @@ const investigationGraphStixSightingRelationshipQuery = graphql`
     }
 `;
 
-// To count the number of relationships for MetaObjects and Identities
-const investigationGraphStixMetaRelCountQuery = graphql`
-  query InvestigationGraphStixMetaRelCountQuery($objectIds: [String!]!) {
+// To count the number of relationships for MetaObjects and Identities.
+// /!\ It counts only rels that point towards given ids. So the value may
+// not be exactly the total number of rels in some cases.
+const investigationGraphCountRelToQuery = graphql`
+  query InvestigationGraphStixCountRelToQuery($objectIds: [String!]!) {
     stixRelationshipsDistribution(
       field: "internal_id"
       isTo: true
@@ -1137,7 +1139,7 @@ class InvestigationGraphComponent extends Component {
     if (objectIds.length === 0) return;
 
     const { stixRelationshipsDistribution: relCounts } = await fetchQuery(
-      investigationGraphStixMetaRelCountQuery,
+      investigationGraphCountRelToQuery,
       { objectIds },
     ).toPromise();
 
