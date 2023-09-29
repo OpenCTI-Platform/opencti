@@ -106,6 +106,11 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
       feedbacksLinesQuery,
       paginationOptions,
     );
+    let toolBarFilters = filters;
+    toolBarFilters = {
+      ...toolBarFilters,
+      entity_type: [{ id: 'Feedback', value: 'Feedback' }],
+    };
     return (
       <ListLines
         sortBy={sortBy}
@@ -167,9 +172,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
               type="Feedback"
-              filters={{
-                entity_type: [{ id: 'Feedback', value: 'Feedback' }],
-              }}
+              filters={toolBarFilters}
             />
           </Suspense>
         )}

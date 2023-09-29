@@ -54,6 +54,11 @@ const Tasks = () => {
       tasksLinesQuery,
       paginationOptions,
     );
+    let toolBarFilters = filters;
+    toolBarFilters = {
+      ...toolBarFilters,
+      entity_type: [{ id: 'Task', value: 'Task' }],
+    };
     return (
       <ListLines
         sortBy={sortBy}
@@ -112,9 +117,7 @@ const Tasks = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
-              filters={{
-                entity_type: [{ id: 'Task', value: 'Task' }],
-              }}
+              filters={toolBarFilters}
               type="Task"
             />
           </>
