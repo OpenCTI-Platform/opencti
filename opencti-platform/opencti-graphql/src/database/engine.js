@@ -1657,7 +1657,8 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
   const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
   const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
   body.size = 0;
-  if (field === 'internal_id' || field === 'entity_type' || field === null) {
+  const isAggregationConnection = aggregateOnConnections && (field === 'internal_id' || field === 'entity_type' || field === null);
+  if (isAggregationConnection) {
     body.aggs = {
       connections: {
         nested: {
@@ -2388,8 +2389,7 @@ export const elUpdateElement = async (instance) => {
   // Update the element it self
   const esData = prepareElementForIndexing(instance);
   // Set the cache
-  const dataToReplace = R.dissoc('representative', esData);
-  const replacePromise = elReplace(instance._index, instance.internal_id, { doc: dataToReplace });
+  const replacePromise = elReplace(instance._index, instance.internal_id, { doc: esData });
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instance.entity_type)) {

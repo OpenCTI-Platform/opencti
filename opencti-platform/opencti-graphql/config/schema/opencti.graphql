@@ -12875,6 +12875,7 @@ type Query {
     filterMode: FilterMode
     dynamicFrom: [StixCoreObjectsFiltering]
     dynamicTo: [StixCoreObjectsFiltering]
+    aggregateOnConnections: Boolean
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsNumber(
     authorId: String
@@ -12987,6 +12988,7 @@ type Query {
     filterMode: FilterMode
     dynamicFrom: [StixCoreObjectsFiltering]
     dynamicTo: [StixCoreObjectsFiltering]
+    aggregateOnConnections: Boolean
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsNumber(
     authorId: String
