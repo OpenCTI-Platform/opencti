@@ -31,7 +31,7 @@ const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWorkspace
   },
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'manifest', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'tags', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },

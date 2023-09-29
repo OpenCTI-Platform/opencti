@@ -93,7 +93,7 @@ export const addIndicator = async (context, user, indicator) => {
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
-  const { validFrom, validUntil } = await computeValidPeriod(context, user, indicator);
+  const { validFrom, validUntil, revoked } = await computeValidPeriod(context, user, indicator);
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
@@ -103,6 +103,7 @@ export const addIndicator = async (context, user, indicator) => {
     R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),
     R.assoc('valid_from', validFrom),
     R.assoc('valid_until', validUntil),
+    R.assoc('revoked', revoked),
   )(indicator);
   // create the linked observables
   let observablesToLink = [];

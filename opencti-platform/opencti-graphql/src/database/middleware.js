@@ -41,7 +41,8 @@ import {
 import {
   elAggregationCount,
   elAggregationRelationsCount,
-  elDeleteElements, elFindByFromAndTo,
+  elDeleteElements,
+  elFindByFromAndTo,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
@@ -105,7 +106,8 @@ import {
   buildRefRelationKey,
   ID_INTERNAL,
   ID_STANDARD,
-  IDS_STIX, INPUT_EXTERNAL_REFS,
+  IDS_STIX,
+  INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -127,12 +129,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import {
-  ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_USER,
-  isDatedInternalObject,
-  isInternalObject,
-} from '../schema/internalObject';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import {
@@ -235,6 +232,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
 import { telemetry } from '../config/tracing';
 import { generateCreateMessage, generateUpdateMessage } from './generate-message';
+import { confidence } from '../schema/attribute-definition';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -421,16 +419,18 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
     // Build flatten view inside the data for stix meta
     const data = {};
     if (element) {
-      const grouped = R.groupBy((a) => schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, a.entity_type), dependencies);
+      const grouped = R.groupBy((a) => a.entity_type, dependencies);
       const entries = Object.entries(grouped);
       for (let index = 0; index < entries.length; index += 1) {
         const [key, values] = entries[index];
+        const inputKey = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, key);
         const resolvedElementsWithRelation = R.map((v) => {
           const resolvedElement = toResolvedElements[v.toId];
           return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
         }, values).filter((d) => isNotEmptyField(d));
-        const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, key);
-        data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
+        const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
+        data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation).internal_id : resolvedElementsWithRelation.map((r) => r.internal_id);
+        data[inputKey] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
       }
       loadedElementMap.set(elementId, data);
     }
@@ -488,10 +488,6 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
     }
   }
   return loadedElements;
-};
-const loadElementWithDependencies = async (context, user, element, opts = {}) => {
-  const elements = await loadElementsWithDependencies(context, user, [element], opts);
-  return elements.length === 1 ? elements.at(0) : null;
 };
 const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
   const elements = await elFindByIds(context, user, ids, { ...opts, withoutRels: true, connectionFormat: false });
@@ -661,9 +657,6 @@ export const distributionRelations = async (context, user, args) => {
 // endregion
 
 // region mutation common
-const TRX_CREATION = 'creation';
-const TRX_UPDATE = 'update';
-const TRX_IDLE = 'idle';
 const depsKeys = (type) => ([
   ...depsKeysRegister.get(),
   ...[
@@ -828,7 +821,7 @@ const isRelationTargetGrants = (elementGrants, relation, type) => {
   if (isUnrestricted) return false;
   return type === ACTION_TYPE_UNSHARE || !elementGrants.every((v) => (relation.to[RELATION_GRANTED_TO] ?? []).includes(v));
 };
-const createContainerSharingTask = (context, type, element, relations) => {
+const createContainerSharingTask = (context, type, element, relations = []) => {
   // If object_refs relations are newly created
   // One side is a container, the other side must inherit from the granted_refs
   const targetGrantIds = [];
@@ -857,29 +850,16 @@ const createContainerSharingTask = (context, type, element, relations) => {
   }
   // If element needs to be updated, start a SHARE background task
   if (targetGrantIds.length > 0) {
-    const input = { ids: targetGrantIds, actions: [{ type, context: { values: elementGrants } }] };
+    const input = { ids: targetGrantIds, scope: 'SETTINGS', actions: [{ type, context: { values: elementGrants } }] };
     taskPromise = createListTask(context, context.user, input);
   }
   return taskPromise;
 };
-const indexCreatedElement = async (context, user, { type, element, update, relations }) => {
+const indexCreatedElement = async (context, user, { element, relations }) => {
   // Continue the creation of the element and the connected relations
-  if (type === TRX_CREATION) {
-    const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
-    const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
-    await Promise.all([taskPromise, indexPromise]);
-  }
-  if (type === TRX_UPDATE) {
-    const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
-    // update can be undefined in case of unneeded update on upsert on the element
-    // noinspection ES6MissingAwait
-    const updatePromise = update ? elUpdateElement(update) : Promise.resolve();
-    await Promise.all([taskPromise, updatePromise]);
-    if (relations.length > 0) {
-      const message = `${relations.length} Relation${relations.length > 1 ? 's' : ''}`;
-      await elIndexElements(context, user, message, relations);
-    }
-  }
+  const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
+  const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
+  await Promise.all([taskPromise, indexPromise]);
 };
 export const updatedInputsToData = (instance, inputs) => {
   const inputPairs = R.map((input) => {
@@ -944,7 +924,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   } else if (isMultiple) {
     const currentValues = (Array.isArray(instance[key]) ? instance[key] : [instance[key]]) ?? [];
     if (operation === UPDATE_OPERATION_ADD) {
-      finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
+      finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
     } else if (operation === UPDATE_OPERATION_REMOVE) {
       finalVal = R.filter((n) => !R.includes(n, value), currentValues);
     } else {
@@ -1464,7 +1444,7 @@ const innerUpdateAttribute = (instance, rawInput) => {
   }
   return updatedInputs;
 };
-const prepareAttributes = (instance, elements) => {
+const prepareAttributesForUpdate = (instance, elements) => {
   const instanceType = instance.entity_type;
   return elements.map((input) => {
     // Check integer
@@ -1472,7 +1452,9 @@ const prepareAttributes = (instance, elements) => {
       return {
         key: input.key,
         value: R.map((value) => {
-          const parsedValue = Number(value);
+          // Like at creation, we need to be sure that confidence is default to 0
+          const baseValue = (input.key === confidence.name && isEmptyField(value)) ? 0 : value;
+          const parsedValue = baseValue ? Number(baseValue) : baseValue;
           return Number.isNaN(parsedValue) ? null : parsedValue;
         }, input.value),
       };
@@ -1544,12 +1526,13 @@ const updateDateRangeValidation = (instance, inputs, from, to) => {
   }
 };
 const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) => {
+  const today = now();
   // Upsert option is only useful to force aliases to be kept when upserting the entity
   const { impactStandardId = true, upsert = false } = opts;
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const instanceType = instance.entity_type;
   // Prepare attributes
-  const preparedElements = prepareAttributes(instance, elements);
+  const preparedElements = prepareAttributesForUpdate(instance, elements);
   // region Check date range
   const inputKeys = inputs.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
@@ -1575,7 +1558,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
       const name = nameInput ? R.head(nameInput.value) : undefined;
       // Cleanup the alias input
       if (aliasesInput) {
-        aliasesInput.value = R.uniq(aliasesInput.value.map((a) => a.trim()).filter((a) => isNotEmptyField(a)));
+        aliasesInput.value = R.uniq((aliasesInput.value ?? []).filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
       }
       // In case of upsert name change, old name must be pushed in aliases
       // If aliases are also ask for modification, we need to change the input
@@ -1606,8 +1589,8 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
         }
         // Internal ids alias must be generated again
         const aliasesId = generateAliasesId(R.uniq([instance.name, ...aliasesInput.value]), instance);
-        const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-        preparedElements.push(aliasInput);
+        const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+        preparedElements.push(aliasIdsInput);
       }
     }
   }
@@ -1672,7 +1655,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     }
   }
   // endregion
-
   // If is valid_until modification, update also revoked if needed
   const validUntilInput = R.find((e) => e.key === VALID_UNTIL, preparedElements);
   if (validUntilInput) {
@@ -1689,7 +1671,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
       preparedElements.push({ key: X_DETECTION, value: [false] });
     }
   }
-
   // Update all needed attributes with inner elements if needed
   const updatedInputs = [];
   const impactedInputs = [];
@@ -1753,14 +1734,13 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
       impactedInputs.push(...ins);
     }
   }
-  // Update updated_at
-  const today = now();
   // Impact the updated_at only if stix data is impacted
-  if (updatedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
+  // In case of upsert, this addition will be supported by the parent function
+  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
-  if (updatedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
+  if (impactedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
   }
@@ -1779,7 +1759,6 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (multiOperationKeys.length > 1) {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
-
   // Load the element to update
   const initialPromise = storeLoadByIdWithRefs(context, user, id, { type });
   const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
@@ -1794,7 +1773,6 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, inputs, entitySetting, initial);
   // Endregion
-
   // Individual check
   const { bypassIndividualUpdate } = opts;
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
@@ -1812,13 +1790,11 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (!validateUserAccessOperation(user, initial, manageAccessUpdate ? 'manage-access' : 'edit')) {
     throw ForbiddenAccess();
   }
-
   // Split attributes and meta
   // Supports inputs meta or stix meta
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
-
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
@@ -1837,9 +1813,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     const isInputAliases = (input) => input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI;
     const aliasedInputs = R.filter((input) => isInputAliases(input), attributes);
     if (aliasedInputs.length > 0) {
-      const aliases = R.uniq(aliasedInputs.map((a) => a.value).flat()
-        .map((a) => a.trim())
-        .filter((a) => isNotEmptyField(a)));
+      const aliases = R.uniq(aliasedInputs.map((a) => a.value).flat().filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
       const aliasesIds = generateAliasesId(aliases, initial);
       const existingEntities = await internalFindByIds(context, user, aliasesIds, { type: initial.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== initial.id, existingEntities);
@@ -2040,7 +2014,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
       const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit });
-      return { element: updatedInstance, event };
+      return { element: updatedInstance, event, isCreation: false };
     }
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
@@ -2061,7 +2035,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
       }
     }
     // Return updated element after waiting for it.
-    return { element: updatedInstance };
+    return { element: updatedInstance, event: null, isCreation: false };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -2070,10 +2044,6 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   } finally {
     if (lock) await lock.unlock();
   }
-};
-export const patchAttributeRaw = async (context, user, instance, patch, opts = {}) => {
-  const inputs = transformPatchToInput(patch, opts.operations);
-  return updateAttributeRaw(context, user, instance, inputs, opts);
 };
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
@@ -2321,32 +2291,6 @@ const buildInnerRelation = (from, to, type) => {
   }
   return relations;
 };
-const upsertIdentifiedFields = async (context, user, element, input, fields) => {
-  const upsertUpdated = [];
-  const upsertImpacted = [];
-  if (fields) {
-    const patch = {};
-    for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex += 1) {
-      const fieldKey = fields[fieldIndex];
-      const inputData = input[fieldKey];
-      if (isNotEmptyField(inputData)) {
-        if (isDictionaryAttribute(fieldKey)) {
-          Object.entries(inputData).forEach(([k, v]) => {
-            patch[`${fieldKey}.${k}`] = v;
-          });
-        } else {
-          patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
-        }
-      }
-    }
-    if (!R.isEmpty(patch)) {
-      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      upsertImpacted.push(...patched.impactedInputs);
-      upsertUpdated.push(...patched.updatedInputs);
-    }
-  }
-  return { upsertImpacted, upsertUpdated };
-};
 
 const ALIGN_OLDEST = 'oldest';
 const ALIGN_NEWEST = 'newest';
@@ -2374,22 +2318,40 @@ const computeExtendedDateValues = (newValue, currentValue, mode) => {
   }
   return null;
 };
-const handleRelationTimeUpdate = (input, instance, startField, stopField) => {
-  const patch = {};
+const buildAttributeUpdate = (isFullSync, attribute, data) => {
+  const inputs = [];
+  const fieldKey = attribute.name;
+  if (isDictionaryAttribute(fieldKey)) {
+    Object.entries(data).forEach(([k, v]) => {
+      inputs.push({ key: `${fieldKey}.${k}`, value: [v] });
+    });
+  } else if (attribute.multiple) {
+    const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
+    // Only add input in case of replace or when we really need to add something
+    if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(data))) {
+      inputs.push({ key: fieldKey, value: data, operation });
+    }
+  } else {
+    inputs.push({ key: fieldKey, value: [data] });
+  }
+  return inputs;
+};
+const buildTimeUpdate = (input, instance, startField, stopField) => {
+  const inputs = [];
   // If not coming from a rule, compute extended time.
   if (input[startField]) {
     const extendedStart = computeExtendedDateValues(input[startField], instance[startField], ALIGN_OLDEST);
     if (extendedStart) {
-      patch[startField] = extendedStart;
+      inputs.push({ key: startField, value: [extendedStart] });
     }
   }
   if (input[stopField]) {
     const extendedStop = computeExtendedDateValues(input[stopField], instance[stopField], ALIGN_NEWEST);
     if (extendedStop) {
-      patch[stopField] = extendedStop;
+      inputs.push({ key: stopField, value: [extendedStop] });
     }
   }
-  return patch;
+  return inputs;
 };
 const buildRelationTimeFilter = (input) => {
   const args = {};
@@ -2427,7 +2389,6 @@ const buildRelationTimeFilter = (input) => {
 export const buildDynamicFilterArgs = (filters) => {
   // Currently, filters are not supported the way we handle elementId and relationship_type in domain/stixCoreObject/findAll
   // We need to rebuild the filters
-
   // Extract elementId and relationship_type
   const elementId = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'rel_*.internal_id' : n.key === 'rel_*.internal_id')))?.values || null;
   const relationship_type = R.head(filters.filter((n) => (Array.isArray(n.key) ? R.head(n.key) === 'relationship_type' : n.key === 'relationship_type')))?.values || null;
@@ -2454,14 +2415,9 @@ export const buildDynamicFilterArgs = (filters) => {
   return { connectionFormat: false, first: 500, filters: dynamicFilters };
 };
 
-const upsertElementRaw = async (context, user, element, type, updatePatch) => {
-  // Upsert relation
-  // If confidence is passed at creation, just compare confidence
-  // Else check if update is explicitly true
-  const forceUpdate = isNotEmptyField(updatePatch.confidence) ? updatePatch.confidence >= element.confidence : updatePatch.update === true;
-  const patchInputs = []; // Sourced inputs for event stream
-  const impactedInputs = []; // All inputs impacted by modifications (+inner)
-  const rawRelations = [];
+const upsertElement = async (context, user, element, type, updatePatch, opts = {}) => {
+  const inputs = []; // All inputs impacted by modifications (+inner)
+  // -- Independent update
   // Handle attributes updates
   if (isNotEmptyField(updatePatch.stix_id) || isNotEmptyField(updatePatch.x_opencti_stix_ids)) {
     const ids = [...(updatePatch.x_opencti_stix_ids || [])];
@@ -2469,201 +2425,111 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
       ids.push(updatePatch.stix_id);
     }
     if (ids.length > 0) {
-      const patch = { x_opencti_stix_ids: ids };
-      const operations = { x_opencti_stix_ids: UPDATE_OPERATION_ADD };
-      const patched = await patchAttributeRaw(context, user, element, patch, { operations, upsert: true });
-      impactedInputs.push(...patched.impactedInputs);
-      patchInputs.push(...patched.updatedInputs);
+      inputs.push({ key: 'x_opencti_stix_ids', value: ids, operation: UPDATE_OPERATION_ADD });
     }
   }
-  const creatorIds = [];
   // Add support for existing creator_id that can be a simple string except of an array
+  const creatorIds = [];
   if (isNotEmptyField(element.creator_id)) {
     const idCreators = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
     creatorIds.push(...idCreators);
   }
+  // Cumulate creator id
   if (!creatorIds.includes(user.id)) {
-    const patch = { creator_id: [...creatorIds, user.id] };
-    const operations = { creator_id: UPDATE_OPERATION_ADD };
-    const patched = await patchAttributeRaw(context, user, element, patch, { operations, upsert: true });
-    impactedInputs.push(...patched.impactedInputs);
-    patchInputs.push(...patched.updatedInputs);
+    inputs.push({ key: 'creator_id', value: [...creatorIds, user.id], operation: UPDATE_OPERATION_ADD });
   }
-  // Upsert observed data
+  // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-    const timePatch = handleRelationTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
     // Upsert the count only if a time patch is applied.
-    if (isNotEmptyField(timePatch)) {
-      const basePatch = { number_observed: element.number_observed + updatePatch.number_observed };
-      const patch = { ...basePatch, ...timePatch };
-      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      impactedInputs.push(...patched.impactedInputs);
-      patchInputs.push(...patched.updatedInputs);
+    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
+    if (timePatchInputs.length > 0) {
+      inputs.push(...timePatchInputs);
+      inputs.push({ key: 'number_observed', value: [element.number_observed + updatePatch.number_observed] });
     }
-  }
-  // Upsert relations
-  if (isStixCoreRelationship(type)) {
-    const basePatch = {};
-    if (updatePatch.confidence && forceUpdate) {
-      basePatch.confidence = updatePatch.confidence;
-    }
-    if (updatePatch.description && forceUpdate) {
-      basePatch.description = updatePatch.description;
-    }
-    const timePatch = handleRelationTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
-    const patch = { ...basePatch, ...timePatch };
-    if (isNotEmptyField(patch)) {
-      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      impactedInputs.push(...patched.impactedInputs);
-      patchInputs.push(...patched.updatedInputs);
-    }
-  }
-  if (isStixSightingRelationship(type)) {
-    const basePatch = {};
-    if (updatePatch.confidence && forceUpdate) {
-      basePatch.confidence = updatePatch.confidence;
-    }
-    if (updatePatch.description && forceUpdate) {
-      basePatch.description = updatePatch.description;
-    }
-    const timePatch = handleRelationTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
-    const countPatch = isNotEmptyField(timePatch) ? { attribute_count: element.attribute_count + updatePatch.attribute_count, ...timePatch } : {};
-    const patch = { ...basePatch, ...countPatch };
-    if (isNotEmptyField(patch)) {
-      const patched = await patchAttributeRaw(context, user, element, patch, { upsert: true });
-      impactedInputs.push(...patched.impactedInputs);
-      patchInputs.push(...patched.updatedInputs);
-    }
-  }
-  // Upsert entities
-  const upsertAttributes = schemaAttributesDefinition.getUpsertAttributeNames(type);
-  if (isInternalObject(type) && forceUpdate) {
-    const {
-      upsertImpacted,
-      upsertUpdated
-    } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    impactedInputs.push(...upsertImpacted);
-    patchInputs.push(...upsertUpdated);
-  }
-  if (isStixDomainObject(type) && forceUpdate) {
-    const {
-      upsertImpacted,
-      upsertUpdated
-    } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    impactedInputs.push(...upsertImpacted);
-    patchInputs.push(...upsertUpdated);
-  }
-  if (isStixMetaObject(type) && forceUpdate) {
-    const {
-      upsertImpacted,
-      upsertUpdated
-    } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    impactedInputs.push(...upsertImpacted);
-    patchInputs.push(...upsertUpdated);
-  }
-  // Upsert SCOs
-  if (isStixCyberObservable(type) && forceUpdate) {
-    const {
-      upsertImpacted,
-      upsertUpdated
-    } = await upsertIdentifiedFields(context, user, element, updatePatch, upsertAttributes);
-    impactedInputs.push(...upsertImpacted);
-    patchInputs.push(...upsertUpdated);
   }
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
     const path = `import/${element.entity_type}/${element.internal_id}`;
     const file = await upload(context, user, path, updatePatch.file, { entity: element });
     const convertedFile = storeFileConverter(user, file);
-    // The patch for message generation is just an add
-    const filePatch = { key: 'x_opencti_files', value: [convertedFile], operation: UPDATE_OPERATION_ADD };
-    patchInputs.push(filePatch);
     // The impact in the database is the completion of the files
     const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
-    impactedInputs.push(fileImpact);
+    inputs.push(fileImpact);
   }
-  // region upsert refs
-  const createdTargets = [];
-  const removedTargets = [];
-  const buildInstanceRelTo = (to, relType) => buildInnerRelation(element, to, relType);
-  // region generic elements
-  // -- Upsert multiple refs for other stix elements
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type)
-    .map((ref) => ref.inputName);
+  // Upsert relations with times extensions
+  if (isStixCoreRelationship(type)) {
+    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'start_time', 'stop_time');
+    inputs.push(...timePatchInputs);
+  }
+  if (isStixSightingRelationship(type)) {
+    const timePatchInputs = buildTimeUpdate(updatePatch, element, 'first_seen', 'last_seen');
+    if (timePatchInputs.length > 0) {
+      inputs.push(...timePatchInputs);
+      inputs.push({ key: 'attribute_count', value: [element.attribute_count + updatePatch.attribute_count] });
+    }
+  }
+  // If confidence is passed at creation, just compare confidence
+  const isPatchUpdateOption = updatePatch.update === true;
+  const applyUpdate = isNotEmptyField(updatePatch.confidence) ? (updatePatch.confidence >= element.confidence) : isPatchUpdateOption;
+  // -- Upsert attributes
+  const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
+  for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
+    const attribute = attributes[attrIndex];
+    const attributeKey = attribute.name;
+    const isInputAvailable = attributeKey in updatePatch;
+    if (isInputAvailable) { // The attribute is explicitly available in the patch
+      const inputData = updatePatch[attributeKey];
+      const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
+      const canBeUpsert = applyUpdate && attribute.upsert; // If field can be upsert
+      const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isNotEmptyField(inputData); // If the element current data is empty, we always expect to put the value
+      if (isFullSync || canBeUpsert || isCurrentlyEmpty) {
+        inputs.push(...buildAttributeUpdate(isFullSync, attribute, inputData));
+      }
+    }
+  }
+  // -- Upsert refs
+  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.inputName);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
     const relDef = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputField);
-    if (relDef.multiple) {
-      const relType = relDef.databaseName;
-      const existingInstances = element[relType] || [];
-      const patchInputData = updatePatch[inputField] ?? [];
-      const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), patchInputData);
-      if (instancesToCreate.length > 0) {
-        const newRelations = instancesToCreate.map((to) => R.head(buildInstanceRelTo(to, relType)));
-        rawRelations.push(...newRelations);
-        patchInputs.push({ key: inputField, value: instancesToCreate, operation: UPDATE_OPERATION_ADD });
-        createdTargets.push({ key: inputField, instances: instancesToCreate });
-      }
-      // Handle full synchronization for granted refs if specified
-      if (inputField === INPUT_GRANTED_REFS && updatePatch[inputField]) {
-        const instancesToRemove = existingInstances.filter((m) => !patchInputData.map((u) => u.internal_id).includes(m));
-        if (instancesToRemove.length > 0) {
-          const currentRels = await listAllRelations(context, user, relType, {
-            fromId: element.internal_id,
-            toId: instancesToRemove
-          });
-          await deleteElements(context, user, currentRels, { publishStreamEvent: false });
-          const targetsInstances = await internalFindByIds(context, user, instancesToRemove);
-          patchInputs.push({ key: inputField, value: targetsInstances, operation: UPDATE_OPERATION_REMOVE });
-          removedTargets.push({ key: inputField, instances: targetsInstances });
+    const isInputAvailable = inputField in updatePatch;
+    if (isInputAvailable) {
+      const patchInputData = updatePatch[inputField];
+      const isUpsertSynchro = (context.synchronizedUpsert || inputField === INPUT_GRANTED_REFS); // Granted Refs are always fully sync
+      if (relDef.multiple) {
+        const currentData = element[relDef.databaseName] ?? [];
+        const targetData = (patchInputData ?? []).map((i) => i.internal_id);
+        // If expected data is different from current data
+        if (R.symmetricDifference(currentData, targetData).length > 0) {
+          const diffInstanceIds = targetData.filter((id) => !currentData.includes(id));
+          if (isUpsertSynchro) {
+            inputs.push({ key: inputField, value: targetData, operation: UPDATE_OPERATION_REPLACE });
+          } else if (diffInstanceIds.length > 0) {
+            inputs.push({ key: inputField, value: diffInstanceIds, operation: UPDATE_OPERATION_ADD });
+          }
+        }
+      } else {
+        const currentData = element[relDef.databaseName];
+        const targetData = patchInputData?.internal_id;
+        const updatable = isUpsertSynchro || isEmptyField(currentData);
+        // If expected data is different from current data
+        // And data can be updated (complete a null value or forced through synchro upsert option
+        if (!R.equals(currentData, targetData) && updatable) {
+          inputs.push({ key: inputField, value: [targetData] });
         }
       }
     }
   }
-  // -- Upsert single refs specific for generic
-  // TODO JRI Upsert single refs specific for generic
-  // endregion
-  // If modification must be done, reload the instance with dependencies to allow complete stix generation
-  if (impactedInputs.length > 0 && patchInputs.length === 0) {
-    throw UnsupportedError('[OPENCTI] Upsert will produce only internal modification', {
-      element,
-      impact: impactedInputs
-    });
+  // -- If modifications need to be done, add updated_at and modified
+  if (inputs.length > 0) {
+    // Update the attribute and return the result
+    const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
+    const update = await updateAttribute(context, user, element.internal_id, element.entity_type, inputs, updateOpts);
+    await createContainerSharingTask(context, ACTION_TYPE_SHARE, update.element);
+    return update;
   }
-  const isUpdated = impactedInputs.length > 0 || rawRelations.length > 0 || removedTargets.length > 0;
-  // Manage update_at
-  if (isUpdated && isUpdatedAtObject(element.entity_type)) {
-    const updatedAtInput = { key: 'updated_at', value: [now()] };
-    impactedInputs.push(updatedAtInput);
-  }
-  // -------------------------------------------------------------------
-  // All impacted elements must be before that lines
-  // -------------------------------------------------------------------
-  if (isUpdated) {
-    // Resolve dependencies.
-    const resolvedInstance = await loadElementWithDependencies(context, user, element, { onlyMarking: false });
-    const updatedInstance = mergeInstanceWithInputs(resolvedInstance, impactedInputs);
-    // Apply relations create to updatedInstance
-    for (let index = 0; index < createdTargets.length; index += 1) {
-      const createdTarget = createdTargets[index];
-      updatedInstance[createdTarget.key] = [...(resolvedInstance[createdTarget.key] ?? []), ...createdTarget.instances];
-    }
-    for (let indexRemove = 0; indexRemove < removedTargets.length; indexRemove += 1) {
-      const removedTarget = removedTargets[indexRemove];
-      resolvedInstance[removedTarget.key] = [...(resolvedInstance[removedTarget.key] ?? []), ...removedTarget.instances];
-    }
-    // Return the built elements
-    return {
-      type: TRX_UPDATE,
-      update: impactedInputs.length > 0 ? partialInstanceWithInputs(element, impactedInputs) : undefined, // For indexation
-      element: updatedInstance,
-      message: generateUpdateMessage(updatedInstance.entity_type, patchInputs),
-      previous: resolvedInstance,
-      relations: rawRelations, // Added meta relationships
-    };
-  }
-  // No update done, return IDLE action
-  return { type: TRX_IDLE, element, relations: [] };
+  // -- No modification applied
+  return { element, event: null, isCreation: false };
 };
 
 const buildRelationData = async (context, user, input, opts = {}) => {
@@ -2810,8 +2676,8 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   )(data);
   // 06. Return result if no need to reverse the relations from and to
   return {
-    type: TRX_CREATION,
     element: created,
+    isCreation: true,
     previous: null,
     relations: relToCreate
   };
@@ -2827,7 +2693,6 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
-
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
   const filledInput = fillDefaultValues(user, input, entitySetting);
   await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
@@ -2907,76 +2772,69 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       existingRelationship.to = to;
     }
     // endregion
-    let dataRel;
     if (existingRelationship) {
       // If upsert come from a rule, do a specific upsert.
       if (fromRule) {
         return await upsertRelationRule(context, existingRelationship, input, { ...opts, locks: participantIds });
       }
       // If not upsert the element
-      dataRel = await upsertElementRaw(context, user, existingRelationship, relationshipType, resolvedInput);
-    } else {
-      // Check cyclic reference consistency for embedded relationships before creation
-      if (isStixRefRelationship(relationshipType)) {
-        const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
-        // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
-        // Checking the direction of the relation to allow relationships
-        const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
-        if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
-          throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
-        }
-      }
-      // Just build a standard relationship
-      dataRel = await buildRelationData(context, user, resolvedInput, opts);
+      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds });
     }
+    // Check cyclic reference consistency for embedded relationships before creation
+    if (isStixRefRelationship(relationshipType)) {
+      const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
+      // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
+      // Checking the direction of the relation to allow relationships
+      const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
+      if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
+        throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
+      }
+    }
+    // Just build a standard relationship
+    const dataRel = await buildRelationData(context, user, resolvedInput, opts);
     // Index the created element
     await indexCreatedElement(context, user, dataRel);
     // Push the input in the stream
     let event;
-    if (dataRel.type === TRX_CREATION) {
-      // In case on embedded relationship creation, we need to dispatch
-      // an update of the from entity that host this embedded ref.
-      if (isStixRefRelationship(relationshipType)) {
-        const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
-        const references = await Promise.all(referencesPromises);
-        if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
-          throw FunctionalError('Cant find element references for commit', {
-            id: input.fromId,
-            references: opts.references
-          });
-        }
-
-        const previous = resolvedInput.from; // Complete resolution done by the input resolver
-        const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
-        const instance = R.clone(previous);
-        const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationshipType);
-        let inputs;
-        if (isSingleRelationsRef(instance.entity_type, relationshipType)) {
-          inputs = [{ key, value: [targetElement] }];
-          // Generate the new version of the from
-          instance[key] = targetElement;
-        } else {
-          inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_ADD }];
-          // Generate the new version of the from
-          instance[key] = [...(instance[key] ?? []), targetElement];
-        }
-        const message = generateUpdateMessage(instance.entity_type, inputs);
-        const isContainCommitReferences = opts.references && opts.references.length > 0;
-        const commit = isContainCommitReferences ? {
-          message: opts.commitMessage,
-          external_references: references.map((ref) => convertExternalReferenceToStix(ref))
-        } : undefined;
-        event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
-        dataRel.element.from = instance; // dynamically update the from to have an up to date relation
-      } else {
-        const createdRelation = { ...resolvedInput, ...dataRel.element };
-        event = await storeCreateRelationEvent(context, user, createdRelation, opts);
+    // In case on embedded relationship creation, we need to dispatch
+    // an update of the from entity that host this embedded ref.
+    if (isStixRefRelationship(relationshipType)) {
+      const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
+      const references = await Promise.all(referencesPromises);
+      if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
+        throw FunctionalError('Cant find element references for commit', {
+          id: input.fromId,
+          references: opts.references
+        });
       }
-    } else if (dataRel.type === TRX_UPDATE) {
-      event = await storeUpdateEvent(context, user, dataRel.previous, dataRel.element, dataRel.message, opts);
+      const previous = resolvedInput.from; // Complete resolution done by the input resolver
+      const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
+      const instance = R.clone(previous);
+      const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationshipType);
+      let inputs;
+      if (isSingleRelationsRef(instance.entity_type, relationshipType)) {
+        inputs = [{ key, value: [targetElement] }];
+        // Generate the new version of the from
+        instance[key] = targetElement;
+      } else {
+        inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_ADD }];
+        // Generate the new version of the from
+        instance[key] = [...(instance[key] ?? []), targetElement];
+      }
+      const message = generateUpdateMessage(instance.entity_type, inputs);
+      const isContainCommitReferences = opts.references && opts.references.length > 0;
+      const commit = isContainCommitReferences ? {
+        message: opts.commitMessage,
+        external_references: references.map((ref) => convertExternalReferenceToStix(ref))
+      } : undefined;
+      event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+      dataRel.element.from = instance; // dynamically update the from to have an up to date relation
+    } else {
+      const createdRelation = { ...resolvedInput, ...dataRel.element };
+      event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
-    return { element: dataRel.element, event, isCreation: dataRel.type === TRX_CREATION };
+    return { element: dataRel.element, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -3101,10 +2959,10 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   // -- Aliased entities
   if (isStixObjectAliased(type)) {
     if (input.aliases) {
-      data.aliases = R.uniq(input.aliases.map((a) => a.trim()).filter((a) => isNotEmptyField(a)));
+      data.aliases = R.uniq(input.aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
     }
     if (input.x_opencti_aliases) {
-      data.x_opencti_aliases = R.uniq(input.x_opencti_aliases.map((a) => a.trim()).filter((a) => isNotEmptyField(a)));
+      data.x_opencti_aliases = R.uniq(input.x_opencti_aliases.filter((a) => isNotEmptyField(a)).map((a) => a.trim()));
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
   }
@@ -3158,8 +3016,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
 
   // Simply return the data
   return {
-    type: TRX_CREATION,
-    update: null,
+    isCreation: true,
     element: entity,
     message: generateCreateMessage(entity),
     previous: null,
@@ -3224,56 +3081,55 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
         return await upsertEntityRule(context, R.head(filteredEntities), input, { ...opts, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
-        dataEntity = await upsertElementRaw(context, user, R.head(filteredEntities), type, resolvedInput);
-      } else {
-        // If creation is not by a reference
-        // We can in best effort try to merge a common stix_id
-        const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
-        if (resolvedInput.update === true) {
-          // The new one is new reference, merge all found entities
-          // Target entity is existingByStandard by default or any other
-          const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
-          const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
-          hashMergeValidation([target, ...sources]);
-          await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
-          dataEntity = await upsertElementRaw(context, user, target, type, resolvedInput);
-        } else if (existingByStandard) {
-          // Sometimes multiple entities can match
-          // Looking for aliasA, aliasB, find in different entities for example
-          // In this case, we try to find if one match the standard id
-          // If a STIX ID has been passed in the creation
-          if (resolvedInput.stix_id) {
-            // Find the entity corresponding to this STIX ID
-            const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
-            const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
-            // If the entity exists by the stix id and not the same as the previously founded.
-            if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
-              // Deciding the target
-              let mergeTarget = existingByStandard.internal_id;
-              let mergeSource = existingByGivenStixId.internal_id;
-              // If confidence level is bigger, pickup as the target
-              if (existingByGivenStixId.confidence > existingByStandard.confidence) {
-                mergeTarget = existingByGivenStixId.internal_id;
-                mergeSource = existingByStandard.internal_id;
-              }
-              logApp.info('[OPENCTI] Merge during creation detected');
-              await mergeEntities(context, user, mergeTarget, [mergeSource], { locks: participantIds });
-            }
-          }
-          // In this mode we can safely consider this entity like the existing one.
-          // We can upsert element except the aliases that are part of other entities
-          const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
-          const key = resolveAliasesField(type).name;
-          const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
-          const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
-          const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
-          const inputAliases = { ...resolvedInput, [key]: filteredAliases };
-          dataEntity = await upsertElementRaw(context, user, existingByStandard, type, inputAliases);
-        } else {
-          // If not we dont know what to do, just throw an exception.
-          throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
-        }
+        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
+        return upsertElement(context, user, R.head(filteredEntities), type, resolvedInput, upsertEntityOpts);
       }
+      // If creation is not by a reference
+      // We can in best effort try to merge a common stix_id
+      const existingByStandard = R.find((e) => e.standard_id === standardId, filteredEntities);
+      if (resolvedInput.update === true) {
+        // The new one is new reference, merge all found entities
+        // Target entity is existingByStandard by default or any other
+        const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
+        const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
+        hashMergeValidation([target, ...sources]);
+        await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
+        return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
+      } if (existingByStandard) {
+        // Sometimes multiple entities can match
+        // Looking for aliasA, aliasB, find in different entities for example
+        // In this case, we try to find if one match the standard id
+        // If a STIX ID has been passed in the creation
+        if (resolvedInput.stix_id) {
+          // Find the entity corresponding to this STIX ID
+          const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
+          const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
+          // If the entity exists by the stix id and not the same as the previously founded.
+          if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
+            // Deciding the target
+            let mergeTarget = existingByStandard.internal_id;
+            let mergeSource = existingByGivenStixId.internal_id;
+            // If confidence level is bigger, pickup as the target
+            if (existingByGivenStixId.confidence > existingByStandard.confidence) {
+              mergeTarget = existingByGivenStixId.internal_id;
+              mergeSource = existingByStandard.internal_id;
+            }
+            logApp.info('[OPENCTI] Merge during creation detected');
+            await mergeEntities(context, user, mergeTarget, [mergeSource], { locks: participantIds });
+          }
+        }
+        // In this mode we can safely consider this entity like the existing one.
+        // We can upsert element except the aliases that are part of other entities
+        const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
+        const key = resolveAliasesField(type).name;
+        const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
+        const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
+        const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
+        const inputAliases = { ...resolvedInput, [key]: filteredAliases };
+        return upsertElement(context, user, existingByStandard, type, inputAliases, { ...opts, locks: participantIds });
+      }
+      // If not we dont know what to do, just throw an exception.
+      throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
     } else {
       // Create the object
       dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
@@ -3281,15 +3137,10 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
     // Index the created element
     await indexCreatedElement(context, user, dataEntity);
     // Push the input in the stream
-    let event;
-    if (dataEntity.type === TRX_CREATION) {
-      const createdElement = { ...resolvedInput, ...dataEntity.element };
-      event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
-    } else if (dataEntity.type === TRX_UPDATE) {
-      event = await storeUpdateEvent(context, user, dataEntity.previous, dataEntity.element, dataEntity.message, opts);
-    }
+    const createdElement = { ...resolvedInput, ...dataEntity.element };
+    const event = await storeCreateEntityEvent(context, user, createdElement, dataEntity.message, opts);
     // Return created element after waiting for it.
-    return { element: dataEntity.element, event, isCreation: dataEntity.type === TRX_CREATION };
+    return { element: dataEntity.element, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });

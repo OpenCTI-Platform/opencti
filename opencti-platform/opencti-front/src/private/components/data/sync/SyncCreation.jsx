@@ -6,6 +6,8 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
@@ -17,12 +19,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  handleErrorInForm,
-  MESSAGING$,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -33,6 +30,7 @@ import CreatorField from '../../common/form/CreatorField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -106,6 +104,7 @@ const syncCreationValidation = (t) => Yup.object().shape({
   listen_deletion: Yup.bool(),
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
+  synchronized: Yup.bool(),
 });
 
 export const syncStreamCollectionQuery = graphql`
@@ -255,6 +254,7 @@ const SyncCreation = ({ paginationOptions }) => {
               no_dependencies: false,
               listen_deletion: true,
               ssl_verify: false,
+              synchronized: false,
             }}
             validationSchema={syncCreationValidation(t)}
             onSubmit={onSubmit}
@@ -422,15 +422,42 @@ const SyncCreation = ({ paginationOptions }) => {
                   <Field
                     component={SwitchField}
                     type="checkbox"
-                    name="no_dependencies"
-                    label={t('Avoid dependencies resolution')}
-                  />
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
                     name="ssl_verify"
+                    containerstyle={{ marginBottom: 20 }}
                     label={t('Verify SSL certificate')}
                   />
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+                      <Typography>{t('Advanced options')}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Alert icon={false}
+                          classes={{ root: classes.alert, message: classes.message }}
+                          severity="error"
+                          variant="outlined"
+                          style={{ position: 'relative' }}>
+                        <div>{t('Use these options if you know what you are doing')}</div>
+                      </Alert>
+                      <Field
+                          component={SwitchField}
+                          containerstyle={{ marginTop: 20 }}
+                          type="checkbox"
+                          name="no_dependencies"
+                          label={t('Avoid dependencies resolution')}
+                      />
+                      <div>{t('Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)')}</div>
+                      <hr style={{ marginTop: 20, marginBottom: 20 }}/>
+                      <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          containerstyle={{ marginLeft: 2 }}
+                          name="synchronized"
+                          label={t('Use perfect synchronization')}
+                      />
+                      <div>{t('Use this option only in case of platform to platform replication')}</div>
+                      <div>{t('Every data fetched from this synchronizer will be written as the only source of truth')}</div>
+                    </AccordionDetails>
+                  </Accordion>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"

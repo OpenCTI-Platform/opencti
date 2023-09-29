@@ -16,6 +16,8 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import { useFormatter } from '../../../../components/i18n';
 import {
   commitMutation,
@@ -30,6 +32,7 @@ import { buildDate } from '../../../../utils/Time';
 import CreatorField from '../../common/form/CreatorField';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -83,6 +86,7 @@ const syncValidation = (t) => Yup.object().shape({
   listen_deletion: Yup.bool(),
   no_dependencies: Yup.bool(),
   ssl_verify: Yup.bool(),
+  synchronized: Yup.bool(),
   user_id: Yup.object().nullable(),
 });
 
@@ -90,9 +94,8 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [streams, setStreams] = useState([]);
-  const relatedUser = synchronizer.user
-    ? { label: synchronizer.user.name, value: synchronizer.user.id }
-    : '';
+  const [openOptions, setOpenOptions] = useState(synchronizer.no_dependencies || synchronizer.synchronized);
+  const relatedUser = synchronizer.user ? { label: synchronizer.user.name, value: synchronizer.user.id } : '';
   const initialValues = R.pipe(
     R.assoc('current_state_date', buildDate(synchronizer.current_state_date)),
     R.assoc('user_id', relatedUser),
@@ -106,6 +109,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
       'no_dependencies',
       'current_state_date',
       'ssl_verify',
+      'synchronized',
     ]),
   )(synchronizer);
   const isStreamAccessible = isNotEmptyField(
@@ -127,6 +131,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
       },
     });
   };
+
   const handleSubmitField = (name, value) => {
     const parsedValue = name === 'user_id' ? value.value : value;
     syncValidation(t)
@@ -288,17 +293,45 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
               <Field
                 component={SwitchField}
                 type="checkbox"
-                name="no_dependencies"
-                label={t('Avoid dependencies resolution')}
-                onChange={handleSubmitField}
-              />
-              <Field
-                component={SwitchField}
-                type="checkbox"
                 name="ssl_verify"
                 label={t('Verify SSL certificate')}
+                containerstyle={{ marginBottom: 20 }}
                 onChange={handleSubmitField}
               />
+              <Accordion expanded={openOptions} onChange={() => setOpenOptions(!openOptions)}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} id="accordion-panel">
+                  <Typography>{t('Advanced options')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Alert icon={false}
+                         classes={{ root: classes.alert, message: classes.message }}
+                         severity="error"
+                         variant="outlined"
+                         style={{ position: 'relative' }}>
+                    <div>{t('Use these options if you know what you are doing')}</div>
+                  </Alert>
+                  <Field
+                      component={SwitchField}
+                      containerstyle={{ marginTop: 20 }}
+                      type="checkbox"
+                      name="no_dependencies"
+                      label={t('Avoid dependencies resolution')}
+                      onChange={handleSubmitField}
+                  />
+                  <div>{t('Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)')}</div>
+                  <hr style={{ marginTop: 20, marginBottom: 20 }}/>
+                  <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      containerstyle={{ marginLeft: 2 }}
+                      name="synchronized"
+                      label={t('Use perfect synchronization')}
+                      onChange={handleSubmitField}
+                  />
+                  <div>{t('Use this option only in case of platform to platform replication')}</div>
+                  <div>{t('Every data fetched from this synchronizer will be written as the only source of truth')}</div>
+                </AccordionDetails>
+              </Accordion>
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
@@ -329,6 +362,7 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       no_dependencies
       current_state_date
       ssl_verify
+      synchronized
       user {
         id
         name

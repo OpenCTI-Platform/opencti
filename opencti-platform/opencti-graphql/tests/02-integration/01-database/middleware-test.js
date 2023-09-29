@@ -1121,3 +1121,64 @@ describe('Elements impacts deletions', () => {
     await deleteElementById(testContext, ADMIN_USER, label.internal_id, ENTITY_TYPE_LABEL);
   });
 });
+
+describe('Elements upsert behaviors', () => {
+  it('should upsert empty values', async () => {
+    const clearMarking = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+    const stixId = 'malware--78ca4366-f5b8-4764-83f7-34ce38198e28';
+
+    // Create entities
+    const base = { stix_id: stixId, name: 'TO_UPSERT', confidence: 10 };
+    let malware = await addMalware(testContext, ADMIN_USER, base);
+    expect(malware).not.toBeNull();
+    expect(malware.name).toEqual('TO_UPSERT');
+    expect(malware.confidence).toEqual(10);
+    expect(malware.description).toEqual(undefined);
+    expect(malware.objectMarking).toEqual(undefined);
+    // Testing empty value with lower confidence
+    malware = await addMalware(testContext, ADMIN_USER, {
+      ...base,
+      confidence: 1,
+      malware_types: ['downloader', 'trojan'],
+      is_family: true,
+      revoked: true,
+      objectMarking: [clearMarking],
+      description: 'TO DESC'
+    });
+    expect(malware.confidence).toEqual(10);
+    expect(malware.description).toEqual('TO DESC');
+    expect(malware.is_family).toEqual(true);
+    expect(malware.revoked).toEqual(false);
+    expect(malware.first_seen).toEqual('1970-01-01T00:00:00.000Z');
+    expect(malware.malware_types).toEqual(['downloader', 'trojan']);
+    expect(malware.objectMarking.length).toEqual(1);
+    // Test on existing value [same confidence level]
+    malware = await addMalware(testContext, ADMIN_USER, { ...base, description: 'TO DESC UPGRADE', first_seen: '2023-09-21T22:04:09.409Z' });
+    expect(malware.confidence).toEqual(10);
+    expect(malware.first_seen).toEqual('2023-09-21T22:04:09.409Z');
+    expect(malware.description).toEqual('TO DESC UPGRADE');
+    // Test on existing value [lower confidence level]
+    malware = await addMalware(testContext, ADMIN_USER, { ...base, confidence: 1, description: 'TO DESC LOWER' });
+    expect(malware.confidence).toEqual(10);
+    expect(malware.description).toEqual('TO DESC UPGRADE');
+    // Test on existing value [greater confidence level]
+    malware = await addMalware(testContext, ADMIN_USER, { ...base, confidence: 11, description: 'TO DESC UPPER' });
+    expect(malware.confidence).toEqual(11);
+    expect(malware.description).toEqual('TO DESC UPPER');
+
+    // Upsert forcing the synchronization
+    const syncContext = { ...testContext, synchronizedUpsert: true };
+    malware = await addMalware(syncContext, ADMIN_USER, { ...base, confidence: 1, objectMarking: [], description: 'TO_UPSERT' });
+    expect(malware.name).toEqual('TO_UPSERT');
+    expect(malware.confidence).toEqual(1);
+    expect(malware.description).toEqual('TO_UPSERT');
+    expect(malware.objectMarking).toEqual([]);
+
+    // Try update = true with no confidence level
+    malware = await addMalware(syncContext, ADMIN_USER, { ...base, confidence: null, description: 'TO DESC UPGRADE' });
+    expect(malware.description).toEqual('TO DESC UPGRADE');
+
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, stixId, ENTITY_TYPE_MALWARE);
+  });
+});

@@ -24084,6 +24084,7 @@ export type Synchronizer = {
   running: Scalars['Boolean']['output'];
   ssl_verify?: Maybe<Scalars['Boolean']['output']>;
   stream_id: Scalars['String']['output'];
+  synchronized?: Maybe<Scalars['Boolean']['output']>;
   token?: Maybe<Scalars['String']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
@@ -24097,6 +24098,7 @@ export type SynchronizerAddInput = {
   recover?: InputMaybe<Scalars['DateTime']['input']>;
   ssl_verify?: InputMaybe<Scalars['Boolean']['input']>;
   stream_id: Scalars['String']['input'];
+  synchronized?: InputMaybe<Scalars['Boolean']['input']>;
   token?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
   user_id?: InputMaybe<Scalars['String']['input']>;
@@ -36358,6 +36360,7 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   ssl_verify?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  synchronized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
