@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,24 +17,12 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
-import { Theme } from '../../../../components/Theme';
 import { ExternalReferencePopoverEditionQuery$data } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
 import { deleteNodeFromId } from '../../../../utils/store';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -67,9 +54,7 @@ interface ExternalReferencePopoverProps {
   isExternalReferenceAttachment?: boolean;
 }
 
-const ExternalReferencePopover: FunctionComponent<
-ExternalReferencePopoverProps
-> = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
+const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({ id, objectId, handleRemove, isExternalReferenceAttachment }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const navigate = useNavigate();
@@ -150,34 +135,26 @@ ExternalReferencePopoverProps
         )}
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseUpdate}
-      >
-        <QueryRenderer
-          query={externalReferenceEditionQuery}
-          variables={{ id }}
-          render={({
-            props,
-          }: {
-            props: ExternalReferencePopoverEditionQuery$data;
-          }) => {
-            if (props && props.externalReference) {
-              return (
-                <ExternalReferenceEditionContainer
-                  externalReference={props.externalReference}
-                  handleClose={handleCloseUpdate}
-                />
-              );
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={externalReferenceEditionQuery}
+        variables={{ id }}
+        render={({
+          props,
+        }: {
+          props: ExternalReferencePopoverEditionQuery$data;
+        }) => {
+          if (props && props.externalReference) {
+            return (
+              <ExternalReferenceEditionContainer
+                externalReference={props.externalReference}
+                handleClose={handleCloseUpdate}
+                open={displayEdit}
+              />
+            );
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={displayDelete}

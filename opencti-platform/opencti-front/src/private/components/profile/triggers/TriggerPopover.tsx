@@ -3,39 +3,21 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
-import TriggerEditionContainer, {
-  triggerKnowledgeEditionQuery,
-} from './TriggerEditionContainer';
+import TriggerEditionContainer, { triggerKnowledgeEditionQuery } from './TriggerEditionContainer';
 import { TriggerEditionContainerKnowledgeQuery } from './__generated__/TriggerEditionContainerKnowledgeQuery.graphql';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
 
 export const TriggerPopoverDeletionMutation = graphql`
   mutation TriggerPopoverDeletionMutation($id: ID!) {
@@ -50,10 +32,9 @@ const TriggerPopover = ({
 }: {
   id: string;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
-  disabled:boolean;
+  disabled: boolean;
 }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
@@ -91,7 +72,7 @@ const TriggerPopover = ({
   };
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
-    <div className={classes.container}>
+    <div>
       <Tooltip title={disabled ? t('This trigger/digest has been shared with you and you are not able to modify or delete it') : ''}>
         <div>
           <IconButton
@@ -101,7 +82,7 @@ const TriggerPopover = ({
             size="medium"
             disabled={disabled}
           >
-             <MoreVert/>
+            <MoreVert />
           </IconButton>
         </div>
       </Tooltip>
@@ -110,13 +91,13 @@ const TriggerPopover = ({
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
       <Dialog
-            open={displayDelete}
-            keepMounted={true}
-            TransitionComponent={Transition}
-            PaperProps={{ elevation: 1 }}
-            onClose={handleCloseDelete}
-        >
-          <DialogContent>
+        open={displayDelete}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        PaperProps={{ elevation: 1 }}
+        onClose={handleCloseDelete}
+      >
+        <DialogContent>
           <DialogContentText>
             {t('Do you want to delete this trigger?')}
           </DialogContentText>
@@ -131,17 +112,17 @@ const TriggerPopover = ({
         </DialogActions>
       </Dialog>
       <Drawer
+        title={t('Update a trigger')}
         open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleCloseEdit}
       >
         {queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <TriggerEditionContainer queryRef={queryRef} handleClose={handleCloseEdit}
-                                     paginationOptions={paginationOptions}/>
+            <TriggerEditionContainer
+              queryRef={queryRef}
+              handleClose={handleCloseEdit}
+              paginationOptions={paginationOptions}
+            />
           </React.Suspense>
         )}
       </Drawer>

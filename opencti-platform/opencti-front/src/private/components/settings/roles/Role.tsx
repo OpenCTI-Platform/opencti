@@ -1,32 +1,20 @@
-import React, { useState } from 'react';
-import {
-  graphql,
-  PreloadedQuery,
-  useFragment,
-  usePreloadedQuery,
-} from 'react-relay';
+import React from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Fab from '@mui/material/Fab';
-import { Edit } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
 import ListItem from '@mui/material/ListItem';
 import { Link, useHistory } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import AccessesMenu from '../AccessesMenu';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  Role_role$data,
-  Role_role$key,
-} from './__generated__/Role_role.graphql';
+import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
 import RolePopover, { roleEditionQuery } from './RolePopover';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
-import { Theme } from '../../../../components/Theme';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import RoleEdition from './RoleEdition';
@@ -36,7 +24,7 @@ import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -57,22 +45,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -113,14 +85,6 @@ const Role = ({
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
   );
-  const [displayUpdate, setDisplayUpdate] = useState(false);
-  const handleOpenUpdate = () => {
-    setDisplayUpdate(true);
-  };
-  const handleCloseUpdate = () => {
-    setDisplayUpdate(false);
-  };
-
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -196,38 +160,20 @@ const Role = ({
           </Paper>
         </Grid>
       </Grid>
-      <Fab
-        onClick={handleOpenUpdate}
-        color="secondary"
-        aria-label="Edit"
-        className={classes.editButton}
-      >
-        <Edit />
-      </Fab>
-      <Drawer
-        open={displayUpdate}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseUpdate}
-      >
-        <QueryRenderer
-          query={roleEditionQuery}
-          variables={{ id: role.id }}
-          render={({ props }: { props: RolePopoverEditionQuery$data }) => {
-            if (props && props.role) {
-              return (
-                <RoleEdition
-                  role={props.role}
-                  handleClose={handleCloseUpdate}
-                />
-              );
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={roleEditionQuery}
+        variables={{ id: role.id }}
+        render={({ props }: { props: RolePopoverEditionQuery$data }) => {
+          if (props && props.role) {
+            return (
+              <RoleEdition
+                role={props.role}
+              />
+            );
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
     </div>
   );
 };

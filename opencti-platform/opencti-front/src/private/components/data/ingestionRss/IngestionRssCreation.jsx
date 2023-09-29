@@ -1,16 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
+import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -23,16 +19,6 @@ import { insertNode } from '../../../../utils/store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -91,13 +77,6 @@ const ingestionRssCreationValidation = (t) => Yup.object().shape({
 
 const IngestionRssCreation = (props) => {
   const { t, classes } = props;
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-  };
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const input = {
       name: values.name,
@@ -126,148 +105,115 @@ const IngestionRssCreation = (props) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
       },
     });
   };
-  const onReset = () => {
-    handleClose();
-  };
   return (
-    <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
+    <Drawer
+      title={t('Create a RSS ingester')}
+      variant={DrawerVariant.createWithPanel}
+    >
+      <Formik
+        initialValues={{
+          name: '',
+          description: '',
+          uri: '',
+          report_types: [],
+          user_id: '',
+          created_by_ref: '',
+          objectMarking: [],
+          current_state_date: null,
+        }}
+        validationSchema={ingestionRssCreationValidation(t)}
+        onSubmit={onSubmit}
       >
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a RSS ingester')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <Formik
-            initialValues={{
-              name: '',
-              description: '',
-              uri: '',
-              report_types: [],
-              user_id: '',
-              created_by_ref: '',
-              objectMarking: [],
-              current_state_date: null,
-            }}
-            validationSchema={ingestionRssCreationValidation(t)}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="uri"
-                  label={t('RSS Feed URL')}
-                  fullWidth={true}
-                  style={fieldSpacingContainerStyle}
-                />
-                <CreatorField
-                  name="user_id"
-                  label={t(
-                    'User responsible for data creation (empty = System)',
-                  )}
-                  containerStyle={fieldSpacingContainerStyle}
-                />
-                <Field
-                  component={DateTimePickerField}
-                  name="current_state_date"
-                  TextFieldProps={{
-                    label: t(
-                      'Import from date (empty = all RSS feed possible items)',
-                    ),
-                    variant: 'standard',
-                    fullWidth: true,
-                    style: { marginTop: 20 },
-                  }}
-                />
-                <OpenVocabField
-                  label={t('Default report types')}
-                  type="report_types_ov"
-                  name="report_types"
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  containerStyle={fieldSpacingContainerStyle}
-                  multiple={true}
-                />
-                <CreatedByField
-                  name="created_by_ref"
-                  label={t('Default author')}
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectMarkingField
-                  label={t('Default marking definitions')}
-                  name="object_marking_refs"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </div>
-      </Drawer>
-    </div>
+        {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="uri"
+              label={t('RSS Feed URL')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+            />
+            <CreatorField
+              name="user_id"
+              label={t(
+                'User responsible for data creation (empty = System)',
+              )}
+              containerStyle={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={DateTimePickerField}
+              name="current_state_date"
+              TextFieldProps={{
+                label: t(
+                  'Import from date (empty = all RSS feed possible items)',
+                ),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
+            />
+            <OpenVocabField
+              label={t('Default report types')}
+              type="report_types_ov"
+              name="report_types"
+              onChange={(name, value) => setFieldValue(name, value)}
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={true}
+            />
+            <CreatedByField
+              name="created_by_ref"
+              label={t('Default author')}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <ObjectMarkingField
+              label={t('Default marking definitions')}
+              name="object_marking_refs"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Create')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </Drawer>
   );
 };
 

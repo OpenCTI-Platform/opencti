@@ -1,54 +1,25 @@
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
-import { Add, Close } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
+import { Add } from '@mui/icons-material';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
 import DataSourceCreation from '../data_sources/DataSourceCreation';
 import SearchInput from '../../../../components/SearchInput';
-import AddDataSourcesLines, {
-  addDataSourcesLinesQuery,
-} from './AddDataSourcesLines';
+import AddDataSourcesLines, { addDataSourcesLinesQuery } from './AddDataSourcesLines';
 import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { DataSourcesLinesPaginationQuery$variables } from '../data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const useStyles = makeStyles(() => ({
   createButton: {
     float: 'left',
     marginTop: -15,
   },
-  title: {
-    float: 'left',
-  },
   search: {
-    float: 'right',
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: 0,
+    marginLeft: 'auto',
+    marginRight: ' 20px',
   },
 }));
 
@@ -90,25 +61,9 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
       </IconButton>
       <Drawer
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Add data source')}
-          </Typography>
+        title={t('Add data sources')}
+        header={(
           <div className={classes.search}>
             <SearchInput
               variant="inDrawer"
@@ -116,19 +71,18 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
               onSubmit={handleSearch}
             />
           </div>
-        </div>
-        <div className={classes.container}>
-          {queryRef && (
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <AddDataSourcesLines
-                dataComponentId={dataComponentId}
-                queryRef={queryRef}
-              />
-            </React.Suspense>
-          )}
-        </div>
+        )}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <AddDataSourcesLines
+              dataComponentId={dataComponentId}
+              queryRef={queryRef}
+            />
+          </React.Suspense>
+        )}
       </Drawer>
       <DataSourceCreation
         contextual={true}

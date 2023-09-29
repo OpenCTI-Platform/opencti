@@ -1,11 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -14,6 +11,7 @@ import { FormikConfig } from 'formik/dist/types';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -32,10 +30,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  IndicatorCreationMutation,
-  IndicatorCreationMutation$variables,
-} from './__generated__/IndicatorCreationMutation.graphql';
+import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
 import { parse } from '../../../../utils/Time';
 import { IndicatorsLinesPaginationQuery$variables } from './__generated__/IndicatorsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -43,16 +38,6 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -77,19 +62,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
 }));
 
@@ -418,7 +390,11 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   );
 };
 
-interface IndicatorCreationProps { paginationOptions: IndicatorsLinesPaginationQuery$variables, contextual?: boolean, display?: boolean }
+interface IndicatorCreationProps {
+  paginationOptions: IndicatorsLinesPaginationQuery$variables,
+  contextual?: boolean,
+  display?: boolean
+}
 
 const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
   const { t } = useFormatter();
@@ -466,44 +442,18 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   }
 
   return (
-    <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create an indicator')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <IndicatorCreationForm
-            updater={updater}
-            onCompleted={handleClose}
-            onReset={onReset}
-          />
-        </div>
-      </Drawer>
-    </div>
+    <Drawer
+      title={t('Create an indicator')}
+      variant={DrawerVariant.create}
+    >
+      {({ onClose }) => (
+        <IndicatorCreationForm
+          updater={updater}
+          onCompleted={onClose}
+          onReset={onClose}
+        />
+      )}
+    </Drawer>
   );
 };
 

@@ -2,14 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import { Add, Close } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
@@ -17,9 +15,8 @@ import Skeleton from '@mui/material/Skeleton';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import InvestigationAddStixCoreObjectsLines, {
-  investigationAddStixCoreObjectsLinesQuery,
-} from './InvestigationAddStixCoreObjectsLines';
+import InvestigationAddStixCoreObjectsLines, { investigationAddStixCoreObjectsLinesQuery } from './InvestigationAddStixCoreObjectsLines';
+import Drawer from '../../common/drawer/Drawer';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -47,7 +44,8 @@ const styles = (theme) => ({
     float: 'left',
   },
   search: {
-    float: 'right',
+    marginLeft: 'auto',
+    marginRight: ' 20px',
   },
   header: {
     backgroundColor: theme.palette.background.nav,
@@ -286,41 +284,21 @@ class InvestigationAddStixCoreObjects extends Component {
         </Tooltip>
         <Drawer
           open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
+          title={t('Add entities')}
+          header={(
+            <>
+              {this.renderSearchTypeFilter(paginationOptions)}
+              <div className={classes.search}>
+                <SearchInput
+                  variant="inDrawer"
+                  placeholder={`${t('Search')}...`}
+                  onSubmit={this.handleSearch.bind(this)}
+                />
+              </div>
+            </>
+          )}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            {(InvestigationAddStixCoreObjects.isTypeDomainObject(
-              paginationOptions.types,
-            )
-              || InvestigationAddStixCoreObjects.isTypeObservable(
-                paginationOptions.types,
-              )) && (
-              <Typography variant="h6" classes={{ root: classes.title }}>
-                {t('Add entities')}
-              </Typography>
-            )}
-            {this.renderSearchTypeFilter(paginationOptions)}
-            <div className={classes.search}>
-              <SearchInput
-                variant="inDrawer"
-                placeholder={`${t('Search')}...`}
-                onSubmit={this.handleSearch.bind(this)}
-              />
-            </div>
-          </div>
           <div className={classes.investigation}>
             {this.renderSearch(paginationOptions)}
           </div>

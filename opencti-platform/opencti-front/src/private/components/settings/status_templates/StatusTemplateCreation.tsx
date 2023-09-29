@@ -1,11 +1,6 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import Dialog from '@mui/material/Dialog';
@@ -15,6 +10,7 @@ import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
@@ -25,40 +21,12 @@ import { StatusTemplateCreationContextualMutation$data } from './__generated__/S
 import { StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
   },
   button: {
     marginLeft: theme.spacing(2),
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
   },
   dialog: {
     overflow: 'hidden',
@@ -100,9 +68,7 @@ interface StatusTemplateCreationProps {
   paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
 }
 
-const StatusTemplateCreation: FunctionComponent<
-StatusTemplateCreationProps
-> = ({
+const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = ({
   contextual,
   inputValueContextual,
   creationCallback,
@@ -112,12 +78,6 @@ StatusTemplateCreationProps
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const [open, setOpen] = useState(false);
-
-  const handleOpen = () => setOpen(true);
-
-  const handleClose = () => setOpen(false);
 
   const onSubmit: FormikConfig<{ name: string; color: string }>['onSubmit'] = (
     values,
@@ -149,8 +109,6 @@ StatusTemplateCreationProps
         if (contextual) {
           creationCallback(response);
           handleCloseContextual();
-        } else {
-          handleClose();
         }
       },
       optimisticUpdater: undefined,
@@ -159,94 +117,67 @@ StatusTemplateCreationProps
     });
   };
 
-  const onResetClassic = () => handleClose();
-
   const onResetContextual = () => handleCloseContextual();
 
   const renderClassic = () => {
     return (
-      <>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer
-          open={open}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">
-              {t('Create a status template')}
-            </Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                color: '',
-              }}
-              validationSchema={statusTemplateValidation(t)}
-              onSubmit={onSubmit}
-              onReset={onResetClassic}
-            >
-              {({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={ColorPickerField}
-                    name="color"
-                    label={t('Color')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
-      </>
+      <Drawer
+        title={t('Create a status template')}
+        variant={DrawerVariant.createWithPanel}
+      >
+        {({ onClose }) => (
+          <Formik<{ name: string; color: string }>
+            initialValues={{
+              name: '',
+              color: '',
+            }}
+            validationSchema={statusTemplateValidation(t)}
+            onSubmit={(values, formikHelpers) => {
+              onSubmit(values, formikHelpers);
+              onClose();
+            }}
+            onReset={onClose}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  label={t('Name')}
+                  fullWidth={true}
+                />
+                <Field
+                  component={ColorPickerField}
+                  name="color"
+                  label={t('Color')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Create')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
+      </Drawer>
     );
   };
 

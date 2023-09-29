@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import { AddOutlined, CancelOutlined, Close } from '@mui/icons-material';
+import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -18,6 +16,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
+import Drawer from '../../common/drawer/Drawer';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import CreatedByField from '../../common/form/CreatedByField';
 import Filters from '../../common/lists/Filters';
@@ -35,24 +34,6 @@ import { numberAttributes } from '../../../../utils/hooks/useAttributes';
 import AutocompleteField from '../../../../components/AutocompleteField';
 
 const useStyles = makeStyles((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    padding: 0,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  title: {
-    float: 'left',
-  },
   lines: {
     padding: 0,
     height: '100%',
@@ -407,9 +388,9 @@ const PlaybookAddComponentsContent = ({
     const initialValues = currentConfig
       ? {
         name:
-            selectedNode?.data?.component?.id === selectedComponent.id
-              ? selectedNode?.data?.name
-              : selectedComponent.name,
+          selectedNode?.data?.component?.id === selectedComponent.id
+            ? selectedNode?.data?.name
+            : selectedComponent.name,
         ...currentConfig,
       }
       : {
@@ -745,7 +726,6 @@ const PlaybookAddComponents = ({
   onConfigAdd,
   onConfigReplace,
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
   const handleClose = () => {
@@ -760,36 +740,23 @@ const PlaybookAddComponents = ({
   return (
     <Drawer
       open={open}
-      anchor="right"
-      elevation={1}
-      sx={{ zIndex: 1202 }}
-      classes={{ paper: classes.drawerPaper }}
+      title={t('Add components')}
       onClose={handleClose}
     >
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Add components')}
-        </Typography>
-      </div>
-      {(selectedNode || selectedEdge) && (
-        <PlaybookAddComponentsContent
-          searchTerm={searchTerm}
-          playbookComponents={playbookComponents}
-          action={action}
-          selectedNode={selectedNode}
-          onConfigAdd={onConfigAdd}
-          onConfigReplace={onConfigReplace}
-          handleClose={handleClose}
-        />
+      {({ onClose }) => (
+        <>
+          {(selectedNode || selectedEdge) && (
+            <PlaybookAddComponentsContent
+              searchTerm={searchTerm}
+              playbookComponents={playbookComponents}
+              action={action}
+              selectedNode={selectedNode}
+              onConfigAdd={onConfigAdd}
+              onConfigReplace={onConfigReplace}
+              handleClose={onClose}
+            />
+          )}
+        </>
       )}
     </Drawer>
   );

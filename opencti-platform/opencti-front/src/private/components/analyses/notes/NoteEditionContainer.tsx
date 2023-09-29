@@ -1,74 +1,41 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
 import NoteEditionOverview from './NoteEditionOverview';
-import { Theme } from '../../../../components/Theme';
 import { NoteEditionContainer_note$data } from './__generated__/NoteEditionContainer_note.graphql';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-}));
-
 interface NoteEditionContainerProps {
-  note: NoteEditionContainer_note$data;
-  handleClose: () => void;
+  note: NoteEditionContainer_note$data
+  handleClose: () => void
+  open?: boolean
 }
 
 const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
   note,
   handleClose,
+  open,
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
 
   const { editContext } = note;
 
   return (
-    <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose.bind(this)}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a note')}
-        </Typography>
-        <SubscriptionAvatars context={editContext} />
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
+    <Drawer
+      title={t('Update a note')}
+      variant={open == null ? DrawerVariant.update : undefined}
+      context={editContext}
+      onClose={handleClose}
+      open={open}
+    >
+      {({ onClose }) => (
         <NoteEditionOverview
           note={note}
           context={editContext}
-          handleClose={handleClose}
+          handleClose={onClose}
         />
-      </div>
-    </div>
+      )}
+    </Drawer>
   );
 };
 

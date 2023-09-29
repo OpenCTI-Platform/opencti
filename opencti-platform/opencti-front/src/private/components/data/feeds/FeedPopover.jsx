@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -21,20 +20,9 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import FeedEdition from './FeedEdition';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 });
 
@@ -144,31 +132,23 @@ class FeedPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
-          <QueryRenderer
-            query={feedEditionQuery}
-            variables={{ id: feedId }}
-            render={({ props }) => {
-              if (props) {
-                // Done
-                return (
-                  <FeedEdition
-                    feed={props.feed}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
+        <QueryRenderer
+          query={feedEditionQuery}
+          variables={{ id: feedId }}
+          render={({ props }) => {
+            if (props) {
+              // Done
+              return (
+                <FeedEdition
+                  feed={props.feed}
+                  handleClose={this.handleCloseUpdate.bind(this)}
+                  open={this.state.displayUpdate}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}

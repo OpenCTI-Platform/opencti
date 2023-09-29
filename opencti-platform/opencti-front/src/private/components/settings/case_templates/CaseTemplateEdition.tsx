@@ -1,56 +1,19 @@
-import { Close, Edit } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
-import Fab from '@mui/material/Fab';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import React, { FunctionComponent, useRef } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/MarkdownField';
 import TextField from '../../../../components/TextField';
-import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseTemplateLine_node$data } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
 
 const caseTemplateAddTask = graphql`
   mutation CaseTemplateEditionAddTaskMutation(
@@ -111,9 +74,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   openPanel,
   setOpenPanel,
 }) => {
-  const classes = useStyles();
   const { t } = useFormatter();
-  const handleOpen = () => setOpenPanel(true);
   const handleClose = () => setOpenPanel(false);
 
   const [commitAddTask] = useMutation(caseTemplateAddTask);
@@ -177,78 +138,53 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   };
 
   return (
-    <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Edit"
-        className={classes.createButton}
+    <Drawer
+      title={t('Update the case template')}
+      variant={DrawerVariant.updateWithPanel}
+      open={openPanel}
+      onClose={handleClose}
+    >
+      <Formik
+        initialValues={{
+          ...caseTemplate,
+          tasks: existingTasks.current,
+        }}
+        onSubmit={() => {
+        }}
+        validationSchema={caseTemplateValidation(t)}
       >
-        <Edit />
-      </Fab>
-      <Drawer
-        open={openPanel}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Update the case template')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <Formik
-            initialValues={{
-              ...caseTemplate,
-              tasks: existingTasks.current,
-            }}
-            onSubmit={() => {}}
-            validationSchema={caseTemplateValidation(t)}
-          >
-            {({ values: currentValues, setFieldValue }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth
-                  onSubmit={handleSubmitField}
-                  style={{ marginBottom: '20px' }}
-                />
-                <Field
-                  component={MarkdownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth
-                  multiline
-                  rows="4"
-                  style={fieldSpacingContainerStyle}
-                  onSubmit={handleSubmitField}
-                />
-                <CaseTemplateTasks
-                  onChange={(name, values) => {
-                    submitTaskEdition(values);
-                    setFieldValue(name, values);
-                  }}
-                  values={currentValues.tasks}
-                />
-              </Form>
-            )}
-          </Formik>
-        </div>
-      </Drawer>
-    </div>
+        {({ values: currentValues, setFieldValue }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth
+              onSubmit={handleSubmitField}
+              style={{ marginBottom: '20px' }}
+            />
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t('Description')}
+              fullWidth
+              multiline
+              rows="4"
+              style={fieldSpacingContainerStyle}
+              onSubmit={handleSubmitField}
+            />
+            <CaseTemplateTasks
+              onChange={(name, values) => {
+                submitTaskEdition(values);
+                setFieldValue(name, values);
+              }}
+              values={currentValues.tasks}
+            />
+          </Form>
+        )}
+      </Formik>
+    </Drawer>
   );
 };
 

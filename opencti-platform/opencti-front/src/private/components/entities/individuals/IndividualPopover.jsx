@@ -7,7 +7,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -16,7 +15,7 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { individualEditionQuery } from './IndividualEdition';
 import IndividualEditionContainer from './IndividualEditionContainer';
 import Loader from '../../../../components/Loader';
@@ -159,30 +158,22 @@ class IndividualPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
-          <QueryRenderer
-            query={individualEditionQuery}
-            variables={{ id }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <IndividualEditionContainer
-                    individual={props.individual}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
+        <QueryRenderer
+          query={individualEditionQuery}
+          variables={{ id }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <IndividualEditionContainer
+                  individual={props.individual}
+                  handleClose={this.handleCloseEdit.bind(this)}
+                  open={this.state.displayEdit}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
       </div>
     );
   }

@@ -3,9 +3,6 @@ import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -19,6 +16,7 @@ import Filters from '../../common/lists/Filters';
 import { adaptFieldValue } from '../../../../utils/String';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import Drawer from '../../common/drawer/Drawer';
 
 const styles = (theme) => ({
   header: {
@@ -78,7 +76,7 @@ const retentionValidation = (t) => Yup.object().shape({
 });
 
 const RetentionEditionContainer = (props) => {
-  const { t, classes, handleClose, retentionRule } = props;
+  const { t, classes, open, handleClose, retentionRule } = props;
   const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
   const [filters, setFilters] = useState(
     JSON.parse(props.retentionRule.filters),
@@ -152,112 +150,102 @@ const RetentionEditionContainer = (props) => {
     });
   };
   return (
-    <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t('Update a retention policy')}</Typography>
-      </div>
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={retentionValidation(t)}
-          onSubmit={onSubmit}
-        >
-          {({ isSubmitting, submitForm, values }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
+    <Drawer
+      title={t('Update a retention policy')}
+      open={open}
+      onClose={handleClose}
+    >
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={retentionValidation(t)}
+        onSubmit={onSubmit}
+      >
+        {({ isSubmitting, submitForm, values }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="max_retention"
+              label={t('Maximum retention days')}
+              onChange={() => setVerified(false)}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip
+                      title={t(
+                        'All objects matching the filters that have not been updated since this amount of days will be deleted',
+                      )}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ cursor: 'default' }}
+                      />
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <div style={{ marginTop: 35 }}>
+              <Filters
+                variant="text"
+                availableFilterKeys={[
+                  'entity_type',
+                  'markedBy',
+                  'labelledBy',
+                  'createdBy',
+                  'x_opencti_score',
+                  'x_opencti_detection',
+                  'revoked',
+                  'confidence',
+                  'pattern_type',
+                ]}
+                handleAddFilter={handleAddFilter}
+                noDirectFilters={true}
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="max_retention"
-                label={t('Maximum retention days')}
-                onChange={() => setVerified(false)}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Tooltip
-                        title={t(
-                          'All objects matching the filters that have not been updated since this amount of days will be deleted',
-                        )}
-                      >
-                        <InformationOutline
-                          fontSize="small"
-                          color="primary"
-                          style={{ cursor: 'default' }}
-                        />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <div style={{ marginTop: 35 }}>
-                <Filters
-                  variant="text"
-                  availableFilterKeys={[
-                    'entity_type',
-                    'markedBy',
-                    'labelledBy',
-                    'createdBy',
-                    'x_opencti_score',
-                    'x_opencti_detection',
-                    'revoked',
-                    'confidence',
-                    'pattern_type',
-                  ]}
-                  handleAddFilter={handleAddFilter}
-                  noDirectFilters={true}
-                />
-              </div>
-              <div className="clearfix" />
-              <FilterIconButton
-                filters={filters}
-                handleRemoveFilter={handleRemoveFilter}
-                classNameNumber={2}
-                styleNumber={2}
-                redirection
-              />
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => handleVerify(values)}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Verify')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={submitForm}
-                  classes={{ root: classes.button }}
-                  disabled={!verified || isSubmitting}
-                >
-                  {t('Update')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </div>
+            </div>
+            <div className="clearfix" />
+            <FilterIconButton
+              filters={filters}
+              handleRemoveFilter={handleRemoveFilter}
+              classNameNumber={2}
+              styleNumber={2}
+              redirection
+            />
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => handleVerify(values)}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Verify')}
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={submitForm}
+                classes={{ root: classes.button }}
+                disabled={!verified || isSubmitting}
+              >
+                {t('Update')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    </Drawer>
   );
 };
 

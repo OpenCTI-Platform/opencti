@@ -3,40 +3,21 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useMutation } from 'react-relay';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditionContainerQuery.graphql';
-import DataSourceEditionContainer, {
-  dataSourceEditionQuery,
-} from './DataSourceEditionContainer';
+import DataSourceEditionContainer, { dataSourceEditionQuery } from './DataSourceEditionContainer';
 import Transition from '../../../../components/Transition';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
 
 const DataSourcePopoverDeletionMutation = graphql`
   mutation DataSourcePopoverDeletionMutation($id: ID!) {
@@ -46,7 +27,6 @@ const DataSourcePopoverDeletionMutation = graphql`
 
 const DataSourcePopover = ({ id }: { id: string }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -92,10 +72,8 @@ const DataSourcePopover = ({ id }: { id: string }) => {
     handleClose();
   };
 
-  const handleCloseEdit = () => setDisplayEdit(false);
-
   return (
-    <div className={classes.container}>
+    <div>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -131,25 +109,17 @@ const DataSourcePopover = ({ id }: { id: string }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseEdit}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <DataSourceEditionContainer
-              queryRef={queryRef}
-              handleClose={handleClose}
-            />
-          </React.Suspense>
-        )}
-      </Drawer>
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <DataSourceEditionContainer
+            queryRef={queryRef}
+            handleClose={handleClose}
+            open={displayEdit}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 };

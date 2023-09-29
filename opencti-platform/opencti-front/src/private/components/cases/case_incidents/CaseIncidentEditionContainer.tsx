@@ -1,40 +1,16 @@
-import { Close } from '@mui/icons-material';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionAvatars } from '../../../../components/Subscription';
-import { Theme } from '../../../../components/Theme';
-
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
 import CaseIncidentEditionOverview from './CaseIncidentEditionOverview';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-}));
-
 interface CaseIncidentEditionContainerProps {
-  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>;
-  handleClose: () => void;
+  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>
+  handleClose: () => void
+  open?: boolean
 }
 
 export const caseIncidentEditionQuery = graphql`
@@ -51,40 +27,29 @@ export const caseIncidentEditionQuery = graphql`
 
 const CaseIncidentEditionContainer: FunctionComponent<
 CaseIncidentEditionContainerProps
-> = ({ queryRef, handleClose }) => {
-  const classes = useStyles();
+> = ({ queryRef, handleClose, open }) => {
   const { t } = useFormatter();
-  const queryData = usePreloadedQuery(caseIncidentEditionQuery, queryRef);
-  if (queryData.caseIncident === null) {
+  const { caseIncident } = usePreloadedQuery(caseIncidentEditionQuery, queryRef);
+  if (caseIncident === null) {
     return <ErrorNotFound />;
   }
   return (
-    <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update an incident response')}
-        </Typography>
-        <SubscriptionAvatars context={queryData.caseIncident.editContext} />
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
+    <Drawer
+      title={t('Update an incident response')}
+      variant={open == null ? DrawerVariant.update : undefined}
+      context={caseIncident.editContext}
+      onClose={handleClose}
+      open={open}
+    >
+      {({ onClose }) => (
         <CaseIncidentEditionOverview
-          caseRef={queryData.caseIncident}
-          context={queryData.caseIncident.editContext}
+          caseRef={caseIncident}
+          context={caseIncident.editContext}
           enableReferences={useIsEnforceReference('Case-Incident')}
-          handleClose={handleClose}
+          handleClose={onClose}
         />
-      </div>
-    </div>
+      )}
+    </Drawer>
   );
 };
 

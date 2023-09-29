@@ -3,14 +3,12 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -19,26 +17,11 @@ import NoteEditionContainer from './NoteEditionContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { Theme } from '../../../../components/Theme';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import Transition from '../../../../components/Transition';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
 import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
-
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-}));
 
 const NotePopoverDeletionMutation = graphql`
   mutation NotePopoverDeletionMutation($id: ID!) {
@@ -64,7 +47,6 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   paginationOptions,
 }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
@@ -155,30 +137,22 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <Drawer
-        open={displayEdit}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseEdit}
-      >
-        <QueryRenderer
-          query={noteEditionQuery}
-          variables={{ id }}
-          render={({ props }: { props: NoteEditionContainerQuery$data }) => {
-            if (props && props.note) {
-              return (
-                <NoteEditionContainer
-                  note={props.note}
-                  handleClose={handleCloseEdit}
-                />
-              );
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={noteEditionQuery}
+        variables={{ id }}
+        render={({ props }: { props: NoteEditionContainerQuery$data }) => {
+          if (props && props.note) {
+            return (
+              <NoteEditionContainer
+                note={props.note}
+                handleClose={handleCloseEdit}
+                open={displayEdit}
+              />
+            );
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
     </>
   );
 };

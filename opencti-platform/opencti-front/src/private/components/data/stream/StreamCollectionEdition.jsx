@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import Switch from '@mui/material/Switch';
@@ -21,20 +18,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 
-const useStyles = makeStyles((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 0px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
+const useStyles = makeStyles(() => ({
   alert: {
     width: '100%',
     marginTop: 20,
@@ -62,7 +46,7 @@ const streamCollectionValidation = (t) => Yup.object().shape({
   authorized_members: Yup.array().nullable(),
 });
 
-const StreamCollectionEditionContainer = ({ handleClose, streamCollection }) => {
+const StreamCollectionEditionContainer = ({ streamCollection }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const initialValues = { ...streamCollection, authorized_members: convertAuthorizedMembers(streamCollection) };
@@ -135,114 +119,98 @@ const StreamCollectionEditionContainer = ({ handleClose, streamCollection }) => 
     });
   };
   return (
-    <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t('Update a live stream')}</Typography>
-      </div>
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={streamCollectionValidation(t)}
-        >
-          {() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={streamCollectionValidation(t)}
+    >
+      {() => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onSubmit={handleSubmitField}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onSubmit={handleSubmitField}
+          />
+          <Alert
+            icon={false}
+            classes={{ root: classes.alert, message: classes.message }}
+            severity="warning"
+            variant="outlined"
+            style={{ position: 'relative' }}
+          >
+            <AlertTitle>
+              {t('Make this stream public and available to anyone')}
+            </AlertTitle>
+            <FormControlLabel
+              control={<Switch defaultChecked={initialValues.stream_public} />}
+              style={{ marginLeft: 1 }}
+              onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())}
+              label={t('Public stream')}
+            />
+            {!initialValues.stream_public && (
+              <ObjectMembersField
+                label={'Accessible for'}
+                style={fieldSpacingContainerStyle}
+                onChange={handleSubmitFieldOptions}
+                multiple={true}
+                helpertext={t('Let the field empty to grant all authenticated users')}
+                name="authorized_members"
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onSubmit={handleSubmitField}
-              />
-              <Alert
-                icon={false}
-                classes={{ root: classes.alert, message: classes.message }}
-                severity="warning"
-                variant="outlined"
-                style={{ position: 'relative' }}
-              >
-                <AlertTitle>
-                  {t('Make this stream public and available to anyone')}
-                </AlertTitle>
-                <FormControlLabel
-                  control={<Switch defaultChecked={initialValues.stream_public} />}
-                  style={{ marginLeft: 1 }}
-                  onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())}
-                  label={t('Public stream')}
-                />
-                {!initialValues.stream_public && (
-                    <ObjectMembersField
-                        label={'Accessible for'}
-                        style={fieldSpacingContainerStyle}
-                        onChange={handleSubmitFieldOptions}
-                        multiple={true}
-                        helpertext={t('Let the field empty to grant all authenticated users')}
-                        name="authorized_members"
-                    />
-                )}
-              </Alert>
-              <div style={{ marginTop: 35 }}>
-                <Filters
-                  variant="text"
-                  availableFilterKeys={[
-                    'entity_type',
-                    'x_opencti_workflow_id',
-                    'assigneeTo',
-                    'objectContains',
-                    'markedBy',
-                    'labelledBy',
-                    'creator',
-                    'createdBy',
-                    'priority',
-                    'severity',
-                    'x_opencti_score',
-                    'x_opencti_detection',
-                    'revoked',
-                    'confidence',
-                    'indicator_types',
-                    'pattern_type',
-                    'x_opencti_main_observable_type',
-                    'fromId',
-                    'toId',
-                    'fromTypes',
-                    'toTypes',
-                  ]}
-                  handleAddFilter={handleAddFilter}
-                  noDirectFilters={true}
-                />
-              </div>
-              <div className="clearfix" />
-              <FilterIconButton
-                filters={filters}
-                classNameNumber={2}
-                styleNumber={2}
-                handleRemoveFilter={handleRemoveFilter}
-                redirection
-              />
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </div>
+            )}
+          </Alert>
+          <div style={{ marginTop: 35 }}>
+            <Filters
+              variant="text"
+              availableFilterKeys={[
+                'entity_type',
+                'x_opencti_workflow_id',
+                'assigneeTo',
+                'objectContains',
+                'markedBy',
+                'labelledBy',
+                'creator',
+                'createdBy',
+                'priority',
+                'severity',
+                'x_opencti_score',
+                'x_opencti_detection',
+                'revoked',
+                'confidence',
+                'indicator_types',
+                'pattern_type',
+                'x_opencti_main_observable_type',
+                'fromId',
+                'toId',
+                'fromTypes',
+                'toTypes',
+              ]}
+              handleAddFilter={handleAddFilter}
+              noDirectFilters={true}
+            />
+          </div>
+          <div className="clearfix" />
+          <FilterIconButton
+            filters={filters}
+            classNameNumber={2}
+            styleNumber={2}
+            handleRemoveFilter={handleRemoveFilter}
+            redirection
+          />
+        </Form>
+      )}
+    </Formik>
   );
 };
 

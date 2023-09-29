@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -15,11 +14,10 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
+import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import StreamCollectionEdition, {
-  streamCollectionMutationFieldPatch,
-} from './StreamCollectionEdition';
+import StreamCollectionEdition, { streamCollectionMutationFieldPatch } from './StreamCollectionEdition';
 
 const styles = (theme) => ({
   container: {
@@ -158,15 +156,11 @@ class StreamCollectionPopover extends Component {
         </Menu>
         <Drawer
           open={this.state.displayUpdate}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
+          title={t('Update a live stream')}
           onClose={this.handleCloseUpdate.bind(this)}
         >
           <StreamCollectionEdition
             streamCollection={this.props.streamCollection}
-            handleClose={this.handleCloseUpdate.bind(this)}
           />
         </Drawer>
         <Dialog

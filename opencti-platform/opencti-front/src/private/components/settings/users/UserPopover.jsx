@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -19,20 +17,6 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
 import Loader from '../../../../components/Loader';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-});
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -108,7 +92,7 @@ class UserPopover extends Component {
   }
 
   render() {
-    const { classes, t, userId, disabled } = this.props;
+    const { t, userId, disabled } = this.props;
     return (
       <>
         <IconButton
@@ -134,30 +118,22 @@ class UserPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
-          <QueryRenderer
-            query={userEditionQuery}
-            variables={{ id: userId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <UserEdition
-                    user={props.user}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
+        <QueryRenderer
+          query={userEditionQuery}
+          variables={{ id: userId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <UserEdition
+                  user={props.user}
+                  open={this.state.displayUpdate}
+                  handleClose={this.handleCloseUpdate.bind(this)}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
         <Dialog
           open={this.state.displayDelete}
           PaperProps={{ elevation: 1 }}
@@ -194,9 +170,8 @@ class UserPopover extends Component {
 UserPopover.propTypes = {
   userId: PropTypes.string,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   disabled: PropTypes.bool,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(UserPopover);
+export default compose(inject18n, withRouter)(UserPopover);

@@ -1,9 +1,8 @@
-import { Close, ExpandLess, ExpandMore, NotificationsOutlined } from '@mui/icons-material';
+import { ExpandLess, ExpandMore, NotificationsOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
-import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -12,7 +11,6 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -20,17 +18,14 @@ import { pick, uniq } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
+import Drawer from '@components/common/drawer/Drawer';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
-import {
-  convertEventTypes,
-  convertNotifiers,
-  instanceEventTypesOptions,
-} from '../../../../utils/edition';
+import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import { TriggerLine_node$data } from '../../profile/triggers/__generated__/TriggerLine_node.graphql';
@@ -43,37 +38,37 @@ import { Option } from '../form/ReferenceField';
 import { StixCoreObjectQuickSubscriptionContentPaginationQuery, StixCoreObjectQuickSubscriptionContentPaginationQuery$data, StixCoreObjectQuickSubscriptionContentPaginationQuery$variables } from './__generated__/StixCoreObjectQuickSubscriptionContentPaginationQuery.graphql';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
-    query StixCoreObjectQuickSubscriptionContentPaginationQuery(
-        $filters: [TriggersFiltering!]
-        $first: Int
-    ) {
-        triggersKnowledge(
-            filters: $filters
-            first: $first
-        ) @connection(key: "Pagination_triggersKnowledge") {
-            edges {
-                node {
-                    id
-                    name
-                    trigger_type
-                    event_types
-                    description
-                    filters
-                    created
-                    modified
-                    notifiers {
-                      id
-                      name
-                    }
-                    resolved_instance_filters {
-                        id
-                        valid
-                        value
-                    }
-                }
-            }
+  query StixCoreObjectQuickSubscriptionContentPaginationQuery(
+    $filters: [TriggersFiltering!]
+    $first: Int
+  ) {
+    triggersKnowledge(
+      filters: $filters
+      first: $first
+    ) @connection(key: "Pagination_triggersKnowledge") {
+      edges {
+        node {
+          id
+          name
+          trigger_type
+          event_types
+          description
+          filters
+          created
+          modified
+          notifiers {
+            id
+            name
+          }
+          resolved_instance_filters {
+            id
+            valid
+            value
+          }
         }
+      }
     }
+  }
 `;
 
 interface InstanceTriggerEditionFormValues {
@@ -87,26 +82,6 @@ interface InstanceTriggerEditionFormValues {
 }
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
   buttons: {
     textAlign: 'right',
   },
@@ -412,62 +387,48 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     const otherInstanceTriggersToDisplay = sortedTriggersToDisplay.slice(1); // the other instance triggers
     return (
       <Drawer
-        disableRestoreFocus={true}
+        title={t('Update instance triggers')}
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Update instance triggers')}</Typography>
-        </div>
-        <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-          {t(instanceTriggerDescription)}
-        </Alert>
-        <div>
-          {updateInstanceTriggerContent(firstInstanceTriggerToDisplay.values, true, firstInstanceTriggerToDisplay.multiple)}
-        </div>
-        {otherInstanceTriggersToDisplay.length > 0
-          && <List>
-            <ListItem
-              button={true}
-              divider={true}
-              classes={{ root: classes.nested }}
-              onClick={handleToggleLine}
-            >
-              <ListItemText primary={`${otherInstanceTriggersToDisplay.length} ${t('other trigger(s) related to this entity')}`} />
-              <ListItemSecondaryAction>
-                <IconButton
-                  onClick={handleToggleLine}
-                  aria-haspopup="true"
-                  size="large"
-                >
-                  {expandedLines ? (
-                    <ExpandLess />
-                  ) : (
-                    <ExpandMore />
-                  )}
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-            <Collapse
-              in={expandedLines}
-            >
-              {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger.values, false, instanceTrigger.multiple))}
-            </Collapse>
-          </List>
-        }
+        <>
+          <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+            {t(instanceTriggerDescription)}
+          </Alert>
+          <div>
+            {updateInstanceTriggerContent(firstInstanceTriggerToDisplay.values, true, firstInstanceTriggerToDisplay.multiple)}
+          </div>
+          {otherInstanceTriggersToDisplay.length > 0
+            && <List>
+              <ListItem
+                button={true}
+                divider={true}
+                classes={{ root: classes.nested }}
+                onClick={handleToggleLine}
+              >
+                <ListItemText primary={`${otherInstanceTriggersToDisplay.length} ${t('other trigger(s) related to this entity')}`} />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    onClick={handleToggleLine}
+                    aria-haspopup="true"
+                    size="large"
+                  >
+                    {expandedLines ? (
+                      <ExpandLess />
+                    ) : (
+                      <ExpandMore />
+                    )}
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+              <Collapse
+                in={expandedLines}
+              >
+                {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(instanceTrigger.values, false, instanceTrigger.multiple))}
+              </Collapse>
+            </List>
+          }
+        </>
       </Drawer>
     );
   };

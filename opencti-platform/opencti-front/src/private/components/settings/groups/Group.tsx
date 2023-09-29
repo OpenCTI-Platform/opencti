@@ -1,6 +1,4 @@
-import { EditOutlined, WarningOutlined } from '@mui/icons-material';
-import Drawer from '@mui/material/Drawer';
-import Fab from '@mui/material/Fab';
+import { WarningOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -12,14 +10,13 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
 import * as R from 'ramda';
-import React, { useState } from 'react';
+import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
 import AccessesMenu from '../AccessesMenu';
 import Triggers from '../common/Triggers';
@@ -30,7 +27,7 @@ import GroupPopover from './GroupPopover';
 import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
@@ -52,22 +49,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -123,14 +104,7 @@ const groupFragment = graphql`
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [displayUpdate, setDisplayUpdate] = useState(false);
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-  const handleOpenUpdate = () => {
-    setDisplayUpdate(true);
-  };
-  const handleCloseUpdate = () => {
-    setDisplayUpdate(false);
-  };
   const markingsSort = R.sortWith([
     R.ascend(R.propOr('TLP', 'definition_type')),
     R.descend(R.propOr(0, 'x_opencti_order')),
@@ -339,24 +313,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <GroupUsers groupId={group.id} />
         </Grid>
       </Grid>
-      <Fab
-        onClick={handleOpenUpdate}
-        color="secondary"
-        aria-label="Edit"
-        className={classes.editButton}
-      >
-        <EditOutlined />
-      </Fab>
-      <Drawer
-        open={displayUpdate}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseUpdate}
-      >
-        <GroupEdition groupId={group.id} handleClose={handleCloseUpdate} />
-      </Drawer>
+      <GroupEdition groupId={group.id}/>
     </div>
   );
 };

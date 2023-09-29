@@ -2,10 +2,6 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -16,31 +12,9 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CreatorField from '../../common/form/CreatorField';
-import {
-  convertCreatedBy,
-  convertMarkingsWithoutEdges,
-  convertUser,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkingsWithoutEdges, convertUser } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-
-const styles = (theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 0px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
-});
+import Drawer from '../../common/drawer/Drawer';
 
 export const ingestionRssMutationFieldPatch = graphql`
   mutation IngestionRssEditionFieldPatchMutation(
@@ -68,9 +42,9 @@ const ingestionRssValidation = (t) => Yup.object().shape({
 
 const IngestionRssEditionContainer = ({
   t,
-  classes,
   handleClose,
   ingestionRss,
+  open,
 }) => {
   const handleSubmitField = (name, value) => {
     ingestionRssValidation(t)
@@ -119,98 +93,88 @@ const IngestionRssEditionContainer = ({
     ]),
   )(ingestionRss);
   return (
-    <>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6">{t('Update a RSS ingester')}</Typography>
-      </div>
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={ingestionRssValidation(t)}
-        >
-          {({ setFieldValue }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-                onSubmit={handleSubmitField}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="uri"
-                label={t('RSS feed URL')}
-                fullWidth={true}
-                onSubmit={handleSubmitField}
-                style={fieldSpacingContainerStyle}
-              />
-              <CreatorField
-                name="user_id"
-                label={t('User responsible for data creation (empty = System)')}
-                onChange={handleSubmitField}
-                containerStyle={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="current_state_date"
-                TextFieldProps={{
-                  label: t(
-                    'Import from date (empty = all RSS feed possible items)',
-                  ),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-                onChange={handleSubmitField}
-              />
-              <OpenVocabField
-                label={t('Report types')}
-                type="report_types_ov"
-                name="report_types"
-                onSubmit={handleSubmitField}
-                onChange={setFieldValue}
-                containerStyle={fieldSpacingContainerStyle}
-                variant="edit"
-                multiple={true}
-              />
-              <CreatedByField
-                name="created_by_ref"
-                style={fieldSpacingContainerStyle}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-              />
-              <ObjectMarkingField
-                name="object_marking_refs"
-                style={fieldSpacingContainerStyle}
-                onChange={handleSubmitField}
-              />
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </>
+    <Drawer
+      title={t('Update a RSS ingester')}
+      open={open}
+      onClose={handleClose}
+    >
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={ingestionRssValidation(t)}
+      >
+        {({ setFieldValue }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              onSubmit={handleSubmitField}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+              onSubmit={handleSubmitField}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="uri"
+              label={t('RSS feed URL')}
+              fullWidth={true}
+              onSubmit={handleSubmitField}
+              style={fieldSpacingContainerStyle}
+            />
+            <CreatorField
+              name="user_id"
+              label={t('User responsible for data creation (empty = System)')}
+              onChange={handleSubmitField}
+              containerStyle={fieldSpacingContainerStyle}
+            />
+            <Field
+              component={DateTimePickerField}
+              name="current_state_date"
+              TextFieldProps={{
+                label: t(
+                  'Import from date (empty = all RSS feed possible items)',
+                ),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
+              onChange={handleSubmitField}
+            />
+            <OpenVocabField
+              label={t('Report types')}
+              type="report_types_ov"
+              name="report_types"
+              onSubmit={handleSubmitField}
+              onChange={setFieldValue}
+              containerStyle={fieldSpacingContainerStyle}
+              variant="edit"
+              multiple={true}
+            />
+            <CreatedByField
+              name="created_by_ref"
+              style={fieldSpacingContainerStyle}
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
+            />
+            <ObjectMarkingField
+              name="object_marking_refs"
+              style={fieldSpacingContainerStyle}
+              onChange={handleSubmitField}
+            />
+          </Form>
+        )}
+      </Formik>
+    </Drawer>
   );
 };
 
@@ -256,5 +220,4 @@ const IngestionRssEditionFragment = createFragmentContainer(
 
 export default R.compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
 )(IngestionRssEditionFragment);

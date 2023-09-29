@@ -1,52 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { compose, defaultTo, lensProp, over, pickAll } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
-
-const styles = (theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    borderBottom: '1px solid #5c5c5c',
-  },
-  title: {
-    float: 'left',
-  },
-});
+import { SubscriptionFocus } from '../../../../components/Subscription';
+import Drawer from '../../common/drawer/Drawer';
 
 const subscription = graphql`
   subscription KillChainPhaseEditionSubscription($id: ID!) {
@@ -128,7 +90,7 @@ class KillChainPhaseEditionContainer extends Component {
   }
 
   render() {
-    const { t, classes, handleClose, killChainPhase } = this.props;
+    const { t, open, handleClose, killChainPhase } = this.props;
     const { editContext } = killChainPhase;
     const initialValues = over(
       lensProp('x_opencti_order'),
@@ -139,84 +101,71 @@ class KillChainPhaseEditionContainer extends Component {
       ),
     );
     return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a kill chain phase')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={killChainPhaseValidation(t)}
-          >
-            {() => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="kill_chain_name"
-                  label={t('Kill chain name')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="kill_chain_name"
-                    />
-                  }
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="phase_name"
-                  label={t('Phase name')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="phase_name"
-                    />
-                  }
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="x_opencti_order"
-                  label={t('Order')}
-                  fullWidth={true}
-                  type="number"
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="x_opencti_order"
-                    />
-                  }
-                />
-              </Form>
-            )}
-          </Formik>
-        </div>
-      </div>
+      <Drawer
+        title={t('Update a kill chain phase')}
+        open={open}
+        onClose={handleClose}
+        context={editContext}
+      >
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={killChainPhaseValidation(t)}
+        >
+          {() => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="kill_chain_name"
+                label={t('Kill chain name')}
+                fullWidth={true}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="kill_chain_name"
+                  />
+                }
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="phase_name"
+                label={t('Phase name')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="phase_name"
+                  />
+                }
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="x_opencti_order"
+                label={t('Order')}
+                fullWidth={true}
+                type="number"
+                style={{ marginTop: 20 }}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="x_opencti_order"
+                  />
+                }
+              />
+            </Form>
+          )}
+        </Formik>
+      </Drawer>
     );
   }
 }
@@ -249,5 +198,4 @@ const KillChainPhaseEditionFragment = createFragmentContainer(
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
 )(KillChainPhaseEditionFragment);

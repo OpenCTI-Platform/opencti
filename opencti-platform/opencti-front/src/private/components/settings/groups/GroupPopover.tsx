@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
-import Drawer from '@mui/material/Drawer';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -15,22 +14,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom-v5-compat';
 import { useFormatter } from '../../../../components/i18n';
 import GroupEdition from './GroupEdition';
-import { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
@@ -125,16 +112,7 @@ const GroupPopover = ({ groupId }: { groupId: string }) => {
         <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
-      <Drawer
-        open={displayUpdate}
-        anchor="right"
-        sx={{ zIndex: 1202 }}
-        elevation={1}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleCloseUpdate}
-      >
-        <GroupEdition groupId={groupId} handleClose={handleCloseUpdate} />
-      </Drawer>
+      <GroupEdition groupId={groupId} handleClose={handleCloseUpdate} open={displayUpdate} />
       <Dialog
         open={displayDelete}
         PaperProps={{ elevation: 1 }}

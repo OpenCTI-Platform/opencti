@@ -1,10 +1,7 @@
 import React from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
 import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
@@ -20,22 +17,6 @@ import { Option } from '../../common/form/ReferenceField';
 import { RelayError } from '../../../../relay/relayTypes';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  header: {
-    backgroundColor: theme.palette.background.nav,
-    padding: '20px 20px 20px 60px',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-  title: {
-    float: 'left',
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -113,103 +94,84 @@ const VocabularyEdition = ({
   };
 
   return (
-    <div>
-      <div className={classes.header}>
-        <IconButton
-          aria-label="Close"
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-          color="primary"
-        >
-          <Close fontSize="small" color="primary" />
-        </IconButton>
-        <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update an attribute')}
-        </Typography>
-        <div className="clearfix" />
-      </div>
-      <div className={classes.container}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={{
-            name: vocab.name,
-            aliases: (vocab.aliases ?? []).map((n) => ({
+    <Formik
+      enableReinitialize={true}
+      initialValues={{
+        name: vocab.name,
+        aliases: (vocab.aliases ?? []).map((n) => ({
+          id: n,
+          value: n,
+          label: n,
+        })) as { id: string; label: string; value: string }[],
+        description: vocab.description ?? '',
+        order: vocab.order,
+      }}
+      validationSchema={attributeValidation(t)}
+      onSubmit={onSubmit}
+    >
+      {({ submitForm, isSubmitting, isValid }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            disabled={vocab.builtIn}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            style={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={AutocompleteFreeSoloField}
+            style={{ marginTop: 20 }}
+            name="aliases"
+            multiple={true}
+            createLabel={t('Add')}
+            textfieldprops={{ variant: 'standard', label: t('Aliases') }}
+            options={(vocab.aliases ?? []).map((n) => ({
               id: n,
               value: n,
               label: n,
-            })) as { id: string; label: string; value: string }[],
-            description: vocab.description ?? '',
-            order: vocab.order,
-          }}
-          validationSchema={attributeValidation(t)}
-          onSubmit={onSubmit}
-        >
-          {({ submitForm, isSubmitting, isValid }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                label={t('Name')}
-                fullWidth={true}
-                disabled={vocab.builtIn}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={AutocompleteFreeSoloField}
-                style={{ marginTop: 20 }}
-                name="aliases"
-                multiple={true}
-                createLabel={t('Add')}
-                textfieldprops={{ variant: 'standard', label: t('Aliases') }}
-                options={(vocab.aliases ?? []).map((n) => ({
-                  id: n,
-                  value: n,
-                  label: n,
-                }))}
-                renderOption={(
-                  props: Record<string, unknown>,
-                  option: Option,
-                ) => (
-                  <li {...props}>
-                    <div className={classes.text}>{option.label}</div>
-                  </li>
-                )}
-                classes={{ clearIndicator: classes.autoCompleteIndicator }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="order"
-                label={t('Order')}
-                fullWidth={true}
-                type="number"
-                style={{ marginTop: 20 }}
-              />
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={submitForm}
-                  disabled={isSubmitting || !isValid}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Update')}
-                </Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      </div>
-    </div>
+            }))}
+            renderOption={(
+              props: Record<string, unknown>,
+              option: Option,
+            ) => (
+              <li {...props}>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+            classes={{ clearIndicator: classes.autoCompleteIndicator }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="order"
+            label={t('Order')}
+            fullWidth={true}
+            type="number"
+            style={{ marginTop: 20 }}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={submitForm}
+              disabled={isSubmitting || !isValid}
+              classes={{ root: classes.button }}
+            >
+              {t('Update')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
   );
 };
 
