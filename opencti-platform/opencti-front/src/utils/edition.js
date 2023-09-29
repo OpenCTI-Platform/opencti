@@ -25,7 +25,7 @@ export const convertTriggers = (element) => (element?.triggers ?? []).map((n) =>
   value: n.id,
 }));
 
-export const convertAuthorizedMembers = (element) => element?.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [];
+export const convertAuthorizedMembers = (element) => (element?.authorized_members ?? []).map(({ id, name }) => ({ value: id, label: name }));
 
 export const convertAssignees = (element) => (element?.objectAssignee?.edges ?? []).map((n) => ({
   label: n.node.name,
