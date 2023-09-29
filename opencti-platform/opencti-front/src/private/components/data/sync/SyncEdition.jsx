@@ -308,7 +308,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
                          severity="error"
                          variant="outlined"
                          style={{ position: 'relative' }}>
-                    <div>{t('Use these options if we know what you are doing')}</div>
+                    <div>{t('Use these options if you know what you are doing')}</div>
                   </Alert>
                   <Field
                       component={SwitchField}
