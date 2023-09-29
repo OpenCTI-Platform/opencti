@@ -45,10 +45,13 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:admin:password          | APP__ADMIN__PASSWORD       | ChangeMe              | Default password of the admin user                               |
 | app:admin:token             | APP__ADMIN__TOKEN          | ChangeMe              | Default token (must be a valid UUIDv4)                           |
 
-#### SSL / TLS
+#### Network and security
 
 | Parameter                          | Environment variable                            | Default value                 | Description                                                                                |
 | :--------------------------------- | :---------------------------------------------- | :---------------------------- |:-------------------------------------------------------------------------------------------|
+| http_proxy                         | HTTP_PROXY                                      |                               | Proxy URL for HTTP connection (example: http://proxy:8O080)                        |
+| https_proxy                        | HTTPS_PROXY                                      |                              | Proxy URL for HTTPS connection (example: http://proxy:8O080)                       |
+| no_proxy                           | NO_PROXY                                         |                              | Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io)                        |
 | app:https_cert:ca                  | APP__HTTPS_CERT__CA                             | Empty list []                 | Certificate authority paths or content, only if the client uses a self-signed certificate. |
 | app:https_cert:key                 | APP__HTTPS_CERT__KEY                            |                               | Certificate key path or content                                                            |
 | app:https_cert:crt                 | APP__HTTPS_CERT__CRT                            |                               | Certificate crt path or content                                                            |
@@ -170,7 +173,6 @@ Here are the configuration keys, for both containers (environment variables) and
 | smtp:reject_unauthorized           | SMTP__REJECT_UNAUTHORIZED                       | `false`                       | Enable TLS certificate check                                                        |
 | smtp:username                      | SMTP__USERNAME                                  |                               | SMTP Username if authentication is needed                                           |
 | smtp:password                      | SMTP__PASSWORD                                  |                               | SMTP Password if authentication is needed                                           |
-| smtp:from_email                    | SMTP__FROM_EMAIL                                | notifications@opencti.io      | Sender email address                                                                |
 
 ### Schedules & Engines
 
@@ -192,19 +194,27 @@ Here are the configuration keys, for both containers (environment variables) and
 | -                                  | -                                               | -                             | -                                                                                   |
 | expiration_scheduler:enabled       | EXPIRATION_SCHEDULER__ENABLED                   | `true`                        | Enable/disable the scheduler                                                        |
 | expiration_scheduler:lock_key      | EXPIRATION_SCHEDULER__LOCK_KEY                  | expired_manager_lock          | Lock key for the scheduler in Redis                                                 |
-| expiration_scheduler:interval      | EXPIRATION_SCHEDULER__INTERVAL                  | 300000                        | Interval to check expired indicators                                                |
+| expiration_scheduler:interval      | EXPIRATION_SCHEDULER__INTERVAL                  | 300000                        | Interval to check expired indicators (in ms)                                        |
 | -                                  | -                                               | -                             | -                                                                                   |
-| retention_manager:enabled          | RETENTION_MANAGER__ENABLED                      | `true`                        | Enable/disable the manager                                                          |
+| retention_manager:enabled          | RETENTION_MANAGER__ENABLED                      | `true`                        | Enable/disable the retention manager                                                |
 | retention_manager:lock_key         | RETENTION_MANAGER__LOCK_KEY                     | retention_manager_lock        | Lock key for the manager in Redis                                                   |
-| retention_manager:interval         | RETENTION_MANAGER__INTERVAL                     | 60000                         | Interval to check items to be deleted                                               |
+| retention_manager:interval         | RETENTION_MANAGER__INTERVAL                     | 60000                         | Interval to check items to be deleted (in ms)                                       |
 | -                                  | -                                               | -                             | -                                                                                   |
 | notification_manager:enabled       | NOTIFICATION_MANAGER__ENABLED                   | `true`                        | Enable/disable the notification manager                                             |
 | notification_manager:lock_key      | NOTIFICATION_MANAGER__LOCK_KEY                  | notification_manager_lock     | Lock key for the manager in Redis                                                   |
-| notification_manager:interval      | NOTIFICATION_MANAGER__INTERVAL                  | 10000                         | Sender email address                                                                |
+| notification_manager:interval      | NOTIFICATION_MANAGER__INTERVAL                  | 10000                         | Interval to push notifications                                                      |
 | -                                  | -                                               | -                             | -                                                                                   |
 | publisher_manager:enabled          | PUBLISHER_MANAGER__ENABLED                      | `true`                        | Enable/disable the publisher manager                                                |
-| publisher_manager:lock_key         | PUBLISHER_MANAGER__LOCK_KEY                     | publisher_manager_lock        | Sender email address                                                                |
-| publisher_manager:interval         | PUBLISHER_MANAGER__INTERVAL                     | 10000                         | Sender email address                                                                |
+| publisher_manager:lock_key         | PUBLISHER_MANAGER__LOCK_KEY                     | publisher_manager_lock        | Lock key for the manager in Redis                                                   |
+| publisher_manager:interval         | PUBLISHER_MANAGER__INTERVAL                     | 10000                         | Interval to send notifications / digests (in ms)                                    |
+| -                                  | -                                               | -                             | -                                                                                   |
+| ingestion_manager:enabled          | INGESTION_MANAGER__ENABLED                      | `true`                        | Enable/disable the ingestion manager                                                |
+| ingestion_manager:lock_key         | INGESTION_MANAGER__LOCK_KEY                     | ingestion_manager_lock        | Lock key for the manager in Redis                                                   |
+| ingestion_manager:interval         | INGESTION_MANAGER__INTERVAL                     | 300000                        | Interval to check for new data in remote feeds                                      |
+| -                                  | -                                               | -                             | -                                                                                   |
+| playbook_manager:enabled           | PLAYBOOK_MANAGER__ENABLED                       | `true`                        | Enable/disable the playbook manager                                                 |
+| playbook_manager:lock_key          | PLAYBOOK_MANAGER__LOCK_KEY                      | publisher_manager_lock        | Lock key for the manager in Redis                                                   |
+| playbook_manager:interval          | PLAYBOOK_MANAGER__INTERVAL                      | 60000                         | Interval to check new playbooks                                                     |
 
 !!! note "Default file"
     
