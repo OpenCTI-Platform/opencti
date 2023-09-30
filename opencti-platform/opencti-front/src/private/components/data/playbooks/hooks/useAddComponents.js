@@ -89,6 +89,7 @@ const useAddComponents = (playbook, playbookComponents) => {
               name: component.name,
               configuration,
               component,
+              onClick: setSelectedNode,
             },
           };
         }
@@ -120,6 +121,7 @@ const useAddComponents = (playbook, playbookComponents) => {
             name: component.name,
             configuration,
             component,
+            onClick: setSelectedNode,
           },
         };
       }
