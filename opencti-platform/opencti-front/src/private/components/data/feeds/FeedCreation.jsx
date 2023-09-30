@@ -21,6 +21,11 @@ import MuiTextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
+import AlertTitle from '@mui/material/AlertTitle';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import Alert from '@mui/material/Alert';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -32,6 +37,7 @@ import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const feedCreationAllTypesQuery = graphql`
   query FeedCreationAllTypesQuery {
@@ -138,6 +144,14 @@ const styles = (theme) => ({
     width: '100%',
     height: 20,
   },
+  alert: {
+    width: '100%',
+    marginTop: 20,
+  },
+  message: {
+    width: '100%',
+    overflow: 'hidden',
+  },
 });
 
 const feedCreationMutation = graphql`
@@ -153,6 +167,8 @@ const feedCreationValidation = (t) => Yup.object().shape({
   separator: Yup.string().required(t('This field is required')),
   rolling_time: Yup.number().required(t('This field is required')),
   feed_types: Yup.array().required(t('This field is required')),
+  feed_public: Yup.bool().nullable(),
+  authorized_members: Yup.array().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -218,6 +234,10 @@ const FeedCreation = (props) => {
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', JSON.stringify(filters)),
+      R.assoc('authorized_members', values.authorized_members.map(({ value }) => ({
+        id: value,
+        access_right: 'view',
+      }))),
     )(values);
     commitMutation({
       mutation: feedCreationMutation,
@@ -392,16 +412,19 @@ const FeedCreation = (props) => {
                   <Formik
                     initialValues={{
                       name: '',
+                      description: '',
                       separator: ';',
                       rolling_time: 60,
                       include_header: true,
                       feed_types: [],
+                      authorized_members: [],
+                      feed_public: false,
                     }}
                     validationSchema={feedCreationValidation(t)}
                     onSubmit={onSubmit}
                     onReset={onReset}
                   >
-                    {({ submitForm, handleReset, isSubmitting }) => (
+                    {({ values, submitForm, setFieldValue, handleReset, isSubmitting }) => (
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field
                           component={TextField}
@@ -410,6 +433,42 @@ const FeedCreation = (props) => {
                           label={t('Name')}
                           fullWidth={true}
                         />
+                        <Field
+                            component={TextField}
+                            variant="standard"
+                            name="description"
+                            label={t('Description')}
+                            fullWidth={true}
+                            style={{ marginTop: 20 }}
+                        />
+                        <Alert
+                            icon={false}
+                            classes={{ root: classes.alert, message: classes.message }}
+                            severity="warning"
+                            variant="outlined"
+                            style={{ position: 'relative' }}
+                        >
+                          <AlertTitle>
+                            {t('Make this feed public and available to anyone')}
+                          </AlertTitle>
+                          <FormControlLabel
+                              control={<Switch />}
+                              style={{ marginLeft: 1 }}
+                              name="feed_public"
+                              onChange={(_, checked) => setFieldValue('feed_public', checked)}
+                              label={t('Public feed')}
+                          />
+                          {!values.feed_public && (
+                              <ObjectMembersField
+                                  label={'Accessible for'}
+                                  style={fieldSpacingContainerStyle}
+                                  onChange={setFieldValue}
+                                  multiple={true}
+                                  helpertext={t('Let the field empty to grant all authenticated users')}
+                                  name="authorized_members"
+                              />
+                          )}
+                        </Alert>
                         <Field
                           component={TextField}
                           variant="standard"

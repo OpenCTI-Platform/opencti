@@ -12,7 +12,6 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
-import { evolve, pluck } from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Alert from '@mui/material/Alert';
@@ -21,10 +20,10 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import GroupField from '../../common/form/GroupField';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -92,6 +91,7 @@ const streamCollectionCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   stream_public: Yup.bool().nullable(),
+  authorized_members: Yup.array().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -119,12 +119,15 @@ const StreamCollectionCreation = (props) => {
   };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const adaptedValues = evolve({ groups: pluck('value') }, values);
     const jsonFilters = JSON.stringify(filters);
+    const authorized_members = values.authorized_members.map(({ value }) => ({
+      id: value,
+      access_right: 'view',
+    }));
     commitMutation({
       mutation: StreamCollectionCreationMutation,
       variables: {
-        input: { ...adaptedValues, filters: jsonFilters },
+        input: { ...values, filters: jsonFilters, authorized_members },
       },
       updater: (store) => {
         const payload = store.getRootField('streamCollectionAdd');
@@ -202,7 +205,7 @@ const StreamCollectionCreation = (props) => {
             initialValues={{
               name: '',
               description: '',
-              groups: [],
+              authorized_members: [],
               stream_public: false,
             }}
             validationSchema={streamCollectionCreationValidation(t)}
@@ -246,18 +249,19 @@ const StreamCollectionCreation = (props) => {
                     control={<Switch />}
                     style={{ marginLeft: 1 }}
                     name="stream_public"
-                    onChange={(_, checked) => setFieldValue('stream_public', checked)
-                    }
+                    onChange={(_, checked) => setFieldValue('stream_public', checked)}
                     label={t('Public stream')}
                   />
+                  {!values.stream_public && (
+                      <ObjectMembersField
+                          label={'Accessible for'}
+                          style={fieldSpacingContainerStyle}
+                          helpertext={t('Let the field empty to grant all authenticated users')}
+                          multiple={true}
+                          name="authorized_members"
+                      />
+                  )}
                 </Alert>
-                {!values.stream_public && (
-                  <GroupField
-                    name="groups"
-                    helpertext={t('Let the field empty to grant all users')}
-                    style={fieldSpacingContainerStyle}
-                  />
-                )}
                 <div style={{ marginTop: 35 }}>
                   <Filters
                     variant="text"

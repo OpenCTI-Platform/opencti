@@ -1,4 +1,5 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
+import type { BasicStoreEntityFeed } from '../types/store.d';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
@@ -6930,7 +6931,10 @@ export enum ExternalReferencesOrdering {
 
 export type Feed = {
   __typename?: 'Feed';
+  authorized_members?: Maybe<Array<MemberAccess>>;
+  description?: Maybe<Scalars['String']['output']>;
   feed_attributes: Array<FeedAttribute>;
+  feed_public?: Maybe<Scalars['Boolean']['output']>;
   feed_types: Array<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -6942,7 +6946,10 @@ export type Feed = {
 };
 
 export type FeedAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
+  description?: InputMaybe<Scalars['String']['input']>;
   feed_attributes: Array<FeedAttributeMappingInput>;
+  feed_public?: InputMaybe<Scalars['Boolean']['input']>;
   feed_types: Array<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   include_header: Scalars['Boolean']['input'];
@@ -6964,7 +6971,7 @@ export type FeedAttributeMappingInput = {
 
 export type FeedConnection = {
   __typename?: 'FeedConnection';
-  edges?: Maybe<Array<Maybe<FeedEdge>>>;
+  edges: Array<Maybe<FeedEdge>>;
   pageInfo: PageInfo;
 };
 
@@ -6972,6 +6979,18 @@ export type FeedEdge = {
   __typename?: 'FeedEdge';
   cursor: Scalars['String']['output'];
   node: Feed;
+};
+
+export enum FeedFilter {
+  FeedPublic = 'feed_public',
+  Name = 'name'
+}
+
+export type FeedFiltering = {
+  filterMode?: InputMaybe<FilterMode>;
+  key: Array<FeedFilter>;
+  operator?: InputMaybe<Scalars['String']['input']>;
+  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export type FeedMapping = {
@@ -18194,6 +18213,7 @@ export type QueryFeedbacksArgs = {
 
 export type QueryFeedsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<Array<FeedFiltering>>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<FeedOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -19832,6 +19852,7 @@ export type QueryTaxiiCollectionArgs = {
 
 export type QueryTaxiiCollectionsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<Array<InputMaybe<TaxiiCollectionFiltering>>>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<TaxiiCollectionOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -23846,9 +23867,9 @@ export enum StixSightingRelationshipsOrdering {
 
 export type StreamCollection = {
   __typename?: 'StreamCollection';
+  authorized_members?: Maybe<Array<MemberAccess>>;
   description?: Maybe<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
-  groups?: Maybe<Array<Maybe<Group>>>;
   id: Scalars['ID']['output'];
   name?: Maybe<Scalars['String']['output']>;
   stream_live?: Maybe<Scalars['Boolean']['output']>;
@@ -23856,9 +23877,9 @@ export type StreamCollection = {
 };
 
 export type StreamCollectionAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
-  groups?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name: Scalars['String']['input'];
   stream_live?: InputMaybe<Scalars['Boolean']['input']>;
   stream_public?: InputMaybe<Scalars['Boolean']['input']>;
@@ -24787,21 +24808,25 @@ export enum TaxiiAuthType {
 
 export type TaxiiCollection = {
   __typename?: 'TaxiiCollection';
+  authorized_members?: Maybe<Array<MemberAccess>>;
   description?: Maybe<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   name?: Maybe<Scalars['String']['output']>;
+  taxii_public?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export type TaxiiCollectionAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   description?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  taxii_public?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type TaxiiCollectionConnection = {
   __typename?: 'TaxiiCollectionConnection';
-  edges?: Maybe<Array<Maybe<TaxiiCollectionEdge>>>;
+  edges: Array<Maybe<TaxiiCollectionEdge>>;
   pageInfo: PageInfo;
 };
 
@@ -24820,6 +24845,18 @@ export type TaxiiCollectionEditMutations = {
 
 export type TaxiiCollectionEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
+};
+
+export enum TaxiiCollectionFilter {
+  Name = 'name',
+  TaxiiPublic = 'taxii_public'
+}
+
+export type TaxiiCollectionFiltering = {
+  filterMode?: InputMaybe<FilterMode>;
+  key: Array<TaxiiCollectionFilter>;
+  operator?: InputMaybe<Scalars['String']['input']>;
+  values?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 export enum TaxiiCollectionOrdering {
@@ -28574,12 +28611,14 @@ export type ResolversTypes = ResolversObject<{
   ExternalReferencesFilter: ExternalReferencesFilter;
   ExternalReferencesFiltering: ExternalReferencesFiltering;
   ExternalReferencesOrdering: ExternalReferencesOrdering;
-  Feed: ResolverTypeWrapper<Feed>;
+  Feed: ResolverTypeWrapper<BasicStoreEntityFeed>;
   FeedAddInput: FeedAddInput;
   FeedAttribute: ResolverTypeWrapper<FeedAttribute>;
   FeedAttributeMappingInput: FeedAttributeMappingInput;
-  FeedConnection: ResolverTypeWrapper<FeedConnection>;
-  FeedEdge: ResolverTypeWrapper<FeedEdge>;
+  FeedConnection: ResolverTypeWrapper<Omit<FeedConnection, 'edges'> & { edges: Array<Maybe<ResolversTypes['FeedEdge']>> }>;
+  FeedEdge: ResolverTypeWrapper<Omit<FeedEdge, 'node'> & { node: ResolversTypes['Feed'] }>;
+  FeedFilter: FeedFilter;
+  FeedFiltering: FeedFiltering;
   FeedMapping: ResolverTypeWrapper<FeedMapping>;
   FeedMappingInput: FeedMappingInput;
   FeedOrdering: FeedOrdering;
@@ -29023,11 +29062,11 @@ export type ResolversTypes = ResolversObject<{
   StixSightingRelationshipsFilter: StixSightingRelationshipsFilter;
   StixSightingRelationshipsFiltering: StixSightingRelationshipsFiltering;
   StixSightingRelationshipsOrdering: StixSightingRelationshipsOrdering;
-  StreamCollection: ResolverTypeWrapper<Omit<StreamCollection, 'groups'> & { groups?: Maybe<Array<Maybe<ResolversTypes['Group']>>> }>;
+  StreamCollection: ResolverTypeWrapper<StreamCollection>;
   StreamCollectionAddInput: StreamCollectionAddInput;
-  StreamCollectionConnection: ResolverTypeWrapper<Omit<StreamCollectionConnection, 'edges'> & { edges: Array<ResolversTypes['StreamCollectionEdge']> }>;
-  StreamCollectionEdge: ResolverTypeWrapper<Omit<StreamCollectionEdge, 'node'> & { node: ResolversTypes['StreamCollection'] }>;
-  StreamCollectionEditMutations: ResolverTypeWrapper<Omit<StreamCollectionEditMutations, 'addGroup' | 'deleteGroup' | 'fieldPatch'> & { addGroup?: Maybe<ResolversTypes['StreamCollection']>, deleteGroup?: Maybe<ResolversTypes['StreamCollection']>, fieldPatch?: Maybe<ResolversTypes['StreamCollection']> }>;
+  StreamCollectionConnection: ResolverTypeWrapper<StreamCollectionConnection>;
+  StreamCollectionEdge: ResolverTypeWrapper<StreamCollectionEdge>;
+  StreamCollectionEditMutations: ResolverTypeWrapper<StreamCollectionEditMutations>;
   StreamCollectionFilter: StreamCollectionFilter;
   StreamCollectionFiltering: StreamCollectionFiltering;
   StreamCollectionOrdering: StreamCollectionOrdering;
@@ -29073,6 +29112,8 @@ export type ResolversTypes = ResolversObject<{
   TaxiiCollectionConnection: ResolverTypeWrapper<TaxiiCollectionConnection>;
   TaxiiCollectionEdge: ResolverTypeWrapper<TaxiiCollectionEdge>;
   TaxiiCollectionEditMutations: ResolverTypeWrapper<TaxiiCollectionEditMutations>;
+  TaxiiCollectionFilter: TaxiiCollectionFilter;
+  TaxiiCollectionFiltering: TaxiiCollectionFiltering;
   TaxiiCollectionOrdering: TaxiiCollectionOrdering;
   TaxiiVersion: TaxiiVersion;
   Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
@@ -29352,12 +29393,13 @@ export type ResolversParentTypes = ResolversObject<{
   ExternalReferenceEdge: ExternalReferenceEdge;
   ExternalReferenceEditMutations: Omit<ExternalReferenceEditMutations, 'relationAdd'> & { relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']> };
   ExternalReferencesFiltering: ExternalReferencesFiltering;
-  Feed: Feed;
+  Feed: BasicStoreEntityFeed;
   FeedAddInput: FeedAddInput;
   FeedAttribute: FeedAttribute;
   FeedAttributeMappingInput: FeedAttributeMappingInput;
-  FeedConnection: FeedConnection;
-  FeedEdge: FeedEdge;
+  FeedConnection: Omit<FeedConnection, 'edges'> & { edges: Array<Maybe<ResolversParentTypes['FeedEdge']>> };
+  FeedEdge: Omit<FeedEdge, 'node'> & { node: ResolversParentTypes['Feed'] };
+  FeedFiltering: FeedFiltering;
   FeedMapping: FeedMapping;
   FeedMappingInput: FeedMappingInput;
   Feedback: BasicStoreEntityFeedback;
@@ -29713,11 +29755,11 @@ export type ResolversParentTypes = ResolversObject<{
   StixSightingRelationshipEditMutations: Omit<StixSightingRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversParentTypes['StixSightingRelationship']>, contextPatch?: Maybe<ResolversParentTypes['StixSightingRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixSightingRelationship']>, relationAdd?: Maybe<ResolversParentTypes['StixSightingRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixSightingRelationship']>, relationsAdd?: Maybe<ResolversParentTypes['StixSightingRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixSightingRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixSightingRelationship']> };
   StixSightingRelationshipsEdge: Omit<StixSightingRelationshipsEdge, 'node'> & { node: ResolversParentTypes['StixSightingRelationship'] };
   StixSightingRelationshipsFiltering: StixSightingRelationshipsFiltering;
-  StreamCollection: Omit<StreamCollection, 'groups'> & { groups?: Maybe<Array<Maybe<ResolversParentTypes['Group']>>> };
+  StreamCollection: StreamCollection;
   StreamCollectionAddInput: StreamCollectionAddInput;
-  StreamCollectionConnection: Omit<StreamCollectionConnection, 'edges'> & { edges: Array<ResolversParentTypes['StreamCollectionEdge']> };
-  StreamCollectionEdge: Omit<StreamCollectionEdge, 'node'> & { node: ResolversParentTypes['StreamCollection'] };
-  StreamCollectionEditMutations: Omit<StreamCollectionEditMutations, 'addGroup' | 'deleteGroup' | 'fieldPatch'> & { addGroup?: Maybe<ResolversParentTypes['StreamCollection']>, deleteGroup?: Maybe<ResolversParentTypes['StreamCollection']>, fieldPatch?: Maybe<ResolversParentTypes['StreamCollection']> };
+  StreamCollectionConnection: StreamCollectionConnection;
+  StreamCollectionEdge: StreamCollectionEdge;
+  StreamCollectionEditMutations: StreamCollectionEditMutations;
   StreamCollectionFiltering: StreamCollectionFiltering;
   String: Scalars['String']['output'];
   SubType: Omit<SubType, 'settings'> & { settings?: Maybe<ResolversParentTypes['EntitySetting']> };
@@ -29752,6 +29794,7 @@ export type ResolversParentTypes = ResolversObject<{
   TaxiiCollectionConnection: TaxiiCollectionConnection;
   TaxiiCollectionEdge: TaxiiCollectionEdge;
   TaxiiCollectionEditMutations: TaxiiCollectionEditMutations;
+  TaxiiCollectionFiltering: TaxiiCollectionFiltering;
   Text: Omit<Text, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   TextAddInput: TextAddInput;
   ThreatActor: ResolversInterfaceTypes<ResolversParentTypes>['ThreatActor'];
@@ -31862,7 +31905,10 @@ export type ExternalReferenceEditMutationsResolvers<ContextType = any, ParentTyp
 }>;
 
 export type FeedResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feed'] = ResolversParentTypes['Feed']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_attributes?: Resolver<Array<ResolversTypes['FeedAttribute']>, ParentType, ContextType>;
+  feed_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   feed_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -31881,7 +31927,7 @@ export type FeedAttributeResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type FeedConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedConnection'] = ResolversParentTypes['FeedConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['FeedEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<Maybe<ResolversTypes['FeedEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -36271,9 +36317,9 @@ export type StixSightingRelationshipsEdgeResolvers<ContextType = any, ParentType
 }>;
 
 export type StreamCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollection'] = ResolversParentTypes['StreamCollection']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  groups?: Resolver<Maybe<Array<Maybe<ResolversTypes['Group']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -36558,15 +36604,17 @@ export type TaskTemplateEdgeResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type TaxiiCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollection'] = ResolversParentTypes['TaxiiCollection']> = ResolversObject<{
+  authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  taxii_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaxiiCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollectionConnection'] = ResolversParentTypes['TaxiiCollectionConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['TaxiiCollectionEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<Maybe<ResolversTypes['TaxiiCollectionEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

@@ -22,6 +22,7 @@ import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
 import { uiSchema } from './NotifierUtils';
 import notifierValidator from './NotifierValidator';
 import { handleErrorInForm } from '../../../../relay/environment';
+import { convertAuthorizedMembers } from '../../../../utils/edition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -108,7 +109,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
   const initialValues: NotifierEditionValues = {
     name: data?.name ?? '',
     description: data?.description,
-    authorized_members: data?.authorized_members?.map(({ id, name }) => ({ value: id, label: name })) ?? [],
+    authorized_members: convertAuthorizedMembers(data),
     notifier_connector_id: data?.notifier_connector ? { value: data.notifier_connector.id, label: data.notifier_connector.name } : undefined,
   };
   const submitForm = (

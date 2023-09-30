@@ -152,10 +152,7 @@ const StreamLineFragment = createFragmentContainer(StreamLineLineComponent, {
       filters
       stream_public
       stream_live
-      groups {
-        id
-        name
-      }
+      ...StreamCollectionEdition_streamCollection
     }
   `,
 });

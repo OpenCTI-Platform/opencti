@@ -12,12 +12,18 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -63,6 +69,14 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
+  alert: {
+    width: '100%',
+    marginTop: 20,
+  },
+  message: {
+    width: '100%',
+    overflow: 'hidden',
+  },
 });
 
 const TaxiiCollectionCreationMutation = graphql`
@@ -76,6 +90,8 @@ const TaxiiCollectionCreationMutation = graphql`
 const taxiiCollectionCreationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
+  authorized_members: Yup.array().nullable(),
+  taxii_public: Yup.bool().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -102,10 +118,14 @@ const TaxiiCollectionCreation = (props) => {
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = JSON.stringify(filters);
+    const authorized_members = values.authorized_members.map(({ value }) => ({
+      id: value,
+      access_right: 'view',
+    }));
     commitMutation({
       mutation: TaxiiCollectionCreationMutation,
       variables: {
-        input: { ...values, filters: jsonFilters },
+        input: { ...values, filters: jsonFilters, authorized_members },
       },
       updater: (store) => {
         const payload = store.getRootField('taxiiCollectionAdd');
@@ -182,12 +202,13 @@ const TaxiiCollectionCreation = (props) => {
             initialValues={{
               name: '',
               description: '',
+              authorized_members: [],
             }}
             validationSchema={taxiiCollectionCreationValidation(t)}
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({ values, setFieldValue, submitForm, handleReset, isSubmitting }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -204,6 +225,33 @@ const TaxiiCollectionCreation = (props) => {
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
+                <Alert
+                    icon={false}
+                    classes={{ root: classes.alert, message: classes.message }}
+                    severity="warning"
+                    variant="outlined"
+                    style={{ position: 'relative' }}
+                >
+                  <AlertTitle>
+                    {t('Make this taxii collection public and available to anyone')}
+                  </AlertTitle>
+                  <FormControlLabel
+                      control={<Switch />}
+                      style={{ marginLeft: 1 }}
+                      name="taxii_public"
+                      onChange={(_, checked) => setFieldValue('taxii_public', checked)}
+                      label={t('Public collection')}
+                  />
+                  {!values.taxii_public && (
+                      <ObjectMembersField
+                          label={'Accessible for'}
+                          style={fieldSpacingContainerStyle}
+                          helpertext={t('Let the field empty to grant all authenticated users')}
+                          multiple={true}
+                          name="authorized_members"
+                      />
+                  )}
+                </Alert>
                 <div style={{ marginTop: 35 }}>
                   <Filters
                     variant="text"

@@ -8,7 +8,7 @@ import { initializeBucket, isStorageAlive } from './database/file-storage';
 import { rabbitMQIsAlive, registerConnectorQueues } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { STREAMAPI, TAXIIAPI } from './domain/user';
+import { TAXIIAPI } from './domain/user';
 import { addCapability, addGroup, addRole } from './domain/grant';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
@@ -51,8 +51,8 @@ const BYPASS_CAPABILITIES = { name: BYPASS, description: 'Bypass all capabilitie
 export const TAXII_CAPABILITIES = {
   name: TAXIIAPI,
   attribute_order: 2500,
-  description: 'Access Taxii feed',
-  dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage Taxii collections', attribute_order: 2510 }],
+  description: 'Access data sharing',
+  dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 }],
 };
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,
@@ -118,11 +118,6 @@ export const CAPABILITIES = [
     name: 'CONNECTORAPI',
     attribute_order: 4000,
     description: 'Connectors API usage: register, ping, export push ...',
-  },
-  {
-    name: STREAMAPI,
-    attribute_order: 5000,
-    description: 'Connect and consume the platform streams (/stream, /stream/live)',
   },
   {
     name: BYPASS_REFERENCE,
@@ -268,7 +263,7 @@ export const createBasicRolesAndCapabilities = async (context) => {
       'CONNECTORAPI',
       'BYPASSREFERENCE',
       'MODULES_MODMANAGE',
-      'STREAMAPI',
+      'TAXIIAPI',
       'SETTINGS_SETMARKINGS',
       'SETTINGS_SETLABELS',
     ],

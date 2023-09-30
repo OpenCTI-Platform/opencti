@@ -7,11 +7,15 @@ import {
   taxiiCollectionEditContext,
   taxiiCollectionCleanContext,
 } from '../domain/taxii';
+import { getAuthorizedMembers } from '../utils/authorizedMembers';
 
 const taxiiResolvers = {
   Query: {
     taxiiCollection: (_, { id }, context) => findById(context, context.user, id),
     taxiiCollections: (_, args, context) => findAll(context, context.user, args),
+  },
+  TaxiiCollection: {
+    authorized_members: (taxii, _, context) => getAuthorizedMembers(context, context.user, taxii),
   },
   Mutation: {
     taxiiCollectionAdd: (_, { input }, context) => createTaxiiCollection(context, context.user, input),

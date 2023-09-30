@@ -4,7 +4,7 @@ import { createEntity, deleteElementById } from '../database/middleware';
 import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { FeedAddInput, QueryFeedsArgs } from '../generated/graphql';
-import type { StoreEntityFeed } from '../types/store';
+import type { BasicStoreEntityFeed } from '../types/store';
 import { elReplace } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
@@ -12,6 +12,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
+import { SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -37,9 +38,10 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
   }
 };
 
-export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<StoreEntityFeed> => {
+export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
-  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_FEED, { complete: true });
+  const feedToCreate = { ...input, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
+  const { element, isCreation } = await createEntity(context, user, feedToCreate, ENTITY_TYPE_FEED, { complete: true });
   if (isCreation) {
     await publishUserAction({
       user,
@@ -52,10 +54,10 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
   }
   return element;
 };
-export const findById: DomainFindById<StoreEntityFeed> = async (context: AuthContext, user: AuthUser, feedId: string) => {
-  return storeLoadById<StoreEntityFeed>(context, user, feedId, ENTITY_TYPE_FEED);
+export const findById: DomainFindById<BasicStoreEntityFeed> = async (context: AuthContext, user: AuthUser, feedId: string) => {
+  return storeLoadById<BasicStoreEntityFeed>(context, user, feedId, ENTITY_TYPE_FEED);
 };
-export const editFeed = async (context: AuthContext, user: AuthUser, id: string, input: FeedAddInput): Promise<StoreEntityFeed> => {
+export const editFeed = async (context: AuthContext, user: AuthUser, id: string, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
   const feed = await findById(context, user, id);
   if (!feed) {
@@ -73,7 +75,13 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   return findById(context, user, id);
 };
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
-  return listEntitiesPaginated<StoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], opts);
+  if (user) {
+    const options = { ...opts, includeAuthorities: true };
+    return listEntitiesPaginated<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
+  }
+  // No user specify, listing only public csv feeds
+  const publicArgs = { ...(opts ?? {}), filters: [{ key: ['feed_public'], values: ['true'] }] };
+  return listEntitiesPaginated<BasicStoreEntityFeed>(context, SYSTEM_USER, [ENTITY_TYPE_FEED], publicArgs);
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
   const deleted = await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);

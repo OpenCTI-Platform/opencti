@@ -18,7 +18,7 @@ import {
   ENTITY_TYPE_SYNC,
   ENTITY_TYPE_BACKGROUND_TASK,
   ENTITY_TYPE_TAXII_COLLECTION,
-  ENTITY_TYPE_USER,
+  ENTITY_TYPE_USER, ENTITY_TYPE_FEED,
 } from '../../schema/internalObject';
 import { settingsMessages } from '../../domain/settings';
 
@@ -133,6 +133,20 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'taxii_public', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
+  ],
+  [ENTITY_TYPE_FEED]: [
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'separator', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'rolling_time', type: 'numeric', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'include_header', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'feed_public', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'feed_types', type: 'string', mandatoryType: 'external', multiple: true, upsert: false },
+    { name: 'feed_attributes', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   [ENTITY_TYPE_STREAM_COLLECTION]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
@@ -140,6 +154,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'stream_public', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'stream_live', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   [ENTITY_TYPE_STATUS_TEMPLATE]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },

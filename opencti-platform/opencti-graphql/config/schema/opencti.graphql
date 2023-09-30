@@ -444,10 +444,12 @@ type TaxiiCollection {
   name: String
   description: String
   filters: String
+  taxii_public: Boolean
+  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }
 type TaxiiCollectionConnection {
   pageInfo: PageInfo!
-  edges: [TaxiiCollectionEdge]
+  edges: [TaxiiCollectionEdge]!
 }
 
 type TaxiiCollectionEdge {
@@ -458,6 +460,8 @@ input TaxiiCollectionAddInput {
   name: String!
   description: String
   filters: String
+  taxii_public: Boolean
+  authorized_members: [MemberAccessInput!]
 }
 enum TaxiiCollectionOrdering {
   name
@@ -478,12 +482,15 @@ type Feed {
   id: ID!
   standard_id: ID!
   name: String!
+  description: String
   filters: String
   separator: String!
   rolling_time: Int!
   include_header: Boolean!
   feed_types: [String!]!
   feed_attributes: [FeedAttribute!]!
+  feed_public: Boolean
+  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }
 
 input FeedMappingInput {
@@ -498,12 +505,15 @@ input FeedAttributeMappingInput {
 
 input FeedAddInput {
   name: String!
+  description: String
   filters: String
   separator: String!
   rolling_time: Int!
   include_header: Boolean!
   feed_types: [String!]!
+  feed_public: Boolean
   feed_attributes: [FeedAttributeMappingInput!]!
+  authorized_members: [MemberAccessInput!]
 }
 
 enum FeedOrdering {
@@ -517,7 +527,7 @@ type FeedEdge {
 
 type FeedConnection {
   pageInfo: PageInfo!
-  edges: [FeedEdge]
+  edges: [FeedEdge]!
 }
 
 ############## Stream
@@ -532,9 +542,9 @@ type StreamCollection {
   name: String
   description: String
   filters: String
-  groups: [Group]
   stream_live: Boolean
   stream_public: Boolean
+  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }
 type StreamCollectionConnection {
   pageInfo: PageInfo!
@@ -547,10 +557,10 @@ type StreamCollectionEdge {
 input StreamCollectionAddInput {
   name: String!
   description: String
-  groups: [String]
   filters: String
   stream_live: Boolean
   stream_public: Boolean
+  authorized_members: [MemberAccessInput!]
 }
 enum StreamCollectionOrdering {
   name
@@ -565,6 +575,30 @@ enum StreamCollectionFilter {
 
 input StreamCollectionFiltering {
   key: [StreamCollectionFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+enum TaxiiCollectionFilter {
+  name
+  taxii_public
+}
+
+input TaxiiCollectionFiltering {
+  key: [TaxiiCollectionFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+enum FeedFilter {
+  name
+  feed_public
+}
+
+input FeedFiltering {
+  key: [FeedFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -11950,7 +11984,8 @@ type Query {
     orderBy: TaxiiCollectionOrdering
     orderMode: OrderingMode
     search: String
-  ): TaxiiCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+    filters: [TaxiiCollectionFiltering]
+  ): TaxiiCollectionConnection
   streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feed(id: String!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feeds(
@@ -11959,7 +11994,8 @@ type Query {
     orderBy: FeedOrdering
     orderMode: OrderingMode
     search: String
-  ): FeedConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+    filters: [FeedFiltering!]
+  ): FeedConnection
   streamCollections(
     first: Int
     after: ID
