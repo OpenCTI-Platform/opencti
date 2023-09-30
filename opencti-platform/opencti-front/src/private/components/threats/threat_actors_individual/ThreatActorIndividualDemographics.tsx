@@ -35,8 +35,8 @@ const ThreatActorIndividualDemographics = (
     country_of_residence: [],
     citizenship: [],
     nationality: [],
-    place_of_birth: threatActorIndividual?.bornIn?.name,
-    ethnicity: threatActorIndividual?.ethnicity?.name,
+    place_of_birth: threatActorIndividual.bornIn?.name,
+    ethnicity: threatActorIndividual.ethnicity?.name,
   };
   const edges = threatActorIndividual.stixCoreRelationships?.edges ?? [];
   for (const { node } of edges) {
