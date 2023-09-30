@@ -1,4 +1,8 @@
-export const computeNodes = (playbookNodes, playbookComponents) => {
+export const computeNodes = (
+  playbookNodes,
+  playbookComponents,
+  setSelectedNode,
+) => {
   return playbookNodes.map((n) => {
     const component = playbookComponents
       .filter((o) => o.id === n.component_id)
@@ -11,12 +15,13 @@ export const computeNodes = (playbookNodes, playbookComponents) => {
         name: n.name,
         configuration: n.configuration,
         component,
+        onClick: setSelectedNode,
       },
     };
   });
 };
 
-export const computeEdges = (playbookEdges) => {
+export const computeEdges = (playbookEdges, setSelectedNode) => {
   return playbookEdges.map((n) => {
     return {
       id: n.id,
@@ -24,11 +29,14 @@ export const computeEdges = (playbookEdges) => {
       source: n.from.id,
       sourceHandle: n.from.port,
       target: n.to.id,
+      data: {
+        onClick: setSelectedNode,
+      },
     };
   });
 };
 
-export const addPlaceholders = (nodes, edges, add) => {
+export const addPlaceholders = (nodes, edges, setSelectedNode) => {
   if (nodes.length === 0) {
     return {
       nodes: [
@@ -40,7 +48,7 @@ export const addPlaceholders = (nodes, edges, add) => {
             name: '+',
             configuration: null,
             component: { is_entry_point: true },
-            onClick: add,
+            onClick: setSelectedNode,
           },
         },
       ],
@@ -62,7 +70,7 @@ export const addPlaceholders = (nodes, edges, add) => {
         name: '+',
         configuration: null,
         component: { is_entry_point: false },
-        onClick: add,
+        onClick: setSelectedNode,
       },
     };
     const childPlaceholderEdge = {
@@ -70,6 +78,9 @@ export const addPlaceholders = (nodes, edges, add) => {
       type: 'placeholder',
       source: n.id,
       target: childPlaceholderId,
+      data: {
+        onClick: setSelectedNode,
+      },
     };
     return { node: childPlaceholderNode, edge: childPlaceholderEdge };
   });

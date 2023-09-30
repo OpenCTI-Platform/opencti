@@ -42,16 +42,21 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
   const definition = JSON.parse(playbook.playbook_definition);
   const width = window.innerWidth - 80;
   const height = window.innerHeight - 160;
-  const initialNodes = computeNodes(definition.nodes, playbookComponents);
-  const initialEdges = computeEdges(definition.links);
-  const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
-    initialNodes,
-    initialEdges,
-  );
   const Flow = () => {
     const { renderAddComponent, setSelectedNode } = useAddComponents(
       playbook,
       playbookComponents,
+    );
+    const initialNodes = computeNodes(
+      definition.nodes,
+      playbookComponents,
+      setSelectedNode,
+    );
+    const initialEdges = computeEdges(definition.links, setSelectedNode);
+    const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
+      initialNodes,
+      initialEdges,
+      setSelectedNode,
     );
     useLayout();
     return (
@@ -62,7 +67,6 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultViewport={defaultViewport}
-          onNodeClick={(_, node) => setSelectedNode(node)}
           minZoom={0.2}
           fitView={true}
           fitViewOptions={fitViewOptions}

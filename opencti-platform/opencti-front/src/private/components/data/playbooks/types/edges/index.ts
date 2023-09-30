@@ -1,7 +1,7 @@
 import PlaceholderEdge from './PlaceholderEdge';
 import WorkflowEdge from './WorkflowEdge';
 
-export const edgeTypes = {
+const edgeTypes = {
   placeholder: PlaceholderEdge,
   workflow: WorkflowEdge,
 };

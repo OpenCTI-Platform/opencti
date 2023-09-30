@@ -66,6 +66,7 @@ const useAddComponents = (playbook, playbookComponents) => {
         name: '+',
         configuration: null,
         component: { is_entry_point: false },
+        onClick: setSelectedNode,
       },
     };
     const childPlaceholderEdge = {
@@ -73,6 +74,9 @@ const useAddComponents = (playbook, playbookComponents) => {
       type: 'placeholder',
       source: result.node,
       target: childPlaceholderId,
+      data: {
+        onClick: setSelectedNode,
+      },
     };
     setNodes((nodes) => nodes
       .map((node) => {

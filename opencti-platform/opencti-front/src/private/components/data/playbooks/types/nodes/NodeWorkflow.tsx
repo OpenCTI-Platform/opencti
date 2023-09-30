@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Handle, Position, NodeProps } from 'reactflow';
+import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
@@ -27,12 +27,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const NodeWorkflow = ({ data }: NodeProps) => {
+const NodeWorkflow = ({ id, data }: NodeProps) => {
   const classes = useStyles();
+  const { getNode } = useReactFlow();
   return (
-    <div className={classes.node}>
+    <div className={classes.node} onClick={() => data.onClick(getNode(id))}>
       <span className={classes.name}>{data.name}</span>
-      {!data.component?.is_entry_point && <Handle type="target" position={Position.Top} isConnectable={false} />}
+      {!data.component?.is_entry_point && (
+        <Handle type="target" position={Position.Top} isConnectable={false} />
+      )}
       <Handle type="source" position={Position.Bottom} isConnectable={false} />
     </div>
   );
