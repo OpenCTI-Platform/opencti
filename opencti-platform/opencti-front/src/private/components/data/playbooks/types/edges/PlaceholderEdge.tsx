@@ -1,9 +1,17 @@
 import React from 'react';
 import { getBezierPath, EdgeProps } from 'reactflow';
+import { makeStyles } from '@mui/styles';
+import { Theme } from '../../../../../../components/Theme';
 
-import styles from './EdgeTypes.module.css';
+const useStyles = makeStyles<Theme>((theme) => ({
+  placeholderPath: {
+    strokeWidth: 1,
+    strokeDasharray: '3 3',
+    stroke: theme.palette.chip.main,
+    fill: 'none',
+  },
+}));
 
-// the placeholder edges do not have a special functionality, only used as a visual
 export default function PlaceholderEdge({
   id,
   sourceX,
@@ -15,6 +23,7 @@ export default function PlaceholderEdge({
   style,
   markerEnd,
 }: EdgeProps) {
+  const classes = useStyles();
   const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
@@ -27,7 +36,7 @@ export default function PlaceholderEdge({
     <path
       id={id}
       style={style}
-      className={styles.placeholderPath}
+      className={classes.placeholderPath}
       d={edgePath}
       markerEnd={markerEnd}
     />

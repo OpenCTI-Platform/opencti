@@ -9022,8 +9022,9 @@ type Mutation {
   threatActorIndividualRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   threatActorIndividualRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): ThreatActorIndividual
   playbookAdd(input: PlaybookAddInput!): Playbook
-  playbookAddNode(input: PlaybookAddNodeInput!): String!
-  playbookAddLink(input: PlaybookAddLinkInput!): String!
+  playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String!
+  playbookReplaceNode(id: ID!, nodeId: ID!, input: PlaybookAddNodeInput!): String!
+  playbookAddLink(id: ID!, input: PlaybookAddLinkInput!): String!
   playbookDelete(id: ID!): ID
   playbookDeleteNode(id: ID!, nodeId: ID!): Playbook
   playbookDeleteLink(id: ID!, linkId: ID!): Playbook
@@ -11765,7 +11766,6 @@ input PositionInput {
 }
 
 input PlaybookAddNodeInput {
-  playbook_id: ID!
   name: String!
   component_id: String!
   position: PositionInput!
@@ -11773,7 +11773,6 @@ input PlaybookAddNodeInput {
 }
 
 input PlaybookAddLinkInput {
-  playbook_id: ID!
   from_node: String!
   from_port: String!
   to_node: String!

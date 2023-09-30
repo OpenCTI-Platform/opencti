@@ -7,14 +7,30 @@ import { commitMutation } from '../../../../../relay/environment';
 import { isNotEmptyField } from '../../../../../utils/utils';
 
 export const useAddComponentsAddNodeMutation = graphql`
-  mutation useAddComponentsAddNodeMutation($input: PlaybookAddNodeInput!) {
-    playbookAddNode(input: $input)
+  mutation useAddComponentsAddNodeMutation(
+    $id: ID!
+    $input: PlaybookAddNodeInput!
+  ) {
+    playbookAddNode(id: $id, input: $input)
   }
 `;
 
 export const useAddComponentsAddLinkMutation = graphql`
-  mutation useAddComponentsAddLinkMutation($input: PlaybookAddLinkInput!) {
-    playbookAddLink(input: $input)
+  mutation useAddComponentsAddLinkMutation(
+    $id: ID!
+    $input: PlaybookAddLinkInput!
+  ) {
+    playbookAddLink(id: $id, input: $input)
+  }
+`;
+
+export const useAddComponentsReplaceNodeMutation = graphql`
+  mutation useAddComponentsReplaceNodeMutation(
+    $id: ID!
+    $nodeId: ID!
+    $input: PlaybookAddNodeInput!
+  ) {
+    playbookReplaceNode(id: $id, nodeId: $nodeId, input: $input)
   }
 `;
 
@@ -37,32 +53,19 @@ export const useAddComponentsDeleteLinkMutation = graphql`
 const useAddComponents = (playbook, playbookComponents) => {
   const [selectedNode, setSelectedNode] = useState(null);
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
-  const addNode = (
-    result,
-    placeholderNode,
-    parentNode,
-    add,
-    component,
-    configuration,
-    nodes,
-    edges,
-  ) => {
+  const addNode = (result, component, configuration) => {
     const childPlaceholderId = uuid();
     const childPlaceholderNode = {
       id: childPlaceholderId,
       position: {
-        x: placeholderNode.position.x,
-        y:
-          placeholderNode.type === 'placeholder'
-            ? placeholderNode.position.y
-            : placeholderNode.position.y + 150,
+        x: selectedNode.position.x,
+        y: selectedNode.position.y,
       },
       type: 'placeholder',
       data: {
         name: '+',
         configuration: null,
-        component: null,
-        onClick: add,
+        component: { is_entry_point: false },
       },
     };
     const childPlaceholderEdge = {
@@ -71,11 +74,9 @@ const useAddComponents = (playbook, playbookComponents) => {
       source: result.node,
       target: childPlaceholderId,
     };
-    let newNodes = nodes;
-    let newEdges = edges;
-    if (placeholderNode.type === 'placeholder') {
-      newNodes = nodes.map((node) => {
-        if (node.id === placeholderNode.id) {
+    setNodes((nodes) => nodes
+      .map((node) => {
+        if (node.id === selectedNode.id) {
           return {
             ...node,
             id: result.node,
@@ -84,29 +85,44 @@ const useAddComponents = (playbook, playbookComponents) => {
               name: component.name,
               configuration,
               component,
-              onClick: add,
             },
           };
         }
         return node;
-      });
-      newEdges = edges.map((edge) => {
-        if (edge.target === placeholderNode.id) {
+      })
+      .concat([childPlaceholderNode]));
+    setEdges((edges) => edges
+      .map((edge) => {
+        if (edge.target === selectedNode.id) {
           return {
             ...edge,
             id: result.edge,
             type: 'workflow',
-            onClick: add,
+            target: result.node,
           };
         }
         return edge;
-      });
-    }
-    setNodes([...newNodes, childPlaceholderNode]);
-    setEdges([...newEdges, childPlaceholderEdge]);
+      })
+      .concat([childPlaceholderEdge]));
   };
-
-  const onConfig = (component, config) => {
+  const configNode = (component, configuration) => {
+    setNodes((nodes) => nodes.map((node) => {
+      if (node.id === selectedNode.id) {
+        return {
+          ...node,
+          id: selectedNode.id,
+          type: 'workflow',
+          data: {
+            name: component.name,
+            configuration,
+            component,
+          },
+        };
+      }
+      return node;
+    }));
+  };
+  const onConfigAdd = (component, config) => {
     const position = {
       x: selectedNode.position.x,
       y: selectedNode.position.y,
@@ -114,8 +130,8 @@ const useAddComponents = (playbook, playbookComponents) => {
     commitMutation({
       mutation: useAddComponentsAddNodeMutation,
       variables: {
+        id: playbook.id,
         input: {
-          playbook_id: playbook.id,
           name: config?.name ?? component.name,
           component_id: component.id,
           position,
@@ -123,21 +139,20 @@ const useAddComponents = (playbook, playbookComponents) => {
         },
       },
       onCompleted: (nodeResult) => {
-        const placeholderNode = selectedNode.type === 'placeholder' ? selectedNode : null;
         const parentNode = getNodes()
           .filter(
             (n) => n.id
               === getEdges()
                 .filter((o) => o.target === selectedNode.id)
-                .at(0)?.target,
+                .at(0)?.source,
           )
           ?.at(0);
         if (isNotEmptyField(parentNode)) {
-          commitMutation({
+          return commitMutation({
             mutation: useAddComponentsAddLinkMutation,
             variables: {
+              id: playbook.id,
               input: {
-                playbook_id: playbook.id,
                 from_node: parentNode.id,
                 from_port: parentNode.data.port ?? 'out',
                 to_node: nodeResult.playbookAddNode,
@@ -149,12 +164,8 @@ const useAddComponents = (playbook, playbookComponents) => {
                   node: nodeResult.playbookAddNode,
                   edge: linkResult.playbookAddLink,
                 },
-                placeholderNode,
-                parentNode,
                 component,
                 config,
-                getNodes(),
-                getEdges(),
               );
               setSelectedNode(null);
             },
@@ -164,13 +175,33 @@ const useAddComponents = (playbook, playbookComponents) => {
           {
             node: nodeResult.playbookAddNode,
           },
-          placeholderNode,
-          parentNode,
           component,
           config,
-          getNodes(),
-          getEdges(),
         );
+        return setSelectedNode(null);
+      },
+    });
+  };
+  const onConfigReplace = (component, config) => {
+    const position = {
+      x: selectedNode.position.x,
+      y: selectedNode.position.y,
+    };
+    commitMutation({
+      mutation: useAddComponentsReplaceNodeMutation,
+      variables: {
+        id: playbook.id,
+        nodeId: selectedNode.id,
+        input: {
+          name: config?.name ?? component.name,
+          component_id: component.id,
+          position,
+          configuration: config ? JSON.stringify(config) : null,
+        },
+      },
+      onCompleted: () => {
+        configNode(component, config);
+        return setSelectedNode(null);
       },
     });
   };
@@ -178,9 +209,10 @@ const useAddComponents = (playbook, playbookComponents) => {
     return (
       <PlaybookAddComponents
         open={selectedNode !== null}
-        handleClose={() => setSelectedNode(null)}
+        setSelectedNode={setSelectedNode}
         selectedNode={selectedNode}
-        onConfig={onConfig}
+        onConfigAdd={onConfigAdd}
+        onConfigReplace={onConfigReplace}
         playbookComponents={playbookComponents}
       />
     );

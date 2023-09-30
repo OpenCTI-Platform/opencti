@@ -12719,6 +12719,7 @@ export type Mutation = {
   playbookDeleteLink?: Maybe<Playbook>;
   playbookDeleteNode?: Maybe<Playbook>;
   playbookFieldPatch?: Maybe<Playbook>;
+  playbookReplaceNode: Scalars['String']['output'];
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
   queryTaskAdd: BackgroundTask;
@@ -13730,11 +13731,13 @@ export type MutationPlaybookAddArgs = {
 
 
 export type MutationPlaybookAddLinkArgs = {
+  id: Scalars['ID']['input'];
   input: PlaybookAddLinkInput;
 };
 
 
 export type MutationPlaybookAddNodeArgs = {
+  id: Scalars['ID']['input'];
   input: PlaybookAddNodeInput;
 };
 
@@ -13761,6 +13764,13 @@ export type MutationPlaybookFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
   references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MutationPlaybookReplaceNodeArgs = {
+  id: Scalars['ID']['input'];
+  input: PlaybookAddNodeInput;
+  nodeId: Scalars['ID']['input'];
 };
 
 
@@ -16995,7 +17005,6 @@ export type PlaybookAddInput = {
 export type PlaybookAddLinkInput = {
   from_node: Scalars['String']['input'];
   from_port: Scalars['String']['input'];
-  playbook_id: Scalars['ID']['input'];
   to_node: Scalars['String']['input'];
 };
 
@@ -17003,7 +17012,6 @@ export type PlaybookAddNodeInput = {
   component_id: Scalars['String']['input'];
   configuration?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  playbook_id: Scalars['ID']['input'];
   position: PositionInput;
 };
 
@@ -33969,12 +33977,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
-  playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'input'>>;
-  playbookAddNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'input'>>;
+  playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'id' | 'input'>>;
+  playbookAddNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'id' | 'input'>>;
   playbookDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteArgs, 'id'>>;
   playbookDeleteLink?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteLinkArgs, 'id' | 'linkId'>>;
   playbookDeleteNode?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteNodeArgs, 'id' | 'nodeId'>>;
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
+  playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
   queryTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;

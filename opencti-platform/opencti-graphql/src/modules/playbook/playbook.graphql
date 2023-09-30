@@ -78,7 +78,6 @@ input PositionInput {
 }
 
 input PlaybookAddNodeInput {
-    playbook_id: ID!
     name: String!
     component_id: String!
     position: PositionInput!
@@ -86,7 +85,6 @@ input PlaybookAddNodeInput {
 }
 
 input PlaybookAddLinkInput {
-    playbook_id: ID!
     from_node: String!
     from_port: String!
     to_node: String!
@@ -95,8 +93,9 @@ input PlaybookAddLinkInput {
 # Mutations
 type Mutation {
     playbookAdd(input: PlaybookAddInput!): Playbook @auth
-    playbookAddNode(input: PlaybookAddNodeInput!): String! @auth
-    playbookAddLink(input: PlaybookAddLinkInput!): String! @auth
+    playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String! @auth
+    playbookReplaceNode(id: ID!, nodeId: ID!, input: PlaybookAddNodeInput!): String! @auth
+    playbookAddLink(id: ID!, input: PlaybookAddLinkInput!): String! @auth
     playbookDelete(id: ID!): ID @auth
     playbookDeleteNode(id: ID!, nodeId: ID!): Playbook @auth
     playbookDeleteLink(id: ID!, linkId: ID!): Playbook @auth

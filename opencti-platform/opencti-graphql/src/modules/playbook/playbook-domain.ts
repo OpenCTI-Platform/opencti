@@ -21,7 +21,12 @@ import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { EditInput, PlaybookAddInput, PlaybookAddNodeInput, PlaybookAddLinkInput } from '../../generated/graphql';
+import type {
+  EditInput,
+  PlaybookAddInput,
+  PlaybookAddNodeInput,
+  PlaybookAddLinkInput,
+} from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS } from './playbook-components';
@@ -43,8 +48,8 @@ export const availableComponents = () => {
   return Object.values(PLAYBOOK_COMPONENTS);
 };
 
-export const playbookAddNode = async (context: AuthContext, user: AuthUser, input: PlaybookAddNodeInput) => {
-  const playbook = await findById(context, user, input.playbook_id);
+export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
+  const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
@@ -66,7 +71,36 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, inpu
   if (relatedComponent.is_entry_point) {
     patch.playbook_start = nodeId;
   }
-  await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
+  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return nodeId;
+};
+
+export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
+  if (!relatedComponent) {
+    throw UnsupportedError('Playbook related component not found');
+  }
+  const existingEntryPoint = definition.nodes.filter((n) => n.id !== nodeId).find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
+  if (relatedComponent.is_entry_point && existingEntryPoint) {
+    throw UnsupportedError('Playbook multiple entrypoint is not supported');
+  }
+  // Delete the previous node
+  definition.nodes = definition.nodes.map((n) => {
+    if (n.id === nodeId) {
+      return {
+        id: nodeId,
+        name: input.name,
+        position: input.position,
+        component_id: input.component_id,
+        configuration: input.configuration ?? '{}' // TODO Check valid json
+      };
+    }
+    return n;
+  });
+  const patch: any = { playbook_definition: JSON.stringify(definition) };
+  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return nodeId;
 };
 
@@ -74,13 +108,15 @@ export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, i
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   definition.nodes = definition.nodes.filter((n) => n.id !== nodeId);
+  // Also delete all links related to the deleted node
+  definition.links = definition.links.filter((n) => n.from.id !== nodeId && n.to.id !== nodeId);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
-export const playbookAddLink = async (context: AuthContext, user: AuthUser, input: PlaybookAddLinkInput) => {
-  const playbook = await findById(context, user, input.playbook_id);
+export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddLinkInput) => {
+  const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   // Check from consistency
   const node = definition.nodes.find((n) => n.id === input.from_node);
@@ -114,7 +150,7 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, inpu
     }
   });
   const patch = { playbook_definition: JSON.stringify(definition) };
-  await patchAttribute(context, user, input.playbook_id, ENTITY_TYPE_PLAYBOOK, patch);
+  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return linkId;
 };
 

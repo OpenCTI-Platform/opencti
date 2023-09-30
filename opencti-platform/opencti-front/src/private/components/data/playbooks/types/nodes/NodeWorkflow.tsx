@@ -32,16 +32,8 @@ const NodeWorkflow = ({ data }: NodeProps) => {
   return (
     <div className={classes.node}>
       <span className={classes.name}>{data.name}</span>
-      <Handle
-        type="target"
-        position={Position.Top}
-        isConnectable={false}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        isConnectable={false}
-      />
+      {!data.component?.is_entry_point && <Handle type="target" position={Position.Top} isConnectable={false} />}
+      <Handle type="source" position={Position.Bottom} isConnectable={false} />
     </div>
   );
 };

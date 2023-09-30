@@ -22,7 +22,10 @@ import {
   findAll,
   availableComponents,
   playbookAddNode,
-  playbookAddLink, playbookDeleteNode, playbookDeleteLink
+  playbookReplaceNode,
+  playbookAddLink,
+  playbookDeleteNode,
+  playbookDeleteLink
 } from './playbook-domain';
 import { isNotEmptyField } from '../../database/utils';
 
@@ -39,8 +42,9 @@ const playbookResolvers: Resolvers = {
   },
   Mutation: {
     playbookAdd: (_, { input }, context) => playbookAdd(context, context.user, input),
-    playbookAddNode: (_, { input }, context) => playbookAddNode(context, context.user, input),
-    playbookAddLink: (_, { input }, context) => playbookAddLink(context, context.user, input),
+    playbookAddNode: (_, { id, input }, context) => playbookAddNode(context, context.user, id, input),
+    playbookAddLink: (_, { id, input }, context) => playbookAddLink(context, context.user, id, input),
+    playbookReplaceNode: (_, { id, nodeId, input }, context) => playbookReplaceNode(context, context.user, id, nodeId, input),
     playbookDelete: (_, { id }, context) => playbookDelete(context, context.user, id),
     playbookDeleteNode: (_, { id, nodeId }, context) => playbookDeleteNode(context, context.user, id, nodeId),
     playbookDeleteLink: (_, { id, linkId }, context) => playbookDeleteLink(context, context.user, id, linkId),

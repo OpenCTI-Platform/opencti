@@ -59,21 +59,23 @@ const useStyles = makeStyles((theme) => ({
 
 const PlaybookAddComponents = ({
   open,
-  handleClose,
+  setSelectedNode,
   selectedNode,
   playbookComponents,
-  onConfig,
+  onConfigAdd,
+  onConfigReplace,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({});
-  const [componentId, setComponentId] = useState(
-    selectedNode?.data?.component?.id ?? null,
-  );
-  const onReset = () => {
-    handleClose();
-  };
+  const [componentId, setComponentId] = useState(null);
+  const handleClose = () => {
+    setSearchTerm('');
+    setFilters({});
+    setComponentId(null);
+    setSelectedNode(null);
+  }
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters({
@@ -92,8 +94,10 @@ const PlaybookAddComponents = ({
   const onSelect = (component) => {
     if (!isEmptyField(JSON.parse(component.configuration_schema))) {
       setComponentId(component.id);
+    } else if (selectedNode.data?.component?.id) {
+      onConfigReplace(component);
     } else {
-      onConfig(component);
+      onConfigAdd(component);
     }
   };
   const onSubmit = (values, { resetForm }) => {
@@ -109,7 +113,11 @@ const PlaybookAddComponents = ({
       config = { ...config, filters: jsonFilters };
     }
     resetForm();
-    onConfig(selectedComponent, config);
+    if (selectedNode.data?.component?.id) {
+      onConfigReplace(selectedComponent, config);
+    } else {
+      onConfigAdd(selectedComponent, config);
+    }
   };
   const renderLines = () => {
     const filterByKeyword = (n) => searchTerm === ''
@@ -117,7 +125,8 @@ const PlaybookAddComponents = ({
       || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     const components = R.pipe(
       R.filter(
-        (n) => n.is_entry_point === (selectedNode?.data?.isEntryPoint ?? false),
+        (n) => n.is_entry_point
+          === (selectedNode?.data?.component?.is_entry_point ?? false),
       ),
       R.filter(filterByKeyword),
     )(playbookComponents);
@@ -156,7 +165,7 @@ const PlaybookAddComponents = ({
         <Formik
           initialValues={{ name: selectedComponent.name }}
           onSubmit={onSubmit}
-          onReset={onReset}
+          onReset={handleClose}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
@@ -268,13 +277,13 @@ const PlaybookAddComponents = ({
       elevation={1}
       sx={{ zIndex: 1202 }}
       classes={{ paper: classes.drawerPaper }}
-      onClose={() => handleClose()}
+      onClose={handleClose}
     >
       <div className={classes.header}>
         <IconButton
           aria-label="Close"
           className={classes.closeButton}
-          onClick={() => handleClose()}
+          onClick={handleClose}
           size="large"
           color="primary"
         >

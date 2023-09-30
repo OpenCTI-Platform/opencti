@@ -39,8 +39,7 @@ export const addPlaceholders = (nodes, edges, add) => {
           data: {
             name: '+',
             configuration: null,
-            component: null,
-            isEntryPoint: true,
+            component: { is_entry_point: true },
             onClick: add,
           },
         },
@@ -62,7 +61,7 @@ export const addPlaceholders = (nodes, edges, add) => {
       data: {
         name: '+',
         configuration: null,
-        component: null,
+        component: { is_entry_point: false },
         onClick: add,
       },
     };

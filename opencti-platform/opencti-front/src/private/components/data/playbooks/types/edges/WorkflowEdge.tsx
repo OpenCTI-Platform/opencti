@@ -1,8 +1,30 @@
 import React from 'react';
 import { EdgeProps, getBezierPath } from 'reactflow';
-
+import { makeStyles } from '@mui/styles';
 import useEdgeClick from '../../hooks/useEdgeClick';
-import styles from './EdgeTypes.module.css';
+import { Theme } from '../../../../../../components/Theme';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  edgeButton: {
+    cursor: 'pointer',
+    pointerEvents: 'all',
+    stroke: theme.palette.primary.main,
+    fill: theme.palette.background.default,
+    '&:hover': {
+      fill: theme.palette.background.paper,
+    },
+  },
+  edgeButtonText: {
+    pointerEvents: 'none',
+    userSelect: 'none',
+    fill: theme.palette.primary.main,
+  },
+  edgePath: {
+    fill: 'none',
+    stroke: theme.palette.primary.main,
+    strokeWidth: 1,
+  },
+}));
 
 export default function CustomEdge({
   id,
@@ -15,8 +37,7 @@ export default function CustomEdge({
   style,
   markerEnd,
 }: EdgeProps) {
-  // see the hook for implementation details
-  // onClick adds a node in between the nodes that are connected by this edge
+  const classes = useStyles();
   const onClick = useEdgeClick(id);
   const [edgePath, edgeCenterX, edgeCenterY] = getBezierPath({
     sourceX,
@@ -26,13 +47,12 @@ export default function CustomEdge({
     targetY,
     targetPosition,
   });
-
   return (
     <>
       <path
         id={id}
         style={style}
-        className={styles.edgePath}
+        className={classes.edgePath}
         d={edgePath}
         markerEnd={markerEnd}
       />
@@ -45,9 +65,9 @@ export default function CustomEdge({
           ry={4}
           rx={4}
           height={20}
-          className={styles.edgeButton}
+          className={classes.edgeButton}
         />
-        <text className={styles.edgeButtonText} y={5} x={-4}>
+        <text className={classes.edgeButtonText} y={5} x={-4}>
           +
         </text>
       </g>

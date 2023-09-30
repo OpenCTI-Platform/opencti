@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../../../components/Theme';
-import usePlaceholderClick from '../../hooks/usePlaceholderClick';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   node: {
@@ -13,12 +12,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     borderRadius: 4,
     backgroundColor:
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.05)'
-        : 'rgba(0, 0, 0, 0.05)',
+        ? 'rgba(255, 255, 255, 0.04)'
+        : 'rgba(0, 0, 0, 0.04)',
     color:
       theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.05)'
-        : 'rgba(0, 0, 0, 0.05)',
+        ? 'rgba(255, 255, 255, 0.04)'
+        : 'rgba(0, 0, 0, 0.04)',
     padding: 12,
     width: 160,
     textAlign: 'center',
