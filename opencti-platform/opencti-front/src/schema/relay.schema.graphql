@@ -9155,38 +9155,6 @@ type Mutation {
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
 }
 
-type HeightTuple {
-  height_cm: Float
-  date_seen: DateTime
-}
-
-input HeightTupleInputValues {
-  height_cm: Float
-  date_seen: DateTime
-}
-
-input HeightTupleInput {
-  values: [HeightTupleInputValues]
-  index: Int
-  operation: EditOperation
-}
-
-type WeightTuple {
-  weight_kg: Float
-  date_seen: DateTime
-}
-
-input WeightTupleInputValues {
-  weight_kg: Float
-  date_seen: DateTime
-}
-
-input WeightTupleInput {
-  values: [WeightTupleInputValues]
-  index: Int
-  operation: EditOperation
-}
-
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -11726,6 +11694,38 @@ input NotifierAddInput {
   authorized_members: [MemberAccessInput!]
 }
 
+type HeightTuple {
+  height_cm: Float
+  date_seen: DateTime
+}
+
+input HeightTupleInputValues {
+  height_cm: Float
+  date_seen: DateTime
+}
+
+input HeightTupleInput {
+  values: [HeightTupleInputValues]
+  index: Int
+  operation: EditOperation
+}
+
+type WeightTuple {
+  weight_kg: Float
+  date_seen: DateTime
+}
+
+input WeightTupleInputValues {
+  weight_kg: Float
+  date_seen: DateTime
+}
+
+input WeightTupleInput {
+  values: [WeightTupleInputValues]
+  index: Int
+  operation: EditOperation
+}
+
 type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & ThreatActor {
   id: ID!
   standard_id: String!
@@ -11869,8 +11869,8 @@ input ThreatActorIndividualAddInput {
   marital_status: String
   eye_color: String
   hair_color: String
-  height: [HeightTupleInputValues]
-  weight: [WeightTupleInputValues]
+  height: [HeightTupleInputValues!]
+  weight: [WeightTupleInputValues!]
   confidence: Int
   revoked: Boolean
   lang: String

@@ -305,6 +305,7 @@ ThreatActorIndividualFormProps
             <div>
               <Field
                 component={TextField}
+                style={{ marginTop: 20 }}
                 name="name"
                 label={t('Name')}
                 fullWidth={true}

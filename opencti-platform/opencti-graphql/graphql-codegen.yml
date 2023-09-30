@@ -1,7 +1,6 @@
 overwrite: true
 schema:
   - "./config/schema/opencti.graphql"
-  - "./config/schema/mcas.graphql"
   - "./src/**/*.graphql":
       includeSources: true
 documents: null

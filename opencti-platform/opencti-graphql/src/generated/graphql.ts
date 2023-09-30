@@ -26356,7 +26356,7 @@ export type ThreatActorIndividualAddInput = {
   gender?: InputMaybe<Scalars['String']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   hair_color?: InputMaybe<Scalars['String']['input']>;
-  height?: InputMaybe<Array<InputMaybe<HeightTupleInputValues>>>;
+  height?: InputMaybe<Array<HeightTupleInputValues>>;
   job_title?: InputMaybe<Scalars['String']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
   last_seen?: InputMaybe<Scalars['DateTime']['input']>;
@@ -26377,7 +26377,7 @@ export type ThreatActorIndividualAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
-  weight?: InputMaybe<Array<InputMaybe<WeightTupleInputValues>>>;
+  weight?: InputMaybe<Array<WeightTupleInputValues>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
 };
 

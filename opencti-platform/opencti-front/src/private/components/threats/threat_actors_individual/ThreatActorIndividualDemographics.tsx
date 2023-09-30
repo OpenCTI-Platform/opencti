@@ -1,39 +1,8 @@
 import { makeStyles } from '@mui/styles';
 import { Chip, Grid, Paper, Typography } from '@mui/material';
-import parse from 'html-react-parser';
-import { useState } from 'react';
-import { graphql } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
-import { fetchQuery } from '../../../../relay/environment';
-import { ThreatActorIndividualDemographicsCountryRelationshipsQuery$data } from './__generated__/ThreatActorIndividualDemographicsCountryRelationshipsQuery.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-
-export const getDemographicCountryRelationship = graphql`
-  query ThreatActorIndividualDemographicsCountryRelationshipsQuery($id: String!) {
-    threatActorIndividual(id:$id) {
-      bornIn {
-        name
-      }
-      ethnicity {
-        name
-      }
-      stixCoreRelationships {
-        edges {
-          node {
-            relationship_type
-            to {
-              ... on Country {
-                id
-                name
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -62,60 +31,32 @@ const ThreatActorIndividualDemographics = (
 ) => {
   const classes = useStyles();
   const { t, fsd } = useFormatter();
-
-  const [countryRelationship, setCountryRelationships] = useState<ThreatActorIndividualDemographicsCountryRelationships>({
+  const countryRelationship: ThreatActorIndividualDemographicsCountryRelationships = {
     country_of_residence: [],
     citizenship: [],
     nationality: [],
-    place_of_birth: undefined,
-    ethnicity: undefined,
-  });
-
-  fetchQuery(
-    getDemographicCountryRelationship,
-    { id: threatActorIndividual.id },
-  ).subscribe({
-    closed: false,
-    error: () => {},
-    complete: () => {},
-    next: (
-      data: ThreatActorIndividualDemographicsCountryRelationshipsQuery$data,
-    ) => {
-      const fetchedCountryRelationships:
-      ThreatActorIndividualDemographicsCountryRelationships = {
-        country_of_residence: [],
-        citizenship: [],
-        nationality: [],
-        place_of_birth: data?.threatActorIndividual?.bornIn?.name,
-        ethnicity: data?.threatActorIndividual?.ethnicity?.name,
-      };
-      const edges = data
-        ?.threatActorIndividual
-        ?.stixCoreRelationships
-        ?.edges
-          ?? [];
-      for (const { node } of edges) {
-        const { relationship_type } = node ?? {};
-        const name = node?.to?.name;
-        if (name) {
-          switch (relationship_type) {
-            case 'resides-in':
-              fetchedCountryRelationships.country_of_residence.push(name);
-              break;
-            case 'citizen-of':
-              fetchedCountryRelationships.citizenship.push(name);
-              break;
-            case 'national-of':
-              fetchedCountryRelationships.nationality.push(name);
-              break;
-            default:
-          }
-        }
+    place_of_birth: threatActorIndividual?.bornIn?.name,
+    ethnicity: threatActorIndividual?.ethnicity?.name,
+  };
+  const edges = threatActorIndividual.stixCoreRelationships?.edges ?? [];
+  for (const { node } of edges) {
+    const { relationship_type } = node ?? {};
+    const name = node?.to?.name;
+    if (name) {
+      switch (relationship_type) {
+        case 'resides-in':
+          countryRelationship.country_of_residence.push(name);
+          break;
+        case 'citizen-of':
+          countryRelationship.citizenship.push(name);
+          break;
+        case 'national-of':
+          countryRelationship.nationality.push(name);
+          break;
+        default:
       }
-      setCountryRelationships(fetchedCountryRelationships);
-    },
-  });
-
+    }
+  }
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -171,7 +112,7 @@ const ThreatActorIndividualDemographics = (
               {t('Place of Birth')}
             </Typography>
             <div id='place_of_birth'>
-              {parse(t(countryRelationship?.place_of_birth ?? '-'))}
+              {t(countryRelationship?.place_of_birth ?? '-')}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
@@ -213,7 +154,7 @@ const ThreatActorIndividualDemographics = (
               {t('Ethnicity')}
             </Typography>
             <div id='ethnicity'>
-              {parse(t(countryRelationship?.ethnicity ?? '-'))}
+              {t(countryRelationship?.ethnicity ?? '-')}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
@@ -250,8 +191,7 @@ const ThreatActorIndividualDemographics = (
               {t('Job Title')}
             </Typography>
             <div id='job_title'>
-              {/* Parse to verify Safe HTML */}
-              {parse(threatActorIndividual.job_title || '-')}
+              {threatActorIndividual.job_title ?? '-'}
             </div>
           </Grid>
         </Grid>

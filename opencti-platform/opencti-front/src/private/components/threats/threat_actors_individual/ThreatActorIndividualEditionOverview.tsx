@@ -240,7 +240,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<ThreatAct
     killChainPhases: convertKillChainPhases(threatActorIndividual),
     x_opencti_workflow_id: convertStatus(t, threatActorIndividual) as Option,
     confidence: threatActorIndividual.confidence,
-    threat_actor_types: threatActorIndividual.threat_actor_types,
+    threat_actor_types: threatActorIndividual.threat_actor_types ?? [],
     references: [],
   };
   return (
