@@ -72,8 +72,8 @@ const ThreatActorIndividualDemographics = (
               {t('Country of Residence')}
             </Typography>
             <div id='mcas_country_of_residence_list'>
-              {countryRelationship?.country_of_residence && countryRelationship?.country_of_residence.length > 0
-                ? countryRelationship?.country_of_residence.map((place: string, index: number) => (
+              {countryRelationship.country_of_residence.length > 0
+                ? countryRelationship.country_of_residence.map((place: string, index: number) => (
                   <Chip
                     key={index}
                     label={t(place)}
@@ -92,8 +92,8 @@ const ThreatActorIndividualDemographics = (
               {t('Citizenship')}
             </Typography>
             <div id='mcas_citizenship_list'>
-              {countryRelationship?.citizenship && countryRelationship?.citizenship.length > 0
-                ? countryRelationship?.citizenship.map((place: string, index: number) => (
+              {countryRelationship.citizenship.length > 0
+                ? countryRelationship.citizenship.map((place: string, index: number) => (
                   <Chip
                     key={index}
                     label={t(place)}
@@ -112,7 +112,7 @@ const ThreatActorIndividualDemographics = (
               {t('Place of Birth')}
             </Typography>
             <div id='place_of_birth'>
-              {t(countryRelationship?.place_of_birth ?? '-')}
+              {t(countryRelationship.place_of_birth ?? '-')}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
@@ -134,8 +134,8 @@ const ThreatActorIndividualDemographics = (
               {t('Nationality')}
             </Typography>
             <div id='nationality'>
-              {countryRelationship?.nationality && countryRelationship?.nationality.length > 0
-                ? countryRelationship?.nationality.map((place: string, index: number) => (
+              {countryRelationship.nationality && countryRelationship.nationality.length > 0
+                ? countryRelationship.nationality.map((place: string, index: number) => (
                   <Chip
                     key={index}
                     label={t(place)}
@@ -154,7 +154,7 @@ const ThreatActorIndividualDemographics = (
               {t('Ethnicity')}
             </Typography>
             <div id='ethnicity'>
-              {t(countryRelationship?.ethnicity ?? '-')}
+              {t(countryRelationship.ethnicity ?? '-')}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
