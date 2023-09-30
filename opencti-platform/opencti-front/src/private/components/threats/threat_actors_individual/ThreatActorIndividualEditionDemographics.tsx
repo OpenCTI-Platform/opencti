@@ -10,7 +10,7 @@ import MarkdownField from '../../../../components/MarkdownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { buildDate } from '../../../../utils/Time';
 import { ThreatActorIndividualEditionDemographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDemographics_ThreatActorIndividual.graphql';
-import CountryPickerField from '../../common/form/mcas/CountryPickerField';
+import CountryPickerField from '../../common/form/CountryPickerField';
 import { EditOperation } from './__generated__/ThreatActorIndividualEditionDetailsFieldPatchMutation.graphql';
 import OpenVocabField from '../../common/form/OpenVocabField';
 

@@ -4,14 +4,14 @@ import { IconButton, Typography } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import convert from 'convert';
-import { useFormatter } from '../../../../../components/i18n';
-import { SubscriptionFocus } from '../../../../../components/Subscription';
-import DatePickerField from '../../../../../components/DatePickerField';
-import TextField from '../../../../../components/TextField';
-import { commitMutation, defaultCommitMutation } from '../../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
+import { SubscriptionFocus } from '../../../../components/Subscription';
+import DatePickerField from '../../../../components/DatePickerField';
+import TextField from '../../../../components/TextField';
+import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { WeightTupleInputValues } from './__generated__/WeightFieldIndividualMutation.graphql';
-import { UnitSystems } from '../../../../../utils/UnitSystems';
-import useAuth from '../../../../../utils/hooks/useAuth';
+import { UnitSystems } from '../../../../utils/UnitSystems';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 export const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: WeightTupleInput!) {

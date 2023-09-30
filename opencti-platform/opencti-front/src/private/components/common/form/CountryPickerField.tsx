@@ -1,10 +1,10 @@
 import { Field } from 'formik';
 import { useEffect, useState } from 'react';
-import AutocompleteField from '../../../../../components/AutocompleteField';
-import { useFormatter } from '../../../../../components/i18n';
-import { fetchQuery } from '../../../../../relay/environment';
-import { getCountriesQuery } from '../../../locations/countries/Country';
-import { CountryGetAllQuery$data } from '../../../locations/countries/__generated__/CountryGetAllQuery.graphql';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { useFormatter } from '../../../../components/i18n';
+import { fetchQuery } from '../../../../relay/environment';
+import { getCountriesQuery } from '../../locations/countries/Country';
+import { CountryGetAllQuery$data } from '../../locations/countries/__generated__/CountryGetAllQuery.graphql';
 
 interface CountryType {
   id: string,

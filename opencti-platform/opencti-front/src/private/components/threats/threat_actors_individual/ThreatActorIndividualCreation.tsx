@@ -40,9 +40,9 @@ import {
   WeightTupleInputValues,
 } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
 import DatePickerField from '../../../../components/DatePickerField';
-import HeightField from '../../common/form/mcas/HeightField';
-import WeightField from '../../common/form/mcas/WeightField';
-import CountryPickerField from '../../common/form/mcas/CountryPickerField';
+import HeightField from '../../common/form/HeightField';
+import WeightField from '../../common/form/WeightField';
+import CountryPickerField from '../../common/form/CountryPickerField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 
 const useStyles = makeStyles<Theme>((theme) => ({

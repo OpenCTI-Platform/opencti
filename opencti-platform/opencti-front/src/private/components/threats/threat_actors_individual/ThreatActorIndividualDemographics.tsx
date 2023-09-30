@@ -71,7 +71,7 @@ const ThreatActorIndividualDemographics = (
             >
               {t('Country of Residence')}
             </Typography>
-            <div id='mcas_country_of_residence_list'>
+            <div id='country_of_residence_list'>
               {countryRelationship.country_of_residence.length > 0
                 ? countryRelationship.country_of_residence.map((place: string, index: number) => (
                   <Chip
@@ -91,7 +91,7 @@ const ThreatActorIndividualDemographics = (
             >
               {t('Citizenship')}
             </Typography>
-            <div id='mcas_citizenship_list'>
+            <div id='citizenship_list'>
               {countryRelationship.citizenship.length > 0
                 ? countryRelationship.citizenship.map((place: string, index: number) => (
                   <Chip
