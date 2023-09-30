@@ -394,8 +394,8 @@ const ProfileOverviewComponent = (props) => {
                 <MenuItem value={UnitSystems.Auto}>
                   <em>{t('Automatic')}</em>
                 </MenuItem>
-                <MenuItem value={UnitSystems.US}>
-                  {t('US Standard')}
+                <MenuItem value={UnitSystems.Imperial}>
+                  {t('Imperial')}
                 </MenuItem>
                 <MenuItem value={UnitSystems.Metric}>
                   {t('Metric')}

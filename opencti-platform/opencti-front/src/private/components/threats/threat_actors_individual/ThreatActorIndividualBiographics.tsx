@@ -61,8 +61,8 @@ const ListValueDisplay = ({ primary, secondary }: ListValue) => (
   </ListItem>
 );
 
-const INCH = getLengthUnit(UnitSystems.US);
-const FOOT = getLengthUnit(UnitSystems.US, true);
+const INCH = getLengthUnit(UnitSystems.Imperial);
+const FOOT = getLengthUnit(UnitSystems.Imperial, true);
 const isNil = (v: unknown) => v === undefined || v === null;
 const isString = (v: unknown) => typeof v === 'string' || v instanceof String;
 
@@ -135,7 +135,7 @@ const ThreatActorIndividualBiographicsComponent = (
       commitLocalUpdate(() => {
         let selectedSystem;
         switch (me.unit_system) {
-          case 'US': selectedSystem = UnitSystems.US;
+          case 'Imperial': selectedSystem = UnitSystems.Imperial;
             break;
           case 'Metric': selectedSystem = UnitSystems.Metric;
             break;
@@ -151,12 +151,12 @@ const ThreatActorIndividualBiographicsComponent = (
     }
   }, []);
 
-  const usingUSUnits = () => (unitSystem === UnitSystems.US);
+  const usingUSUnits = () => (unitSystem === UnitSystems.Imperial);
   const toggleUnitSystem = () => setUnitSystem(usingUSUnits()
     ? UnitSystems.Metric
-    : UnitSystems.US);
+    : UnitSystems.Imperial);
   const unitToggleMessage = () => (
-    `Convert to ${usingUSUnits() ? UnitSystems.Metric : UnitSystems.US} units`
+    `Convert to ${usingUSUnits() ? UnitSystems.Metric : UnitSystems.Imperial} units`
   );
   const heightUnit = () => {
     let result;

@@ -2,12 +2,12 @@ import { DEFAULT_LANG, LANGUAGES } from './BrowserLanguage';
 
 /**
  * @type UnitSystems
- * @property {'US'} US - US metric system.
+ * @property {'Imperial'} Imperial - US metric system.
  * @property {'Metric'} Metric - International system of units (SI).
- * @property {'auto'} Auto - Default metric system determined by locale ('en-us' => 'US')
+ * @property {'auto'} Auto - Default metric system determined by locale ('en-us' => 'Imperial')
  */
 export enum UnitSystems {
-  US = 'US',
+  Imperial = 'Imperial',
   Metric = 'Metric',
   Auto = 'auto',
 }
@@ -26,7 +26,7 @@ export type UnitsRecord = {
  * Supported unit systems and associated units.
  */
 export const Units: UnitsRecord = {
-  [UnitSystems.US]: {
+  [UnitSystems.Imperial]: {
     length: {
       primary: 'inch',
       secondary: 'foot',
@@ -61,12 +61,8 @@ export const Units: UnitsRecord = {
 export const validateUnitSystem = (selectedSystem: UnitSystems | null, selectedLanguage = DEFAULT_LANG) => {
   const unitSystem = selectedSystem || UnitSystems.Auto;
   if (unitSystem === UnitSystems.Auto || UnitSystems[unitSystem] === undefined) {
-    const languageLocale = selectedLanguage && selectedLanguage !== LANGUAGES.AUTO
-      ? selectedLanguage
-      : DEFAULT_LANG;
-    return languageLocale === LANGUAGES.ENGLISH
-      ? UnitSystems.US
-      : UnitSystems.Metric;
+    const languageLocale = selectedLanguage && selectedLanguage !== LANGUAGES.AUTO ? selectedLanguage : DEFAULT_LANG;
+    return languageLocale === LANGUAGES.ENGLISH ? UnitSystems.Imperial : UnitSystems.Metric;
   }
   return unitSystem;
 };
@@ -113,19 +109,4 @@ export const getWeightUnit = (unitSystem: UnitSystems): string | null => (
 export const getWeightUnitForLocale = (locale: string = DEFAULT_LANG): string | null => {
   const unitSystem = validateUnitSystem(null, locale);
   return getWeightUnit(unitSystem);
-};
-
-/**
- * Returns the unit represented by the given symbol or unit string.
- * @param symbol
- * @param defaultUnit - Used if the correct unit could not be determined
- */
-export const getUnitForSymbol = (symbol: string, defaultUnit: string): string | null => {
-  if (['inch', 'inches', 'in', '"'].includes(symbol)) return getLengthUnit(UnitSystems.US);
-  if (['foot', 'feet', 'ft', "'"].includes(symbol)) return getLengthUnit(UnitSystems.US, true);
-  if (['meter', 'meters', 'm'].includes(symbol)) return getLengthUnit(UnitSystems.Metric);
-  if (['centimeter', 'centimeters', 'cm'].includes(symbol)) return getLengthUnit(UnitSystems.Metric, true);
-  if (['kilogram', 'kilograms', 'kg'].includes(symbol)) return getWeightUnit(UnitSystems.Metric);
-  if (['pound', 'pounds', 'lb', 'lbs'].includes(symbol)) return getWeightUnit(UnitSystems.US);
-  return defaultUnit || null;
 };

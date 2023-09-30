@@ -55,7 +55,7 @@ const WeightField: FunctionComponent<WeightFieldProps> = ({
   const { me } = useAuth();
   let unitSystem = UnitSystems.Auto;
   switch (me.unit_system) {
-    case 'US': unitSystem = UnitSystems.US;
+    case 'Imperial': unitSystem = UnitSystems.Imperial;
       break;
     case 'Metric': unitSystem = UnitSystems.Metric;
       break;
