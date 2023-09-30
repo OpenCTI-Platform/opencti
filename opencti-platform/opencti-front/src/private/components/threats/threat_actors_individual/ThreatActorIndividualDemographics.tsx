@@ -73,7 +73,7 @@ const ThreatActorIndividualDemographics = (
 
   fetchQuery(
     getDemographicCountryRelationship,
-    { id: threatActorIndividual?.id },
+    { id: threatActorIndividual.id },
   ).subscribe({
     closed: false,
     error: () => {},
@@ -182,7 +182,7 @@ const ThreatActorIndividualDemographics = (
               {t('Date of Birth')}
             </Typography>
             <div id='date_of_birth'>
-              {threatActorIndividual?.date_of_birth ? fsd(threatActorIndividual?.date_of_birth) : '-'}
+              {threatActorIndividual.date_of_birth ? fsd(threatActorIndividual.date_of_birth) : '-'}
             </div>
           </Grid>
           <Grid item={true} xs={4}>
@@ -251,7 +251,7 @@ const ThreatActorIndividualDemographics = (
             </Typography>
             <div id='job_title'>
               {/* Parse to verify Safe HTML */}
-              {parse(threatActorIndividual?.job_title || '-')}
+              {parse(threatActorIndividual.job_title || '-')}
             </div>
           </Grid>
         </Grid>

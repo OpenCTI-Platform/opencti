@@ -20,6 +20,7 @@ import { commitLocalUpdate } from '../../../../relay/environment';
 import { ThreatActorIndividual_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { DEFAULT_LANG } from '../../../../utils/BrowserLanguage';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -133,17 +134,17 @@ const ThreatActorIndividualBiographicsComponent = (
     if (!unitSystem) {
       commitLocalUpdate(() => {
         let selectedSystem;
-        switch (me?.unit_system) {
+        switch (me.unit_system) {
           case 'US': selectedSystem = UnitSystems.US;
             break;
           case 'Metric': selectedSystem = UnitSystems.Metric;
             break;
           default: selectedSystem = UnitSystems.Auto;
         }
-        const language = me?.language as string;
+        const { language } = me;
         const defaultUnitSystem = validateUnitSystem(
           selectedSystem,
-          language,
+          language ?? DEFAULT_LANG,
         );
         setUnitSystem(defaultUnitSystem);
       });
@@ -251,9 +252,8 @@ const ThreatActorIndividualBiographicsComponent = (
             }
           >
             <List dense={true} disablePadding={true} id={'HeightIDRead'}>
-              { threatActorIndividual?.height
-                && threatActorIndividual?.height?.length > 0
-                ? (threatActorIndividual?.height as Height[] ?? []).map((height, i) => (
+              { (threatActorIndividual.height ?? []).length > 0
+                ? (threatActorIndividual.height as Height[] ?? []).map((height, i) => (
                   <HeightDisplay
                     key={i}
                     height={heightValue(height)}
@@ -278,9 +278,8 @@ const ThreatActorIndividualBiographicsComponent = (
             }
           >
             <List dense={true} disablePadding={true} id={'WeightIDRead'}>
-              { threatActorIndividual?.weight
-                && threatActorIndividual?.weight?.length > 0
-                ? (threatActorIndividual?.weight as Weight[] ?? []).map((weight, i) => (
+              { (threatActorIndividual.weight ?? []).length > 0
+                ? (threatActorIndividual.weight as Weight[] ?? []).map((weight, i) => (
                   <WeightDisplay
                     key={i}
                     weight={weightValue(weight)}

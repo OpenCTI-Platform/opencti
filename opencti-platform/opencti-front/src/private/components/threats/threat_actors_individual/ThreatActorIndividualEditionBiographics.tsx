@@ -106,13 +106,13 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
       .catch(() => false);
   };
 
-  const fullHeights = threatActorIndividual?.height?.map((height) => ({
+  const fullHeights = (threatActorIndividual.height ?? []).map((height) => ({
     height_in: Math.round(convert(Number(height?.height_cm), 'centimeter').to('inch')),
     height_cm: height?.height_cm as number,
     date_seen: height?.date_seen as Date,
   }));
 
-  const fullWeights = threatActorIndividual?.weight?.map((weight) => ({
+  const fullWeights = (threatActorIndividual.weight ?? []).map((weight) => ({
     weight_lb: Math.round(convert(Number(weight?.weight_kg), 'kilogram').to('pound')),
     weight_kg: weight?.weight_kg as number,
     date_seen: weight?.date_seen as Date,

@@ -44,7 +44,6 @@ import HeightField from '../../common/form/mcas/HeightField';
 import WeightField from '../../common/form/mcas/WeightField';
 import CountryPickerField from '../../common/form/mcas/CountryPickerField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
-import { styled } from '@mui/material/styles';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

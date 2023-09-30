@@ -1,9 +1,9 @@
 import { Component } from 'react';
 import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
+import convert from 'convert';
 import { bytesFormat, numberFormat } from '../utils/Number';
 import { getLengthUnitForLocale, getWeightUnitForLocale } from '../utils/UnitSystems';
-import convert from 'convert';
 
 export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
@@ -187,13 +187,13 @@ export const useFormatter = () => {
     const converted = convert(number, fromUnit || localeUnit).to(toUnit || localeUnit);
     const formatOpts = { maximumFractionDigits: precision, unitDisplay };
     if (toUnit) {
-      formatOpts['style'] = 'unit';
-      formatOpts['unit'] = toUnit;
+      formatOpts.style = 'unit';
+      formatOpts.unit = toUnit;
     }
     if (toUnit === 'foot' && unitDisplay === 'narrow') {
       const feet = Math.floor(converted);
-      const inches = Math.round((converted - feet) * 12)
-      return `${feet}'${inches}"`
+      const inches = Math.round((converted - feet) * 12);
+      return `${feet}'${inches}"`;
     }
     return intl.formatNumber(Number(converted), formatOpts);
   };
@@ -212,8 +212,8 @@ export const useFormatter = () => {
     const converted = convert(number, fromUnit || localeUnit).to(toUnit || localeUnit);
     const formatOpts = { maximumFractionDigits: precision, unitDisplay };
     if (toUnit) {
-      formatOpts['style'] = 'unit';
-      formatOpts['unit'] = toUnit;
+      formatOpts.style = 'unit';
+      formatOpts.unit = toUnit;
     }
     return intl.formatNumber(Number(converted), formatOpts);
   };

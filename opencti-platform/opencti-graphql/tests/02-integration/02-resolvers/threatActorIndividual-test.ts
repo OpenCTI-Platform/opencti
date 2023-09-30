@@ -1,7 +1,7 @@
-import gql from "graphql-tag";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { queryAsAdmin } from "../../utils/testQuery";
-import type { ThreatActorIndividualAddInput } from "../../../src/generated/graphql";
+import gql from 'graphql-tag';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { queryAsAdmin } from '../../utils/testQuery';
+import type { ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
 
 const READ_QUERY = gql`
   query threatActorIndividual($id: String!) {
@@ -22,21 +22,21 @@ const UPDATED_COUNTRY = {
   id: null,
 };
 const THREAT_ACTOR: ThreatActorIndividualAddInput = {
-  name: "John Doe Test",
-  description: "A test threat actor individual",
-  gender: "male",
-  job_title: "Test actor",
-  marital_status: "annulled",
-  eye_color: "blue",
-  hair_color: "brown",
+  name: 'John Doe Test',
+  description: 'A test threat actor individual',
+  gender: 'male',
+  job_title: 'Test actor',
+  marital_status: 'annulled',
+  eye_color: 'blue',
+  hair_color: 'brown',
   height: [{
     height_cm: 183,
-    date_seen: "2022-10-10T00:00:00Z"
+    date_seen: '2022-10-10T00:00:00Z'
   }],
   weight: [
     {
       weight_kg: 82,
-      date_seen: "2022-10-10T00:00:00Z"
+      date_seen: '2022-10-10T00:00:00Z'
     },
     {
       weight_kg: 81
@@ -44,7 +44,7 @@ const THREAT_ACTOR: ThreatActorIndividualAddInput = {
   ],
   bornIn: null,
   ethnicity: null,
-}
+};
 
 const isDate = (value: string) => !isNaN(new Date(value).getTime());
 
@@ -62,9 +62,9 @@ beforeAll(async () => {
     variables: { input: { name: REF_COUNTRY.name } },
   });
   const country = result.data?.countryAdd;
-  THREAT_ACTOR.bornIn = country.id;
-  THREAT_ACTOR.ethnicity = country.id;
-  REF_COUNTRY.id = country.id;
+  THREAT_ACTOR.bornIn = country?.id;
+  THREAT_ACTOR.ethnicity = country?.id;
+  REF_COUNTRY.id = country?.id;
   result = await queryAsAdmin({
     query: CREATE_COUNTRY,
     variables: { input: { name: UPDATED_COUNTRY.name } },
@@ -133,7 +133,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     const actual = threatActorIndividual.data?.threatActorIndividualAdd;
     const _expectField = (field: keyof ThreatActorIndividualAddInput) => {
       expect(actual[field]).toEqual(THREAT_ACTOR[field]);
-    }
+    };
     _expectField('name');
     _expectField('description');
     _expectField('gender');
@@ -146,9 +146,9 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(actual.weight.length)
       .toEqual(2);
     expect(actual.bornIn?.name)
-      .toEqual(REF_COUNTRY.name)
+      .toEqual(REF_COUNTRY.name);
     expect(actual.ethnicity?.name)
-      .toEqual(REF_COUNTRY.name)
+      .toEqual(REF_COUNTRY.name);
     threatActorIndividualInternalId = actual.id;
   });
   it('should update threat actor individual details', async () => {
@@ -196,7 +196,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       } else {
         expect(threatActorIndividual[key]).toEqual(value);
       }
-    })
+    });
   });
   it('should update threat actor individual demographics', async () => {
     const UPDATE_QUERY = gql`
@@ -263,14 +263,14 @@ describe('Threat actor individual resolver standard behavior', () => {
       'resides-in',
       'citizen-of',
       'national-of',
-    ]
-    await Promise.all(relationships.map(relationship_type => queryAsAdmin({
+    ];
+    await Promise.all(relationships.map((relationship_type) => queryAsAdmin({
       query: addCoreRelationship,
       variables: { input: {
         fromId: threatActorIndividualInternalId,
         toId: REF_COUNTRY.id,
         relationship_type,
-      }}
+      } }
     })));
     const { data } = await queryAsAdmin({
       query: getCoreRelationships,
@@ -279,15 +279,14 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(data?.threatActorIndividual?.stixCoreRelationships?.edges).toHaveLength(3);
     const stixCoreRelationships = data?.threatActorIndividual
       ?.stixCoreRelationships?.edges?.map((
-        { node }: { node : { relationship_type: string, toId: string }}
+        { node }: { node : { relationship_type: string, toId: string } }
       ) => ({ ...node }));
     // expect(stixCoreRelationships).toHaveLength(3);
-    relationships.forEach(relationship_type => expect(stixCoreRelationships)
+    relationships.forEach((relationship_type) => expect(stixCoreRelationships)
       .toContainEqual({
         relationship_type,
         toId: REF_COUNTRY.id,
-      })
-    );
+      }));
   });
   it('should update threat actor individual biographics', async () => {
     const UPDATE_QUERY = gql`
@@ -402,7 +401,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual.height).toHaveLength(2);
     expect(threatActorIndividual.height[0]).toEqual(expectedHeights[1]);
     expect(threatActorIndividual.height[1]).toEqual(expectedHeights[3]);
-    
+
     const removeAll = await queryAsAdmin({
       query: HEIGHT_EDIT,
       variables: { id: threatActorIndividualInternalId, input: REMOVE_ALL_HEIGHTS },
@@ -502,7 +501,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual.weight).toHaveLength(2);
     expect(threatActorIndividual.weight[0]).toEqual(expectedWeights[1]);
     expect(threatActorIndividual.weight[1]).toEqual(expectedWeights[3]);
-    
+
     const removeAll = await queryAsAdmin({
       query: WEIGHT_EDIT,
       variables: { id: threatActorIndividualInternalId, input: REMOVE_ALL_WEIGHTS },
