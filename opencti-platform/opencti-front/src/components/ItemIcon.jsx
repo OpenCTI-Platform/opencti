@@ -358,7 +358,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'filter':
       return <FilterAltOutlined style={style} fontSize={fontSize} role="img" />;
     case 'stream':
-      return <StreamOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <CastConnectedOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'console':
       return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
     case 'relationship':

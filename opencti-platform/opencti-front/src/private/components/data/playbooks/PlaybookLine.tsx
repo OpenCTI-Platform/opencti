@@ -12,7 +12,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { PlaybookLine_node$key } from './__generated__/PlaybookLine_node.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import {useFormatter} from "../../../../components/i18n";
+import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
