@@ -20,6 +20,10 @@ export const computeNodes = (
           setSelectedNode(nodeId);
           setAction('config');
         },
+        openAddSibling: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('add');
+        },
         openDelete: (nodeId) => {
           setSelectedNode(nodeId);
           setAction('delete');

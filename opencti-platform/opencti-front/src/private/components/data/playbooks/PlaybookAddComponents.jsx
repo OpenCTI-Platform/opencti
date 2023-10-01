@@ -65,6 +65,7 @@ const addComponentValidation = (t) => Yup.object().shape({
 
 const PlaybookAddComponentsContent = ({
   searchTerm,
+  action,
   selectedNode,
   playbookComponents,
   onConfigAdd,
@@ -107,7 +108,7 @@ const PlaybookAddComponentsContent = ({
       finalConfig = { ...config, filters: jsonFilters };
     }
     resetForm();
-    if (selectedNode?.data?.component?.id) {
+    if (selectedNode?.data?.component?.id && action === 'config') {
       onConfigReplace(selectedComponent, name, finalConfig);
     } else {
       onConfigAdd(selectedComponent, name, finalConfig);
@@ -291,7 +292,7 @@ const PlaybookAddComponentsContent = ({
 };
 
 const PlaybookAddComponents = ({
-  open,
+  action,
   setSelectedNode,
   setSelectedEdge,
   selectedNode,
@@ -308,6 +309,8 @@ const PlaybookAddComponents = ({
     setSelectedNode(null);
     setSelectedEdge(null);
   };
+  const open = (action === 'config' || action === 'add')
+    && (selectedNode !== null || selectedEdge || null);
   return (
     <Drawer
       open={open}
@@ -342,8 +345,8 @@ const PlaybookAddComponents = ({
         <PlaybookAddComponentsContent
           searchTerm={searchTerm}
           playbookComponents={playbookComponents}
+          action={action}
           selectedNode={selectedNode}
-          selectedEdge={selectedEdge}
           onConfigAdd={onConfigAdd}
           onConfigReplace={onConfigReplace}
           handleClose={handleClose}

@@ -4,7 +4,7 @@ import { makeStyles } from '@mui/styles';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
-import MoreVert from '@mui/icons-material/MoreVert';
+import { MoreVert, ForkLeftOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { Theme } from '../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../components/i18n';
@@ -73,7 +73,8 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         <div className={classes.name}>{data.name}</div>
         <div className={classes.component}>{data.component.name}</div>
       </div>
-      <div style={{ float: 'right', margin: '-10px -4px 0 0' }}>
+      <div className="clearfix" />
+      <div style={{ position: 'absolute', top: 0, right: 0 }}>
         <IconButton
           onClick={(event) => setAnchorEl(event.currentTarget)}
           aria-haspopup="true"
@@ -104,7 +105,19 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
           </MenuItem>
         </Menu>
       </div>
-      <div className="clearfix" />
+      {!data.component?.is_entry_point && (
+        <div style={{ position: 'absolute', bottom: 0, right: 0 }}>
+          <IconButton
+            onClick={() => data.openAddSibling(getNode(id))}
+            aria-haspopup="true"
+            size="small"
+          >
+            <ForkLeftOutlined
+              style={{ fontSize: 12, transform: 'rotate(-180deg)' }}
+            />
+          </IconButton>
+        </div>
+      )}
       {!data.component?.is_entry_point && (
         <Handle type="target" position={Position.Top} isConnectable={false} />
       )}

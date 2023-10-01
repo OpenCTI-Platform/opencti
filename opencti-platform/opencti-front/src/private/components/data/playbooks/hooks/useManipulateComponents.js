@@ -155,6 +155,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
                 setSelectedNode(nodeId);
                 setAction('config');
               },
+              openAddSibling: (nodeId) => {
+                setSelectedNode(nodeId);
+                setAction('add');
+              },
               openDelete: (nodeId) => {
                 setSelectedNode(nodeId);
                 setAction('delete');
@@ -185,6 +189,80 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       })
       .concat(childPlaceholderEdges));
   };
+  const applyAddNode = (result, component, name, configuration, originEdge) => {
+    const newNode = {
+      id: result.nodeId,
+      position: { x: selectedNode.position.x, y: selectedNode.position.y },
+      type: 'workflow',
+      data: {
+        name,
+        configuration,
+        component,
+        openConfig: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('config');
+        },
+        openAddSibling: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('add');
+        },
+        openDelete: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('delete');
+        },
+      },
+    };
+    const newEdge = {
+      id: result.linkId,
+      type: 'workflow',
+      source: originEdge.source,
+      sourceHandle: originEdge.sourceHandle,
+      target: result.nodeId,
+      data: {
+        openConfig: (edgeId) => {
+          setSelectedEdge(edgeId);
+          setAction('config');
+        },
+      },
+    };
+    const childPlaceholderId = uuid();
+    const childPlaceholderNodes = component.ports
+      .filter((n) => n.type === 'out')
+      .map((n) => ({
+        id: `${childPlaceholderId}-${n.id}`,
+        position: {
+          x: selectedNode.position.x,
+          y: selectedNode.position.y,
+        },
+        type: 'placeholder',
+        data: {
+          name: '+',
+          configuration: null,
+          component: { is_entry_point: false },
+          openConfig: (nodeId) => {
+            setSelectedNode(nodeId);
+            setAction('config');
+          },
+        },
+      }));
+    const childPlaceholderEdges = component.ports
+      .filter((n) => n.type === 'out')
+      .map((n) => ({
+        id: `${result.nodeId}-${childPlaceholderId}-${n.id}`,
+        type: 'placeholder',
+        source: result.nodeId,
+        sourceHandle: n.id,
+        target: `${childPlaceholderId}-${n.id}`,
+        data: {
+          openConfig: (nodeId) => {
+            setSelectedNode(nodeId);
+            setAction('config');
+          },
+        },
+      }));
+    setNodes((nodes) => nodes.concat([...childPlaceholderNodes, newNode]));
+    setEdges((edges) => edges.concat([...childPlaceholderEdges, newEdge]));
+  };
   const applyInsertNode = (result, component, name, configuration) => {
     const targetNode = getNode(selectedEdge.target);
     const newNode = {
@@ -198,6 +276,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
         openConfig: (nodeId) => {
           setSelectedNode(nodeId);
           setAction('config');
+        },
+        openAddSibling: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('add');
         },
         openDelete: (nodeId) => {
           setSelectedNode(nodeId);
@@ -297,6 +379,10 @@ const useManipulateComponents = (playbook, playbookComponents) => {
               setSelectedNode(nodeId);
               setAction('config');
             },
+            openAddSibling: (nodeId) => {
+              setSelectedNode(nodeId);
+              setAction('add');
+            },
             openDelete: (nodeId) => {
               setSelectedNode(nodeId);
               setAction('delete');
@@ -388,6 +474,58 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       },
     });
   };
+  const addNode = (component, name, config) => {
+    const jsonConfig = config ? JSON.stringify(config) : null;
+    const position = {
+      x: selectedNode.position.x,
+      y: selectedNode.position.y,
+    };
+    commitMutation({
+      mutation: useManipulateComponentsAddNodeMutation,
+      variables: {
+        id: playbook.id,
+        input: {
+          name,
+          component_id: component.id,
+          position,
+          configuration: jsonConfig,
+        },
+      },
+      onCompleted: (nodeResult) => {
+        const originEdge = getEdges()
+          .filter((o) => o.target === selectedNode.id)
+          ?.at(0);
+        const parentNode = getNodes()
+          .filter((n) => n.id === originEdge?.source)
+          ?.at(0);
+        commitMutation({
+          mutation: useManipulateComponentsAddLinkMutation,
+          variables: {
+            id: playbook.id,
+            input: {
+              from_node: parentNode.id,
+              from_port: originEdge.sourceHandle,
+              to_node: nodeResult.playbookAddNode,
+            },
+          },
+          onCompleted: (linkResult) => {
+            applyAddNode(
+              {
+                nodeId: nodeResult.playbookAddNode,
+                linkId: linkResult.playbookAddLink,
+              },
+              component,
+              name,
+              config,
+              originEdge,
+            );
+          },
+        });
+        setSelectedNode(null);
+        setAction(null);
+      },
+    });
+  };
   const insertNode = (component, name, config) => {
     const jsonConfig = config ? JSON.stringify(config) : null;
     const targetNode = getNode(selectedEdge.target);
@@ -465,9 +603,12 @@ const useManipulateComponents = (playbook, playbookComponents) => {
   };
   // endregion
   const onConfigAdd = (component, name, config) => {
+    console.log(action);
     // We are in a placeholder
-    if (selectedNode) {
+    if (selectedNode && action === 'config') {
       addNodeFromPlaceholder(component, name, config);
+    } else if (selectedNode && action === 'add') {
+      addNode(component, name, config);
     } else if (selectedEdge) {
       // We are in an edge
       insertNode(component, name, config);
@@ -481,10 +622,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     return (
       <>
         <PlaybookAddComponents
-          open={
-            (selectedNode !== null || selectedEdge !== null)
-            && action === 'config'
-          }
+          action={action}
           setSelectedNode={setSelectedNode}
           setSelectedEdge={setSelectedEdge}
           selectedNode={selectedNode}
