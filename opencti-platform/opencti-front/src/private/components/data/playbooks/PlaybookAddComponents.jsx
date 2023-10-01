@@ -10,13 +10,15 @@ import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
+import * as Yup from 'yup';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
-import { isEmptyField } from '../../../../utils/utils';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -57,6 +59,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const addComponentValidation = (t) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
+});
+
 const PlaybookAddComponentsContent = ({
   searchTerm,
   selectedNode,
@@ -72,15 +78,6 @@ const PlaybookAddComponentsContent = ({
     currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
   );
   const [componentId, setComponentId] = useState(null);
-  const onSelect = (component) => {
-    if (!isEmptyField(JSON.parse(component.configuration_schema))) {
-      setComponentId(component.id);
-    } else if (selectedNode?.data?.component?.id) {
-      onConfigReplace(component);
-    } else {
-      onConfigAdd(component);
-    }
-  };
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters({
@@ -103,16 +100,17 @@ const PlaybookAddComponentsContent = ({
     const configurationSchema = JSON.parse(
       selectedComponent.configuration_schema,
     );
-    let config = values;
-    if (configurationSchema.properties.filters) {
+    const { name, ...config } = values;
+    let finalConfig = config;
+    if (configurationSchema?.properties?.filters) {
       const jsonFilters = JSON.stringify(filters);
-      config = { ...config, filters: jsonFilters };
+      finalConfig = { ...config, filters: jsonFilters };
     }
     resetForm();
     if (selectedNode?.data?.component?.id) {
-      onConfigReplace(selectedComponent, config);
+      onConfigReplace(selectedComponent, name, finalConfig);
     } else {
-      onConfigAdd(selectedComponent, config);
+      onConfigAdd(selectedComponent, name, finalConfig);
     }
   };
   const renderLines = () => {
@@ -136,8 +134,11 @@ const PlaybookAddComponentsContent = ({
                 divider={true}
                 button={true}
                 clases={{ root: classes.item }}
-                onClick={() => onSelect(component)}
+                onClick={() => setComponentId(component.id)}
               >
+                <ListItemIcon>
+                  <ItemIcon type={component.icon} />
+                </ListItemIcon>
                 <ListItemText
                   primary={component.name}
                   secondary={component.description}
@@ -159,7 +160,18 @@ const PlaybookAddComponentsContent = ({
     return (
       <div className={classes.config}>
         <Formik
-          initialValues={currentConfig ?? { name: selectedComponent.name }}
+          initialValues={
+            currentConfig
+              ? {
+                name:
+                    selectedNode?.data?.component?.id === selectedComponent.id
+                      ? selectedNode?.data?.name
+                      : selectedComponent.name,
+                ...currentConfig,
+              }
+              : { name: selectedComponent.name }
+          }
+          validationSchema={addComponentValidation(t)}
           onSubmit={onSubmit}
           onReset={handleClose}
         >
@@ -172,74 +184,76 @@ const PlaybookAddComponentsContent = ({
                 label={t('Name')}
                 fullWidth={true}
               />
-              {Object.entries(configurationSchema.properties).map(([k, v]) => {
-                if (k === 'filters') {
-                  return (
-                    <div key={k}>
-                      <div style={{ marginTop: 35 }}>
-                        <Filters
-                          variant="text"
-                          availableFilterKeys={[
-                            'entity_type',
-                            'x_opencti_workflow_id',
-                            'assigneeTo',
-                            'objectContains',
-                            'markedBy',
-                            'labelledBy',
-                            'creator',
-                            'createdBy',
-                            'priority',
-                            'severity',
-                            'x_opencti_score',
-                            'x_opencti_detection',
-                            'revoked',
-                            'confidence',
-                            'indicator_types',
-                            'pattern_type',
-                            'x_opencti_main_observable_type',
-                            'fromId',
-                            'toId',
-                            'fromTypes',
-                            'toTypes',
-                          ]}
-                          handleAddFilter={handleAddFilter}
-                          noDirectFilters={true}
+              {Object.entries(configurationSchema?.properties ?? {}).map(
+                ([k, v]) => {
+                  if (k === 'filters') {
+                    return (
+                      <div key={k}>
+                        <div style={{ marginTop: 35 }}>
+                          <Filters
+                            variant="text"
+                            availableFilterKeys={[
+                              'entity_type',
+                              'x_opencti_workflow_id',
+                              'assigneeTo',
+                              'objectContains',
+                              'markedBy',
+                              'labelledBy',
+                              'creator',
+                              'createdBy',
+                              'priority',
+                              'severity',
+                              'x_opencti_score',
+                              'x_opencti_detection',
+                              'revoked',
+                              'confidence',
+                              'indicator_types',
+                              'pattern_type',
+                              'x_opencti_main_observable_type',
+                              'fromId',
+                              'toId',
+                              'fromTypes',
+                              'toTypes',
+                            ]}
+                            handleAddFilter={handleAddFilter}
+                            noDirectFilters={true}
+                          />
+                        </div>
+                        <div className="clearfix" />
+                        <FilterIconButton
+                          filters={filters}
+                          handleRemoveFilter={handleRemoveFilter}
+                          classNameNumber={2}
+                          styleNumber={2}
+                          redirection
                         />
+                        <div className="clearfix" />
                       </div>
-                      <div className="clearfix" />
-                      <FilterIconButton
-                        filters={filters}
-                        handleRemoveFilter={handleRemoveFilter}
-                        classNameNumber={2}
-                        styleNumber={2}
-                        redirection
+                    );
+                  }
+                  if (v.type === 'number') {
+                    return (
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        type="number"
+                        name={k}
+                        label={t(k)}
+                        fullWidth={true}
                       />
-                      <div className="clearfix" />
-                    </div>
-                  );
-                }
-                if (v.type === 'number') {
+                    );
+                  }
                   return (
                     <Field
                       component={TextField}
                       variant="standard"
-                      type="number"
                       name={k}
                       label={t(k)}
                       fullWidth={true}
                     />
                   );
-                }
-                return (
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name={k}
-                    label={t(k)}
-                    fullWidth={true}
-                  />
-                );
-              })}
+                },
+              )}
               <div className="clearfix" />
               <div className={classes.buttons}>
                 <Button
@@ -257,7 +271,9 @@ const PlaybookAddComponentsContent = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {selectedNode?.data?.component?.id ? t('Update') : t('Create')}
+                  {selectedNode?.data?.component?.id
+                    ? t('Update')
+                    : t('Create')}
                 </Button>
               </div>
             </Form>

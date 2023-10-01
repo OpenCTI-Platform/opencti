@@ -58,6 +58,7 @@ export interface PlaybookComponent<T extends PlaybookComponentConfiguration> {
   id: string
   name: string
   description: string
+  icon: string
   is_entry_point: boolean
   is_internal: boolean
   ports: PortDefinition[]

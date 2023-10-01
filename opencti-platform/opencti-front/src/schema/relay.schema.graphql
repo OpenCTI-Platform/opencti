@@ -9029,6 +9029,7 @@ type Mutation {
   playbookDelete(id: ID!): ID
   playbookDeleteNode(id: ID!, nodeId: ID!): Playbook
   playbookDeleteLink(id: ID!, linkId: ID!): Playbook
+  playbookUpdatePositions(id: ID!, positions: String!): ID
   playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook
   ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss
   ingestionRssDelete(id: ID!): ID
@@ -11724,6 +11725,7 @@ type PlaybookComponent {
   id: ID!
   name: String!
   description: String!
+  icon: String!
   is_entry_point: Boolean
   is_internal: Boolean
   configuration_schema: String

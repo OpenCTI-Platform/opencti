@@ -12721,6 +12721,7 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookInsertNode: PlaybookInsertResult;
   playbookReplaceNode: Scalars['String']['output'];
+  playbookUpdatePositions?: Maybe<Scalars['ID']['output']>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
   queryTaskAdd: BackgroundTask;
@@ -13781,6 +13782,12 @@ export type MutationPlaybookReplaceNodeArgs = {
   id: Scalars['ID']['input'];
   input: PlaybookAddNodeInput;
   nodeId: Scalars['ID']['input'];
+};
+
+
+export type MutationPlaybookUpdatePositionsArgs = {
+  id: Scalars['ID']['input'];
+  positions: Scalars['String']['input'];
 };
 
 
@@ -17029,6 +17036,7 @@ export type PlaybookComponent = {
   __typename?: 'PlaybookComponent';
   configuration_schema?: Maybe<Scalars['String']['output']>;
   description: Scalars['String']['output'];
+  icon: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_entry_point?: Maybe<Scalars['Boolean']['output']>;
   is_internal?: Maybe<Scalars['Boolean']['output']>;
@@ -34003,6 +34011,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
   playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
+  playbookUpdatePositions?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPlaybookUpdatePositionsArgs, 'id' | 'positions'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
   queryTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;
@@ -34853,6 +34862,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
 export type PlaybookComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookComponent'] = ResolversParentTypes['PlaybookComponent']> = ResolversObject<{
   configuration_schema?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  icon?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_entry_point?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_internal?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

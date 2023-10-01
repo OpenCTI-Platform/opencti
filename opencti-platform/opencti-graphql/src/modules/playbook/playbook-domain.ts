@@ -25,7 +25,7 @@ import type {
   EditInput,
   PlaybookAddInput,
   PlaybookAddNodeInput,
-  PlaybookAddLinkInput,
+  PlaybookAddLinkInput, PositionInput,
 } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
@@ -95,6 +95,25 @@ const clearOrphans = (def: ComponentDefinition) => {
     orphanLinks = computeOrphanLinks(definition);
   }
   return definition;
+};
+
+export const playbookUpdatePositions = async (context: AuthContext, user: AuthUser, id: string, positions: string) => {
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const nodesPositions = JSON.parse(positions);
+  definition.nodes = definition.nodes.map((n) => {
+    const position = nodesPositions.filter((o: { id: string, position: PositionInput }) => o.id === n.id).at(0);
+    if (position) {
+      return {
+        ...n,
+        position: position.position
+      };
+    }
+    return n;
+  });
+  const patch: any = { playbook_definition: JSON.stringify(definition) };
+  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return id;
 };
 
 export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {

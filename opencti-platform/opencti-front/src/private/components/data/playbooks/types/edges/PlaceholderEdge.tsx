@@ -18,9 +18,10 @@ function EdgeLabel({ transform, label }: { transform: string; label: string }) {
       style={{
         position: 'absolute',
         background: 'transparent',
-        padding: 10,
-        fontSize: 10,
+        padding: 8,
+        fontSize: 9,
         transform,
+        fontFamily: 'Consolas',
       }}
       className="nodrag nopan"
     >

@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useReactFlow, useStore, Node, Edge, ReactFlowState } from 'reactflow';
 import { stratify, tree } from 'd3-hierarchy';
 import { timer } from 'd3-timer';
+import { commitMutation } from '../../../../../relay/environment';
+import { useManipulateComponentsPlaybookUpdatePositionsMutation } from './useManipulateComponents';
 
 const layout = tree<Node>()
   .nodeSize([200, 150])
@@ -9,7 +11,7 @@ const layout = tree<Node>()
 
 const options = { duration: 300 };
 
-function layoutNodes(nodes: Node[], edges: Edge[]): Node[] {
+const layoutNodes = (nodes: Node[], edges: Edge[]): Node[] => {
   if (nodes.length === 0) {
     return [];
   }
@@ -22,11 +24,11 @@ function layoutNodes(nodes: Node[], edges: Edge[]): Node[] {
   return root
     .descendants()
     .map((d) => ({ ...d.data, position: { x: d.x, y: d.y } }));
-}
+};
 
 const nodeCountSelector = (state: ReactFlowState) => state.nodeInternals.size;
 
-function useLayout() {
+const useLayout = (playbookId: string) => {
   const initial = useRef(true);
   const nodeCount = useStore(nodeCountSelector);
   const { getNodes, getNode, setNodes, setEdges, getEdges, fitView } = useReactFlow();
@@ -72,6 +74,24 @@ function useLayout() {
           };
         });
         setNodes(finalNodes);
+        commitMutation({
+          mutation: useManipulateComponentsPlaybookUpdatePositionsMutation,
+          variables: {
+            id: playbookId,
+            positions: JSON.stringify(
+              finalNodes.map((n) => ({
+                id: n.id,
+                position: n.position,
+              })),
+            ),
+          },
+          updater: undefined,
+          optimisticUpdater: undefined,
+          optimisticResponse: undefined,
+          onCompleted: undefined,
+          onError: undefined,
+          setSubmitting: undefined,
+        });
         t.stop();
         if (!initial.current) {
           fitView({ duration: 200, padding: 0.2 });
@@ -83,6 +103,6 @@ function useLayout() {
       t.stop();
     };
   }, [nodeCount, getEdges, getNodes, getNode, setNodes, fitView, setEdges]);
-}
+};
 
 export default useLayout;

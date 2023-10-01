@@ -37,6 +37,7 @@ const playbookQuery = graphql`
       id
       name
       description
+      icon
       is_entry_point
       is_internal
       configuration_schema

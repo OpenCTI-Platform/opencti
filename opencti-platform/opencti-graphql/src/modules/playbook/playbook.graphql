@@ -18,6 +18,7 @@ type PlaybookComponent {
     id: ID!
     name: String!
     description: String!
+    icon: String!
     is_entry_point: Boolean
     is_internal: Boolean
     configuration_schema: String
@@ -104,5 +105,6 @@ type Mutation {
     playbookDelete(id: ID!): ID @auth
     playbookDeleteNode(id: ID!, nodeId: ID!): Playbook @auth
     playbookDeleteLink(id: ID!, linkId: ID!): Playbook @auth
+    playbookUpdatePositions(id: ID!, positions: String!): ID @auth
     playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook @auth
 }

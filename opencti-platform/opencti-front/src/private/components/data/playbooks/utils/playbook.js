@@ -1,6 +1,7 @@
 export const computeNodes = (
   playbookNodes,
   playbookComponents,
+  setAction,
   setSelectedNode,
 ) => {
   return playbookNodes.map((n) => {
@@ -15,13 +16,20 @@ export const computeNodes = (
         name: n.name,
         configuration: n.configuration ? JSON.parse(n.configuration) : null,
         component,
-        onClick: setSelectedNode,
+        openConfig: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('config');
+        },
+        openDelete: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('delete');
+        },
       },
     };
   });
 };
 
-export const computeEdges = (playbookEdges, setSelectedEdge) => {
+export const computeEdges = (playbookEdges, setAction, setSelectedEdge) => {
   return playbookEdges.map((n) => {
     return {
       id: n.id,
@@ -30,13 +38,16 @@ export const computeEdges = (playbookEdges, setSelectedEdge) => {
       sourceHandle: n.from.port,
       target: n.to.id,
       data: {
-        onClick: setSelectedEdge,
+        openConfig: (edgeId) => {
+          setSelectedEdge(edgeId);
+          setAction('config');
+        },
       },
     };
   });
 };
 
-export const addPlaceholders = (nodes, edges, setSelectedNode) => {
+export const addPlaceholders = (nodes, edges, setAction, setSelectedNode) => {
   if (nodes.length === 0) {
     return {
       nodes: [
@@ -48,7 +59,10 @@ export const addPlaceholders = (nodes, edges, setSelectedNode) => {
             name: '+',
             configuration: null,
             component: { is_entry_point: true },
-            onClick: setSelectedNode,
+            openConfig: (nodeId) => {
+              setSelectedNode(nodeId);
+              setAction('config');
+            },
           },
         },
       ],
@@ -75,7 +89,10 @@ export const addPlaceholders = (nodes, edges, setSelectedNode) => {
         name: '+',
         configuration: null,
         component: { is_entry_point: false },
-        onClick: setSelectedNode,
+        openConfig: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('config');
+        },
       },
     };
     const childPlaceholderEdge = {

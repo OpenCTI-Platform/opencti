@@ -24,7 +24,7 @@ import useLayout from './hooks/useLayout';
 import nodeTypes from './types/nodes';
 import edgeTypes from './types/edges';
 import { addPlaceholders, computeNodes, computeEdges } from './utils/playbook';
-import useAddComponents from './hooks/useAddComponents';
+import useManipulateComponents from './hooks/useManipulateComponents';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -43,19 +43,30 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
   const width = window.innerWidth - 80;
   const height = window.innerHeight - 160;
   const Flow = () => {
-    const { renderAddComponent, setSelectedNode, setSelectedEdge } = useAddComponents(playbook, playbookComponents);
+    const {
+      setAction,
+      setSelectedNode,
+      setSelectedEdge,
+      renderManipulateComponents,
+    } = useManipulateComponents(playbook, playbookComponents);
     const initialNodes = computeNodes(
       definition.nodes,
       playbookComponents,
+      setAction,
       setSelectedNode,
     );
-    const initialEdges = computeEdges(definition.links, setSelectedEdge);
+    const initialEdges = computeEdges(
+      definition.links,
+      setAction,
+      setSelectedEdge,
+    );
     const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
       initialNodes,
       initialEdges,
+      setAction,
       setSelectedNode,
     );
-    useLayout();
+    useLayout(playbook.id);
     return (
       <>
         <ReactFlow
@@ -72,7 +83,7 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
           zoomOnDoubleClick={false}
           proOptions={proOptions}
         />
-        {renderAddComponent()}
+        {renderManipulateComponents()}
       </>
     );
   };

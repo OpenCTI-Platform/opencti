@@ -49,6 +49,9 @@ import {
   ReceiptOutlined,
   UpcomingOutlined,
   PrecisionManufacturingOutlined,
+  FilterAltOutlined,
+  CastConnectedOutlined,
+  TerminalOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -313,7 +316,13 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'session':
       return <ReceiptOutlined style={style} fontSize={fontSize} role="img" />;
     case 'playbook':
-      return <PrecisionManufacturingOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <PrecisionManufacturingOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
     case 'stix-cyber-observable':
     case 'autonomous-system':
     case 'directory':
@@ -346,8 +355,12 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
       return <Visibility style={style} fontSize={fontSize} role="img" />;
-    case 'stix-internal-relationship':
-      return <VectorRadius style={style} fontSize={fontSize} role="img" />;
+    case 'filter':
+      return <FilterAltOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'stream':
+      return <StreamOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'console':
+      return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
     case 'relationship':
     case 'stix-core-relationship':
     case 'targets':

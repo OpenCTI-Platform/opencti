@@ -18,8 +18,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
       theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.04)'
         : 'rgba(0, 0, 0, 0.04)',
-    padding: 12,
     width: 160,
+    height: 50,
+    padding: '11px 5px 5px 5px',
     textAlign: 'center',
     cursor: 'pointer',
     '&:hover': {
@@ -38,7 +39,7 @@ const NodePlaceholder = ({ id, data }: NodeProps) => {
   const classes = useStyles();
   const { getNode } = useReactFlow();
   return (
-    <div className={classes.node} onClick={() => data.onClick(getNode(id))}>
+    <div className={classes.node} onClick={() => data.openConfig(getNode(id))}>
       {data.name}
       <Handle
         className={classes.handle}

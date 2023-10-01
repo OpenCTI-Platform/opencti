@@ -36,9 +36,10 @@ function EdgeLabel({ transform, label }: { transform: string; label: string }) {
       style={{
         position: 'absolute',
         background: 'transparent',
-        padding: 10,
-        fontSize: 10,
+        padding: 8,
+        fontSize: 9,
         transform,
+        fontFamily: 'Consolas',
       }}
       className="nodrag nopan"
     >
@@ -81,7 +82,7 @@ export default function CustomEdge({
       />
       <g transform={`translate(${edgeCenterX}, ${edgeCenterY})`}>
         <rect
-          onClick={() => data.onClick(getEdge(id))}
+          onClick={() => data.openConfig(getEdge(id))}
           x={-10}
           y={-10}
           width={20}
