@@ -3,6 +3,10 @@ import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
+type node = {
+  id: string;
+};
+
 const useStyles = makeStyles<Theme>((theme) => ({
   node: {
     border:
@@ -36,7 +40,14 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       {!data.component?.is_entry_point && (
         <Handle type="target" position={Position.Top} isConnectable={false} />
       )}
-      <Handle type="source" position={Position.Bottom} isConnectable={false} />
+      {(data.component?.ports ?? []).map((n: node) => (
+        <Handle
+          id={n.id}
+          type="source"
+          position={Position.Bottom}
+          isConnectable={false}
+        />
+      ))}
     </div>
   );
 };

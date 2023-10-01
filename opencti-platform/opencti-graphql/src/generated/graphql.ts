@@ -12719,6 +12719,7 @@ export type Mutation = {
   playbookDeleteLink?: Maybe<Playbook>;
   playbookDeleteNode?: Maybe<Playbook>;
   playbookFieldPatch?: Maybe<Playbook>;
+  playbookInsertNode: PlaybookInsertResult;
   playbookReplaceNode: Scalars['String']['output'];
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
@@ -13764,6 +13765,15 @@ export type MutationPlaybookFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
   references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MutationPlaybookInsertNodeArgs = {
+  childNodeId: Scalars['ID']['input'];
+  id: Scalars['ID']['input'];
+  input: PlaybookAddNodeInput;
+  parentNodeId: Scalars['ID']['input'];
+  parentPortId: Scalars['ID']['input'];
 };
 
 
@@ -17047,6 +17057,12 @@ export type PlaybookEdge = {
 export enum PlaybookFilter {
   Name = 'name'
 }
+
+export type PlaybookInsertResult = {
+  __typename?: 'PlaybookInsertResult';
+  linkId: Scalars['String']['output'];
+  nodeId: Scalars['String']['output'];
+};
 
 export type PlaybooksFiltering = {
   filterMode?: InputMaybe<FilterMode>;
@@ -29064,6 +29080,7 @@ export type ResolversTypes = ResolversObject<{
   PlaybookConnection: ResolverTypeWrapper<Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversTypes['PlaybookEdge']> }>;
   PlaybookEdge: ResolverTypeWrapper<Omit<PlaybookEdge, 'node'> & { node: ResolversTypes['Playbook'] }>;
   PlaybookFilter: PlaybookFilter;
+  PlaybookInsertResult: ResolverTypeWrapper<PlaybookInsertResult>;
   PlaybooksFiltering: PlaybooksFiltering;
   PlaybooksOrdering: PlaybooksOrdering;
   Position: ResolverTypeWrapper<Omit<Position, 'cases' | 'city' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, city?: Maybe<ResolversTypes['City']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
@@ -29800,6 +29817,7 @@ export type ResolversParentTypes = ResolversObject<{
   PlaybookComponentPort: PlaybookComponentPort;
   PlaybookConnection: Omit<PlaybookConnection, 'edges'> & { edges: Array<ResolversParentTypes['PlaybookEdge']> };
   PlaybookEdge: Omit<PlaybookEdge, 'node'> & { node: ResolversParentTypes['Playbook'] };
+  PlaybookInsertResult: PlaybookInsertResult;
   PlaybooksFiltering: PlaybooksFiltering;
   Position: Omit<Position, 'cases' | 'city' | 'containers' | 'createdBy' | 'groupings' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, city?: Maybe<ResolversParentTypes['City']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PositionAddInput: PositionAddInput;
@@ -33983,6 +34001,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   playbookDeleteLink?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteLinkArgs, 'id' | 'linkId'>>;
   playbookDeleteNode?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookDeleteNodeArgs, 'id' | 'nodeId'>>;
   playbookFieldPatch?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookFieldPatchArgs, 'id' | 'input'>>;
+  playbookInsertNode?: Resolver<ResolversTypes['PlaybookInsertResult'], ParentType, ContextType, RequireFields<MutationPlaybookInsertNodeArgs, 'childNodeId' | 'id' | 'input' | 'parentNodeId' | 'parentPortId'>>;
   playbookReplaceNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookReplaceNodeArgs, 'id' | 'input' | 'nodeId'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
@@ -34857,6 +34876,12 @@ export type PlaybookConnectionResolvers<ContextType = any, ParentType extends Re
 export type PlaybookEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookEdge'] = ResolversParentTypes['PlaybookEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Playbook'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PlaybookInsertResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookInsertResult'] = ResolversParentTypes['PlaybookInsertResult']> = ResolversObject<{
+  linkId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  nodeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -38164,6 +38189,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PlaybookComponentPort?: PlaybookComponentPortResolvers<ContextType>;
   PlaybookConnection?: PlaybookConnectionResolvers<ContextType>;
   PlaybookEdge?: PlaybookEdgeResolvers<ContextType>;
+  PlaybookInsertResult?: PlaybookInsertResultResolvers<ContextType>;
   Position?: PositionResolvers<ContextType>;
   PositionConnection?: PositionConnectionResolvers<ContextType>;
   PositionEdge?: PositionEdgeResolvers<ContextType>;

@@ -23,6 +23,10 @@ type PlaybookComponent {
     configuration_schema: String
     ports: [PlaybookComponentPort!]!
 }
+type PlaybookInsertResult {
+    nodeId: String!
+    linkId: String!
+}
 
 # Ordering
 enum PlaybooksOrdering {
@@ -95,6 +99,7 @@ type Mutation {
     playbookAdd(input: PlaybookAddInput!): Playbook @auth
     playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String! @auth
     playbookReplaceNode(id: ID!, nodeId: ID!, input: PlaybookAddNodeInput!): String! @auth
+    playbookInsertNode(id: ID!, parentNodeId: ID!, parentPortId: ID!, childNodeId: ID!, input: PlaybookAddNodeInput!): PlaybookInsertResult! @auth
     playbookAddLink(id: ID!, input: PlaybookAddLinkInput!): String! @auth
     playbookDelete(id: ID!): ID @auth
     playbookDeleteNode(id: ID!, nodeId: ID!): Playbook @auth

@@ -1,7 +1,6 @@
 import React from 'react';
-import { EdgeProps, getBezierPath } from 'reactflow';
+import { EdgeProps, getBezierPath, useReactFlow } from 'reactflow';
 import { makeStyles } from '@mui/styles';
-import useEdgeClick from '../../hooks/useEdgeClick';
 import { Theme } from '../../../../../../components/Theme';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -36,9 +35,10 @@ export default function CustomEdge({
   targetPosition,
   style,
   markerEnd,
+  data,
 }: EdgeProps) {
   const classes = useStyles();
-  const onClick = useEdgeClick(id);
+  const { getEdge } = useReactFlow();
   const [edgePath, edgeCenterX, edgeCenterY] = getBezierPath({
     sourceX,
     sourceY,
@@ -58,7 +58,7 @@ export default function CustomEdge({
       />
       <g transform={`translate(${edgeCenterX}, ${edgeCenterY})`}>
         <rect
-          onClick={onClick}
+          onClick={() => data.onClick(getEdge(id))}
           x={-10}
           y={-10}
           width={20}

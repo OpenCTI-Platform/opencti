@@ -34,6 +34,27 @@ export const useAddComponentsReplaceNodeMutation = graphql`
   }
 `;
 
+export const useAddComponentsInsertNodeMutation = graphql`
+  mutation useAddComponentsInsertNodeMutation(
+    $id: ID!
+    $parentNodeId: ID!
+    $parentPortId: ID!
+    $childNodeId: ID!
+    $input: PlaybookAddNodeInput!
+  ) {
+    playbookInsertNode(
+      id: $id
+      parentNodeId: $parentNodeId
+      parentPortId: $parentPortId
+      childNodeId: $childNodeId
+      input: $input
+    ) {
+      nodeId
+      linkId
+    }
+  }
+`;
+
 export const useAddComponentsDeleteNodeMutation = graphql`
   mutation useAddComponentsDeleteNodeMutation($id: ID!, $nodeId: ID!) {
     playbookDeleteNode(id: $id, nodeId: $nodeId) {
@@ -52,7 +73,8 @@ export const useAddComponentsDeleteLinkMutation = graphql`
 
 const useAddComponents = (playbook, playbookComponents) => {
   const [selectedNode, setSelectedNode] = useState(null);
-  const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
+  const [selectedEdge, setSelectedEdge] = useState(null);
+  const { getNode, getNodes, getEdges, setNodes, setEdges } = useReactFlow();
   const addNode = (result, component, configuration) => {
     const childPlaceholderId = uuid();
     const childPlaceholderNode = {
@@ -104,11 +126,53 @@ const useAddComponents = (playbook, playbookComponents) => {
             id: result.edge,
             type: 'workflow',
             target: result.node,
+            data: {
+              onClick: setSelectedEdge,
+            },
           };
         }
         return edge;
       })
       .concat([childPlaceholderEdge]));
+  };
+  const insertNode = (result, component, configuration) => {
+    const targetNode = getNode(selectedEdge.target);
+    const newNode = {
+      id: result.node,
+      position: { x: targetNode.position.x, y: targetNode.position.y },
+      type: 'workflow',
+      data: {
+        name: component.name,
+        configuration,
+        component,
+        onClick: setSelectedNode,
+      },
+    };
+    const newEdge = {
+      id: result.edge,
+      type: 'workflow',
+      source: result.node,
+      target: selectedEdge.target,
+      data: {
+        onClick: setSelectedEdge,
+      },
+    };
+    setNodes((nodes) => nodes.concat([newNode]));
+    setEdges((edges) => edges
+      .map((edge) => {
+        if (edge.source === selectedEdge.source) {
+          return {
+            ...edge,
+            type: 'workflow',
+            target: result.node,
+            data: {
+              onClick: setSelectedEdge,
+            },
+          };
+        }
+        return edge;
+      })
+      .concat([newEdge]));
   };
   const configNode = (component, configuration) => {
     setNodes((nodes) => nodes.map((node) => {
@@ -129,62 +193,95 @@ const useAddComponents = (playbook, playbookComponents) => {
     }));
   };
   const onConfigAdd = (component, config) => {
+    const configuration = config ? JSON.stringify(config) : null;
+    const targetNode = selectedNode || getNode(selectedEdge.target);
     const position = {
-      x: selectedNode.position.x,
-      y: selectedNode.position.y,
+      x: targetNode.position.x,
+      y: targetNode.position.y,
     };
-    commitMutation({
-      mutation: useAddComponentsAddNodeMutation,
+    // We are in a placeholder
+    if (selectedNode) {
+      commitMutation({
+        mutation: useAddComponentsAddNodeMutation,
+        variables: {
+          id: playbook.id,
+          input: {
+            name: config?.name ?? component.name,
+            component_id: component.id,
+            position,
+            configuration,
+          },
+        },
+        onCompleted: (nodeResult) => {
+          const parentNode = getNodes()
+            .filter(
+              (n) => n.id
+                === getEdges()
+                  .filter((o) => o.target === selectedNode.id)
+                  .at(0)?.source,
+            )
+            ?.at(0);
+          if (isNotEmptyField(parentNode)) {
+            return commitMutation({
+              mutation: useAddComponentsAddLinkMutation,
+              variables: {
+                id: playbook.id,
+                input: {
+                  from_node: parentNode.id,
+                  from_port: parentNode.data.port ?? 'out',
+                  to_node: nodeResult.playbookAddNode,
+                },
+              },
+              onCompleted: (linkResult) => {
+                addNode(
+                  {
+                    node: nodeResult.playbookAddNode,
+                    edge: linkResult.playbookAddLink,
+                  },
+                  component,
+                  configuration,
+                );
+                setSelectedNode(null);
+              },
+            });
+          }
+          addNode(
+            {
+              node: nodeResult.playbookAddNode,
+            },
+            component,
+            configuration,
+          );
+          return setSelectedNode(null);
+        },
+      });
+    }
+    // We are in an edge
+    // The parent node is now linked to the new node
+    return commitMutation({
+      mutation: useAddComponentsInsertNodeMutation,
       variables: {
         id: playbook.id,
+        parentNodeId: selectedEdge.source,
+        parentPortId: selectedEdge.sourceHandle,
+        childNodeId: selectedEdge.target,
         input: {
           name: config?.name ?? component.name,
           component_id: component.id,
           position,
-          configuration: config ? JSON.stringify(config) : null,
+          configuration,
         },
       },
-      onCompleted: (nodeResult) => {
-        const parentNode = getNodes()
-          .filter(
-            (n) => n.id
-              === getEdges()
-                .filter((o) => o.target === selectedNode.id)
-                .at(0)?.source,
-          )
-          ?.at(0);
-        if (isNotEmptyField(parentNode)) {
-          return commitMutation({
-            mutation: useAddComponentsAddLinkMutation,
-            variables: {
-              id: playbook.id,
-              input: {
-                from_node: parentNode.id,
-                from_port: parentNode.data.port ?? 'out',
-                to_node: nodeResult.playbookAddNode,
-              },
-            },
-            onCompleted: (linkResult) => {
-              addNode(
-                {
-                  node: nodeResult.playbookAddNode,
-                  edge: linkResult.playbookAddLink,
-                },
-                component,
-                config,
-              );
-              setSelectedNode(null);
-            },
-          });
-        }
-        addNode(
+      onCompleted: (insertResult) => {
+        insertNode(
           {
-            node: nodeResult.playbookAddNode,
+            node: insertResult.playbookInsertNode.nodeId,
+            edge: insertResult.playbookInsertNode.linkId,
           },
           component,
-          config,
+          configuration,
         );
-        return setSelectedNode(null);
+        setSelectedEdge(null);
       },
     });
   };
@@ -193,6 +290,7 @@ const useAddComponents = (playbook, playbookComponents) => {
       x: selectedNode.position.x,
       y: selectedNode.position.y,
     };
+    const configuration = config ? JSON.stringify(config) : null;
     commitMutation({
       mutation: useAddComponentsReplaceNodeMutation,
       variables: {
@@ -202,11 +300,11 @@ const useAddComponents = (playbook, playbookComponents) => {
           name: config?.name ?? component.name,
           component_id: component.id,
           position,
-          configuration: config ? JSON.stringify(config) : null,
+          configuration,
         },
       },
       onCompleted: () => {
-        configNode(component, config);
+        configNode(component, configuration);
         return setSelectedNode(null);
       },
     });
@@ -214,16 +312,18 @@ const useAddComponents = (playbook, playbookComponents) => {
   const renderAddComponent = () => {
     return (
       <PlaybookAddComponents
-        open={selectedNode !== null}
+        open={selectedNode !== null || selectedEdge !== null}
         setSelectedNode={setSelectedNode}
+        setSelectedEdge={setSelectedEdge}
         selectedNode={selectedNode}
+        selectedEdge={selectedEdge}
         onConfigAdd={onConfigAdd}
         onConfigReplace={onConfigReplace}
         playbookComponents={playbookComponents}
       />
     );
   };
-  return { setSelectedNode, renderAddComponent, addNode };
+  return { setSelectedNode, setSelectedEdge, renderAddComponent, addNode };
 };
 
 export default useAddComponents;

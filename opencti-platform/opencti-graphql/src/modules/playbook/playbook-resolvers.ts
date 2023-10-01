@@ -22,6 +22,7 @@ import {
   findAll,
   availableComponents,
   playbookAddNode,
+  playbookInsertNode,
   playbookReplaceNode,
   playbookAddLink,
   playbookDeleteNode,
@@ -45,6 +46,8 @@ const playbookResolvers: Resolvers = {
     playbookAddNode: (_, { id, input }, context) => playbookAddNode(context, context.user, id, input),
     playbookAddLink: (_, { id, input }, context) => playbookAddLink(context, context.user, id, input),
     playbookReplaceNode: (_, { id, nodeId, input }, context) => playbookReplaceNode(context, context.user, id, nodeId, input),
+    // eslint-disable-next-line max-len
+    playbookInsertNode: (_, { id, parentNodeId, parentPortId, childNodeId, input }, context) => playbookInsertNode(context, context.user, id, parentNodeId, parentPortId, childNodeId, input),
     playbookDelete: (_, { id }, context) => playbookDelete(context, context.user, id),
     playbookDeleteNode: (_, { id, nodeId }, context) => playbookDeleteNode(context, context.user, id, nodeId),
     playbookDeleteLink: (_, { id, linkId }, context) => playbookDeleteLink(context, context.user, id, linkId),

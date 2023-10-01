@@ -21,7 +21,7 @@ export const computeNodes = (
   });
 };
 
-export const computeEdges = (playbookEdges, setSelectedNode) => {
+export const computeEdges = (playbookEdges, setSelectedEdge) => {
   return playbookEdges.map((n) => {
     return {
       id: n.id,
@@ -30,7 +30,7 @@ export const computeEdges = (playbookEdges, setSelectedNode) => {
       sourceHandle: n.from.port,
       target: n.to.id,
       data: {
-        onClick: setSelectedNode,
+        onClick: setSelectedEdge,
       },
     };
   });
@@ -78,9 +78,6 @@ export const addPlaceholders = (nodes, edges, setSelectedNode) => {
       type: 'placeholder',
       source: n.id,
       target: childPlaceholderId,
-      data: {
-        onClick: setSelectedNode,
-      },
     };
     return { node: childPlaceholderNode, edge: childPlaceholderEdge };
   });

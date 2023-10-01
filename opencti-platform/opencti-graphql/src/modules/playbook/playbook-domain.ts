@@ -86,7 +86,7 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported');
   }
-  // Delete the previous node
+  // Replace the node
   definition.nodes = definition.nodes.map((n) => {
     if (n.id === nodeId) {
       return {
@@ -102,6 +102,74 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return nodeId;
+};
+
+// eslint-disable-next-line max-len
+export const playbookInsertNode = async (context: AuthContext, user: AuthUser, id: string, parentNodeId: string, parentPortId: string, childNodeId: string, input: PlaybookAddNodeInput) => {
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
+  if (!relatedComponent) {
+    throw UnsupportedError('Playbook related component not found');
+  }
+  const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
+  if (relatedComponent.is_entry_point && existingEntryPoint) {
+    throw UnsupportedError('Playbook multiple entrypoint is not supported');
+  }
+  // Add the new node
+  const nodeId = uuidv4();
+  definition.nodes.push({
+    id: nodeId,
+    name: input.name,
+    position: input.position,
+    component_id: input.component_id,
+    configuration: input.configuration ?? '{}' // TODO Check valid json
+  });
+  // Replace node with new position
+  definition.nodes = definition.nodes.map((n) => {
+    if (n.id === childNodeId) {
+      return {
+        ...n,
+        position: {
+          x: n.position.x,
+          y: n.position.y + 150,
+        }
+      };
+    }
+    return n;
+  });
+  // Replace links
+  // Build the link between the new node and the parent
+  const linkId = uuidv4();
+  definition.links.push({
+    id: linkId,
+    from: {
+      id: parentNodeId,
+      port: parentPortId,
+    },
+    to: {
+      id: nodeId
+    }
+  });
+  // Replace the link
+  definition.links = definition.links.map((n) => {
+    if (n.from.id === parentNodeId && n.from.port === parentPortId && n.to.id === childNodeId) {
+      return {
+        ...n,
+        from: {
+          id: nodeId,
+          port: 'out',
+        },
+        to: {
+          id: childNodeId
+        }
+      };
+    }
+    return n;
+  });
+  const patch: any = { playbook_definition: JSON.stringify(definition) };
+  await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return { nodeId, linkId };
 };
 
 export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {

@@ -43,16 +43,13 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
   const width = window.innerWidth - 80;
   const height = window.innerHeight - 160;
   const Flow = () => {
-    const { renderAddComponent, setSelectedNode } = useAddComponents(
-      playbook,
-      playbookComponents,
-    );
+    const { renderAddComponent, setSelectedNode, setSelectedEdge } = useAddComponents(playbook, playbookComponents);
     const initialNodes = computeNodes(
       definition.nodes,
       playbookComponents,
       setSelectedNode,
     );
-    const initialEdges = computeEdges(definition.links, setSelectedNode);
+    const initialEdges = computeEdges(definition.links, setSelectedEdge);
     const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
       initialNodes,
       initialEdges,

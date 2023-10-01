@@ -9024,6 +9024,7 @@ type Mutation {
   playbookAdd(input: PlaybookAddInput!): Playbook
   playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String!
   playbookReplaceNode(id: ID!, nodeId: ID!, input: PlaybookAddNodeInput!): String!
+  playbookInsertNode(id: ID!, parentNodeId: ID!, parentPortId: ID!, childNodeId: ID!, input: PlaybookAddNodeInput!): PlaybookInsertResult!
   playbookAddLink(id: ID!, input: PlaybookAddLinkInput!): String!
   playbookDelete(id: ID!): ID
   playbookDeleteNode(id: ID!, nodeId: ID!): Playbook
@@ -11727,6 +11728,11 @@ type PlaybookComponent {
   is_internal: Boolean
   configuration_schema: String
   ports: [PlaybookComponentPort!]!
+}
+
+type PlaybookInsertResult {
+  nodeId: String!
+  linkId: String!
 }
 
 enum PlaybooksOrdering {

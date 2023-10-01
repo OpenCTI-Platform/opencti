@@ -13,10 +13,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO Remove this when V6
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import React from 'react';
 import { Route, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
+import { RootPlaybookQuery$data } from './__generated__/RootPlaybookQuery.graphql';
 import Playbook from './Playbook';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -48,7 +54,7 @@ const RootPlaybook = () => {
     <QueryRenderer
       query={playbookQuery}
       variables={{ id: playbookId }}
-      render={({ props }) => {
+      render={({ props }: { props: RootPlaybookQuery$data }) => {
         if (props) {
           if (props.playbook && props.playbookComponents) {
             return (
@@ -56,7 +62,7 @@ const RootPlaybook = () => {
                 <Route
                   exact
                   path="/dashboard/data/processing/automation/:playbookId"
-                  render={(routeProps) => (
+                  render={(routeProps: any) => (
                     <Playbook
                       {...routeProps}
                       playbook={props.playbook}

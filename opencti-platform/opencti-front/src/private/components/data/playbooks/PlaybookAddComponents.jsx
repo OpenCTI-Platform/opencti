@@ -57,25 +57,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const PlaybookAddComponents = ({
-  open,
-  setSelectedNode,
+const PlaybookAddComponentsContent = ({
+  searchTerm,
   selectedNode,
   playbookComponents,
   onConfigAdd,
   onConfigReplace,
+  handleClose,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({});
+  const currentConfig = selectedNode?.data?.configuration
+    ? JSON.parse(selectedNode?.data?.configuration)
+    : null;
+  const [filters, setFilters] = useState(
+    currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
+  );
   const [componentId, setComponentId] = useState(null);
-  const handleClose = () => {
-    setSearchTerm('');
-    setFilters({});
-    setComponentId(null);
-    setSelectedNode(null);
-  }
+  const onSelect = (component) => {
+    if (!isEmptyField(JSON.parse(component.configuration_schema))) {
+      setComponentId(component.id);
+    } else if (selectedNode?.data?.component?.id) {
+      onConfigReplace(component);
+    } else {
+      onConfigAdd(component);
+    }
+  };
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
       setFilters({
@@ -91,15 +98,6 @@ const PlaybookAddComponents = ({
   const handleRemoveFilter = (key) => {
     setFilters(R.dissoc(key, filters));
   };
-  const onSelect = (component) => {
-    if (!isEmptyField(JSON.parse(component.configuration_schema))) {
-      setComponentId(component.id);
-    } else if (selectedNode.data?.component?.id) {
-      onConfigReplace(component);
-    } else {
-      onConfigAdd(component);
-    }
-  };
   const onSubmit = (values, { resetForm }) => {
     const selectedComponent = playbookComponents
       .filter((n) => n.id === componentId)
@@ -113,7 +111,7 @@ const PlaybookAddComponents = ({
       config = { ...config, filters: jsonFilters };
     }
     resetForm();
-    if (selectedNode.data?.component?.id) {
+    if (selectedNode?.data?.component?.id) {
       onConfigReplace(selectedComponent, config);
     } else {
       onConfigAdd(selectedComponent, config);
@@ -163,7 +161,7 @@ const PlaybookAddComponents = ({
     return (
       <div className={classes.config}>
         <Formik
-          initialValues={{ name: selectedComponent.name }}
+          initialValues={currentConfig ?? { name: selectedComponent.name }}
           onSubmit={onSubmit}
           onReset={handleClose}
         >
@@ -261,7 +259,7 @@ const PlaybookAddComponents = ({
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
-                  {t('Create')}
+                  {selectedNode?.data?.component?.id ? t('Update') : t('Create')}
                 </Button>
               </div>
             </Form>
@@ -269,6 +267,32 @@ const PlaybookAddComponents = ({
         </Formik>
       </div>
     );
+  };
+  return (
+    <>
+      {componentId === null && renderLines()}
+      {componentId !== null && renderConfig()}
+    </>
+  );
+};
+
+const PlaybookAddComponents = ({
+  open,
+  setSelectedNode,
+  setSelectedEdge,
+  selectedNode,
+  selectedEdge,
+  playbookComponents,
+  onConfigAdd,
+  onConfigReplace,
+}) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const handleClose = () => {
+    setSearchTerm('');
+    setSelectedNode(null);
+    setSelectedEdge(null);
   };
   return (
     <Drawer
@@ -300,8 +324,17 @@ const PlaybookAddComponents = ({
           />
         </div>
       </div>
-      {componentId === null && renderLines()}
-      {componentId !== null && renderConfig()}
+      {(selectedNode || selectedEdge) && (
+        <PlaybookAddComponentsContent
+          searchTerm={searchTerm}
+          playbookComponents={playbookComponents}
+          selectedNode={selectedNode}
+          selectedEdge={selectedEdge}
+          onConfigAdd={onConfigAdd}
+          onConfigReplace={onConfigReplace}
+          handleClose={handleClose}
+        />
+      )}
     </Drawer>
   );
 };
