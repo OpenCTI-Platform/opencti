@@ -68,7 +68,8 @@ const playbookEditionQuery = graphql`
   }
 `;
 
-const PlaybookPopover = ({ playbookId, running, paginationOptions }) => {
+const PlaybookPopover = (props) => {
+  const { playbookId, running, paginationOptions } = props;
   const classes = useStyles();
   const { t } = useFormatter();
   const navigate = useNavigate();

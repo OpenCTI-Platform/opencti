@@ -19,6 +19,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import PlaybookPopover from './PlaybookPopover';
 import { useFormatter } from '../../../../components/i18n';
+import { Playbook_playbook$data } from './__generated__/Playbook_playbook.graphql';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -53,7 +54,7 @@ const inlineStyles = {
   },
 };
 
-const PlaybookHeader = ({ playbook }) => {
+const PlaybookHeader = ({ playbook }: { playbook: Playbook_playbook$data }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   return (
