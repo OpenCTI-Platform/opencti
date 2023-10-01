@@ -185,11 +185,11 @@ const PlaybookPopover = (props) => {
         <QueryRenderer
           query={playbookEditionQuery}
           variables={{ id: playbookId }}
-          render={({ props }) => {
-            if (props) {
+          render={({ props: resultProps }) => {
+            if (resultProps) {
               return (
                 <PlaybookEdition
-                  playbook={props.playbook}
+                  playbook={resultProps.playbook}
                   handleClose={() => setDisplayUpdate(false)}
                 />
               );

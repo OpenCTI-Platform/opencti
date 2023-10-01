@@ -35,7 +35,7 @@ const useStyles = makeStyles(() => ({
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
-const fitViewOptions = { padding: 0.95 };
+const fitViewOptions = { padding: 0.8 };
 
 const PlaybookComponent = ({ playbook, playbookComponents }) => {
   const classes = useStyles();

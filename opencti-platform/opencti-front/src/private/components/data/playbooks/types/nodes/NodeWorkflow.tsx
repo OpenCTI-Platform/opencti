@@ -9,6 +9,7 @@ type node = {
 
 const useStyles = makeStyles<Theme>((theme) => ({
   node: {
+    position: 'relative',
     border:
       theme.palette.mode === 'dark'
         ? '1px solid rgba(255, 255, 255, 0.12)'
@@ -29,6 +30,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
   name: {
     fontSize: 12,
   },
+  handlesWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  handle: {
+    position: 'relative',
+    transform: 'none',
+    left: 'auto',
+    margin: '0 20px 0 20px',
+  },
 }));
 
 const NodeWorkflow = ({ id, data }: NodeProps) => {
@@ -40,14 +56,17 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       {!data.component?.is_entry_point && (
         <Handle type="target" position={Position.Top} isConnectable={false} />
       )}
-      {(data.component?.ports ?? []).map((n: node) => (
-        <Handle
-          id={n.id}
-          type="source"
-          position={Position.Bottom}
-          isConnectable={false}
-        />
-      ))}
+      <div className={classes.handlesWrapper}>
+        {(data.component?.ports ?? []).map((n: node) => (
+          <Handle
+            id={n.id}
+            type="source"
+            position={Position.Bottom}
+            isConnectable={false}
+            className={classes.handle}
+          />
+        ))}
+      </div>
     </div>
   );
 };

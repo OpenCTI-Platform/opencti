@@ -1,5 +1,10 @@
 import React from 'react';
-import { EdgeProps, getBezierPath, useReactFlow } from 'reactflow';
+import {
+  EdgeLabelRenderer,
+  EdgeProps,
+  getBezierPath,
+  useReactFlow,
+} from 'reactflow';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
@@ -25,6 +30,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+function EdgeLabel({ transform, label }: { transform: string; label: string }) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        background: 'transparent',
+        padding: 10,
+        fontSize: 10,
+        transform,
+      }}
+      className="nodrag nopan"
+    >
+      {label}
+    </div>
+  );
+}
+
 export default function CustomEdge({
   id,
   sourceX,
@@ -36,6 +58,7 @@ export default function CustomEdge({
   style,
   markerEnd,
   data,
+  sourceHandleId,
 }: EdgeProps) {
   const classes = useStyles();
   const { getEdge } = useReactFlow();
@@ -71,6 +94,14 @@ export default function CustomEdge({
           +
         </text>
       </g>
+      <EdgeLabelRenderer>
+        {sourceHandleId && (
+          <EdgeLabel
+            transform={`translate(-50%, 0%) translate(${sourceX}px,${sourceY}px)`}
+            label={sourceHandleId}
+          />
+        )}
+      </EdgeLabelRenderer>
     </>
   );
 }

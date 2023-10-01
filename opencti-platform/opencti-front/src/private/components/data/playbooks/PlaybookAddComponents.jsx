@@ -67,9 +67,7 @@ const PlaybookAddComponentsContent = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const currentConfig = selectedNode?.data?.configuration
-    ? JSON.parse(selectedNode?.data?.configuration)
-    : null;
+  const currentConfig = selectedNode?.data?.configuration;
   const [filters, setFilters] = useState(
     currentConfig?.filters ? JSON.parse(currentConfig?.filters) : {},
   );

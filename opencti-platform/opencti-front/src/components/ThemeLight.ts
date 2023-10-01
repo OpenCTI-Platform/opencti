@@ -92,6 +92,9 @@ const ThemeLight = (
         tooltip: {
           backgroundColor: 'rgba(0,0,0,0.7)',
         },
+        arrow: {
+          color: 'rgba(0,0,0,0.7)',
+        },
       },
     },
     MuiAccordion: {

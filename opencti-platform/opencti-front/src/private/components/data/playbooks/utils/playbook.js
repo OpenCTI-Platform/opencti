@@ -13,7 +13,7 @@ export const computeNodes = (
       position: n.position,
       data: {
         name: n.name,
-        configuration: n.configuration,
+        configuration: n.configuration ? JSON.parse(n.configuration) : null,
         component,
         onClick: setSelectedNode,
       },
@@ -56,12 +56,17 @@ export const addPlaceholders = (nodes, edges, setSelectedNode) => {
     };
   }
   // Search for nodes with outputs and without connected nodes
-  const notConnectedNodes = nodes.filter(
-    (n) => n.data.component.ports.filter((o) => o.type === 'out').length > 0
-      && edges.filter((o) => o.source === n.id).length === 0,
+  const nodesOutputs = nodes
+    .map((n) => n.data.component.ports
+      .filter((o) => o.type === 'out')
+      .map((o) => ({ ...n, port_id: o.id })))
+    .flat();
+  const notConnectedNodesOutputs = nodesOutputs.filter(
+    (n) => edges.filter((o) => o.source === n.id && o.sourceHandle === n.port_id)
+      .length === 0,
   );
-  const placeholders = notConnectedNodes.map((n) => {
-    const childPlaceholderId = `${n.id}-PLACEHOLDER`;
+  const placeholders = notConnectedNodesOutputs.map((n) => {
+    const childPlaceholderId = `${n.id}-${n.port_id}-PLACEHOLDER`;
     const childPlaceholderNode = {
       id: childPlaceholderId,
       position: { x: n.position.x, y: n.position.y },
@@ -74,9 +79,10 @@ export const addPlaceholders = (nodes, edges, setSelectedNode) => {
       },
     };
     const childPlaceholderEdge = {
-      id: `${n.id}-${childPlaceholderId}`,
+      id: `${n.id}-${n.port_id}-${childPlaceholderId}`,
       type: 'placeholder',
       source: n.id,
+      sourceHandle: n.port_id,
       target: childPlaceholderId,
     };
     return { node: childPlaceholderNode, edge: childPlaceholderEdge };
