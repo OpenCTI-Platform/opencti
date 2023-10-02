@@ -16,7 +16,7 @@ import {
 import {
   InvestigationExpandFormRelDistributionQuery$data,
 } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
-import CheckboxesField from '../../../../components/CheckboxesField';
+import CheckboxesField, { CheckboxesItem } from '../../../../components/CheckboxesField';
 
 // The number of elements targeted by or targeting the given
 // entities ids, sorted by type of entity.
@@ -58,14 +58,9 @@ const useStyles = makeStyles(() => ({
 }));
 
 type FormData = {
-  entity_types: SelectOption[],
-  relationship_types: SelectOption[],
+  entity_types: CheckboxesItem[],
+  relationship_types: CheckboxesItem[],
   reset_filters: boolean,
-};
-
-type SelectOption = {
-  label: string
-  value: string
 };
 
 type Props = {
@@ -100,8 +95,8 @@ export default function InvestigationExpandForm({
 }: Props) {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [targets, setTargets] = useState<SelectOption[]>([]);
-  const [relationships, setRelationships] = useState<SelectOption[]>([]);
+  const [targets, setTargets] = useState<CheckboxesItem[]>([]);
+  const [relationships, setRelationships] = useState<CheckboxesItem[]>([]);
 
   const [existingTargets, setExistingTargets] = useState<Map<string, Map<string, number>>>(new Map());
   const [existingRels, setExistingRels] = useState<Map<string, Map<string, string[]>>>(new Map());
