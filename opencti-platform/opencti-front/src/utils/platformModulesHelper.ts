@@ -12,12 +12,14 @@ export const EXPIRATION_SCHEDULER = 'EXPIRATION_SCHEDULER';
 export const SYNC_MANAGER = 'SYNC_MANAGER';
 export const INGESTION_MANAGER = 'INGESTION_MANAGER';
 export const RETENTION_MANAGER = 'RETENTION_MANAGER';
+export const PLAYBOOK_MANAGER = 'PLAYBOOK_MANAGER';
 
 export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
   isFeatureEnable: (id: string) => boolean;
   isRuntimeFieldEnable: () => boolean;
   isRuleEngineEnable: () => boolean;
+  isPlayBookManagerEnable: () => boolean;
   isTasksManagerEnable: () => boolean;
   isSyncManagerEnable: () => boolean;
   isRetentionManagerEnable: () => boolean;
@@ -52,6 +54,7 @@ const platformModuleHelper = (
   isRuntimeFieldEnable: () => isFeatureEnable(settings, RUNTIME_SORTING),
   isTasksManagerEnable: () => isModuleEnable(settings, TASK_MANAGER),
   isSyncManagerEnable: () => isModuleEnable(settings, SYNC_MANAGER),
+  isPlayBookManagerEnable: () => isModuleEnable(settings, PLAYBOOK_MANAGER),
   isRetentionManagerEnable: () => isModuleEnable(settings, RETENTION_MANAGER),
   isIngestionManagerEnable: () => isModuleEnable(settings, INGESTION_MANAGER),
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),

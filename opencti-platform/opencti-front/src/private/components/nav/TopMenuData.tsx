@@ -94,7 +94,7 @@ const TopMenuData = () => {
             component={Link}
             size="small"
             to="/dashboard/data/processing"
-            disabled={!platformModuleHelpers.isTasksManagerEnable()}
+            disabled={!platformModuleHelpers.isPlayBookManagerEnable()}
             variant={getVariant('/dashboard/data/processing')}
             color={getColor('/dashboard/data/processing')}
             classes={{ root: classes.button }}
