@@ -31,7 +31,7 @@ const PLAYBOOK_CONSOLE_STANDARD_COMPONENT: PlaybookComponent<ConsoleConfiguratio
   executor: async ({ data }) => {
     // eslint-disable-next-line no-console
     console.log(data);
-    return { output_port: undefined, data };
+    return { output_port: 'out', data };
   }
 };
 const PLAYBOOK_CONSOLE_ERROR_COMPONENT: PlaybookComponent<ConsoleConfiguration> = {
@@ -46,7 +46,7 @@ const PLAYBOOK_CONSOLE_ERROR_COMPONENT: PlaybookComponent<ConsoleConfiguration> 
   executor: async ({ data }) => {
     // eslint-disable-next-line no-console
     console.error(data);
-    return { output_port: undefined, data };
+    return { output_port: 'out', data };
   }
 };
 /*

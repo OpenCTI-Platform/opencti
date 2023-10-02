@@ -405,6 +405,47 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       );
       linksToDelete = computeOrphanLinks(selectedNode, component, newEdges);
     }
+    if (selectedNode.data.component.ports.length < component.ports.length) {
+      const childPlaceholderId = uuid();
+      for (
+        let i = 1;
+        i <= component.ports.length - selectedNode.data.component.ports.length;
+        // eslint-disable-next-line no-plusplus
+        i++
+      ) {
+        const port = component.ports[i];
+        newNodes.push({
+          id: `${childPlaceholderId}-${port.id}`,
+          position: {
+            x: selectedNode.position.x,
+            y: selectedNode.position.y,
+          },
+          type: 'placeholder',
+          data: {
+            name: '+',
+            configuration: null,
+            component: { is_entry_point: false },
+            openConfig: (nodeId) => {
+              setSelectedNode(nodeId);
+              setAction('config');
+            },
+          },
+        });
+        newEdges.push({
+          id: `${selectedNode.nodeId}-${childPlaceholderId}-${port.id}`,
+          type: 'placeholder',
+          source: selectedNode.id,
+          sourceHandle: port.id,
+          target: `${childPlaceholderId}-${port.id}`,
+          data: {
+            openConfig: (nodeId) => {
+              setSelectedNode(nodeId);
+              setAction('config');
+            },
+          },
+        });
+      }
+    }
     setNodes(newNodes);
     setEdges(newEdges);
   };
@@ -603,7 +644,6 @@ const useManipulateComponents = (playbook, playbookComponents) => {
   };
   // endregion
   const onConfigAdd = (component, name, config) => {
-    console.log(action);
     // We are in a placeholder
     if (selectedNode && action === 'config') {
       addNodeFromPlaceholder(component, name, config);
