@@ -94,7 +94,6 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: Representative!
   is_from_relation_inferred: Boolean
   objects(
     first: Int

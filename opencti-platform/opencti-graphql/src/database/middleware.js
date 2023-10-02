@@ -287,13 +287,13 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     targetIds = targetIds.filter((id) => elementIds.includes(id));
   }
   const targets = await elFindByIds(context, user, targetIds, opts);
+  console.log('targets', targets);
   const relationWithTargets = {};
   relations.forEach((relation) => {
-    const tempTarget = targets.find((target) => target[`${opposite}Id`] === relation.id);
+    const tempTarget = targets.find(({ id }) => relation[`${opposite}Id`]);
     relationWithTargets[relation.id] = { ...tempTarget, is_from_relation_inferred: !!relation.x_opencti_inferences };
+    console.log('relationWithTargets', relationWithTargets);
   });
-
-  // Need to adapt the code up to the paginate and elements below
 
   // Group and rebuild the result
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
@@ -302,9 +302,16 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
       const values = elGrouped[id];
       const edges = [];
       if (values) {
-        const data = first ? R.take(first, values) : values;
-        const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
-        const filteredElements = findAllTargets.filter((t) => filterIds.includes(t.internal_id));
+        const currentSourceRelations = first ? R.take(first, values) : values;
+        console.log('currentSourceRelations', currentSourceRelations);
+        const filteredElements = [];
+        currentSourceRelations.forEach((relation) => {
+          const target = relationWithTargets[relation.id];
+          console.log('target dans le forEach', target);
+          if (target) {
+            filteredElements.push(target);
+          }
+        });
         edges.push(...filteredElements.map((n) => ({ node: n })));
       }
       return buildPagination(0, null, edges, edges.length);

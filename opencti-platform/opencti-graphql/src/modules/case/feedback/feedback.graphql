@@ -94,7 +94,6 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: Representative!
   is_from_relation_inferred: Boolean
   objects(
     first: Int

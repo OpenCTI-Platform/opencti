@@ -94,7 +94,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectAssignee: AssigneeConnection
   avatar: OpenCtiFile
   # Container
-  representative: Representative!
   is_from_relation_inferred: Boolean
   objects(
     first: Int
