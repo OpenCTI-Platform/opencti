@@ -1,81 +1,72 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import * as R from 'ramda';
-import { QueryRenderer } from '../../../../relay/environment';
+import React from 'react';
+import makeStyles from '@mui/styles/makeStyles';
+import {
+  ContainerStixCoreObjectsMappingLineDummy,
+} from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCoreObjectsMappingLines, {
   containerStixCoreObjectsMappingLinesQuery,
 } from './ContainerStixCoreObjectsMappingLines';
-import { convertFilters } from '../../../../utils/ListParameters';
-import inject18n from '../../../../components/i18n';
-import { UserContext } from '../../../../utils/hooks/useAuth';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
     padding: '15px 0 0 0',
   },
-});
+}));
 
-class ContainerStixCoreObjectsMapping extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
+const ContainerStixCoreObjectsMapping = ({
+  container,
+  height,
+  addMapping,
+  contentMappingData,
+  contentMapping,
+  openDrawer,
+  selectedText,
+  handleClose,
+}) => {
+  const classes = useStyles();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+
+  const LOCAL_STORAGE_KEY = `view-container-${container.id}-stixCoreObjectsMapping`;
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers,
+  } = usePaginationLocalStorage(
+    LOCAL_STORAGE_KEY,
+    {
+      id: container.id,
+      filters: {},
+      searchTerm: '',
       sortBy: 'name',
       orderAsc: false,
-      searchTerm: '',
-      filters: {},
-      numberOfElements: { number: 0, symbol: '' },
-    };
-  }
+      openExports: false,
+    },
+  );
+  const {
+    numberOfElements,
+    filters,
+    searchTerm,
+    sortBy,
+    orderAsc,
+  } = viewStorage;
+  const {
+    handleRemoveFilter,
+    handleSearch,
+    handleSort,
+    handleAddFilter,
+    handleSetNumberOfElements,
+  } = helpers;
 
-  handleSearch(value) {
-    this.setState({ searchTerm: value });
-  }
-
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
-  }
-
-  setNumberOfElements(numberOfElements) {
-    this.setState({ numberOfElements });
-  }
-
-  handleAddFilter(key, id, value, event = null) {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    if (this.state.filters[key] && this.state.filters[key].length > 0) {
-      this.setState({
-        filters: {
-          ...this.state.filters,
-          [key]: isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [
-              { id, value },
-              ...this.state.filters[key],
-            ]),
-        },
-      });
-    } else {
-      this.setState({
-        filters: { ...this.state.filters, [key]: [{ id, value }] },
-      });
-    }
-  }
-
-  handleRemoveFilter(key) {
-    this.setState({ filters: R.dissoc(key, this.state.filters) });
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  buildColumns(platformModuleHelpers) {
-    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const buildColumns = () => {
     return {
       entity_type: {
         label: 'Type',
@@ -108,40 +99,24 @@ class ContainerStixCoreObjectsMapping extends Component {
         isSortable: false,
       },
     };
-  }
+  };
+  const queryRef = useQueryLoading(
+    containerStixCoreObjectsMappingLinesQuery,
+    paginationOptions,
+  );
 
-  render() {
-    const {
-      container,
-      classes,
-      height,
-      selectedText,
-      openDrawer,
-      handleClose,
-      addMapping,
-      contentMapping,
-      contentMappingData,
-    } = this.props;
-    const { sortBy, orderAsc, searchTerm, numberOfElements, filters } = this.state;
-    const finalFilters = convertFilters(filters);
-    const paginationOptions = {
-      search: searchTerm,
-      filters: finalFilters,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    };
-    return (
+  return (
       <UserContext.Consumer>
         {({ platformModuleHelpers }) => (
           <div className={classes.container}>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
-              dataColumns={this.buildColumns(platformModuleHelpers)}
-              handleSort={this.handleSort.bind(this)}
-              handleSearch={this.handleSearch.bind(this)}
-              handleAddFilter={this.handleAddFilter.bind(this)}
-              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+              dataColumns={buildColumns(platformModuleHelpers)}
+              handleSort={handleSort}
+              handleSearch={handleSearch}
+              handleAddFilter={handleAddFilter}
+              handleRemoveFilter={handleRemoveFilter}
               iconExtension={false}
               filters={filters}
               availableFilterKeys={[
@@ -157,27 +132,33 @@ class ContainerStixCoreObjectsMapping extends Component {
               numberOfElements={numberOfElements}
               noPadding={true}
             >
-              <QueryRenderer
-                query={containerStixCoreObjectsMappingLinesQuery}
-                variables={{
-                  id: container.id,
-                  count: 25,
-                  ...paginationOptions,
-                }}
-                render={({ props }) => (
+              {queryRef && (
+                <React.Suspense
+                  fallback={
+                    <>
+                      {Array(20)
+                        .fill(0)
+                        .map((idx) => (
+                          <ContainerStixCoreObjectsMappingLineDummy
+                            key={idx}
+                            dataColumns={buildColumns(platformModuleHelpers)}
+                          />
+                        ))}
+                    </>
+                  }
+                >
                   <ContainerStixCoreObjectsMappingLines
-                    container={props ? props.container : null}
-                    paginationOptions={paginationOptions}
-                    searchTerm={searchTerm}
-                    dataColumns={this.buildColumns(platformModuleHelpers)}
-                    initialLoading={props === null}
-                    setNumberOfElements={this.setNumberOfElements.bind(this)}
+                    container={container ?? null}
+                    queryRef={queryRef}
+                    paginationOptions={paginationOptions} searchTerm={searchTerm}
+                    dataColumns={buildColumns(platformModuleHelpers)}
+                    setNumberOfElements={handleSetNumberOfElements}
                     height={height}
                     contentMappingData={contentMappingData}
                     contentMapping={contentMapping}
                   />
-                )}
-              />
+                </React.Suspense>
+              )}
             </ListLines>
             <ContainerAddStixCoreObjects
               containerId={container.id}
@@ -200,23 +181,7 @@ class ContainerStixCoreObjectsMapping extends Component {
           </div>
         )}
       </UserContext.Consumer>
-    );
-  }
-}
-
-ContainerStixCoreObjectsMapping.propTypes = {
-  container: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fd: PropTypes.func,
-  history: PropTypes.object,
-  height: PropTypes.number,
-  contentMapping: PropTypes.object,
-  contentMappingData: PropTypes.object,
-  addMapping: PropTypes.func,
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ContainerStixCoreObjectsMapping);
+export default ContainerStixCoreObjectsMapping;
