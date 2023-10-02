@@ -51,7 +51,7 @@ describe('File storage file listing', () => {
   });
   it('should file download', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const fileStream = await downloadFile(testContext, exportFileId(malware));
+    const fileStream = await downloadFile(exportFileId(malware));
     expect(fileStream).not.toBeNull();
     const data = await streamConverter(fileStream);
     expect(data).not.toBeNull();

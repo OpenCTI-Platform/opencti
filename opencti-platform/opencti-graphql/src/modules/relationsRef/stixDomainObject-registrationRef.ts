@@ -45,11 +45,11 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INDICATOR, [killCh
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INFRASTRUCTURE, [killChainPhases, objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [{
   ...samples,
-  checker: (fromType, toType) => [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType)
+  checker: (_, toType) => [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE].includes(toType)
 },
 {
   ...operatingSystems,
-  checker: (fromType, toType) => ENTITY_SOFTWARE === toType
+  checker: (_, toType) => ENTITY_SOFTWARE === toType
 }, killChainPhases, objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_TOOL, [killChainPhases, objectOrganization]);
 

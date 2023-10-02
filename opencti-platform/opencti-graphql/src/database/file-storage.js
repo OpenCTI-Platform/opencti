@@ -108,7 +108,7 @@ export const deleteFiles = async (context, user, ids) => {
   return true;
 };
 
-export const downloadFile = async (context, id) => {
+export const downloadFile = async (id) => {
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
@@ -147,7 +147,7 @@ export const storeFileConverter = (user, file) => {
   };
 };
 
-export const loadFile = async (context, user, filename) => {
+export const loadFile = async (_, user, filename) => {
   try {
     const object = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,

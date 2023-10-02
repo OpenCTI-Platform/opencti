@@ -270,7 +270,7 @@ const inlineStyles = {
 
 export const workbenchFileContentAttributesQuery = graphql`
   query WorkbenchFileContentAttributesQuery($elementType: [String]!) {
-    schemaAttributes(elementType: $elementType) {
+    schemaAttributeNames(elementType: $elementType) {
       edges {
         node {
           value

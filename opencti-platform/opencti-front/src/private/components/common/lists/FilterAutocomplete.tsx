@@ -163,8 +163,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
         cacheEntities,
         setCacheEntities,
         event,
-      )
-      }
+      )}
       inputValue={(inputValues[filterKey] as string) || ''}
       onChange={handleChange}
       groupBy={

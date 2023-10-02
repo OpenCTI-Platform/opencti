@@ -11979,7 +11979,7 @@ type Query {
     orderMode: OrderingMode
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
-  schemaAttributes(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE])
+  schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE])
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS])
   retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS])
   taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])

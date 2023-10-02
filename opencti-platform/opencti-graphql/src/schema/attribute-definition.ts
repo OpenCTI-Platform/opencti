@@ -87,6 +87,14 @@ export const relationshipType: AttributeDefinition = {
   upsert: false
 };
 
+export const xOpenctiType: AttributeDefinition = {
+  name: 'x_opencti_type',
+  type: 'string',
+  mandatoryType: 'no',
+  multiple: false,
+  upsert: false
+};
+
 // -- STIX DOMAIN OBJECT --
 
 // IDS
@@ -162,8 +170,6 @@ export const updatedAt: AttributeDefinition = {
   upsert: false
 };
 
-// OTHERS
-
 export const revoked: AttributeDefinition = {
   name: 'revoked',
   type: 'boolean',
@@ -196,4 +202,12 @@ export const lang: AttributeDefinition = {
   mandatoryType: 'no',
   multiple: false,
   upsert: false,
+};
+
+export const identityClass: AttributeDefinition = {
+  name: 'identity_class',
+  type: 'string',
+  mandatoryType: 'no',
+  multiple: false,
+  upsert: false
 };
