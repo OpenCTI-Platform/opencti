@@ -3,7 +3,8 @@ import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
 import convert from 'convert';
 import { bytesFormat, numberFormat } from '../utils/Number';
-import { getLengthUnitForLocale, getWeightUnitForLocale } from '../utils/UnitSystems';
+import useUserMetric, { BASE_LENGTH_TYPE, BASE_WEIGHT_TYPE } from '../utils/hooks/useUserMetric';
+import { isEmptyField } from '../utils/utils';
 
 export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
@@ -160,6 +161,7 @@ const inject18n = (WrappedComponent) => {
 
 export const useFormatter = () => {
   const intl = useIntl();
+  const { lengthPrimaryUnit, weightPrimaryUnit } = useUserMetric();
   const translate = (message) => intl.formatMessage({ id: message });
   const formatNumber = (number) => {
     if (number === null || number === '') {
@@ -172,52 +174,18 @@ export const useFormatter = () => {
   const formatBytes = (number) => `${intl.formatNumber(bytesFormat(number).number)}${
     bytesFormat(number).symbol
   }`;
-
-  /**
-   * Formats a length number.
-   * @param {string | number} number Length to format.
-   * @param {string} toUnit Unit type to convert to. Optional.
-   * @param {string} fromUnit Unit type to convert from. Optional.
-   * @param {string} unitDisplay How to display the unit. Optional.
-   * @param {number} precision Amount of precision to use. Optional.
-   * @returns A formatted unit of length.
-   */
-  const formatLength = (number, toUnit = null, fromUnit = null, unitDisplay = 'long', precision = 0) => {
-    const localeUnit = getLengthUnitForLocale(intl.locale);
-    const converted = convert(number, fromUnit || localeUnit).to(toUnit || localeUnit);
-    const formatOpts = { maximumFractionDigits: precision, unitDisplay };
-    if (toUnit) {
-      formatOpts.style = 'unit';
-      formatOpts.unit = toUnit;
-    }
-    if (toUnit === 'foot' && unitDisplay === 'narrow') {
-      const feet = Math.floor(converted);
-      const inches = Math.round((converted - feet) * 12);
-      return `${feet}'${inches}"`;
-    }
+  const formatLength = (number) => {
+    if (isEmptyField(number)) return '';
+    const converted = convert(number, BASE_LENGTH_TYPE).to(lengthPrimaryUnit);
+    const formatOpts = { maximumFractionDigits: 2, unitDisplay: 'long' };
     return intl.formatNumber(Number(converted), formatOpts);
   };
-
-  /**
-   * Formats a weight number.
-   * @param {string | number} number Weight to format.
-   * @param {string} toUnit Unit type to convert to. Optional.
-   * @param {string} fromUnit Unit type to convert from. Optional.
-   * @param {string} unitDisplay How to display the unit. Optional.
-   * @param {number} precision Amount of precision to use. Optional.
-   * @returns A formatted unit of weight.
-   */
-  const formatWeight = (number, toUnit = null, fromUnit = null, unitDisplay = 'long', precision = 2) => {
-    const localeUnit = getWeightUnitForLocale(intl.locale);
-    const converted = convert(number, fromUnit || localeUnit).to(toUnit || localeUnit);
-    const formatOpts = { maximumFractionDigits: precision, unitDisplay };
-    if (toUnit) {
-      formatOpts.style = 'unit';
-      formatOpts.unit = toUnit;
-    }
+  const formatWeight = (number) => {
+    if (isEmptyField(number)) return '';
+    const converted = convert(number, BASE_WEIGHT_TYPE).to(weightPrimaryUnit);
+    const formatOpts = { maximumFractionDigits: 2, unitDisplay: 'long' };
     return intl.formatNumber(Number(converted), formatOpts);
   };
-
   const longDate = (date) => {
     if (isNone(date)) {
       return '-';

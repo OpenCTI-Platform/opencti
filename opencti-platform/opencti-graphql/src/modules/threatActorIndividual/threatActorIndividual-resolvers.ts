@@ -18,9 +18,9 @@ import {
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
-import { heightEdit, heightWeightSort, weightEdit } from '../../mcas/threatActor';
 import { batchLoader } from '../../database/middleware';
 import { batchBornIn, batchEthnicity } from '../../domain/stixCoreObject';
+import { utcDate } from '../../utils/format';
 
 const bornInLoader = batchLoader(batchBornIn);
 const ethnicityLoader = batchLoader(batchEthnicity);
@@ -33,6 +33,12 @@ const threatActorIndividualResolvers: Resolvers = {
   ThreatActorIndividual: {
     bornIn: (threatActorIndividual, _, context) => bornInLoader.load(threatActorIndividual.id, context, context.user),
     ethnicity: (threatActorIndividual, _, context) => ethnicityLoader.load(threatActorIndividual.id, context, context.user),
+    height: (threatActorIndividual, _, __) => (threatActorIndividual.height ?? [])
+      .map((height, index) => ({ ...height, index }))
+      .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
+    weight: (threatActorIndividual, _, __) => (threatActorIndividual.weight ?? [])
+      .map((weight, index) => ({ ...weight, index }))
+      .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
   },
   ThreatActorsIndividualFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -52,15 +58,6 @@ const threatActorIndividualResolvers: Resolvers = {
     },
     threatActorIndividualFieldPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input);
-    },
-    threatActorIndividualHeightEdit: (_, { id, input, sort = true }, context) => {
-      return heightEdit(context, context.user, id, input, sort as boolean);
-    },
-    threatActorIndividualWeightEdit: (_, { id, input, sort = true }, context) => {
-      return weightEdit(context, context.user, id, input, sort as boolean);
-    },
-    threatActorIndividualHeightWeightSort: (_, { id }, context) => {
-      return heightWeightSort(context, context.user, id);
     },
     threatActorIndividualContextPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditContext(context, context.user, id, input);

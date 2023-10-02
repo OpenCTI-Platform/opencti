@@ -3,7 +3,7 @@ import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
 // eslint-disable-next-line import/extensions
-import { GraphQLScalarType, Kind } from 'graphql/index.js';
+import { GraphQLScalarType, GraphQLError, Kind } from 'graphql/index.js';
 import { validate as uuidValidate } from 'uuid';
 import { UserInputError } from 'apollo-server-express';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
@@ -100,12 +100,6 @@ const validateStixRef = (stixRef) => {
   throw new UserInputError('Provided value is not a valid STIX Reference');
 };
 
-const toObject = (value) => {
-  if (typeof value === 'object') return value;
-  if (typeof value === 'string' && value.charAt(0) === '{') return JSON.parse(value);
-  return value;
-};
-
 const parseObject = (ast) => {
   const value = Object.create(null);
   ast.fields.forEach((field) => {
@@ -170,15 +164,9 @@ const globalResolvers = {
   Any: new GraphQLScalarType({
     name: 'Any',
     description: 'Arbitrary object',
-    parseValue: toObject,
-    serialize: toObject,
-    parseLiteral: (ast) => {
-      switch (ast.kind) {
-        case Kind.STRING: return JSON.parse(ast.value);
-        case Kind.OBJECT: return parseObject(ast);
-        default: return null;
-      }
-    }
+    serialize: () => { throw new GraphQLError('Any serialization unsupported.'); },
+    parseValue: (value) => value,
+    parseLiteral: (ast) => parseAst(ast)
   }),
 };
 const schemaResolvers = [

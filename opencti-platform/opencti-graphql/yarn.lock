@@ -9476,6 +9476,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"js-deep-equals@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "js-deep-equals@npm:2.1.1"
+  dependencies:
+    murmurhash: 0.0.2
+  checksum: b2f1a333b475ae58feb793f7e6b4f97b4e0cf11d357bab5a1acad4ff64c0be4e05f44441d2ae49877ea3035bdc55f90c66b8e10f5f43a6278d8e04081297fc7b
+  languageName: node
+  linkType: hard
+
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -9589,6 +9598,13 @@ __metadata:
   version: 0.0.1
   resolution: "jsonify@npm:0.0.1"
   checksum: 027287e1c0294fce15f18c0ff990cfc2318e7f01fb76515f784d5cd0784abfec6fc5c2355c3a2f2cb0ad7f4aa2f5b74ebbfe4e80476c35b2d13cabdb572e1134
+  languageName: node
+  linkType: hard
+
+"jsonpath-plus@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "jsonpath-plus@npm:7.2.0"
+  checksum: 05f447339d29be861e307d6e812aec1b9b88a3ba6bba286966a4e8bed3e752bee3d715eabfc21dce968be85ccb48bf79d2c1af78da7b9b74cd1b446d4d5d02f5
   languageName: node
   linkType: hard
 
@@ -10304,6 +10320,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"murmurhash@npm:0.0.2":
+  version: 0.0.2
+  resolution: "murmurhash@npm:0.0.2"
+  checksum: e06d1e7cfdc39d742584d96af30e9b26bd44c995b9ced192b62c36b52898347ac28d32a9a94f5e0b286339d45657490ae32ed42ead75ef2a15aef9cfe386e5fa
+  languageName: node
+  linkType: hard
+
 "mute-stream@npm:0.0.8":
   version: 0.0.8
   resolution: "mute-stream@npm:0.0.8"
@@ -10773,7 +10796,9 @@ __metadata:
     ioredis: 5.3.2
     ipaddr.js: 2.1.0
     iterall: 1.3.0
+    js-deep-equals: ^2.1.1
     jsondiffpatch: 0.5.0
+    jsonpath-plus: ^7.2.0
     jwt-decode: 3.1.2
     lru-cache: 7.18.3
     merge-graphql-schemas: 1.7.8

@@ -6,7 +6,13 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, isNotEmptyField, UPDATE_OPERATION_REPLACE } from './utils';
 import { UnsupportedError } from '../config/errors';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { isDateAttribute, isDictionaryAttribute, isJsonAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import {
+  isDateAttribute,
+  isDictionaryAttribute,
+  isJsonAttribute,
+  isObjectAttribute,
+  schemaAttributesDefinition
+} from '../schema/schema-attributes';
 import { truncate } from '../utils/mailData';
 import { creators } from '../schema/attribute-definition';
 import { FROM_START_STR, UNTIL_END_STR } from '../utils/format';
@@ -81,6 +87,8 @@ export const generateUpdateMessage = (entityType, inputs) => {
           message = values.map((v) => truncate(JSON.stringify(v)));
         } else if (isDateAttribute(key)) {
           message = values.map((v) => ((v === FROM_START_STR || v === UNTIL_END_STR) ? 'nothing' : v));
+        } else if (isObjectAttribute(key)) {
+          message = JSON.stringify(values); // TODO JRI
         } else {
           // If standard primitive data, just join the values
           message = values.join(', ');

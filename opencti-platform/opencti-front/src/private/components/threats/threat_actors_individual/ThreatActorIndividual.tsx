@@ -88,11 +88,11 @@ export const threatActorIndividualFragment = graphql`
     hair_color
     height {
       date_seen
-      height_cm
+      measure
     }
     weight {
       date_seen
-      weight_kg
+      measure
     }
     date_of_birth
     gender

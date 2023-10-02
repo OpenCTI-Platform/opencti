@@ -1,15 +1,17 @@
 import * as Yup from 'yup';
 import { Form, Formik } from 'formik';
 import { graphql, useFragment } from 'react-relay';
-import convert from 'convert';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
-import HeightField from '../../common/form/HeightField';
-import WeightField from '../../common/form/WeightField';
+import { HeightFieldEdit } from '../../common/form/HeightField';
+import { WeightFieldEdit } from '../../common/form/WeightField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CommitMessage from '../../common/form/CommitMessage';
-import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
+import {
+  ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key,
+} from './__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import useUserMetric from '../../../../utils/hooks/useUserMetric';
 
 const threatActorIndividualEditionBiographicsFocus = graphql`
   mutation ThreatActorIndividualEditionBiographicsFocusMutation(
@@ -40,12 +42,14 @@ const threatActorIndividualEditionBiographicsFragment = graphql`
     eye_color
     hair_color
     height {
+      index
       date_seen
-      height_cm
+      measure
     }
     weight {
+      index
       date_seen
-      weight_kg
+      measure
     }
   }
 `;
@@ -77,6 +81,7 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
   context,
 }: ThreatActorIndividualEditionBiographicsComponentProps) => {
   const { t } = useFormatter();
+  const { heightsConverterLoad, weightsConverterLoad } = useUserMetric();
   const threatActorIndividual = useFragment(threatActorIndividualEditionBiographicsFragment, threatActorIndividualRef);
 
   const handleChangeFocus = (name: string) => commitMutation({
@@ -89,7 +94,6 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
       },
     },
   });
-
   const handleSubmitField = (name: string, value: string | string[]) => {
     threatActorIndividualValidation(t)
       .validateAt(name, { [name]: value })
@@ -106,23 +110,11 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
       .catch(() => false);
   };
 
-  const fullHeights = (threatActorIndividual.height ?? []).map((height) => ({
-    height_in: Math.round(convert(Number(height?.height_cm), 'centimeter').to('inch')),
-    height_cm: height?.height_cm as number,
-    date_seen: height?.date_seen as Date,
-  }));
-
-  const fullWeights = (threatActorIndividual.weight ?? []).map((weight) => ({
-    weight_lb: Math.round(convert(Number(weight?.weight_kg), 'kilogram').to('pound')),
-    weight_kg: weight?.weight_kg as number,
-    date_seen: weight?.date_seen as Date,
-  }));
-
   const initialValues = {
     eye_color: threatActorIndividual.eye_color,
     hair_color: threatActorIndividual.hair_color,
-    height: fullHeights ?? [],
-    weight: fullWeights ?? [],
+    height: heightsConverterLoad(threatActorIndividual.height ?? []),
+    weight: weightsConverterLoad(threatActorIndividual.weight ?? []),
   };
 
   return (
@@ -167,23 +159,21 @@ React.FunctionComponent<ThreatActorIndividualEditionBiographicsComponentProps> =
                 multiple={false}
                 editContext={context}
               />
-              <HeightField
+              <HeightFieldEdit
                 name="height"
                 values={values.height}
                 id={threatActorIndividual.id}
                 label={t('Heights')}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
-                variant="edit"
               />
-              <WeightField
+              <WeightFieldEdit
                 name="weight"
                 values={values.weight}
                 id={threatActorIndividual.id}
                 label={t('Weights')}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={context}
-                variant="edit"
               />
               {enableReferences && (
                 <CommitMessage

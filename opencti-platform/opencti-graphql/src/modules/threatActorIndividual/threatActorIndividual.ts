@@ -95,11 +95,30 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'marital_status', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'eye_color', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'hair_color', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'height', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'height_cm', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'weight', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'weight_kg', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'date_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+    {
+      name: 'height',
+      type: 'object',
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      attributes: [
+        { name: 'id', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+        { name: 'measure', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
+        { name: 'date_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
+      ]
+    },
+    {
+      name: 'weight',
+      type: 'object',
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: true,
+      attributes: [
+        { name: 'id', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+        { name: 'measure', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
+        { name: 'date_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
+      ]
+    },
   ],
   relations: [
     {

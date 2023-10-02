@@ -51,17 +51,6 @@ export const ThreatActorIndividualEditionOverviewFocus = graphql`
     threatActorIndividualContextPatch(id: $id, input: $input) {
         id
     }
-    threatActorIndividualHeightWeightSort(id: $id) {
-      id
-      height {
-        height_cm
-        date_seen
-      }
-      weight {
-        weight_kg
-        date_seen
-      }
-    }
   }
 `;
 

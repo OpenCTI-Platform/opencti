@@ -24,16 +24,16 @@ const THREAT_ACTOR: ThreatActorIndividualAddInput = {
   eye_color: 'blue',
   hair_color: 'brown',
   height: [{
-    height_cm: 183,
+    measure: 183,
     date_seen: '2022-10-10T00:00:00Z'
   }],
   weight: [
     {
-      weight_kg: 82,
+      measure: 82,
       date_seen: '2022-10-10T00:00:00Z'
     },
     {
-      weight_kg: 81,
+      measure: 81,
       date_seen: '2022-10-10T00:00:00Z'
     }
   ],
@@ -55,11 +55,11 @@ describe('Threat actor individual resolver standard behavior', () => {
           eye_color
           hair_color
           height {
-            height_cm
+            measure
             date_seen
           }
           weight {
-            weight_kg
+            measure
             date_seen
           }
           bornIn {
@@ -253,7 +253,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       mutation threatActorIndividualHeightEdit($id: ID!, $input: HeightTupleInput!) {
         threatActorIndividualHeightEdit(id:$id, input:$input) {
           height {
-            height_cm
+            measure
             date_seen
           }
         }
@@ -265,18 +265,18 @@ describe('Threat actor individual resolver standard behavior', () => {
       '2019-12-15T00:00:00.000Z',
     ];
     const REPLACE_ALL_HEIGHT = {
-      values: [{ height_cm: 182, date_seen: DATES[0] }],
+      values: [{ measure: 182, date_seen: DATES[0] }],
       operation: 'replace',
     };
     const ADD_HEIGHTS = {
       values: [
-        { height_cm: 190, date_seen: DATES[2] },
-        { height_cm: 189, date_seen: DATES[1] },
+        { measure: 190, date_seen: DATES[2] },
+        { measure: 189, date_seen: DATES[1] },
       ],
       operation: 'add',
     };
     const REPLACE_INDEX_HEIGHT = {
-      values: [{ height_cm: 183, date_seen: DATES[0] }],
+      values: [{ measure: 183, date_seen: DATES[0] }],
       index: 0,
       operation: 'replace',
     };
@@ -288,10 +288,10 @@ describe('Threat actor individual resolver standard behavior', () => {
       operation: 'remove',
     };
     const expectedHeights = [
-      { height_cm: 182, date_seen: new Date(DATES[0]) },
-      { height_cm: 183, date_seen: new Date(DATES[0]) },
-      { height_cm: 189, date_seen: new Date(DATES[1]) },
-      { height_cm: 190, date_seen: new Date(DATES[2]) },
+      { measure: 182, date_seen: new Date(DATES[0]) },
+      { measure: 183, date_seen: new Date(DATES[0]) },
+      { measure: 189, date_seen: new Date(DATES[1]) },
+      { measure: 190, date_seen: new Date(DATES[2]) },
     ];
 
     const replaceAll = await queryAsAdmin({
@@ -353,7 +353,7 @@ describe('Threat actor individual resolver standard behavior', () => {
       mutation threatActorIndividualWeightEdit($id: ID!, $input: WeightTupleInput!) {
         threatActorIndividualWeightEdit(id:$id, input:$input) {
           weight {
-            weight_kg
+            measure
             date_seen
           }
         }
@@ -365,18 +365,18 @@ describe('Threat actor individual resolver standard behavior', () => {
       '2019-12-15T00:00:00.000Z',
     ];
     const REPLACE_ALL_WEIGHT = {
-      values: [{ weight_kg: 182, date_seen: DATES[0] }],
+      values: [{ measure: 182, date_seen: DATES[0] }],
       operation: 'replace',
     };
     const ADD_WEIGHTS = {
       values: [
-        { weight_kg: 190, date_seen: DATES[2] },
-        { weight_kg: 189, date_seen: DATES[1] },
+        { measure: 190, date_seen: DATES[2] },
+        { measure: 189, date_seen: DATES[1] },
       ],
       operation: 'add',
     };
     const REPLACE_INDEX_WEIGHT = {
-      values: [{ weight_kg: 183, date_seen: DATES[0] }],
+      values: [{ measure: 183, date_seen: DATES[0] }],
       index: 0,
       operation: 'replace',
     };
@@ -388,10 +388,10 @@ describe('Threat actor individual resolver standard behavior', () => {
       operation: 'remove',
     };
     const expectedWeights = [
-      { weight_kg: 182, date_seen: new Date(DATES[0]) },
-      { weight_kg: 183, date_seen: new Date(DATES[0]) },
-      { weight_kg: 189, date_seen: new Date(DATES[1]) },
-      { weight_kg: 190, date_seen: new Date(DATES[2]) },
+      { measure: 182, date_seen: new Date(DATES[0]) },
+      { measure: 183, date_seen: new Date(DATES[0]) },
+      { measure: 189, date_seen: new Date(DATES[1]) },
+      { measure: 190, date_seen: new Date(DATES[2]) },
     ];
 
     const replaceAll = await queryAsAdmin({

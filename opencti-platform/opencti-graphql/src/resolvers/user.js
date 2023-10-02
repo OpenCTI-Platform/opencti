@@ -44,7 +44,7 @@ const userResolvers = {
     members: (_, args, context) => findAllMembers(context, context.user, args),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
-    me: (_, args, context) => findById(context, context.user, context.user.id),
+    me: (_, __, context) => findById(context, context.user, context.user.id),
     bookmarks: (_, { types }, context) => bookmarks(context, context.user, types),
   },
   User: {
@@ -63,6 +63,8 @@ const userResolvers = {
     },
   },
   MeUser: {
+    language: (current) => current.language ?? 'auto',
+    unit_system: (current) => current.unit_system ?? 'auto',
     groups: (current, args, context) => groupsLoader.load(current.id, context, context.user, args),
     objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
     default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),

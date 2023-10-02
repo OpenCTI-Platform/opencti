@@ -35,7 +35,6 @@ import OtpInputField, {
   OTP_CODE_SIZE,
 } from '../../../public/components/OtpInputField';
 import ItemCopy from '../../../components/ItemCopy';
-import { UnitSystems } from '../../../utils/UnitSystems';
 
 const styles = () => ({
   container: {
@@ -366,9 +365,7 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto">
-                  <em>{t('Automatic')}</em>
-                </MenuItem>
+                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
                 <MenuItem value="en-us">English</MenuItem>
                 <MenuItem value="fr-fr">Français</MenuItem>
                 <MenuItem value="es-es">Español</MenuItem>
@@ -381,25 +378,13 @@ const ProfileOverviewComponent = (props) => {
                 name="unit_system"
                 label={t('Unit System')}
                 fullWidth={true}
-                inputProps={{
-                  name: 'unit_system',
-                  id: 'unit_system',
-                }}
+                inputProps={{ name: 'unit_system', id: 'unit_system' }}
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value='undefined' disabled={true}>
-                  {t('Select a unit system')}
-                </MenuItem>
-                <MenuItem value={UnitSystems.Auto}>
-                  <em>{t('Automatic')}</em>
-                </MenuItem>
-                <MenuItem value={UnitSystems.Imperial}>
-                  {t('Imperial')}
-                </MenuItem>
-                <MenuItem value={UnitSystems.Metric}>
-                  {t('Metric')}
-                </MenuItem>
+                <MenuItem value={'auto'}><em>{t('Automatic')}</em></MenuItem>
+                <MenuItem value={'Imperial'}>{t('Imperial')}</MenuItem>
+                <MenuItem value={'Metric'}>{t('Metric')}</MenuItem>
               </Field>
               <Field
                 component={TextField}

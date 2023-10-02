@@ -34,16 +34,16 @@ import {
   ThreatActorsIndividualCardsPaginationQuery$variables,
 } from './__generated__/ThreatActorsIndividualCardsPaginationQuery.graphql';
 import {
-  HeightTupleInputValues,
+  MeasureInput,
   ThreatActorIndividualCreationMutation,
   ThreatActorIndividualCreationMutation$variables,
-  WeightTupleInputValues,
 } from './__generated__/ThreatActorIndividualCreationMutation.graphql';
 import DatePickerField from '../../../../components/DatePickerField';
-import HeightField from '../../common/form/HeightField';
-import WeightField from '../../common/form/WeightField';
+import { HeightFieldAdd } from '../../common/form/HeightField';
+import { WeightFieldAdd } from '../../common/form/WeightField';
 import CountryPickerField from '../../common/form/CountryPickerField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
+import useUserMetric from '../../../../utils/hooks/useUserMetric';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -130,8 +130,8 @@ interface ThreatActorIndividualAddInput {
   job_title: string | undefined
   eye_color: string | null
   hair_color: string | null
-  height: HeightTupleInputValues[]
-  weight: WeightTupleInputValues[]
+  height: MeasureInput[]
+  weight: MeasureInput[]
 }
 
 interface ThreatActorIndividualFormProps {
@@ -157,6 +157,7 @@ ThreatActorIndividualFormProps
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const { heightsConverterSave, weightsConverterSave } = useUserMetric();
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (_: React.SyntheticEvent, value: number) => setCurrentTab(value);
   const basicShape = {
@@ -181,7 +182,7 @@ ThreatActorIndividualFormProps
     hair_color: Yup.string().nullable(),
     height: Yup.array().of(
       Yup.object().shape({
-        height_cm: Yup.number().min(0).nullable()
+        measure: Yup.number().min(0).nullable()
           .typeError(t('The value must be a number')),
         date_seen: Yup.date().nullable()
           .typeError(t('The value must be a date (yyyy-MM-dd)')),
@@ -189,18 +190,14 @@ ThreatActorIndividualFormProps
     ),
     weight: Yup.array().of(
       Yup.object().shape({
-        weight_kg: Yup.number().min(0).nullable()
+        measure: Yup.number().min(0).nullable()
           .typeError(t('The value must be a number')),
         date_seen: Yup.date().nullable()
           .typeError(t('The value must be a date (yyyy-MM-dd)')),
       }),
     ),
   };
-  const threatActorIndividualValidator = useSchemaCreationValidation(
-    THREAT_ACTOR_INDIVIDUAL_TYPE,
-    basicShape,
-  );
-
+  const threatActorIndividualValidator = useSchemaCreationValidation(THREAT_ACTOR_INDIVIDUAL_TYPE, basicShape);
   const [commit] = useMutation<ThreatActorIndividualCreationMutation>(ThreatActorIndividualMutation);
 
   const onSubmit: FormikConfig<ThreatActorIndividualAddInput>['onSubmit'] = (
@@ -225,19 +222,11 @@ ThreatActorIndividualFormProps
       job_title: values?.job_title,
       eye_color: values?.eye_color,
       hair_color: values?.hair_color,
-      height: values?.height?.map(({ height_cm, date_seen }) => ({
-        height_cm,
-        date_seen,
-      })),
-      weight: values?.weight?.map(({ weight_kg, date_seen }) => ({
-        weight_kg,
-        date_seen,
-      })),
+      height: heightsConverterSave(values?.height ?? []),
+      weight: weightsConverterSave(values?.weight ?? []),
     };
     commit({
-      variables: {
-        input,
-      },
+      variables: { input },
       updater: (store) => {
         if (updater) {
           updater(store, 'threatActorIndividualAdd');
@@ -449,21 +438,18 @@ ThreatActorIndividualFormProps
                 multiple={false}
                 editContext={[]}
               />
-              <HeightField
+              <HeightFieldAdd
                 id='new_height'
                 name="height"
                 values={values?.height}
                 label={t('Heights')}
-                variant="create"
                 containerStyle={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />
-              <WeightField
-                id='new_weight'
+              <WeightFieldAdd
                 name="weight"
                 values={values?.weight}
                 label={t('Weights')}
-                variant="create"
                 containerStyle={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />

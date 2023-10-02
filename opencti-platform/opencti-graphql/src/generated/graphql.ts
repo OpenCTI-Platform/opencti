@@ -6058,6 +6058,7 @@ export type EditContext = {
 
 export type EditInput = {
   key: Scalars['String']['input'];
+  object_path?: InputMaybe<Scalars['String']['input']>;
   operation?: InputMaybe<EditOperation>;
   value: Array<InputMaybe<Scalars['Any']['input']>>;
 };
@@ -8154,23 +8155,6 @@ export type HashedObservableStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-};
-
-export type HeightTuple = {
-  __typename?: 'HeightTuple';
-  date_seen?: Maybe<Scalars['DateTime']['output']>;
-  height_cm?: Maybe<Scalars['Float']['output']>;
-};
-
-export type HeightTupleInput = {
-  index?: InputMaybe<Scalars['Int']['input']>;
-  operation?: InputMaybe<EditOperation>;
-  values?: InputMaybe<Array<InputMaybe<HeightTupleInputValues>>>;
-};
-
-export type HeightTupleInputValues = {
-  date_seen?: InputMaybe<Scalars['DateTime']['input']>;
-  height_cm?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -12528,7 +12512,7 @@ export type MeUser = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   theme?: Maybe<Scalars['String']['output']>;
-  unit_system?: Maybe<Scalars['String']['output']>;
+  unit_system?: Maybe<UnitSystem>;
   user_email: Scalars['String']['output'];
 };
 
@@ -12536,6 +12520,18 @@ export type MeUser = BasicObject & InternalObject & {
 export type MeUserGroupsArgs = {
   orderBy?: InputMaybe<GroupsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
+};
+
+export type Measure = {
+  __typename?: 'Measure';
+  date_seen?: Maybe<Scalars['DateTime']['output']>;
+  index?: Maybe<Scalars['Int']['output']>;
+  measure?: Maybe<Scalars['Float']['output']>;
+};
+
+export type MeasureInput = {
+  date_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  measure?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -13051,11 +13047,8 @@ export type Mutation = {
   threatActorIndividualContextPatch?: Maybe<ThreatActorIndividual>;
   threatActorIndividualDelete?: Maybe<Scalars['ID']['output']>;
   threatActorIndividualFieldPatch?: Maybe<ThreatActorIndividual>;
-  threatActorIndividualHeightEdit?: Maybe<ThreatActorIndividual>;
-  threatActorIndividualHeightWeightSort?: Maybe<ThreatActorIndividual>;
   threatActorIndividualRelationAdd?: Maybe<StixRefRelationship>;
   threatActorIndividualRelationDelete?: Maybe<ThreatActorIndividual>;
-  threatActorIndividualWeightEdit?: Maybe<ThreatActorIndividual>;
   token?: Maybe<Scalars['String']['output']>;
   toolAdd?: Maybe<Tool>;
   toolEdit?: Maybe<ToolEditMutations>;
@@ -14570,18 +14563,6 @@ export type MutationThreatActorIndividualFieldPatchArgs = {
 };
 
 
-export type MutationThreatActorIndividualHeightEditArgs = {
-  id: Scalars['ID']['input'];
-  input: HeightTupleInput;
-  sort?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-
-export type MutationThreatActorIndividualHeightWeightSortArgs = {
-  id: Scalars['ID']['input'];
-};
-
-
 export type MutationThreatActorIndividualRelationAddArgs = {
   id: Scalars['ID']['input'];
   input: StixRefRelationshipAddInput;
@@ -14592,13 +14573,6 @@ export type MutationThreatActorIndividualRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
-};
-
-
-export type MutationThreatActorIndividualWeightEditArgs = {
-  id: Scalars['ID']['input'];
-  input: WeightTupleInput;
-  sort?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -26158,7 +26132,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   goals?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   groupings?: Maybe<GroupingConnection>;
   hair_color?: Maybe<Scalars['String']['output']>;
-  height?: Maybe<Array<Maybe<HeightTuple>>>;
+  height?: Maybe<Array<Measure>>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
@@ -26198,7 +26172,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   threat_actor_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
-  weight?: Maybe<Array<Maybe<WeightTuple>>>;
+  weight?: Maybe<Array<Measure>>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -26356,7 +26330,7 @@ export type ThreatActorIndividualAddInput = {
   gender?: InputMaybe<Scalars['String']['input']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   hair_color?: InputMaybe<Scalars['String']['input']>;
-  height?: InputMaybe<Array<HeightTupleInputValues>>;
+  height?: InputMaybe<Array<MeasureInput>>;
   job_title?: InputMaybe<Scalars['String']['input']>;
   lang?: InputMaybe<Scalars['String']['input']>;
   last_seen?: InputMaybe<Scalars['DateTime']['input']>;
@@ -26377,7 +26351,7 @@ export type ThreatActorIndividualAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
-  weight?: InputMaybe<Array<WeightTupleInputValues>>;
+  weight?: InputMaybe<Array<MeasureInput>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
 };
 
@@ -26908,6 +26882,12 @@ export type TypeAttribute = {
   type: Scalars['String']['output'];
 };
 
+export enum UnitSystem {
+  Imperial = 'Imperial',
+  Metric = 'Metric',
+  Auto = 'auto'
+}
+
 export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Url';
   cases?: Maybe<CaseConnection>;
@@ -27126,7 +27106,7 @@ export type User = BasicObject & InternalObject & {
   sessions?: Maybe<Array<Maybe<SessionDetail>>>;
   standard_id: Scalars['String']['output'];
   theme?: Maybe<Scalars['String']['output']>;
-  unit_system?: Maybe<Scalars['String']['output']>;
+  unit_system?: Maybe<UnitSystem>;
   updated_at: Scalars['DateTime']['output'];
   user_email: Scalars['String']['output'];
 };
@@ -28114,23 +28094,6 @@ export type VulnerabilityEditMutationsRelationAddArgs = {
 export type VulnerabilityEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
-};
-
-export type WeightTuple = {
-  __typename?: 'WeightTuple';
-  date_seen?: Maybe<Scalars['DateTime']['output']>;
-  weight_kg?: Maybe<Scalars['Float']['output']>;
-};
-
-export type WeightTupleInput = {
-  index?: InputMaybe<Scalars['Int']['input']>;
-  operation?: InputMaybe<EditOperation>;
-  values?: InputMaybe<Array<InputMaybe<WeightTupleInputValues>>>;
-};
-
-export type WeightTupleInputValues = {
-  date_seen?: InputMaybe<Scalars['DateTime']['input']>;
-  weight_kg?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -29321,9 +29284,6 @@ export type ResolversTypes = ResolversObject<{
   Hash: ResolverTypeWrapper<Hash>;
   HashInput: HashInput;
   HashedObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['HashedObservable']>;
-  HeightTuple: ResolverTypeWrapper<HeightTuple>;
-  HeightTupleInput: HeightTupleInput;
-  HeightTupleInputValues: HeightTupleInputValues;
   Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   HostnameAddInput: HostnameAddInput;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -29471,6 +29431,8 @@ export type ResolversTypes = ResolversObject<{
   MeOrganizationConnection: ResolverTypeWrapper<MeOrganizationConnection>;
   MeOrganizationEdge: ResolverTypeWrapper<MeOrganizationEdge>;
   MeUser: ResolverTypeWrapper<Omit<MeUser, 'default_dashboard' | 'default_dashboards' | 'groups'> & { default_dashboard?: Maybe<ResolversTypes['Workspace']>, default_dashboards: Array<ResolversTypes['Workspace']>, groups?: Maybe<ResolversTypes['GroupConnection']> }>;
+  Measure: ResolverTypeWrapper<Measure>;
+  MeasureInput: MeasureInput;
   MediaContent: ResolverTypeWrapper<Omit<MediaContent, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   MediaContentAddInput: MediaContentAddInput;
   Member: ResolverTypeWrapper<Member>;
@@ -29851,6 +29813,7 @@ export type ResolversTypes = ResolversObject<{
   TriggersFiltering: TriggersFiltering;
   TriggersOrdering: TriggersOrdering;
   TypeAttribute: ResolverTypeWrapper<TypeAttribute>;
+  UnitSystem: UnitSystem;
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   Url: ResolverTypeWrapper<Omit<Url, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UrlAddInput: UrlAddInput;
@@ -29889,9 +29852,6 @@ export type ResolversTypes = ResolversObject<{
   VulnerabilityConnection: ResolverTypeWrapper<Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['VulnerabilityEdge']>>> }>;
   VulnerabilityEdge: ResolverTypeWrapper<Omit<VulnerabilityEdge, 'node'> & { node: ResolversTypes['Vulnerability'] }>;
   VulnerabilityEditMutations: ResolverTypeWrapper<Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Vulnerability']>, contextPatch?: Maybe<ResolversTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversTypes['Vulnerability']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Vulnerability']> }>;
-  WeightTuple: ResolverTypeWrapper<WeightTuple>;
-  WeightTupleInput: WeightTupleInput;
-  WeightTupleInputValues: WeightTupleInputValues;
   WindowsRegistryKey: ResolverTypeWrapper<Omit<WindowsRegistryKey, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
   WindowsRegistryValueType: ResolverTypeWrapper<Omit<WindowsRegistryValueType, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
@@ -30143,9 +30103,6 @@ export type ResolversParentTypes = ResolversObject<{
   Hash: Hash;
   HashInput: HashInput;
   HashedObservable: ResolversInterfaceTypes<ResolversParentTypes>['HashedObservable'];
-  HeightTuple: HeightTuple;
-  HeightTupleInput: HeightTupleInput;
-  HeightTupleInputValues: HeightTupleInputValues;
   Hostname: Omit<Hostname, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   HostnameAddInput: HostnameAddInput;
   ID: Scalars['ID']['output'];
@@ -30260,6 +30217,8 @@ export type ResolversParentTypes = ResolversObject<{
   MeOrganizationConnection: MeOrganizationConnection;
   MeOrganizationEdge: MeOrganizationEdge;
   MeUser: Omit<MeUser, 'default_dashboard' | 'default_dashboards' | 'groups'> & { default_dashboard?: Maybe<ResolversParentTypes['Workspace']>, default_dashboards: Array<ResolversParentTypes['Workspace']>, groups?: Maybe<ResolversParentTypes['GroupConnection']> };
+  Measure: Measure;
+  MeasureInput: MeasureInput;
   MediaContent: Omit<MediaContent, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   MediaContentAddInput: MediaContentAddInput;
   Member: Member;
@@ -30593,9 +30552,6 @@ export type ResolversParentTypes = ResolversObject<{
   VulnerabilityConnection: Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['VulnerabilityEdge']>>> };
   VulnerabilityEdge: Omit<VulnerabilityEdge, 'node'> & { node: ResolversParentTypes['Vulnerability'] };
   VulnerabilityEditMutations: Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Vulnerability']>, contextPatch?: Maybe<ResolversParentTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversParentTypes['Vulnerability']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Vulnerability']> };
-  WeightTuple: WeightTuple;
-  WeightTupleInput: WeightTupleInput;
-  WeightTupleInputValues: WeightTupleInputValues;
   WindowsRegistryKey: Omit<WindowsRegistryKey, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
   WindowsRegistryValueType: Omit<WindowsRegistryValueType, 'cases' | 'containers' | 'createdBy' | 'groupings' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
@@ -33092,12 +33048,6 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
-export type HeightTupleResolvers<ContextType = any, ParentType extends ResolversParentTypes['HeightTuple'] = ResolversParentTypes['HeightTuple']> = ResolversObject<{
-  date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  height_cm?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type HostnameResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hostname'] = ResolversParentTypes['Hostname']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<HostnameCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<HostnameConnectorsArgs>>;
@@ -34412,8 +34362,15 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  unit_system?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MeasureResolvers<ContextType = any, ParentType extends ResolversParentTypes['Measure'] = ResolversParentTypes['Measure']> = ResolversObject<{
+  date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  index?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  measure?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -34770,11 +34727,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   threatActorIndividualContextPatch?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualContextPatchArgs, 'id'>>;
   threatActorIndividualDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualDeleteArgs, 'id'>>;
   threatActorIndividualFieldPatch?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualFieldPatchArgs, 'id' | 'input'>>;
-  threatActorIndividualHeightEdit?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualHeightEditArgs, 'id' | 'input'>>;
-  threatActorIndividualHeightWeightSort?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualHeightWeightSortArgs, 'id'>>;
   threatActorIndividualRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationAddArgs, 'id' | 'input'>>;
   threatActorIndividualRelationDelete?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  threatActorIndividualWeightEdit?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualWeightEditArgs, 'id' | 'input'>>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
   toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
@@ -37877,7 +37831,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   goals?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualGroupingsArgs>>;
   hair_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  height?: Resolver<Maybe<Array<Maybe<ResolversTypes['HeightTuple']>>>, ParentType, ContextType>;
+  height?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -37917,7 +37871,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  weight?: Resolver<Maybe<Array<Maybe<ResolversTypes['WeightTuple']>>>, ParentType, ContextType>;
+  weight?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -38147,7 +38101,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  unit_system?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unit_system?: Resolver<Maybe<ResolversTypes['UnitSystem']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -38425,12 +38379,6 @@ export type VulnerabilityEditMutationsResolvers<ContextType = any, ParentType ex
   fieldPatch?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type WeightTupleResolvers<ContextType = any, ParentType extends ResolversParentTypes['WeightTuple'] = ResolversParentTypes['WeightTuple']> = ResolversObject<{
-  date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  weight_kg?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -38843,7 +38791,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   GroupingEdge?: GroupingEdgeResolvers<ContextType>;
   Hash?: HashResolvers<ContextType>;
   HashedObservable?: HashedObservableResolvers<ContextType>;
-  HeightTuple?: HeightTupleResolvers<ContextType>;
   Hostname?: HostnameResolvers<ContextType>;
   IPv4Addr?: IPv4AddrResolvers<ContextType>;
   IPv6Addr?: IPv6AddrResolvers<ContextType>;
@@ -38919,6 +38866,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MeOrganizationConnection?: MeOrganizationConnectionResolvers<ContextType>;
   MeOrganizationEdge?: MeOrganizationEdgeResolvers<ContextType>;
   MeUser?: MeUserResolvers<ContextType>;
+  Measure?: MeasureResolvers<ContextType>;
   MediaContent?: MediaContentResolvers<ContextType>;
   Member?: MemberResolvers<ContextType>;
   MemberAccess?: MemberAccessResolvers<ContextType>;
@@ -39147,7 +39095,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   VulnerabilityConnection?: VulnerabilityConnectionResolvers<ContextType>;
   VulnerabilityEdge?: VulnerabilityEdgeResolvers<ContextType>;
   VulnerabilityEditMutations?: VulnerabilityEditMutationsResolvers<ContextType>;
-  WeightTuple?: WeightTupleResolvers<ContextType>;
   WindowsRegistryKey?: WindowsRegistryKeyResolvers<ContextType>;
   WindowsRegistryValueType?: WindowsRegistryValueTypeResolvers<ContextType>;
   Work?: WorkResolvers<ContextType>;

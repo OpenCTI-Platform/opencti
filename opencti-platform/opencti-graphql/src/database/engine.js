@@ -585,25 +585,19 @@ const elCreateIndexTemplate = async (index) => {
               },
             },
             height: {
-              type: 'object',
+              type: 'nested',
               properties: {
-                height_cm: {
-                  type: 'float',
-                },
-                date_seen: {
-                  type: 'date',
-                },
+                id: { type: 'keyword' },
+                measure: { type: 'float' },
+                date_seen: { type: 'date' },
               },
             },
             weight: {
-              type: 'object',
+              type: 'nested',
               properties: {
-                weight_kg: {
-                  type: 'float',
-                },
-                date_seen: {
-                  type: 'date',
-                },
+                id: { type: 'keyword' },
+                measure: { type: 'float' },
+                date_seen: { type: 'date' },
               },
             },
             timestamp: {
