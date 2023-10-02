@@ -13,9 +13,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { v4 as uuidv4 } from 'uuid';
 import type { PlaybookComponent, PlaybookComponentConfiguration } from './playbook-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters } from '../../utils/filtering';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
+import { pushToSync } from '../../database/rabbitmq';
+import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 
 // region Testing playbook components
 interface ConsoleConfiguration extends PlaybookComponentConfiguration {}
@@ -34,6 +37,7 @@ const PLAYBOOK_CONSOLE_STANDARD_COMPONENT: PlaybookComponent<ConsoleConfiguratio
     return { output_port: 'out', data };
   }
 };
+
 const PLAYBOOK_CONSOLE_ERROR_COMPONENT: PlaybookComponent<ConsoleConfiguration> = {
   id: 'PLAYBOOK_CONSOLE_ERROR_COMPONENT',
   name: 'Error console',
@@ -94,6 +98,26 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
     return ({ output_port: 'out', data });
   }
 };
+
+interface IngestionConfiguration extends PlaybookComponentConfiguration {}
+const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = {
+  id: 'PLAYBOOK_WRITE_COMPONENT',
+  name: 'Send to absorption',
+  description: 'Send stix data to get injected',
+  icon: 'storage',
+  is_entry_point: false,
+  is_internal: true,
+  ports: [],
+  configuration_schema: undefined,
+  executor: async ({ data }) => {
+    const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: [data] };
+    const stixBundle = JSON.stringify(bundle);
+    const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
+    await pushToSync({ type: 'bundle', applicant_id: OPENCTI_SYSTEM_UUID, content, update: true });
+    return { output_port: undefined, data };
+  }
+};
+
 interface FilterConfiguration extends PlaybookComponentConfiguration {
   filters: string
 }
@@ -131,5 +155,6 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<StreamConfigu
   PLAYBOOK_FILTERING_COMPONENT,
   PLAYBOOK_INTERNAL_DATA_STREAM,
   PLAYBOOK_CONSOLE_STANDARD_COMPONENT,
-  PLAYBOOK_CONSOLE_ERROR_COMPONENT
+  PLAYBOOK_CONSOLE_ERROR_COMPONENT,
+  PLAYBOOK_INGESTION_COMPONENT
 };

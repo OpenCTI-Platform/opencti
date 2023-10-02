@@ -52,6 +52,7 @@ import {
   FilterAltOutlined,
   CastConnectedOutlined,
   TerminalOutlined,
+  DriveFolderUploadOutlined,
 } from '@mui/icons-material';
 import {
   ArchiveOutline,
@@ -363,6 +364,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       );
     case 'console':
       return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'storage':
+      return <DriveFolderUploadOutlined style={style} fontSize={fontSize} role="img" />;
     case 'relationship':
     case 'stix-core-relationship':
     case 'targets':
