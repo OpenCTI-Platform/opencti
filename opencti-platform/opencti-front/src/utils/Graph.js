@@ -1187,7 +1187,7 @@ export const nodePaint = (
   ctx.textBaseline = 'middle';
   ctx.fillText(label, x, y + 10);
 
-  if (numberOfConnectedElement !== 0) {
+  if (numberOfConnectedElement === undefined || numberOfConnectedElement > 0) {
     ctx.beginPath();
     ctx.fillStyle = itemColor('numberOfConnectedElement');
     ctx.arc(x + 4, y - 5, 3.5, 0, 2 * Math.PI, false);
