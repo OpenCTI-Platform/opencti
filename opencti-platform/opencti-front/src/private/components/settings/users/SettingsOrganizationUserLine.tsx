@@ -1,4 +1,4 @@
-import React, { Component, FunctionComponent } from 'react';
+import React, { Component, FunctionComponent, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer, useFragment } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
@@ -20,6 +20,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { SettingsOrganizationUserLine_node$key } from '@components/settings/users/__generated__/SettingsOrganizationUserLine_node.graphql';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -60,10 +63,31 @@ interface SettingsOrganizationUserLineComponentProps {
 
 export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizationUserLineComponentProps> = ({dataColumns, node, isOrganizationAdmin}) => {
   const classes = useStyles();
-  const { fd } = useFormatter();
+  const { fd, t } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
   const data = useFragment(UserLineFragment, node);
   const external = data.external === true;
+
+  const handleOpen = (event: React.SyntheticEvent) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  function promoteUser() {
+
+  }
+
+  function demoteUser() {
+
+  }
+
+  function removeUserFromOrganization() {
+
+  }
+
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -123,9 +147,24 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         { isOrganizationAdmin ?
-        <KeyboardArrowRightOutlined />
-          :
-          <MoreVertOutlined/>
+          <>
+            <IconButton
+              onClick={handleOpen}
+              aria-haspopup="true"
+              style={{ marginTop: 3 }}
+              size="large"
+            >
+              <MoreVertOutlined />
+            </IconButton>
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+              <MenuItem onClick={promoteUser}>{t('Promote as Organization Admin')}</MenuItem>
+              <MenuItem onClick={demoteUser}>{t('Demote as simple member')}</MenuItem>
+              <MenuItem onClick={removeUserFromOrganization}>{t('Remove from the Organization')}</MenuItem>
+            </Menu>
+          </>
+        :
+            <KeyboardArrowRightOutlined />
+
         }
       </ListItemIcon>
     </ListItem>

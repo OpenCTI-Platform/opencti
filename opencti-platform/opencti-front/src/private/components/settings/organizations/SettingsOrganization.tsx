@@ -24,6 +24,9 @@ import { truncate } from '../../../../utils/String';
 import { SettingsOrganization_organization$key } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationEdition from './SettingsOrganizationEdition';
 import SettingsOrganizationHiddenTypesChipList from './SettingsOrganizationHiddenTypesChipList';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { SETTINGS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const useStyles = makeStyles({
   container: {
@@ -99,6 +102,7 @@ const SettingsOrganization = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const { me } = useAuth();
   const organization = useFragment<SettingsOrganization_organization$key>(
     settingsOrganizationFragment,
     organizationData,
@@ -108,18 +112,19 @@ const SettingsOrganization = ({
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
   ).some(({ id }) => ['ALL', organization.id].includes(id));
-  // TODO put the right value
-  const isOrganizationAdmin = true;
+  const userHasSetAccessCapability = (me.capabilities ?? []).map((c) => c.name).includes(SETTINGS_SETACCESSES)
+  const isOrganizationAdmin = me.administrated_organizations.map((orga) => orga?.id).includes(organization.id) && userHasSetAccessCapability;
+  // TODO Check if right capability for Orga Edition
   return (
     <div className={classes.container}>
       <AccessesMenu />
-      {!isOrganizationAdmin &&
+      <Security needs={[SETTINGS]}>
         <SettingsOrganizationEdition
         organization={organization}
         enableReferences={useIsEnforceReference('Organization')}
         context={organization.editContext}
-      />
-      }
+        />
+      </Security>
       <>
         <Typography variant="h1" gutterBottom={true} className={classes.title}>
           {organization.name}
