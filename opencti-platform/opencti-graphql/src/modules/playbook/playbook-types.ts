@@ -71,24 +71,28 @@ export interface PortDefinition {
   type: 'in' | 'out'
 }
 
+export interface NodeDefinition {
+  id: string,
+  name: string,
+  position: { x: number, y: number },
+  component_id: string,
+  configuration: string // json
+}
+
+export interface LinkDefinition {
+  id: string,
+  from: {
+    port: string,
+    id: string
+  },
+  to: {
+    id: string
+  }
+}
+
 export interface ComponentDefinition {
-  nodes: {
-    id: string,
-    name: string,
-    position: { x: number, y: number },
-    component_id: string,
-    configuration: string // json
-  }[]
-  links: {
-    id: string,
-    from: {
-      port: string,
-      id: string
-    },
-    to: {
-      id: string
-    }
-  }[]
+  nodes: NodeDefinition[]
+  links: LinkDefinition[]
 }
 
 export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {

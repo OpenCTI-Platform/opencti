@@ -86,12 +86,31 @@ export const useManipulateComponentsDeleteLinkMutation = graphql`
   }
 `;
 
-const computeOrphanLinks = (selectedNode, component, edges) => edges
-  .filter(
-    (n) => n.source === selectedNode.id
-        && !component.ports.map((o) => o.id).includes(n.sourceHandle),
-  )
-  .map((n) => n.id);
+const deleteEdgesAndAllChildren = (definitionNodes, definitionEdges, edges) => {
+  const edgesToDelete = edges;
+  const nodesToDelete = [];
+  let childrenEdges = [];
+  let childrenNodes = definitionNodes.filter((n) => edges.map((o) => o.target).includes(n.id));
+  if (childrenNodes.length > 0) {
+    nodesToDelete.push(...childrenNodes);
+    childrenEdges = definitionEdges.filter((n) => childrenNodes.map((o) => o.id).includes(n.source));
+  }
+  while (childrenEdges.length > 0) {
+    edgesToDelete.push(...childrenEdges);
+    childrenNodes = definitionNodes.filter((n) => edgesToDelete.map((o) => o.target).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
+    if (childrenNodes.length > 0) {
+      nodesToDelete.push(...childrenNodes);
+      // eslint-disable-next-line @typescript-eslint/no-loop-func
+      childrenEdges = definitionEdges.filter((n) => childrenNodes.map((o) => o.id).includes(n.source));
+    } else {
+      childrenEdges = [];
+    }
+  }
+  return {
+    nodes: definitionNodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
+    edges: definitionEdges.filter((n) => !edgesToDelete.map((o) => o.id).includes(n.id)),
+  };
+};
 
 const useManipulateComponents = (playbook, playbookComponents) => {
   const [selectedNode, setSelectedNode] = useState(null);
@@ -365,6 +384,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       .concat(newEdges));
   };
   const applyReplaceNode = (component, name, configuration) => {
+    let newEdges = getEdges();
     let newNodes = getNodes().map((node) => {
       if (node.id === selectedNode.id) {
         return {
@@ -392,19 +412,6 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       }
       return node;
     });
-    // Links connected to inexisting ports
-    let newEdges = getEdges();
-    let linksToDelete = computeOrphanLinks(selectedNode, component, newEdges);
-    while (linksToDelete.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
-      newEdges = newEdges.filter((n) => !linksToDelete.includes(n.id));
-      newNodes = newNodes.filter(
-        // eslint-disable-next-line @typescript-eslint/no-loop-func
-        (n) => newEdges.filter((o) => o.source === n.id || o.target === n.id)
-          .length > 0,
-      );
-      linksToDelete = computeOrphanLinks(selectedNode, component, newEdges);
-    }
     if (selectedNode.data.component.ports.length < component.ports.length) {
       const childPlaceholderId = uuid();
       for (
@@ -445,12 +452,65 @@ const useManipulateComponents = (playbook, playbookComponents) => {
           },
         });
       }
+    } else if (selectedNode.data.component.ports.length > component.ports.length) {
+      // eslint-disable-next-line no-plusplus
+      for (let i = 1; i <= selectedNode.data.component.ports.length - component.ports.length; i++) {
+        // Find all links to the port
+        const edgesToDelete = newEdges.filter((n) => n.source === selectedNode.id && n.sourceHandle === selectedNode.data.component.ports[i].id);
+        const result = deleteEdgesAndAllChildren(newNodes, newEdges, edgesToDelete);
+        newNodes = result.nodes;
+        newEdges = result.edges;
+      }
     }
     setNodes(newNodes);
     setEdges(newEdges);
   };
   const applyDeleteNode = () => {
-    // TODO
+    let newNodes = getNodes().filter((n) => n.id !== selectedNode.id);
+    let newEdges = getEdges();
+    const edgesToDelete = newEdges.filter((n) => n.source === selectedNode.id);
+    const result = deleteEdgesAndAllChildren(newNodes, newEdges, edgesToDelete);
+    newNodes = result.nodes;
+    newEdges = result.edges;
+    const originEdge = getEdges()
+      .filter((o) => o.target === selectedNode.id)
+      ?.at(0);
+    const parentNode = getNodes()
+      .filter((n) => n.id === originEdge?.source)
+      ?.at(0);
+    const childPlaceholderId = uuid();
+    newNodes.push({
+      id: `${childPlaceholderId}-${originEdge.sourceHandle}`,
+      position: {
+        x: parentNode.position.x,
+        y: parentNode.position.y,
+      },
+      type: 'placeholder',
+      data: {
+        name: '+',
+        configuration: null,
+        component: { is_entry_point: false },
+        openConfig: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('config');
+        },
+      },
+    });
+    newEdges.push({
+      id: `${selectedNode.nodeId}-${childPlaceholderId}-${originEdge.sourceHandle}`,
+      type: 'placeholder',
+      source: originEdge.source,
+      sourceHandle: originEdge.sourceHandle,
+      target: `${childPlaceholderId}-${originEdge.sourceHandle}`,
+      data: {
+        openConfig: (nodeId) => {
+          setSelectedNode(nodeId);
+          setAction('config');
+        },
+      },
+    });
+    setNodes(newNodes);
+    setEdges(newEdges);
   };
   // endregion
   // region backend graph

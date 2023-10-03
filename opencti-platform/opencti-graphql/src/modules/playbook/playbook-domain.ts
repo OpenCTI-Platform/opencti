@@ -25,9 +25,10 @@ import type {
   EditInput,
   PlaybookAddInput,
   PlaybookAddNodeInput,
-  PlaybookAddLinkInput, PositionInput,
+  PlaybookAddLinkInput,
+  PositionInput,
 } from '../../generated/graphql';
-import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
+import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS } from './playbook-components';
 import { UnsupportedError } from '../../config/errors';
@@ -75,26 +76,34 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   return nodeId;
 };
 
-const computeOrphanLinks = (definition: ComponentDefinition) => {
-  return definition.links.filter(
-    (n) => (definition.nodes.filter((o) => (n.from.id === o.id && PLAYBOOK_COMPONENTS[o.component_id].ports.map((p) => p.id).includes(n.from.port))).length === 0
-          || definition.nodes.filter((o) => n.to.id === o.id).length === 0)
-  ).map((n) => n.id);
-};
-const clearOrphans = (def: ComponentDefinition) => {
-  const definition = def;
-  let orphanLinks = computeOrphanLinks(definition);
-  while (orphanLinks.length > 0) {
-    logApp.info('[PLAYBOOK] Clearing orphan links loop', { orphanLinks });
-    // Clear links with missing from (including correct port) or missing to
-    // eslint-disable-next-line @typescript-eslint/no-loop-func
-    definition.links = definition.links.filter((n) => !orphanLinks.includes(n.id));
-    // Clear nodes with no links
-    definition.nodes = definition.nodes.filter((n) => definition.links.filter((o) => o.from.id === n.id || o.to.id === n.id).length > 0);
-    // Recompute orphan links
-    orphanLinks = computeOrphanLinks(definition);
+const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
+  // Resolve all nodes to delete
+  const linksToDelete = links;
+  const nodesToDelete = [] as NodeDefinition[];
+  let childrenLinks = [] as LinkDefinition[];
+  // Resolve children nodes
+  let childrenNodes = definition.nodes.filter((n) => links.map((o) => o.to.id).includes(n.id));
+  if (childrenNodes.length > 0) {
+    nodesToDelete.push(...childrenNodes);
+    childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
   }
-  return definition;
+  while (childrenLinks.length > 0) {
+    linksToDelete.push(...childrenLinks);
+    // Resolve children nodes not already in nodesToDelete
+    childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
+    if (childrenNodes.length > 0) {
+      nodesToDelete.push(...childrenNodes);
+      // eslint-disable-next-line @typescript-eslint/no-loop-func
+      childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
+    } else {
+      childrenLinks = [];
+    }
+    logApp.info('Delete links and children loop', { nodesToDelete, linksToDelete });
+  }
+  return {
+    nodes: definition.nodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
+    links: definition.links.filter((n) => !linksToDelete.map((o) => o.id).includes(n.id))
+  };
 };
 
 export const playbookUpdatePositions = async (context: AuthContext, user: AuthUser, id: string, positions: string) => {
@@ -118,7 +127,7 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
 
 export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, input: PlaybookAddNodeInput) => {
   const playbook = await findById(context, user, id);
-  let definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found');
@@ -126,6 +135,22 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
   const existingEntryPoint = definition.nodes.filter((n) => n.id !== nodeId).find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported');
+  }
+  // We need to re-compute port mapping
+  const oldComponentId = definition.nodes.filter((n) => n.id === nodeId).at(0)?.component_id;
+  if (!oldComponentId) {
+    throw UnsupportedError('Old component not found');
+  }
+  const oldComponent = PLAYBOOK_COMPONENTS[oldComponentId];
+  if (oldComponent.ports.length > relatedComponent.ports.length) {
+    // eslint-disable-next-line no-plusplus
+    for (let i = 1; i <= oldComponent.ports.length - relatedComponent.ports.length; i++) {
+      // Find all links to the port
+      const linksToDelete = definition.links.filter((n) => n.from.id === nodeId && n.from.port === oldComponent.ports[i].id);
+      const result = deleteLinksAndAllChildren(definition, linksToDelete);
+      definition.nodes = result.nodes;
+      definition.links = result.links;
+    }
   }
   // Replace the node
   definition.nodes = definition.nodes.map((n) => {
@@ -140,8 +165,7 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
     }
     return n;
   });
-  // Clear potential orphan ports because of component replacement
-  definition = clearOrphans(definition);
+
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return nodeId;
@@ -217,12 +241,15 @@ export const playbookInsertNode = async (context: AuthContext, user: AuthUser, i
 
 export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {
   const playbook = await findById(context, user, id);
-  let definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   definition.nodes = definition.nodes.filter((n) => n.id !== nodeId);
-  // Also delete all links related to the deleted node
-  definition.links = definition.links.filter((n) => n.from.id !== nodeId && n.to.id !== nodeId);
-  // Clear orphans
-  definition = clearOrphans(definition);
+  // Also delete all links going to this node (all links from this node are deleted after)
+  definition.links = definition.links.filter((n) => n.to.id !== nodeId);
+  // Delete all children
+  const linksToDelete = definition.links.filter((n) => n.from.id === nodeId);
+  const result = deleteLinksAndAllChildren(definition, linksToDelete);
+  definition.nodes = result.nodes;
+  definition.links = result.links;
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
