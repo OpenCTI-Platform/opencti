@@ -10,7 +10,7 @@ import {
   AccountCircleOutlined,
   KeyboardArrowRightOutlined,
   HorizontalRule,
-  Security, MoreVertOutlined,
+  Security, MoreVertOutlined, AdminPanelSettingsOutlined,
 } from '@mui/icons-material';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
@@ -20,9 +20,11 @@ import { SettingsOrganizationUserLine_node$key } from '@components/settings/user
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { externalReferenceEditionOverviewFocus } from '@components/analyses/external_references/ExternalReferenceEditionOverview';
 import { DataColumns } from '../../../../components/list_lines';
 import { Theme } from '../../../../components/Theme';
 import inject18n, { useFormatter } from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -67,6 +69,19 @@ const UserLineFragment = graphql`
     }
   }
 `;
+// organizationRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+export const organizationMutationAdminAdd = graphql`
+  mutation SettingsOrganizationUserLineAdminAddMutation(
+    $id: ID!
+    $memberId: String!
+  ) {
+    organizationAdminAdd(id: $id, memberId: $memberId) {
+      id
+      authorized_authorities
+    }
+  }
+`;
+
 interface SettingsOrganizationUserLineComponentProps {
   dataColumns: DataColumns;
   node: SettingsOrganizationUserLine_node$key;
@@ -79,7 +94,6 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
   const data = useFragment(UserLineFragment, node);
-  // TODO Correct value
   const memberIsOrganizationAdmin = data.administrated_organizations?.length > 0;
   const external = data.external === true;
 
@@ -91,7 +105,20 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
   };
 
   function promoteUser() {
-
+    commitMutation({
+      mutation: organizationMutationAdminAdd,
+      variables: {
+        id: '111',
+        memberId: data.id,
+      },
+      updater: undefined,
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onCompleted: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
+    });
+    handleClose();
   }
 
   function demoteUser() {
@@ -112,7 +139,7 @@ export const SettingsOrganizationUserLine: FunctionComponent<SettingsOrganizatio
         to={isOrganizationAdmin ? undefined : `/dashboard/settings/accesses/users/${data.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {external ? <AccountCircleOutlined /> : <PersonOutlined />}
+          {external ? <AccountCircleOutlined /> : (memberIsOrganizationAdmin ? <AdminPanelSettingsOutlined/> : <PersonOutlined />)}
         </ListItemIcon>
         <ListItemText
           primary={

@@ -12949,6 +12949,8 @@ export type Mutation = {
   opinionAdd?: Maybe<Opinion>;
   opinionEdit?: Maybe<OpinionEditMutations>;
   organizationAdd?: Maybe<Organization>;
+  organizationAdminAdd?: Maybe<Organization>;
+  organizationAdminRemove?: Maybe<Organization>;
   organizationContextClean?: Maybe<Organization>;
   organizationContextPatch?: Maybe<Organization>;
   organizationDelete?: Maybe<Scalars['ID']['output']>;
@@ -13929,6 +13931,18 @@ export type MutationOpinionEditArgs = {
 
 export type MutationOrganizationAddArgs = {
   input: OrganizationAddInput;
+};
+
+
+export type MutationOrganizationAdminAddArgs = {
+  id: Scalars['ID']['input'];
+  memberId: Scalars['String']['input'];
+};
+
+
+export type MutationOrganizationAdminRemoveArgs = {
+  id: Scalars['ID']['input'];
+  memberId: Scalars['String']['input'];
 };
 
 
@@ -34632,6 +34646,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   opinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationOpinionAddArgs, 'input'>>;
   opinionEdit?: Resolver<Maybe<ResolversTypes['OpinionEditMutations']>, ParentType, ContextType, RequireFields<MutationOpinionEditArgs, 'id'>>;
   organizationAdd?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationAddArgs, 'input'>>;
+  organizationAdminAdd?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationAdminAddArgs, 'id' | 'memberId'>>;
+  organizationAdminRemove?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationAdminRemoveArgs, 'id' | 'memberId'>>;
   organizationContextClean?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationContextCleanArgs, 'id'>>;
   organizationContextPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationContextPatchArgs, 'id' | 'input'>>;
   organizationDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationOrganizationDeleteArgs, 'id'>>;

@@ -7,7 +7,7 @@ import {
   batchSectors,
   batchSubOrganizations, editAuthorizedAuthorities,
   findAll,
-  findById
+  findById, organizationAdminAdd, organizationAdminRemove
 } from './organization-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -55,6 +55,12 @@ const organizationResolvers: Resolvers = {
     },
     organizationEditAuthorizedAuthorities: (_, { id, input }, context) => {
       return editAuthorizedAuthorities(context, context.user, id, input);
+    },
+    organizationAdminAdd: (_, { id, memberId }, context) => {
+      return organizationAdminAdd(context, context.user, id, memberId);
+    },
+    organizationAdminRemove: (_, { id, memberId }, context) => {
+      return organizationAdminRemove(context, context.user, id, memberId);
     },
   },
 };

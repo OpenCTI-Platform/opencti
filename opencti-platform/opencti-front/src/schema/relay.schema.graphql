@@ -9156,6 +9156,8 @@ type Mutation {
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
   organizationEditAuthorizedAuthorities(id: ID!, input: [String]!): Organization
+  organizationAdminAdd(id: ID!, memberId: String!): Organization
+  organizationAdminRemove(id: ID!, memberId: String!): Organization
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
