@@ -56,12 +56,14 @@ export default function CheckboxesField({
 
         <ButtonGroup size="small" sx={{ marginTop: '4px' }}>
           <Button
-            variant={value.length === items.length ? 'contained' : undefined}
+            disabled={items.length === 0}
+            variant={(items.length > 0 && value.length === items.length) ? 'contained' : undefined}
             onClick={checkAll}>
             {t('All')}
           </Button>
           <Button
-            variant={value.length === 0 ? 'contained' : undefined}
+            disabled={items.length === 0}
+            variant={(items.length > 0 && value.length === 0) ? 'contained' : undefined}
             onClick={checkNone}>
             {t('None')}
           </Button>
