@@ -160,6 +160,7 @@ const searchConfiguration = {
 const elasticSearchClient = new ElkClient(searchConfiguration);
 const openSearchClient = new OpenClient(searchConfiguration);
 let isRuntimeSortingEnable = false;
+let isTermsSetUsable = false;
 let engine = openSearchClient;
 
 // The OpenSearch/ELK Body Parser (oebp)
@@ -221,6 +222,7 @@ export const searchEngineInit = async () => {
   }
   // Setup the platform runtime field option
   isRuntimeSortingEnable = enginePlatform === ELK_ENGINE && semver.satisfies(engineVersion, '>=7.12.x');
+  isTermsSetUsable = enginePlatform === ELK_ENGINE && semver.satisfies(engineVersion, '>=8.10.0');
   const runtimeStatus = isRuntimeSortingEnable ? 'enabled' : 'disabled';
   logApp.info(`[SEARCH] ${enginePlatform} (${engineVersion}) client selected / runtime sorting ${runtimeStatus}`);
   // Everything is fine, return true
@@ -1336,25 +1338,43 @@ const elQueryBodyBuilder = async (context, user, options) => {
           const nestedElement = nested[nestIndex];
           const parentKey = validKeys.at(0);
           const { key: nestedKey, values: nestedValues, operator: nestedOperator = 'eq' } = nestedElement;
-          const nestedShould = [];
-          for (let i = 0; i < nestedValues.length; i += 1) {
-            const nestedFieldKey = `${parentKey}.${nestedKey}`;
-            const nestedSearchValues = nestedValues[i].toString();
-            if (nestedOperator === 'wildcard') {
-              nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
-            } else if (nestedOperator === 'not_eq') {
-              nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+          const nestedFieldKey = `${parentKey}.${nestedKey}`;
+          // Use term queries for keyword fields where applicable
+          // TODO: Get full list of keywordable fields but for now IDs are the most important use case
+          const keywordable = [ID_INTERNAL, ID_STANDARD, IDS_STIX, 'connections.internal_id'];
+          if (nestedOperator !== 'wildcard' && !(localFilterMode !== 'or' && isTermsSetUsable === false) && keywordable.indexOf(nestedFieldKey) !== -1) {
+            const keywordKey = `${nestedFieldKey}.keyword`;
+            let query;
+            if (localFilterMode === 'or') {
+              query = { terms: { [keywordKey]: nestedValues.map((v) => v.toString()) } };
             } else {
-              nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+              query = { terms_set: { [keywordKey]: { terms: nestedValues.map((v) => v.toString()), minimum_should_match: nestedValues.length } } };
             }
+            if (nestedOperator === 'not_eq') {
+              nestedMustNot.push(query);
+            } else {
+              nestedMust.push(query);
+            }
+          } else {
+            const nestedShould = [];
+            for (let i = 0; i < nestedValues.length; i += 1) {
+              const nestedSearchValues = nestedValues[i].toString();
+              if (nestedOperator === 'wildcard') {
+                nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
+              } else if (nestedOperator === 'not_eq') {
+                nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+              } else {
+                nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
+              }
+            }
+            const should = {
+              bool: {
+                should: nestedShould,
+                minimum_should_match: localFilterMode === 'or' ? 1 : nestedShould.length,
+              },
+            };
+            nestedMust.push(should);
           }
-          const should = {
-            bool: {
-              should: nestedShould,
-              minimum_should_match: localFilterMode === 'or' ? 1 : nestedShould.length,
-            },
-          };
-          nestedMust.push(should);
         }
         const nestedQuery = {
           path: R.head(validKeys),
