@@ -44,7 +44,7 @@ export interface StixPlaybook extends StixObject {
 
 export interface PlaybookComponentConfiguration {}
 
-export interface NodeInstance<T> {
+export interface NodeInstance<T extends PlaybookComponentConfiguration> {
   id: string
   component_id: string
   configuration: T
@@ -52,7 +52,7 @@ export interface NodeInstance<T> {
 
 export interface PlaybookExecution { output_port: string | undefined, data: StixCoreObject }
 
-export interface ExecutorParameters<T> { playbookRunId: string, instance: NodeInstance<T>, data: StixCoreObject }
+export interface ExecutorParameters<T extends PlaybookComponentConfiguration> { playbookRunId: string, instance: NodeInstance<T>, data: StixCoreObject }
 
 export interface PlaybookComponent<T extends PlaybookComponentConfiguration> {
   id: string

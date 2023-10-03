@@ -125,12 +125,13 @@ const playbookExecutor = async (
   playbookRunId: string,
   definition: ComponentDefinition,
   component: PlaybookComponent<PlaybookComponentConfiguration>,
-  instance: NodeInstance<PlaybookComponentConfiguration>,
+  instance: NodeInstance<string>,
   data: StixCoreObject
 ) => {
   const start = now();
   try {
-    const execution = await component.executor({ playbookRunId, instance, data });
+    const instanceWithConfig = { ...instance, configuration: JSON.parse(instance.configuration ?? '{}') };
+    const execution = await component.executor({ playbookRunId, instance: instanceWithConfig, data });
     // For internal component, register directly the observability
     if (component.is_internal) {
       const observation = { stepId: instance.id, start, end: now(), playbookRunId, data };
