@@ -2,7 +2,7 @@
   "name": "eslint-plugin-custom-rules",
   "version": "0.0.1",
   "description": "Additional custom rules",
-  "main": "./lib/index.js",
+  "main": "lib/index.js",
   "exports": "./lib/index.js",
   "dependencies": {
     "requireindex": "1.2.0"
