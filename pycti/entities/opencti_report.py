@@ -619,10 +619,10 @@ class Report:
                 stix_object[
                     "x_opencti_stix_ids"
                 ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-            if "granted_refs" not in stix_object:
-                stix_object["granted_refs"] = self.opencti.get_attribute_in_extension(
-                    "granted_refs", stix_object
-                )
+            if "x_opencti_granted_refs" not in stix_object:
+                stix_object[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
             if "x_opencti_reliability" not in stix_object:
                 stix_object[
                     "x_opencti_reliability"
