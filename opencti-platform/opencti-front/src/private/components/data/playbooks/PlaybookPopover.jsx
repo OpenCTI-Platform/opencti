@@ -63,6 +63,7 @@ const playbookEditionQuery = graphql`
       id
       name
       playbook_running
+      playbook_definition
       ...PlaybookEdition_playbook
     }
   }

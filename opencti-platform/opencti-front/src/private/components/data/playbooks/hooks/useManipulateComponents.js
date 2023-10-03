@@ -482,8 +482,8 @@ const useManipulateComponents = (playbook, playbookComponents) => {
     newNodes.push({
       id: `${childPlaceholderId}-${originEdge.sourceHandle}`,
       position: {
-        x: parentNode.position.x,
-        y: parentNode.position.y,
+        x: selectedNode.position.x,
+        y: selectedNode.position.y,
       },
       type: 'placeholder',
       data: {
@@ -497,9 +497,9 @@ const useManipulateComponents = (playbook, playbookComponents) => {
       },
     });
     newEdges.push({
-      id: `${selectedNode.nodeId}-${childPlaceholderId}-${originEdge.sourceHandle}`,
+      id: `${parentNode.id}-${originEdge.sourceHandle}-${childPlaceholderId}`,
       type: 'placeholder',
-      source: originEdge.source,
+      source: parentNode.id,
       sourceHandle: originEdge.sourceHandle,
       target: `${childPlaceholderId}-${originEdge.sourceHandle}`,
       data: {

@@ -165,7 +165,6 @@ export const playbookReplaceNode = async (context: AuthContext, user: AuthUser, 
     }
     return n;
   });
-
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return nodeId;

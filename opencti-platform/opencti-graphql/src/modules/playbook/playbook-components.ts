@@ -101,9 +101,9 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
 
 interface IngestionConfiguration extends PlaybookComponentConfiguration {}
 const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = {
-  id: 'PLAYBOOK_WRITE_COMPONENT',
-  name: 'Send to absorption',
-  description: 'Send stix data to get injected',
+  id: 'PLAYBOOK_INGESTION_COMPONENT',
+  name: 'Send for ingestion',
+  description: 'Send STIX data for ingestion',
   icon: 'storage',
   is_entry_point: false,
   is_internal: true,
@@ -124,7 +124,7 @@ interface FilterConfiguration extends PlaybookComponentConfiguration {
 const PLAYBOOK_FILTERING_COMPONENT: PlaybookComponent<FilterConfiguration> = {
   id: 'PLAYBOOK_FILTERING_COMPONENT',
   name: 'Filter knowledge',
-  description: 'Filter stix data',
+  description: 'Filter STIX data',
   icon: 'filter',
   is_entry_point: false,
   is_internal: true,

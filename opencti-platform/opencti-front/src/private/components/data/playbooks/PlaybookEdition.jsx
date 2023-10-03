@@ -121,14 +121,6 @@ const PlaybookEditionContainer = ({ handleClose, playbook }) => {
   );
 };
 
-PlaybookEditionContainer.propTypes = {
-  handleClose: PropTypes.func,
-  classes: PropTypes.object,
-  playbook: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-};
-
 const PlaybookEditionFragment = createFragmentContainer(
   PlaybookEditionContainer,
   {
